@@ -51,8 +51,8 @@ node .claude/skills/belge-esitle/baglanti-denetimi.mjs docs CLAUDE.md .claude
 - Ayar doğrulamasını kullanıcı yapar: oturumda `/doctor` ya da ayrı bir terminalde `claude doctor` çalıştırır ve "Invalid settings" bölümü olup olmadığını söyler. Claude Code oturumunun içinden `claude doctor` çalıştırılmaz (iç içe oturum, terminal yok).
 - Çalışma dizini proje kökü değilse dur: kullanıcı Claude Code'u kökte yeniden başlatır ([Kurulum](../01-kurulum.md) §5). Proje ayarları yüklendiyse `PowerShell aracı: 0` yazar.
 - Hook testlerinin hepsi geçmeli. Kullanıcının `/doctor` sonucunda "Invalid settings" bölümü olmamalı.
-- Kullanıcıdan `/hooks`, `/agents`, `/skills` ve `/status` komutlarını çalıştırmasını ve sonuçları doğrulamasını iste: 3 hook kaydı, 11 ajan, 16 beceri, "Setting sources" içinde proje ayarları ([Kurulum](../01-kurulum.md) §5).
-- Klasör bekçisini canlı dene; deneme hedefi bilgisayarda olmayan bir sürücüdür, böylece onay verilse bile hiçbir yere yazılamaz. Kullanıcıya bilgisayarda `Z:` sürücüsü olup olmadığını sor; varsa kullanılmayan başka bir harf seç. (1) `Write` ile `Z:/mutalaa-bekci.txt` reddedilmeli; (2) `echo deneme > /z/mutalaa-bekci.txt` komutu onay sormalı ve kullanıcı reddetmeli. Retleri rapora koy. Ayrıntı ve sınırlar: [Kurulum](../01-kurulum.md) §7.
+- Kullanıcıdan `/hooks`, `/agents`, `/skills` ve `/status` komutlarını çalıştırmasını ve sonuçları doğrulamasını iste: 3 hook kaydı, 11 ajan, 16 beceri, "Setting sources" içinde proje ayarları ([Kurulum](../01-kurulum.md) §5). VS Code uzantısında `/hooks` kullanılamaz ve `/agents` sihirbazı kaldırılmıştır (19 Ekim 2026'da görüldü); bu ortamda aynı sayımlar diskten kanıtlanır: `.claude/settings.json` içindeki hook olayları, `.claude/agents/*.md` (11) ve `.claude/skills/*/SKILL.md` (16) dosyalarının başlık denetimi, kit testleri ve `doctor` becerisinin ayar dosyası ayrıştırması.
+- Klasör bekçisini canlı dene; deneme hedefi bilgisayarda olmayan bir sürücüdür, böylece onay verilse bile hiçbir yere yazılamaz. Kullanıcıya bilgisayarda `Z:` sürücüsü olup olmadığını sor; varsa kullanılmayan başka bir harf seç. (1) `Write` ile `Z:/mutalaa-bekci.txt` reddedilmeli; (2) `echo deneme > /z/mutalaa-bekci.txt` komutu onay sormalı ve kullanıcı reddetmeli. Onay penceresini görmek kullanıcıya bağlıdır; hook'un `ask` kararı oturum kaydında (transkript, `PreToolUse:Bash` kaydı) doğrulanabilir. Retleri rapora koy. Ayrıntı ve sınırlar: [Kurulum](../01-kurulum.md) §7.
 - **Bitti sayılır:** oturum proje kökünde; komutlar başarılı; kullanıcı sayıları ve ayar kaynağını doğruladı; iki dışarı yazma denemesi de engellendi.
 
 ### A00.3 · Proje yolu ve OneDrive kararı
@@ -109,7 +109,7 @@ node .claude/skills/belge-esitle/baglanti-denetimi.mjs docs CLAUDE.md .claude
 - [ ] Araç sürüm tablosu raporda; Git, Node, pnpm, .NET 10 SDK ve uv kurulu.
 - [ ] `node --test ".claude/hooks/test/*.test.mjs"` bütün testleri geçiyor.
 - [ ] Bağlantı denetimi "kırık bağlantı yok" diyor.
-- [ ] Kullanıcının `/doctor` (ya da ayrı terminalde `claude doctor`) çıktısında geçersiz ayar yok.
+- [ ] Kullanıcının `/doctor` (ya da ayrı terminalde `claude doctor`) çıktısında geçersiz ayar yok. VS Code uzantısında yerleşik `/doctor` çıktısını Claude Code göremez; bu durumda `doctor` becerisinin ayar dosyası ayrıştırması (bozuk dosya yok) ve kit testleri kanıt sayılır, kullanıcı kendi ekranında "Invalid settings" bölümüne ayrıca bakar.
 - [ ] Proje dışına yazma denemesi `klasor-bekcisi` tarafından reddedildi.
 - [ ] Yol kararı ilerleme dosyasında yazılı.
 - [ ] Git deposu açık; ilk commit var; `.gitignore` kit, gizli değer ve veri yollarını yok sayıyor.

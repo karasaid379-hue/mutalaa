@@ -6,11 +6,11 @@
 Bu dosya aşamaların durumunu tutar. Aşağıdaki durum bloğu her oturumun başında Claude Code'a otomatik verilir (`.claude/hooks/oturum-baslangici.mjs`). Bloğun işaret satırlarını (`<!-- durum:baslangic -->`, `<!-- durum:bitis -->`) silmeyin.
 
 <!-- durum:baslangic -->
-- Aktif aşama: A00 · Ortam, klasör ve depo hazırlığı
-- Son tamamlanan: yok
+- Aktif aşama: yok
+- Son tamamlanan: A00 · Ortam, klasör ve depo hazırlığı (2026-10-20)
 - Sıradaki: A01 · Hukuk ve izin yazışma paketi
 - Bekleyen insan adımları: İ-01 (Docker, yönetici ayarları)
-- Son güncelleme: 2026-10-19
+- Son güncelleme: 2026-10-20
 <!-- durum:bitis -->
 
 ## Aşama tablosu
@@ -19,7 +19,7 @@ Durum değerleri: `bekliyor`, `sürüyor`, `tamam`, `engelli` (neden Not sütunu
 
 | No | Aşama | Durum | Başlangıç | Bitiş | Commit | Not |
 |---|---|---|---|---|---|---|
-| A00 | Ortam, klasör ve depo hazırlığı | sürüyor | 2026-10-19 | | | A00.1, A00.3, A00.4 tamam; A00.2 (kullanıcının `/doctor`, `/hooks`, `/agents`, `/skills`, `/status` sonuçları ve bekçi onay penceresi) ve A00.5 (yönetici gerektiren Windows ayarları) bekleniyor. Yol kararı: yerinde kal (OneDrive; klasör "Her zaman bu cihazda tut", yoğun işlerde eşitleme duraklatılır, Android derlemesi EAS bulutunda) |
+| A00 | Ortam, klasör ve depo hazırlığı | tamam | 2026-10-19 | 2026-10-20 | `7fc54af` kök git dosyaları; `ec4526c` push politikası; `57f424f` belge düzeltmeleri | Hook, ajan ve beceri sayımı VS Code'da `/hooks` ve `/agents` olmadığı için diskten kanıtlandı; yerleşik `/doctor` çıktısı Claude Code'a görünmez, `doctor` becerisi ayar dosyası ayrıştırmasını yaptı (bozuk dosya yok). Klasör bekçisi: `Write Z:` reddedildi, `echo > /z/...` için hook `ask` kararı oturum kaydında. Yönetici gerektiren Windows ayarları ve Docker İ-01'de. Yol kararı: yerinde kal (OneDrive; klasör "Her zaman bu cihazda tut", yoğun işlerde eşitleme duraklatılır, Android derlemesi EAS bulutunda) |
 | A01 | Hukuk ve izin yazışma paketi | bekliyor | | | | |
 | A02 | Tek depo iskeleti | bekliyor | | | | |
 | A03 | Yerel altyapı | bekliyor | | | | |
@@ -66,7 +66,8 @@ Durum değerleri: `bekliyor`, `sürüyor`, `tamam`, `engelli` (neden Not sütunu
 Her aşama oturumunun sonunda bir satır eklenir: `YYYY-AA-GG · Aşama · ne yapıldı · sıradaki adım`.
 
 - 2026-10-19 · Kit · Claude Code kiti kuruldu (CLAUDE.md, `.claude/`, `docs/10-claude-code/`) · A00
-- 2026-10-19 · A00 · sürüm tablosu, kök git dosyaları (`7fc54af`), pnpm 12.14.0 kurulumu, push politikası ve klasör adı kararları, belge düzeltmeleri; `/doctor` sonuçları ile yönetici adımları bekleniyor · A00'ı kapat, sonra A01
+- 2026-10-19 · A00 · sürüm tablosu, kök git dosyaları (`7fc54af`), pnpm 12.14.0 kurulumu, push politikası ve klasör adı kararları, belge düzeltmeleri · kabul kanıtları
+- 2026-10-20 · A00 · `doctor` taraması, hook/ajan/beceri sayımının disk kanıtı, A00.2 ve Kurulum §5 belge düzeltmesi, aşama kapandı · A01
 
 ## İlgili dosyalar
 
