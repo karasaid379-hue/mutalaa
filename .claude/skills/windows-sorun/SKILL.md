@@ -1,0 +1,68 @@
+---
+name: windows-sorun
+description: >-
+  Mütâlaa'yı Windows'ta geliştirirken çıkan sorunların teşhis ve çözüm tablosu; Türkçe yerel ayar
+  (İ/ı, cp1254), OneDrive eşitlemesi ve kotası, boşluk ve Türkçe karakter içeren yol, uzun yol, CRLF
+  ve BOM, port çakışması, telefonun Metro'ya ya da S3 deposuna bağlanamaması, Docker ve WSL2 saati,
+  PowerShell farkları, Git Bash. Windows'a özgü bir hata, izin uyarısı ya da beklenmeyen davranış
+  görüldüğünde kullan.
+---
+
+# Windows sorunları
+
+Kaynak: [Yerel geliştirme](../../../docs/02-mimari/04-yerel-gelistirme.md) §2 ve §10. Önce belirtiyi tabloda bul; çözüm proje klasörünün dışında bir değişiklik gerektiriyorsa (sistem ayarı, kayıt defteri, kurulum) komutu kullanıcıya ver, kendin çalıştırma.
+
+## Yol ve klasör
+
+| Belirti | Neden | Çözüm |
+|---|---|---|
+| Android Gradle yerel derlemesi yol hatası veriyor ("non-ASCII characters", boşluk, uzun yol) | Proje yolu `MEHMET SAİD` ve `Masaüstü` içeriyor | Varsayılan yol EAS bulut derlemesidir. Yerel derleme gerekiyorsa kullanıcı kısa sürücü harfi tanımlar: `subst M: "<proje klasörü>"` ve Claude Code'u `M:\` içinde açar (A00 yol kararı) |
+| `EPERM`, `EBUSY`, "operation not permitted, rename" (pnpm, Metro, dotnet) | OneDrive dosyayı eşitlerken kilitliyor | OneDrive eşitlemesini geliştirme sırasında duraklatma; klasörü "Her zaman bu cihazda tut" yapma; işlemi yeniden deneme |
+| OneDrive kotası doluyor, eşitleme yavaş | `node_modules`, `bin/obj`, `data/` binlerce dosya ya da GB'larca veri | A00'daki karar: klasörü OneDrive dışına (ör. `C:\dev\mutalaa`) bütünüyle taşımak kiti bozmaz; kullanıcı karar verir |
+| `filename too long` | Uzun yol | Yönetici PowerShell: `LongPathsEnabled` kaydı ve `git config --global core.longpaths true` (kullanıcı çalıştırır) |
+| Proje dışındaki dosya için onay ya da ret | Klasör sınırı (hook ve `blockReadsOutsideWorkingDirectories`) | Beklenen davranış; işi proje içinde yap |
+| Ayarlar, izin kuralları ya da hook'lar çalışmıyor; `/hooks` boş | Claude Code proje kökünde değil, alt klasörde başlatılmış | Oturumu kapatıp proje kökünde `claude` ile yeniden başlatın |
+| Bütün dosya yazmaları ve komutlar "hook" hatasıyla duruyor | Klasör bekçisi başlayamıyor (Node PATH'te değil) ya da zaman aşımı; bekçi güvenli tarafta kalır (`onFailure: block`) | Node 24 LTS kurulu mu (`node --version`); terminali yeniden açın; `node --test ".claude/hooks/test/*.test.mjs"` |
+| `node -e`, `python -c` ya da `node <betik>` her seferinde onay istiyor | Claude Code satır içi kodun ve betiğin açacağı dosyaları göremez | Beklenen davranış: komutu okuyup onaylayın. Tekrar kullanılacak denetim paket içinde ya da `scripts/` altında, proje dışı yol kullanmayan betik olarak yazılır |
+
+## Metin ve kodlama
+
+| Belirti | Neden | Çözüm |
+|---|---|---|
+| `"İD"`, `"i̇"` gibi bozuk büyük-küçük harf | Türkçe yerel ayar | `metin-butunlugu` becerisindeki açık eşleme ve Ordinal kuralları |
+| Python dosyayı yanlış kodlamayla okuyor | Türkçe Windows'ta varsayılan cp1254 | `encoding="utf-8"`; `PYTHONUTF8=1` (kit ayarlarında var; kullanıcı ortamı için A00) |
+| `LANG=tr_TR.UTF-8 pnpm … test` ile varsayılan koşu aynı yerel ayarda çalışıyor | Windows'ta Node'un ICU'su varsayılan yerel ayarı Windows kullanıcı ayarından alır, `LANG`'a bakmaz ([ICU putil.cpp](https://github.com/unicode-org/icu/blob/main/icu4c/source/common/putil.cpp), `uprv_getDefaultLocaleID`) | Beklenen davranış: Türkçe Windows'ta iki koşu da `tr-TR`'dir, `LANG` karşıtlığı Linux CI'da görülür. Vitest kurulum dosyası etkin yerel ayarı koşu başında yazar |
+| Konsolda Arapça ya da Türkçe bozuk | Konsol kod sayfası | PowerShell'de `[Console]::OutputEncoding = [Text.Encoding]::UTF8`; Windows Terminal |
+| Konteynerde `/bin/sh^M` | CRLF satır sonlu kabuk betiği | `.gitattributes` LF; dosyayı LF'ye çevir |
+| JSONL ilk satırı ayrıştırılamıyor | BOM | BOM'suz UTF-8 kaydet |
+| Yalnız harf büyüklüğü değişen dosya adı git'te görünmüyor | Windows harf ayırmaz | `git mv eski Yeni` |
+
+## Ağ ve portlar
+
+| Belirti | Neden | Çözüm |
+|---|---|---|
+| `bind: An attempt was made to access a socket in a way forbidden…` | Hyper-V/WSL ayrılmış port aralığı | `netsh interface ipv4 show excludedportrange protocol=tcp`; `.env` içinde portu değiştir |
+| 5432 kullanımda | Bilgisayarda kurulu PostgreSQL | Servisi durdur ya da `POSTGRES_PORT=5433` |
+| Telefon Metro'ya bağlanamıyor | Ağ "Ortak", güvenlik duvarı, yanlış IP, VPN, misafir ağı | Ağı Özel yap, kuralları ekle (kullanıcı); `REACT_NATIVE_PACKAGER_HOSTNAME`; USB'de `adb reverse tcp:8081 tcp:8081` |
+| Uygulama manifesti ya da paketi indiremiyor | `localhost` ya da değişmiş LAN IP | `paket-yayini` becerisi, sık hatalar |
+| S3 `RequestTimeTooSkewed` | WSL2 saati kaymış olabilir | `wsl --shutdown`, Docker Desktop'ı yeniden başlat (kullanıcı) |
+| Konteynerden ana makineye erişilemiyor | `localhost` konteynerin kendisi | `host.docker.internal`; konteynerler arasında servis adı |
+
+## Kabuk farkları
+
+| Belirti | Neden | Çözüm |
+|---|---|---|
+| PowerShell'de `curl` farklı davranıyor | `curl` başka komutun takma adı | PowerShell'de `curl.exe`; Git Bash'te `curl` |
+| `pg_dump` çıktısı bozuk | Windows PowerShell 5.1'de `>` ikili çıktıyı bozar | Dosyayı konteynerde yaz, `docker compose cp` ile al (`scripts/backup-db.ps1`) |
+| Ortam değişkeni atanmıyor | Bash ve PowerShell sözdizimi farklı | Bash: `AD=deger komut`; PowerShell: `$env:AD = "deger"` |
+| `export AD=deger` sonraki komutta yok | Claude Code her Bash çağrısını ayrı kabukta çalıştırır | Değişkeni komutun başına yazın (`AD=deger komut`); her komutta gereken değerler kit ayarlarındadır (`.claude/settings.json` › `env`) |
+| `/` ile başlayan argüman Windows yoluna dönüşüyor (ör. konteyner ya da cihaz içi `/var/lib/…`, `/sdcard/…` → `C:/Program Files/Git/…`) | Git Bash (MSYS) yerel Windows programlarına giden argümanları çevirir | Uzak komutu tek argüman olarak tırnaklayın: `adb shell "ls /sdcard"`, `docker compose exec -T postgres sh -c 'ls /var/lib/postgresql'`. `MSYS_NO_PATHCONV=1` öneki de çalışır, ama çıplak `/…` yolu klasör bekçisinin onay sorusunu getirir. Kalıcı ayar yapmayın |
+| Claude Code Git Bash'i bulamıyor | Git for Windows yok ya da başka yerde | Git for Windows kur; gerekirse kullanıcı `.claude/settings.local.json` içine `"env": {"CLAUDE_CODE_GIT_BASH_PATH": "C:\\Program Files\\Git\\bin\\bash.exe"}` ekler |
+| Hook "node bulunamadı" hatası | Node PATH'te değil | Node 24 LTS kurulumu (İ-01); terminali yeniden aç |
+
+## Araçlar
+
+- `expo prebuild` yerel klasörleri temizler; `android/` ve `ios/` depoya girmez.
+- EF Core: `timestamptz` sütununa UTC yaz; yerel saat (UTC+3) kullanma.
+- SQLite dosyası taşınamıyorsa bağlantıyı kapat (`Pooling=False`).
+- CAMeL Tools verisi ayrıca indirilir: `camel_data -i light` (kullanıcı onayıyla; veri proje dışına yazılabilir).
