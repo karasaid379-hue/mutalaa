@@ -77,7 +77,8 @@ Aşamalar `docs/10-claude-code/asamalar/` altındadır. Harita: `docs/10-claude-
 
 ## 8. Commit
 
-- `/commit` becerisinin kurallarıyla, değişiklikleri anlamlı birimlere bölerek commit at. Push yapma.
+- `/commit` becerisinin kurallarıyla, değişiklikleri anlamlı birimlere bölerek commit at.
+- Push: A08'e kadar aşama bittiğinde dalı ve hedefi göster (`git status -sb`, `git remote -v`), sonra `git push origin main` çalıştır; komut kullanıcıdan onay ister. A08'den sonra aşama dalı açılır, dal itilir ve PR'ı kullanıcı birleştirir ([Proje yapısı](../../../docs/02-mimari/03-proje-yapisi.md) §6). Zorla push yapılmaz.
 
 ## 9. Kapanış raporu
 

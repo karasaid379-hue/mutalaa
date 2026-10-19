@@ -68,7 +68,7 @@ Bağımlılık kuralları ve klasörlerin tamamı: [Proje yapısı](docs/02-mima
 1. Oturum başında ilerleme özeti bağlama otomatik eklenir. İş başlatmak için `/asama <no>` (ör. `/asama A04`), durum için `/durum`.
 2. Önce önkoşulları ve planı göster, kullanıcının onayını al, sonra kod yaz. Büyük işte plan modunu kullan. Aşamaya atanmış `açık` belge çelişkisi varsa planın ilk maddesi onun kararıdır.
 3. Küçük adımlarla ilerle; her adımdan sonra ilgili testi ya da denetimi çalıştır. Test yazılmadan özellik bitmiş sayılmaz.
-4. "Bitti" demeden önce: kabul ölçütlerini komut çıktısıyla kanıtla, `/inceleme` çalıştır, [ilerleme](docs/10-claude-code/05-ilerleme.md) dosyasını güncelle, `/commit` ile commit at. Push yapma.
+4. "Bitti" demeden önce: kabul ölçütlerini komut çıktısıyla kanıtla, `/inceleme` çalıştır, [ilerleme](docs/10-claude-code/05-ilerleme.md) dosyasını güncelle, `/commit` ile commit at. A08'e kadar aşama sonunda `git push origin main` (her seferinde onay sorar); A08'den sonra aşama dalı, PR ve squash ([Proje yapısı §6](docs/02-mimari/03-proje-yapisi.md)). Zorla push yok.
 5. Kod dokümandan saparsa ya da bir "Doğrulanacak" çözülürse `/belge-esitle`; yeni karar gerekirse uygulamadan önce `/karar`.
 6. Bir aşama bitince kullanıcıya `/clear` ile yeni oturum açmasını öner.
 7. Claude Code'un yapamadığı işler (Kurul, avukat, hesaplar, izinler, insan düzeltmeleri) [insan adımları](docs/10-claude-code/06-insan-adimlari.md) listesindedir. Bekleyen insan adımına bağlı işi başlatma; kullanıcıya hangi adımın beklendiğini söyle.
