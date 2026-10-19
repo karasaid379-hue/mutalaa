@@ -141,7 +141,7 @@ Lisans sütunu: bağlantılı değerler araştırmadan gelir. "beyan" yazan değ
 | Yerel React Native kitaplıkları | Yeni Mimari desteği şarttır |
 | .NET | Yalnız LTS sürüm. .NET 10'da kalınır (destek 14 Kasım 2028). .NET 11 kısa süreli destekli olduğu için atlanır ([.NET destek politikası](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core)). Aylık yamalar (SDK ve imaj) iki hafta içinde uygulanır. Sonraki LTS'ye geçiş 2028'de planlanır; LTS takvimi Doğrulanacak |
 | PostgreSQL | 18'de kalınır; ara sürümler uygulanır. 19'a kararlı sürüm ve pgvector desteğinden sonra döküm ve geri yükleme ile geçilir |
-| Node.js | Expo araçları 22.13+, 24.3+ ya da 26+ ister ([SDK 58 beta](https://expo.dev/changelog/sdk-58-beta)). Seçim Node.js 24 LTS |
+| Node.js | Expo araçları 22.13+, 24.3+ ya da 26+ ister; tek sayılı 23 ve 25 desteklenmez ([SDK 58 kararlı sürüm notu](https://expo.dev/changelog/sdk-58), 15 Ekim 2026; aralık beta notuyla aynı). Seçim Node.js 24 LTS |
 | Python | 3.13. CAMeL Tools 3.14'ü destekliyor; OCR araçları da hazır olunca 3.14'e geçilir |
 | Next.js | Faz 5 başında güncel kararlı sürüm; yükseltmede `next upgrade --agent` ([Next.js 16.4](https://nextjs.org/blog/next-16-4)) |
 | Bağımlılık güncellemesi | Dependabot: npm, NuGet, GitHub Actions ve Docker için haftalık gruplu PR; uv desteği Doğrulanacak. Expo'ya bağlı paketler yalnız SDK yükseltmesiyle güncellenir. Güvenlik güncellemeleri beklemeden alınır |

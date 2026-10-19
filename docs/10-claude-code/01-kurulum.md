@@ -20,7 +20,7 @@ Aşağıdaki komutlar PowerShell içindir. `winget` paket kimlikleri yazım gün
 | Claude Code | 2.1.295 ya da üstü (kitin klasör bekçisi `onFailure` alanını kullanır) | `irm https://claude.ai/install.ps1 \| iex` (yerel kurulum, kendiliğinden güncellenir) ya da `winget install Anthropic.ClaudeCode` | `claude --version` |
 | Git for Windows | güncel | `winget install --id Git.Git -e` | `git --version` |
 | Node.js | 24 LTS | `winget install --id OpenJS.NodeJS.LTS -e` ya da nodejs.org'dan 24 LTS yükleyicisi | `node --version` (v24 beklenir; başka ana sürüm gelirse A00'da karar verilir) |
-| pnpm | kök `package.json` içindeki `packageManager` | Yönetici terminalde `corepack enable`; olmazsa `npm install -g pnpm` | `pnpm --version` |
+| pnpm | kuruluma göre belirlenir; `packageManager` sabitlemesi A02'dedir ([BÇ-28](./07-belge-celiskileri.md)) | `npm install -g pnpm` (pnpm'in güncel kurulum belgesi Windows için npm yolunu önerir: [pnpm kurulumu](https://pnpm.io/installation)). Node 24'te Corepack ile de olur: `corepack enable` (Corepack Node 25.0.0'dan itibaren dağıtılmaz; Program Files altındaki MSI kurulumunda yönetici terminali ya da `--install-directory` gerekebilir, açık "yönetici gerekir" cümlesi Doğrulanamadı) | `pnpm --version` |
 | .NET SDK | 10.0 | `winget install --id Microsoft.DotNet.SDK.10 -e` | `dotnet --list-sdks` |
 | uv | güncel | `winget install --id astral-sh.uv -e` | `uv --version` |
 | WSL2 | güncel | Yönetici terminalde `wsl --install`, sonra `wsl --update` | `wsl --status` |
@@ -60,7 +60,7 @@ Kit, Claude Code'un kendi komutları için `PYTHONUTF8=1` değerini zaten verir 
 
 ## 4. Proje klasörü ve OneDrive
 
-Proje klasörü `C:\Users\MEHMET SAİD\OneDrive\Masaüstü\mutalaa-docs` yolundadır. Bu yolun üç özelliği sorun çıkarabilir:
+Proje klasörü `C:\Users\MEHMET SAİD\OneDrive\Masaüstü\mutalaa-kit` yolundadır. Bu yolun üç özelliği sorun çıkarabilir:
 
 | Özellik | Etkisi | Kitteki önlem |
 |---|---|---|
@@ -74,7 +74,7 @@ A00 aşamasında Claude Code yolu ölçer ve size üç seçenek sunar: (1) klas�
 
 1. Proje klasöründe terminal açın: Dosya Gezgini'nde klasöre sağ tıklayıp "Terminalde aç", ya da:
    ```powershell
-   cd "C:\Users\MEHMET SAİD\OneDrive\Masaüstü\mutalaa-docs"
+   cd "C:\Users\MEHMET SAİD\OneDrive\Masaüstü\mutalaa-kit"
    claude
    ```
    **Claude Code'u her zaman proje kökünde başlatın.** Alt klasörde (ör. `docs`, `apps\mobile`) başlatılırsa projenin `.claude/settings.json` dosyası, izin kuralları ve hook'ları yüklenmez; yalnız `CLAUDE.md` okunur ve klasör korumaları çalışmaz.

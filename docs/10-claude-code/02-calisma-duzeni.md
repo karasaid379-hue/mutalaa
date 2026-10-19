@@ -71,7 +71,7 @@ Bu korumaların sınırı: Claude Code'un çalıştırdığı programlar (testle
 ## 6. Commit ve dallar
 
 - `/inceleme` → bulguları düzeltme → `/commit`. Mesajlar İngilizce Conventional Commits biçimindedir ([Proje yapısı](../02-mimari/03-proje-yapisi.md) §6), kit değişiklikleri `kit` kapsamıyla yazılır.
-- `main` dalında kısa ömürlü dallarla çalışılır (`feat/…`, `fix/…`, `docs/…`, `chore/…`). Push ve birleştirme sizin onayınızla yapılır; GitHub deposu yoksa (İ-16) commit'ler yerelde kalır.
+- A08'e kadar çalışma `main` üzerinde yürür ve aşama sonunda `git push origin main` onayınızla yapılır (depo özel `karasaid379-hue/mutalaa`, remote ekli; zorla push yok). A08'den sonra kısa ömürlü dallarla çalışılır (`feat/…`, `fix/…`, `docs/…`, `chore/…`): aşama dalı, PR ve squash ([Proje yapısı](../02-mimari/03-proje-yapisi.md) §6); push ve birleştirme sizin onayınızla yapılır. Çelişki kaydı: [BÇ-27](./07-belge-celiskileri.md).
 - Paralel ve deneysel iş için ileri seçenek: `claude --worktree <ad>` ayrı bir git çalışma ağacında oturum açar.
 
 ## 7. Kararlar, belgeler, insan adımları

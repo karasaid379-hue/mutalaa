@@ -39,7 +39,7 @@
 - **Bitti sayılır:** üç soru kaynaklı cevaplandı ve aşama kaydına yazıldı; araç sürümleri kayıtlı.
 
 ### A02.2 · pnpm çalışma alanı ve Turborepo (`web-gelistirici`)
-- Kök `package.json` Proje yapısı §4.1'deki gibi (`name`, `private`, `scripts`); `packageManager` alanına kurulu pnpm sürümü yazılır.
+- Kök `package.json` Proje yapısı §4.1'deki gibi (`name`, `private`, `scripts`); `packageManager` alanına kurulu pnpm sürümü yazılır. Önce karar: pnpm kurulum yolu (Corepack ya da npm) ve `packageManager` sabitlemesi [BÇ-28](../07-belge-celiskileri.md) ile `/karar`a bağlanır; A02.1'de `arastirmaci` ile doğrulanır.
 - `pnpm-workspace.yaml` (`apps/*`, `packages/*`, `shared/test-vectors`), `.npmrc` (A02.1 sonucuna göre), `turbo.json` (§4.1'deki `build`, `typecheck`, `lint`, `test`, `dev` görevleri), `.nvmrc` (`24`).
 - Kök geliştirme bağımlılıkları `pnpm add -Dw` ile: `turbo`, `typescript`, `eslint`, `typescript-eslint`, `eslint-config-prettier`, `prettier`, `vitest`. Sürümler kurulum günü kilit dosyasına yazılır; elle sürüm yazılmaz (Teknoloji yığını §4.1).
 - `eslint.config.mjs` Proje yapısı §5'teki özetle (yerel ayar kuralları, paketlerde `react-native`, `expo-*`, `next` yasağı). Ek olarak `packages/anchors` ve `packages/search` dosyalarında `@mutalaa/*` içe aktarımı yasaklanır (§2 kural 3; öneri).

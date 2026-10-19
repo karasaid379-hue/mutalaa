@@ -58,7 +58,7 @@ Her PR'da üç dilin lint, tip, birim ve vektör denetimleri GitHub Actions'ta k
 - **Bitti sayılır:** üç komut grubu yerelde yeşil; çıktı özeti aşama kaydında.
 
 ### A08.5 · İlk GitHub koşusu (İ-16'dan sonra)
-- Kullanıcı özel depoyu açar, uzak adresi ekler ve `EXPO_TOKEN` sırrını tanımlar (İ-16). `EXPO_TOKEN` Expo hesabı (İ-15) ister; hesap yoksa sır A21'e kalır, `eas-build.yml` zaten elle tetiklenir.
+- Özel depo (`karasaid379-hue/mutalaa`) ve `origin` A00'da hazırlandı. Kullanıcı yalnız `EXPO_TOKEN` sırrını tanımlar (İ-16). `EXPO_TOKEN` Expo hesabı (İ-15) ister; hesap yoksa sır A21'e kalır, `eas-build.yml` zaten elle tetiklenir.
 - `git push` yalnız kullanıcının açık onayıyla yapılır; `--force` yasaktır.
 - Bir deneme dalı ve PR açılır (başlık örneği `ci(infra): add github actions workflows`). Üç iş akışı ve başlık denetimi koşar. Biçimsiz başlıklı ikinci bir deneme PR'ı başlık denetiminde kırmızı olmalıdır (öneri dosya açıldıysa).
 - Sonuçlar GitHub CLI kuruluysa `gh run list` ile, değilse kullanıcının Actions sekmesinden bildirdiğiyle kaydedilir.

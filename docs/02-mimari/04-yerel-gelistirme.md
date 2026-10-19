@@ -38,8 +38,8 @@ flowchart LR
 | WSL2 | Güncel (`wsl --install`, `wsl --update`) | Docker Desktop |
 | Docker Desktop | Güncel; Compose v2 | PostgreSQL ve S3 deposu |
 | Git | Güncel | — |
-| Node.js | 24 LTS (24.3 ya da üstü) | Expo SDK 58 araçları Node 22.13+, 24.3+ ya da 26+ ister ([SDK 58 beta](https://expo.dev/changelog/sdk-58-beta)) |
-| pnpm | Kök `package.json` içindeki `packageManager` sürümü | `corepack enable` ile gelir (Node 24 Corepack içerir; sonraki Node sürümlerinde Corepack'in dağıtımdan çıkarılması Doğrulanacak). Yedek yol `npm install -g pnpm` |
+| Node.js | 24 LTS (24.3 ya da üstü) | Expo SDK 58 araçları Node 22.13+, 24.3+ ya da 26+ ister; tek sayılı 23 ve 25 desteklenmez ([SDK 58](https://expo.dev/changelog/sdk-58)). Çözüldü (19 Ekim 2026): SDK 58 kararlı sürümü 15 Ekim 2026'da çıktı ve aralık beta notuyla aynıdır (`expo@58` `engines`: `^22.13.0 \|\| ^24.3.0 \|\| ^26.0.0 \|\| >=27.0.0`) |
+| pnpm | Kuruluma göre belirlenir; kök `package.json` içindeki `packageManager` sabitlemesi A02'dedir ([BÇ-28](../10-claude-code/07-belge-celiskileri.md)) | Yol 1: `npm install -g pnpm`; pnpm'in güncel kurulum belgesi Corepack'i anmaz ve Windows için npm yolunu önerir ([pnpm kurulumu](https://pnpm.io/installation), `npx get-pnpm`). Yol 2: Node 24.x Corepack içerir (deneysel), `corepack enable`. Çözüldü (19 Ekim 2026): Corepack Node 25.0.0'dan itibaren dağıtılmıyor ([TSC oylaması](https://github.com/nodejs/TSC/pull/1697), [Node 25.0.0 sürüm notu](https://nodejs.org/en/blog/release/v25.0.0)). Program Files altındaki MSI kurulumunda `corepack enable` yönetici terminali ya da `--install-directory` gerektirebilir ([Corepack](https://github.com/nodejs/corepack) README); açık bir "yönetici gerekir" cümlesi yok (Doğrulanamadı). Corepack ile pnpm 12 uyumu da doğrulanamadı |
 | .NET SDK | 10.0 (`global.json`) | API ve Yayınlayıcı |
 | uv | Güncel | Python 3.13'ü de kurar: `uv python install 3.13` |
 | Android Studio | Güncel | Emülatör, Android SDK ve yerel Android derlemesi için JDK |
@@ -72,12 +72,12 @@ New-NetFirewallRule -DisplayName "Mutalaa S3 8333" -Direction Inbound -Protocol 
 [Environment]::SetEnvironmentVariable("PYTHONUTF8", "1", "User")
 ```
 
-- **Proje konumu (K-31).** Proje kökü masaüstündeki `mutalaa-docs` klasörüdür (`C:\Users\…\OneDrive\Masaüstü\mutalaa-docs`). Yol boşluk, Türkçe karakter ve OneDrive içerir. React Native'in Android derlemesi uzun ve ASCII dışı yollarda kırılabilir ve `LongPathsEnabled` her aracı kurtarmaz; bu yüzden Android geliştirme derlemesi varsayılan olarak EAS bulutunda üretilir. OneDrive eşitlemesi `node_modules`, derleme çıktıları ve `data/` yüzünden dosya kilitleyebilir ve kotayı doldurabilir. Yol kararı A00 aşamasında verilir: klasör yerinde kalır (eşitleme yoğun işlerde duraklatılır), klasörün tamamı OneDrive dışında kısa bir yola (ör. `C:\dev\mutalaa`) taşınır ya da yerel derleme için `subst` ile kısa sürücü harfi tanımlanır (Doğrulanacak). Ayrıntı: [Kurulum](../10-claude-code/01-kurulum.md) §4.
+- **Proje konumu (K-31).** Proje kökü masaüstündeki `mutalaa-kit` klasörüdür (`C:\Users\…\OneDrive\Masaüstü\mutalaa-kit`). Yol boşluk, Türkçe karakter ve OneDrive içerir. React Native'in Android derlemesi uzun ve ASCII dışı yollarda kırılabilir ve `LongPathsEnabled` her aracı kurtarmaz; bu yüzden Android geliştirme derlemesi varsayılan olarak EAS bulutunda üretilir. OneDrive eşitlemesi `node_modules`, derleme çıktıları ve `data/` yüzünden dosya kilitleyebilir ve kotayı doldurabilir. Yol kararı A00 aşamasında verildi (19 Ekim 2026): klasör yerinde kalır. Seçenekler şunlardı: klasör yerinde kalır (eşitleme yoğun işlerde duraklatılır), klasörün tamamı OneDrive dışında kısa bir yola (ör. `C:\dev\mutalaa`) taşınır ya da yerel derleme için `subst` ile kısa sürücü harfi tanımlanır (Doğrulanacak). Ayrıntı: [Kurulum](../10-claude-code/01-kurulum.md) §4.
 - PowerShell 7 ve Windows Terminal kullanın. Arapça ve Türkçe karakterler bozuk görünürse `[Console]::OutputEncoding = [Text.Encoding]::UTF8` çalıştırın. WSL2 belleği `%UserProfile%\.wslconfig` içinde `[wsl2]` altına `memory=6GB` yazılarak sınırlanır.
 
 ## 3. Depoyu alma ve kurulum
 
-Ana geliştirme bilgisayarında proje klasörü zaten yerindedir ve git deposu A00 aşamasında açılır. Aşağıdaki adımlar depoyu başka bir bilgisayara klonlarken geçerlidir; o bilgisayarda kısa, ASCII ve OneDrive dışı bir yol seçilir. Bağımlılık kurulumu ilgili aşamalarda (A02, A03, A21) Claude Code tarafından yapılır.
+Ana geliştirme bilgisayarında proje klasörü zaten yerindedir ve git deposu A00'dan önce açılmıştır (uzak depo özel `karasaid379-hue/mutalaa`). Aşağıdaki adımlar depoyu başka bir bilgisayara klonlarken geçerlidir; o bilgisayarda kısa, ASCII ve OneDrive dışı bir yol seçilir. Bağımlılık kurulumu ilgili aşamalarda (A02, A03, A21) Claude Code tarafından yapılır.
 
 ```powershell
 cd C:\dev

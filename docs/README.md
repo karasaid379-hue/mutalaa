@@ -4,7 +4,7 @@
 
 **Mütâlaa**, Kur'an-ı Kerîm'i mushaf sayfasında, karşısında Elmalılı meali ve yanında âyeti izleyen tefsiriyle okutan, seçilen hafızla dinleten ve bir kelimeye ya da kelime grubuna dokununca Kur'an'da, tefsirde, hadiste ve Risale-i Nur'da nerede geçtiğini gösterip okunan yere geri döndüren, çevrimdışı çalışan bir mobil okuma ve öğrenme uygulamasıdır.
 
-Bu klasör (`docs/`), 16–18 Ekim 2026 araştırma ve beyin fırtınası oturumunda verilen kararları uygulanabilir bir plana çevirir. Proje kökü masaüstündeki `mutalaa-docs` klasörüdür; kod da aynı kökte durur ve yalnız Claude Code ile geliştirilir ([K-31](./00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)). Eski `quran-app-docs` planı (Mayıs 2026) arşiv ve referans olarak kalır; çelişkide bu klasör geçerlidir.
+Bu klasör (`docs/`), 16–18 Ekim 2026 araştırma ve beyin fırtınası oturumunda verilen kararları uygulanabilir bir plana çevirir. Proje kökü masaüstündeki `mutalaa-kit` klasörüdür (ilk adı `mutalaa-docs`; [K-23](./00-ozet/02-karar-defteri.md) güncelleme notu); kod da aynı kökte durur ve yalnız Claude Code ile geliştirilir ([K-31](./00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)). Eski `quran-app-docs` planı (Mayıs 2026) arşiv ve referans olarak kalır; çelişkide bu klasör geçerlidir.
 
 ## Nereden başlamalı
 

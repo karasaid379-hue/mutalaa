@@ -35,6 +35,7 @@ Claude Code ile geliştirmeye başlamadan önce bilgisayarın, proje klasörün�
 - Şu komutları çalıştır ve sonuçları tabloya dök (komut yoksa "yok" yaz):
   `git --version` · `node --version` · `pnpm --version` · `dotnet --list-sdks` · `uv --version` · `docker version --format '{{.Server.Version}}'` · `docker compose version` · `eas --version` · `adb --version`. Claude Code sürümünü kullanıcı `/status` çıktısından okur ve söyler (2.1.295 ya da üstü gerekir; Claude Code oturumunun içinden `claude` komutu çalıştırılmaz). Docker sunucu sürümü dönüyorsa Docker Desktop ve WSL2 arka ucu çalışıyordur; WSL durumunu kullanıcı PowerShell'de `wsl --status` ile görür.
 - Gereken sürümlerle karşılaştır ([Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md) §1): Node 24 LTS, .NET SDK 10.0, Docker Compose v2. Expo SDK sürümünün gerektirdiği Node aralığını `arastirmaci` ile doğrula; Node'un kurulu ana sürümü 24 değilse kullanıcıya iki seçenek sun (24 kurmak ya da belgeleri yeni LTS'ye göre güncellemek için `/karar`).
+- pnpm: kurulu sürüm kuruluma göre belirlenir ([Kurulum](../01-kurulum.md) §2); `packageManager` sabitlemesi A02'dedir ([BÇ-28](../07-belge-celiskileri.md)).
 - Eksik araç için kullanıcıya [Kurulum](../01-kurulum.md) §2'deki komutu ver; kurulumu kendin yapma.
 - **Bitti sayılır:** sürüm tablosu rapordadır ve zorunlu araçların (Git, Node, pnpm, .NET, uv) hepsi kuruludur. Docker, EAS CLI ve Android araçları eksikse not düşülür; bunlar A03 ve A21'de gerekir.
 
@@ -66,7 +67,7 @@ node .claude/skills/belge-esitle/baglanti-denetimi.mjs docs CLAUDE.md .claude
 
 ### A00.4 · Git deposu ve kök dosyalar
 
-- `git rev-parse --is-inside-work-tree` ile depo var mı bak. Yoksa `git init -b main`.
+- `git rev-parse --is-inside-work-tree` ile depo var mı bak. Yoksa `git init -b main`. Bu projede depo A00'dan önce açılmıştı (`ilk komit`, 000ed29) ve remote ekliydi (`karasaid379-hue/mutalaa`, özel depo); varsa `git remote -v` ile doğrula.
 - Yerel depo ayarı: `git config core.autocrlf false` (yalnız bu depo; küresel ayar kullanıcının işidir).
 - `.gitattributes` ve `.editorconfig` dosyalarını [Proje yapısı](../../02-mimari/03-proje-yapisi.md) §5'teki içerikle yaz.
 - `.gitignore` en az şunları içerir (A02 ve sonraki aşamalar ekleme yapar):
@@ -93,7 +94,8 @@ node .claude/skills/belge-esitle/baglanti-denetimi.mjs docs CLAUDE.md .claude
   __pycache__/
   ```
 - `git status` ile girecek dosyaları göster; `docs/`, `CLAUDE.md`, `.claude/` (yerel ayar dosyası hariç), `.gitattributes`, `.editorconfig`, `.gitignore`.
-- İlk commit: `chore(kit): add Claude Code kit and project docs`. Push yok; uzak depo İ-16 ile gelir.
+- İlk commit: depo boşsa `chore(kit): add Claude Code kit and project docs`. Depo önceden açılmışsa ilk commit zaten vardır (`ilk komit`, 000ed29); A00 kök dosyaları ayrı bir commit'le ekledi: `chore(kit): add root git config files`.
+- Push: A08'e kadar aşama sonunda `git push origin main` ile, onayınızla yapılır (zorla push yok); A08'den sonra aşama dalı, PR ve squash ([Proje yapısı](../../02-mimari/03-proje-yapisi.md) §6; [BÇ-27](../07-belge-celiskileri.md)). Uzak depo özel `karasaid379-hue/mutalaa` olarak oluşturulmuş ve remote eklidir; İ-16'nın kalan kısmı özel depo oluşturmak değil, `EXPO_TOKEN`/CI sırrıdır.
 - **Bitti sayılır:** `git log --oneline` ilk commit'i gösterir; `git status --short` temizdir; `git check-ignore .claude/settings.local.json .tmp/x data/x .env` dört yolu da yok sayıldı olarak gösterir; `shared/data/x` yok sayılmaz.
 
 ### A00.5 · Kullanıcı ortamı denetim listesi

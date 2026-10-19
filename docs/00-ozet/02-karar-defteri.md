@@ -166,6 +166,7 @@ Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrı
 ### K-23 · Doküman yeri
 - **Karar:** Yeni klasör `mutalaa-docs`. Eski `quran-app-docs` dokunulmadan arşiv ve referans olarak kalır.
 - **Güncelleme (19 Ekim 2026):** Masaüstündeki `mutalaa-docs` klasörü proje kökü oldu; belgeler bu klasörün `docs/` alt klasörüne taşındı ([K-31](#k-31--geliştirme-aracı-claude-code)).
+- **Güncelleme (19 Ekim 2026, A00):** Proje kökünün gerçek adı `mutalaa-kit`tir (`C:\Users\MEHMET SAİD\OneDrive\Masaüstü\mutalaa-kit`); `mutalaa-docs` adı proje kökü olarak kullanılmaz. Ayrıntı: [K-31](#k-31--geliştirme-aracı-claude-code).
 
 ### K-24 · Tasarım dili
 - **Karar:** "Sade Osmanlı": kâğıt yüzeyler, İznik çinisi paletinden çini mavisi, turkuaz ve lâl; altın yalnız süs çizgilerinde. Kâğıt, Âhar ve Gece temaları.
@@ -216,6 +217,9 @@ Eski planın okuyucu tasarımları, "okuma simetrisi" çekirdeği (son okunan ye
   - Claude Code Kur'an, meal, tefsir, hadis ve Risale metnini hafızadan yazmaz; bu metinler yalnız kaynak dosyalardan, içerik hattıyla gelir.
   - Commit kapsam listesine kit değişiklikleri için `kit` eklendi ([Proje yapısı](../02-mimari/03-proje-yapisi.md) §6).
 - **Not:** Proje yolu boşluk, Türkçe karakter ve OneDrive içerdiği için Android geliştirme derlemesi varsayılan olarak EAS bulutunda yapılır; yol ve OneDrive kararı A00 aşamasında verilir ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md) §2).
+- **Güncelleme (19 Ekim 2026, A00):**
+  - Proje kökü `mutalaa-kit` klasörüdür; yol kararı "yerinde kal"dır (OneDrive altında; yoğun işlerde eşitleme duraklatılır, Android derlemesi EAS bulutunda). Metindeki `mutalaa-docs` ifadesi bu karara göre okunur.
+  - Uzak depo özel (private) GitHub deposu `karasaid379-hue/mutalaa`'dır. A08'e kadar her aşama sonunda commit'ler `main` dalına itilir (`git push origin main`, her seferinde onay sorar). A08'den sonra [Proje yapısı](../02-mimari/03-proje-yapisi.md) §6'daki akış (aşama dalı, PR, squash) geçerlidir. Zorla push yasaktır.
 - **Kaynak:** Proje sahibinin talebi (19 Ekim 2026).
 
 ---

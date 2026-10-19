@@ -6,10 +6,10 @@
 Bu dosya aşamaların durumunu tutar. Aşağıdaki durum bloğu her oturumun başında Claude Code'a otomatik verilir (`.claude/hooks/oturum-baslangici.mjs`). Bloğun işaret satırlarını (`<!-- durum:baslangic -->`, `<!-- durum:bitis -->`) silmeyin.
 
 <!-- durum:baslangic -->
-- Aktif aşama: yok
+- Aktif aşama: A00 · Ortam, klasör ve depo hazırlığı
 - Son tamamlanan: yok
-- Sıradaki: A00 · Ortam, klasör ve depo hazırlığı
-- Bekleyen insan adımları: İ-01 (araç kurulumu)
+- Sıradaki: A01 · Hukuk ve izin yazışma paketi
+- Bekleyen insan adımları: İ-01 (Docker, yönetici ayarları)
 - Son güncelleme: 2026-10-19
 <!-- durum:bitis -->
 
@@ -19,7 +19,7 @@ Durum değerleri: `bekliyor`, `sürüyor`, `tamam`, `engelli` (neden Not sütunu
 
 | No | Aşama | Durum | Başlangıç | Bitiş | Commit | Not |
 |---|---|---|---|---|---|---|
-| A00 | Ortam, klasör ve depo hazırlığı | bekliyor | | | | |
+| A00 | Ortam, klasör ve depo hazırlığı | sürüyor | 2026-10-19 | | | A00.1, A00.3, A00.4 tamam; A00.2 (kullanıcının `/doctor`, `/hooks`, `/agents`, `/skills`, `/status` sonuçları ve bekçi onay penceresi) ve A00.5 (yönetici gerektiren Windows ayarları) bekleniyor. Yol kararı: yerinde kal (OneDrive; klasör "Her zaman bu cihazda tut", yoğun işlerde eşitleme duraklatılır, Android derlemesi EAS bulutunda) |
 | A01 | Hukuk ve izin yazışma paketi | bekliyor | | | | |
 | A02 | Tek depo iskeleti | bekliyor | | | | |
 | A03 | Yerel altyapı | bekliyor | | | | |
@@ -66,6 +66,7 @@ Durum değerleri: `bekliyor`, `sürüyor`, `tamam`, `engelli` (neden Not sütunu
 Her aşama oturumunun sonunda bir satır eklenir: `YYYY-AA-GG · Aşama · ne yapıldı · sıradaki adım`.
 
 - 2026-10-19 · Kit · Claude Code kiti kuruldu (CLAUDE.md, `.claude/`, `docs/10-claude-code/`) · A00
+- 2026-10-19 · A00 · sürüm tablosu, kök git dosyaları (`7fc54af`), pnpm 12.14.0 kurulumu, push politikası ve klasör adı kararları, belge düzeltmeleri; `/doctor` sonuçları ile yönetici adımları bekleniyor · A00'ı kapat, sonra A01
 
 ## İlgili dosyalar
 

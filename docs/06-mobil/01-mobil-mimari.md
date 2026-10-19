@@ -43,7 +43,7 @@ Kaynak: [Expo SDK 58 beta](https://expo.dev/changelog/sdk-58-beta).
 | expo-sqlite libSQL desteği kaldırıldı | Kullanmıyoruz | — |
 | expo-sqlite `NativeArrayBuffer` yerine `ArrayBuffer` | Mushaf A font BLOB okuma kodu etkilenir | Font önbelleği testleri yeniden koşulur |
 | Expo Router yerel sekmeler kararlı | Mini oynatıcı yerleşimi yeniden denenir | Doğrulanacak |
-| Geliştirme araçları Node.js 22.13+, 24.3+ ya da 26+ ister | Geliştirme ortamı | [Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md) |
+| Geliştirme araçları Node.js 22.13+, 24.3+ ya da 26+ ister (kararlı sürüm 15 Ekim 2026; [SDK 58](https://expo.dev/changelog/sdk-58)) | Geliştirme ortamı | [Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md) |
 | expo-sqlite için ajan becerisi (`npx @expo/agent-cli skills:sync`) | Yapay zekâ destekli geliştirmede kullanılır | İsteğe bağlı |
 
 ## 3. Klasör yapısı
