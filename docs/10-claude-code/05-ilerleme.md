@@ -9,7 +9,7 @@ Bu dosya aşamaların durumunu tutar. Aşağıdaki durum bloğu her oturumun ba�
 - Aktif aşama: yok
 - Son tamamlanan: A00 · Ortam, klasör ve depo hazırlığı (2026-10-20)
 - Sıradaki: A01 · Hukuk ve izin yazışma paketi
-- Bekleyen insan adımları: İ-01 (Docker, yönetici ayarları)
+- Bekleyen insan adımları: İ-01 (Docker ilk açılış, yönetici ayarları)
 - Son güncelleme: 2026-10-20
 <!-- durum:bitis -->
 
