@@ -1,0 +1,22 @@
+# Kit ve Claude Code
+.claude/settings.local.json
+CLAUDE.local.md
+.tmp/
+# IDE
+.idea/
+# Gizli değerler
+.env
+.env.*
+!.env.example
+**/.env.local
+# Veri (git dışı; docs/02-mimari/03 §1.1). Kökte bağlanır: shared/data/ izlenir.
+/data/
+# Bağımlılıklar ve çıktılar
+node_modules/
+dist/
+bin/
+obj/
+.expo/
+.turbo/
+.venv/
+__pycache__/
