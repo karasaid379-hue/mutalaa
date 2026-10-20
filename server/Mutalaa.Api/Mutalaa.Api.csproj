@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mutalaa.Infrastructure\Mutalaa.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

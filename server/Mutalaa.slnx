@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/Mutalaa.Api.Tests/Mutalaa.Api.Tests.csproj" />
+    <Project Path="tests/Mutalaa.Domain.Tests/Mutalaa.Domain.Tests.csproj" />
+    <Project Path="tests/Mutalaa.Publisher.Tests/Mutalaa.Publisher.Tests.csproj" />
+  </Folder>
+  <Project Path="Mutalaa.Api/Mutalaa.Api.csproj" />
+  <Project Path="Mutalaa.Domain/Mutalaa.Domain.csproj" />
+  <Project Path="Mutalaa.Infrastructure/Mutalaa.Infrastructure.csproj" />
+  <Project Path="Mutalaa.Publisher/Mutalaa.Publisher.csproj" />
+</Solution>

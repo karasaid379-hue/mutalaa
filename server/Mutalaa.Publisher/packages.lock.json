@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0": {
+      "mutalaa.domain": {
+        "type": "Project"
+      },
+      "mutalaa.infrastructure": {
+        "type": "Project",
+        "dependencies": {
+          "Mutalaa.Domain": "[1.0.0, )"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mutalaa.Domain\Mutalaa.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
