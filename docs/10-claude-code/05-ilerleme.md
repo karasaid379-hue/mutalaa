@@ -8,8 +8,8 @@ Bu dosya aşamaların durumunu tutar. Aşağıdaki durum bloğu her oturumun ba�
 <!-- durum:baslangic -->
 - Aktif aşama: yok
 - Son tamamlanan: A00 · Ortam, klasör ve depo hazırlığı (2026-10-20)
-- Sıradaki: A01 · Hukuk ve izin yazışma paketi
-- Bekleyen insan adımları: İ-01 (Docker ilk açılış, yönetici ayarları)
+- Sıradaki: A02 · Tek depo iskeleti (A01, İ-02 gönderimini bekliyor; A02'nin önkoşulu yalnız A00)
+- Bekleyen insan adımları: İ-01 (Docker ilk açılış, yönetici ayarları); İ-02 … İ-08 taslakları hazır, gönderim ve onay bekliyor (öncelik İ-02)
 - Son güncelleme: 2026-10-20
 <!-- durum:bitis -->
 
@@ -20,7 +20,7 @@ Durum değerleri: `bekliyor`, `sürüyor`, `tamam`, `engelli` (neden Not sütunu
 | No | Aşama | Durum | Başlangıç | Bitiş | Commit | Not |
 |---|---|---|---|---|---|---|
 | A00 | Ortam, klasör ve depo hazırlığı | tamam | 2026-10-19 | 2026-10-20 | `7fc54af` kök git dosyaları; `ec4526c` push politikası; `57f424f` belge düzeltmeleri | Hook, ajan ve beceri sayımı VS Code'da `/hooks` ve `/agents` olmadığı için diskten kanıtlandı; yerleşik `/doctor` çıktısı Claude Code'a görünmez, `doctor` becerisi ayar dosyası ayrıştırmasını yaptı (bozuk dosya yok). Klasör bekçisi: `Write Z:` reddedildi, `echo > /z/...` için hook `ask` kararı oturum kaydında. Yönetici gerektiren Windows ayarları ve Docker İ-01'de. Yol kararı: yerinde kal (OneDrive; klasör "Her zaman bu cihazda tut", yoğun işlerde eşitleme duraklatılır, Android derlemesi EAS bulutunda) |
-| A01 | Hukuk ve izin yazışma paketi | bekliyor | | | | |
+| A01 | Hukuk ve izin yazışma paketi | engelli | 2026-10-20 | | yazışma taslakları, insan adımları, belge eşitleme | A01.1–A01.6 tamam (7 taslak, 5 açıdan inceleme ve doğrulama uygulandı); A01.7 inceleme düzeltmeleri işlendi; İ-02 gönderimi bekleniyor (Faz 0 çıkış ölçütü: Kurul'a talep gitti; cevap ya da takip tarihi kayıtlı) |
 | A02 | Tek depo iskeleti | bekliyor | | | | |
 | A03 | Yerel altyapı | bekliyor | | | | |
 | A04 | Çapa grameri ve ortak test vektörleri | bekliyor | | | | |
@@ -68,6 +68,7 @@ Her aşama oturumunun sonunda bir satır eklenir: `YYYY-AA-GG · Aşama · ne ya
 - 2026-10-19 · Kit · Claude Code kiti kuruldu (CLAUDE.md, `.claude/`, `docs/10-claude-code/`) · A00
 - 2026-10-19 · A00 · sürüm tablosu, kök git dosyaları (`7fc54af`), pnpm 12.14.0 kurulumu, push politikası ve klasör adı kararları, belge düzeltmeleri · kabul kanıtları
 - 2026-10-20 · A00 · `doctor` taraması, hook/ajan/beceri sayımının disk kanıtı, A00.2 ve Kurulum §5 belge düzeltmesi, aşama kapandı · A01
+- 2026-10-20 · A01 · 7 yazışma taslağı yazıldı; araştırma (5 kurum) ve beş açılı inceleme/doğrulama uygulandı; belgeler eşitlendi (lisans defteri, yayın kapısı, BÇ-29…BÇ-34) · İ-02 gönderimi; sıradaki A02
 
 ## İlgili dosyalar
 
