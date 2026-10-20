@@ -7,10 +7,10 @@ Bu dosya aşamaların durumunu tutar. Aşağıdaki durum bloğu her oturumun ba�
 
 <!-- durum:baslangic -->
 - Aktif aşama: yok
-- Son tamamlanan: A00 · Ortam, klasör ve depo hazırlığı (2026-10-20)
-- Sıradaki: A02 · Tek depo iskeleti (A01, İ-02 gönderimini bekliyor; A02'nin önkoşulu yalnız A00)
+- Son tamamlanan: A02 · Tek depo iskeleti (2026-10-21)
+- Sıradaki: A03 · Yerel altyapı (A01, İ-02 gönderimini bekliyor; A03'ün önkoşulu A00 ve A02, ikisi tamam)
 - Bekleyen insan adımları: İ-01 (Docker ilk açılış, yönetici ayarları); İ-02 … İ-08 taslakları hazır, gönderim ve onay bekliyor (öncelik İ-02)
-- Son güncelleme: 2026-10-20
+- Son güncelleme: 2026-10-21
 <!-- durum:bitis -->
 
 ## Aşama tablosu
@@ -21,7 +21,7 @@ Durum değerleri: `bekliyor`, `sürüyor`, `tamam`, `engelli` (neden Not sütunu
 |---|---|---|---|---|---|---|
 | A00 | Ortam, klasör ve depo hazırlığı | tamam | 2026-10-19 | 2026-10-20 | `7fc54af` kök git dosyaları; `ec4526c` push politikası; `57f424f` belge düzeltmeleri | Hook, ajan ve beceri sayımı VS Code'da `/hooks` ve `/agents` olmadığı için diskten kanıtlandı; yerleşik `/doctor` çıktısı Claude Code'a görünmez, `doctor` becerisi ayar dosyası ayrıştırmasını yaptı (bozuk dosya yok). Klasör bekçisi: `Write Z:` reddedildi, `echo > /z/...` için hook `ask` kararı oturum kaydında. Yönetici gerektiren Windows ayarları ve Docker İ-01'de. Yol kararı: yerinde kal (OneDrive; klasör "Her zaman bu cihazda tut", yoğun işlerde eşitleme duraklatılır, Android derlemesi EAS bulutunda) |
 | A01 | Hukuk ve izin yazışma paketi | engelli | 2026-10-20 | | yazışma taslakları, insan adımları, belge eşitleme | A01.1–A01.6 tamam (7 taslak, 5 açıdan inceleme ve doğrulama uygulandı); A01.7 inceleme düzeltmeleri işlendi; İ-02 gönderimi bekleniyor (Faz 0 çıkış ölçütü: Kurul'a talep gitti; cevap ya da takip tarihi kayıtlı) |
-| A02 | Tek depo iskeleti | bekliyor | | | | |
+| A02 | Tek depo iskeleti | tamam | 2026-10-21 | 2026-10-21 | `01ded34` pnpm çalışma alanı; `36fbcd0` vektör denetleyicisi; `a47fb8b` .NET çözümü; `6deda1d` uv projesi; `8ac7cd7` kit; `848c165` belgeler | Kararlar: K-32 (BÇ-28: Corepack yok, `devEngines.packageManager`, izole `node_modules`), K-33 (xunit.v3 4.x + MTP, `dotnet test --solution`, `.slnx` ve `dotnet format` çalışıyor, `.sln` gerekmedi), K-34 (TypeScript tek sürüm 6.0.x). Doğrulama: `turbo run lint typecheck test build --force` 28/28, `dotnet test` 7/7, `pytest`, `ruff`, `mypy` yeşil. İnceleme: `inceleyici`, `lisans-denetcisi`, `metin-denetcisi`; düzeltilenler turbo girdileri, TypeScript tek sürüm, vektör denetleyicisi sağlamlaştırma, mimari testleri, Ruff PLW1514. Kullanıcıya kalan: `.slnx` IDE açılışı (C# Dev Kit), Codex dosyaları (`.agents/`, `.codex/`, `AGENTS.md`) takipsiz bırakıldı. Açılan çelişki: BÇ-35 (CAMeL ve zeyrek veri lisansı, A17). İleriye: paket çizgesinin `package.json` testi var, `dist` tabanlı `exports` A04'te gözden geçirilir |
 | A03 | Yerel altyapı | bekliyor | | | | |
 | A04 | Çapa grameri ve ortak test vektörleri | bekliyor | | | | |
 | A05 | Arama normalizasyonu | bekliyor | | | | |
@@ -69,6 +69,7 @@ Her aşama oturumunun sonunda bir satır eklenir: `YYYY-AA-GG · Aşama · ne ya
 - 2026-10-19 · A00 · sürüm tablosu, kök git dosyaları (`7fc54af`), pnpm 12.14.0 kurulumu, push politikası ve klasör adı kararları, belge düzeltmeleri · kabul kanıtları
 - 2026-10-20 · A00 · `doctor` taraması, hook/ajan/beceri sayımının disk kanıtı, A00.2 ve Kurulum §5 belge düzeltmesi, aşama kapandı · A01
 - 2026-10-20 · A01 · 7 yazışma taslağı yazıldı; araştırma (5 kurum) ve beş açılı inceleme/doğrulama uygulandı; belgeler eşitlendi (lisans defteri, yayın kapısı, BÇ-29…BÇ-34) · İ-02 gönderimi; sıradaki A02
+- 2026-10-21 · A02 · pnpm, .NET ve uv iskeleti kuruldu; K-32, K-33, K-34 yazıldı; BÇ-28 çözüldü, BÇ-35 açıldı; üç denetçi incelemesi uygulandı · A03
 
 ## İlgili dosyalar
 
