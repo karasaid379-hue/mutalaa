@@ -30,6 +30,7 @@ Bu klasör (`docs/`), 16–18 Ekim 2026 araştırma ve beyin fırtınası oturum
 | `07-yayin/` | Lisans kapısı, Kurul, KVKK, testler | [Yayın kapısı ve Kurul](./07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK ve gizlilik](./07-yayin/02-kvkk-ve-gizlilik.md) · [Test stratejisi](./07-yayin/03-test-stratejisi.md) |
 | `08-yol-haritasi/` | Fazlar, sonra yapılacaklar, riskler | [Fazlar](./08-yol-haritasi/01-fazlar.md) · [Sonra yapılacaklar](./08-yol-haritasi/02-sonra-yapilacaklar.md) · [Riskler](./08-yol-haritasi/03-riskler.md) |
 | — | Kaynak listesi | [Kaynakça](./09-kaynakca.md) |
+| `yazismalar/` | Kurul, avukat ve izin sahiplerine gidecek yazışma taslakları (gönderen kullanıcıdır) | [Kurul](./yazismalar/kurul-on-gorusme.md) · [Avukat](./yazismalar/avukat-sorulari.md) · [QAC](./yazismalar/qac-lisans.md) · [KFGQPC](./yazismalar/kfgqpc-hafs-font.md) · [Quran Foundation](./yazismalar/qf-developer-console.md) · [Hafız](./yazismalar/hafiz-izin.md) · [Tanzil](./yazismalar/tanzil-arama-metni.md) |
 | `10-claude-code/` | Claude Code ile geliştirme: rehber, aşamalar, ilerleme, insan adımları | [Rehber](./10-claude-code/README.md) · [Kurulum](./10-claude-code/01-kurulum.md) · [Çalışma düzeni](./10-claude-code/02-calisma-duzeni.md) · [Ajanlar, beceriler ve kurallar](./10-claude-code/03-ajanlar-beceriler-kurallar.md) · [Aşama haritası](./10-claude-code/04-asama-haritasi.md) · [İlerleme](./10-claude-code/05-ilerleme.md) · [İnsan adımları](./10-claude-code/06-insan-adimlari.md) |
 
 ## Kararlar bir bakışta
