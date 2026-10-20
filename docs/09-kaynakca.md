@@ -19,12 +19,13 @@ Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo 
 
 ### Telif (FSEK) ve Risale-i Nur hakları
 
-- [FSEK metni (WIPO Lex)](https://www.wipo.int/wipolex/en/text/499171). Koruma süresi (m. 26–27), işlenme eser (m. 6), güzel sanat eseri (m. 4), manevi haklar (m. 16, 19).
+- [FSEK güncel metni (mevzuat.gov.tr)](https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3). 5846 sayılı Kanunun güncel metni; kullanılmadan önce kaynak yeniden açılır.
+- [FSEK metni (WIPO Lex)](https://www.wipo.int/wipolex/en/text/499171). Koruma süresi (m. 26–27), işlenme eser (m. 6), güzel sanat eseri (m. 4), manevi haklar (m. 16, 19). Yalnız 2008'e kadarki metindir; 6552 değişikliğini ve m. 47 iptal notunu taşımaz.
 - [Bakanlığın 2014 açıklaması (AA/Sondakika)](https://www.sondakika.com/guncel/haber-risale-i-nur-kulliyati-nin-basimi-6272228/). Mirasçıların birlikte tasarrufu ve muvafakatname şartı.
 - [Topluluğun görüşü (Timeturk)](https://www.timeturk.com/tr/2014/07/08/risale-i-nurlar-yasaklaniyor-mu.html). Yayının "mutlak vekil" talebelere emanet edildiği görüşü.
 - [Hakların Diyanet'e verilmesi, 2014 (Hürriyet)](https://www.hurriyet.com.tr/yazarlar/yalcin-bayer/nereden-nereye-27679980). Bakanlar Kurulu kararı.
-- [AYM E.2015/48, K.2015/45](https://normkararlarbilgibankasi.anayasa.gov.tr/Dosyalar/Kararlar/KararPDF/2015-45-nrm.pdf). FSEK m. 47 değişikliği ve itiraz yolu kararı.
-- [AYM iptal haberi (T24)](https://t24.com.tr/haber/aym-risale-i-nur-yasagini-iptal-etti,299364). 11 Haziran 2015 iptali.
+- [AYM, 14.05.2015, E.2014/177, K.2015/49 (RG 11.06.2015, sayı 29383)](https://www.resmigazete.gov.tr/eskiler/2015/06/20150611.htm). FSEK m. 47 değişikliğinin iptal kararı; Resmî Gazete'de yayımlanması.
+- [AYM iptal haberi (T24)](https://t24.com.tr/haber/aym-risale-i-nur-yasagini-iptal-etti,299364). 14 Mayıs 2015 tarihli iptal kararı (RG 11 Haziran 2015).
 - [Fikri hakların anayasal himayesi (Lexpera, 2023)](https://www.lexpera.com.tr/literatur/armagan-makaleler/fikri-haklarin-anayasal-himayesi-uzerine-notlar-2-soyut-norm-denetimi-iptal-davasi-934-937/1). İptalin akademik teyidi.
 
 ### KVKK

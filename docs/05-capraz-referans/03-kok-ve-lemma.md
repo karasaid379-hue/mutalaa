@@ -1,6 +1,6 @@
 # Kök ve Lemma Katmanı
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.2 · **Tarih:** 20 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 
 Bu dosya Kur'an kelimelerinin kök ve lemma verisini, Türkçe kelimeyi Arapça köke bağlayan hattı ve kelime kartıyla kök gezgininin ihtiyaç duyduğu veriyi tanımlar. Bağlantı türleri `kok` ve `lemma`, puanlama ve panel kuralları [bağlantı modelindedir](./01-baglanti-modeli.md). Türkçe kelime anlamlarının yazımı [kelime anlamları](../04-icerik/06-kelime-anlamlari.md) dosyasındadır (K-19).
@@ -24,23 +24,32 @@ Bu dosya Kur'an kelimelerinin kök ve lemma verisini, Türkçe kelimeyi Arapça 
 Hukuki görüş değildir. Eylemler:
 1. **QAC'ye yazılır** (rapor ve brif). Sorular aşağıdaki taslakta. Cevap [kaynaklar ve lisans defterine](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) ve `source` satırına işlenir.
 2. **Tarteel'e yazılır;** QUL'un morfoloji ve lemma dışa aktarımları için kaynak bazında şart sorulur.
-3. **Ara durum:** QAC kaynağı `license_status = 'bekliyor'` taşır. QAC'den türeyen alanlar (`root_id`, `lemma_id`, `pos`) yalnız iç derlemelerde görünür. Mağaza derlemesinde kelime kartı metni ve sesi gösterir; kök, lemma ve anlam satırları cevap gelene kadar kapalıdır (Açık soru 1).
-4. **B planı:** QAC ticari olmayan kullanım ya da yalnız aynen dağıtım şartında ısrar ederse üç yol var. (a) Dosya ayrı bir pakette aynen dağıtılır ve tablolar cihazda ilk açılışta kurulur (avukata sorulur). (b) Kendi etiketlerimizi CAMeL Tools (MIT) ve editör onayıyla üretiriz; Kur'an Arapçasındaki başarısı Doğrulanacak. (c) QAC Version 2'nin açık veri setleri beklenir.
+3. **Ara durum:** QAC kaynağı `license_status = 'bekliyor'` taşır. QAC'den türeyen alanlar (`root_id`, `lemma_id`, `pos`) yalnız ekip içi `dev` derlemede görünür (K-06; [lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §1). `internal` ve `public` derlemede kelime kartı metni ve sesi gösterir; kök, lemma ve anlam satırları cevap gelene kadar kapalıdır (Açık soru 1).
+4. **B planı:** QAC ticari olmayan kullanım ya da yalnız aynen dağıtım şartında ısrar ederse üç yol var. (a) Dosya ayrı bir pakette aynen dağıtılır ve tablolar cihazda ilk açılışta kurulur (avukata sorulur). (b) Kendi etiketlerimizi CAMeL Tools (MIT) ve editör onayıyla üretiriz; Kur'an Arapçasındaki başarısı Doğrulanacak. (c) QAC Version 2'nin açık veri setleri beklenir. Not (20 Ekim 2026): Version 2 deposunda veri lisansı ifadesi yok, son işleme 21 Temmuz 2023 tarihli; bu yüzden (c) zayıfladı ([kaisdukes/quranic-corpus](https://github.com/kaisdukes/quranic-corpus)).
+
+Gönderilecek metin [QAC lisans sorusu](../yazismalar/qac-lisans.md) yazısındadır. Yazının hitabı artık "QAC bakımcıları"dır (sitenin altbilgisine göre bakım quran.com ekibindedir; 20 Ekim 2026). Soru sayısı 6'dır. Aşağıdaki taslak kısa özetidir; metin ile çelişirse yazışma dosyası geçerlidir.
 
 ```text
 Subject: Licensing question: Quranic Arabic Corpus morphology in a free reading app
 
-Dear Dr. Dukes,
+Dear Quranic Arabic Corpus maintainers,
 We are building "Mütâlaa", a free, ad-free Qur'an reading and study app in Turkish.
 1. The download page licenses the morphology file under the GNU GPL and allows use "in any website
    or application" with credit and a link; the FAQ says "You do not use the data for commercial
    purposes". Which terms apply to a free app that may accept donations?
 2. May we convert the unchanged values into our own SQLite tables and ship them with credit,
-   given the "verbatim copies" clause?
+   given the "verbatim copies" clause? (Combining the segment-level records into word-level
+   rows is part of this question: does it count as changing the file?)
 3. We keep our corrections in a separate layer and never edit your file. May we ship that layer,
    and would you like to receive the corrections?
 4. What credit line do you prefer?
+5. May we include a word's root, lemma and part-of-speech tags in the prompts we send to an AI
+   service, when drafting Turkish word meanings?
+6. Can you answer on behalf of the copyright holder (the website names Kais Dukes)? If not,
+   whom should we contact?
 ```
+
+Yeni sorular (20 Ekim 2026): 2. soruda "değiştirmek yasaktır" cümlesi ışığında segmentlerin kelime satırında toplanması (§3 madde 2); 5. soruda yapay zekâ istemlerinde kök, lemma ve sözcük türü etiketlerinin kullanımı; 6. soruda hak sahibinin kim olduğu ve kimin adına cevap verilebileceği.
 
 ## 3. İçe aktarma ve tablolar
 

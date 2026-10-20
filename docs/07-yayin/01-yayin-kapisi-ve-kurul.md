@@ -1,6 +1,6 @@
 # Yayın kapısı ve Kurul onayı
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.2 · **Tarih:** 20 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
 
 > **Hukuki görüş değildir.** Bu dosya araştırma raporundaki mevzuat ve lisans bulgularını mühendislik kurallarına çevirir. Mağaza yayınından önce Kurul'un yazılı cevabı ve bir fikri haklar avukatının görüşü alınır.
@@ -15,7 +15,8 @@ Bu dosya `Mutalaa.Publisher` içindeki lisans kapısını, **Kaynaklar ve lisans
 | Yürürlük | Hüküm 7549 sayılı Kanunla geldi, 4 Haziran 2025'te yürürlüğe girdi. Kural 2018'den beri kararnamede vardı. | [Yeni Akit](https://www.yeniakit.com.tr/haber/diyanete-yeni-yetki-yururluge-girdi-sakincali-kuran-meallerini-toplayip-imha-edebilecek-1937002.html), [Memurlar.net, 2018](https://www.memurlar.net/haber/761684/diyanetten-kur-an-i-kerim-ve-meallere-yakin-takip.html) |
 | Yaptırım | Mahkeme onaysız internet yayınında içeriğin çıkarılmasına ve/veya erişimin engellenmesine karar verebilir. İki haftalık itiraz engeli durdurmaz. | [Karar](https://www.karar.com/guncel-haberler/duzenleme-mecliste-yasalasti-diyanet-kuran-i-kerim-meali-1963979) |
 | Sürüme bağlılık | 2022 yönetmeliği dijital eserlerin onaylanmasını öngörür. Onaylanmış eserin içeriği değiştirilemez. | [Memurlar.net, 2022](https://www.memurlar.net/haber/1045766/kur-an-i-kerim-basim-ve-yayim-kriterleri-hakkinda-yonetmelik-resmi-gazete-de-yayimlandi.html) |
-| Ücret | Döner sermaye yönetmeliği "dijital dini yayınların inceletilmesi" için ücret öngörür; tutar bilinmiyor. | [Memurlar.net](https://www.memurlar.net/haber/850408) |
+| Ücret ve süre | Kur'an-ı Kerim Basım ve Yayım Kriterleri Hakkında Yönetmelikte (RG 2/11/2022, 32001) inceleme ücreti ya da süresi hükmü yok (okuma: 20 Ekim 2026). "Dijital dini yayınların inceletilmesi ve mütalaası karşılığında özel kişi ve kuruluşlara ödenecek ücretler" ifadesi başka bir metinde geçer: Diyanet İşleri Başkanlığı Dini Yayınlar Döner Sermaye İşletmesi Yönetmeliği'nin (RG 22/8/2019, 30866) "Giderler" maddesi. İfade giderler arasında ve "ödenecek ücretler" diye geçiyor; başvurandan alınacak bir ücreti açıkça öngördüğü bu ifadeden okunmuyor. Tutar ya da tarife de yok. 7549 sayılı Kanun m. 6 (RG 4/6/2025, 32920) Din İşleri Yüksek Kurulu inceleme gelirlerini 633 m. 14/2'den çıkardı. Ücret ve süre Açık soru kalır ([Kurul yazısı](../yazismalar/kurul-on-gorusme.md), soru 4). Döner sermaye yönetmeliğinin birincil metni ve 7549 m. 6 metni okunmadı (Doğrulanacak). Hukuki görüş değildir. | [Yönetmelik, mevzuat.gov.tr](https://www.mevzuat.gov.tr/anasayfa/MevzuatFihristDetayIframe?MevzuatTur=7&MevzuatNo=39802&MevzuatTertip=5); [Memurlar.net, döner sermaye (ikincil)](https://www.memurlar.net/haber/850408) |
+| Tebliğ | Kurul'un 09.02.2023 tarihli "Yayınevi ve Matbaalara Tebliğ Edilecek Hususlar" belgesi, 3. maddede "Basılı ve dijital eserlerde" aranan nitelikleri sayar (ayet berkenar, on beş satır, cüz sonları 20'nin katları ve 604 sayfa, geleneksel harekeleme, Türkçe karakter, renklendirme, Kurul'un uygun gördüğü yazı tipi). 3/b'nin ikinci cümlesi, tarihi veya sanat değeri bulunan basılı eserlerin tıpkı basımlarında bu şartların aranmaz olduğunu söyler; istisna yalnız basılı eser içindir, dijital eseri kapsamaz. 2. madde dijital eserlerde hızlandırma ve yavaşlatma ölçülerini ister. Bent harfleri Yönetmelik m. 5/3'tekilerle bir harf kayıktır (§7.5). | [Kurul duyurusu (01.03.2023) ve tebliğ](https://mushaflariinceleme.diyanet.gov.tr/Detay/155/) |
 | Meal incelemesi | Din İşleri Yüksek Kurulu meal yayınlarını inceleyebilir; aykırı yayın toplatılabilir ya da erişime kapatılabilir (m. 5/ı). | Lexpera, 633 |
 
 Telif ekseni bundan ayrıdır. Tanzil metni değiştirilemez, QPC sayfa fontları "All rights reserved" der, Risale-i Nur 31 Aralık 2030'a kadar korunur. Kaynak bazındaki durum [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) dosyasındadır. Kapı iki ekseni birlikte uygular.
@@ -171,10 +172,11 @@ Açık kaynak yazılım lisansları derlemede bağımlılık meta verisinden ür
 
 | İçerik | Yeri | Değerlendirme |
 |---|---|---|
-| Kur'an metni (Tanzil) | `core`, bütün modlar | Muhtemelen gerekir ("elektronik ortamda hazırlanan Kur'an-ı Kerim") |
+| Kur'an metni (Tanzil Unicode) | `core`; akan metin görünümü (C), âyet âyet okuma, arama; Mushaf A'da kopyalama, arama ve ekran okuyucu katmanı. Mushaf A'da ekrandaki yazı QPC sayfa yazı tipinin gliflerdir, Mushaf B'de sayfa görüntüsüdür ([Mobil mimari](../06-mobil/01-mobil-mimari.md) §7; [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md)) | Muhtemelen gerekir ("elektronik ortamda hazırlanan Kur'an-ı Kerim") |
 | Arapça metinle birlikte Elmalılı meali | `core`, Mushaf + Meal | Muhtemelen gerekir ("mealli mushaf"); ayrıca m. 5/ı incelemesi |
 | Hafız kayıtları | `ses-{hafiz}` | Muhtemelen gerekir ("sesli ... Kur'an-ı Kerim") |
-| QPC sayfa fontları (Medine düzeni) | `mushaf-a-cuz-*` | Gerekir; fontun kabulü Açık soru. Basılı mushafta "Kurul'un uygun gördüğü yazı tipleri" şartı var ([Cumhuriyet](https://www.cumhuriyet.com.tr/turkiye/resmi-gazetede-yayimlandi-diyanetten-kuran-karari-1998786)) |
+| QPC sayfa fontları (Medine düzeni) | `mushaf-a-cuz-*` | Gerekir; fontun kabulü Açık soru. Tebliğ 3/o, basılı ve dijital eserlerde "Kurul tarafından uygun görülen yazı tipi (font)" kullanılmasını ister ([tebliğ](https://mushaflariinceleme.diyanet.gov.tr/Detay/155/); haber özeti: [Cumhuriyet](https://www.cumhuriyet.com.tr/turkiye/resmi-gazetede-yayimlandi-diyanetten-kuran-karari-1998786)) |
+| Medine düzeni sayfa düzeni verisi (`medine-604-duzen`) | `mushaf-a-cuz-*` | Kaynak seçimi sürüyor (Açık soru); düzenin Kurul açısından kabulü Tebliğ 3/b ve 3/ç ile birlikte sorulur (§7.4, §7.5) |
 | Türk hattı görselleri | `mushaf-b` | Gerekir; hat lisansı da gerekir |
 | Unicode font (Amiri Quran ya da KFGQPC Hafs) | `core`, Mushaf C | Gerekir; fontun kabulü Açık soru |
 | Kur'an metninin yanında gösterilen bağlantı ve dizin verisi | Bağlantılar alt sayfası, kök kartı | Açık soru |
@@ -196,7 +198,7 @@ flowchart LR
   E -->|"ret"| I["Yedek: Mushaf C, kapsam daraltma"]
 ```
 
-1. **Ön görüşme (Faz 0).** Kurul'a yazılı görüşme talebi gider. İletişim kanalı Doğrulanacak; araştırma notlarında geçen `mushaflariinceleme.diyanet.gov.tr` adresi araştırma sırasında hata verdi. Görüşmeye bir sayfalık ürün tanımı, üç mushaf modunun ekran görüntüleri (varsa; uygulama ekranları Faz 2'den önce yoktur, o zaman tasarım vitrini görselleri ya da görüşmede gösterim; görsel uydurulmaz), kaynaklar, sürüm dondurma yaklaşımı ve §7.5'teki sorular götürülür.
+1. **Ön görüşme (Faz 0).** Kurul'a yazılı görüşme talebi gider. **Çözüldü (2026-10-20):** Kurul sitesi açılıyor; iletişim bilgileri [İletişim sayfasında](https://mushaflariinceleme.diyanet.gov.tr/sayfa/90) (okuma: 2026-10-20): birim e-postası `mushaflar@diyanet.gov.tr`; posta adresi Diyanet İşleri Başkanlığı, Üniversiteler Mah. Dumlupınar Blv. No: 147/A 06800 Çankaya/ANKARA. KEP adresi ve iletişim formu bulunamadı (Doğrulanacak). Başvuru usulü Yönetmelik m. 7/1'dedir: Başkanlıkça belirlenen matbu form Kurul'a teslim edilir; internet sitesinde ilan edilecek bağlantıyla elektronik başvuru da öngörülebilir. Tebliğ ve başvuru formu [01.03.2023 duyurusunun](https://mushaflariinceleme.diyanet.gov.tr/Detay/155/) ekidir. Görüşme taslağı: [Kurul ön görüşme talebi](../yazismalar/kurul-on-gorusme.md). Görüşmeye bir sayfalık ürün tanımı, üç mushaf modunun ekran görüntüleri (varsa; uygulama ekranları Faz 2'den önce yoktur, o zaman tasarım vitrini görselleri ya da görüşmede gösterim; görsel uydurulmaz), kaynaklar, sürüm dondurma yaklaşımı ve §7.5'teki sorular götürülür.
 2. **İçerik dondurma.** Kurul kaynakları için bir `release` kaydı açılır: içerik özetleri, Tanzil dosya özeti, Elmalılı metin sürümü, ses dosyası listesi.
 3. **İç tashih ve başvuru dosyası.** Tanzil'le bayt bayt eşitlik raporu, hafız başına âyet-dosya listesi, izin belgeleri, test raporları, ekran görüntüleri ve Kurul'un istediği biçimde bir derleme ya da metin dökümü (biçim Açık soru) hazırlanır. Mealin düzeltme turları bu adımdan önce kapanır, çünkü onaydan sonraki düzeltme yeniden onay gerektirebilir. Basılı mushafta üretimi onaya kadar bir hafızın izlemesi kuralı var; dijital iş için de bir hafızın kaydı ve metni baştan sona kontrol etmesi önerilir.
 4. **İnceleme.** Kurul düzeltme isterse düzeltme elle yapılmaz; içerik hattından geçer, testler çalışır, yeni içerik özeti üretilir.
@@ -221,18 +223,41 @@ flowchart LR
 
 Kurul Medine düzenli fontları kabul etmezse Mushaf A public derlemeye girmez ve Mushaf C (sayfa sınırlarına sadık, satırları akan Unicode metin) kalır. Bu K-07'yi değiştirmez; yalnız public derlemedeki mod listesini daraltır. Rapor mushaf çizim yönteminin bu cevap gelmeden kesinleşmemesini öneriyor.
 
+**A01.1 bulgusu (2026-10-20).** Tebliğ 3/b sayfaların "ayet berkenar, sayfa tutar ve on beş satırlı" olmasını, 3/ç cüz sonlarının 20 ve katları, son sayfa numarasının 604 olmasını ister (basılı ve dijital eserlerde). 3/b'nin ikinci cümlesi "tarihi veya sanat değeri bulunan basılı eserlerin tıpkı basımlarında bu şartlar aranmaz" der; istisna yalnız basılı eser içindir, dijital eser için değildir. Bu iki madde yedek planla ve Mushaf A ile gerilim taşır:
+
+- Mushaf C satırları ekran boyutuna göre yeniden dizer ve büyük yazıda sayfa kendi içinde kayar; "sayfa tutar ve on beş satırlı" ölçütüyle gerilim taşır. Yedek plan Mushaf C'ye dayandığı için Kurul cevabından bağımsız bir güvence sayılmaz.
+- Mushaf A'nın izlediği Medine düzeninde cüz sonları 20'nin katlarına denk gelmiyor: 1. cüz 21. sayfada biter, 2. cüz 22. sayfada (`q:2:142`), 3. cüz 42. sayfada (`q:2:253`), 30. cüz 582. sayfada (`q:78:1`) başlar (kaynak: [Tanzil `quran-data.js`](https://tanzil.net/res/text/metadata/quran-data.js) ve quran.com API v4 `by_page`; okuma: 2026-10-20; 7. ve 11. cüzün sayfa ortasında başladığı bilgisi doğrulanmadı).
+- Karar yok. Üç görünümün bu maddeler açısından durumu Kurul cevabına bağlıdır ([Kurul yazısı](../yazismalar/kurul-on-gorusme.md), soru 7); belgelerdeki karşılığı [Belge çelişkileri](../10-claude-code/07-belge-celiskileri.md) BÇ-29.
+
 ### 7.5 Bilinmeyenler
 
-1. **Açık soru:** Mobil uygulama "elektronik ortamda hazırlanan Kur'an-ı Kerim" sayılıyor mu; başvuru hangi birime ve hangi belgelerle yapılır? Yönetmeliğin tam metni okunamadı.
-2. **Açık soru:** İnceleme ücreti ve süresi.
+1. **Açık soru:** Mobil uygulama "elektronik ortamda hazırlanan Kur'an-ı Kerim" sayılıyor mu; başvuru hangi birime ve hangi belgelerle yapılır? **Çözüldü (2026-10-20):** Yönetmeliğin tam metni [mevzuat.gov.tr](https://www.mevzuat.gov.tr/anasayfa/MevzuatFihristDetayIframe?MevzuatTur=7&MevzuatNo=39802&MevzuatTertip=5) adresinden okundu (RG 2/11/2022, 32001; değişiklik RG 28/6/2024, 32586, yalnız m. 9/4); m. 2/1, 4/1-d, 7/1, 7/2, 8/1-b, 8/3, 8/4, 9/1 ve 9/2-b metinle ve tebliğle karşılaştırıldı (bent eşlemesi için kaynak notu: aşağıda, "Tebliğ ve Yönetmelik bent harfleri" tablosunun altında; Resmî Gazete PDF'i okunamadı). Metinde mobil uygulamaya özgü bir hüküm ya da kılavuz yok; Kurul'un başvuru formunda eser türü olarak forma, cüz, ses kaydı ve görüntü var, mobil uygulama seçeneği yok. Soru bu yüzden açık kalır ([Kurul yazısı](../yazismalar/kurul-on-gorusme.md), soru 1–3).
+2. **Açık soru:** İnceleme ücreti ve süresi. Yönetmelikte ücret ya da süre hükmü yok (§1, "Ücret ve süre" satırı); Kurul yazısı soru 4.
 3. **Açık soru:** Onayın birimi uygulama mı, paket mi, içerik sürümü mü? Web sürümü (Faz 5) ayrı başvuru ister mi?
 4. **Açık soru:** Medine düzenli QPC fontları ve Amiri Quran gibi Unicode fontlar kabul ediliyor mu?
 5. **Açık soru:** Onay, Kur'an metninin yanında gösterilen bağlantı ve dizin verisini (Bağlantılar alt sayfası, kök kartı) da kapsıyor mu? §7.1'deki öteki sınır türler (kelime anlamları; tefsir, hadis ve Risale içindeki âyetler; arama sonuçlarındaki âyet parçaları) aynı soruyla sorulur.
 6. **Açık soru:** Her hafız kaydı ayrı mı onaylanır; kodlama ve zamanlama değişikliği yeniden onay ister mi?
 7. **Açık soru:** Kapalı test grubuna dağıtım yayım sayılır mı?
 8. **Açık soru:** Onay bilgisi uygulamada nasıl gösterilir? Yönetmelik onaylı eserlerin QR kodlarının değiştirilemeyeceğini söylüyor.
-9. **Açık soru:** Basılı mushaf kuralı "Mealsiz eserlerde, çerçeve içinde Türkçe karakter yer almayacak" der (Cumhuriyet). Mushaf A ve C sayfasındaki Türkçe arayüz öğeleri (sure adı, sayfa numarası) için dijital karşılığı ne?
+9. **Açık soru:** Tebliğ 3/l, "Basılı ve dijital eserlerde" aranan nitelikler arasında "Mealsiz eserlerde çerçeve içinde Türkçe karakter yer almaz" der; 3/k sure ismi, cüz ve sayfa numarasının çerçeve dışında gösterilmesini ister. Cumhuriyet haberi bunları "basılı mushaf" kuralı diye aktarmıştı; tebliğ metni dijital eseri de kapsıyor. Mushaf A ve C sayfasındaki Türkçe arayüz öğeleri (sure adı, sayfa numarası) için dijital karşılığı ne? (Kurul yazısı, soru 10.)
 10. **Açık soru:** Başvuruyu gerçek kişi mi, tüzel kişi mi yapar?
+
+**Tebliğ ve Yönetmelik bent harfleri.** Tebliğin 3. maddesinde Yönetmelik m. 5/3'te bulunmayan bir "a) nazil olduğu dille" bendi var; bu yüzden aynı hükmün harfi iki metinde bir harf kayıktır. Bu belgeler ve Kurul yazısı tebliğin harflerini kullanır; ikisi karıştırılmasın diye eşleme (A01.1, 2026-10-20):
+
+| Tebliğ | 3/b | 3/c | 3/ç | 3/k | 3/l | 3/n | 3/o | madde 2 |
+|---|---|---|---|---|---|---|---|---|
+| Yönetmelik | 5/3-a | 5/3-b | 5/3-c | 5/3-j | 5/3-k | 5/3-m | 5/3-n | m. 5/2 |
+
+Kaynak notu: eşleme mevzuat.gov.tr metninden iki ayrı okumayla ve Tebliğ PDF'iyle karşılaştırılarak çıkarıldı (2026-10-20); Resmî Gazete PDF'i okunamadı.
+
+**A01.1 bulguları (2026-10-20; karar yok, hepsi Kurul cevabına bağlı).** Her madde [Kurul yazısındaki](../yazismalar/kurul-on-gorusme.md) soruya bağlıdır; belgelerle gerilim [Belge çelişkileri](../10-claude-code/07-belge-celiskileri.md) defterindedir.
+
+- **Görünüm (3/b, 3/ç):** §7.4'teki yedek plan, Mushaf C ve Medine düzeninin cüz sınırlarıyla gerilim. Soru 7; BÇ-29.
+- **Harekeleme (3/c):** Resm-i Osmani ya da Aliyyül-Kari imlasıyla hazırlanan eserlerde "zapt olarak geleneksel harekeleme sistemi aynen korunur". Tanzil Uthmani metni ve QPC yazı tipleri için soru 8.
+- **Renklendirme (3/n):** "Kur'an-ı Kerim'in mehabetine uygun düşmeyen, doğru okunmasına katkı sağlamayan ve renk karmaşasına yol açabilecek renklendirmeler yapılmaz." Tecvid renkleri ve Gece teması (K-07, K-24) için soru 11; BÇ-29.
+- **Hız (tebliğ madde 2):** hızlandırma ve yavaşlatma programlarında hadr, tedvir ve tahkik ölçüleri dikkate alınır. Oynatıcının hız ayarı için soru 13.d; BÇ-29.
+- **İnceleme sırası (Yönetmelik m. 8/1-b, m. 9/2-b):** dijital eserde son inceleme yayımdan sonra yapılır ve onay yayımdan sonra verilir. Bu sıra P-04 (§4) ve §7.2 akışıyla (onay önce, `public` derleme sonra) çelişir; onaysız `public` derleme durur. Ayrıntı: m. 8/1-b'de ilk inceleme yayımdan önce tamamlanır, sonra yayım, sonra son inceleme ve onay gelir. m. 9/1 ise mührü ya da onayı bulunmayan eserin yayımlanamayacağını söyler; m. 9/1 ile m. 9/2-b kendi aralarında da gerilim taşır ve Kurul'a sorulacaktır. Hukuki görüş değildir. Soru 14; BÇ-30.
+- **Meal (m. 8/3):** meal içeren eserler Din İşleri Yüksek Kurulu'nun uygun görüşü alındıktan sonra Kurul incelemesine alınır; Elmalılı meali için ek bir adım. Soru 20 ve 12.
 
 ### 7.6 Yurt dışı mağazalar
 
@@ -241,6 +266,7 @@ Uygulamanın yurt dışındaki mağazalardan dağıtılması Türkiye vitrinini 
 ## İlgili dosyalar
 
 - [KVKK ve gizlilik](./02-kvkk-ve-gizlilik.md) · [Test stratejisi](./03-test-stratejisi.md)
+- [Kurul ön görüşme talebi](../yazismalar/kurul-on-gorusme.md) · [Belge çelişkileri](../10-claude-code/07-belge-celiskileri.md)
 - [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md)
 - [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) · [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) · [Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md)

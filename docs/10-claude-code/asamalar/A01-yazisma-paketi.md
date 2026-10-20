@@ -88,7 +88,7 @@ Faz 0'ın kritik yolundaki hukuk ve izin işleri kod beklemeden başlar. Kurul �
 ### A01.6 · Hafız izin mektubu (İ-07)
 - Şablon, S-07'deki yedi maddeyi açıkça sorar: iç test ve mağaza dağıtımı, çevrimdışı indirme, Kurul'a sunma, zamanlama verisi üretme, atıf biçimi, ücretli katmana konmama, kaldırma usulü. Kaldırma isteğinde paketin `kapali` olacağı ve dosyaların silineceği yazılır (Ses sistemi §12).
 - Görüşme kontrol listesi: en az iki Türk hafız (Fazlar, Faz 0); rapordaki 3–5 okuyucuyla başlama önerisi; kayıt biçimi ve zamanlama soruları (Ses sistemi SS-5, SS-7).
-- Hafız adı ve iletişim bilgisi yer tutucudur (`<hafız adı>`); rapordaki örnek adlar yalnız iç notta durur.
+- Hafız adı ve iletişim bilgisi yer tutucudur (`[Hafızın adı]`); köşeli ayraç kullanılır, çünkü ASCII harfle başlayan açılı ayraç markdown önizlemesinde HTML etiketi sayılıp kaybolabilir. Rapordaki örnek adlar yalnız iç notta durur.
 - **Bitti sayılır:** şablon yedi maddenin hepsini taşıyor.
 
 ### A01.7 · İnceleme, onay ve kayıt
