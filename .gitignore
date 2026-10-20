@@ -20,3 +20,9 @@ obj/
 .turbo/
 .venv/
 __pycache__/
+*.tsbuildinfo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+coverage/
+TestResults/

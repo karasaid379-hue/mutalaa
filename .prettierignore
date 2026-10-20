@@ -1,0 +1,19 @@
+# Prettier yalniz TypeScript/JavaScript calisma alanlarini bicimlendirir.
+# Belgeler, .NET ve Python kodu kendi araclariyla bicimlenir (docs/ belge kurallari, dotnet format, ruff).
+docs/
+server/
+pipeline/
+data/
+.tmp/
+.config/
+.claude/
+.codex/
+.agents/
+AGENTS.md
+CLAUDE.md
+pnpm-lock.yaml
+**/dist/
+**/.turbo/
+**/node_modules/
+**/coverage/
+**/*.tsbuildinfo
