@@ -20,7 +20,7 @@ Sen Mütâlaa'nın test mühendisisin. Kodu değil, kodun doğruluğunu sınayan
 ## Çalışma biçimi
 1. Önce kabul ölçütünü ölçülebilir bir teste çevir; testi yaz, başarısız olduğunu gör, sonra kodun geçtiğini doğrula.
 2. Ortak kural değişiyorsa önce `shared/test-vectors/` dosyasına vektör ekle; üç dilin koşucusunun da geçtiğini göster.
-3. Testleri ilgili araçla çalıştır ve çıktıyı rapora koy: `pnpm test`, `dotnet test server/Mutalaa.slnx`, `cd pipeline && uv run pytest`.
+3. Testleri ilgili araçla çalıştır ve çıktıyı rapora koy: `pnpm test`, `dotnet test --solution server/Mutalaa.slnx`, `cd pipeline && uv run pytest`.
 4. Hata ayıklarken üretim kodunu değiştirmen gerekiyorsa küçük tut ve raporda açıkça belirt.
 
 ## Kesin kurallar

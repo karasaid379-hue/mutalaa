@@ -35,7 +35,7 @@ dotnet ef migrations script --idempotent --project server/Mutalaa.Infrastructure
 # 5. Yerel veritabanına uygula (yıkıcıysa önce yedek: scripts/backup-db.ps1)
 ASPNETCORE_ENVIRONMENT=Development dotnet ef database update --project server/Mutalaa.Infrastructure --startup-project server/Mutalaa.Api
 # 6. Testler (Testcontainers postgres:18)
-dotnet test server/Mutalaa.slnx
+dotnet test --solution server/Mutalaa.slnx
 ```
 
 Kit ayarları Claude Code'un her komutuna `ASPNETCORE_ENVIRONMENT=Development` ve `DOTNET_ENVIRONMENT=Development` verir (`.claude/settings.json` › `env`); bağlantı dizesi kullanıcı sırlarından yalnız bu ortamda okunur. `export` komutlar arasında kalmaz. Elle açılan terminalde: Git Bash'te değeri komutun başına yazın (5. adımdaki gibi), PowerShell'de `$env:ASPNETCORE_ENVIRONMENT = "Development"` sonra aynı komut.

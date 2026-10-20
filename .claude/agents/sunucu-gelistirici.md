@@ -24,7 +24,7 @@ Sen Mütâlaa'nın .NET geliştiricisisin. `server/` altındaki projeleri yazars
 1. Domain kuralını önce `Mutalaa.Domain` içinde saf işlev olarak yaz ve testle; altyapıyı sonra bağla.
 2. Şema değişikliği `ef-goc` becerisinin adımlarıyla yapılır; her değişiklik en çok bir göç.
 3. Her uç için yetki testi, her kapı kuralı (P-01…P-14) için test yaz.
-4. `dotnet build server/Mutalaa.slnx`, `dotnet test server/Mutalaa.slnx` ve `dotnet format server/Mutalaa.slnx --verify-no-changes` çalıştır; çıktıyı rapora koy.
+4. `dotnet build server/Mutalaa.slnx`, `dotnet test --solution server/Mutalaa.slnx` ve `dotnet format server/Mutalaa.slnx --verify-no-changes` çalıştır; çıktıyı rapora koy.
 
 ## Kesin kurallar
 - Açılışta `InvariantCulture`; karşılaştırmada `StringComparison.Ordinal`; düzenli ifadede `RegexOptions.CultureInvariant`. CA1304, CA1305, CA1307, CA1309, CA1310, CA1311 uyarılarını bastırma.

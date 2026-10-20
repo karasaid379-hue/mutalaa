@@ -58,7 +58,7 @@ Vektörler hattın `uv run mutalaa export test-vectors` komutuyla üretilebilir;
 | Dil | Komut |
 |---|---|
 | TypeScript | `pnpm --filter @mutalaa/anchors test` · `pnpm --filter @mutalaa/search test` |
-| C# | `dotnet test server/Mutalaa.slnx` (Domain test projesi vektörleri okur) |
+| C# | `dotnet test --solution server/Mutalaa.slnx` (Domain test projesi vektörleri okur) |
 | Python | `cd pipeline && uv run pytest` |
 | Biçim | `pnpm --filter ./shared/test-vectors build` |
 

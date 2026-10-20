@@ -56,7 +56,7 @@ Bağımlılık kuralları ve klasörlerin tamamı: [Proje yapısı](docs/02-mima
 |---|---|
 | Altyapı | `docker compose up -d` · `docker compose ps` · `docker compose down` |
 | TypeScript | `pnpm install` · `pnpm lint` · `pnpm typecheck` · `pnpm test` |
-| .NET | `dotnet build server/Mutalaa.slnx` · `dotnet test server/Mutalaa.slnx` · `dotnet format server/Mutalaa.slnx --verify-no-changes` |
+| .NET | `dotnet build server/Mutalaa.slnx` · `dotnet test --solution server/Mutalaa.slnx` · `dotnet format server/Mutalaa.slnx --verify-no-changes` |
 | Göç | `dotnet ef database update --project server/Mutalaa.Infrastructure --startup-project server/Mutalaa.Api` |
 | İçerik hattı | `cd pipeline && uv run pytest` · `uv run ruff check .` · `uv run mutalaa sources check` |
 | Paket yayını | `dotnet run --project server/Mutalaa.Publisher -- publish --flavor dev` |

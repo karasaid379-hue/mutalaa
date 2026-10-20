@@ -22,7 +22,7 @@ Kapsam: `$ARGUMENTS` (boşsa çalışma ağacındaki bütün değişiklikler)
 | Alan | Komut |
 |---|---|
 | TypeScript | `pnpm lint` · `pnpm typecheck` · `pnpm test` (Turborepo önbelleği değişmeyen paketleri atlar) |
-| .NET | `dotnet build server/Mutalaa.slnx` · `dotnet test server/Mutalaa.slnx` · `dotnet format server/Mutalaa.slnx --verify-no-changes` |
+| .NET | `dotnet build server/Mutalaa.slnx` · `dotnet test --solution server/Mutalaa.slnx` · `dotnet format server/Mutalaa.slnx --verify-no-changes` |
 | Python | `cd pipeline && uv run ruff check . && uv run ruff format --check . && uv run pytest` |
 | Test vektörleri | üç dilin vektör testleri (bkz. `test-vektoru` becerisi) |
 | Belgeler | `node .claude/skills/belge-esitle/baglanti-denetimi.mjs docs` |
