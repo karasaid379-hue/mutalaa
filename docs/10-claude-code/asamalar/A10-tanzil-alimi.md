@@ -110,7 +110,7 @@ test -f pipeline/.env && echo "pipeline/.env var" || echo "pipeline/.env yok: A0
 docker compose exec -T postgres psql -U mutalaa -d mutalaa -c "SELECT count(*) FROM icerik.unit WHERE source_id = 'tanzil-uthmani';"
 docker compose exec -T postgres psql -U mutalaa -d mutalaa -c "SELECT count(*) FROM icerik.unit WHERE source_id = 'tanzil-uthmani' AND content_hash <> encode(sha256(convert_to(metin, 'UTF8')), 'hex');"
 grep -c 'tanzil-uthmani q:' shared/test-vectors/normalize/ar.jsonl          # 7 (A10.7)
-pnpm --filter @mutalaa/search test && dotnet test server/Mutalaa.slnx
+pnpm --filter @mutalaa/search test && dotnet test --solution server/Mutalaa.slnx
 ```
 `-U` ve `-d` değerleri `.env.example` varsayılanlarıdır; kullanıcı değiştirdiyse ona göre yazılır.
 

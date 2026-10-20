@@ -69,7 +69,7 @@ Cihazdaki SQLite paketlerinin tek şeması (`packages/content-schema/sql/`), FTS
 ### A12.6 · C# DDL duman testi ve hat uyumu
 - `sunucu-gelistirici`: Publisher test projesinde her paket türünün DDL'i `Microsoft.Data.Sqlite` ile boş dosyaya uygulanır; `PRAGMA compile_options` `ENABLE_FTS5` içerir; `trigram` tablosu kurulur; `PRAGMA user_version` 1 döner.
 - `hat-gelistirici`: hattın ürettiği `tr_wide`, `tr_stem`, `ar_norm` sütunlarının `unit_search` sütunlarıyla aynı adda olduğu doğrulanır. "`tr_wide` ile `tr_stem` aynı sayıda sözcük taşır" değişmez kuralı ([Arama](../../03-veri/05-arama-fts5.md) §1.2 madde 7) A05'te test edildi; bu aşamada hattın QA adımına da bağlanır, çünkü Yayınlayıcı `tr_stem_lex` tablosunu bu hizadan kurar.
-- **Bitti sayılır:** `dotnet test server/Mutalaa.slnx` ve `uv run pytest` yeşil.
+- **Bitti sayılır:** `dotnet test --solution server/Mutalaa.slnx` ve `uv run pytest` yeşil.
 
 ## Kabul ölçütleri
 - [ ] `packages/content-schema/sql/` İçerik paketleri §3 ve Arama §2'deki bütün tabloları taşıyor; `inceleyici` tablo ve sütun adlarının dokümanla birebir olduğunu karşılaştırma tablosuyla raporluyor.
@@ -78,7 +78,7 @@ Cihazdaki SQLite paketlerinin tek şeması (`packages/content-schema/sql/`), FTS
 - [ ] `fts-query/query.jsonl` §3'teki yedi örneği ve en az beş kenar durumunu taşıyor; vektör testleri yeşil.
 - [ ] Node düzeneğinde bm25 sırası, önek, `trigram`, içeriksiz tablo ve `ATTACH` ile şema nitelemeli `MATCH` testleri yeşil.
 - [ ] Node SQLite kitaplığı, JSON Schema taslağı, `tr_stem_lex` ve Simple Clean kararları karar defterinde; expo-sqlite `trigram` sonucu ilerleme notunda.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test`, `dotnet test server/Mutalaa.slnx` ve `uv run pytest` yeşil.
+- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test`, `dotnet test --solution server/Mutalaa.slnx` ve `uv run pytest` yeşil.
 
 ## Doğrulama
 ```bash
@@ -86,7 +86,7 @@ pnpm --filter @mutalaa/test-vectors build
 pnpm --filter @mutalaa/search test
 pnpm --filter @mutalaa/content-schema test
 pnpm lint && pnpm typecheck && pnpm test
-dotnet test server/Mutalaa.slnx
+dotnet test --solution server/Mutalaa.slnx
 (cd pipeline && uv run pytest)
 ```
 

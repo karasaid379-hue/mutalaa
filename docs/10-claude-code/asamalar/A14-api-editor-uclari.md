@@ -85,7 +85,7 @@ Editör kipindeki ASP.NET Core 10 Minimal API kurulur: ASP.NET Core Identity ile
 ## Doğrulama
 ```bash
 dotnet build server/Mutalaa.slnx
-dotnet test server/Mutalaa.slnx
+dotnet test --solution server/Mutalaa.slnx
 dotnet format server/Mutalaa.slnx --verify-no-changes
 docker compose up -d
 dotnet ef database update --project server/Mutalaa.Infrastructure --startup-project server/Mutalaa.Api

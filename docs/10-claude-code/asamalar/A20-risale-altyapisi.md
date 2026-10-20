@@ -89,7 +89,7 @@ K-05 gereği Risale-i Nur'un altyapısı metne dokunmadan kurulur: kaynak kayıt
 (cd pipeline && uv run mutalaa sources check)
 (cd pipeline && uv run pytest && uv run ruff check .)
 docker compose exec -T postgres psql -U mutalaa -d mutalaa -c "SELECT source_id, count(*) FROM icerik.unit WHERE kind = 'risale' GROUP BY 1;"
-dotnet test server/Mutalaa.slnx
+dotnet test --solution server/Mutalaa.slnx
 dotnet run --project server/Mutalaa.Publisher -- publish --flavor dev
 curl -s http://localhost:8333/mutalaa/dev/manifest.json
 dotnet run --project server/Mutalaa.Publisher -- publish --flavor internal --dry-run

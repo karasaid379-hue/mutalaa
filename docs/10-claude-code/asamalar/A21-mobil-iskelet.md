@@ -1,6 +1,6 @@
 # A21 · Mobil iskelet: Expo, Router, NativeWind, temalar, derleme türleri, EAS
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-29](../../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-24](../../00-ozet/02-karar-defteri.md#k-24--tasarım-dili) · [K-30](../../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)
+> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-29](../../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-24](../../00-ozet/02-karar-defteri.md#k-24--tasarım-dili) · [K-30](../../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)
 > **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A02](./A02-tek-depo-iskeleti.md) · [A04](./A04-capa-ve-test-vektorleri.md) · **İnsan adımı:** [İ-15](../06-insan-adimlari.md) (Expo hesabı, `eas login`)
 > **Ajanlar:** `mobil-gelistirici` · `arastirmaci` · `arayuz-denetcisi` · `inceleyici` · **Beceriler:** `mobil-ekran` · `windows-sorun` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A21`
@@ -45,7 +45,7 @@ Bu aşama `apps/mobile` altında Expo uygulamasının iskeletini kurar: rota ağ
   - `react-native-mmkv` örnek oluşturma API'si; Literata değişken fontunun React Native'de kullanımı.
   - Sentry Expo eklentisi ve Metro ayarı; kaynak eşlemesi yüklemesi olmadan derleme; `sendDefaultPii` ve kırıntı alan adları.
   - `app.config.ts`'nin `.env.local` dosyasını okuması; dinamik yapılandırmada EAS proje kimliğinin yeri; `expo-updates` kanal ayarı.
-  - pnpm izole kurulumunun seçilen SDK'da çalışması (`node-linker=hoisted` kalır mı); EAS'in pnpm çalışma alanını derlemesi.
+  - pnpm izole kurulumunun (K-32'ye göre varsayılan düzen) seçilen SDK'da yeniden sınanması; Expo SDK 58'e özel uyumluluk tablosu yoktur. Sorun çıkarsa yedek `pnpm-workspace.yaml` içinde `nodeLinker: hoisted`'dır ve `/karar` ister. EAS'in pnpm çalışma alanını derlemesi.
   - Asgari Android sürümü (MM-12); EAS ücretsiz planının aylık derleme sınırı ([Proje yapısı](../../02-mimari/03-proje-yapisi.md) §8).
 - **Bitti sayılır:** her maddenin sonucu kaynak bağlantısıyla `/belge-esitle` üzerinden ilgili dokümanda; SDK seçimi karar defterinde.
 

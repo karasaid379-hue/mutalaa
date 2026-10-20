@@ -1,6 +1,6 @@
 # A08 · CI iş akışları (GitHub Actions)
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python)
+> **Sürüm:** 1.2 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
 > **Faz:** 0 · Hazırlık · **Önkoşul:** [A05](./A05-arama-normalizasyonu.md) · [A07](./A07-editoryal-veritabani.md) · **İnsan adımı:** [İ-16](../06-insan-adimlari.md) (GitHub özel deposu ve `EXPO_TOKEN`)
 > **Ajanlar:** `inceleyici` · `arastirmaci` · **Beceriler:** `windows-sorun` · **Tahmini oturum:** 1–2
 > **Başlat:** `/asama A08`
@@ -35,6 +35,7 @@ Her PR'da üç dilin lint, tip, birim ve vektör denetimleri GitHub Actions'ta k
   - Dependabot'un uv desteği (§4.2).
   - EAS'in ücretsiz planındaki aylık derleme sınırı (Proje yapısı §8 madde 3); sonuç A21 ve A33'ün planına not edilir.
   - Kurulum gerektirmeden çalışan bir iş akışı denetleyicisi (ör. actionlint; `uvx` ya da `pnpm dlx` ile).
+  - `dotnet test --solution server/Mutalaa.slnx -c Release --no-build` birleşimi MTP kipinde ([K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)). [dotnet test belgesi](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test) `-c` ve `--no-build` bayraklarını destekler diyor, ama A02'de yerelde yalnız `--no-build` denendi; `-c Release` ile birleşimi burada doğrulanır, sonuç Proje yapısı §7'ye işlenir. `global.json` içindeki `test.runner` ayarı CI'da `setup-dotnet` ile gelen SDK'da da geçerli olmalı.
 - **Bitti sayılır:** maddeler kaynaklı aşama kaydında; seçilen araçlar yazılı.
 
 ### A08.2 · Dört iş akışı
@@ -42,6 +43,7 @@ Her PR'da üç dilin lint, tip, birim ve vektör denetimleri GitHub Actions'ta k
 - Henüz olmayan uygulamalara bağlı adımlar dosya varlığıyla korunur (Proje yapısı §7): `expo install --check` adımı `hashFiles('apps/mobile/package.json') != ''`, editör API istemcisi adımı `hashFiles('apps/editor/package.json') != ''`, OpenAPI farkı adımı `hashFiles('server/Mutalaa.Api/openapi/v1.json') != ''` koşuluyla çalışır.
 - `ci-ts.yml` matrisinin her ayağında Node'un çözdüğü yerel ayar günlüğe yazılır (öneri); `tr_TR.UTF-8` ayağının gerçekten Türkçe koştuğu böyle görülür.
 - İş akışlarında en az izin: `permissions: contents: read` (öneri). Tetikleyici `pull_request`'tir; `pull_request_target` kullanılmaz.
+- `ci-dotnet.yml` iş akışında `TESTINGPLATFORM_TELEMETRY_OPTOUT: 1` ve `DOTNET_CLI_TELEMETRY_OPTOUT: 1` ortam değişkenleri tanımlanır; xunit.v3'ün test koşusu Microsoft'a kullanım telemetrisi göndermesin ([Yerel geliştirme §10.4](../../02-mimari/04-yerel-gelistirme.md)).
 - `eas-build.yml` §7'deki gibidir; yalnız elle ve `mobile-v*` etiketiyle tetiklenir. `EXPO_TOKEN` yalnız `secrets` içinden okunur.
 - **Bitti sayılır:** dört dosya var; yerel denetleyici hatasız.
 
@@ -53,7 +55,7 @@ Her PR'da üç dilin lint, tip, birim ve vektör denetimleri GitHub Actions'ta k
 
 ### A08.4 · Yerel eşdeğer koşu
 - `ci-ts`: `pnpm install --frozen-lockfile`, ardından `pnpm turbo run lint typecheck test`; ikinci kez `LANG=tr_TR.UTF-8` ile. Türkçe Windows'ta Node zaten Türkçe yerel ayarla koşar; Linux karşılığı ilk GitHub koşusunda görülür.
-- `ci-dotnet`: `dotnet tool restore`, `restore --locked-mode`, `format --verify-no-changes --no-restore`, `build -c Release --no-restore`, `test -c Release --no-build`. Testcontainers için Docker Desktop açık olmalı.
+- `ci-dotnet`: `dotnet tool restore`, `restore --locked-mode`, `format --verify-no-changes --no-restore`, `build -c Release --no-restore`, `test --solution server/Mutalaa.slnx -c Release --no-build` (MTP kipi, K-33; `-c Release --no-build` birleşimi burada doğrulanır). Testcontainers için Docker Desktop açık olmalı.
 - `ci-pipeline`: `uv sync --locked`, `ruff check`, `ruff format --check`, `pytest`. CI `PYTHONUTF8` vermez; Claude Code oturumunda değer `1` olduğu için `pytest` bir kez de `PYTHONUTF8=0` ile koşar.
 - **Bitti sayılır:** üç komut grubu yerelde yeşil; çıktı özeti aşama kaydında.
 
@@ -82,7 +84,7 @@ pnpm install --frozen-lockfile && pnpm turbo run lint typecheck test
 LANG=tr_TR.UTF-8 pnpm turbo run test
 dotnet tool restore && dotnet restore server/Mutalaa.slnx --locked-mode
 dotnet format server/Mutalaa.slnx --verify-no-changes --no-restore
-dotnet build server/Mutalaa.slnx -c Release --no-restore && dotnet test server/Mutalaa.slnx -c Release --no-build
+dotnet build server/Mutalaa.slnx -c Release --no-restore && dotnet test --solution server/Mutalaa.slnx -c Release --no-build
 (cd pipeline && uv sync --locked && uv run ruff check . && uv run ruff format --check . && uv run pytest && PYTHONUTF8=0 uv run pytest)
 gh run list --limit 10                                        # İ-16'dan sonra; gh kuruluysa
 ```

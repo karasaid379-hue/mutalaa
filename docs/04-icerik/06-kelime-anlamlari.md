@@ -1,5 +1,5 @@
 # Kelime Anlamları
-> **Sürüm:** 1.0 · **Tarih:** 18 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.1 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python)
 
 K-19 gereği Kur'an kelimelerinin Türkçe anlamlarını kendimiz yazarız: yapay zekâ lemma başına taslak çıkarır, insan onaylar. Yeniden kullanılabilir açık lisanslı bir Türkçe kelime meali yok: QuranWBW "copying them is not allowed" diyor, hablullah/data-quran CC BY-NC-ND lisanslı ([QuranWBW](https://legacy.quranwbw.com/2); [data-quran](https://github.com/hablullah/data-quran)). İş yükü farklı lemma sayısına bağlıdır; 77.429 kelimenin her biri ayrı yazılmaz. K-06 uygulama notu gereği QAC kaynaklı kök ve lemma verisi `core` paketinden ayrı bir pakette tutulur (önerilen ad `kelime-kok`); onaylı Türkçe anlamlar da bu paketle kelime kartına gider ([İçerik paketleri](../03-veri/03-icerik-paketleri.md)).
@@ -76,8 +76,9 @@ CREATE TABLE lemma_kaynak (
 |---|---|
 | Yazılı izin | `kelime-kok` `serbest` olur. Atıf ve GPL bildirimi eklenir; dosya değiştirilmez, düzeltmeler ayrı katmanda tutulur |
 | Yalnız ticari olmayan kullanım | Gelir modeli olmayan bugünkü durumun (K-22) bu şarta uyup uymadığı avukata ve proje sahibine sorulur; fiyatlandırma kararında yeniden değerlendirilir. O zamana kadar `bekliyor` |
-| Ret ya da cevap yok | Kelime → lemma ve kök ataması kendimiz üretilir: Tanzil metni üzerinde CAMeL Tools (MIT) çözümlemesi ve sıklık dalgalarıyla insan doğrulaması. `lemma.id` ve anlamlar korunur; yalnız `lemma_kaynak` eşlemesi değişir. Ayrılan ya da birleşen lemmalar `kullanim_disi` ve yönlendirmeyle çözülür |
+| Ret ya da cevap yok | Kelime → lemma ve kök ataması kendimiz üretilir: Tanzil metni üzerinde CAMeL Tools çözümlemesi (kod MIT; veri paketlerinin lisansı Doğrulanacak, aşağıdaki not) ve sıklık dalgalarıyla insan doğrulaması. `lemma.id` ve anlamlar korunur; yalnız `lemma_kaynak` eşlemesi değişir. Ayrılan ya da birleşen lemmalar `kullanim_disi` ve yönlendirmeyle çözülür |
 
+- **CAMeL veri lisansı (Doğrulanacak; 21 Ekim 2026, A02 lisans denetimi; hukuki görüş değildir).** CAMeL Tools kodu MIT'tir, ama varsayılan Modern Standart Arapça veri paketleri GPL v2'dir (`morphology-db-msa-r13`, `disambig-mle-calima-msa-r13`); `morphology-db-msa-s31` LDC lisanslıdır; Mısır paketleri GPL v2, Körfez ve Şam paketleri CC BY 4.0, BERT modelleri MIT'tir ([camel-tools-data kataloğu](https://raw.githubusercontent.com/CAMeL-Lab/camel-tools-data/main/catalogue-1.6.json); [camel_tools LICENSE](https://github.com/CAMeL-Lab/camel_tools/blob/master/LICENSE)). Bu yedek yolda kök ve lemma çıktısını hangi paketin ürettiği ve çıktının paketlenen içeriğe (`kelime-kok`) etkisi doğrulanmadı; avukata sorulacak bir konudur ([BÇ-35](../10-claude-code/07-belge-celiskileri.md#1-karar-bekleyenler), [Teknoloji yığını §2.4](../02-mimari/02-teknoloji-yigini.md)). Kullanılacak paket CC BY ya da MIT veriyle sınırlanabiliyorsa o yol tercih edilir.
 - Araştırma notu Kur'an kelimeleri için çözümleyici yerine insan doğrulamalı QAC verisini öneriyor. Yedek yol bu yüzden pahalıdır ve insan doğrulaması zorunludur.
 - QUL'un ve Quranpedia'nın morfoloji verisi QAC'den türediği için bağımsız yedek sayılmaz. Quranpedia lisansı morfolojinin QAC'den (GNU GPL, atıf zorunlu) geldiğini söylüyor ([Quranpedia LICENSE](https://quranpedia.net/dumps/LICENSE.md); [QUL krediler](https://qul.tarteel.ai/credits)).
 - QAC'nin 2. sürümü geliştiriliyor; standart veri setleri henüz yayımlanmadı ([kaisdukes/quranic-corpus](https://github.com/kaisdukes/quranic-corpus)). Lisansı netleşirse yedek olabilir (Doğrulanacak).
@@ -223,6 +224,7 @@ Fiyatlar [Claude fiyatlandırma](https://platform.claude.com/docs/en/about-claud
 5. Âyet içi bağlam anlamı ne zaman ve hangi veri modeliyle gelecek?
 6. Kelime anlamlarının lisansı.
 7. QAC'de aynı yazılışlı lemmaların ayrımı (Doğrulanacak).
+8. CAMeL veri paketlerinin lisansı ve çıktının paketlenen içeriğe etkisi (Doğrulanacak; bölüm 2.1, BÇ-35).
 
 ## İlgili dosyalar
 - [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) · [İçerik hattı](./02-icerik-hatti.md) · [Elmalılı hazırlığı](./03-elmalili-hazirligi.md) · [Risale hazırlığı](./05-risale-hazirligi.md)

@@ -72,7 +72,7 @@ Okur için isteğe bağlı hesap kurulur: ASP.NET Core Identity ile e-posta ve p
 - **Bitti sayılır:** listedeki her madde kanıt ya da İ numarası taşıyor.
 
 ## Kabul ölçütleri
-- [ ] `dotnet test server/Mutalaa.slnx` yeşil; hesap testleri (giriş, yenileme, çıkış, dış sağlayıcı ret durumları, 429, genel kipte editör uçları 404, günlükte e-posta ve parola yok) raporda adıyla.
+- [ ] `dotnet test --solution server/Mutalaa.slnx` yeşil; hesap testleri (giriş, yenileme, çıkış, dış sağlayıcı ret durumları, 429, genel kipte editör uçları 404, günlükte e-posta ve parola yok) raporda adıyla.
 - [ ] Silme testi `information_schema` ile listelenen her tabloda kullanıcı satırının 0 olduğunu doğruluyor.
 - [ ] `git diff --exit-code server/Mutalaa.Api/openapi` temiz.
 - [ ] Döküm dosyası `"format": "mutalaa-yedek"` taşıyor ve v1 içe aktarma testinde açılıyor.
@@ -84,7 +84,7 @@ Okur için isteğe bağlı hesap kurulur: ASP.NET Core Identity ile e-posta ve p
 
 ## Doğrulama
 ```bash
-dotnet test server/Mutalaa.slnx
+dotnet test --solution server/Mutalaa.slnx
 dotnet ef migrations script --idempotent --project server/Mutalaa.Infrastructure --startup-project server/Mutalaa.Api > .tmp/goc.sql
 git diff --exit-code server/Mutalaa.Api/openapi
 pnpm turbo run lint typecheck && pnpm --filter @mutalaa/mobile test

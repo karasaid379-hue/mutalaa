@@ -65,7 +65,7 @@ Kalıcı adres grameri (K-26) üç dilde aynı davranışla yazılır ve ortak t
 - `Mutalaa.Domain/Anchors`: `AnchorRef` (`sealed record`), `Parse`, `TryParse`, `ToString`, `IComparable<AnchorRef>`, `Contains`, `ToRoute`; desenler `[GeneratedRegex]` ve `RegexOptions.CultureInvariant` ile, `IgnoreCase` yok (Backend API §2, Çapa şeması §3).
 - `Mutalaa.Domain/Text`: `ContentHash` (SHA-256, küçük harf onaltılık), kendi metnimizin ilk kayıt kanonikleştirmesi (§7 adım 1–3), kod noktası ofsetleri ve `snapSpan` karşılığı (Backend API §2); kod noktası işlemleri `Rune` ile.
 - `Mutalaa.Domain.Tests` vektör koşucusu yedi dosyanın hepsini okur; vektörler ve `ayet-sayilari.json` test çıktısına bağlantılı dosya olarak kopyalanır (öneri). Koşucu kendi nesnesini `expected`'deki JSON biçimine çevirerek karşılaştırır. Rota dosyasında yalnız `ToRoute` sınanır; `fromRoute` yalnız TypeScript'tedir (§11 tablosu). Bütün vektör testleri `tr-TR` kültüründe ikinci kez koşar (Backend API §9).
-- **Bitti sayılır:** `dotnet test server/Mutalaa.slnx` yeşil; `tr-TR` koşumu ayrı test olarak görünüyor.
+- **Bitti sayılır:** `dotnet test --solution server/Mutalaa.slnx` yeşil; `tr-TR` koşumu ayrı test olarak görünüyor.
 
 ### A04.5 · Python: `mutalaa_pipeline.anchor` (`hat-gelistirici`)
 - `pipeline/src/mutalaa_pipeline/anchor/capa.py`: `parse`, `try_parse`, `format` ve `str`, `sort_key`, `contains`, `to_route`; `dataclass(frozen=True)`; `re` ile `(?P<ad>…)` ve `[0-9]`.
@@ -83,7 +83,7 @@ Kalıcı adres grameri (K-26) üç dilde aynı davranışla yazılır ve ortak t
 - [ ] `shared/test-vectors/` altında yedi dosya var; `pnpm --filter @mutalaa/test-vectors build` geçiyor.
 - [ ] `shared/data/ayet-sayilari.json` kaynak adresi, alınma tarihi ve SHA-256 taşıyor; 114 eleman, toplam 6.236; üç kopya JSON'la aynı.
 - [ ] `pnpm --filter @mutalaa/anchors test` hem varsayılan hem `LANG=tr_TR.UTF-8` ile yeşil.
-- [ ] `dotnet test server/Mutalaa.slnx` yeşil; vektörler `tr-TR` kültüründe de geçiyor.
+- [ ] `dotnet test --solution server/Mutalaa.slnx` yeşil; vektörler `tr-TR` kültüründe de geçiyor.
 - [ ] `cd pipeline && uv run pytest` yeşil; `uv run mutalaa export test-vectors --check` 0 ile çıkıyor.
 - [ ] Çapa şeması §4 tablolarındaki her girdi vektörlerde birebir var (Doğrulama'daki döngü "EKSİK" yazmıyor).
 - [ ] Bozma denemesi üç dilde kırmızı; `metin-denetcisi` ve `test-yazari` raporları aşama kaydında.
@@ -93,7 +93,7 @@ Kalıcı adres grameri (K-26) üç dilde aynı davranışla yazılır ve ortak t
 pnpm --filter @mutalaa/test-vectors build
 pnpm --filter @mutalaa/anchors test
 LANG=tr_TR.UTF-8 pnpm --filter @mutalaa/anchors test
-dotnet test server/Mutalaa.slnx
+dotnet test --solution server/Mutalaa.slnx
 (cd pipeline && uv run pytest && uv run ruff check . && uv run mypy src && uv run mutalaa export test-vectors --check)
 for g in 'q:1:1' 'q:2:255:3-7' 'q:2:255-257' 'konu:tevhid' 'meal:elmalili:2:255@10-48' \
          'tf:elmalili:2-255-257:p3' 'tf:elmalili:2-255-255:p1' 'tf:elmalili:mukaddime:p4' \

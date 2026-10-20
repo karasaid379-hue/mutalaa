@@ -1,6 +1,6 @@
 # A07 · Editoryal veritabanı (EF Core 10 + PostgreSQL 18)
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
+> **Sürüm:** 1.1 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
 > **Faz:** 0 · Hazırlık · **Önkoşul:** [A03](./A03-yerel-altyapi.md) · [A04](./A04-capa-ve-test-vektorleri.md) · [A06](./A06-lisans-defteri-ve-enumlar.md) · **İnsan adımı:** yok
 > **Ajanlar:** `sunucu-gelistirici` · `test-yazari` · `arastirmaci` · `inceleyici` · **Beceriler:** `ef-goc` · `lisans-kapisi` · **Tahmini oturum:** 2–3
 > **Başlat:** `/asama A07`
@@ -34,10 +34,10 @@
   - Npgsql EF Core 10 sağlayıcısında enum eşleme API'sinin adı ve kullanımı (Backend API §7; Editoryal veritabanı §12).
   - `xmin` eşzamanlılık belirteci (`IsRowVersion()`; Backend API §7).
   - PostgreSQL 18'de `uuidv7()` işlevi ve üretilen sütunların varsayılan türü (ED-3). A03'teki konteynerde `SELECT uuidv7();` ile de sınanır.
-  - `xunit.v3` ile `IAsyncLifetime` imzası; Test stratejisi §6'daki örnek `ValueTask` döndürür, sonuç oraya işlenir.
+  - ~~`xunit.v3` ile `IAsyncLifetime` imzası; Test stratejisi §6'daki örnek `ValueTask` döndürür, sonuç oraya işlenir.~~ Çözüldü (21 Ekim 2026, [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)): `InitializeAsync()` ve `DisposeAsync()` `ValueTask` döndürür ([IAsyncLifetime.cs](https://raw.githubusercontent.com/xunit/xunit/main/src/xunit.v3.core/IAsyncLifetime.cs), [göç kılavuzu](https://xunit.net/docs/getting-started/v3/migration)); sonuç Test stratejisi §6'ya işlendi. Burada yalnız örnek `MigrationTests` ile derlenip koştuğu görülür. Test komutu `dotnet test --solution server/Mutalaa.slnx` (MTP).
   - `pg_dump --schema-only` çıktısındaki sürüme ya da oturuma bağlı satırlar (sürüm yorumları; varsa rastgele anahtar taşıyan satırlar).
 - `uuidv7()` yoksa kimlik değerini hat ve uygulama üretir; varsayılan değer göçe yazılmaz (Editoryal veritabanı §5).
-- **Bitti sayılır:** altı madde kaynaklı aşama kaydında.
+- **Bitti sayılır:** altı madde kaynaklı aşama kaydında (xunit maddesi K-33 ile çözüldü; burada yalnız derleme ile teyit edilir).
 
 ### A07.2 · Domain ve `IcerikDbContext` (`sunucu-gelistirici`)
 - Varlıklar `Mutalaa.Domain` altında (`Content/`, `Links/`, `Releases/`, `Review/`; Backend API §2). Domain EF Core'a bağlanmaz.
@@ -68,11 +68,11 @@
 - Şema dökümü: konteyner içinde `pg_dump --schema-only`; A07.1'deki değişken satırlar ayıklanır; sonuç `server/tests/Mutalaa.Api.Tests/Snapshots/editoryal-sema.sql` (öneri yol) ile karşılaştırılır. Bilinçli değişiklikte anlık görüntü bir ortam değişkeniyle yeniden yazılır (öneri) ve farkı commit'te gözden geçirilir.
 - Kısıt testleri: biçimsiz `content_hash` reddedilir; `kurul_onay` dolu ama tarih ya da özet boşsa reddedilir; `status = 'kullanim_disi'` ve boş `successors` reddedilir; `xref_natural_key` NULL aralıklı kopyayı reddeder; `char_start >= char_end` reddedilir; `tsv_tr` ve `tsv_ar` saklı üretilen sütundur (`pg_attribute.attgenerated = 's'`).
 - Değer dönüştürücü: geçersiz çapa yazma girişimi hata verir. `seed` idempotentliği.
-- **Bitti sayılır:** `dotnet test server/Mutalaa.slnx` yeşil (Docker Desktop açık).
+- **Bitti sayılır:** `dotnet test --solution server/Mutalaa.slnx` yeşil (Docker Desktop açık).
 
 ## Kabul ölçütleri
 - [ ] `dotnet build server/Mutalaa.slnx` uyarısız ve hatasız.
-- [ ] `dotnet test server/Mutalaa.slnx` yeşil; `MigrationTests` boş veritabanına bütün göçleri uyguluyor ve bekleyen göç yok.
+- [ ] `dotnet test --solution server/Mutalaa.slnx` yeşil; `MigrationTests` boş veritabanına bütün göçleri uyguluyor ve bekleyen göç yok.
 - [ ] PostgreSQL'deki 11 enum türünün etiketleri ve sırası `enums.json` ve Editoryal veritabanı §2 ile aynı (test).
 - [ ] Şema dökümü testi yeşil; anlık görüntü dosyası depoda.
 - [ ] `dotnet ef migrations has-pending-model-changes` fark bildirmiyor.
@@ -85,7 +85,7 @@
 ```bash
 docker compose up -d && docker compose ps
 dotnet build server/Mutalaa.slnx
-dotnet test server/Mutalaa.slnx
+dotnet test --solution server/Mutalaa.slnx
 dotnet ef migrations has-pending-model-changes --project server/Mutalaa.Infrastructure --startup-project server/Mutalaa.Api
 dotnet ef migrations script --idempotent --project server/Mutalaa.Infrastructure --startup-project server/Mutalaa.Api -o .tmp/editoryal-goc.sql
 dotnet ef database update --project server/Mutalaa.Infrastructure --startup-project server/Mutalaa.Api

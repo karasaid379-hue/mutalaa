@@ -81,7 +81,7 @@ Lisans defterindeki her somut kaynak, `pipeline/sources/{kimlik}.toml` kaydı ve
 ls pipeline/sources/*.toml | wc -l
 ls pipeline/sources/licenses/
 pnpm --filter @mutalaa/content-schema test
-dotnet test server/Mutalaa.slnx
+dotnet test --solution server/Mutalaa.slnx
 ```
 
 ## Dikkat

@@ -65,7 +65,7 @@
 - BÇ-04 (terfi ve geri alma talebi) kabul edilirse `release` tablosuna eklenen alanlar yeni bir EF göçüdür: `sunucu-gelistirici` `ef-goc` becerisiyle ekler, `dotnet ef migrations has-pending-model-changes` temiz kalır, A07'nin şema dökümü anlık görüntüsü bilinçli olarak güncellenir ve fark commit'te gözden geçirilir.
 - `release` durumları: `hazirlaniyor → dogrulandi → yayinlandi`; başarısız deneme `basarisiz` (Editoryal veritabanı §10, Backend API §10.6); geri almada `geri_cekildi`. Okuma tek `REPEATABLE READ` salt okunur anlık görüntüdedir. Sürüm CalVer `YYYY.M.N`; komutta verilmezse ayın sıradaki numarası (öneri).
 - Bütünleşik test (Testcontainers, `postgres:18`): her durumdan birer kaynak ve bir `test-` kaynağı taşıyan fikstür veritabanından üç derleme üretilir; P-01…P-14, FTS sorgusu ve imza denetlenir (Backend API §11).
-- **Bitti sayılır:** `dotnet test server/Mutalaa.slnx` yeşil.
+- **Bitti sayılır:** `dotnet test --solution server/Mutalaa.slnx` yeşil.
 
 ### A13.6 · Fikstürler ve ilk `dev` yayını
 - `hat-gelistirici`: `pipeline/sources/test-kucuk.toml` (`serbest`) ve `test-tefsir-ornek.toml` (`ic_kullanim`), ikisi de `embed_ok = false`; lisans defterine kayıt (`/belge-esitle`). `sources check` `kapali` dışındaki her kaynakta lisans kopyası ister; iki sentetik kaynağın lisans kopyası projenin kendi beyanıdır (`pipeline/sources/licenses/test-kucuk-{YYYY-AA-GG}.txt` ve `test-tefsir-ornek-{YYYY-AA-GG}.txt`: "Sentetik test verisi; Mütâlaa projesince üretildi; dinî ya da telifli metin içermez."), `lisans_sha256` bu dosyanın özetidir ve `atif_metni` "Sentetik test verisi (Mütâlaa)" olur (öneri). Belirlenimci üreteç (komut öneri: `uv run mutalaa ingest fikstur --source test-kucuk`) "Deneme paragrafı 1 …" biçiminde açıkça sentetik Türkçe metin üretir; `test-kucuk` Maestro arama akışı için "Işık" sözcüğünü içerir (Test stratejisi §9). Metin kendi ürettiğimizdir; ilk kayıtta NFC.
@@ -87,7 +87,7 @@
 ## Doğrulama
 ```bash
 dotnet build server/Mutalaa.slnx
-dotnet test server/Mutalaa.slnx
+dotnet test --solution server/Mutalaa.slnx
 docker compose up -d && docker compose ps
 (cd pipeline && uv run mutalaa sources check)
 dotnet run --project server/Mutalaa.Publisher -- publish --flavor dev

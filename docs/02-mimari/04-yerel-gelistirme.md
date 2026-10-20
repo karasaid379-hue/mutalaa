@@ -1,7 +1,7 @@
 # Yerel geliştirme
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı)
+> **Sürüm:** 1.3 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)
 
 Geliştirme ekibin kendi Windows bilgisayarında yapılır ([K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma)). PostgreSQL ve S3 deposu Docker'da çalışır. API, editör ve Yayınlayıcı isteğe bağlı olarak Docker'da ya da doğrudan ana makinede çalışır. Node, .NET ve Python araçları ana makinededir. Uygulama telefonda ya da Android emülatöründe geliştirme derlemesiyle açılır.
 
@@ -39,7 +39,7 @@ flowchart LR
 | Docker Desktop | Güncel; Compose v2 | PostgreSQL ve S3 deposu |
 | Git | Güncel | — |
 | Node.js | 24 LTS (24.3 ya da üstü) | Expo SDK 58 araçları Node 22.13+, 24.3+ ya da 26+ ister; tek sayılı 23 ve 25 desteklenmez ([SDK 58](https://expo.dev/changelog/sdk-58)). Çözüldü (19 Ekim 2026): SDK 58 kararlı sürümü 15 Ekim 2026'da çıktı ve aralık beta notuyla aynıdır (`expo@58` `engines`: `^22.13.0 \|\| ^24.3.0 \|\| ^26.0.0 \|\| >=27.0.0`) |
-| pnpm | Kuruluma göre belirlenir; kök `package.json` içindeki `packageManager` sabitlemesi A02'dedir ([BÇ-28](../10-claude-code/07-belge-celiskileri.md)) | Yol 1: `npm install -g pnpm`; pnpm'in güncel kurulum belgesi Corepack'i anmaz ve Windows için npm yolunu önerir ([pnpm kurulumu](https://pnpm.io/installation), `npx get-pnpm`). Yol 2: Node 24.x Corepack içerir (deneysel), `corepack enable`. Çözüldü (19 Ekim 2026): Corepack Node 25.0.0'dan itibaren dağıtılmıyor ([TSC oylaması](https://github.com/nodejs/TSC/pull/1697), [Node 25.0.0 sürüm notu](https://nodejs.org/en/blog/release/v25.0.0)). Program Files altındaki MSI kurulumunda `corepack enable` yönetici terminali ya da `--install-directory` gerektirebilir ([Corepack](https://github.com/nodejs/corepack) README); açık bir "yönetici gerekir" cümlesi yok (Doğrulanamadı). Corepack ile pnpm 12 uyumu da doğrulanamadı |
+| pnpm | A02'de kurulu sürüm (12.14.0); kök `package.json` içinde yalnız `devEngines.packageManager` ile sabitlenir ([K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)) | npm ile kurulur: `npm install -g pnpm` ya da `npx get-pnpm`; pnpm'in kurulum belgesi Windows için npm yolunu önerir ([pnpm kurulumu](https://pnpm.io/installation)). Corepack kullanılmaz (K-32). Çözüldü (19 Ekim 2026): Corepack Node 25.0.0'dan itibaren dağıtılmıyor ([TSC oylaması](https://github.com/nodejs/TSC/pull/1697), [Node 25.0.0 sürüm notu](https://nodejs.org/en/blog/release/v25.0.0)). Corepack ile pnpm 12 uyumuna dair resmî ifade bulunamadı |
 | .NET SDK | 10.0 (`global.json`) | API ve Yayınlayıcı |
 | uv | Güncel | Python 3.13'ü de kurar: `uv python install 3.13` |
 | Android Studio | Güncel | Emülatör, Android SDK ve yerel Android derlemesi için JDK |
@@ -87,7 +87,7 @@ Copy-Item .env.example .env
 Copy-Item apps\mobile\.env.example apps\mobile\.env.local
 Copy-Item pipeline\.env.example pipeline\.env
 Copy-Item infra\local\s3.example.json infra\local\s3.json
-corepack enable
+npm install -g pnpm          # Corepack kullanılmaz (K-32); sürüm kök package.json devEngines.packageManager ile sabittir
 pnpm install
 dotnet tool restore
 dotnet restore server\Mutalaa.slnx
@@ -345,7 +345,7 @@ PYTHONUTF8=1
 | Editör | `pnpm dev:editor` |
 | Mobil | `pnpm dev:mobile` |
 | Paketleri yenile | `dotnet run --project server/Mutalaa.Publisher -- publish --flavor dev` ya da editörde "Yayınla" + `docker compose --profile app up -d publisher` |
-| Tüm denetimler | `pnpm lint; pnpm typecheck; pnpm test; dotnet test server/Mutalaa.slnx; cd pipeline; uv run pytest` |
+| Tüm denetimler | `pnpm lint; pnpm typecheck; pnpm test; dotnet test --solution server/Mutalaa.slnx; cd pipeline; uv run pytest` |
 | Durdur | `docker compose down` (birimler kalır). `docker compose down -v` birimleri ve veritabanını siler; önce yedek alın |
 
 ## 8. Örnek veri
@@ -435,16 +435,17 @@ Kurallar:
 
 ### 10.4 Araçlar
 
-- **Android derlemesinde yol hatası:** depoyu kısa bir yola taşıyın. **pnpm ve Metro:** sembolik bağ sorununda `.npmrc` içindeki `node-linker=hoisted` satırına bakın.
+- **Android derlemesinde yol hatası:** depoyu kısa bir yola taşıyın. **pnpm ve Metro:** `node_modules` düzeni izole (varsayılan) kalır ([K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)). Sembolik bağ sorunu çıkarsa yedek, `pnpm-workspace.yaml` içine `nodeLinker: hoisted` yazmaktır ve `/karar` ister; `nodeLinker` `.npmrc` dosyasından okunmaz.
 - **`expo prebuild`** SDK 57'den beri yerel klasörleri varsayılan olarak temizler ([Expo SDK 57](https://expo.dev/changelog/sdk-57)); `android/` ve `ios/` depoya girmez.
 - **EF Core ve saat:** `timestamptz` sütununa `DateTimeKind.Utc` değer yazılır; yerel saat (UTC+3) kullanılmaz.
 - **SQLite dosya kilidi:** Yayınlayıcı paketi taşımadan önce bağlantıyı kapatır (`Pooling=False`); Windows açık dosyayı taşıtmaz.
-- **CAMeL Tools verisi** ayrıca indirilir: `camel_data -i light` ([PyPI camel-tools](https://pypi.org/project/camel-tools/)).
+- **CAMeL Tools verisi** ayrıca indirilir: `camel_data -i light` ([PyPI camel-tools](https://pypi.org/project/camel-tools/)). Veri paketlerinin lisansları kodunkinden farklıdır (bazıları GPL v2); ayrıntı [Teknoloji yığını §2.4](./02-teknoloji-yigini.md).
+- **Test telemetrisi.** Çözüldü (21 Ekim 2026). `xunit.v3` 3.2.0'dan beri `Microsoft.Testing.Extensions.Telemetry` paketine bağlıdır. Microsoft.Testing.Platform varsayılan olarak "Usage Data" türünde kullanım telemetrisi gönderir: çalıştırılabilir dosya adı ve test çatısı adı (özetlenmiş), işletim sistemi, sürüm bilgisi, test sayıları, çıkış kodu ve üç oktetli IP; kullanıcı adı ya da e-posta yok. Ürüne girmez; KVKK kuralı ürünü kapsar. `TESTINGPLATFORM_TELEMETRY_OPTOUT=1` ya da `DOTNET_CLI_TELEMETRY_OPTOUT=1` ortam değişkeniyle kapanır ("1" ya da "true"); telemetriye özel komut satırı seçeneği yoktur (`--no-banner` yalnız bildirimi gizler). Claude Code oturumlarında kit ayarları `DOTNET_CLI_TELEMETRY_OPTOUT=1` verir (`.claude/settings.json`, `env`). Kendi terminalinizde ve CI'da değişkeni ayrıca tanımlayın: Windows'ta kullanıcı ortam değişkeni olarak (Sistem özellikleri, Ortam Değişkenleri), geçerli PowerShell oturumunda `$env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"`, Git Bash'te `export DOTNET_CLI_TELEMETRY_OPTOUT=1`. Kaynaklar: [MTP telemetri](https://learn.microsoft.com/en-us/dotnet/core/testing/microsoft-testing-platform-telemetry) · [xUnit.net MTP](https://xunit.net/docs/getting-started/v3/microsoft-testing-platform) · [TelemetryManager.cs](https://github.com/microsoft/testfx/blob/main/src/Platform/Microsoft.Testing.Platform/Telemetry/TelemetryManager.cs) (okuma 21 Ekim 2026).
 
 ## 11. Açık sorular
 
 1. ~~K-21 yerelde MinIO der.~~ Çözüldü: K-21 güncellendi, yerel depo SeaweedFS. Garage yedek seçenek olarak kalır.
-2. pnpm `node-linker=hoisted` yerine izole kurulum Expo SDK 57'de çalışıyor mu?
+2. ~~pnpm `node-linker=hoisted` yerine izole kurulum Expo SDK 57'de çalışıyor mu?~~ Çözüldü (21 Ekim 2026, [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)): izole düzen varsayılandır; Expo SDK 54'ten beri destekler ([Expo monorepo kılavuzu](https://docs.expo.dev/guides/monorepos/)). SDK 58'e özel tablo yok; mobil iskelet gelince (A21) yeniden sınanır.
 3. SeaweedFS `server -s3` kipinin anonim okuma ve Range isteklerini mobil indirme kuyruğuyla sorunsuz karşıladığı ilk kurulumda doğrulanmalı.
 
 ## İlgili dosyalar

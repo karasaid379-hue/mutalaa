@@ -1,6 +1,6 @@
 # A00 · Ortam, klasör ve depo hazırlığı
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-20](../../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-31](../../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)
+> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-20](../../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-31](../../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code) · [K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)
 > **Faz:** 0 · Hazırlık · **Önkoşul:** yok · **İnsan adımı:** İ-01
 > **Ajanlar:** `arastirmaci` · `belge-bekcisi` · `inceleyici` · **Beceriler:** `windows-sorun` · **Tahmini oturum:** 1
 > **Başlat:** `/asama A00`
@@ -35,7 +35,7 @@ Claude Code ile geliştirmeye başlamadan önce bilgisayarın, proje klasörün�
 - Şu komutları çalıştır ve sonuçları tabloya dök (komut yoksa "yok" yaz):
   `git --version` · `node --version` · `pnpm --version` · `dotnet --list-sdks` · `uv --version` · `docker version --format '{{.Server.Version}}'` · `docker compose version` · `eas --version` · `adb --version`. Claude Code sürümünü kullanıcı `/status` çıktısından okur ve söyler (2.1.295 ya da üstü gerekir; Claude Code oturumunun içinden `claude` komutu çalıştırılmaz). Docker sunucu sürümü dönüyorsa Docker Desktop ve WSL2 arka ucu çalışıyordur; WSL durumunu kullanıcı PowerShell'de `wsl --status` ile görür.
 - Gereken sürümlerle karşılaştır ([Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md) §1): Node 24 LTS, .NET SDK 10.0, Docker Compose v2. Expo SDK sürümünün gerektirdiği Node aralığını `arastirmaci` ile doğrula; Node'un kurulu ana sürümü 24 değilse kullanıcıya iki seçenek sun (24 kurmak ya da belgeleri yeni LTS'ye göre güncellemek için `/karar`).
-- pnpm: kurulu sürüm kuruluma göre belirlenir ([Kurulum](../01-kurulum.md) §2); `packageManager` sabitlemesi A02'dedir ([BÇ-28](../07-belge-celiskileri.md)).
+- pnpm: kurulu sürüm kuruluma göre belirlenir ([Kurulum](../01-kurulum.md) §2); sürüm sabitlemesi A02'dedir: yalnız `devEngines.packageManager`, Corepack yok ([K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen); [BÇ-28](../07-belge-celiskileri.md) çözüldü).
 - Eksik araç için kullanıcıya [Kurulum](../01-kurulum.md) §2'deki komutu ver; kurulumu kendin yapma.
 - **Bitti sayılır:** sürüm tablosu rapordadır ve zorunlu araçların (Git, Node, pnpm, .NET, uv) hepsi kuruludur. Docker, EAS CLI ve Android araçları eksikse not düşülür; bunlar A03 ve A21'de gerekir.
 

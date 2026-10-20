@@ -1,7 +1,7 @@
 # Test stratejisi
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
+> **Sürüm:** 1.2 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
 
 Bu dosya neyin, hangi araçla, ne zaman test edildiğini tanımlar. Eşik değerlerinin çoğu bu dosyanın önerisidir; ilk ölçümden sonra kalibre edilir ve öyle işaretlidir.
 
@@ -164,7 +164,7 @@ Tanzil metni aynen dağıtılabilir, değiştirilemez ([Tanzil metni, OpenITI ko
 public sealed class MigrationTests : IAsyncLifetime
 {
     readonly PostgreSqlContainer _pg = new PostgreSqlBuilder().WithImage("postgres:18").Build();
-    public async ValueTask InitializeAsync() => await _pg.StartAsync();   // xunit.v3 imzası
+    public async ValueTask InitializeAsync() => await _pg.StartAsync();   // xunit.v3 imzası (doğrulandı, 21 Ekim 2026)
     public ValueTask DisposeAsync() => _pg.DisposeAsync();
 
     [Fact]
@@ -177,7 +177,7 @@ public sealed class MigrationTests : IAsyncLifetime
 }
 ```
 
-Yığın `xunit.v3` kullanır ([Teknoloji yığını](../02-mimari/02-teknoloji-yigini.md)); `IAsyncLifetime` yöntemleri `ValueTask` döndürür. İmza A07'de doğrulanır.
+Yığın `xunit.v3` kullanır ([Teknoloji yığını](../02-mimari/02-teknoloji-yigini.md)); `IAsyncLifetime` yöntemleri `ValueTask` döndürür. Çözüldü (21 Ekim 2026): imza xunit.v3 kaynağında ve göç kılavuzunda doğrulandı ([IAsyncLifetime.cs](https://raw.githubusercontent.com/xunit/xunit/main/src/xunit.v3.core/IAsyncLifetime.cs), [xunit.v3 göç kılavuzu](https://xunit.net/docs/getting-started/v3/migration), okuma 21 Ekim 2026). Testler Microsoft.Testing.Platform üzerinde koşar; komut `dotnet test --solution server/Mutalaa.slnx` ([K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform), [Proje yapısı](../02-mimari/03-proje-yapisi.md) §4.2). A07'de örnek gerçek `MigrationTests` ile derlenir.
 
 **Enum tutarlılığı.** `license_status` (4 değer), `xref.type` (8), `xref.status` (3) ve `origin` (3) değerleri `packages/content-schema` içindeki tek bir JSON'dan okunur. PostgreSQL enum'u, C# enum'u, Python enum'u ve TypeScript birleşim tipi bu JSON'la karşılaştırılır.
 

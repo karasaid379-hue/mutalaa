@@ -1,6 +1,6 @@
 # A02 · Tek depo iskeleti (pnpm + Turborepo, .NET çözümü, uv)
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python)
+> **Sürüm:** 1.2 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
 > **Faz:** 0 · Hazırlık · **Önkoşul:** [A00](./A00-ortam-ve-depo.md) · **İnsan adımı:** yok
 > **Ajanlar:** `web-gelistirici` · `sunucu-gelistirici` · `hat-gelistirici` · `arastirmaci` · `inceleyici` · **Beceriler:** `windows-sorun` · **Tahmini oturum:** 2–3
 > **Başlat:** `/asama A02`
@@ -17,7 +17,7 @@
 
 ## Kapsam
 **Yapılır**
-- Kök araç dosyaları: `package.json`, `pnpm-workspace.yaml`, `.npmrc`, `turbo.json`, `tsconfig.base.json`, `eslint.config.mjs`, `.prettierrc.json`, `.nvmrc`, `global.json`, `.config/dotnet-tools.json`.
+- Kök araç dosyaları: `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `eslint.config.mjs`, `.prettierrc.json`, `.nvmrc`, `global.json`, `.config/dotnet-tools.json`. `.npmrc` açılmaz; yalnız kimlik doğrulama, kayıt defteri ya da sertifika gerekirse açılır ([K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)).
 - Altı boş TypeScript paketi (`packages/anchors`, `content-schema`, `search`, `reader-core`, `player`, `ui-tokens`) ve `shared/test-vectors` çalışma alanı paketi.
 - `server/` çözümü: dört proje, üç test projesi, `Directory.Build.props`, `Directory.Packages.props`, kilit dosyaları.
 - `pipeline/` uv projesi: `pyproject.toml`, `uv.lock`, `.python-version`, `mutalaa.toml`, `src/mutalaa_pipeline/`, `sources/licenses/`, `prompts/`, `tests/`.
@@ -32,15 +32,15 @@
 ## Adımlar
 ### A02.1 · Doğrulanacaklar
 - `arastirmaci` resmî kaynaktan bağlantısıyla raporlar:
-  - pnpm izole kurulumu Expo SDK 57'de (kararlıysa 58'de) Metro ile sorunsuz mu, yoksa `node-linker=hoisted` mı gerekir (Proje yapısı §4.1 ve §8 madde 1; Yerel geliştirme §11 madde 2). Kesin destek kanıtı yoksa `hoisted` kalır; kesin cevap A21'de yeniden sınanır.
-  - `Mutalaa.slnx` biçiminin `dotnet format`'ta ve kullanıcının IDE'sinde desteği; `dotnet new sln` ile `.slnx` üretme yolu (Proje yapısı §4.2 ve §8 madde 2).
-  - `xunit.v3` test projesi şablonu ve paket adları (Teknoloji yığını §2.2).
+  - ~~pnpm izole kurulumu Expo SDK 57'de (kararlıysa 58'de) Metro ile sorunsuz mu, yoksa `node-linker=hoisted` mı gerekir.~~ Çözüldü (21 Ekim 2026): izole düzen varsayılandır; Expo SDK 54'ten beri destekler. Kaynaklar [K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) gerekçesindedir ([Expo monorepo kılavuzu](https://docs.expo.dev/guides/monorepos/)). SDK 58'e özel tablo yok; A21'de yeniden sınanır.
+  - ~~`Mutalaa.slnx` biçiminin `dotnet format`'ta ve kullanıcının IDE'sinde desteği; `dotnet new sln` ile `.slnx` üretme yolu (Proje yapısı §4.2 ve §8 madde 2).~~ Çözüldü (21 Ekim 2026, [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)): `dotnet new sln` .NET 10'da `.slnx` üretir; `restore`, `build`, `test` ve `format` `.slnx` ile SDK 10.0.402'de çalışıyor, `.sln`'e geçiş gerekmedi. IDE desteği Doğrulanacak olarak kalır (kaynaklar çelişkili; VS Code C# Dev Kit için `dotnet.defaultSolution` ayarı gerekebilir): kullanıcının IDE'sinde ilk açılışta denenir.
+  - ~~`xunit.v3` test projesi şablonu ve paket adları (Teknoloji yığını §2.2).~~ Çözüldü (21 Ekim 2026, [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)): `xunit.v3` 4.x Microsoft.Testing.Platform üzerinde koşar; `Microsoft.NET.Test.Sdk` ve `xunit.runner.visualstudio` eklenmez; `global.json` içinde `test.runner` = `Microsoft.Testing.Platform`. Kaynaklar: [xunit.v3 4.0.0](https://xunit.net/releases/v3/4.0.0), [dotnet test belgesi](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test), [xunit.v3 göç kılavuzu](https://xunit.net/docs/getting-started/v3/migration) (okuma 21 Ekim 2026).
 - Kurulu araçlar okunur: `node --version` (24), `pnpm --version`, `dotnet --list-sdks` (10.0.1xx), `uv --version`. Eksik araç varsa İ-01'e dönülür ve kullanıcıya söylenir.
-- **Bitti sayılır:** üç soru kaynaklı cevaplandı ve aşama kaydına yazıldı; araç sürümleri kayıtlı.
+- **Bitti sayılır:** pnpm sorusu K-32 ile, `.slnx` (komut satırı tarafı) ve xunit soruları K-33 ile çözüldü; kalan IDE sorusu "Doğrulanacak" olarak yazıldı; araç sürümleri kayıtlı.
 
 ### A02.2 · pnpm çalışma alanı ve Turborepo (`web-gelistirici`)
-- Kök `package.json` Proje yapısı §4.1'deki gibi (`name`, `private`, `scripts`); `packageManager` alanına kurulu pnpm sürümü yazılır. Önce karar: pnpm kurulum yolu (Corepack ya da npm) ve `packageManager` sabitlemesi [BÇ-28](../07-belge-celiskileri.md) ile `/karar`a bağlanır; A02.1'de `arastirmaci` ile doğrulanır.
-- `pnpm-workspace.yaml` (`apps/*`, `packages/*`, `shared/test-vectors`), `.npmrc` (A02.1 sonucuna göre), `turbo.json` (§4.1'deki `build`, `typecheck`, `lint`, `test`, `dev` görevleri), `.nvmrc` (`24`).
+- Kök `package.json` Proje yapısı §4.1'deki gibi (`name`, `private`, `devEngines`, `scripts`). Kurulu pnpm sürümü (12.14.0) yalnız `devEngines.packageManager` alanına tam sürüm olarak yazılır; `packageManager` alanı yazılmaz. pnpm npm ile kurulur, Corepack kullanılmaz ([K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen); [BÇ-28](../07-belge-celiskileri.md) çözüldü).
+- `pnpm-workspace.yaml` (`apps/*`, `packages/*`, `shared/test-vectors`; `nodeLinker` ayarı yok, düzen izole), `.npmrc` açılmaz (K-32), `turbo.json` (§4.1'deki `build`, `typecheck`, `lint`, `test`, `dev` görevleri), `.nvmrc` (`24`).
 - Kök geliştirme bağımlılıkları `pnpm add -Dw` ile: `turbo`, `typescript`, `eslint`, `typescript-eslint`, `eslint-config-prettier`, `prettier`, `vitest`. Sürümler kurulum günü kilit dosyasına yazılır; elle sürüm yazılmaz (Teknoloji yığını §4.1).
 - `eslint.config.mjs` Proje yapısı §5'teki özetle (yerel ayar kuralları, paketlerde `react-native`, `expo-*`, `next` yasağı). Ek olarak `packages/anchors` ve `packages/search` dosyalarında `@mutalaa/*` içe aktarımı yasaklanır (§2 kural 3; öneri).
 - `.prettierrc.json`: `{ "printWidth": 100, "singleQuote": true, "trailingComma": "all", "endOfLine": "lf" }` (§5). `tsconfig.base.json`: `strict` açık ortak ayarlar (içerik dokümanda yok; öneri).
@@ -55,13 +55,14 @@
 - **Bitti sayılır:** `pnpm turbo run build lint typecheck test` yedi çalışma alanı paketinde yeşil; denetleyici `.tmp/` altındaki temiz deneme dosyasını geçiriyor, yalnız BOM'lu ve yalnız CRLF'li deneme dosyalarını ayrı ayrı reddediyor.
 
 ### A02.4 · .NET çözümü (`sunucu-gelistirici`)
-- Kökte `global.json` (`10.0.100`, `rollForward: latestFeature`). `dotnet new tool-manifest` ve `dotnet tool install dotnet-ef` ile `.config/dotnet-tools.json` (Proje yapısı §4.2); araç sürümü bildirime yazılır.
+- Kökte `global.json` (`10.0.100`, `rollForward: latestFeature`, `"test": { "runner": "Microsoft.Testing.Platform" }`; [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)). `dotnet new tool-manifest` ve `dotnet tool install dotnet-ef` ile `.config/dotnet-tools.json` (Proje yapısı §4.2); araç sürümü bildirime yazılır.
 - `server/Mutalaa.slnx` ve projeler: `Mutalaa.Domain` (sınıf kitaplığı), `Mutalaa.Infrastructure` (sınıf kitaplığı), `Mutalaa.Api` (boş ASP.NET Core), `Mutalaa.Publisher` (konsol). Test projeleri: `server/tests/Mutalaa.Domain.Tests`, `Mutalaa.Api.Tests`, `Mutalaa.Publisher.Tests` (adlar öneri; §1 "Domain, Api ve Publisher test projeleri").
 - Başvurular §2'deki gibi: `Api → Infrastructure → Domain`, `Publisher → Infrastructure`. `Api` ile `Publisher` birbirine bağlanmaz; `Domain` hiçbir projeye ve altyapı paketine bağlanmaz.
-- `server/Directory.Build.props`: `TargetFramework=net10.0`, `Nullable=enable`, `TreatWarningsAsErrors=true`, `RestorePackagesWithLockFile=true`; `InvariantGlobalization` açılmaz (Backend API §2). `server/Directory.Packages.props` merkezi sürüm yönetimi; paket sürümü yalnız burada.
+- `server/Directory.Build.props`: `TargetFramework=net10.0`, `Nullable=enable`, `TreatWarningsAsErrors=true`, `RestorePackagesWithLockFile=true`; `InvariantGlobalization` açılmaz (Backend API §2). `server/Directory.Packages.props` merkezi sürüm yönetimi; paket sürümü yalnız burada. Test projeleri `xunit.v3` 4.x kullanır (sürüm yalnız `Directory.Packages.props` içinde; A02.4'te 4.0.2); `Microsoft.NET.Test.Sdk` ve `xunit.runner.visualstudio` eklenmez.
 - Yer tutucu test bir mimari testidir: `Mutalaa.Domain` derlemesinin başvuruları arasında EF Core, Npgsql, AWS ve `Mutalaa.*` yoktur (Proje yapısı §2 son paragraf).
-- `packages.lock.json` dosyaları üretilir ve depoya girer. `dotnet format --verify-no-changes` `.slnx` ile denenir; çalışmazsa `Mutalaa.sln`'e geçiş `/karar` ile yazılır (§4.2).
-- **Bitti sayılır:** `dotnet build` ve `dotnet test` yeşil; `dotnet restore --locked-mode` hatasız.
+- `packages.lock.json` dosyaları üretilir ve depoya girer. `dotnet format server/Mutalaa.slnx --verify-no-changes` `.slnx` ile çalışıyor: temiz ağaçta çıkış 0, bilerek bozulan dosyada 2 (SDK 10.0.402, 21 Ekim 2026). `Mutalaa.sln`'e geçiş gerekmedi ([K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)).
+- Test komutu `dotnet test --solution server/Mutalaa.slnx` (MTP kipi; eski `dotnet test server/Mutalaa.slnx` biçimi kullanılmaz). `--no-build` ile 5 test geçti.
+- **Bitti sayılır:** `dotnet build` ve `dotnet test --solution server/Mutalaa.slnx` yeşil; `dotnet format … --verify-no-changes` çıkış 0; `dotnet restore --locked-mode` hatasız.
 
 ### A02.5 · Python içerik hattı (`hat-gelistirici`)
 - `pipeline/pyproject.toml` İçerik hattı §3'teki gibi: ad, `requires-python = ">=3.13,<3.14"`, bağımlılıklar, `arapca`, `turkce`, `gomme` grupları, `mutalaa = "mutalaa_pipeline.cli:app"`, hatchling. Geliştirme araçları: `uv add --dev pytest ruff mypy`. Ruff ayarı Proje yapısı §5'teki gibi (`py313`, `line-length = 100`, kural seçimi, `line-ending = "lf"`).
@@ -80,10 +81,11 @@
 - [ ] `pnpm install --frozen-lockfile` hatasız; `pnpm -r ls --depth -1` çıktısında kök dışında yedi `@mutalaa/*` paketi var.
 - [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` ve `pnpm turbo run build` yeşil.
 - [ ] `@mutalaa/test-vectors` denetleyicisi temiz dosyayı geçiriyor, BOM'lu ya da CRLF'li dosyada sıfırdan farklı kodla çıkıyor.
-- [ ] `dotnet restore server/Mutalaa.slnx --locked-mode`, `dotnet build`, `dotnet test` yeşil; mimari testi geçiyor.
-- [ ] `dotnet format server/Mutalaa.slnx --verify-no-changes` çalışıyor ya da `.sln` kararı karar defterinde.
+- [ ] `dotnet restore server/Mutalaa.slnx --locked-mode`, `dotnet build server/Mutalaa.slnx` ve `dotnet test --solution server/Mutalaa.slnx` yeşil; mimari testi geçiyor.
+- [ ] `dotnet format server/Mutalaa.slnx --verify-no-changes` çalışıyor (K-33; `.sln` kararı gerekmedi).
+- [ ] `global.json` içinde `test.runner` = `Microsoft.Testing.Platform`; test projelerinde `Microsoft.NET.Test.Sdk` ve `xunit.runner.visualstudio` yok.
 - [ ] `cd pipeline && uv sync --locked` hatasız; `pytest`, `ruff check`, `ruff format --check`, `mypy src` yeşil; `uv run mutalaa --help` 0 ile çıkıyor.
-- [ ] `.npmrc` ve `.slnx` sorularının cevabı kaynak bağlantısıyla aşama kaydında.
+- [ ] pnpm kararı (K-32) uygulanmış: kök `package.json` yalnız `devEngines.packageManager` taşıyor, `packageManager` alanı ve `.npmrc` yok. `.slnx` ve xunit sorularının cevabı (K-33) kaynak bağlantısıyla aşama kaydında; IDE desteği "Doğrulanacak" olarak kalıyor.
 - [ ] `git status --porcelain` içinde `node_modules`, `bin`, `obj`, `.venv`, `dist` yok.
 
 ## Doğrulama
@@ -101,14 +103,15 @@ dotnet tool restore
 dotnet restore server/Mutalaa.slnx --locked-mode
 dotnet format server/Mutalaa.slnx --verify-no-changes --no-restore
 dotnet build server/Mutalaa.slnx --no-restore
-dotnet test server/Mutalaa.slnx --no-build
+dotnet test --solution server/Mutalaa.slnx --no-build
 (cd pipeline && uv sync --locked && uv run ruff check . && uv run ruff format --check . && uv run mypy src && uv run pytest && uv run mutalaa --help)
 git status --porcelain
 ```
 
 ## Dikkat
 - Sürüm uydurulmaz. Dokümanın verdiği sabitler (`10.0.100`, Node 24, Python 3.13) dışındaki sürümler kurulum günü kilit dosyasına yazılır.
-- `.npmrc` Metro'yu etkiler. Mobil (A21) gelene kadar `hoisted` güvenli varsayımdır; değişiklik `/karar` ister.
+- `node_modules` düzeni izole (varsayılan) kalır; `.npmrc` açılmaz ve `nodeLinker` `.npmrc` dosyasından okunmaz. Metro ile sorun çıkarsa yedek `pnpm-workspace.yaml` içine `nodeLinker: hoisted` yazmaktır; bu değişiklik `/karar` ister ([K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)). Mobil (A21) gelince yeniden sınanır.
+- `devEngines.packageManager` ile `packageManager` birlikte yazılmaz; birlikte verilince pnpm 12 davranışı belgelenmemiştir (K-32 Not).
 - Paketlerde `react-native`, `expo-*`, `next` ve DOM API'si kullanılmaz; `anchors` ve `search` yapraktır (§2). Ayrıntı: `.claude/rules/` altındaki paylaşılan paket kuralı.
 - `Mutalaa.Domain` EF Core, Npgsql ve AWS paketlerine bağlanmaz; NuGet sürümü yalnız `Directory.Packages.props`'tadır. CA1304…CA1311 `.editorconfig`'te hata düzeyindedir; kültüre duyarlı çağrı derlemeyi durdurur.
 - Python: dosyalar `encoding="utf-8"` ile açılır. Claude Code oturumunda `PYTHONUTF8=1` ayarlıdır; CI'da bilerek verilmez (A08).
@@ -120,7 +123,7 @@ git status --porcelain
 - Yok. Araçlardan biri eksikse İ-01'e dönülür ([İnsan adımları](../06-insan-adimlari.md)).
 
 ## Çıktılar
-- Kök: `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.npmrc`, `turbo.json`, `tsconfig.base.json`, `eslint.config.mjs`, `.prettierrc.json`, `.nvmrc`, `global.json`, `.config/dotnet-tools.json`, `.gitignore` eki
+- Kök: `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `eslint.config.mjs`, `.prettierrc.json`, `.nvmrc`, `global.json`, `.config/dotnet-tools.json`, `.gitignore` eki
 - `packages/{anchors,content-schema,search,reader-core,player,ui-tokens}/` ve `shared/test-vectors/` (`package.json`, biçim denetleyicisi)
 - `server/Mutalaa.slnx`, `server/Directory.Build.props`, `server/Directory.Packages.props`, `server/Mutalaa.{Domain,Infrastructure,Api,Publisher}/`, `server/tests/Mutalaa.{Domain,Api,Publisher}.Tests/`, `packages.lock.json` dosyaları
 - `pipeline/pyproject.toml`, `uv.lock`, `.python-version`, `mutalaa.toml`, `src/mutalaa_pipeline/`, `sources/licenses/`, `prompts/`, `tests/test_cli.py`

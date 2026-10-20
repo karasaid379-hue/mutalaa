@@ -56,7 +56,7 @@ Arama metninin normalizasyonu ([Arama](../../03-veri/05-arama-fts5.md) §1, `nor
 - `SearchNormalizer` (Backend API §2); Türkçe küçük harf `LowerTurkish` örneğindeki açık eşlemeyle (§9). Kültüre duyarlı çağrı CA1304…CA1311 ile derlemede durur.
 - Klasör `Mutalaa.Domain/Text/` (Backend API §2, Proje yapısı §3, Arama §1).
 - xUnit vektör testleri `Mutalaa.Domain.Tests` içinde; varsayılan ve `tr-TR` kültüründe.
-- **Bitti sayılır:** `dotnet test server/Mutalaa.slnx` yeşil; `tr-TR` koşumu görünür.
+- **Bitti sayılır:** `dotnet test --solution server/Mutalaa.slnx` yeşil; `tr-TR` koşumu görünür.
 
 ### A05.5 · Python: `mutalaa_pipeline.normalize` (`hat-gelistirici`)
 - `unicode.py` (NFC, yazı sistemine göre bölme), `turkish.py` (dar ve geniş anahtar; kesme ve ek kuralları; iç kesme listesi `shared/data/ic-kesme.txt` dosyasından `encoding="utf-8"` ile okunur), `arabic.py`. `str.lower()` İ'yi iki kod noktasına çevirir; önce açık eşleme (Test stratejisi §2 tuzak tablosu).
@@ -72,7 +72,7 @@ Arama metninin normalizasyonu ([Arama](../../03-veri/05-arama-fts5.md) §1, `nor
 ## Kabul ölçütleri
 - [ ] `normalize/tr.jsonl` ve `normalize/ar.jsonl` var; biçim denetimi geçiyor; Arama §1.5 Türkçe tablosunun her girdisi birebir bir satırda (döngü "EKSİK" yazmıyor); Arapça kurallar (§1.3 madde 1–3, §1.5 "Sınanan kural" sütunu) sentetik dizilerle sınanıyor.
 - [ ] `pnpm --filter @mutalaa/search test` varsayılan ve `LANG=tr_TR.UTF-8` ile yeşil; `pnpm lint` yeşil.
-- [ ] `dotnet test server/Mutalaa.slnx` yeşil; normalizasyon testleri `tr-TR` kültüründe de geçiyor.
+- [ ] `dotnet test --solution server/Mutalaa.slnx` yeşil; normalizasyon testleri `tr-TR` kültüründe de geçiyor.
 - [ ] `uv run pytest` hem varsayılan hem `PYTHONUTF8=0` ile yeşil.
 - [ ] Üç uygulamada `normalizer_version` `1.0`.
 - [ ] `tr_stem` ya Python'da uygulandı ve değişmez kural testi yeşil, ya da A12'ye devri aşama kaydında.
@@ -85,7 +85,7 @@ pnpm --filter @mutalaa/test-vectors build
 pnpm --filter @mutalaa/search test
 LANG=tr_TR.UTF-8 pnpm --filter @mutalaa/search test
 pnpm lint
-dotnet test server/Mutalaa.slnx
+dotnet test --solution server/Mutalaa.slnx
 (cd pipeline && uv run pytest && PYTHONUTF8=0 uv run pytest && uv run ruff check . && uv run mypy src)
 grep -c . shared/test-vectors/normalize/tr.jsonl shared/test-vectors/normalize/ar.jsonl
 grep -rn "normalizer_version\|NORMALIZER_VERSION\|NormalizerVersion" packages/search/src server/Mutalaa.Domain/Text pipeline/src/mutalaa_pipeline/normalize

@@ -1,7 +1,7 @@
 # Kurulum (Windows)
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)
+> **Sürüm:** 1.1 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)
 
 Bu dosya Claude Code'u ve projenin araçlarını Windows'a kurmayı, Claude Code'u proje klasöründe ilk kez açmayı ve kitin çalıştığını doğrulamayı anlatır. Buradaki kurulumlar sistem genelini değiştirdiği için Claude Code değil, siz yaparsınız (insan adımı İ-01). Kurulumdan sonra Claude Code, A00 aşamasında sürümleri denetler.
 
@@ -20,7 +20,7 @@ Aşağıdaki komutlar PowerShell içindir. `winget` paket kimlikleri yazım gün
 | Claude Code | 2.1.295 ya da üstü (kitin klasör bekçisi `onFailure` alanını kullanır) | `irm https://claude.ai/install.ps1 \| iex` (yerel kurulum, kendiliğinden güncellenir) ya da `winget install Anthropic.ClaudeCode` | `claude --version` |
 | Git for Windows | güncel | `winget install --id Git.Git -e` | `git --version` |
 | Node.js | 24 LTS | `winget install --id OpenJS.NodeJS.LTS -e` ya da nodejs.org'dan 24 LTS yükleyicisi | `node --version` (v24 beklenir; başka ana sürüm gelirse A00'da karar verilir) |
-| pnpm | kuruluma göre belirlenir; `packageManager` sabitlemesi A02'dedir ([BÇ-28](./07-belge-celiskileri.md)) | `npm install -g pnpm` (pnpm'in güncel kurulum belgesi Windows için npm yolunu önerir: [pnpm kurulumu](https://pnpm.io/installation)). Node 24'te Corepack ile de olur: `corepack enable` (Corepack Node 25.0.0'dan itibaren dağıtılmaz; Program Files altındaki MSI kurulumunda yönetici terminali ya da `--install-directory` gerekebilir, açık "yönetici gerekir" cümlesi Doğrulanamadı) | `pnpm --version` |
+| pnpm | A02'de kurulu sürüm (12.14.0); kök `package.json` içinde yalnız `devEngines.packageManager` ile sabitlenir ([K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)) | `npm install -g pnpm` ya da `npx get-pnpm` (pnpm'in kurulum belgesi Windows için npm yolunu önerir: [pnpm kurulumu](https://pnpm.io/installation)). Corepack kullanılmaz (K-32; Corepack Node 25.0.0'dan itibaren dağıtılmaz) | `pnpm --version` |
 | .NET SDK | 10.0 | `winget install --id Microsoft.DotNet.SDK.10 -e` | `dotnet --list-sdks` |
 | uv | güncel | `winget install --id astral-sh.uv -e` | `uv --version` |
 | WSL2 | güncel | Yönetici terminalde `wsl --install`, sonra `wsl --update` | `wsl --status` |

@@ -87,7 +87,7 @@ pnpm --filter @mutalaa/reader-core test
 pnpm --filter @mutalaa/mobile test
 pnpm test                                                    # Turborepo; shared/test-vectors JSONL denetimi dahil
 pnpm lint && pnpm typecheck
-dotnet test server/Mutalaa.slnx && cd pipeline && uv run pytest && cd ..
+dotnet test --solution server/Mutalaa.slnx && cd pipeline && uv run pytest && cd ..
 curl -s http://localhost:8333/mutalaa/dev/manifest.json
 mkdir -p .tmp/a28
 adb shell "am start -W -a android.intent.action.VIEW -d 'mutalaa-dev://ara?q=isik'"

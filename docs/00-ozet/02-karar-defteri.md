@@ -1,7 +1,7 @@
 # Karar Defteri
 
 > **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Onaylı
-> **Kapsam:** 16–18 Ekim 2026 beyin fırtınası oturumunda verilen bütün kararlar ve sonraki eklemeler (K-31, 19 Ekim 2026).
+> **Kapsam:** 16–18 Ekim 2026 beyin fırtınası oturumunda verilen bütün kararlar ve sonraki eklemeler (K-31, 19 Ekim 2026; K-32, K-33 ve K-34, 21 Ekim 2026).
 > **Kural:** Bir karar değişirse eski satır silinmez; "Geçersiz" olarak işaretlenir ve yeni karara bağlantı verilir.
 
 Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrıntılandırır ama değiştiremez. Çelişki görülürse bu dosya geçerlidir.
@@ -43,6 +43,9 @@ Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrı
 | K-29 | Mobil arayüz | NativeWind v4 + React Native Reusables + @gorhom/bottom-sheet + Reanimated 4 | [Mobil mimari](../06-mobil/01-mobil-mimari.md) |
 | K-30 | Eski plandan çıkarılanlar | .NET 9 monolit, Azure yığını, Expo SDK 51 ve kapsam dışı modüller | [Bu dosya, K-30](#k-30--eski-plandan-çıkarılanlar) |
 | K-31 | Geliştirme aracı | Yalnız Claude Code ile, proje klasörünün içinde, aşama aşama (A00–A40) | [Claude Code rehberi](../10-claude-code/README.md) |
+| K-32 | pnpm kurulumu ve düzeni | npm ile kurulur (Corepack yok); sürüm yalnız `devEngines.packageManager` ile sabitlenir; `node_modules` düzeni izole (varsayılan) | [Proje yapısı](../02-mimari/03-proje-yapisi.md) |
+| K-33 | .NET test çalıştırıcısı | xunit.v3 4.x + Microsoft.Testing.Platform; komut `dotnet test --solution server/Mutalaa.slnx`; çözüm biçimi `.slnx` | [Teknoloji yığını](../02-mimari/02-teknoloji-yigini.md) |
+| K-34 | TypeScript sürümü | Tek sürüm TypeScript 6.0.x; TS 7 (native) kullanılmaz, geçiş araçlar desteklenince | [Teknoloji yığını](../02-mimari/02-teknoloji-yigini.md) |
 
 ---
 
@@ -221,6 +224,38 @@ Eski planın okuyucu tasarımları, "okuma simetrisi" çekirdeği (son okunan ye
   - Proje kökü `mutalaa-kit` klasörüdür; yol kararı "yerinde kal"dır (OneDrive altında; yoğun işlerde eşitleme duraklatılır, Android derlemesi EAS bulutunda). Metindeki `mutalaa-docs` ifadesi bu karara göre okunur.
   - Uzak depo özel (private) GitHub deposu `karasaid379-hue/mutalaa`'dır. A08'e kadar her aşama sonunda commit'ler `main` dalına itilir (`git push origin main`, her seferinde onay sorar). A08'den sonra [Proje yapısı](../02-mimari/03-proje-yapisi.md) §6'daki akış (aşama dalı, PR, squash) geçerlidir. Zorla push yasaktır.
 - **Kaynak:** Proje sahibinin talebi (19 Ekim 2026).
+
+### K-32 · pnpm kurulumu, sürüm sabitleme ve düzen
+- **Karar:**
+  - pnpm npm yoluyla kurulur (`npx get-pnpm` ya da `npm install -g pnpm`); Corepack kullanılmaz.
+  - Sürüm kök `package.json` içinde yalnız `devEngines.packageManager` alanıyla, tam sürüm olarak sabitlenir (kurulum günü kurulu sürüm; A02'de 12.14.0). `packageManager` alanı yazılmaz.
+  - `node_modules` düzeni pnpm'in izole varsayılanıdır. Metro ile sembolik bağ sorunu çıkarsa yedek `pnpm-workspace.yaml` içine `nodeLinker: hoisted` yazmaktır; bu değişiklik `/karar` ister. `nodeLinker` ayarı `.npmrc` dosyasından okunmadığı için `.npmrc` yalnız kimlik doğrulama, kayıt defteri ya da sertifika gerekirse açılır.
+- **Gerekçe:**
+  - pnpm'in kurulum belgesi Windows'ta npm yolunu öneriyor ([pnpm.io/installation](https://pnpm.io/installation), okuma 2026-10-21). pnpm bakımcısı Corepack ile pnpm kurulmamasını öneriyor ([pnpm/discussions #9044](https://github.com/orgs/pnpm/discussions/9044)). Corepack Node 24'te deneysel, Node 25'ten itibaren dağıtılmıyor ([Node.js belgesi](https://nodejs.org/docs/latest-v24.x/api/corepack.html)); Corepack ile pnpm 12 uyumuna dair resmî ifade bulunamadı.
+  - `devEngines.packageManager` pnpm belgesinde yeni yol, `packageManager` "legacy" ([pnpm.io/package_json](https://pnpm.io/package_json)). `pnpm/action-setup` iki alanı da okur, bu yüzden CI'da `version` girdisi gerekmez ([README](https://github.com/pnpm/action-setup#readme)).
+  - Expo, SDK 54'ten beri pnpm'in izole kurulumunu resmî destekler; `hoisted` yalnız sorun çıkarsa önerilir ([docs.expo.dev/guides/monorepos](https://docs.expo.dev/guides/monorepos/), okuma 2026-10-21). İzole düzen, sürüm sabitleme ve bağımlılık sınırları ([Proje yapısı](../02-mimari/03-proje-yapisi.md) §2) için de daha sıkıdır.
+- **Değerlendirilen alternatifler:** Corepack ile kurulum ve `packageManager` alanı (yukarıdaki gerekçelerle elendi); `node-linker=hoisted` (SDK 54+ için resmî destek varken gerekmiyor).
+- **Not:** Expo SDK 58'e özel bir uyumluluk tablosu yok, kanıt SDK 54+ için genel destek beyanıdır; mobil iskelet gelince (A21) yeniden sınanır. `devEngines.packageManager` ile `packageManager` birlikte verilince pnpm 12'nin davranışı belgelenmemiş; bu yüzden yalnız biri kullanılır.
+- **Kaynak:** Proje sahibinin kararı (21 Ekim 2026, A02; [BÇ-28](../10-claude-code/07-belge-celiskileri.md)).
+
+### K-33 · .NET test çalıştırıcısı: xunit.v3 + Microsoft.Testing.Platform
+- **Karar:**
+  - Test projeleri `xunit.v3` 4.x (MTP v2) kullanır; kökteki `global.json` içinde `"test": { "runner": "Microsoft.Testing.Platform" }` yazılıdır.
+  - Test komutu `dotnet test --solution server/Mutalaa.slnx` (CI'da `-c Release --no-build` ile). Çözüm biçimi `.slnx` kalır; `.sln`'e geçilmez.
+  - `Microsoft.NET.Test.Sdk` ve `xunit.runner.visualstudio` eklenmez.
+- **Gerekçe:**
+  - `xunit.v3` 4.0, VSTest hedefini .NET 10 SDK'da desteklemiyor ([xunit.net/releases/v3/4.0.0](https://xunit.net/releases/v3/4.0.0)). .NET 10 SDK'da MTP kipi `global.json` ile açılır ve çözüm yolu `--solution` ile verilir ([dotnet test belgesi](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test), okuma 2026-10-21).
+  - Yerel kanıt (A02.4, SDK 10.0.402, 21 Ekim 2026): `dotnet test --solution server/Mutalaa.slnx --no-build` 5 testi geçti; `dotnet format server/Mutalaa.slnx --verify-no-changes` çıkış 0 verdi (bilerek bozulan dosyada 2); `dotnet restore server/Mutalaa.slnx --locked-mode` hatasız. `.slnx` için `.sln` yedeği gerekmedi.
+- **Değerlendirilen alternatifler:** `xunit.v3.mtp-off` + `xunit.runner.visualstudio` + `Microsoft.NET.Test.Sdk` (VSTest; komut değişmezdi, ama xunit'in varsayılan ve geleceğe dönük yolu MTP).
+- **Not:** Pozisyonel `dotnet test server/Mutalaa.slnx` biçimi 10.0.402'de çalışıyor, ama MTP belgesinde yoktur; kullanılmaz. `global.json` `rollForward: latestFeature` ile kilit dosyaları birlikte kullanılıyor (kilitler 10.0.402 ile üretildi); SDK kayması `restore --locked-mode` içinde NU1004 verirse `rollForward` için yeni karar açılır.
+- **Kaynak:** Proje sahibinin kararı (21 Ekim 2026, A02).
+
+### K-34 · TypeScript: tek sürüm 6.0.x
+- **Karar:** Kök `package.json` içinde `typescript` gerçek pakettir ve `~6.0` aralığındadır; takma ad ya da ikinci derleyici yoktur. TypeScript 7 (native) kullanılmaz. `tsc`, typescript-eslint ve editörün tsserver'ı aynı sürümü görür.
+- **Gerekçe:** typescript-eslint 8.72.0 `typescript` eş bağımlılığını `<6.1` ile sınırlıyor; A02'de TypeScript 7.0.2 ile `typescript-eslint does not support TS 7.0` hatası alındı (21 Ekim 2026). TS 6 ve 7'yi takma adlarla yan yana kurmak çalıştı, ama bağımsız incelemede kırılgan bulundu: `tsc` bin'i 7.0.2, `typescript` paketi 6.0.x verir; Expo (`expo install --check`) ve Next.js `typescript` paketinin adını ve sürümünü bekler; ikinci bir `typescript` bağımlılığı gelince `tsc` bin'i sessizce başka sürüme geçebilir. TS 7 duyurusu: [devblogs.microsoft.com](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/).
+- **Değerlendirilen alternatifler:** İki derleyici (`typescript` adına `@typescript/typescript6`, `tsc` için `@typescript/native` = TS 7.0.2). Hız kazancı yedi boş pakette önemsiz, bakım yükü ve kırılganlık fazla.
+- **Not:** TS 7'ye geçiş typescript-eslint, Expo ve Next desteği belgelenince tek satırlık yükseltmedir; o zaman bu karar `/karar` ile güncellenir.
+- **Kaynak:** Proje sahibinin kararı (21 Ekim 2026, A02).
 
 ---
 

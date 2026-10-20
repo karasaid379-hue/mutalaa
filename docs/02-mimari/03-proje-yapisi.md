@@ -1,7 +1,7 @@
 # Proje yapısı
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
+> **Sürüm:** 1.4 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
 
 Kod tek depoda durur: TypeScript uygulamaları ve paketleri pnpm + Turborepo ile, .NET projeleri `server/` altındaki çözümle, Python içerik hattı `pipeline/` altında uv ile yönetilir. Bu dosya klasörleri, bağımlılık kurallarını, araçları, kod biçimini, Git kurallarını ve CI iş akışlarını tanımlar.
 
@@ -68,7 +68,7 @@ mutalaa/
 ├─ .tmp/                         git dışı geçici dosyalar ve Claude Code plan dosyaları
 ├─ .github/workflows/            ci-ts.yml, ci-dotnet.yml, ci-pipeline.yml, eas-build.yml
 ├─ docker-compose.yml · .env.example · .dockerignore
-├─ package.json · pnpm-workspace.yaml · turbo.json · tsconfig.base.json · .npmrc
+├─ package.json · pnpm-workspace.yaml · turbo.json · tsconfig.base.json   (.npmrc yalnız gerekirse, K-32)
 ├─ eslint.config.mjs · .prettierrc.json · .editorconfig · .gitattributes · .gitignore
 └─ global.json · .nvmrc · .config/dotnet-tools.json
 ```
@@ -169,18 +169,17 @@ packages:
   - shared/test-vectors
 ```
 
-```ini
-# .npmrc
-node-linker=hoisted
-```
+`node_modules` düzeni pnpm'in izole varsayılanıdır ([K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)); Expo SDK 54'ten beri izole kurulumu destekler. Metro ile sembolik bağ sorunu çıkarsa yedek, `pnpm-workspace.yaml` içine `nodeLinker: hoisted` yazmaktır ve `/karar` ister. `nodeLinker` ayarı `.npmrc` dosyasından okunmaz. `.npmrc` yalnız kimlik doğrulama, kayıt defteri ya da sertifika gerekirse açılır. Paket adları `@mutalaa/<klasör>` biçimindedir; iç bağımlılıklar `workspace:*` ile yazılır.
 
-`node-linker=hoisted` Metro'nun sembolik bağlarla sorun yaşamaması için seçildi. Expo SDK 57'nin izole kurulumu sorunsuz destekleyip desteklemediği Doğrulanacak; destekliyorsa bu satır kaldırılır. Paket adları `@mutalaa/<klasör>` biçimindedir; iç bağımlılıklar `workspace:*` ile yazılır.
+pnpm npm ile kurulur, Corepack kullanılmaz. Sürüm kök `package.json` içinde yalnız `devEngines.packageManager` ile tam sürüm olarak sabitlenir (A02'de 12.14.0); `packageManager` alanı yazılmaz (K-32).
 
 ```json
 {
   "name": "mutalaa",
   "private": true,
-  "packageManager": "pnpm@<kurulumda sabitlenir>",
+  "devEngines": {
+    "packageManager": { "name": "pnpm", "version": "<kurulu tam sürüm>" }
+  },
   "scripts": {
     "dev:editor": "pnpm --filter @mutalaa/editor dev",
     "dev:mobile": "pnpm --filter @mutalaa/mobile start",
@@ -194,6 +193,7 @@ node-linker=hoisted
 
 ```json
 {
+  "globalDependencies": ["tsconfig.base.json", "eslint.config.mjs", ".prettierrc.json"],
   "tasks": {
     "build": { "dependsOn": ["^build"], "outputs": ["dist/**"] },
     "typecheck": { "dependsOn": ["^build"] },
@@ -204,15 +204,17 @@ node-linker=hoisted
 }
 ```
 
+`turbo.json` içindeki `globalDependencies` ile kök yapılandırma dosyaları (`tsconfig.base.json`, `eslint.config.mjs`, `.prettierrc.json`) Turborepo önbelleğine girdi olur; ESLint, tsconfig ya da Prettier kuralı değişince önbellek geçersiz sayılır.
+
 `shared/test-vectors` bir çalışma alanı paketidir ve `build` görevi JSONL biçimini denetler. `search` ve `anchors` bu pakete geliştirme bağımlılığı olarak bağlanır. Böylece bir vektör değişince Turborepo bu paketlerin test önbelleğini geçersiz sayar.
 
 ### 4.2 .NET
 
-- `global.json` SDK'yı `10.0.100` ve `rollForward: latestFeature` ile sabitler.
+- `global.json` SDK'yı `10.0.100` ve `rollForward: latestFeature` ile sabitler. Aynı dosyada `"test": { "runner": "Microsoft.Testing.Platform" }` yazılıdır: `dotnet test` MTP kipinde koşar ve çözüm yolu `--solution` ile verilir (`dotnet test --solution server/Mutalaa.slnx`). Test projeleri `xunit.v3` 4.x kullanır; `Microsoft.NET.Test.Sdk` ve `xunit.runner.visualstudio` eklenmez ([K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)).
 - `server/Directory.Build.props` ortak ayarları taşır (hedef `net10.0`, `Nullable`, uyarıların hata sayılması, kilit dosyası); içerik [Backend API](./05-backend-api.md) bölüm 2'dedir.
 - `server/Directory.Packages.props` bütün NuGet sürümlerini tek yerde tutar.
 - `dotnet-ef` yerel araçtır: `dotnet new tool-manifest` ve `dotnet tool install dotnet-ef` bir kez çalıştırılır; diğer geliştiriciler `dotnet tool restore` kullanır.
-- Çözüm dosyası XML biçimli `Mutalaa.slnx`'tir. Kullanılan IDE ve `dotnet format` desteği Doğrulanacak; sorun çıkarsa `Mutalaa.sln` kullanılır.
+- Çözüm dosyası XML biçimli `Mutalaa.slnx`'tir; `.sln`'e geçilmez. Çözüldü (21 Ekim 2026, [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)): `dotnet new sln` .NET 10'da `.slnx` üretir; `restore`, `build`, `test` ve `format` `.slnx` ile SDK 10.0.402'de çalışıyor. IDE desteği Doğrulanacak: kaynaklar çelişkili (VS Code C# Dev Kit için `dotnet.defaultSolution` ayarı gerekebilir; Rider ve Visual Studio 17.14+ destekler). Kullanıcının IDE'sinde ilk açılışta denenir.
 
 ### 4.3 uv
 
@@ -254,6 +256,8 @@ export default defineConfig([
   prettier,
 ]);
 ```
+
+**Windows tuzağı.** Proje yolundaki "İ" (U+0130, `MEHMET SAİD`) yüzünden kök yapılandırmada `files: ['packages/**/*.ts']` gibi glob'lar Windows'ta eşleşmez (Node `path.relative` sonucu glob ile uyuşmuyor). Bu yüzden kural kökte glob ile değil, her paketin kendi `eslint.config.mjs` dosyasında uygulanır: paket dosyası kökteki `baseConfig` ve `packageImportRules({leaf})` yardımcılarını `files: ['**/*.ts']` ile çağırır. Yeni paket açılırken kendi `eslint.config.mjs` dosyası unutulmamalıdır; yoksa paket kuralsız kalır. Ayrıntı: `windows-sorun` becerisi. Yukarıdaki özet kuralların içeriğini gösterir; `files` değerleri bu nedenle pakette `**/*.ts` olur.
 
 Mobil uygulama bu yapılandırmaya Expo'nun ESLint yapılandırmasını ve React Hooks kurallarını ekler. Prettier ayarı: `{ "printWidth": 100, "singleQuote": true, "trailingComma": "all", "endOfLine": "lf" }`.
 
@@ -366,6 +370,9 @@ on:
 jobs:
   dotnet:
     runs-on: ubuntu-latest
+    env:
+      TESTINGPLATFORM_TELEMETRY_OPTOUT: 1
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -374,10 +381,12 @@ jobs:
       - run: dotnet restore server/Mutalaa.slnx --locked-mode
       - run: dotnet format server/Mutalaa.slnx --verify-no-changes --no-restore
       - run: dotnet build server/Mutalaa.slnx -c Release --no-restore
-      - run: dotnet test server/Mutalaa.slnx -c Release --no-build
+      - run: dotnet test --solution server/Mutalaa.slnx -c Release --no-build
       - name: OpenAPI belgesi güncel mi
         run: git diff --exit-code server/Mutalaa.Api/openapi
 ```
+
+`dotnet test` burada MTP kipindedir ([K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)). `-c Release --no-build` bayraklarını dotnet test MTP belgesi destekler ([dotnet test belgesi](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test), okuma 21 Ekim 2026), ama yerelde yalnız `--no-build` denendi. Birleşimin CI'da çalıştığı A08'de doğrulanır.
 
 ```yaml
 # .github/workflows/ci-pipeline.yml
@@ -440,8 +449,8 @@ Gömülü `core` denetimi EAS'in derleme kancasında çalışır. `apps/mobile/p
 
 ## 8. Açık sorular
 
-1. pnpm `node-linker=hoisted` yerine izole kurulum Expo SDK 57'de çalışıyor mu?
-2. `Mutalaa.slnx` kullanılan IDE'de ve `dotnet format`'ta sorunsuz mu?
+1. ~~pnpm `node-linker=hoisted` yerine izole kurulum Expo SDK 57'de çalışıyor mu?~~ Çözüldü (21 Ekim 2026, [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)): izole düzen varsayılandır ([Expo monorepo kılavuzu](https://docs.expo.dev/guides/monorepos/)); SDK 58'e özel tablo yok, A21'de yeniden sınanır.
+2. `Mutalaa.slnx` kullanılan IDE'de ve `dotnet format`'ta sorunsuz mu? Çözüldü (21 Ekim 2026, [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)): `dotnet format` ve komut satırı araçları `.slnx` ile çalışıyor (10.0.402). IDE kısmı Doğrulanacak: kaynaklar çelişkili, kullanıcının IDE'sinde ilk açılışta denenir (VS Code C# Dev Kit için `dotnet.defaultSolution` ayarı gerekebilir).
 3. EAS'in ücretsiz planındaki aylık derleme sınırı Faz 2 temposuna yetiyor mu (Doğrulanacak)?
 
 ## İlgili dosyalar

@@ -102,7 +102,7 @@ Hesabı bağlı cihazlar arasında kullanıcı verisi eşitlenir: UUIDv7 kimlikl
 pnpm --filter @mutalaa/test-vectors build          # JSONL biçim denetimi
 pnpm --filter @mutalaa/reader-core test
 pnpm --filter @mutalaa/mobile test                 # user.db göç ve ortak sütun testleri dahil
-dotnet test server/Mutalaa.slnx
+dotnet test --solution server/Mutalaa.slnx
 git diff --exit-code server/Mutalaa.Api/openapi
 grep -n "imlec-eskidi" docs/02-mimari/05-backend-api.md
 # Canlıya açılıştan sonra (A36.7)

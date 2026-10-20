@@ -79,7 +79,7 @@
 
 ## Doğrulama
 ```bash
-pnpm --filter @mutalaa/anchors test && dotnet test server/Mutalaa.slnx && (cd pipeline && uv run pytest && uv run ruff check .)
+pnpm --filter @mutalaa/anchors test && dotnet test --solution server/Mutalaa.slnx && (cd pipeline && uv run pytest && uv run ruff check .)
 (cd pipeline && uv run mutalaa qa run --source elmalili-tefsir); echo "çıkış: $?"
 docker compose exec -T postgres psql -U mutalaa -d mutalaa -c "SELECT count(*) FROM icerik.unit WHERE source_id = 'elmalili-tefsir' AND (metin_durumu <> 'onayli' OR strpos(metin, chr(10214) || '?' || chr(10215)) > 0);"
 docker compose exec -T postgres psql -U mutalaa -d mutalaa -c "SELECT count(*) FROM icerik.unit WHERE source_id = 'elmalili-tefsir' AND anchor ~ '^tf:elmalili:[0-9]' AND ayah_range IS NULL;"

@@ -1,7 +1,7 @@
 # Teknoloji yığını
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)
+> **Sürüm:** 1.4 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-34](../00-ozet/02-karar-defteri.md#k-34--typescript-tek-sürüm-60x)
 
 Bu dosya her katmanın teknolojisini, sürümünü, seçilme nedenini ve reddedilen seçenekleri listeler. Sürüm ve fiyatlar 16 Ekim 2026 araştırmasından gelir ([araştırma raporu](../09-kaynakca.md), araştırma notu 05). Kaynağı olmayan sürüm numaraları "Doğrulanacak" diye işaretlidir ve kurulum günü kilit dosyasına yazılır.
 
@@ -70,6 +70,8 @@ Lisans sütunu: bağlantılı değerler araştırmadan gelir. "beyan" yazan değ
 | `OpenTelemetry.Extensions.Hosting`, `OpenTelemetry.Instrumentation.AspNetCore`, `OpenTelemetry.Exporter.OpenTelemetryProtocol`, `Npgsql.OpenTelemetry` | İz ve ölçü | Apache-2.0, PostgreSQL License (beyan) |
 | `xunit.v3`, `Microsoft.AspNetCore.Mvc.Testing`, `Testcontainers.PostgreSql` | Birim ve tümleşik test | Apache-2.0, MIT (beyan) |
 
+Test çalıştırıcısı ([K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)): `xunit.v3` 4.x, Microsoft.Testing.Platform (MTP v2) üzerinde koşar. `Microsoft.NET.Test.Sdk` ve `xunit.runner.visualstudio` eklenmez. MTP kipi kökteki `global.json` içindeki `test.runner` ile açılır; komut `dotnet test --solution server/Mutalaa.slnx`. Paket sürümü yalnız `server/Directory.Packages.props` içinde yazılır (A02.4'te `xunit.v3` 4.0.2). Neden: `xunit.v3` 4.0, VSTest hedefini .NET 10 SDK'da desteklemiyor ([xunit.v3 4.0.0](https://xunit.net/releases/v3/4.0.0), [dotnet test belgesi](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test), okuma 21 Ekim 2026).
+
 ### 2.3 Yayınlayıcı (`server/Mutalaa.Publisher`)
 
 | Paket | Görev | Lisans | Not |
@@ -86,12 +88,19 @@ Lisans sütunu: bağlantılı değerler araştırmadan gelir. "beyan" yazan değ
 |---|---|---|
 | `psycopg` (3) | PostgreSQL bağlantısı | LGPL-3.0 (beyan); yalnız geliştirme bilgisayarında çalışır, dağıtılmaz |
 | `regex`, `rapidfuzz` | Unicode düzenli ifade, bulanık eşleştirme (iktibas) | Apache-2.0, MIT (beyan) |
-| CAMeL Tools | Tefsir ve Risale'deki Kur'an dışı Arapça | MIT; 1.6.0 (8 Haziran 2026); Python 3.11–3.14 ([PyPI](https://pypi.org/project/camel-tools/)) |
-| zeyrek | Türkçe morfoloji (Zemberek'in kısmi Python uyarlaması) | MIT; 0.1.3 (Aralık 2022), alfa ([PyPI](https://pypi.org/project/zeyrek)) |
+| CAMeL Tools | Tefsir ve Risale'deki Kur'an dışı Arapça | Kod MIT; 1.6.0 (8 Haziran 2026); Python 3.11–3.14 ([PyPI](https://pypi.org/project/camel-tools/)). Veri paketleri ayrı lisanslıdır, aşağıdaki nota bakın (Doğrulanacak) |
+| zeyrek | Türkçe morfoloji (Zemberek'in kısmi Python uyarlaması) | Kod MIT; 0.1.3 (Aralık 2022), alfa ([PyPI](https://pypi.org/project/zeyrek)). Sözlük verisi Zemberek'ten uyarlanmıştır, aşağıdaki nota bakın (Doğrulanacak) |
 | `sentence-transformers` + Qwen3-Embedding ya da BGE-M3 | Anlamsal katman (sonra) | Kitaplık Apache-2.0 (beyan); Qwen3-Embedding Apache-2.0, BGE-M3 MIT ([wz-it](https://wz-it.com/en/blog/best-embedding-models-german/)) |
 | Kraken, Tesseract ya da görsel yapay zekâ modeli | Elmalılı OCR | Seçim [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) dosyasında |
 | `anthropic` | Toplu etiketleme taslağı | MIT (beyan); `source.embed_ok` kapalı kaynağın metni gönderilmez ([Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md)) |
 | `typer`, `pytest`, `ruff`, `mypy` | Komut satırı, test, biçim, tip denetimi | MIT (beyan) |
+
+**Lisans bulguları, A02 lisans denetimi (21 Ekim 2026). Hukuki görüş değildir.** Aşağıdakiler kaynak dosyalarından okundu; çıktının paketlenen içeriğe etkisi ve veri haklarının kapsamı doğrulanmadı.
+
+- **CAMeL Tools (Doğrulanacak).** Kod MIT'tir (camel-tools 1.6.0; [LICENSE](https://github.com/CAMeL-Lab/camel_tools/blob/master/LICENSE)). Ama veri paketleri kodla aynı lisansta değildir ([camel-tools-data kataloğu 1.6](https://raw.githubusercontent.com/CAMeL-Lab/camel-tools-data/main/catalogue-1.6.json)): varsayılan Modern Standart Arapça paketleri `morphology-db-msa-r13` ve `disambig-mle-calima-msa-r13` GPL v2; `morphology-db-msa-s31` LDC lisanslı; Mısır paketleri GPL v2; Körfez ve Şam paketleri CC BY 4.0; BERT modelleri MIT. `camel-kenlm` (camel-tools'un Windows dışındaki geçişli bağımlılığı) LGPL, 2.1 ya da sonrası ([LICENSE](https://raw.githubusercontent.com/CAMeL-Lab/camel-kenlm/master/LICENSE)). Kök ve lemma çıktısını hangi veri paketinin ürettiği ve bu çıktının paketlenen içeriğe (örneğin `kelime-kok`, Risale ve tefsir dizinleri) etkisi doğrulanmadı. Avukata sorulacak bir konudur ([BÇ-35](../10-claude-code/07-belge-celiskileri.md#1-karar-bekleyenler)); soru taslağı henüz yazılmadı ve gönderilmeden önce kullanıcı onaylar.
+- **zeyrek (Doğrulanacak).** Kod MIT'tir (0.1.3), ama Zemberek'ten uyarlanmış sözlük verisi taşır. Zemberek-NLP Apache-2.0'dır ([LICENSE](https://raw.githubusercontent.com/ahmetaa/zemberek-nlp/master/LICENSE)); zeyrek tekerleğinde Apache bildirimi görünmüyor. Sözlük verisinin (TDK türevi dosyalar dahil) kaynağı ve hakkı doğrulanamadı. Hat içi morfolojide kullanılıp çıktı insan onayından geçen eşleme tablosuna dönüşüyorsa risk düşük görünüyor; bu hukuki sonuç değildir.
+- **psycopg 3.3.6** LGPL-3.0-only'dir. Yukarıdaki satırdaki "yalnız geliştirme bilgisayarında çalışır, dağıtılmaz" beyanıyla tutarlıdır; ek işlem gerekmiyor.
+- **`THIRD_PARTY_NOTICES`.** `camel-kenlm` ile zeyrek/Zemberek için bildirimler mağaza sürümünden önce taslağa eklenir (bkz. bölüm 3, lisans denetimi maddesi).
 
 ### 2.5 Editör paneli (`apps/editor`)
 
@@ -115,7 +124,7 @@ Lisans sütunu: bağlantılı değerler araştırmadan gelir. "beyan" yazan değ
 - **NativeWind v5:** `nativewind@5.0.0-rc.0`, `tailwindcss@4.1.12` sürümüne sabit ve "üretim için değil" ([NativeWind v5](https://www.nativewind.dev/v5/getting-started/installation)). v4 kullanılır (K-29).
 - **Ticari lisansa geçen .NET kitaplıkları:** Eski plan MediatR'ın yeni sürümlerinin ticari olduğunu not eder (`quran-app-docs/02-mimari/03-mimari-karar-loglari.md`, ADR-003). Yeni yapıda MediatR yoktur; işleyiciler Minimal API uçlarındadır. AutoMapper ve FluentAssertions'ın yeni sürümleri için de lisans değişikliği bilinir (Doğrulanacak). Üçü de kullanılmaz.
 - **İçerik lisansları** (Tanzil, QPC fontları, KFGQPC Hafs, QAC) kod lisanslarından ayrıdır ve [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) dosyasında izlenir.
-- **Lisans denetimi:** CI her ekosistem için bağımlılık lisans listesi çıkarır (`pnpm licenses list`, `dotnet list package --include-transitive` ile bir lisans aracı, `pip-licenses`; araç seçimi Doğrulanacak). GPL, AGPL ya da ticari lisanslı yeni bir bağımlılık PR'ı durdurur (öneri). Mağaza sürümünden önce `THIRD_PARTY_NOTICES` dosyası bu listeden üretilir.
+- **Lisans denetimi:** CI her ekosistem için bağımlılık lisans listesi çıkarır (`pnpm licenses list`, `dotnet list package --include-transitive` ile bir lisans aracı, `pip-licenses`; araç seçimi Doğrulanacak). GPL, AGPL ya da ticari lisanslı yeni bir bağımlılık PR'ı durdurur (öneri). Mağaza sürümünden önce `THIRD_PARTY_NOTICES` dosyası bu listeden üretilir. Taslağa `camel-kenlm` (LGPL) ile zeyrek/Zemberek (Apache-2.0) bildirimleri mağaza sürümünden önce eklenir ([bölüm 2.4](#24-i̇çerik-hattı-pipeline) lisans bulguları; hukuki görüş değildir).
 - **Uygulamanın kendi kaynak kodu lisansı** Açık soru. Eski plandaki AGPL-3.0 kararı yeni karar defterinde ele alınmadı.
 
 ## 4. Sürüm sabitleme ve yükseltme
@@ -125,9 +134,10 @@ Lisans sütunu: bağlantılı değerler araştırmadan gelir. "beyan" yazan değ
 | Ne | Nerede |
 |---|---|
 | JavaScript bağımlılıkları | `pnpm-lock.yaml`; CI `pnpm install --frozen-lockfile` |
-| pnpm sürümü | Kök `package.json` `packageManager` alanı |
+| pnpm sürümü | Kök `package.json` `devEngines.packageManager` alanı, tam sürüm; `packageManager` alanı ve Corepack kullanılmaz ([K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)) |
 | Node.js | `.nvmrc` (24) |
-| .NET SDK | `global.json` (`10.0.100`, `rollForward: latestFeature`) |
+| TypeScript | Tek sürüm, 6.0.x ([K-34](../00-ozet/02-karar-defteri.md#k-34--typescript-tek-sürüm-60x)). Kök `package.json` `devDependencies` içinde `typescript` gerçek paket olarak `~6.0` aralığıyla durur. TS 7 (native) kullanılmaz: `typescript-eslint` 8.72.0 eş bağımlılık aralığı `<6.1`'dir ve A02'de TS 7.0.2 ile "typescript-eslint does not support TS 7.0" hatası alındı (21 Ekim 2026). TS 7'ye geçiş `typescript-eslint`, Expo ve Next desteği belgelenince tek satırlık yükseltmedir; o zaman `/karar` ile karar defterine yazılır ([TS 7 duyurusu](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/)) |
+| .NET SDK ve test çalıştırıcısı | `global.json` (`10.0.100`, `rollForward: latestFeature`; `test.runner` = `Microsoft.Testing.Platform`, [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)) |
 | NuGet paketleri | `Directory.Packages.props` (merkezi sürüm) ve `packages.lock.json` (`RestorePackagesWithLockFile`) |
 | Python | `pipeline/.python-version` (3.13) ve `uv.lock`; CI `uv sync --locked` |
 | Expo'ya bağlı paketler | `npx expo install` ile kurulur; CI `npx expo install --check` ile uyumu denetler |
@@ -178,6 +188,7 @@ Eski plan: `quran-app-docs/02-mimari/01-genel-mimari.md` ve `quran-app-docs/00-b
 1. ~~Yerel S3 deposu: K-21 MinIO der.~~ Çözüldü: K-21 güncellendi, yerel depo SeaweedFS ([Genel mimari](./01-genel-mimari.md)).
 2. Uygulamanın kendi kaynak kodu lisansı.
 3. Kaynağı olmayan sürüm numaraları (Turborepo, pnpm, Vite, Npgsql sağlayıcısı, Sentry, Scalar) kurulum günü kilit dosyalarına yazılır ve bu tabloya işlenir.
+4. CAMeL veri paketlerinin (GPL v2, LDC) ve zeyrek/Zemberek sözlük verisinin lisansı ile çıktının paketlenen içeriğe etkisi (Doğrulanacak; bölüm 2.4, [BÇ-35](../10-claude-code/07-belge-celiskileri.md#1-karar-bekleyenler)). Avukata sorulacak konudur; hukuki görüş değildir.
 
 ## İlgili dosyalar
 

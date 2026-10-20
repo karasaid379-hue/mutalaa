@@ -81,7 +81,7 @@ Next.js 16 ile her âyete (`/kuran/[sure]/[ayet]`, 6.236 sayfa) ve her mushaf sa
 ```bash
 pnpm --filter @mutalaa/anchors test && pnpm --filter @mutalaa/search test && pnpm --filter @mutalaa/ui-tokens test
 pnpm --filter @mutalaa/web test
-dotnet test server/Mutalaa.slnx && (cd pipeline && uv run pytest)
+dotnet test --solution server/Mutalaa.slnx && (cd pipeline && uv run pytest)
 grep -n '"q:2:255"' shared/test-vectors/anchors/route.jsonl
 grep -rniE "npgsql|postgres|ConnectionStrings" apps/web --include="*.ts" --include="*.tsx" --include="*.mjs"   # boş
 MANIFEST_URL="https://<içerik-alanı>/public/manifest.json" pnpm --filter @mutalaa/web exec node scripts/fetch-packs.mjs

@@ -97,7 +97,7 @@ docker compose exec -T postgres psql -U mutalaa -d mutalaa -c "SELECT count(*), 
 docker compose exec -T postgres psql -U mutalaa -d mutalaa -c "SELECT count(*), count(DISTINCT ayah_index), count(root_id) FROM icerik.quran_word;"
 docker compose exec -T postgres psql -U mutalaa -d mutalaa -c "SELECT kind, status, count(*) FROM icerik.surah_alias GROUP BY kind, status ORDER BY 1, 2;"
 pnpm --filter @mutalaa/anchors test
-dotnet test server/Mutalaa.slnx
+dotnet test --solution server/Mutalaa.slnx
 ```
 `{seçilen-kaynak}` A11.1'deki karardaki kaynak kimliğidir. `quran_word` sorgusunda ikinci sütun 6236, üçüncü sütun A17'ye kadar 0 olmalıdır. İşaret tablosu karara göre adlandırılır; sorgusu planda yazılır.
 

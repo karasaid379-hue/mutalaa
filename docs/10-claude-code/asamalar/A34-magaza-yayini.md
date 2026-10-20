@@ -95,7 +95,7 @@ Kurul onaylı içerikle `public` (mağaza) derlemesini yayına hazır hâle geti
 
 ## Doğrulama
 ```bash
-pnpm turbo run lint typecheck test && dotnet test server/Mutalaa.slnx && (cd pipeline && uv run pytest)
+pnpm turbo run lint typecheck test && dotnet test --solution server/Mutalaa.slnx && (cd pipeline && uv run pytest)
 docker compose exec -T postgres psql -U mutalaa -d mutalaa -c "SELECT count(*) FROM icerik.unit WHERE source_id = 'elmalili-meal' AND metin_durumu <> 'onayli';"
 docker compose exec -T postgres psql -U mutalaa -d mutalaa -c "SELECT slug, kurul_onay, kurul_onay_tarihi, left(kurul_onay_ozeti, 12) FROM icerik.source WHERE kurul_gerekli AND license_status = 'serbest';"
 docker compose exec -T postgres psql -U mutalaa -d mutalaa -c "SELECT hedef_anahtar, inceleyen, ikinci_inceleyen FROM icerik.review WHERE hedef_tablo = 'source' AND alan = 'kurul_onay' AND durum = 'onaylandi';"
