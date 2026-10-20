@@ -1,0 +1,13 @@
+{
+  "name": "@mutalaa/test-vectors",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cross-language test vectors (JSONL). The build task checks their format.",
+  "scripts": {
+    "build": "node scripts/check.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "node --test \"test/*.test.mjs\""
+  }
+}

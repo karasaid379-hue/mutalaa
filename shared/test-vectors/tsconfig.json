@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true,
+    "declaration": false,
+    "target": "ES2024",
+    "lib": ["ES2024"],
+    "types": ["node"]
+  },
+  "include": ["scripts", "test"]
+}
