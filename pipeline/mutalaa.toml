@@ -1,0 +1,15 @@
+# Okurken tomllib.load(open(yol, "rb")) ya da Path.read_text(encoding="utf-8") kullanın.
+[genel]
+veri_kok = "../data"            # git dışı
+db_url_env = "MUTALAA_DB_URL"   # gizli değerler yalnız ortam değişkeninde
+log_duzeyi = "INFO"
+
+[llm]
+model = "<Haiku 5.5 model kimliği>"   # modeller sayfasından alınır (Doğrulanacak)
+batch = true
+sicaklik = 0
+azami_cikti_token = 600
+
+[baski.elmalili-1935]            # taramalar baskı kimliğiyle tutulur
+tarama_klasoru = "../data/raw/elmalili-1935"
+ocr_motoru = "vision"            # örneklem değerlendirmesinden sonra seçilir
