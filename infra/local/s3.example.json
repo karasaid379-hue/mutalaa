@@ -1,0 +1,10 @@
+{
+  "identities": [
+    {
+      "name": "mutalaa-yerel",
+      "credentials": [{ "accessKey": "mutalaa", "secretKey": "yerel-gizli-degistir" }],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    },
+    { "name": "anonymous", "actions": ["Read"] }
+  ]
+}

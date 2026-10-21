@@ -1,0 +1,98 @@
+# docker-compose.yml
+name: mutalaa
+
+services:
+  postgres:
+    image: postgres:${POSTGRES_TAG:-18}
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C.UTF-8"
+      TZ: UTC
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql          # PostgreSQL 18 imajında birim burada
+    healthcheck:
+      # -h 127.0.0.1: imajın ilk kurulumda açtığı geçici sunucu yalnız unix soketini dinler; TCP gerçek sunucuyu bekler
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  s3:
+    # K-21: yerel S3 deposu SeaweedFS (A03.1: imaj, bayraklar ve s3.json biçimi resmî kaynaktan doğrulandı)
+    # `user:` verilmez: imajın entrypoint'i /data sahipliğini kendisi düzeltir.
+    image: chrislusf/seaweedfs:${SEAWEEDFS_TAG:-4.48}
+    restart: unless-stopped
+    command: "server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json"
+    ports:
+      - "0.0.0.0:${S3_PORT:-8333}:8333"     # telefon paketleri LAN üzerinden okur
+    volumes:
+      - s3data:/data
+      - ./infra/local/s3.json:/etc/seaweedfs/s3.json:ro
+
+  s3-init:
+    image: amazon/aws-cli:${AWSCLI_TAG:-2.38.3}
+    depends_on: [s3]
+    restart: "no"
+    environment:
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY}
+      AWS_DEFAULT_REGION: us-east-1
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        for i in $$(seq 1 30); do
+          aws --endpoint-url http://s3:8333 s3api head-bucket --bucket ${S3_BUCKET} && exit 0
+          aws --endpoint-url http://s3:8333 s3api create-bucket --bucket ${S3_BUCKET} && exit 0
+          echo "S3 deposu bekleniyor ($$i)"; sleep 2
+        done
+        exit 1
+
+  api:
+    profiles: ["app"]
+    build: { context: ., dockerfile: server/Mutalaa.Api/Dockerfile }
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__Editorial: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      Mutalaa__Features__Editor: "true"
+      Mutalaa__Features__Public: "false"
+      Mutalaa__Seed__AdminEmail: ${MUTALAA_ADMIN_EMAIL}
+      Mutalaa__Seed__AdminPassword: ${MUTALAA_ADMIN_PASSWORD}
+    ports:
+      - "127.0.0.1:${API_PORT:-5080}:8080"
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  editor:
+    profiles: ["app"]
+    build: { context: ., dockerfile: apps/editor/Dockerfile }
+    ports:
+      - "127.0.0.1:${EDITOR_PORT:-5174}:80"
+    depends_on: [api]
+
+  publisher:
+    profiles: ["app"]
+    build: { context: ., dockerfile: server/Mutalaa.Publisher/Dockerfile }
+    command: ["watch"]
+    environment:
+      ConnectionStrings__Editorial: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      Storage__ServiceUrl: http://s3:8333
+      Storage__AccessKey: ${S3_ACCESS_KEY}
+      Storage__SecretKey: ${S3_SECRET_KEY}
+      Storage__Bucket: ${S3_BUCKET}
+      Storage__PublicBaseUrl: http://${DEV_LAN_IP}:${S3_PORT:-8333}/${S3_BUCKET}
+      Signing__dev__PrivateKey: ${PUBLISHER_DEV_SIGNING_KEY}
+    volumes:
+      - ./data/packs:/work
+    depends_on:
+      postgres: { condition: service_healthy }
+      s3-init: { condition: service_completed_successfully }
+
+volumes:
+  pgdata:
+  s3data:

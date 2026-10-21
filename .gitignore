@@ -9,6 +9,7 @@ CLAUDE.local.md
 .env.*
 !.env.example
 **/.env.local
+infra/local/s3.json
 # Veri (git dışı; docs/02-mimari/03 §1.1). Kökte bağlanır: shared/data/ izlenir.
 /data/
 # Bağımlılıklar ve çıktılar

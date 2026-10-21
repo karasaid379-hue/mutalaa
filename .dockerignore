@@ -1,0 +1,10 @@
+**/node_modules
+**/bin
+**/obj
+data/
+.git
+.tmp/
+**/.env
+**/.env.*
+!**/.env.example
+infra/local/s3.json
