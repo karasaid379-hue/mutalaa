@@ -141,7 +141,7 @@ Test çalıştırıcısı ([K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-
 | NuGet paketleri | `Directory.Packages.props` (merkezi sürüm) ve `packages.lock.json` (`RestorePackagesWithLockFile`) |
 | Python | `pipeline/.python-version` (3.13) ve `uv.lock`; CI `uv sync --locked` |
 | Expo'ya bağlı paketler | `npx expo install` ile kurulur; CI `npx expo install --check` ile uyumu denetler |
-| Docker imajları | En az ana sürümle (`postgres:18`); canlıya yakın ara sürüm ve özetle (digest) |
+| Docker imajları | En az ana sürümle (`postgres:18`); canlıya yakın ara sürüm ve özetle (digest). Yerel imajlar sabit etiketlidir: `postgres:18`, `chrislusf/seaweedfs:4.48`, `amazon/aws-cli:2.38.3`; `latest` kullanılmaz. Etiketler kök `.env.example` içindeki `POSTGRES_TAG`, `SEAWEEDFS_TAG` ve `AWSCLI_TAG` değişkenleriyle verilir ([Yerel geliştirme](./04-yerel-gelistirme.md) §5) |
 
 ### 4.2 Yükseltme politikası
 

@@ -1,6 +1,6 @@
 # Yerel geliştirme
 
-> **Sürüm:** 1.3 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.4 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)
 
 Geliştirme ekibin kendi Windows bilgisayarında yapılır ([K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma)). PostgreSQL ve S3 deposu Docker'da çalışır. API, editör ve Yayınlayıcı isteğe bağlı olarak Docker'da ya da doğrudan ana makinede çalışır. Node, .NET ve Python araçları ana makinededir. Uygulama telefonda ya da Android emülatöründe geliştirme derlemesiyle açılır.
@@ -128,14 +128,16 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql          # PostgreSQL 18 imajında birim burada
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      # -h 127.0.0.1: imajın ilk kurulumda açtığı geçici sunucu yalnız unix soketini dinler; TCP gerçek sunucuyu bekler
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 3s
       retries: 20
 
   s3:
-    # K-21: yerel S3 deposu SeaweedFS (Doğrulanacak: imaj, etiket, bayraklar, s3.json biçimi)
-    image: chrislusf/seaweedfs:${SEAWEEDFS_TAG:-latest}
+    # K-21: yerel S3 deposu SeaweedFS (A03.1: imaj, bayraklar ve s3.json biçimi resmî kaynaktan doğrulandı)
+    # `user:` verilmez: imajın entrypoint'i /data sahipliğini kendisi düzeltir.
+    image: chrislusf/seaweedfs:${SEAWEEDFS_TAG:-4.48}
     restart: unless-stopped
     command: "server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json"
     ports:
@@ -145,7 +147,7 @@ services:
       - ./infra/local/s3.json:/etc/seaweedfs/s3.json:ro
 
   s3-init:
-    image: amazon/aws-cli:latest
+    image: amazon/aws-cli:${AWSCLI_TAG:-2.38.3}
     depends_on: [s3]
     restart: "no"
     environment:
@@ -225,9 +227,14 @@ volumes:
 
 Notlar:
 - **PostgreSQL 18 birimi.** Resmî imajda `PGDATA` 18'den itibaren sürüme bağlıdır (`/var/lib/postgresql/18/docker`) ve birim `/var/lib/postgresql` noktasına bağlanır ([Docker Hub postgres](https://hub.docker.com/_/postgres); araştırma raporu dışında, 18 Ekim 2026'da kontrol edildi). Eski örneklerdeki `/var/lib/postgresql/data` bağlaması kullanılmaz.
-- **`C.UTF-8` yerel ayarı.** Sıralama kod noktasına göredir ve glibc güncellemesiyle değişmez. Türkçe sıralama gereken sorgu `COLLATE "tr-x-icu"` ile açıkça yazılır (imajdaki ICU desteği Doğrulanacak).
-- **S3 deposu.** MinIO topluluk sürümü Ekim 2025'ten beri Docker imajı yayımlamıyor ve Aralık 2025'ten beri bakım kipinde ([linuxiac](https://linuxiac.com/minio-ends-active-development/), [ayedo](https://ayedo.de/en/posts/minio-im-maintenance-mode/)). Örnek bu yüzden SeaweedFS kullanır; diğer aday Garage'dır. Depo değişimi yalnız `.env` ve `Storage:ServiceUrl` değişikliğidir ([Genel mimari](./01-genel-mimari.md)).
-- **Dockerfile'lar.** API ve Yayınlayıcı `mcr.microsoft.com/dotnet/sdk:10.0` ile derlenir (`global.json`, `.editorconfig` ve `server/` kopyalanır, `dotnet publish`); API `aspnet:10.0`, Yayınlayıcı `runtime:10.0` imajında çalışır ve `packages/content-schema/sql/` klasörünü de taşır. Editör `node:24-alpine` ile derlenir, `nginx:stable-alpine` ile sunulur; nginx `/api/` isteklerini `http://api:8080` adresine aktarır. `.dockerignore` `**/node_modules`, `**/bin`, `**/obj`, `data/` ve `.git` klasörlerini dışarıda bırakır.
+- **`C.UTF-8` yerel ayarı.** Sıralama kod noktasına göredir ve glibc güncellemesiyle değişmez. Türkçe sıralama gereken sorgu `COLLATE "tr-x-icu"` ile açıkça yazılır. Çözüldü (21 Ekim 2026, A03.3): imajda `tr-x-icu` harmanlaması var (`pg_collation` sayısı 1).
+- **Canlı denetim (A03.3, 21 Ekim 2026).** PostgreSQL 18.6; `datcollate` `C.UTF-8`; `turkish` ve `arabic` metin arama yapılandırmaları var. `vector` eklentisi imajda yok (`pg_available_extensions` sayısı 0); `embedding` tablosu v1.x'te olduğu için yalnız bilgidir ([BÇ-09](../10-claude-code/07-belge-celiskileri.md)).
+- **`pg_isready -h 127.0.0.1`.** Resmî imaj ilk kurulumda önce geçici bir sunucu açar ve bu sunucu yalnız unix soketini dinler. Soket üzerinden yapılan denetim, gerçek sunucu hazır olmadan `healthy` gösterebilir. `-h 127.0.0.1` TCP'yi dener ve geçici sunucuyu atlar.
+- **S3 deposu.** MinIO topluluk sürümü Ekim 2025'ten beri Docker imajı yayımlamıyor ve Aralık 2025'ten beri bakım kipinde ([linuxiac](https://linuxiac.com/minio-ends-active-development/), [ayedo](https://ayedo.de/en/posts/minio-im-maintenance-mode/)). Örnek bu yüzden SeaweedFS kullanır; diğer aday Garage'dır. Depo değişimi yalnız `.env` ve `Storage:ServiceUrl` değişikliğidir ([Genel mimari](./01-genel-mimari.md)). İmaj ve etiketler A03.1'de resmî kaynaktan doğrulandı ([kaynak kaydı](../10-claude-code/asamalar/A03-yerel-altyapi.md)); etiketler `.env` içinde sabittir (bölüm 5). Servise `user:` verilmez, çünkü imajın entrypoint'i `/data` sahipliğini kendisi düzeltir.
+- **Anonim okuma.** `{"name":"anonymous","actions":["Read"]}` içindeki çıplak `Read` bütün kovalara uygulanır. Bugün tek kova vardır. İkinci kova eklenirse eylem `Read:<kova>` biçiminde yazılır ([SeaweedFS #7134](https://github.com/seaweedfs/seaweedfs/issues/7134)). Kova kısıtının bazı sürümlerde filer yeniden başlayana kadar işlemediği bildirilmiştir; ikinci kova eklendiğinde anonim erişim yeniden sınanır.
+- **S3 güvenliği.** Şablondaki varsayılan örnek anahtarlar `Admin` yetkilidir ve S3 `0.0.0.0` üzerinde LAN'a açıktır. Yalnız "Özel" ağda ve güvenlik duvarı kuralıyla kullanılır (bölüm 2). Ortak bir ağda `S3_SECRET_KEY` değiştirilir; `infra/local/s3.json` ve `.env` içinde aynı değer olmalıdır.
+- **`s3-init` ilk denemesi.** İlk `head-bucket` çağrısı S3 henüz açılmadan başarısız olabilir; günlükte `Could not connect to the endpoint URL` görülür. Döngü yeniden dener ve `create-bucket` ile kova oluşur. Bu beklenen davranıştır. Kova yokken `head-bucket` 404 `NoSuchBucket` döner.
+- **Dockerfile'lar.** API ve Yayınlayıcı `mcr.microsoft.com/dotnet/sdk:10.0` ile derlenir (`global.json`, `.editorconfig` ve `server/` kopyalanır, `dotnet publish`); API `aspnet:10.0`, Yayınlayıcı `runtime:10.0` imajında çalışır ve `packages/content-schema/sql/` klasörünü de taşır. Editör `node:24-alpine` ile derlenir, `nginx:stable-alpine` ile sunulur; nginx `/api/` isteklerini `http://api:8080` adresine aktarır. API, editör ve Yayınlayıcı imajlarının derleme bağlamı depo köküdür (`context: .`). `.dockerignore` beş kalıbı dışarıda bırakır: `**/node_modules`, `**/bin`, `**/obj`, `data/`, `.git`. Gizli değerler derleme bağlamına ve imaj katmanına girmesin diye `.tmp/`, `**/.env`, `**/.env.*` (`!**/.env.example` hariç) ve `infra/local/s3.json` de eklenmiştir.
 
 ## 5. Ortam dosyaları
 
@@ -239,7 +246,9 @@ POSTGRES_PASSWORD=yerel-sifre-degistir
 POSTGRES_DB=mutalaa
 POSTGRES_PORT=5432
 
-SEAWEEDFS_TAG=latest
+# Etiketler sabit (Teknoloji yığını 4.1); sürüm kaynağı: A03.1, 21 Ekim 2026
+SEAWEEDFS_TAG=4.48
+AWSCLI_TAG=2.38.3
 S3_PORT=8333
 S3_ACCESS_KEY=mutalaa
 S3_SECRET_KEY=yerel-gizli-degistir
@@ -324,10 +333,11 @@ PYTHONUTF8=1
    - iOS: `eas device:create`, ardından `eas build --profile development --platform ios`.
 9. **Metro'yu başlatın ve bağlanın.**
    ```powershell
-   Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias "Wi-Fi" | Select-Object IPAddress
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/lan-ip.ps1
    $env:REACT_NATIVE_PACKAGER_HOSTNAME = "192.168.1.50"   # birden çok ağ bağdaştırıcısı varsa
    pnpm --filter @mutalaa/mobile start
    ```
+   `lan-ip.ps1` bilgisayarın IPv4 adresini yazar. `-InterfaceAlias` parametresi bağdaştırıcı adını verir; varsayılanı `"Wi-Fi"`'dir (ör. `-InterfaceAlias "Ethernet"`). `169.254.*` (otomatik özel) adresleri atlanır. Bağdaştırıcıda adres bulunamazsa betik 1 koduyla çıkar ve IPv4 adresi olan bağdaştırıcıları listeler.
    Telefondaki geliştirme derlemesi QR kodla Metro'ya bağlanır. Emülatör bilgisayarın LAN IP adresine de ulaşır; manifestteki paket adresleri bu IP'yi taşıdığı için emülatörde de LAN IP kullanılır. Metro'ya emülatörden `10.0.2.2:8081`, USB ile bağlı Android cihazdan `adb reverse tcp:8081 tcp:8081` sonrası `localhost:8081` ile de bağlanılır.
 10. **Doğrulayın.** Ayarlar › Depolama ekranı `dev` manifestindeki paketleri listeler. Derin bağlantı Oku sekmesinde 2:255'i açar:
     ```powershell
@@ -367,20 +377,98 @@ Editoryal veritabanı yedeklenir, çünkü editör kararları yeniden üretileme
 
 ```powershell
 # scripts/backup-db.ps1
-$stamp = Get-Date -Format "yyyyMMdd-HHmm"
+# Takes a custom-format pg_dump of the editorial database into data/backups/.
+# The dump is checked with pg_restore --list and only then renamed to its final name,
+# so an interrupted run never leaves a file that looks like a good backup.
+# Also archives data/gold when it exists (hand-made gold sets cannot be regenerated).
+# Run from anywhere: powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/backup-db.ps1
+$ErrorActionPreference = "Stop"
+Set-Location (Join-Path $PSScriptRoot "..")
+
+$stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 New-Item -ItemType Directory -Force data/backups | Out-Null
+$final = "data/backups/mutalaa-$stamp.dump"
+$partial = "$final.partial"
+
+# The user and database names are read by the container's own sh, so .env changes need no edit here.
 docker compose exec -T postgres sh -c 'pg_dump -U $POSTGRES_USER -d $POSTGRES_DB -Fc -f /tmp/mutalaa.dump'
-docker compose cp postgres:/tmp/mutalaa.dump "data/backups/mutalaa-$stamp.dump"
-docker compose exec -T postgres rm /tmp/mutalaa.dump
-if (Test-Path data/gold) { Compress-Archive -Path data/gold -DestinationPath "data/backups/gold-$stamp.zip" }
+$code = $LASTEXITCODE
+if ($code -eq 0) {
+    docker compose exec -T postgres sh -c 'pg_restore --list /tmp/mutalaa.dump > /dev/null'
+    $code = $LASTEXITCODE
+}
+if ($code -eq 0) {
+    docker compose cp postgres:/tmp/mutalaa.dump $partial
+    $code = $LASTEXITCODE
+}
+
+# The full dump inside the container is removed on success and on failure.
+docker compose exec -T postgres rm -f /tmp/mutalaa.dump
+
+if ($code -ne 0) {
+    Remove-Item -LiteralPath $partial -Force -ErrorAction SilentlyContinue
+    [Console]::Error.WriteLine("backup failed (exit code $code); no backup file was kept")
+    exit $code
+}
+Move-Item -LiteralPath $partial -Destination $final
+
+if (Test-Path data/gold) {
+    # Compress-Archive in Windows PowerShell 5.1 needs a .zip destination, so the temporary name ends in .zip.
+    $goldTemp = "data/backups/gold-$stamp.partial.zip"
+    Compress-Archive -Path data/gold -DestinationPath $goldTemp -Force
+    Move-Item -LiteralPath $goldTemp -Destination "data/backups/gold-$stamp.zip"
+}
+
+Write-Output $final
 ```
 
 ```powershell
-# scripts/restore-db.ps1 (dosya adı parametreyle verilir)
-param([string]$File)
-docker compose cp $File postgres:/tmp/restore.dump
-docker compose exec -T postgres sh -c 'pg_restore -U $POSTGRES_USER -d $POSTGRES_DB --clean --if-exists /tmp/restore.dump'
+# scripts/restore-db.ps1
+# Restores a pg_dump file (positional argument) into the editorial database.
+# pg_restore runs with --clean --if-exists: existing objects in the dump are dropped first.
+# Use it only with a backup you just took or one you have checked.
+# powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/restore-db.ps1 data/backups/mutalaa-YYYYMMDD-HHmmss.dump
+param(
+    [Parameter(Mandatory = $true, Position = 0)]
+    [string]$File
+)
+$ErrorActionPreference = "Stop"
+
+# Resolve the argument against the caller's directory before moving to the repository root.
+if (-not (Test-Path -LiteralPath $File -PathType Leaf)) {
+    [Console]::Error.WriteLine("Backup file not found: $File")
+    exit 2
+}
+$full = (Resolve-Path -LiteralPath $File).Path
+Set-Location (Join-Path $PSScriptRoot "..")
+# A relative path avoids "C:\..." being read as a service name by docker compose cp.
+$source = Resolve-Path -LiteralPath $full -Relative
+
+docker compose cp $source postgres:/tmp/restore.dump
+if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine("docker compose cp failed"); exit $LASTEXITCODE }
+
+docker compose exec -T postgres sh -c 'pg_restore -U $POSTGRES_USER -d $POSTGRES_DB --clean --if-exists --single-transaction /tmp/restore.dump'
+$code = $LASTEXITCODE
+
+docker compose exec -T postgres rm -f /tmp/restore.dump
+if ($code -ne 0) { [Console]::Error.WriteLine("pg_restore failed"); exit $code }
 ```
+
+Yedek betiği şöyle çalışır:
+- `Set-Location` ile depo köküne geçer; betik her klasörden çağrılabilir.
+- Zaman damgası saniyelidir (`yyyyMMdd-HHmmss`); aynı dakikada alınan iki yedek birbirinin üstüne yazılmaz.
+- Dökümü konteynerde alır, `pg_restore --list` ile doğrular, `.partial` adıyla kopyalar ve yalnız başarıdan sonra son adına çevirir. Yarıda kesilen çalıştırma iyi görünen sahte bir yedek bırakmaz.
+- Konteynerdeki `/tmp/mutalaa.dump` başarıda da hatada da silinir.
+- Altın arşivi (`data/gold`) de geçici adla yazılıp yeniden adlandırılır.
+- Hata olursa çıkış kodu aktarılır ve hiçbir yedek dosyası kalmaz. Başarıda son dosyanın yolunu yazar.
+
+Geri yükleme betiği şöyle çalışır:
+- Dosya yolu zorunlu konumsal `-File` parametresidir. Dosya yoksa betik 2 koduyla çıkar.
+- Yol, depo köküne geçilmeden önce çağıranın klasörüne göre çözülür, sonra bağıl yola çevrilir. Sebep: `docker compose cp` Windows `C:\` yolunun başını servis adı sanabilir.
+- `pg_restore --clean --if-exists --single-transaction` kullanılır. Tek işlem sayesinde yarıda kalan ya da hata veren geri yükleme veritabanını yarım bırakmaz; `--single-transaction` ilk hatada da durur.
+- Konteynerdeki geçici `/tmp/restore.dump` silinir; hata kodu aktarılır.
+
+Betik dosyaları ASCII ve CRLF'tir: Windows PowerShell 5.1 BOM'suz UTF-8 dosyayı ANSI okur, bu yüzden ASCII dışı karakter konmaz. `$ErrorActionPreference = "Stop"` altında `Write-Error` çıkış kodunu 1'e düşürür; kendi çıkış kodunu korumak için hata iletisi `[Console]::Error.WriteLine` ile yazılır.
 
 - Kullanıcı ve veritabanı adı konteynerin kendi ortam değişkenlerinden (`POSTGRES_USER`, `POSTGRES_DB`) okunur; `.env` değişince betik değişmez. Komut tek tırnak içindedir, bu yüzden değişkenleri PowerShell değil konteynerdeki `sh` açar. İç çift tırnak kullanılmaz, çünkü Windows PowerShell 5.1 yerel komuta geçen bağımsız değişkendeki çift tırnağı kaçışsız aktarır; bu iki değer `.env`'de boşluksuz yazılır.
 - Elle çalıştırılan örnekler (bölüm 3'teki bağlantı dizeleri, aşama dosyalarındaki `psql -U mutalaa -d mutalaa` komutları) `.env.example` varsayılanlarını kullanır; `.env`'de bu adlar değiştiyse komutta da değiştirilir.
@@ -429,7 +517,7 @@ Kurallar:
 | Telefon Metro'ya bağlanamıyor | Ağ "Ortak", güvenlik duvarı, yanlış bağdaştırıcı IP'si, VPN, misafir ağında istemci yalıtımı | Ağı Özel yapın; kuralları ekleyin; `REACT_NATIVE_PACKAGER_HOSTNAME` verin; VPN'i kapatın; USB'de `adb reverse` |
 | Uygulama manifesti ya da paketi indiremiyor | `MANIFEST_URL` içinde `localhost`; LAN IP değişti | LAN IP kullanın; IP değiştiyse `Storage:PublicBaseUrl` güncellenir ve `publish` yeniden çalıştırılır |
 | Uygulama manifesti reddediyor | İmza tutmuyor; uygulamadaki `dev` açık anahtarı eski | `keys.ts` içindeki açık anahtarı `keys generate` çıktısıyla karşılaştırın |
-| S3 isteği `RequestTimeTooSkewed` ile reddediliyor | Uykudan sonra WSL2 saati kaymış olabilir (Doğrulanacak) | `wsl --shutdown`, ardından Docker Desktop'ı yeniden başlatın |
+| S3 isteği `RequestTimeTooSkewed` ile reddediliyor | Uykudan sonra WSL2 saati kayar; bilinen sorundur ([microsoft/WSL#10006](https://github.com/microsoft/WSL/issues/10006)). SeaweedFS saat farkında 403 `RequestTimeTooSkewed` üretir. Docker Desktop'a özgü resmî çözüm bulunamadı | Topluluk önerisi: `wsl --shutdown`, ardından Docker Desktop'ı yeniden başlatın |
 | PowerShell'de `curl` farklı davranıyor | Windows PowerShell'de `curl` başka bir komutun takma adıdır | `curl.exe` yazın |
 | Konteynerden ana makineye erişilemiyor | `localhost` konteynerin kendisidir | `host.docker.internal`; konteynerler arasında servis adı (`postgres`, `s3`) |
 
@@ -446,7 +534,13 @@ Kurallar:
 
 1. ~~K-21 yerelde MinIO der.~~ Çözüldü: K-21 güncellendi, yerel depo SeaweedFS. Garage yedek seçenek olarak kalır.
 2. ~~pnpm `node-linker=hoisted` yerine izole kurulum Expo SDK 57'de çalışıyor mu?~~ Çözüldü (21 Ekim 2026, [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)): izole düzen varsayılandır; Expo SDK 54'ten beri destekler ([Expo monorepo kılavuzu](https://docs.expo.dev/guides/monorepos/)). SDK 58'e özel tablo yok; mobil iskelet gelince (A21) yeniden sınanır.
-3. SeaweedFS `server -s3` kipinin anonim okuma ve Range isteklerini mobil indirme kuyruğuyla sorunsuz karşıladığı ilk kurulumda doğrulanmalı.
+3. ~~SeaweedFS `server -s3` kipinin anonim okuma ve Range isteklerini mobil indirme kuyruğuyla sorunsuz karşıladığı ilk kurulumda doğrulanmalı.~~ Çözüldü (21 Ekim 2026, A03.4): SeaweedFS 4.48 ile canlı sınandı ([kaynak kaydı](../10-claude-code/asamalar/A03-yerel-altyapi.md)).
+   - Kimlikli yükleme çalıştı (`aws s3 cp -` ile 1 MiB).
+   - Anonim `HEAD` 200 döndü (`Accept-Ranges: bytes` ve `ETag` var).
+   - `Range: bytes=0-1023` 206 ve 1024 bayt döndü.
+   - İki parçalı indirme (`0-524287` ve `524288-`) iki yanıtta da 206 verdi; birleşik dosyanın SHA-256 değeri özgün dosyayla aynı çıktı.
+   - Anonim `PUT` 403 ile reddedildi.
+   - AWS CLI 2.38.3'ün varsayılan checksum davranışı SeaweedFS 4.48 ile sorun çıkarmadı; `AWS_REQUEST_CHECKSUM_CALCULATION` ve `AWS_RESPONSE_CHECKSUM_VALIDATION` için `when_required` değerine gerek kalmadı. Başka bir sürümde yükleme ya da indirme checksum hatası verirse çözüm bu iki ortam değişkenini `s3-init` servisine eklemektir ([AWS CLI ortam değişkenleri](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html), [aws-cli#9214](https://github.com/aws/aws-cli/issues/9214)).
 
 ## İlgili dosyalar
 

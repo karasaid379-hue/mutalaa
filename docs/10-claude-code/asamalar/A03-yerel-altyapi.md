@@ -1,6 +1,6 @@
 # A03 · Yerel altyapı: Docker Compose, PostgreSQL 18, SeaweedFS
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-11](../../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-20](../../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı)
+> **Sürüm:** 1.1 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-11](../../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-20](../../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı)
 > **Faz:** 0 · Hazırlık · **Önkoşul:** [A02](./A02-tek-depo-iskeleti.md) · **İnsan adımı:** [İ-01](../06-insan-adimlari.md) (Docker Desktop ve WSL2)
 > **Ajanlar:** `sunucu-gelistirici` · `arastirmaci` · `inceleyici` · **Beceriler:** `windows-sorun` · **Tahmini oturum:** 1–2
 > **Başlat:** `/asama A03`
@@ -44,6 +44,10 @@ Yerel altyapı tek komutla kalkar: `postgres:18` ve SeaweedFS'in S3 arayüzü (K
 - `.dockerignore`: `**/node_modules`, `**/bin`, `**/obj`, `data/`, `.git` (§4 notları).
 - `infra/local/s3.json` yoksa şablondan kopyalanır: `cp -n infra/local/s3.example.json infra/local/s3.json`. `.env` ve `pipeline/.env` dosyalarını kullanıcı oluşturur (`cp -n .env.example .env` ve `cp -n pipeline/.env.example pipeline/.env`; PowerShell'de `Copy-Item`): Claude Code `.env` dosyalarını okuyamaz, oluşturamaz ve düzenleyemez (izin kuralı). Kullanıcı parolayı değiştirirse `s3.json`'daki anahtarı ve `pipeline/.env` içindeki `MUTALAA_DB_URL` parolasını da aynı yapar; hat bu dosyayı A10'da kullanır.
 - **Bitti sayılır:** `docker compose config --quiet` ve `docker compose --profile app config --quiet` 0 ile çıkıyor.
+- **Uygulamada bilinçli sapmalar (21 Ekim 2026; Yerel geliştirme §4 ve §5 koda göre eşitlendi):**
+  - `amazon/aws-cli` etiketi `latest` değil, `AWSCLI_TAG` değişkeniyle sabittir (`amazon/aws-cli:${AWSCLI_TAG:-2.38.3}`); `SEAWEEDFS_TAG` 4.48'dir. İkisi de `.env.example` içindedir.
+  - `postgres` sağlık denetimi `pg_isready -h 127.0.0.1` ile TCP'yi dener; imajın ilk kurulumdaki geçici sunucusu yalnız unix soketini dinler.
+  - `.dockerignore` beş kalıba ek olarak `.tmp/`, `**/.env`, `**/.env.*` (`!**/.env.example` hariç) ve `infra/local/s3.json` içerir; gizli değerler derleme bağlamına girmesin diye.
 
 ### A03.3 · Altyapıyı kaldırma ve PostgreSQL denetimi
 - İ-01: Docker Desktop çalışıyor (`docker info`). Çalışmıyorsa kullanıcıdan başlatması istenir.
@@ -73,6 +77,12 @@ Yerel altyapı tek komutla kalkar: `postgres:18` ve SeaweedFS'in S3 arayüzü (K
 - Çağrı biçimi: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/<betik>.ps1`. Geri yükleme dosya yolunu konumsal argüman olarak alır.
 - Gidiş-dönüş: `public.yedek_deneme` tablosu ve bir satır oluşturulur → yedek alınır → tablo silinir → en son yedek geri yüklenir → satır okunur → tablo silinir. Komutlar Doğrulama bloğundadır; geri yükleme (`pg_restore --clean --if-exists`) yalnız az önce alınan yedekle yapılır.
 - **Bitti sayılır:** `data/backups/mutalaa-*.dump` oluştu; geri yüklemeden sonra deneme satırı okundu; `lan-ip.ps1` bir IPv4 adresi yazdı.
+- **Uygulamada bilinçli sapmalar (21 Ekim 2026; Yerel geliştirme §6 adım 9 ve §9 koda göre eşitlendi):**
+  - Yedek atomiktir: döküm konteynerde alınır, `pg_restore --list` ile doğrulanır, `.partial` adıyla kopyalanır ve başarıdan sonra yeniden adlandırılır. Altın arşivi de geçici adla yazılıp yeniden adlandırılır. Zaman damgası saniyelidir (`yyyyMMdd-HHmmss`).
+  - Geri yükleme `--single-transaction` kullanır; yarıda kalan geri yükleme veritabanını yarım bırakmaz ve ilk hatada durur (`--exit-on-error` gerekmez).
+  - Betikler `$ErrorActionPreference = "Stop"` ile çalışır, konteynerdeki geçici döküm başarıda da hatada da silinir ve hata kodu aktarılır. `Write-Error` çıkış kodunu 1'e düşürdüğü için hata iletisi `[Console]::Error.WriteLine` ile yazılır. Özel kodlar: `restore-db.ps1` dosya yoksa 2, `lan-ip.ps1` adres bulamazsa 1.
+  - `restore-db.ps1` yolu bağıl yola çevirir, çünkü `docker compose cp` Windows `C:\` yolunu servis adı sanabilir. `lan-ip.ps1` `169.254.*` adreslerini atlar.
+  - Betikler ASCII ve CRLF'tir (Windows PowerShell 5.1, BOM'suz UTF-8 dosyayı ANSI okur).
 
 ## Kabul ölçütleri
 - [ ] `docker compose config --quiet` ve `docker compose --profile app config --quiet` 0 ile çıkıyor.
@@ -134,6 +144,24 @@ PowerShell'de elle çalıştırılacaksa `curl` yerine `curl.exe` yazılır (Yer
 ```text
 docs/10-claude-code/asamalar/A03-yerel-altyapi.md dosyasındaki aşamayı yürüt. Önce önkoşulları ve planı göster, onayımı bekle.
 ```
+
+## A03.1 kaynak kaydı (okuma 2026-10-21)
+
+| Konu | Bulgu | Kaynak |
+|---|---|---|
+| SeaweedFS imajı ve etiketi | İmaj `chrislusf/seaweedfs`; kararlı etiket 4.48 (GitHub sürümü 2026-09-28) | [Sürüm 4.48](https://github.com/seaweedfs/seaweedfs/releases/tag/4.48) · [Docker Hub](https://hub.docker.com/r/chrislusf/seaweedfs) |
+| `server` bayrakları | `-dir`, `-s3`, `-s3.port`, `-s3.config` | [weed/command/server.go](https://github.com/seaweedfs/seaweedfs/blob/master/weed/command/server.go) |
+| `s3.json` biçimi ve anonim kimlik | `identities`, `credentials`, `actions`; anonim kimlik adı `anonymous` | [docker/compose/s3.json](https://github.com/seaweedfs/seaweedfs/blob/master/docker/compose/s3.json) · [S3 Credentials](https://github.com/seaweedfs/seaweedfs/wiki/S3-Credentials) |
+| `head-bucket` | Kova yokken 404 `NoSuchBucket` döner | weed/s3api/s3api_bucket_handlers.go ([depo](https://github.com/seaweedfs/seaweedfs/blob/master/weed/s3api/s3api_bucket_handlers.go)) |
+| `amazon/aws-cli` etiketi | 2.38.3 (Docker Hub güncellemesi 2026-10-20); `ENTRYPOINT` `aws` | [Docker Hub](https://hub.docker.com/r/amazon/aws-cli) · [Dockerfile](https://github.com/aws/aws-cli/blob/v2/docker/Dockerfile) |
+| `create-bucket` | `us-east-1` bölgesinde `LocationConstraint` gerekmez | [create-bucket](https://docs.aws.amazon.com/cli/latest/reference/s3api/create-bucket.html) |
+| Checksum davranışı | AWS CLI varsayılanı değişti; `AWS_REQUEST_CHECKSUM_CALCULATION` ve `AWS_RESPONSE_CHECKSUM_VALIDATION` ortam değişkenleri `when_required` değerini alabilir | [ortam değişkenleri](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html) · [aws-cli#9214](https://github.com/aws/aws-cli/issues/9214) |
+| `RequestTimeTooSkewed` | Uyku sonrası WSL2 saat kayması bilinen sorun; Docker Desktop'a özgü resmî çözüm bulunamadı (bilgi notu) | [microsoft/WSL#10006](https://github.com/microsoft/WSL/issues/10006) |
+
+Canlı sınamayla doğrulananlar:
+- Anonim `PUT` için 403 ve açık uçlu `Range` (`bytes=524288-`) kaynak kodundan çıkarımdı; A03.4'te canlı doğrulandı (anonim `PUT` 403, açık uçlu Range 206).
+- AWS CLI 2.38.3'ün varsayılan checksum davranışı SeaweedFS 4.48 ile canlı sınandı ve sorun çıkarmadı; `when_required` ortam değişkenleri eklenmedi.
+- Anonim `Read` eyleminin bütün kovalara uygulanması ve kova kısıtının sürüme bağlı davranışı için [SeaweedFS #7134](https://github.com/seaweedfs/seaweedfs/issues/7134) okundu; canlı sınanmadı (bugün tek kova var).
 
 ## İlgili dosyalar
 - [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A02](./A02-tek-depo-iskeleti.md) · Sonraki: [A04](./A04-capa-ve-test-vektorleri.md)
