@@ -17,4 +17,10 @@
     <ProjectReference Include="..\..\Mutalaa.Domain\Mutalaa.Domain.csproj" />
   </ItemGroup>
 
+  <!-- Ortak test vektorleri ve ayet sayilari cikti klasorune kopyalanir (vectors\ ve data\). -->
+  <ItemGroup>
+    <None Include="..\..\..\shared\test-vectors\**\*.jsonl" Exclude="..\..\..\shared\test-vectors\node_modules\**" Link="vectors\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\shared\data\ayet-sayilari.json" Link="data\ayet-sayilari.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
