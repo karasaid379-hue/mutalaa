@@ -1,8 +1,12 @@
 // JSONL format checker for shared/test-vectors (Proje yapisi 1.2).
-// Rules: UTF-8, no BOM, LF only, final newline, no blank lines,
-// one JSON object per line, unique non-empty string "id" per file.
+// Basic rules (every .jsonl file): UTF-8, no BOM, LF only, final newline, no blank lines,
+// one JSON object per line, unique non-empty string "id" per file, no duplicate keys,
+// no lone surrogates.
+// Field rules (A04 vector specification 1-2) apply to the recognized files only, which are
+// named by their path relative to the package root (VECTOR_KINDS). Other files (normalize/,
+// fts-query/, arama/olcum.jsonl ...) get the basic rules only.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 
 /** Directory names skipped when scanning the package folder by default. */
 export const DEFAULT_SKIP = new Set(['node_modules', 'scripts', 'test', 'dist']);
@@ -66,17 +70,412 @@ export function scanStrings(json) {
   return messages;
 }
 
+const NUMBER_CHAR = /^[0-9.eE+-]$/;
+const PLAIN_INTEGER = /^-?(0|[1-9][0-9]*)$/;
+
 /**
- * Checks the bytes of one JSONL file.
- * @param {Uint8Array} bytes
- * @returns {{ line: number, message: string }[]} violations (line 0 = whole file)
+ * Lists the number literals of one line that is already known to be valid JSON, as written in
+ * the source. JSON.parse turns 1.0 and 1e0 into the integer 1, but Python reads them as float and
+ * C# GetInt32 rejects them, so the recognized files must write integers plainly.
+ * @param {string} json
+ * @returns {string[]}
  */
-export function checkBytes(bytes) {
+export function numberLiterals(json) {
+  /** @type {string[]} */
+  const found = [];
+  let i = 0;
+  while (i < json.length) {
+    const ch = json.charAt(i);
+    if (ch === '"') {
+      let j = i + 1;
+      while (json.charAt(j) !== '"') {
+        j += json.charAt(j) === '\\' ? 2 : 1;
+      }
+      i = j + 1;
+      continue;
+    }
+    if (ch === '-' || (ch >= '0' && ch <= '9')) {
+      let j = i + 1;
+      while (j < json.length && NUMBER_CHAR.test(json.charAt(j))) {
+        j += 1;
+      }
+      found.push(json.slice(i, j));
+      i = j;
+      continue;
+    }
+    i += 1;
+  }
+  return found;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Field rules. A rule appends messages of the form "<path>: <problem>" to `out`; the top-level
+// object has the empty path, so its messages read "missing key ..." / "unknown key ...".
+// ---------------------------------------------------------------------------------------------
+
+/** @typedef {(value: unknown, path: string, out: string[]) => void} Rule */
+/** @typedef {{ rule: Rule, required: boolean }} Field */
+
+/**
+ * @param {unknown} value
+ * @returns {value is Record<string, unknown>}
+ */
+function isRecord(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+/**
+ * Short description of a value for messages (code-point safe truncation).
+ * @param {unknown} value
+ * @returns {string}
+ */
+function describe(value) {
+  if (value === null) {
+    return 'null';
+  }
+  if (Array.isArray(value)) {
+    return 'an array';
+  }
+  if (typeof value === 'object') {
+    return 'an object';
+  }
+  const text = JSON.stringify(value);
+  const chars = [...text];
+  return chars.length > 40 ? `${chars.slice(0, 37).join('')}...` : text;
+}
+
+/**
+ * @param {string} path
+ * @param {string} message
+ * @returns {string}
+ */
+function at(path, message) {
+  return path === '' ? message : `${path}: ${message}`;
+}
+
+/**
+ * @param {string} path
+ * @param {string} key
+ * @returns {string}
+ */
+function child(path, key) {
+  return path === '' ? key : `${path}.${key}`;
+}
+
+/**
+ * @param {Rule} rule
+ * @returns {Field}
+ */
+function req(rule) {
+  return { rule, required: true };
+}
+
+/**
+ * @param {Rule} rule
+ * @returns {Field}
+ */
+function opt(rule) {
+  return { rule, required: false };
+}
+
+/** @type {Rule} */
+function anyValue() {}
+
+/** @type {Rule} */
+function string(value, path, out) {
+  if (typeof value !== 'string') {
+    out.push(at(path, `must be a string, got ${describe(value)}`));
+  }
+}
+
+/** @type {Rule} */
+function stringOrNull(value, path, out) {
+  if (value !== null && typeof value !== 'string') {
+    out.push(at(path, `must be a string or null, got ${describe(value)}`));
+  }
+}
+
+/** @type {Rule} */
+function boolean(value, path, out) {
+  if (typeof value !== 'boolean') {
+    out.push(at(path, `must be a boolean, got ${describe(value)}`));
+  }
+}
+
+/** Non-negative integer: counts, offsets, positions. @type {Rule} */
+function count(value, path, out) {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0) {
+    out.push(at(path, `must be a non-negative integer, got ${describe(value)}`));
+  }
+}
+
+/** Positive integer: sure and ayet numbers. @type {Rule} */
+function positive(value, path, out) {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1) {
+    out.push(at(path, `must be a positive integer, got ${describe(value)}`));
+  }
+}
+
+/**
+ * @param {readonly (string | number)[]} allowed
+ * @returns {Rule}
+ */
+function oneOf(allowed) {
+  const list = allowed.map((v) => JSON.stringify(v)).join(', ');
+  return (value, path, out) => {
+    if (
+      (typeof value !== 'string' && typeof value !== 'number') ||
+      !allowed.some((v) => v === value)
+    ) {
+      out.push(at(path, `must be one of ${list}, got ${describe(value)}`));
+    }
+  };
+}
+
+/**
+ * @param {RegExp} pattern
+ * @param {string} label what the pattern means, for the message
+ * @returns {Rule}
+ */
+function matches(pattern, label) {
+  return (value, path, out) => {
+    if (typeof value !== 'string' || !pattern.test(value)) {
+      out.push(at(path, `must be ${label}, got ${describe(value)}`));
+    }
+  };
+}
+
+/**
+ * @param {Rule} item
+ * @returns {Rule}
+ */
+function arrayOf(item) {
+  return (value, path, out) => {
+    if (!Array.isArray(value)) {
+      out.push(at(path, `must be an array, got ${describe(value)}`));
+      return;
+    }
+    value.forEach((element, index) => item(element, `${path}[${index}]`, out));
+  };
+}
+
+/**
+ * Fixed-length array.
+ * @param {Rule[]} items
+ * @param {string} label e.g. "2 strings"
+ * @returns {Rule}
+ */
+function tuple(items, label) {
+  return (value, path, out) => {
+    if (!Array.isArray(value) || value.length !== items.length) {
+      const got = Array.isArray(value) ? `${value.length} item(s)` : describe(value);
+      out.push(at(path, `must be an array of ${label}, got ${got}`));
+      return;
+    }
+    items.forEach((rule, index) => rule(value[index], `${path}[${index}]`, out));
+  };
+}
+
+/**
+ * Object with the given fields. Closed objects reject unknown keys.
+ * @param {Record<string, Field>} fields
+ * @param {{ open?: boolean, nullable?: boolean }} [options]
+ * @returns {Rule}
+ */
+function object(fields, { open = false, nullable = false } = {}) {
+  return (value, path, out) => {
+    if (nullable && value === null) {
+      return;
+    }
+    if (!isRecord(value)) {
+      out.push(at(path, `must be an object${nullable ? ' or null' : ''}, got ${describe(value)}`));
+      return;
+    }
+    if (!open) {
+      for (const key of Object.keys(value)) {
+        if (!Object.hasOwn(fields, key)) {
+          out.push(at(path, `unknown key ${JSON.stringify(key)}`));
+        }
+      }
+    }
+    for (const [key, field] of Object.entries(fields)) {
+      if (!Object.hasOwn(value, key)) {
+        if (field.required) {
+          out.push(at(path, `missing key ${JSON.stringify(key)}`));
+        }
+        continue;
+      }
+      field.rule(value[key], child(path, key), out);
+    }
+  };
+}
+
+const stringPair = tuple([string, string], '2 strings');
+const countPair = tuple([count, count], '2 non-negative integers');
+
+/** Error codes of the anchor parsers (Capa semasi 7). */
+export const ANCHOR_ERRORS = Object.freeze([
+  'BICIM',
+  'SURE_ARALIGI',
+  'AYET_ARALIGI',
+  'TERS_ARALIK',
+  'KANONIK_DEGIL',
+  'UZUNLUK',
+]);
+
+/**
+ * content-hash: expected.text exists exactly when input.op is "kanonik".
+ * @param {Record<string, unknown>} line
+ * @param {string[]} out
+ */
+function hashTextRule(line, out) {
+  const input = line['input'];
+  const expected = line['expected'];
+  if (!isRecord(input) || !isRecord(expected)) {
+    return;
+  }
+  const hasText = Object.hasOwn(expected, 'text');
+  if (input['op'] === 'kanonik' && !hasText) {
+    out.push('expected: missing key "text" (required when input.op is "kanonik")');
+  } else if (input['op'] === 'ham' && hasText) {
+    out.push('expected.text: only allowed when input.op is "kanonik"');
+  }
+}
+
+/**
+ * @typedef {object} Kind
+ * @property {Rule} input
+ * @property {Rule} expected
+ * @property {(line: Record<string, unknown>, out: string[]) => void} [extra] cross-field rule
+ */
+
+/**
+ * Recognized vector files, by path relative to the package root (A04 vector specification 2).
+ * @type {ReadonlyMap<string, Kind>}
+ */
+const KINDS = new Map([
+  [
+    'anchors/valid.jsonl',
+    {
+      input: string,
+      expected: object({
+        ref: req(
+          object({
+            anchor: req(object({ t: req(string) }, { open: true })),
+            span: opt(object({ start: req(count), end: req(count) })),
+          }),
+        ),
+        canonical: req(string),
+        unit: req(string),
+        unit_span: req(object({ unit: req(string), span: opt(countPair) }, { nullable: true })),
+        ayahs: req(arrayOf(object({ sure: req(positive), ayet: req(positive) }))),
+      }),
+    },
+  ],
+  ['anchors/invalid.jsonl', { input: string, expected: oneOf(ANCHOR_ERRORS) }],
+  ['anchors/compare.jsonl', { input: stringPair, expected: oneOf([-1, 0, 1]) }],
+  ['anchors/contains.jsonl', { input: stringPair, expected: boolean }],
+  [
+    'anchors/route.jsonl',
+    {
+      input: object({ capa: req(string), sema: opt(string) }),
+      expected: object({ native: req(string), web: opt(stringOrNull) }),
+    },
+  ],
+  [
+    'offsets/offsets.jsonl',
+    {
+      input: string,
+      expected: object({
+        codepoints: req(count),
+        utf16: req(count),
+        cp_to_utf16: opt(arrayOf(countPair)),
+        snap: opt(arrayOf(object({ in: req(countPair), out: req(countPair) }))),
+      }),
+    },
+  ],
+  [
+    'content-hash/hash.jsonl',
+    {
+      input: object({ text: req(string), op: req(oneOf(['ham', 'kanonik'])) }),
+      expected: object({
+        sha256: req(matches(/^[0-9a-f]{64}$/, '64 lower-case hex digits')),
+        text: opt(string),
+      }),
+      extra: hashTextRule,
+    },
+  ],
+]);
+
+/** Package-relative paths of the recognized vector files. */
+export const VECTOR_KINDS = Object.freeze([...KINDS.keys()]);
+
+/** Folders that hold recognized vector files (a scan root with this name is a vector folder). */
+const VECTOR_FOLDERS = new Set(VECTOR_KINDS.map((key) => key.slice(0, key.indexOf('/'))));
+
+/** Files that share one id sequence: an id may not appear in both (vector specification 1). */
+const ID_PARTNERS = new Map([
+  ['anchors/valid.jsonl', 'anchors/invalid.jsonl'],
+  ['anchors/invalid.jsonl', 'anchors/valid.jsonl'],
+]);
+
+/** @type {Map<Kind, Rule>} */
+const lineRules = new Map();
+
+/**
+ * Top-level rule of one kind: only id, input, expected, note; input and expected required.
+ * @param {Kind} kind
+ * @returns {Rule}
+ */
+function lineRule(kind) {
+  let rule = lineRules.get(kind);
+  if (rule === undefined) {
+    rule = object({
+      id: opt(anyValue), // checked by the basic rules
+      input: req(kind.input),
+      expected: req(kind.expected),
+      note: opt(string),
+    });
+    lineRules.set(kind, rule);
+  }
+  return rule;
+}
+
+/**
+ * Field messages of one parsed line of a recognized file.
+ * @param {string} content the line as written
+ * @param {Record<string, unknown>} value the parsed line
+ * @param {Kind} kind
+ * @returns {string[]}
+ */
+function checkFields(content, value, kind) {
+  /** @type {string[]} */
+  const out = [];
+  for (const literal of numberLiterals(content)) {
+    if (!PLAIN_INTEGER.test(literal)) {
+      out.push(`number ${literal} is not a plain integer (numbers in this file are integers)`);
+    }
+  }
+  lineRule(kind)(value, '', out);
+  kind.extra?.(value, out);
+  return out;
+}
+
+/**
+ * Checks one JSONL file and returns its problems and the line of every accepted id.
+ * @param {Uint8Array} bytes
+ * @param {string} key package-relative path; unknown keys get the basic rules only
+ * @returns {{ problems: { line: number, message: string }[], ids: Map<string, number> }}
+ */
+function inspect(bytes, key) {
   /** @type {{ line: number, message: string }[]} */
   const problems = [];
+  /** @type {Map<string, number>} */
+  const seen = new Map();
+  const kind = KINDS.get(key);
 
   if (bytes.length === 0) {
-    return [{ line: 0, message: 'empty file' }];
+    return { problems: [{ line: 0, message: 'empty file' }], ids: seen };
   }
   if (bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) {
     problems.push({ line: 1, message: 'UTF-8 BOM found' });
@@ -91,7 +490,7 @@ export function checkBytes(bytes) {
     text = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
   } catch {
     problems.push({ line: 0, message: 'invalid UTF-8' });
-    return problems;
+    return { problems, ids: seen };
   }
 
   if (bytes[bytes.length - 1] !== LF) {
@@ -103,13 +502,17 @@ export function checkBytes(bytes) {
     lines.pop();
   }
 
-  const seen = new Map();
+  /**
+   * Previous accepted id, for the order rule of recognized files.
+   * @type {{ id: string, line: number } | null}
+   */
+  let previous = null;
   lines.forEach((raw, index) => {
     const no = index + 1;
     // A leading BOM is reported once above; strip it so line 1 can still be parsed.
     const line = no === 1 ? raw.replace(/^\uFEFF/, '') : raw;
     const content = line.endsWith('\r') ? line.slice(0, -1) : line;
-    if (no > 1 && content.startsWith('﻿')) {
+    if (no > 1 && content.startsWith('\uFEFF')) {
       problems.push({ line: no, message: 'BOM (U+FEFF) at the start of a line' });
       return;
     }
@@ -126,14 +529,19 @@ export function checkBytes(bytes) {
       problems.push({ line: no, message: `invalid JSON: ${detail}` });
       return;
     }
-    if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    if (!isRecord(value)) {
       problems.push({ line: no, message: 'line is not a JSON object' });
       return;
     }
     for (const message of scanStrings(content)) {
       problems.push({ line: no, message });
     }
-    const id = /** @type {Record<string, unknown>} */ (value)['id'];
+    if (kind !== undefined) {
+      for (const message of checkFields(content, value, kind)) {
+        problems.push({ line: no, message });
+      }
+    }
+    const id = value['id'];
     if (typeof id !== 'string' || id === '') {
       problems.push({ line: no, message: 'missing or empty string "id"' });
       return;
@@ -144,9 +552,53 @@ export function checkBytes(bytes) {
       return;
     }
     seen.set(id, no);
+    // Code-unit order (JavaScript < on strings), not locale order: "Z" sorts before "a".
+    if (kind !== undefined && previous !== null && id < previous.id) {
+      problems.push({
+        line: no,
+        message: `id "${id}" is out of order: it sorts before "${previous.id}" (line ${previous.line}); lines must be in code-unit order of id`,
+      });
+    }
+    previous = { id, line: no };
   });
 
-  return problems;
+  return { problems, ids: seen };
+}
+
+/**
+ * Checks the bytes of one JSONL file.
+ * @param {Uint8Array} bytes
+ * @param {string} [key] path relative to the package root ('anchors/valid.jsonl'); with a
+ *   recognized path the field rules apply too, otherwise only the basic rules
+ * @returns {{ line: number, message: string }[]} violations (line 0 = whole file)
+ */
+export function checkBytes(bytes, key = '') {
+  return inspect(bytes, key).problems;
+}
+
+/**
+ * Walks a folder and returns its .jsonl files with their path relative to the folder.
+ * @param {string} dir
+ * @param {string} prefix relative path of dir, '' or ending with '/'
+ * @param {Set<string>} skip
+ * @returns {{ file: string, key: string }[]}
+ */
+function walk(dir, prefix, skip) {
+  /** @type {{ file: string, key: string }[]} */
+  const found = [];
+  const names = readdirSync(dir).sort();
+  for (const name of names) {
+    if (skip.has(name) || name.startsWith('.')) {
+      continue;
+    }
+    const full = join(dir, name);
+    if (statSync(full).isDirectory()) {
+      found.push(...walk(full, `${prefix}${name}/`, skip));
+    } else if (name.endsWith('.jsonl')) {
+      found.push({ file: full, key: `${prefix}${name}` });
+    }
+  }
+  return found;
 }
 
 /**
@@ -159,21 +611,33 @@ export function listJsonl(path, skip = new Set()) {
   if (statSync(path).isFile()) {
     return [path];
   }
-  /** @type {string[]} */
-  const found = [];
-  const names = readdirSync(path).sort();
-  for (const name of names) {
-    if (skip.has(name) || name.startsWith('.')) {
-      continue;
-    }
-    const full = join(path, name);
-    if (statSync(full).isDirectory()) {
-      found.push(...listJsonl(full, skip));
-    } else if (name.endsWith('.jsonl')) {
-      found.push(full);
-    }
+  return walk(path, '', skip).map((entry) => entry.file);
+}
+
+/**
+ * Lists the vector files under a scan root with their package-relative path (key) and the
+ * package root they belong to (base). The package root is found without path.relative(), which
+ * lower-cases Windows paths and breaks on the U+0130 in the project folder name:
+ * - a folder named like a vector folder (anchors, offsets, content-hash) is inside the package
+ *   root, so its files are keyed "<folder>/<path>";
+ * - any other folder is taken as the package root;
+ * - a file is keyed "<parent folder>/<file name>".
+ * @param {string} root
+ * @param {Set<string>} skip
+ * @returns {{ file: string, key: string, base: string }[]}
+ */
+export function listVectors(root, skip = new Set()) {
+  const full = resolve(root);
+  if (statSync(full).isFile()) {
+    const folder = dirname(full);
+    return [{ file: root, key: `${basename(folder)}/${basename(full)}`, base: dirname(folder) }];
   }
-  return found;
+  const name = basename(full);
+  if (VECTOR_FOLDERS.has(name)) {
+    const base = dirname(full);
+    return walk(root, `${name}/`, skip).map((entry) => ({ ...entry, base }));
+  }
+  return walk(root, '', skip).map((entry) => ({ ...entry, base: full }));
 }
 
 /**
@@ -185,12 +649,45 @@ export function listJsonl(path, skip = new Set()) {
 export function checkPaths(roots, skip = new Set()) {
   /** @type {{ file: string, line: number, message: string }[]} */
   const problems = [];
+  /**
+   * Package root -> key -> ids of that file (with their line), for ID_PARTNERS.
+   * @type {Map<string, Map<string, Map<string, number>>>}
+   */
+  const shared = new Map();
   let files = 0;
   for (const root of roots) {
-    for (const file of listJsonl(root, skip)) {
+    for (const { file, key, base } of listVectors(root, skip)) {
       files += 1;
-      for (const problem of checkBytes(readFileSync(file))) {
+      const { problems: own, ids } = inspect(readFileSync(file), key);
+      for (const problem of own) {
         problems.push({ file, ...problem });
+      }
+      const partnerKey = ID_PARTNERS.get(key);
+      if (partnerKey === undefined) {
+        continue;
+      }
+      let group = shared.get(base);
+      if (group === undefined) {
+        group = new Map();
+        shared.set(base, group);
+      }
+      if (group.has(key)) {
+        continue; // the same file reached through two roots
+      }
+      group.set(key, ids);
+      const partner = group.get(partnerKey);
+      if (partner === undefined) {
+        continue;
+      }
+      for (const [id, line] of ids) {
+        const other = partner.get(id);
+        if (other !== undefined) {
+          problems.push({
+            file,
+            line,
+            message: `id "${id}" is also used in ${partnerKey} (line ${other}); valid and invalid share one id sequence`,
+          });
+        }
       }
     }
   }

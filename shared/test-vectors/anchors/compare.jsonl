@@ -1,0 +1,79 @@
+{"id":"cm-0001","input":["q:2:255","q:2:255:2"],"expected":-1,"note":"K-35 madde 3 zinciri, ardışık: âyet kendi kelimelerinden önce"}
+{"id":"cm-0002","input":["q:2:255","q:2:255:2-3"],"expected":-1,"note":"K-35 madde 3 zinciri, atlamalı"}
+{"id":"cm-0003","input":["q:2:255","q:2:255:9"],"expected":-1,"note":"K-35 madde 3 zinciri, atlamalı"}
+{"id":"cm-0004","input":["q:2:255","q:2:255-256"],"expected":-1,"note":"K-35 madde 3 zinciri, atlamalı"}
+{"id":"cm-0005","input":["q:2:255","q:2:255-257"],"expected":-1,"note":"K-35 madde 3 zinciri, atlamalı"}
+{"id":"cm-0006","input":["q:2:255","q:2:256"],"expected":-1,"note":"K-35 madde 3 zinciri, atlamalı"}
+{"id":"cm-0007","input":["q:2:255:2","q:2:255:2-3"],"expected":-1,"note":"K-35 madde 3 zinciri, ardışık: aynı başlangıçta tek kelime önce"}
+{"id":"cm-0008","input":["q:2:255:2","q:2:255:9"],"expected":-1,"note":"K-35 madde 3 zinciri, atlamalı"}
+{"id":"cm-0009","input":["q:2:255:2","q:2:255-256"],"expected":-1,"note":"K-35 madde 3 zinciri, atlamalı"}
+{"id":"cm-0010","input":["q:2:255:2","q:2:255-257"],"expected":-1,"note":"K-35 madde 3 zinciri, atlamalı"}
+{"id":"cm-0011","input":["q:2:255:2","q:2:256"],"expected":-1,"note":"K-35 madde 3 zinciri, atlamalı"}
+{"id":"cm-0012","input":["q:2:255:2-3","q:2:255:9"],"expected":-1,"note":"K-35 madde 3 zinciri, ardışık: kelime ve kelime aralığı başlangıç kelimesine göre"}
+{"id":"cm-0013","input":["q:2:255:2-3","q:2:255-256"],"expected":-1,"note":"K-35 madde 3 zinciri, atlamalı"}
+{"id":"cm-0014","input":["q:2:255:2-3","q:2:255-257"],"expected":-1,"note":"K-35 madde 3 zinciri, atlamalı"}
+{"id":"cm-0015","input":["q:2:255:2-3","q:2:256"],"expected":-1,"note":"K-35 madde 3 zinciri, atlamalı"}
+{"id":"cm-0016","input":["q:2:255:9","q:2:255-256"],"expected":-1,"note":"K-35 madde 3 zinciri, ardışık: kelimeler âyet aralığından önce"}
+{"id":"cm-0017","input":["q:2:255:9","q:2:255-257"],"expected":-1,"note":"K-35 madde 3 zinciri, atlamalı"}
+{"id":"cm-0018","input":["q:2:255:9","q:2:256"],"expected":-1,"note":"K-35 madde 3 zinciri, atlamalı"}
+{"id":"cm-0019","input":["q:2:255-256","q:2:255-257"],"expected":-1,"note":"K-35 madde 3 zinciri, ardışık: âyet aralıkları bitişe göre"}
+{"id":"cm-0020","input":["q:2:255-256","q:2:256"],"expected":-1,"note":"K-35 madde 3 zinciri, atlamalı"}
+{"id":"cm-0021","input":["q:2:255-257","q:2:256"],"expected":-1,"note":"K-35 madde 3 zinciri, ardışık: önce sure ve başlangıç âyeti"}
+{"id":"cm-0022","input":["q:2:255","q:2:255"],"expected":0,"note":"Eşitlik; Çapa şeması §11 compare"}
+{"id":"cm-0023","input":["q:2:255-257","q:2:255-257"],"expected":0,"note":"Eşitlik, âyet aralığı"}
+{"id":"cm-0024","input":["rn:sozler:soz-10:hakikat-3:p4@120-184","rn:sozler:soz-10:hakikat-3:p4@120-184"],"expected":0,"note":"Eşitlik, aralıklı paragraf"}
+{"id":"cm-0025","input":["konu:tevhid","konu:tevhid"],"expected":0,"note":"Eşitlik, konu"}
+{"id":"cm-0026","input":["meal:elmalili:2:255@10-48","meal:elmalili:2:255@10-48"],"expected":0,"note":"Eşitlik, aralıklı meal"}
+{"id":"cm-0027","input":["q:2:255:2-9","q:2:255:3"],"expected":-1,"note":"K-35 madde 3: kelime aralığı başlangıç kelimesine göre; önce tür sırası tersini verirdi"}
+{"id":"cm-0028","input":["q:2:255:3","q:2:255:3-4"],"expected":-1,"note":"K-35 madde 3: aynı başlangıçta tek kelime önce"}
+{"id":"cm-0029","input":["q:2:255:2-3","q:2:255:2-9"],"expected":-1,"note":"K-35 madde 3: aynı başlangıçta bitişe göre"}
+{"id":"cm-0030","input":["q:2:255:999","q:2:255-256"],"expected":-1,"note":"K-35 madde 3: kelimeler âyet aralığından önce"}
+{"id":"cm-0031","input":["q:2:254-257","q:2:255"],"expected":-1,"note":"Çapa şeması §11: q ve qa sure ve başlangıç âyetine göre birlikte dizilir"}
+{"id":"cm-0032","input":["q:2:255-286","q:2:256"],"expected":-1,"note":"Âyet aralığı başlangıç âyetiyle dizilir, kapsadığı âyetle değil; K-35 madde 3"}
+{"id":"cm-0033","input":["q:2:286","q:3:1"],"expected":-1,"note":"Önce sure; K-35 madde 3"}
+{"id":"cm-0034","input":["q:2:1","q:10:1"],"expected":-1,"note":"Sure sayı olarak (dizgi sırası tersini verirdi); Çapa şeması §11"}
+{"id":"cm-0035","input":["q:2:9","q:2:10"],"expected":-1,"note":"Âyet sayı olarak; Çapa şeması §11"}
+{"id":"cm-0036","input":["q:2:255:9","q:2:255:10"],"expected":-1,"note":"Kelime sayı olarak; Çapa şeması §11"}
+{"id":"cm-0037","input":["q:114:1","meal:elmalili:1:1"],"expected":-1,"note":"Tür önce: Kur'an < meal (dizgi sırası tersini verirdi); Çapa şeması §11"}
+{"id":"cm-0038","input":["q:2:255-257","meal:elmalili:1:1"],"expected":-1,"note":"Tür önce: qa < meal; Çapa şeması §11"}
+{"id":"cm-0039","input":["meal:elmalili:114:1","tf:elmalili:1-1-1:p1"],"expected":-1,"note":"Tür önce: meal < tf; Çapa şeması §11"}
+{"id":"cm-0040","input":["tf:elmalili:1-1-1:p1","tf:deneme:mukaddime:p1"],"expected":-1,"note":"Tür önce: tf < tfb (eser sırası tersini verirdi); Çapa şeması §11"}
+{"id":"cm-0041","input":["tf:elmalili:mukaddime:p4","rn:a:p1"],"expected":-1,"note":"Tür önce: tfb < rn (dizgi sırası tersini verirdi); Çapa şeması §11"}
+{"id":"cm-0042","input":["rn:z:p9","h:a:1"],"expected":-1,"note":"Tür önce: rn < h (dizgi sırası tersini verirdi); Çapa şeması §11"}
+{"id":"cm-0043","input":["h:z:9","ht:a:a:1"],"expected":-1,"note":"Tür önce: h < ht; Çapa şeması §11"}
+{"id":"cm-0044","input":["ht:z:z:9","k:a:p1"],"expected":-1,"note":"Tür önce: ht < k; Çapa şeması §11"}
+{"id":"cm-0045","input":["k:z:p9","konu:a"],"expected":-1,"note":"Tür önce: k < konu; Çapa şeması §11"}
+{"id":"cm-0046","input":["meal:elmalili:9:1","meal:elmalili:10:1"],"expected":-1,"note":"Meal sure sayı olarak; Çapa şeması §11"}
+{"id":"cm-0047","input":["meal:a:3:1","meal:b:1:1"],"expected":-1,"note":"K-35 madde 3: alanlar soldan sağa, meal adı sureden önce"}
+{"id":"cm-0048","input":["meal:elmalili:2:255","meal:elmalili:2:255@0-1"],"expected":-1,"note":"Aralıksız kayıt aralıklıdan önce; Çapa şeması §11, K-35 madde 3"}
+{"id":"cm-0049","input":["meal:elmalili:2:255@9-100","meal:elmalili:2:255@10-11"],"expected":-1,"note":"K-35 madde 3: aralık önce başlangıçla, sayı olarak"}
+{"id":"cm-0050","input":["meal:elmalili:2:255@10-48","meal:elmalili:2:255@10-49"],"expected":-1,"note":"K-35 madde 3: aynı başlangıçta bitişle"}
+{"id":"cm-0051","input":["tf:elmalili:2-255-257:p9","tf:elmalili:2-255-257:p10"],"expected":-1,"note":"Paragraf sayı olarak; Çapa şeması §11"}
+{"id":"cm-0052","input":["tf:elmalili:2-255-255:p9","tf:elmalili:2-255-257:p1"],"expected":-1,"note":"K-35 madde 3: alanlar soldan sağa, son p'den önce"}
+{"id":"cm-0053","input":["tf:elmalili:2-255-257:p9","tf:elmalili:2-256-256:p1"],"expected":-1,"note":"K-35 madde 3: alanlar soldan sağa, ilk son'dan önce"}
+{"id":"cm-0054","input":["tf:elmalili:9-1-1:p1","tf:elmalili:10-1-1:p1"],"expected":-1,"note":"Tefsir sure sayı olarak; Çapa şeması §11"}
+{"id":"cm-0055","input":["tf:elmalili:mukaddime:p4","tf:elmalili:sure-2-giris:p1"],"expected":-1,"note":"tfb: bölüm ASCII ve p'den önce; K-35 madde 3"}
+{"id":"cm-0056","input":["tf:elmalili:mukaddime:p9","tf:elmalili:mukaddime:p10"],"expected":-1,"note":"tfb: paragraf sayı olarak"}
+{"id":"cm-0057","input":["rn:sozler:p9","rn:sozler:p10"],"expected":-1,"note":"p9 < p10, sayı olarak; Çapa şeması §11"}
+{"id":"cm-0058","input":["rn:sozler:soz-10:p1","rn:sozler:soz-9:p1"],"expected":-1,"note":"Slug ASCII: soz-10 < soz-9; Çapa şeması §11"}
+{"id":"cm-0059","input":["rn:sozler:p9","rn:sozler:deneme:p1"],"expected":-1,"note":"K-35 madde 3: yol p'den önce, kısa önek önce (dizgi sırası tersini verirdi)"}
+{"id":"cm-0060","input":["rn:sozler:soz-10:p9","rn:sozler:soz-10:hakikat-3:p1"],"expected":-1,"note":"K-35 madde 3: yolda kısa önek önce"}
+{"id":"cm-0061","input":["rn:a:b:p1","rn:a-b:p1"],"expected":-1,"note":"K-35 madde 3: yol öğe öğe (a < a-b); birleşik dizgi sırası tersini verirdi"}
+{"id":"cm-0062","input":["rn:sozler:soz-10:hakikat-3:p1","rn:sozler:soz-9:p1"],"expected":-1,"note":"K-35 madde 3: yol öğe öğe, öğe farkı uzunluktan önce"}
+{"id":"cm-0063","input":["rn:sozler:soz-10:hakikat-3:p4","rn:sozler:soz-10:hakikat-3:p4@0-5"],"expected":-1,"note":"K-35 madde 3 örneği: p4 < p4@0-5"}
+{"id":"cm-0064","input":["rn:sozler:soz-10:hakikat-3:p4@0-5","rn:sozler:soz-10:hakikat-3:p4:s1"],"expected":-1,"note":"K-35 madde 3 örneği: p4@0-5 < p4:s1"}
+{"id":"cm-0065","input":["rn:sozler:soz-10:hakikat-3:p4","rn:sozler:soz-10:hakikat-3:p4:s1"],"expected":-1,"note":"K-35 madde 3 örneği: p4 < p4:s1"}
+{"id":"cm-0066","input":["rn:sozler:soz-10:hakikat-3:p4:s9","rn:sozler:soz-10:hakikat-3:p4:s10"],"expected":-1,"note":"Cümle sayı olarak; Çapa şeması §11"}
+{"id":"cm-0067","input":["rn:sozler:soz-10:hakikat-3:p4:s2","rn:sozler:soz-10:hakikat-3:p5"],"expected":-1,"note":"K-35 madde 3: p cümleden önce"}
+{"id":"cm-0068","input":["h:buhari:9","h:buhari:10"],"expected":-1,"note":"Hadis no sayı olarak; Çapa şeması §11"}
+{"id":"cm-0069","input":["h:buhari:52","h:muslim:1"],"expected":-1,"note":"K-35 madde 3: koleksiyon no'dan önce"}
+{"id":"cm-0070","input":["h:buhari:52","h:buhari:52@0-1"],"expected":-1,"note":"Aralıksız önce; Çapa şeması §11"}
+{"id":"cm-0071","input":["ht:miras:tecrid:15","ht:naim:buhari:1"],"expected":-1,"note":"K-35 madde 3: çeviri önce"}
+{"id":"cm-0072","input":["ht:naim:buhari:99","ht:naim:tecrid:1"],"expected":-1,"note":"K-35 madde 3: koleksiyon no'dan önce"}
+{"id":"cm-0073","input":["k:kisas-i-enbiya:p9","k:kisas-i-enbiya:hz-ibrahim:p1"],"expected":-1,"note":"K-35 madde 3: kitap yolunda kısa önek önce (dizgi sırası tersini verirdi)"}
+{"id":"cm-0074","input":["k:kisas-i-enbiya:hz-ibrahim:p2","k:kisas-i-enbiya:hz-ibrahim:p2@0-5"],"expected":-1,"note":"Aralıksız önce; Çapa şeması §11"}
+{"id":"cm-0075","input":["konu:a-c","konu:ab"],"expected":-1,"note":"Slug ASCII: - (0x2D) < b (0x62); kültüre duyarlı karşılaştırma farklı sonuç verebilir"}
+{"id":"cm-0076","input":["konu:tevhid","konu:tevhid-1"],"expected":-1,"note":"Slug ASCII: kısa önek önce"}
+{"id":"cm-0077","input":["tf:diger:2-255-257:p3","tf:elmalili:2-255-257:p3"],"expected":-1,"note":"K-35 madde 3: alanlar kanonik dizgideki soldan sağa sırayla; eser ASCII (d < e)"}
+{"id":"cm-0078","input":["tf:diger:mukaddime:p4","tf:elmalili:mukaddime:p4"],"expected":-1,"note":"K-35 madde 3: tfb'de eser ASCII (d < e)"}
+{"id":"cm-0079","input":["tf:elmalili:giris:p1","tf:elmalili:mukaddime:p1"],"expected":-1,"note":"K-35 madde 3: tfb'de bölüm ASCII (g < m)"}

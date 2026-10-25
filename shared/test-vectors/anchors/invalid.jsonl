@@ -1,0 +1,192 @@
+{"id":"an-0002","input":"q:2:255:7-3","expected":"TERS_ARALIK","note":"ilk > son; Çapa şeması §4"}
+{"id":"an-0003","input":"q:2:287","expected":"AYET_ARALIGI","note":"Bakara 286 âyet; Çapa şeması §4"}
+{"id":"an-0005","input":"rn:sözler:soz-10:p4","expected":"BICIM","note":"slug küçük harf ASCII; Çapa şeması §2 madde 9; K-35 madde 1"}
+{"id":"an-0006","input":"rn:sozler:soz-10:hakikat-3:p4@184-120","expected":"TERS_ARALIK","note":"başlangıç > bitiş; Çapa şeması §2 madde 5"}
+{"id":"an-0038","input":"q:115:1","expected":"SURE_ARALIGI","note":"Sure 114'ü aşıyor; Çapa şeması §4"}
+{"id":"an-0039","input":"q:2:255:3-3","expected":"KANONIK_DEGIL","note":"Tek kelime aralık olarak yazılmış; Çapa şeması §4"}
+{"id":"an-0040","input":"q:2:255-255","expected":"KANONIK_DEGIL","note":"Tek âyet aralık olarak yazılmış; Çapa şeması §4"}
+{"id":"an-0041","input":"q:2:257-255","expected":"TERS_ARALIK","note":"Âyet aralığında ilk > son; Çapa şeması §4"}
+{"id":"an-0042","input":"konu:tevhid@0-5","expected":"BICIM","note":"Konu çapasına @ eklenmez; Çapa şeması §4"}
+{"id":"an-0043","input":"q:02:255","expected":"BICIM","note":"Baştaki sıfır; Çapa şeması §4"}
+{"id":"an-0044","input":"Q:2:255","expected":"BICIM","note":"Büyük harf; Çapa şeması §4; K-35 madde 1"}
+{"id":"an-0045","input":"q:2:255@0-10","expected":"BICIM","note":"Kur'an çapasına @ eklenmez; Çapa şeması §4"}
+{"id":"an-0046","input":"rn:sozler:p4:p5","expected":"BICIM","note":"p4 ayrılmış ad; Çapa şeması §4"}
+{"id":"an-0047","input":"rn:sözler:p1","expected":"BICIM","note":"ASCII dışı harf; Çapa şeması §4"}
+{"id":"an-0048","input":"tf:elmalili:2-255:p3","expected":"BICIM","note":"Tefsir aralığının iki ucu zorunlu; Çapa şeması §4"}
+{"id":"an-0049","input":"meal:elmalili:2:255@48-10","expected":"TERS_ARALIK","note":"başlangıç ≥ bitiş; Çapa şeması §4"}
+{"id":"an-0050","input":"h:muslim:2564a","expected":"BICIM","note":"Alt numara desteklenmiyor (ÇŞ-3); Çapa şeması §4"}
+{"id":"an-0051","input":"q:0:1","expected":"BICIM","note":"Sure 0: §3 K3 sıfırla başlamaz; K-35 madde 1 (desen anlam denetiminden önce)"}
+{"id":"an-0052","input":"q:2:0","expected":"BICIM","note":"Âyet 0: §3 K3"}
+{"id":"an-0053","input":"q:2:255:0","expected":"BICIM","note":"Kelime 0: §3 K3"}
+{"id":"an-0054","input":"","expected":"BICIM","note":"Boş dizgi; §3 desenleri"}
+{"id":"an-0055","input":"q:","expected":"BICIM","note":"Yarım çapa; §3 q deseni"}
+{"id":"an-0056","input":"q:1:1\n","expected":"BICIM","note":"Sondaki satır sonu; K-35 madde 1 karakter kümesi (Python re $ satır sonundan önce de eşler)"}
+{"id":"an-0057","input":" q:1:1","expected":"BICIM","note":"Baştaki boşluk; K-35 madde 1 karakter kümesi"}
+{"id":"an-0058","input":"q:1:1 ","expected":"BICIM","note":"Sondaki boşluk; K-35 madde 1 karakter kümesi"}
+{"id":"an-0059","input":"rn:sozler:s1:p1","expected":"BICIM","note":"s1 ayrılmış ad; Çapa şeması §2 madde 7, §3 SEG"}
+{"id":"an-0060","input":"rn:p1","expected":"BICIM","note":"Kitap yok, p1 bölüm adı olamaz; §3 rn deseni"}
+{"id":"an-0061","input":"k:p1","expected":"BICIM","note":"Kitap yok, p1 bölüm adı olamaz; §3 k deseni"}
+{"id":"an-0062","input":"rn:soz--10:p1","expected":"BICIM","note":"Ardışık tire; §3 SLUG"}
+{"id":"an-0063","input":"rn:soz-:p1","expected":"BICIM","note":"Sondaki tire; §3 SLUG"}
+{"id":"an-0064","input":"rn:10-soz:p1","expected":"BICIM","note":"Rakamla başlayan slug; §3 SLUG"}
+{"id":"an-0065","input":"rn:sozler:soz-10:hakikat-3:p4:s2@0-5","expected":"BICIM","note":"Cümle çapasına @ eklenmez; Çapa şeması §2 madde 6, §3 rn deseni"}
+{"id":"an-0066","input":"q:2:255:3-7@0-5","expected":"BICIM","note":"Kur'an kelime aralığına @ eklenmez; Çapa şeması §2 madde 6"}
+{"id":"an-0067","input":"q:2:255-257@0-5","expected":"BICIM","note":"Âyet aralığına @ eklenmez; Çapa şeması §2 madde 6"}
+{"id":"an-0068","input":"meal:elmalili:115:1","expected":"SURE_ARALIGI","note":"Meal: sure 114'ü aşıyor; Çapa şeması §2 madde 1"}
+{"id":"an-0069","input":"tf:elmalili:115-1-1:p1","expected":"SURE_ARALIGI","note":"Tefsir: sure 114'ü aşıyor; Çapa şeması §2 madde 1"}
+{"id":"an-0070","input":"meal:elmalili:2:287","expected":"AYET_ARALIGI","note":"Meal: Bakara 286 âyet; Çapa şeması §2 madde 1"}
+{"id":"an-0071","input":"tf:elmalili:2-285-287:p1","expected":"AYET_ARALIGI","note":"Tefsir aralığının sonu surenin âyet sayısını aşıyor; Çapa şeması §2 madde 1, 4"}
+{"id":"an-0072","input":"tf:elmalili:2-257-255:p1","expected":"TERS_ARALIK","note":"Tefsir aralığında ilk > son; Çapa şeması §2 madde 4"}
+{"id":"an-0073","input":"meal:elmalili:2:255@10-10","expected":"TERS_ARALIK","note":"başlangıç = bitiş; Çapa şeması §2 madde 5, §4 (başlangıç ≥ bitiş)"}
+{"id":"an-0074","input":"q:2:285-287","expected":"AYET_ARALIGI","note":"Âyet aralığının sonu surenin âyet sayısını aşıyor; Çapa şeması §2 madde 3"}
+{"id":"an-0075","input":"q:1000:1","expected":"BICIM","note":"K-35 madde 2: sure en çok üç hane"}
+{"id":"an-0076","input":"q:2:255:1000","expected":"BICIM","note":"K-35 madde 2: kelime en çok üç hane"}
+{"id":"an-0077","input":"meal:elmalili:2:255@0-0","expected":"BICIM","note":"K-35 madde 2: aralık bitişi 0 olamaz"}
+{"id":"an-0078","input":"meal:elmalili:2:255@5-0","expected":"BICIM","note":"K-35 madde 2: aralık bitişi 0 olamaz (desen, ters aralıktan önce gelir)"}
+{"id":"an-0079","input":"meal:elmalili:2:255@05-10","expected":"BICIM","note":"Aralık başlangıcında baştaki sıfır; Çapa şeması §3 ARA"}
+{"id":"an-0080","input":"q:2:\u0662\u0665\u0665","expected":"BICIM","note":"Arapça-Hint rakamları; Çapa şeması §3 yalnız ASCII rakam ([0-9]); K-35 madde 1"}
+{"id":"an-0081","input":"konu:tevhıd","expected":"BICIM","note":"Noktasız ı (U+0131); Çapa şeması §2 madde 9; K-35 madde 1"}
+{"id":"an-0082","input":"konu:İnce","expected":"BICIM","note":"Noktalı büyük İ (U+0130); Çapa şeması §2 madde 9; K-35 madde 1"}
+{"id":"an-0083","input":"q:2:287:1","expected":"AYET_ARALIGI","note":"Kelime çapasında âyet sınırı (Bakara 286 âyet); Çapa şeması §2 madde 1"}
+{"id":"an-0084","input":"q:115:1-2","expected":"SURE_ARALIGI","note":"Âyet aralığında sure sınırı; Çapa şeması §2 madde 1"}
+{"id":"an-0085","input":"rn:sozler:p0","expected":"BICIM","note":"Paragraf numarası 0; Çapa şeması §2 para ::= p sayi, §3 SAYI"}
+{"id":"an-0086","input":"rn:sozler:p4:s0","expected":"BICIM","note":"Cümle numarası 0; Çapa şeması §2 cumle ::= s sayi, §3 SAYI"}
+{"id":"an-0087","input":"h:buhari:0","expected":"BICIM","note":"Hadis numarası 0; Çapa şeması §3 SAYI"}
+{"id":"an-0088","input":"tf:elmalili:2-255-257:p3:s1","expected":"BICIM","note":"Cümle çapası yalnız Risale'de; Çapa şeması §3 tf deseni"}
+{"id":"an-0089","input":"k:kisas-i-enbiya:hz-ibrahim:p2:s1","expected":"BICIM","note":"Kitapta cümle çapası yok; Çapa şeması §3 k deseni"}
+{"id":"an-0090","input":"2:255","expected":"BICIM","note":"İnsan yazımı çapa değildir, ayrı ayrıştırıcıyla çevrilir; Çapa şeması §2 madde 9"}
+{"id":"an-0091","input":"quran:2:255","expected":"BICIM","note":"Eski plan biçimi; Çapa şeması giriş, §3 önekleri"}
+{"id":"an-0092","input":"konu:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@0-5","expected":"UZUNLUK","note":"K-35 madde 1 önceliği: toplam 256 sınırı, desenden önce gelir (konu çapasında @ da desen dışı olurdu)"}
+{"id":"an-0093","input":"konu:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@0-5","expected":"BICIM","note":"K-35 madde 1 önceliği: desen, slug sınırından önce gelir (konu çapasına @ eklenmez; slug 65 karakter)"}
+{"id":"an-0094","input":"Q:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","expected":"BICIM","note":"K-35 madde 1 önceliği: karakter kümesi, uzunluktan önce gelir"}
+{"id":"an-0095","input":"tf:elmalili:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:p1@5-3","expected":"UZUNLUK","note":"K-35 madde 1 önceliği: slug sınırı (tfb bölüm adı 65 karakter), TERS_ARALIK'tan önce gelir"}
+{"id":"an-0096","input":"rn:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:p1@5-3","expected":"UZUNLUK","note":"K-35 madde 1 önceliği: slug sınırı (Risale kitap adı 65 karakter), TERS_ARALIK'tan önce gelir"}
+{"id":"an-0097","input":"meal:elmalili:115:1@0-2147483648","expected":"UZUNLUK","note":"K-35 madde 1 önceliği: sayı sınırı, SURE_ARALIGI'ndan önce gelir"}
+{"id":"an-0098","input":"meal:elmalili:2:255@5-2147483648","expected":"UZUNLUK","note":"K-35 madde 1 önceliği: sayı sınırı, TERS_ARALIK'tan önce gelir"}
+{"id":"an-0099","input":"q:115:300","expected":"SURE_ARALIGI","note":"K-35 madde 1 önceliği: SURE_ARALIGI, AYET_ARALIGI'ndan önce gelir"}
+{"id":"an-0100","input":"q:2:287:7-3","expected":"AYET_ARALIGI","note":"K-35 madde 1 önceliği: AYET_ARALIGI, TERS_ARALIK'tan önce gelir"}
+{"id":"an-0101","input":"q:115:1-0","expected":"BICIM","note":"K-35 madde 1 önceliği: desen (aralık ucu 0 olamaz), SURE_ARALIGI'ndan önce gelir"}
+{"id":"an-0102","input":"rn:sozler:p2147483648","expected":"UZUNLUK","note":"K-35 madde 1 önceliği: paragraf sayısı 2.147.483.647'yi aşıyor"}
+{"id":"an-0103","input":"rn:sozler:p1:s2147483648","expected":"UZUNLUK","note":"K-35 madde 1 önceliği: cümle sayısı 2.147.483.647'yi aşıyor"}
+{"id":"an-0104","input":"tf:elmalili:p4:p1","expected":"BICIM","note":"Çapa şeması §2 madde 7: p4 ayrılmış ad, tfb bölüm adı olamaz; K-35 madde 1 (desen)"}
+{"id":"an-0105","input":"k:a:p4:p1","expected":"BICIM","note":"Çapa şeması §2 madde 7: p4 ayrılmış ad, kitap yolunun ortasında da bölüm adı olamaz; K-35 madde 1 (desen)"}
+{"id":"an-0106","input":"konu:Tevhid","expected":"BICIM","note":"Büyük harfli slug; Çapa şeması §2 madde 9, K-35 madde 1 (karakter kümesi)"}
+{"id":"an-0107","input":"rn:Sozler:p1","expected":"BICIM","note":"Büyük harfli slug; Çapa şeması §2 madde 9, K-35 madde 1 (karakter kümesi)"}
+{"id":"an-s001-fazla","input":"q:1:8","expected":"AYET_ARALIGI"}
+{"id":"an-s002-fazla","input":"q:2:287","expected":"AYET_ARALIGI"}
+{"id":"an-s003-fazla","input":"q:3:201","expected":"AYET_ARALIGI"}
+{"id":"an-s004-fazla","input":"q:4:177","expected":"AYET_ARALIGI"}
+{"id":"an-s005-fazla","input":"q:5:121","expected":"AYET_ARALIGI"}
+{"id":"an-s006-fazla","input":"q:6:166","expected":"AYET_ARALIGI"}
+{"id":"an-s007-fazla","input":"q:7:207","expected":"AYET_ARALIGI"}
+{"id":"an-s008-fazla","input":"q:8:76","expected":"AYET_ARALIGI"}
+{"id":"an-s009-fazla","input":"q:9:130","expected":"AYET_ARALIGI"}
+{"id":"an-s010-fazla","input":"q:10:110","expected":"AYET_ARALIGI"}
+{"id":"an-s011-fazla","input":"q:11:124","expected":"AYET_ARALIGI"}
+{"id":"an-s012-fazla","input":"q:12:112","expected":"AYET_ARALIGI"}
+{"id":"an-s013-fazla","input":"q:13:44","expected":"AYET_ARALIGI"}
+{"id":"an-s014-fazla","input":"q:14:53","expected":"AYET_ARALIGI"}
+{"id":"an-s015-fazla","input":"q:15:100","expected":"AYET_ARALIGI"}
+{"id":"an-s016-fazla","input":"q:16:129","expected":"AYET_ARALIGI"}
+{"id":"an-s017-fazla","input":"q:17:112","expected":"AYET_ARALIGI"}
+{"id":"an-s018-fazla","input":"q:18:111","expected":"AYET_ARALIGI"}
+{"id":"an-s019-fazla","input":"q:19:99","expected":"AYET_ARALIGI"}
+{"id":"an-s020-fazla","input":"q:20:136","expected":"AYET_ARALIGI"}
+{"id":"an-s021-fazla","input":"q:21:113","expected":"AYET_ARALIGI"}
+{"id":"an-s022-fazla","input":"q:22:79","expected":"AYET_ARALIGI"}
+{"id":"an-s023-fazla","input":"q:23:119","expected":"AYET_ARALIGI"}
+{"id":"an-s024-fazla","input":"q:24:65","expected":"AYET_ARALIGI"}
+{"id":"an-s025-fazla","input":"q:25:78","expected":"AYET_ARALIGI"}
+{"id":"an-s026-fazla","input":"q:26:228","expected":"AYET_ARALIGI"}
+{"id":"an-s027-fazla","input":"q:27:94","expected":"AYET_ARALIGI"}
+{"id":"an-s028-fazla","input":"q:28:89","expected":"AYET_ARALIGI"}
+{"id":"an-s029-fazla","input":"q:29:70","expected":"AYET_ARALIGI"}
+{"id":"an-s030-fazla","input":"q:30:61","expected":"AYET_ARALIGI"}
+{"id":"an-s031-fazla","input":"q:31:35","expected":"AYET_ARALIGI"}
+{"id":"an-s032-fazla","input":"q:32:31","expected":"AYET_ARALIGI"}
+{"id":"an-s033-fazla","input":"q:33:74","expected":"AYET_ARALIGI"}
+{"id":"an-s034-fazla","input":"q:34:55","expected":"AYET_ARALIGI"}
+{"id":"an-s035-fazla","input":"q:35:46","expected":"AYET_ARALIGI"}
+{"id":"an-s036-fazla","input":"q:36:84","expected":"AYET_ARALIGI"}
+{"id":"an-s037-fazla","input":"q:37:183","expected":"AYET_ARALIGI"}
+{"id":"an-s038-fazla","input":"q:38:89","expected":"AYET_ARALIGI"}
+{"id":"an-s039-fazla","input":"q:39:76","expected":"AYET_ARALIGI"}
+{"id":"an-s040-fazla","input":"q:40:86","expected":"AYET_ARALIGI"}
+{"id":"an-s041-fazla","input":"q:41:55","expected":"AYET_ARALIGI"}
+{"id":"an-s042-fazla","input":"q:42:54","expected":"AYET_ARALIGI"}
+{"id":"an-s043-fazla","input":"q:43:90","expected":"AYET_ARALIGI"}
+{"id":"an-s044-fazla","input":"q:44:60","expected":"AYET_ARALIGI"}
+{"id":"an-s045-fazla","input":"q:45:38","expected":"AYET_ARALIGI"}
+{"id":"an-s046-fazla","input":"q:46:36","expected":"AYET_ARALIGI"}
+{"id":"an-s047-fazla","input":"q:47:39","expected":"AYET_ARALIGI"}
+{"id":"an-s048-fazla","input":"q:48:30","expected":"AYET_ARALIGI"}
+{"id":"an-s049-fazla","input":"q:49:19","expected":"AYET_ARALIGI"}
+{"id":"an-s050-fazla","input":"q:50:46","expected":"AYET_ARALIGI"}
+{"id":"an-s051-fazla","input":"q:51:61","expected":"AYET_ARALIGI"}
+{"id":"an-s052-fazla","input":"q:52:50","expected":"AYET_ARALIGI"}
+{"id":"an-s053-fazla","input":"q:53:63","expected":"AYET_ARALIGI"}
+{"id":"an-s054-fazla","input":"q:54:56","expected":"AYET_ARALIGI"}
+{"id":"an-s055-fazla","input":"q:55:79","expected":"AYET_ARALIGI"}
+{"id":"an-s056-fazla","input":"q:56:97","expected":"AYET_ARALIGI"}
+{"id":"an-s057-fazla","input":"q:57:30","expected":"AYET_ARALIGI"}
+{"id":"an-s058-fazla","input":"q:58:23","expected":"AYET_ARALIGI"}
+{"id":"an-s059-fazla","input":"q:59:25","expected":"AYET_ARALIGI"}
+{"id":"an-s060-fazla","input":"q:60:14","expected":"AYET_ARALIGI"}
+{"id":"an-s061-fazla","input":"q:61:15","expected":"AYET_ARALIGI"}
+{"id":"an-s062-fazla","input":"q:62:12","expected":"AYET_ARALIGI"}
+{"id":"an-s063-fazla","input":"q:63:12","expected":"AYET_ARALIGI"}
+{"id":"an-s064-fazla","input":"q:64:19","expected":"AYET_ARALIGI"}
+{"id":"an-s065-fazla","input":"q:65:13","expected":"AYET_ARALIGI"}
+{"id":"an-s066-fazla","input":"q:66:13","expected":"AYET_ARALIGI"}
+{"id":"an-s067-fazla","input":"q:67:31","expected":"AYET_ARALIGI"}
+{"id":"an-s068-fazla","input":"q:68:53","expected":"AYET_ARALIGI"}
+{"id":"an-s069-fazla","input":"q:69:53","expected":"AYET_ARALIGI"}
+{"id":"an-s070-fazla","input":"q:70:45","expected":"AYET_ARALIGI"}
+{"id":"an-s071-fazla","input":"q:71:29","expected":"AYET_ARALIGI"}
+{"id":"an-s072-fazla","input":"q:72:29","expected":"AYET_ARALIGI"}
+{"id":"an-s073-fazla","input":"q:73:21","expected":"AYET_ARALIGI"}
+{"id":"an-s074-fazla","input":"q:74:57","expected":"AYET_ARALIGI"}
+{"id":"an-s075-fazla","input":"q:75:41","expected":"AYET_ARALIGI"}
+{"id":"an-s076-fazla","input":"q:76:32","expected":"AYET_ARALIGI"}
+{"id":"an-s077-fazla","input":"q:77:51","expected":"AYET_ARALIGI"}
+{"id":"an-s078-fazla","input":"q:78:41","expected":"AYET_ARALIGI"}
+{"id":"an-s079-fazla","input":"q:79:47","expected":"AYET_ARALIGI"}
+{"id":"an-s080-fazla","input":"q:80:43","expected":"AYET_ARALIGI"}
+{"id":"an-s081-fazla","input":"q:81:30","expected":"AYET_ARALIGI"}
+{"id":"an-s082-fazla","input":"q:82:20","expected":"AYET_ARALIGI"}
+{"id":"an-s083-fazla","input":"q:83:37","expected":"AYET_ARALIGI"}
+{"id":"an-s084-fazla","input":"q:84:26","expected":"AYET_ARALIGI"}
+{"id":"an-s085-fazla","input":"q:85:23","expected":"AYET_ARALIGI"}
+{"id":"an-s086-fazla","input":"q:86:18","expected":"AYET_ARALIGI"}
+{"id":"an-s087-fazla","input":"q:87:20","expected":"AYET_ARALIGI"}
+{"id":"an-s088-fazla","input":"q:88:27","expected":"AYET_ARALIGI"}
+{"id":"an-s089-fazla","input":"q:89:31","expected":"AYET_ARALIGI"}
+{"id":"an-s090-fazla","input":"q:90:21","expected":"AYET_ARALIGI"}
+{"id":"an-s091-fazla","input":"q:91:16","expected":"AYET_ARALIGI"}
+{"id":"an-s092-fazla","input":"q:92:22","expected":"AYET_ARALIGI"}
+{"id":"an-s093-fazla","input":"q:93:12","expected":"AYET_ARALIGI"}
+{"id":"an-s094-fazla","input":"q:94:9","expected":"AYET_ARALIGI"}
+{"id":"an-s095-fazla","input":"q:95:9","expected":"AYET_ARALIGI"}
+{"id":"an-s096-fazla","input":"q:96:20","expected":"AYET_ARALIGI"}
+{"id":"an-s097-fazla","input":"q:97:6","expected":"AYET_ARALIGI"}
+{"id":"an-s098-fazla","input":"q:98:9","expected":"AYET_ARALIGI"}
+{"id":"an-s099-fazla","input":"q:99:9","expected":"AYET_ARALIGI"}
+{"id":"an-s100-fazla","input":"q:100:12","expected":"AYET_ARALIGI"}
+{"id":"an-s101-fazla","input":"q:101:12","expected":"AYET_ARALIGI"}
+{"id":"an-s102-fazla","input":"q:102:9","expected":"AYET_ARALIGI"}
+{"id":"an-s103-fazla","input":"q:103:4","expected":"AYET_ARALIGI"}
+{"id":"an-s104-fazla","input":"q:104:10","expected":"AYET_ARALIGI"}
+{"id":"an-s105-fazla","input":"q:105:6","expected":"AYET_ARALIGI"}
+{"id":"an-s106-fazla","input":"q:106:5","expected":"AYET_ARALIGI"}
+{"id":"an-s107-fazla","input":"q:107:8","expected":"AYET_ARALIGI"}
+{"id":"an-s108-fazla","input":"q:108:4","expected":"AYET_ARALIGI"}
+{"id":"an-s109-fazla","input":"q:109:7","expected":"AYET_ARALIGI"}
+{"id":"an-s110-fazla","input":"q:110:4","expected":"AYET_ARALIGI"}
+{"id":"an-s111-fazla","input":"q:111:6","expected":"AYET_ARALIGI"}
+{"id":"an-s112-fazla","input":"q:112:5","expected":"AYET_ARALIGI"}
+{"id":"an-s113-fazla","input":"q:113:6","expected":"AYET_ARALIGI"}
+{"id":"an-s114-fazla","input":"q:114:7","expected":"AYET_ARALIGI"}
+{"id":"an-u-derinlik-9","input":"rn:a:b:c:d:e:f:g:h:i:p1","expected":"UZUNLUK"}
+{"id":"an-u-sayi-2147483648","input":"h:deneme:2147483648","expected":"UZUNLUK"}
+{"id":"an-u-slug-65","input":"konu:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","expected":"UZUNLUK"}
+{"id":"an-u-toplam-257","input":"rn:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc:dddddddddddddddddddddddddddddddddddddddddddddddddddddddd:p1","expected":"UZUNLUK"}

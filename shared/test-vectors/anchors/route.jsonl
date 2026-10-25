@@ -1,0 +1,21 @@
+{"id":"ro-0001","input":{"capa":"q:2:255"},"expected":{"native":"mutalaa://q/2/255","web":"/kuran/2/255"},"note":"Çapa şeması §11 rota tablosu"}
+{"id":"ro-0002","input":{"capa":"q:2:255:3-7"},"expected":{"native":"mutalaa://q/2/255/3-7","web":"/kuran/2/255?k=3-7"},"note":"Çapa şeması §11 rota tablosu"}
+{"id":"ro-0003","input":{"capa":"q:2:255-257"},"expected":{"native":"mutalaa://q/2/255-257","web":"/kuran/2/255-257"},"note":"Çapa şeması §11 rota tablosu"}
+{"id":"ro-0004","input":{"capa":"konu:tevhid"},"expected":{"native":"mutalaa://konu/tevhid","web":"/konu/tevhid"},"note":"Çapa şeması §11 rota tablosu"}
+{"id":"ro-0005","input":{"capa":"meal:elmalili:2:255"},"expected":{"native":"mutalaa://meal/elmalili/2/255","web":"/meal/elmalili/2#255"},"note":"Çapa şeması §11 rota tablosu"}
+{"id":"ro-0006","input":{"capa":"tf:elmalili:2-255-257:p3"},"expected":{"native":"mutalaa://tf/elmalili/2-255-257/p3","web":"/tefsir/elmalili/2/255#p3"},"note":"Çapa şeması §11 rota tablosu"}
+{"id":"ro-0007","input":{"capa":"rn:sozler:soz-10:hakikat-3:p4@120-184"},"expected":{"native":"mutalaa://rn/sozler/soz-10/hakikat-3/p4?aralik=120-184","web":"/risale/sozler/soz-10/hakikat-3#p4"},"note":"Çapa şeması §11 rota tablosu"}
+{"id":"ro-0008","input":{"capa":"h:buhari:52"},"expected":{"native":"mutalaa://h/buhari/52","web":"/hadis/buhari/52"},"note":"Çapa şeması §11 rota tablosu"}
+{"id":"ro-0009","input":{"capa":"q:2:255:3"},"expected":{"native":"mutalaa://q/2/255/3","web":null},"note":"K-35 madde 6: tek kelime web tablosunda yok; yerel rota mekanik (§11)"}
+{"id":"ro-0010","input":{"capa":"tf:elmalili:mukaddime:p4"},"expected":{"native":"mutalaa://tf/elmalili/mukaddime/p4","web":null},"note":"K-35 madde 6: âyetsiz tefsir bölümü web tablosunda yok"}
+{"id":"ro-0011","input":{"capa":"rn:sozler:soz-10:hakikat-3:p4:s2"},"expected":{"native":"mutalaa://rn/sozler/soz-10/hakikat-3/p4/s2","web":null},"note":"K-35 madde 6: Risale cümlesi web tablosunda yok"}
+{"id":"ro-0012","input":{"capa":"ht:naim:tecrid:15"},"expected":{"native":"mutalaa://ht/naim/tecrid/15","web":null},"note":"K-35 madde 6: hadis çevirisi web tablosunda yok"}
+{"id":"ro-0013","input":{"capa":"k:kisas-i-enbiya:hz-ibrahim:p2"},"expected":{"native":"mutalaa://k/kisas-i-enbiya/hz-ibrahim/p2","web":null},"note":"K-35 madde 6: kitap web tablosunda yok"}
+{"id":"ro-0014","input":{"capa":"meal:elmalili:2:255@10-48"},"expected":{"native":"mutalaa://meal/elmalili/2/255?aralik=10-48","web":null},"note":"K-35 madde 6: web yalnız aralıksız meal için; aralık ?aralik= sorgusuna gider (§11)"}
+{"id":"ro-0015","input":{"capa":"tf:elmalili:2-255-257:p3@0-12"},"expected":{"native":"mutalaa://tf/elmalili/2-255-257/p3?aralik=0-12","web":null},"note":"K-35 madde 6: web yalnız aralıksız âyetli tefsir için"}
+{"id":"ro-0016","input":{"capa":"h:buhari:52@3-17"},"expected":{"native":"mutalaa://h/buhari/52?aralik=3-17","web":null},"note":"K-35 madde 6: web yalnız aralıksız hadis için"}
+{"id":"ro-0017","input":{"capa":"rn:sozler:soz-10:hakikat-3:p4"},"expected":{"native":"mutalaa://rn/sozler/soz-10/hakikat-3/p4","web":"/risale/sozler/soz-10/hakikat-3#p4"},"note":"K-35 madde 6: Risale paragrafı, web rotasında aralık atılır; aralıksız paragraf aynı web rotasını verir"}
+{"id":"ro-0018","input":{"capa":"q:2:255","sema":"mutalaa-internal"},"expected":{"native":"mutalaa-internal://q/2/255","web":"/kuran/2/255"},"note":"§11 ve K-35 madde 6: şema yalnız yerel rotanın önekidir"}
+{"id":"ro-0019","input":{"capa":"rn:sozler:soz-10:hakikat-3:p4@120-184","sema":"mutalaa-dev"},"expected":{"native":"mutalaa-dev://rn/sozler/soz-10/hakikat-3/p4?aralik=120-184","web":"/risale/sozler/soz-10/hakikat-3#p4"},"note":"§11 ve K-35 madde 6: dev şeması, aralık sorgusuyla"}
+{"id":"ro-0020","input":{"capa":"q:2:255:3","sema":"mutalaa"},"expected":{"native":"mutalaa://q/2/255/3","web":null},"note":"Açık yazılmış varsayılan şema; K-35 madde 6"}
+{"id":"ro-0021","input":{"capa":"tf:elmalili:mukaddime:p4@5-9","sema":"mutalaa-internal"},"expected":{"native":"mutalaa-internal://tf/elmalili/mukaddime/p4?aralik=5-9","web":null},"note":"internal şeması, tablo dışı tür; K-35 madde 6"}

@@ -1,0 +1,78 @@
+{"id":"ct-0001","input":["q:2:255","q:2:255"],"expected":true,"note":"Çapa şeması §11 contains: aynı çapa her zaman kapsar (âyet)"}
+{"id":"ct-0002","input":["q:2:255:3-7","q:2:255:3-7"],"expected":true,"note":"§11: aynı çapa (kelime aralığı)"}
+{"id":"ct-0003","input":["q:2:255-257","q:2:255-257"],"expected":true,"note":"§11: aynı çapa (âyet aralığı)"}
+{"id":"ct-0004","input":["konu:tevhid","konu:tevhid"],"expected":true,"note":"§11: aynı çapa (konu)"}
+{"id":"ct-0005","input":["meal:elmalili:2:255@10-48","meal:elmalili:2:255@10-48"],"expected":true,"note":"§11: aynı çapa (aralıklı meal)"}
+{"id":"ct-0006","input":["rn:sozler:soz-10:hakikat-3:p4:s2","rn:sozler:soz-10:hakikat-3:p4:s2"],"expected":true,"note":"§11 ve K-35 madde 4: cümle çapası kendini kapsar"}
+{"id":"ct-0007","input":["tf:elmalili:mukaddime:p4","tf:elmalili:mukaddime:p4"],"expected":true,"note":"§11: aynı çapa (tfb)"}
+{"id":"ct-0008","input":["h:tecrid:15","h:tecrid:15"],"expected":true,"note":"§11: aynı çapa (hadis)"}
+{"id":"ct-0009","input":["q:2:255","q:2:256"],"expected":false,"note":"Aynı tür, başka âyet"}
+{"id":"ct-0010","input":["h:tecrid:15","h:buhari:15"],"expected":false,"note":"Aynı tür, başka koleksiyon"}
+{"id":"ct-0011","input":["q:2:255-257","q:2:256"],"expected":true,"note":"§11: âyet aralığı aralıktaki âyetleri kapsar (q ve qa aynı Kur'an ailesi)"}
+{"id":"ct-0012","input":["q:2:255-257","q:2:255"],"expected":true,"note":"§11: âyet aralığı, alt uçtaki âyet"}
+{"id":"ct-0013","input":["q:2:255-257","q:2:257"],"expected":true,"note":"§11: âyet aralığı, üst uçtaki âyet (son dahil)"}
+{"id":"ct-0014","input":["q:2:255-257","q:2:256:4"],"expected":true,"note":"§11: âyet aralığı aralıktaki âyetlerin kelimelerini kapsar"}
+{"id":"ct-0015","input":["q:2:255-257","q:2:255-256"],"expected":true,"note":"§11: âyet aralığı iç âyet aralığını kapsar"}
+{"id":"ct-0016","input":["q:2:255-257","q:2:256-257"],"expected":true,"note":"§11: iç âyet aralığı, üst uca dayanan"}
+{"id":"ct-0017","input":["q:2:255-257","q:2:256:2-5"],"expected":true,"note":"K-35 madde 4: âyet aralığı içindeki kelime aralığını kapsar"}
+{"id":"ct-0018","input":["q:2:255-257","q:2:257:1-3"],"expected":true,"note":"K-35 madde 4: üst uçtaki âyetin kelime aralığı"}
+{"id":"ct-0019","input":["q:2:255-257","q:2:254"],"expected":false,"note":"§11: aralık dışındaki âyet"}
+{"id":"ct-0020","input":["q:2:255-257","q:2:258"],"expected":false,"note":"§11: aralık dışındaki âyet"}
+{"id":"ct-0021","input":["q:2:255-257","q:2:258:1"],"expected":false,"note":"§11: aralık dışındaki âyetin kelimesi"}
+{"id":"ct-0022","input":["q:2:255-257","q:2:254-256"],"expected":false,"note":"§11: alt uçtan taşan âyet aralığı iç aralık değildir"}
+{"id":"ct-0023","input":["q:2:255-257","q:2:255-258"],"expected":false,"note":"§11: üst uçtan taşan âyet aralığı iç aralık değildir"}
+{"id":"ct-0024","input":["q:2:255-257","q:2:258:1-2"],"expected":false,"note":"K-35 madde 4: aralık dışındaki kelime aralığı"}
+{"id":"ct-0025","input":["q:2:255","q:2:255:3"],"expected":true,"note":"§11: âyet kendi kelimelerini kapsar"}
+{"id":"ct-0026","input":["q:2:255","q:2:255:3-7"],"expected":true,"note":"§11: âyet kendi kelime aralıklarını kapsar"}
+{"id":"ct-0027","input":["q:2:255:3-7","q:2:255:5"],"expected":true,"note":"§11: kelime aralığı içindeki kelimeyi kapsar"}
+{"id":"ct-0028","input":["q:2:255:3-7","q:2:255:3"],"expected":true,"note":"§11 ve §1: ilk kelime dahil"}
+{"id":"ct-0029","input":["q:2:255:3-7","q:2:255:7"],"expected":true,"note":"§11 ve §1: son kelime dahil"}
+{"id":"ct-0030","input":["q:2:255:3-7","q:2:255:4-6"],"expected":true,"note":"K-35 madde 4: kelime aralığı alt aralığını kapsar"}
+{"id":"ct-0031","input":["q:2:255:3-7","q:2:255:3-4"],"expected":true,"note":"K-35 madde 4: uca dayanan alt aralık"}
+{"id":"ct-0032","input":["q:2:255","q:2:256:3"],"expected":false,"note":"§11: başka âyetin kelimesi"}
+{"id":"ct-0033","input":["q:2:255:3-7","q:2:255:8"],"expected":false,"note":"§11: aralık dışındaki kelime"}
+{"id":"ct-0034","input":["q:2:255:3-7","q:2:255:2"],"expected":false,"note":"§11: aralık dışındaki kelime"}
+{"id":"ct-0035","input":["q:2:255:3-7","q:2:255:5-9"],"expected":false,"note":"K-35 madde 4: taşan kelime aralığı alt aralık değildir"}
+{"id":"ct-0036","input":["q:2:255:3-7","q:2:255:2-4"],"expected":false,"note":"K-35 madde 4: taşan kelime aralığı alt aralık değildir"}
+{"id":"ct-0037","input":["q:2:255:3","q:2:255"],"expected":false,"note":"§11: kelime âyeti kapsamaz (ters yön)"}
+{"id":"ct-0038","input":["q:2:255:3-7","q:2:255"],"expected":false,"note":"§11: kelime aralığı âyeti kapsamaz (ters yön)"}
+{"id":"ct-0039","input":["q:2:255:3","q:2:255:3-4"],"expected":false,"note":"§11: tek kelime kelime aralığını kapsamaz"}
+{"id":"ct-0040","input":["q:2:255","q:2:255-256"],"expected":false,"note":"§11: âyet yalnız kendi kelimelerini ve kelime aralıklarını kapsar, âyet aralığını değil"}
+{"id":"ct-0041","input":["meal:elmalili:2:255","meal:elmalili:2:255@10-48"],"expected":true,"note":"§11: aralıksız birim kendi aralıklarını kapsar (meal)"}
+{"id":"ct-0042","input":["rn:sozler:soz-10:hakikat-3:p4","rn:sozler:soz-10:hakikat-3:p4@120-184"],"expected":true,"note":"§11: aralıksız birim kendi aralıklarını kapsar (Risale paragrafı)"}
+{"id":"ct-0043","input":["h:buhari:52","h:buhari:52@3-17"],"expected":true,"note":"§11: aralıksız birim kendi aralıklarını kapsar (hadis)"}
+{"id":"ct-0044","input":["tf:elmalili:2-255-257:p3","tf:elmalili:2-255-257:p3@0-12"],"expected":true,"note":"§11: aralıksız birim kendi aralıklarını kapsar (tf)"}
+{"id":"ct-0045","input":["tf:elmalili:mukaddime:p4","tf:elmalili:mukaddime:p4@5-9"],"expected":true,"note":"§11: aralıksız birim kendi aralıklarını kapsar (tfb)"}
+{"id":"ct-0046","input":["ht:naim:tecrid:15","ht:naim:tecrid:15@1-2"],"expected":true,"note":"§11: aralıksız birim kendi aralıklarını kapsar (ht)"}
+{"id":"ct-0047","input":["k:kisas-i-enbiya:hz-ibrahim:p2","k:kisas-i-enbiya:hz-ibrahim:p2@7-30"],"expected":true,"note":"§11: aralıksız birim kendi aralıklarını kapsar (k)"}
+{"id":"ct-0048","input":["meal:elmalili:2:255@10-48","meal:elmalili:2:255@20-30"],"expected":true,"note":"§11: [a, b) içindeki [c, d) aralığını kapsar"}
+{"id":"ct-0049","input":["meal:elmalili:2:255@10-48","meal:elmalili:2:255@10-11"],"expected":true,"note":"§11: iç aralık başlangıç ucunda"}
+{"id":"ct-0050","input":["meal:elmalili:2:255@10-48","meal:elmalili:2:255@47-48"],"expected":true,"note":"§11: iç aralık bitiş ucunda (yarı açık, K-26)"}
+{"id":"ct-0051","input":["meal:elmalili:2:255@10-48","meal:elmalili:2:255@9-20"],"expected":false,"note":"§11: başlangıçtan taşan aralık"}
+{"id":"ct-0052","input":["meal:elmalili:2:255@10-48","meal:elmalili:2:255@40-49"],"expected":false,"note":"§11: bitişten taşan aralık"}
+{"id":"ct-0053","input":["meal:elmalili:2:255@10-48","meal:elmalili:2:255@48-50"],"expected":false,"note":"§11 ve K-26: bitişik aralık; bitiş hariç"}
+{"id":"ct-0054","input":["meal:elmalili:2:255@10-48","meal:elmalili:2:255"],"expected":false,"note":"§11: aralık birimin tamamını kapsamaz (ters yön)"}
+{"id":"ct-0055","input":["meal:elmalili:2:255","meal:elmalili:2:256@0-5"],"expected":false,"note":"§11: başka birimin aralığı"}
+{"id":"ct-0056","input":["rn:sozler:soz-10:hakikat-3:p4@120-184","rn:sozler:soz-10:hakikat-3:p5@130-140"],"expected":false,"note":"§11: başka paragrafın aralığı, ofsetler içeride olsa da"}
+{"id":"ct-0057","input":["rn:sozler:soz-10:hakikat-3:p4","rn:sozler:soz-10:hakikat-3:p4:s2"],"expected":true,"note":"§11: paragraf kendi cümle çapalarını yapısal olarak kapsar"}
+{"id":"ct-0058","input":["rn:sozler:soz-10:hakikat-3:p4","rn:sozler:soz-10:hakikat-3:p5:s1"],"expected":false,"note":"§11: başka paragrafın cümlesi"}
+{"id":"ct-0059","input":["rn:sozler:soz-10:hakikat-3:p4@120-184","rn:sozler:soz-10:hakikat-3:p4:s2"],"expected":false,"note":"K-35 madde 4: aralıklı paragraf cümle çapasını kapsamaz"}
+{"id":"ct-0060","input":["rn:sozler:soz-10:hakikat-3:p4:s2","rn:sozler:soz-10:hakikat-3:p4"],"expected":false,"note":"K-35 madde 4: cümle çapası yalnız kendini kapsar"}
+{"id":"ct-0061","input":["rn:sozler:soz-10:hakikat-3:p4:s2","rn:sozler:soz-10:hakikat-3:p4:s3"],"expected":false,"note":"K-35 madde 4: cümle çapası yalnız kendini kapsar"}
+{"id":"ct-0062","input":["rn:sozler:soz-10:hakikat-3:p4:s2","rn:sozler:soz-10:hakikat-3:p4@0-5"],"expected":false,"note":"K-35 madde 4: cümle çapası yalnız kendini kapsar"}
+{"id":"ct-0063","input":["meal:elmalili:2:255","q:2:255"],"expected":false,"note":"§11: farklı türler birbirini kapsamaz; meal ile âyet ilişkisi coveredAyahs ile sorulur"}
+{"id":"ct-0064","input":["q:2:255","meal:elmalili:2:255"],"expected":false,"note":"§11: farklı türler (ters yön)"}
+{"id":"ct-0065","input":["tf:elmalili:2-255-257:p3","q:2:256"],"expected":false,"note":"§11: farklı türler; tefsir ile âyet ilişkisi coveredAyahs ile sorulur"}
+{"id":"ct-0066","input":["q:2:255-257","tf:elmalili:2-255-257:p3"],"expected":false,"note":"§11: farklı türler (ters yön)"}
+{"id":"ct-0067","input":["tf:elmalili:2-255-257:p3","tf:elmalili:mukaddime:p4"],"expected":false,"note":"§11: tf ve tfb farklı türler"}
+{"id":"ct-0068","input":["h:tecrid:15","ht:naim:tecrid:15"],"expected":false,"note":"§11: hadis ve çevirisi farklı türler"}
+{"id":"ct-0069","input":["konu:tevhid","q:2:255"],"expected":false,"note":"§11: farklı türler (konu)"}
+{"id":"ct-0070","input":["rn:sozler:p1","k:sozler:p1"],"expected":false,"note":"§11: rn ve k farklı türler"}
+{"id":"ct-0071","input":["q:2:1-3","q:3:2"],"expected":false,"note":"Sure farkı: 2. surenin 1-3 aralığı 3. surenin 2. âyetini kapsamaz (sure yok sayılsa true çıkardı); Çapa şeması §11"}
+{"id":"ct-0072","input":["q:2:2","q:3:2:1"],"expected":false,"note":"Sure farkı: başka surenin aynı numaralı âyetinin kelimesi; Çapa şeması §11"}
+{"id":"ct-0073","input":["q:2:255:3","q:2:255:3"],"expected":true,"note":"Aynı kelime kendini kapsar; Çapa şeması §11"}
+{"id":"ct-0074","input":["q:2:255:3","q:2:255:4"],"expected":false,"note":"Tek kelime başka kelimeyi kapsamaz; Çapa şeması §11"}
+{"id":"ct-0075","input":["meal:elmalili:2:255","meal:diger:2:255"],"expected":false,"note":"Meal adı farkı: aynı tür, başka kaynak; Çapa şeması §11"}
+{"id":"ct-0076","input":["meal:elmalili:2:255","meal:elmalili:2:256"],"expected":false,"note":"Meal âyet farkı: aynı tür, başka birim; Çapa şeması §11"}
+{"id":"ct-0077","input":["tf:elmalili:2-255-257:p3","tf:diger:2-255-257:p3"],"expected":false,"note":"Eser farkı: aynı tür, başka eser; Çapa şeması §11"}
+{"id":"ct-0078","input":["rn:sozler:soz-10:hakikat-3:p4","rn:sozler:soz-11:hakikat-3:p4"],"expected":false,"note":"Bölüm farkı: aynı kitap, başka söz; Çapa şeması §11"}
