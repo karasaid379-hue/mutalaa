@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { packageName } from '../src/index';
+import { packageName } from '../src/index.js';
 
 describe('package identity', () => {
   it('package.json name, folder name and exported packageName agree', () => {
