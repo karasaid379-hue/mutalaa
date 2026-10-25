@@ -1,6 +1,6 @@
 # A11 · Kur'an yapısı: sure adları, cüz, secde, Medine sayfa eşlemesi
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-07](../../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)
+> **Sürüm:** 1.1 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-07](../../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A10](./A10-tanzil-alimi.md) · **İnsan adımı:** İ-23 (sure adlarının girişi ve onayı) · AS-10 kaynak kararı (proje sahibi)
 > **Ajanlar:** `hat-gelistirici` · `lisans-denetcisi` · `arastirmaci` · `sunucu-gelistirici` (şema eki gerekirse) · `test-yazari` · `inceleyici` · **Beceriler:** `icerik-hatti` · `lisans-kapisi` · `capa-gramer` · `ef-goc` · **Tahmini oturum:** 2–3 (insan beklemesi hariç)
 > **Başlat:** `/asama A11`
@@ -32,7 +32,7 @@ Okuyucunun, aramanın ve atıf ayrıştırıcısının ihtiyaç duyduğu Kur'an 
 
 ## Adımlar
 ### A11.1 · Kaynak ve lisans doğrulaması (AS-10)
-- Tanzil üst veri dosyasının adresi ve kullanım şartı A04'te doğrulanmıştır (`shared/data/ayet-sayilari.json` içindeki `kaynak_url`). Bu aşama dosyayı kalıcı olarak alır ve kaynak kaydını açar.
+- Tanzil üst veri dosyasının adresi A04'te doğrulandı (`shared/data/ayet-sayilari.json` içindeki `kaynak_url`); kullanım şartı belirsiz ([lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.1, [İ-08](../06-insan-adimlari.md)). Bu aşama dosyayı kalıcı olarak alır ve kaynak kaydını açar.
 - `arastirmaci` resmî kaynaktan doğrular ve bağlantısıyla raporlar:
   - Üst veri dosyasının içerdiği alanlar (Arapça sure adı, âyet sayısı, cüz, hizb, secde, sayfa başlangıcı) ve lisans metninin tarihli kopyası için kaynak.
   - AS-10: Medine 604 sayfa sınırlarının kaynağı ve lisansı; adaylar Tanzil üst verisi ve `medine-604-duzen` (QUL ya da QF). QF içeriği hazır veritabanı olarak dağıtılamaz (`kisitlar.hazir_vt_yasak`; lisans defteri §3.1).

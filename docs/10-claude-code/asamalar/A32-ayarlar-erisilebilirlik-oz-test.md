@@ -1,6 +1,6 @@
 # A32 · Ayarlar, ilk açılış tanıtımı, erişilebilirlik, Kaynaklar ve lisanslar, Kurul bilgisi, öz test, hata raporu
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-24](../../00-ozet/02-karar-defteri.md#k-24--tasarım-dili) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-15](../../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları)
+> **Sürüm:** 1.1 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-24](../../00-ozet/02-karar-defteri.md#k-24--tasarım-dili) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-15](../../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları)
 > **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A24](./A24-okuyucu-mushaf-c.md) · [A29](./A29-kutuphane-ve-depolama.md) · **İnsan adımı:** İ-27 (Sentry hesabı ve DSN)
 > **Ajanlar:** `mobil-gelistirici` · `arayuz-denetcisi` · `test-yazari` · `lisans-denetcisi` · `arastirmaci` · `inceleyici` · **Beceriler:** `mobil-ekran` · `test-vektoru` · `lisans-kapisi` · `metin-butunlugu` · **Tahmini oturum:** 4–5
 > **Başlat:** `/asama A32`
@@ -70,7 +70,7 @@ Ayarlar ağacını 01-urun/03 §6'ya göre tamamlar ve erişilebilirlik kurallar
 ### A32.5 · Öz test ekranı
 - Rota `ayarlar/gelistirici/oz-test.tsx` (öneri ad), yalnız `dev` derlemede; vektör dosyaları yalnız `dev` JS paketine girer (07-yayin/03 §2).
 - Koşulan vektörler: `normalize/tr.jsonl`, `normalize/ar.jsonl`, `anchors/{valid,invalid,compare,contains,route}.jsonl`, `offsets/offsets.jsonl`, `fts-query/query.jsonl`. `content-hash/hash.jsonl` koşulmaz, çünkü cihaz özet hesaplamaz (03-veri/01 §7).
-- Ayrıca Arapça sorgu sınaması koşulur (A28 ölçüm kümesindeki Arapça satırların beklenen ilk sonuçları; 07-yayin/03 §9). Bilgi satırları Hermes'teki `'İ'.toLocaleLowerCase('tr')`, `'I'.toLocaleLowerCase('tr')`, `normalize('NFC')` ve `Intl.NumberFormat('tr')` çıktılarını gösterir (MM-11).
+- Ayrıca Arapça sorgu sınaması koşulur (A28 ölçüm kümesindeki Arapça satırların beklenen ilk sonuçları; 07-yayin/03 §9). Bilgi satırları Hermes'teki `'İ'.toLocaleLowerCase('tr')`, `'I'.toLocaleLowerCase('tr')`, `normalize('NFC')` ve `Intl.NumberFormat('tr')` çıktılarını gösterir (MM-11). A04'ten devreden: ekran Hermes'te `\p{Mn}`, adlı grup (`(?<ad>…)`) ve olumsuz ileri bakış desteğini de sınar (`snapSpan` ve çapa desenleri bunlara dayanır; [A04 aşama kaydı](./A04-capa-ve-test-vektorleri.md#aşama-kaydı-kapanış-2026-10-25)); anchors vektörlerinin Hermes'te koşumu bu aşamadadır.
 - Ekran dosya başına geçen ve kalan sayısını, sonda tek satırda "Geçti" ya da "Kaldı" gösterir (`testID` önerisi: `oz-test-sonuc`).
 - **Bitti sayılır:** Emülatörde "Geçti"; MM-11 gözlemleri `/belge-esitle` ile işlendi.
 

@@ -1,6 +1,6 @@
 # A05 · Arama normalizasyonu (TS, C#, Python)
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
+> **Sürüm:** 1.1 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
 > **Faz:** 0 · Hazırlık · **Önkoşul:** [A04](./A04-capa-ve-test-vektorleri.md) · **İnsan adımı:** yok
 > **Ajanlar:** `web-gelistirici` · `sunucu-gelistirici` · `hat-gelistirici` · `test-yazari` · `metin-denetcisi` · `arastirmaci` · `inceleyici` · **Beceriler:** `test-vektoru` · `metin-butunlugu` · `windows-sorun` · **Tahmini oturum:** 2–3
 > **Başlat:** `/asama A05`
@@ -102,6 +102,7 @@ Döngü Arama §1.5 Türkçe tablosunun girdilerini arar; birleşen işaret dosy
 - Türkçe küçük harf asla cihazın ya da işletim sisteminin yerel ayarına bırakılmaz. .NET'te `StringComparison.Ordinal` ve `CultureInfo.InvariantCulture`; düzenli ifadede `[0-9]`.
 - Arapça kural sırası: önce silme (U+064B–U+065F, U+0670, U+06D6–U+06ED, U+0640), sonra harf birleştirme, sonra noktalama; yalın hemze korunur (§1.3 ve §1.5 tablosu).
 - Vektör biçimi: Arama §1.5 ve Test stratejisi §2 Türkçe satırı tek nesnede iki anahtarla verir (`expected: {dar, genis}`); dosyalar JSONL'dir (Proje yapısı §1.2).
+- Unicode sürüm farkı (A04'ten, 2026-10-25): Python 3.13 `unicodedata` 15.1.0, Node Unicode 17.0, .NET ≥ 16. Node'da `Mn` olup Python'da `Mn` olmayan 75 kod noktası var (örn. U+0897), tersi 1. Normalizasyon vektörlerinde ve `Mn` temelli kurallarda (Arapça işaret silme, geniş anahtarda U+0300–U+036F) yalnız eski, yerleşik işaretler kullanılır (U+0302, U+0301, U+0307, U+0651, U+064E); yeni eklenen işaretler vektöre girmez. `snapSpan` normalizasyonla aynı `Mn` verisine dayanır: hat ve sunucu tarafında hesaplanır, cihaz tablosunun sabit kalıp kalmayacağı A05/A21'de netleşir. Ayrıntı: [A04 aşama kaydı](./A04-capa-ve-test-vektorleri.md#aşama-kaydı-kapanış-2026-10-25).
 - Windows: Claude Code oturumunda `PYTHONUTF8=1` ayarlıdır; bu yüzden ikinci pytest koşusu `PYTHONUTF8=0` ile yapılır. `LANG=tr_TR.UTF-8` ise Windows'ta Node'un yerel ayarını değiştirmez (ICU Windows kullanıcı ayarını okur); Türkçe Windows'ta iki Vitest koşusu da `tr-TR`'dir ve karşıtlık Linux CI'da (A08) görülür. Koşu başında yazılan yerel ayarlar aşama kaydına geçer. Ayrıntı: `windows-sorun`.
 
 ## İnsan adımları

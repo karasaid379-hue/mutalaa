@@ -1,6 +1,6 @@
 # A08 · CI iş akışları (GitHub Actions)
 
-> **Sürüm:** 1.2 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
+> **Sürüm:** 1.3 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
 > **Faz:** 0 · Hazırlık · **Önkoşul:** [A05](./A05-arama-normalizasyonu.md) · [A07](./A07-editoryal-veritabani.md) · **İnsan adımı:** [İ-16](../06-insan-adimlari.md) (GitHub özel deposu ve `EXPO_TOKEN`)
 > **Ajanlar:** `inceleyici` · `arastirmaci` · **Beceriler:** `windows-sorun` · **Tahmini oturum:** 1–2
 > **Başlat:** `/asama A08`
@@ -36,6 +36,10 @@ Her PR'da üç dilin lint, tip, birim ve vektör denetimleri GitHub Actions'ta k
   - EAS'in ücretsiz planındaki aylık derleme sınırı (Proje yapısı §8 madde 3); sonuç A21 ve A33'ün planına not edilir.
   - Kurulum gerektirmeden çalışan bir iş akışı denetleyicisi (ör. actionlint; `uvx` ya da `pnpm dlx` ile).
   - `dotnet test --solution server/Mutalaa.slnx -c Release --no-build` birleşimi MTP kipinde ([K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)). [dotnet test belgesi](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test) `-c` ve `--no-build` bayraklarını destekler diyor, ama A02'de yerelde yalnız `--no-build` denendi; `-c Release` ile birleşimi burada doğrulanır, sonuç Proje yapısı §7'ye işlenir. `global.json` içindeki `test.runner` ayarı CI'da `setup-dotnet` ile gelen SDK'da da geçerli olmalı.
+- **A04'ten devreden (2026-10-25):**
+  - `turbo run test` görevine `LANG` ve `LC_ALL` bildirilir (`"env": ["LANG","LC_ALL"]` ya da `passThroughEnv`). A04'te iki `LANG` değeri için aynı görev özeti çıktı; bildirilmezse yerel ayar karşıtı koşu önbellekten gelir. Yukarıdaki `globalEnv` önerisinin yerine geçebilir.
+  - `LANG` karşıtlığı yalnız Linux CI'da görülür (Windows'ta Node iki koşuda da `tr-TR`).
+  - NFC içeren vektörler (`content-hash`, `offsets`) Linux'ta yeniden koşar: .NET ICU/NLS ve Python Unicode sürümü Windows'tan farklı olabilir. Üç çalışma zamanının A04'teki sürümleri [A04 aşama kaydında](./A04-capa-ve-test-vektorleri.md#aşama-kaydı-kapanış-2026-10-25).
 - **Bitti sayılır:** maddeler kaynaklı aşama kaydında; seçilen araçlar yazılı.
 
 ### A08.2 · Dört iş akışı

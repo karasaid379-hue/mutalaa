@@ -1,6 +1,6 @@
 # A21 · Mobil iskelet: Expo, Router, NativeWind, temalar, derleme türleri, EAS
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-29](../../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-24](../../00-ozet/02-karar-defteri.md#k-24--tasarım-dili) · [K-30](../../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)
+> **Sürüm:** 1.1 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-29](../../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-24](../../00-ozet/02-karar-defteri.md#k-24--tasarım-dili) · [K-30](../../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)
 > **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A02](./A02-tek-depo-iskeleti.md) · [A04](./A04-capa-ve-test-vektorleri.md) · **İnsan adımı:** [İ-15](../06-insan-adimlari.md) (Expo hesabı, `eas login`)
 > **Ajanlar:** `mobil-gelistirici` · `arastirmaci` · `arayuz-denetcisi` · `inceleyici` · **Beceriler:** `mobil-ekran` · `windows-sorun` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A21`
@@ -82,7 +82,7 @@ Bu aşama `apps/mobile` altında Expo uygulamasının iskeletini kurar: rota ağ
 - **Bitti sayılır:** yapılandırma testi üç `APP_FLAVOR` değerinde ad, kimlik ve şemayı; `eas.json` testi profil, kanal ve `APP_FLAVOR` eşlemesini doğrular.
 
 ### A21.6 · Metinler, telemetri, lint ve testler
-- `src/lib/i18n/tr.ts` ve `t()` Mobil mimari §14'teki gibi; ekranlarda düz Türkçe dizgi yazılmaz. `trLower` ve `trUpper` açık eşlemeyle yazılır. Hermes'teki davranış (MM-11) öz test ekranında sınanır (A32).
+- `src/lib/i18n/tr.ts` ve `t()` Mobil mimari §14'teki gibi; ekranlarda düz Türkçe dizgi yazılmaz. `trLower` ve `trUpper` açık eşlemeyle yazılır. Hermes'teki davranış (MM-11) öz test ekranında sınanır (A32). A04'ten devreden: `snapSpan` Hermes'te `\p{Mn}`, adlı grup ve ileri bakış desteğine dayanır; destek A32 öz testinde sınanır, burada yalnız kullanılan düzenli ifade özellikleri listelenir ve `snapSpan` cihazda hesaplanacaksa Unicode sürüm farkı (A04 aşama kaydı) dikkate alınır.
 - `src/lib/telemetry.ts` Mobil mimari §12'deki gibi: `dev`'de `Sentry.init` çağrılmaz; `internal` ve `public`'te `sendDefaultPii: false`, ekran görüntüsü ve görünüm hiyerarşisi kapalı, kırıntı ve olay ayıklaması açık; oturum tekrarı yok.
 - ESLint: kök yapılandırmaya Expo yapılandırması ve React Hooks kuralları eklenir. Yön `app → features → (db, packs, lib) → packages/*` `import/no-restricted-paths` ile; özellik içine derin içe aktarma `no-restricted-imports` deseniyle (öneri) engellenir.
 - Jest ve jest-expo kurulur. Testler: yapılandırma ve EAS (A21.5), bayrak matrisi, `t()` anahtarları, `trLower('IŞIK') === 'ışık'`, `beforeSend` sonrası olayda not metni kalmaması ([KVKK ve gizlilik](../../07-yayin/02-kvkk-ve-gizlilik.md) §2.2), ESLint sınır testi (yasak içe aktarma içeren örnek kod hata verir).

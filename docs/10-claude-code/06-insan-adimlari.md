@@ -1,6 +1,6 @@
 # İnsan adımları
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Canlı belge
+> **Sürüm:** 1.1 · **Tarih:** 25 Ekim 2026 · **Durum:** Canlı belge
 > **Bağlı kararlar:** [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)
 
 Claude Code bu işleri yapamaz: hukuki ve kurumsal yazışma, hesap açma, ödeme, izin almak, insan editör kararı, sistem geneli kurulum. Claude Code hazırlığı yapar (taslak, kontrol listesi, araç), işi siz yaparsınız ve sonucu Claude Code'a söylersiniz; Claude Code bu dosyayı günceller. Bir aşama, bağlı olduğu insan adımı `tamam` olmadan o kısmına başlamaz.
@@ -16,7 +16,7 @@ Durum değerleri: `bekliyor`, `taslak hazır`, `gönderildi`, `sürüyor`, `tama
 | İ-05 | KFGQPC'ye Hafs yazı tipi için yazılı izin talebi | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) | Mushaf C'de KFGQPC fontu (yedek: Amiri Quran) | `/yazisma kfgqpc` | taslak hazır | [taslak](../yazismalar/kfgqpc-hafs-font.md) · 2026-10-20 |
 | İ-06 | Quran Foundation Developer Console hesabı ve şartların okunması | AS-02 | A26 | `/yazisma qf` (kontrol listesi) | taslak hazır | [taslak](../yazismalar/qf-developer-console.md) · 2026-10-20 |
 | İ-07 | Hafız görüşmeleri ve yazılı izin (en az iki Türk hafız) | [Ses sistemi](../06-mobil/02-ses-sistemi.md) §12 | A27 (yayın için), A34 | `/yazisma hafiz` | taslak hazır | [taslak](../yazismalar/hafiz-izin.md) · 2026-10-20 |
-| İ-08 | Tanzil'e soru: ayrı sütundaki normalize arama metni "değiştirme" sayılır mı | ÇŞ-2, [Çapa şeması](../03-veri/01-capa-semasi.md) §13 | A34 (bilgi) | `/yazisma tanzil` | taslak hazır | [taslak](../yazismalar/tanzil-arama-metni.md) · 2026-10-20 |
+| İ-08 | Tanzil'e soru: ayrı sütundaki normalize arama metni "değiştirme" sayılır mı; 2. soru ayrıca üst veri dosyalarının (`quran-data.xml`, `quran-data.js`) hangi şartla kullanılacağını sorar (A04 âyet sayısı dizisi bu dosyadan üretildi; şart belirsiz, kayıt: lisans defteri §3.1). Gönderim kullanıcıdadır | ÇŞ-2, [Çapa şeması](../03-veri/01-capa-semasi.md) §13 | A34 (bilgi) | `/yazisma tanzil` | taslak hazır | [taslak](../yazismalar/tanzil-arama-metni.md) · 2026-10-20 |
 | İ-09 | Elmalılı özgün baskısının (1935–38) tarama nüshasını edinmek | [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) | A09, A16 | Tarama envanteri şablonu, alım komutu | bekliyor | |
 | İ-10 | OCR altın örneklemini elle yazmak (CER ölçümü için) | [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) | A09 | Örneklem listesi ve yazım kuralları | bekliyor | |
 | İ-11 | Meal, Naim tercümesi aktarımı ve (sonra) tefsir düzeltme turları | [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md), [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md), G-MET, G-INC | A16, A19, A37 | Editör panelinde düzeltme kuyruğu, ilerleme raporu | bekliyor | |

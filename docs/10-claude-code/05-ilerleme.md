@@ -7,10 +7,10 @@ Bu dosya aşamaların durumunu tutar. Aşağıdaki durum bloğu her oturumun ba�
 
 <!-- durum:baslangic -->
 - Aktif aşama: yok
-- Son tamamlanan: A03 · Yerel altyapı (2026-10-21)
-- Sıradaki: A04 · Çapa grameri ve ortak test vektörleri (A01, İ-02 gönderimini bekliyor)
-- Bekleyen insan adımları: İ-01 (Docker ilk açılış, yönetici ayarları); İ-02 … İ-08 taslakları hazır, gönderim ve onay bekliyor (öncelik İ-02)
-- Son güncelleme: 2026-10-21
+- Son tamamlanan: A04 · Çapa grameri ve ortak test vektörleri (2026-10-25)
+- Sıradaki: A05 · Arama normalizasyonu (A01, İ-02 gönderimini bekliyor)
+- Bekleyen insan adımları: İ-01 (Docker ilk açılış, yönetici ayarları); İ-02 … İ-08 taslakları hazır, gönderim ve onay bekliyor (öncelik İ-02; İ-08 artık Tanzil üst veri dosyasını da kapsıyor)
+- Son güncelleme: 2026-10-25
 <!-- durum:bitis -->
 
 ## Aşama tablosu
@@ -23,7 +23,7 @@ Durum değerleri: `bekliyor`, `sürüyor`, `tamam`, `engelli` (neden Not sütunu
 | A01 | Hukuk ve izin yazışma paketi | engelli | 2026-10-20 | | yazışma taslakları, insan adımları, belge eşitleme | A01.1–A01.6 tamam (7 taslak, 5 açıdan inceleme ve doğrulama uygulandı); A01.7 inceleme düzeltmeleri işlendi; İ-02 gönderimi bekleniyor (Faz 0 çıkış ölçütü: Kurul'a talep gitti; cevap ya da takip tarihi kayıtlı) |
 | A02 | Tek depo iskeleti | tamam | 2026-10-21 | 2026-10-21 | `01ded34` pnpm çalışma alanı; `36fbcd0` vektör denetleyicisi; `a47fb8b` .NET çözümü; `6deda1d` uv projesi; `8ac7cd7` kit; `848c165` belgeler | Kararlar: K-32 (BÇ-28: Corepack yok, `devEngines.packageManager`, izole `node_modules`), K-33 (xunit.v3 4.x + MTP, `dotnet test --solution`, `.slnx` ve `dotnet format` çalışıyor, `.sln` gerekmedi), K-34 (TypeScript tek sürüm 6.0.x). Doğrulama: `turbo run lint typecheck test build --force` 28/28, `dotnet test` 7/7, `pytest`, `ruff`, `mypy` yeşil. İnceleme: `inceleyici`, `lisans-denetcisi`, `metin-denetcisi`; düzeltilenler turbo girdileri, TypeScript tek sürüm, vektör denetleyicisi sağlamlaştırma, mimari testleri, Ruff PLW1514. Kullanıcıya kalan: `.slnx` IDE açılışı (C# Dev Kit), Codex dosyaları (`.agents/`, `.codex/`, `AGENTS.md`) takipsiz bırakıldı. Açılan çelişki: BÇ-35 (CAMeL ve zeyrek veri lisansı, A17). İleriye: paket çizgesinin `package.json` testi var, `dist` tabanlı `exports` A04'te gözden geçirilir |
 | A03 | Yerel altyapı | tamam | 2026-10-21 | 2026-10-21 | `14c89d0` compose, `85d71de` betikler, `1d3618e` belgeler | A03.1 kaynaklı (SeaweedFS 4.48, aws-cli 2.38.3; kayıt: [A03 kaynak kaydı](./asamalar/A03-yerel-altyapi.md)). Kabul kanıtları: `compose config` 0 ve `--profile app` 0; `ps -a`: postgres healthy, s3 çalışıyor, s3-init exited 0; PostgreSQL 18.6, `C.UTF-8`, `arabic` ve `turkish` var, `tr-x-icu` 1, `vector` 0; S3 anonim 200, Range 206 ve 1024 bayt, anonim PUT 403, iki parçalı indirmenin özeti özgün dosyayla aynı; yedek gidiş-dönüşünde satır 1 geri geldi; iki `.env` dosyasını kullanıcı oluşturdu, `git check-ignore` üç dosyayı gösteriyor, üç örnek dosya izleniyor. İnceleme: `inceleyici`, betik ve lisans denetçisi iş akışı (31 ajan); düzeltilenler atomik yedek, `--single-transaction`, `pg_isready -h`, `.dockerignore` kapsamı, belge eşitleme. Kullanıcıya bırakıldı: Görev Zamanlayıcı kaydı, LAN testinin telefondan yapılması, güvenlik duvarı kuralları (İ-01). Öneri düzeyindeki bulgular: `s3.json` için uzun bind sözdizimi (`create_host_path: false`); zorunlu değişkenlerde `:?`; varsayılan Admin S3 anahtarı. |
-| A04 | Çapa grameri ve ortak test vektörleri | bekliyor | | | | |
+| A04 | Çapa grameri ve ortak test vektörleri | tamam | 2026-10-24 | 2026-10-25 | (commit sonrası yazılır) | Kararlar: K-35 (hata önceliği ve §3 deseni önceliği, Kur'an `compare` okuma sırası, `contains` ekleri, birim ve rota işlevleri üç dilde, ilk kayıt adım sırası, ofset hataları); Tanzil üst veri şartı belirsiz, devam edildi ve kayda geçti (lisans defteri §3.1, İ-08). Kanıt: yedi vektör dosyası, 560 satır; TS 568, C# 1155 (Invariant ve tr-TR ayrı), Python 969, vektör denetleyicisi 180 test, kanca testleri 64; turbo `test`/`lint`/`typecheck` yeşil; `export test-vectors --check` ve `export ayet-sayilari --check` 0; 114 eleman, toplam 6.236, 2. sure 286 (Tanzil `quran-data.xml` 1.0, SHA-256 `8867c1d8…`); bozma denemesi (`cm-0001`) üç dilde kırmızı, geri alındı. İnceleme: `inceleyici`, `metin-denetcisi`, `test-yazari` kapsam denetimi, `lisans-denetcisi`, 2232 girdilik üç dilli çapraz sınama; düzeltilenler Python `tfb` hata önceliği, üretecin UTF-16 DOCTYPE atlatması, vekil çift davranışı, ham Unicode literalleri, `unitOf` nesne paylaşımı. Kullanıcıya bırakıldı: Hermes'te vektör ve `\p{Mn}` sınaması (A21, A32). Devreden: turbo `LANG` env ve Linux'ta NFC koşusu (A08); Unicode sürüm farkı Python 15.1 / Node 17.0 / .NET ≥16 (A05, A21); kaynak kartı ve CC BY atfı (A11, A13, A34); Tanzil 2. soru gönderimi (İ-08). Açılan çelişki: BÇ-36 (`fromRoute` ve web adresleri, A38) |
 | A05 | Arama normalizasyonu | bekliyor | | | | |
 | A06 | Lisans defteri v1 ve ortak enum şeması | bekliyor | | | | |
 | A07 | Editoryal veritabanı | bekliyor | | | | |
@@ -71,6 +71,7 @@ Her aşama oturumunun sonunda bir satır eklenir: `YYYY-AA-GG · Aşama · ne ya
 - 2026-10-20 · A01 · 7 yazışma taslağı yazıldı; araştırma (5 kurum) ve beş açılı inceleme/doğrulama uygulandı; belgeler eşitlendi (lisans defteri, yayın kapısı, BÇ-29…BÇ-34) · İ-02 gönderimi; sıradaki A02
 - 2026-10-21 · A02 · pnpm, .NET ve uv iskeleti kuruldu; K-32, K-33, K-34 yazıldı; BÇ-28 çözüldü, BÇ-35 açıldı; üç denetçi incelemesi uygulandı · A03
 - 2026-10-21 · A03 · compose (postgres 18, SeaweedFS 4.48, aws-cli 2.38.3), betikler, S3 ve yedek doğrulamaları, iki aşamalı inceleme · A04
+- 2026-10-25 · A04 · K-35; Tanzil üst veriden âyet sayıları; yedi vektör dosyası (560 satır); TS, C# ve Python çapa kitaplıkları; bozma denemesi; dört denetçi ve çapraz sınama · A05 (Kurul/İ-02 bekleniyor)
 
 ## İlgili dosyalar
 
