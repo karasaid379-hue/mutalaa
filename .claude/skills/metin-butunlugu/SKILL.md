@@ -20,10 +20,10 @@ Kaynaklar: [Çapa şeması](../../../docs/03-veri/01-capa-semasi.md) §7–§8, 
 
 Neden: Tanzil şartları metni değiştirmeyi yasaklar ve NFC şedde ile harekenin sırasını değiştirir (U+0651 U+064E → U+064E U+0651).
 
-**Kendi metnimizde ilk kayıt adımları:**
-1. Unicode NFC.
-2. Satır sonu yalnız U+000A; baştaki ve sondaki boşluk kırpılır; U+0020 ve U+0009 dizileri tek U+0020 olur; U+00A0 korunur.
-3. Silinir: U+FEFF, U+00AD, U+200E, U+200F, U+202A–U+202E, U+2066–U+2069, U+061C. Korunur: U+200C, U+200D.
+**Kendi metnimizde ilk kayıt adımları (bu sırayla; K-35 madde 7):**
+1. Silinir: U+FEFF, U+00AD, U+200E, U+200F, U+202A–U+202E, U+2066–U+2069, U+061C. Korunur: U+200C, U+200D.
+2. Unicode NFC.
+3. Satır sonu yalnız U+000A (CRLF ve tek CR → LF); U+0020 ve U+0009 dizileri tek U+0020 olur; metnin başı ve sonu yalnız U+0020, U+0009, U+000A'dan kırpılır. U+00A0 kenarda da korunur; U+2028, U+2029, U+0085'e dokunulmaz. Dilin varsayılan `trim`/`strip`/`Trim` işlevi kullanılmaz (U+00A0'ı da keser).
 4. Kesme işareti, hareke ve düzeltme işaretleri basılı kaynaktaki gibi yazılır.
 
 ## content_hash
@@ -34,7 +34,7 @@ Neden: Tanzil şartları metni değiştirmeyi yasaklar ve NFC şedde ile hareken
 
 - Kanonik metindeki Unicode kod noktası sırası; 0'dan başlar; aralık `[başlangıç, bitiş)`.
 - Python `str` kod noktasıyla indeksler. JavaScript ve C# UTF-16 birimiyle indeksler: dönüşüm yalnız `packages/anchors` (`cpToUtf16`, `utf16ToCp`) ve C#'ta `Rune` ile.
-- `snapSpan`: başlangıç birleşen işaretin (Mn) üstüne düşerse geriye, bitiş Mn öncesine düşerse ileriye kayar; harf harekesinden ayrılmaz.
+- `snapSpan`: başlangıç birleşen işaretin (Mn) üstüne düşerse geriye, bitiş Mn öncesine düşerse ileriye kayar; harf harekesinden ayrılmaz. Mn sınaması kod noktası üzerinde yapılır (JS `for…of` + `/\p{Mn}/u`, C# `Rune.GetUnicodeCategory`, Python `unicodedata.category`). Geçersiz aralık ya da konumda `snapSpan`, `cpToUtf16`, `utf16ToCp` hata verir (K-35 madde 8).
 - Test: `offsets/offsets.jsonl` en az bir BMP dışı karakter içerir (`"âlem 𝐀"`: 6 kod noktası, 7 UTF-16 birimi).
 
 ## Arama metni
