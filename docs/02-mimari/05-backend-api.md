@@ -1,7 +1,7 @@
 # Backend API
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
+> **Sürüm:** 1.2 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)
 
 Bu dosya ASP.NET Core 10 çözümünü, uçları, kimlik doğrulamayı, hata modelini, EF Core kurallarını ve Yayınlayıcı konsolunu tanımlar. Tablolar [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md), paket ve manifest biçimi [İçerik paketleri](../03-veri/03-icerik-paketleri.md), kapı kuralları [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) dosyasındadır.
 
@@ -26,7 +26,7 @@ server/
 │  ├─ Content/ Links/       Source, Unit, QuranWord, Lemma, Root, Xref, enum'lar
 │  ├─ Licensing/            LicenseStatus, BuildFlavor, LicenseGate (saf fonksiyonlar)
 │  ├─ Releases/ Review/     içerik özeti, inceleme ve ikinci onay kuralları
-│  └─ Text/                 SearchNormalizer, ContentHash, kod noktası ofsetleri
+│  └─ Text/                 SearchNormalizer, IcKesme.g.cs (üretilir), ContentHash, kod noktası ofsetleri
 ├─ Mutalaa.Infrastructure/  Persistence/ (IcerikDbContext), Migrations/, Identity/,
 │                           Storage/ (S3), Packs/ (SqlitePackWriter, ManifestSigner)
 ├─ Mutalaa.Api/             Program.cs, Endpoints/, Problems/, openapi/v1.json
@@ -178,18 +178,33 @@ Hat ve editör önerileri tek `review` tablosundan geçer. Onay `onerilen` değe
 - **Kanonik metin** ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)): hazır kaynak metni dağıtıldığı gibi saklanır ve API onu değiştirmez; Tanzil'e NFC bile uygulanmaz. NFC yalnız kendi ürettiğimiz metinlere ilk kayıtta uygulanır. Çapa ofsetleri kanonik metnin kod noktalarıdır. Normalizasyon yalnız ayrı `search_text` sütununda ve sorguda yapılır.
 - Açılışta varsayılan kültür `InvariantCulture` olur; Türkçe Windows'taki `dotnet run` ile Linux konteyner aynı sonucu verir.
 - CA1304, CA1305, CA1307, CA1309, CA1310 ve CA1311 hata düzeyindedir ([Proje yapısı](./03-proje-yapisi.md)). Karşılaştırmada `StringComparison.Ordinal`, sayı ve tarihte `CultureInfo.InvariantCulture`, düzenli ifadede `RegexOptions.CultureInvariant` kullanılır.
-- Türkçe küçük harf kültür verisine bırakılmaz; açık eşlemeyle yapılır ve test vektörleriyle Python ve TypeScript uygulamalarına kilitlenir. Domain testleri `tr-TR` kültüründe de koşar ve aynı sonucu vermelidir.
+- Türkçe küçük harf kültür verisine bırakılmaz; açık eşlemeyle yapılır ve test vektörleriyle Python ve TypeScript uygulamalarına kilitlenir ([K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)). Domain testleri `tr-TR` kültüründe de koşar ve aynı sonucu vermelidir.
 
 ```csharp
-public static string LowerTurkish(string s)
+// Mutalaa.Domain/Text/SearchNormalizer.cs (özet): küçük harf kod noktası başınadır
+public static string LowerTurkish(string text)
 {
-    var nfc = s.Normalize(NormalizationForm.FormC);   // yalnız search_text ve sorgu için; I + U+0307 → İ
-    var sb = new StringBuilder(nfc.Length);
-    foreach (var ch in nfc)
-        sb.Append(ch switch { 'İ' => 'i', 'I' => 'ı', _ => char.ToLowerInvariant(ch) });
+    var sb = new StringBuilder(text.Length);
+    int i = 0;
+    while (i < text.Length)
+    {
+        if (Rune.TryGetRuneAt(text, i, out Rune r))
+        {
+            sb.Append(r.Value switch
+            {
+                0x49 => new Rune(0x131),        // I → ı
+                0x130 => new Rune(0x69),        // İ → i
+                _ => Rune.ToLowerInvariant(r),  // dize düzeyinde ToLowerInvariant yok: son sigma bağlamı uygulanmaz
+            });
+            i += r.Utf16SequenceLength;
+        }
+        else sb.Append(text[i++]);              // eşsiz vekil olduğu gibi kalır (ön adım onu U+0020 yapar)
+    }
     return sb.ToString();   // gevşek katlama (ı→i, ş→s …) Arama kurallarıyla ayrı adımda
 }
 ```
+
+NFC `LowerTurkish` içinde değildir; yalnız `SplitScripts` ön adımında, bölmeden önce uygulanır (I + U+0307 böylece `İ` olur ve `i` verir; `tr-0019`). .NET `Normalize` U+FFFE'yi reddettiği için ön adım NFC'yi U+FFFE sınırlarında parçalayarak uygular. Genel API: `SearchNormalizer.TurkishNarrow`, `TurkishWide`, `Arabic`, `Keys` (`SearchKeys` kaydı), sabit `NormalizerVersion = "1.0"`; iç kesme listesi üretilmiş `IcKesme.Entries`'ten gelir.
 
 ## 10. Yayınlayıcı (`Mutalaa.Publisher`)
 

@@ -35,7 +35,7 @@ Cihazdaki SQLite paketlerinin tek şeması (`packages/content-schema/sql/`), FTS
   - expo-sqlite derlemesindeki SQLite sürümü ve `trigram` desteği; paket yalnız cihazdaki SQLite'ın desteklediği özellikleri kullanır ([Backend API](../../02-mimari/05-backend-api.md) §10.4).
   - `Microsoft.Data.Sqlite` (e_sqlite3) derlemesinde FTS5 ve `trigram`.
   - `JsonSchema.Net` sürüm durumu ve desteklediği JSON Schema taslağı.
-- `tr_stem_lex` kararı (AR-2): A05'in raporuna göre TypeScript'te Türkçe Snowball uygulaması yoksa tablo kalır ve Yayınlayıcı doldurur ([Arama](../../03-veri/05-arama-fts5.md) §2). A05 Python gövdeleyicisini doğrulayamayıp `tr_stem` işini bu aşamaya bıraktıysa, gövdeleyici burada `arastirmaci` ile seçilir, `hat-gelistirici` tarafından uygulanır ve değişmez kural testi yazılır.
+- `tr_stem_lex` kararı (AR-2): A05'in raporuna göre TypeScript'te Türkçe Snowball uygulaması yoksa tablo kalır ve Yayınlayıcı doldurur ([Arama](../../03-veri/05-arama-fts5.md) §2). A05'te Python gövdeleyicisi seçildi ve uygulandı (`snowballstemmer` 3.1.1, [K-36](../../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) madde 6; AR-2 Python yarısı çözüldü); bu aşamada yalnız TypeScript yarısı (cihazda gövdeleyici) ve Snowball'un agresif gövdelerinin (`kuran` → `kura`, `mümin` → `mum`, `iman` → `ima`) arama ölçümüyle gözden geçirilmesi kalır.
 - Seçimler `/karar` ile yazılır. expo-sqlite `trigram` desteklemiyorsa durum kullanıcıya gösterilir; Arapça alt dize araması için seçenek karar olmadan uygulanmaz.
 - **Bitti sayılır:** dört konu kaynak bağlantısıyla raporlu; kitaplık, JSON Schema taslağı ve `tr_stem_lex` kararları karar defterinde.
 

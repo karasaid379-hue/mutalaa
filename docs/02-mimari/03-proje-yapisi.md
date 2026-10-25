@@ -1,7 +1,7 @@
 # Proje yapısı
 
-> **Sürüm:** 1.5 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
+> **Sürüm:** 1.6 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
 
 Kod tek depoda durur: TypeScript uygulamaları ve paketleri pnpm + Turborepo ile, .NET projeleri `server/` altındaki çözümle, Python içerik hattı `pipeline/` altında uv ile yönetilir. Bu dosya klasörleri, bağımlılık kurallarını, araçları, kod biçimini, Git kurallarını ve CI iş akışlarını tanımlar.
 
@@ -33,13 +33,13 @@ mutalaa/
 ├─ packages/
 │  ├─ anchors/                   çapa ayrıştırma, biçimlendirme, doğrulama; src/generated/ayet-sayilari.ts (üretilir, elle düzenlenmez)
 │  ├─ content-schema/            sql/ (paket DDL'i), manifest.schema.json, user.db Drizzle şeması
-│  ├─ search/                    Türkçe ve Arapça normalizasyon, FTS5 sorgu kurucu
+│  ├─ search/                    Türkçe ve Arapça normalizasyon (src/normalize.ts), FTS5 sorgu kurucu; src/generated/ic-kesme.ts (üretilir, elle düzenlenmez)
 │  ├─ reader-core/               sayfa, satır, kelime modelleri; seçim; içerik sorguları
 │  ├─ player/                    XState oynatıcı makinesi, motor arayüzü
 │  └─ ui-tokens/                 renk, tip ölçeği, boşluk jetonları
 ├─ server/
 │  ├─ Mutalaa.slnx · Directory.Build.props · Directory.Packages.props
-│  ├─ Mutalaa.Domain/            varlıklar, çapa, lisans kapısı kuralları, C# normalizasyon
+│  ├─ Mutalaa.Domain/            varlıklar, çapa, lisans kapısı kuralları, C# normalizasyon (Text/SearchNormalizer.cs; Text/IcKesme.g.cs üretilir)
 │  ├─ Mutalaa.Infrastructure/    EF Core, göçler, Identity, S3, SQLite paket yazıcı
 │  ├─ Mutalaa.Api/               Minimal API uçları, openapi/v1.json
 │  ├─ Mutalaa.Publisher/         yayın konsolu
@@ -48,6 +48,7 @@ mutalaa/
 │  ├─ pyproject.toml · uv.lock · .python-version · mutalaa.toml
 │  ├─ sources/                   kaynak kayıtları (TOML) ve tarihli lisans kopyaları
 │  ├─ prompts/                   sürümlü yapay zekâ istemleri
+│  ├─ stubs/                     tip bilgisi taşımayan paketler için mypy taslakları (snowballstemmer; A05)
 │  ├─ src/mutalaa_pipeline/      cli.py (`mutalaa` komutu), ingest/, normalize/, anchor/,
 │  │                             enrich/, qa/, export/
 │  └─ tests/                     birim testleri ve test vektörü koşucusu
@@ -60,6 +61,7 @@ mutalaa/
 │  ├─ fts-query/                 query.jsonl
 │  └─ arama/                     olcum.jsonl (arama ölçüm kümesi; vektör koşucuları okumaz)
 ├─ shared/data/                  ayet-sayilari.json (114 eleman; Tanzil üst verisinden üretilir, A04; üç kopyası src/generated/ayet-sayilari.ts, anchor/ayet_sayilari.py, Anchors/AyetSayilari.g.cs)
+│                                ic-kesme.txt (iç kesme listesi, A05; kopyaları packages/search/src/generated/ic-kesme.ts ve Text/IcKesme.g.cs `uv run mutalaa export ic-kesme` ile üretilir; Python dosyayı doğrudan okur)
 │                                sure-adlari.json (114 kayıt; Çapa şeması §12; A11'de gelir)
 ├─ infra/local/                  yerel konteyner yapılandırması (s3.example.json; s3.json git dışı)
 ├─ data/                         git dışı: raw/, gelen/, staged/, ocr/, gold/, llm-cache/, reports/, logs/, packs/, kurul/, backups/ (§1.1)
@@ -95,16 +97,17 @@ Editör rotaları [Backend API](./05-backend-api.md#41-i̇nceleme-kuyrukları) �
 
 ### 1.2 Test vektörü biçimi
 
-Her dosya JSONL'dir: UTF-8, BOM yok, LF satır sonu, satır başına bir JSON nesnesi. Python, TypeScript ve C# koşucuları aynı dosyaları okur. Vektörlerin hesaplanan alanları (`codepoints`, `utf16`, `cp_to_utf16`, `sha256`) ve sınır satırları `uv run mutalaa export test-vectors` ile üretilir; anlamsal beklentiler elle yazılır ve gözden geçirilir ([İçerik hattı](../04-icerik/02-icerik-hatti.md) §4). `--check` kipi diskle karşılaştırır. Âyet sayısı dizisi `uv run mutalaa export ayet-sayilari` ile üretilir (A04). Bir normalizasyon kuralı değişmeden önce o kuralı gösteren vektör eklenir.
+Her dosya JSONL'dir: UTF-8, BOM yok, LF satır sonu, satır başına bir JSON nesnesi. Python, TypeScript ve C# koşucuları aynı dosyaları okur. Vektörlerin hesaplanan alanları (`codepoints`, `utf16`, `cp_to_utf16`, `sha256`) ve sınır satırları `uv run mutalaa export test-vectors` ile üretilir; anlamsal beklentiler elle yazılır ve gözden geçirilir ([İçerik hattı](../04-icerik/02-icerik-hatti.md) §4). `--check` kipi diskle karşılaştırır. Âyet sayısı dizisi `uv run mutalaa export ayet-sayilari` ile üretilir (A04). Normalizasyon vektörlerinde (`normalize/tr.jsonl`, `normalize/ar.jsonl`) `expected` tamamen elle yazılır; üreteç yalnız biçimi, `\u` kaçışını ve kimlik düzenini denetler (A05). İç kesme listesi kopyaları `uv run mutalaa export ic-kesme [--check]` ile üretilir. Bir normalizasyon kuralı değişmeden önce o kuralı gösteren vektör eklenir.
 
-Kimlik önekleri: `tr-` ve `ar-` (`normalize/`); `an-` (`anchors/valid` ve `anchors/invalid` tek ortak dizi), `cm-` (`compare`), `ct-` (`contains`), `ro-` (`route`), `of-` (`offsets`), `ch-` (`content-hash`). Üretilen sınır satırları `an-s…` ve `an-u-…` kimliklidir. Hata önceliğini sınayan çok ihlalli satırlar `invalid` içindedir ([K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)).
+Kimlik önekleri: `tr-` ve `ar-` (`normalize/`, ayrı iki dizi); `an-` (`anchors/valid` ve `anchors/invalid` tek ortak dizi), `cm-` (`compare`), `ct-` (`contains`), `ro-` (`route`), `of-` (`offsets`), `ch-` (`content-hash`). Üretilen sınır satırları `an-s…` ve `an-u-…` kimliklidir. Hata önceliğini sınayan çok ihlalli satırlar `invalid` içindedir ([K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)).
 
 ```json
-{"id":"tr-0001","input":"IŞIK","expected":{"dar":"ışık","genis":"isik"},"note":"Türkçe küçük harf, sonra gevşek katlama"}
-{"id":"ar-0001","input":"بِسْمِ","expected":"بسم","note":"harekeler silinir"}
+{"id":"tr-0001","input":"Işık","expected":{"dar":"ışık","genis":"isik"},"note":"I → ı"}
+{"id":"tr-0015","input":"IŞIK","expected":{"dar":"ışık","genis":"isik"},"note":"büyük harf I → ı (Test stratejisi 2)"}
+{"id":"ar-0001","input":"بًب","expected":"بب","note":"U+064B (silme aralığının başı) silinir, harfler birleşir"}
 ```
 
-Beklenen değerler [Arama](../03-veri/05-arama-fts5.md) ve [Çapa şeması](../03-veri/01-capa-semasi.md) kurallarından gelir; yukarıdaki satırlar biçimi gösterir. `note` isteğe bağlıdır; `expected` dosyaya göre bir değer ya da nesnedir (ör. Türkçe dosyada `dar` ve `genis`). `arama/olcum.jsonl` vektör değil, arama ölçüm kümesidir: satır alanları `id`, `kategori`, `sorgu`, `beklenen` ([Arama](../03-veri/05-arama-fts5.md) §6); vektör koşucuları bu klasörü okumaz. `offsets/` dosyası en az bir Temel Çok Dilli Düzlem (BMP) dışı karakter içerir, çünkü JavaScript ve C# dizeleri UTF-16'dır ve ofsetler kanonik metnin kod noktalarıdır. Tanzil metni NFC'ye çevrilmeden saklandığı için ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)) `content-hash/` dosyası NFC olmayan bir Arapça dizi de içerir; böylece bir uygulamanın metni sessizce normalize etmesi testte yakalanır.
+Beklenen değerler [Arama](../03-veri/05-arama-fts5.md) ve [Çapa şeması](../03-veri/01-capa-semasi.md) kurallarından gelir; yukarıdaki satırlar gerçek vektörlerdir ve biçimi gösterir. Arapça normalizasyon satırları sentetik `\u` dizileridir (Kur'an metni değildir; A05). `note` isteğe bağlıdır; `expected` dosyaya göre bir değer ya da nesnedir (ör. Türkçe dosyada `dar` ve `genis`). `arama/olcum.jsonl` vektör değil, arama ölçüm kümesidir: satır alanları `id`, `kategori`, `sorgu`, `beklenen` ([Arama](../03-veri/05-arama-fts5.md) §6); vektör koşucuları bu klasörü okumaz. `offsets/` dosyası en az bir Temel Çok Dilli Düzlem (BMP) dışı karakter içerir, çünkü JavaScript ve C# dizeleri UTF-16'dır ve ofsetler kanonik metnin kod noktalarıdır. Tanzil metni NFC'ye çevrilmeden saklandığı için ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)) `content-hash/` dosyası NFC olmayan bir Arapça dizi de içerir; böylece bir uygulamanın metni sessizce normalize etmesi testte yakalanır.
 
 ## 2. Bağımlılık kuralları
 

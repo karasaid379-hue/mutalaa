@@ -1,7 +1,7 @@
 # Arama (SQLite FTS5)
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · K-21 ([karar defteri](../00-ozet/02-karar-defteri.md))
+> **Sürüm:** 1.2 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · K-21 ([karar defteri](../00-ozet/02-karar-defteri.md))
 
 Arama cihazda SQLite FTS5 ile yapılır. Arama metni içerik hattında normalize edilir ve kanonik metinden ayrı sütunlarda durur; kanonik metin değişmez (K-26). Diğer belgelerdeki `search_text` adı bu sütunların (`tr_narrow`, `tr_wide`, `tr_stem`, `ar_norm`) ortak adıdır. Önek indeksi, Arapça için trigram tablosu ve bm25 sıralaması kullanılır; hedef orta seviye Android'de 50 ms altıdır (K-17). Normalleştirme kuralları yalnız bu dosyada tanımlıdır; Python, TypeScript ve C# uygulamaları `shared/test-vectors/` ile birbirine kilitlenir.
 
@@ -21,32 +21,37 @@ flowchart LR
 
 ## 1. Normalleştirme belirtimi
 
-Sürüm `normalizer_version = 1.0`. Uygulamalar `packages/search/src/normalize.ts`, `pipeline/src/mutalaa_pipeline/normalize/` ve `server/Mutalaa.Domain/Text/` altındadır ([Backend API](../02-mimari/05-backend-api.md) §2). Paketin `pack_meta.normalizer_version` değeri uygulamanınkiyle `major.minor` düzeyinde aynı olmalıdır ([İçerik paketleri](./03-icerik-paketleri.md)). Yama sürümü çıktıyı değiştiremez; değiştiren her kural yeni bir küçük sürümdür ve bütün metin paketlerini yeniden ürettirir.
+Sürüm `normalizer_version = 1.0`. Bu bölümün açık bıraktığı ayrıntılar [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) ile kapatılmıştır; çelişkide karar defteri geçer. Uygulamalar `packages/search/src/normalize.ts` (`normalizeTr`, `normalizeAr`, `searchKeys`, `splitScripts`), `pipeline/src/mutalaa_pipeline/normalize/` (`unicode.py`, `turkish.py`, `arabic.py`) ve `server/Mutalaa.Domain/Text/SearchNormalizer.cs` altındadır ([Backend API](../02-mimari/05-backend-api.md) §2). Üçünde de sürüm sabiti `1.0`'dır. İç kesme listesi ve gövdeleyici sürümü normalleştiricinin parçasıdır: liste eklemesi ya da gövdeleyici sürüm değişikliği küçük sürümü artırır. Paketin `pack_meta.normalizer_version` değeri uygulamanınkiyle `major.minor` düzeyinde aynı olmalıdır ([İçerik paketleri](./03-icerik-paketleri.md)). Yama sürümü çıktıyı değiştiremez; değiştiren her kural yeni bir küçük sürümdür ve bütün metin paketlerini yeniden ürettirir.
 
 ### 1.1 Ortak ön adım
 
-1. Metin Unicode NFC'ye çevrilir. Bu yalnız arama anahtarını üretirken yapılır; kanonik metin aynen kalır.
-2. Metin yazı sistemine göre parçalara ayrılır. Arapça bloklarındaki harfler (U+0600–06FF, U+0750–077F, U+08A0–08FF, U+FB50–FDFF, U+FE70–FEFF) Arapça parçaya, diğer harfler Türkçe parçaya gider. Türkçe sözcükler `tr_*` sütunlarına, Arapça sözcükler `ar_norm` sütununa yazılır.
+1. **Sıra (K-36 madde 1).** Bu adımlar yalnız arama anahtarını üretirken uygulanır; kanonik metin aynen kalır. (a) Eşsiz vekil kod birimi (eşlenmemiş yüksek ya da alçak vekil) U+0020 olur. (b) U+200B U+0020 olur; kategorisi `Cf` olan diğer karakterler silinir (U+00AD, U+200C–U+200F, U+2060, U+2066–U+2069, U+FEFF, U+061C, U+0600–U+0605, U+06DD, U+E0001 ve benzerleri). (c) Metin Unicode NFC'ye çevrilir. (d) Yazı sistemine göre bölme (madde 2). Silme NFC'den önce gelir, çünkü hiçbir kanonik ayrışım `Cf` üretmez. Yumuşak tire ve ZWNJ gibi karakterler sözcüğü bölmez.
+2. **Yazı sistemine göre bölme.** Arapça bloklarındaki her kod noktası (U+0600–06FF, U+0750–077F, U+08A0–08FF, U+FB50–FDFF, U+FE70–FEFF) Arapça parçaya, diğerleri Türkçe parçaya gider; öbür parçada o konum tek U+0020 olur. Türkçe sözcükler `tr_*` sütunlarına, Arapça sözcükler `ar_norm` sütununa yazılır. Atanmamış ve gizli kullanım kod noktaları (`Cn`, `Co`; değişmez karakterler ve U+FFFE dahil) silinmez, NFC onları değiştirmeden geçirir ve sözcük ayırıcıdır. .NET `Normalize` U+FFFE'yi reddettiği için C# NFC'yi U+FFFE sınırlarında parçalayarak uygular; sonuç diğer iki dille aynıdır (vektörler `tr-0080`, `tr-0081`, `ar-0061`).
 
 ### 1.2 Türkçe
 
-1. **Küçük harf.** Önce `I → ı` ve `İ → i` elle çevrilir, sonra dilden bağımsız küçük harf dönüşümü yapılır. Python'da `"İ".lower()` ve JavaScript'te `"İ".toLowerCase()` iki kod noktası (`i` + U+0307) döndürür; Hermes'te `toLocaleLowerCase('tr')` davranışı Doğrulanacak ([Mobil mimari](../06-mobil/01-mobil-mimari.md) MM-11).
-2. **Kesme işareti.** U+2019, U+2018, U+02BC, U+02BE, U+02BF, U+00B4 ve U+0060 düz kesmeye (U+0027) çevrilir.
-3. **Ek ayırma.**
-   - Sözcük `shared/data/ic-kesme.txt` listesindeki bir girdiyle başlıyorsa (en uzun eşleşme, geniş anahtarla karşılaştırılır), girdinin içindeki kesmeler iç kesmedir ve silinir. Liste Arapça kökenli iç kesmeli kelimeleri taşır: `kur'an`, `mu'min`, `ma'na`, `san'at`, `lem'a`, `i'caz`, `te'sir` gibi. Liste külliyattaki bütün kesmeli sözcüklerden çıkarılır ve editör onaylar.
-   - Kalan kısımda ilk kesmeden sonrası ektir ve atılır: "Kur'ân'ın" → "kurân", "Sözler'de" → "sözler".
-   - Sözcük başındaki ve sonundaki kesme noktalamadır.
-4. **Noktalama.** Tire ve noktalama boşluğa döner, boşluk dizileri teke iner: "rahmet-i İlâhiye" → "rahmet i ilâhiye".
+1. **Küçük harf (K-36 madde 2 ve 5).** Önce `I → ı` ve `İ → i` elle çevrilir, sonra kod noktası başına basit küçük harf eşlemesi uygulanır (Python `ch.lower()`, JavaScript tek kod noktasına `toLowerCase()`, C# `Rune.ToLowerInvariant`). Dize düzeyinde küçük harf çağrısı yapılmaz, çünkü Python `str.lower()` ve JavaScript `toLowerCase()` son sigma bağlamı uygular, .NET uygulamaz; kod noktası başına çağrı üçünü eşitler. Son sigma bağlamı yoktur: `ΟΔΟΣ → οδοσ` bilinen sınırdır (`tr-0025`; Yunanca hedef yazı sistemi değildir). Python'da `"İ".lower()` ve JavaScript'te `"İ".toLowerCase()` iki kod noktası (`i` + U+0307) döndürür; açık eşleme bu yüzden önce gelir. Kod `toLocaleLowerCase('tr')` kullanmaz; Hermes'teki davranışı ([Mobil mimari](../06-mobil/01-mobil-mimari.md) MM-11) bu normalleştirici için kullanılmıyor ve engel değildir. Hermes'te `toLowerCase`, `normalize` ve `\p{…}` desteği A21 öz testinde ve A32 öz test ekranında sınanır.
+2. **Kesme işareti.** U+2019, U+2018, U+02BC, U+02BE, U+02BF, U+00B4 ve U+0060 düz kesmeye (U+0027) çevrilir. Bu, sözcük ayırmadan önce yapılır, çünkü bu karakterler noktalama ve simge kategorisindedir.
+3. **Sözcük ve ek ayırma (K-36 madde 2 ve 3).**
+   - **Sözcük tanımı.** Sözcük, `Lu Ll Lt Lm Lo Mn Mc Me Nd Nl No` kategorilerindeki kod noktalarıyla U+0027'nin en uzun dizisidir; her diğer kod noktası ayırıcıdır. `isalnum`, `IsLetterOrDigit` ve `\w` kullanılmaz.
+   - **Baş ve son kesme.** Sözcükte baş ve sondaki kesme dizileri atılır. "Baş" ve "son", sözcüğün küçük harfli, kesmeleri U+0027 olmuş hâlinin ilk ve son kod noktasıdır; birleşen işaret önde ise kesme baş sayılmaz (`tr-0060`), birleşen işaretle bitiyorsa sondaki kesme son sayılmaz (`tr-0082`). Boş kalan sözcük atılır.
+   - **İç kesme.** Sözcüğün geniş biçimi (kesmeler korunarak, madde 6) `shared/data/ic-kesme.txt` girdilerinden biriyle başlıyorsa (saf önek, sınır koşulu yok) en uzun girdi seçilir ve sözcüğün ilk k kesmesi silinir (k = girdideki kesme sayısı). Liste Arapça kökenli iç kesmeli kelimeleri taşır: `kur'an`, `mu'min`, `ma'na`, `san'at`, `lem'a`, `i'caz`, `te'sir` (A05 başlangıç listesi, 7 girdi). Liste külliyattaki bütün kesmeli sözcüklerden çıkarılır ve editör onaylar (AR-1).
+   - **Liste dosyası.** UTF-8 (BOM'suz), LF, satır başına bir girdi; girdi `^[a-z]+('[a-z]+)+$` desenine uyar, benzersizdir ve sıralıdır. TypeScript ve C# koduna `uv run mutalaa export ic-kesme` ile kopyalanır (`packages/search/src/generated/ic-kesme.ts`, `server/Mutalaa.Domain/Text/IcKesme.g.cs`; `--check` yazmadan karşılaştırır); Python dosyayı doğrudan okur.
+   - **Ek.** Kalan kısımda ilk kesmeden sonrası ektir ve atılır: "Kur'ân'ın" → "kurân" (iç kesme listesi, sonra ek), "Sözler'de" → "sözler".
+   - **Son adım.** Sözcük NFC'ye çevrilir. Harf ya da rakam taşımayan sözcük atılır; "harf ya da rakam" `Lu Ll Lt Lm Lo Nd Nl No` kategorileridir (yalnız işaretten ya da kesmeden oluşan sözcük kalmaz).
+4. **Noktalama.** Tire, noktalama ve sözcük karakteri olmayan her kod noktası (« » dahil) ayırıcıdır, boşluk dizileri teke iner: "rahmet-i İlâhiye" → "rahmet i ilâhiye".
 5. Sonuç **dar anahtardır** (`tr_narrow`, `key_narrow`). Düzeltme işaretleri ve Türkçe harfler korunur.
-6. **Geniş anahtar** (`tr_wide`, `key_wide`): dar anahtarda `ı → i` yapılır, NFD uygulanır, U+0300–U+036F silinir, NFC'ye dönülür. Böylece `â î û` ve `ç ğ ö ş ü` katlanır. Rapor bu iki anahtarı ister: düzeltme işaretsiz geniş anahtar ve âlem/alem, hâlâ/hala gibi çiftleri ayıran dar anahtar (rapor). [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) dosyasındaki `keys()` örneği yalnız düzeltme işaretlerini katlıyor; tek tanım bu dosyadır.
-7. **Gövde** (`tr_stem`): hat, dar anahtarın her sözcüğü için Snowball Türkçe gövdesini üretir ve geniş anahtara katlar. PostgreSQL'in `turkish_stem` sözlüğü de Snowball'dur ([PostgreSQL docs](https://www.postgresql.org/docs/19/textsearch-psql.html)). Python paketindeki Türkçe Snowball uygulaması Doğrulanacak; zeyrek (MIT, 0.1.3, alfa) lemma için ayrıca kullanılır ([PyPI zeyrek](https://pypi.org/project/zeyrek)). Değişmez kural: `tr_wide` ve `tr_stem` aynı sayıda sözcük taşır ve sıraları aynıdır.
+6. **Geniş anahtar** (`tr_wide`, `key_wide`): her sözcüğe ayrı olarak `ı → i` yapılır, NFD uygulanır, yalnız U+0300–U+036F silinir (başka birleşen işaretler, ör. U+20DD, kalır; `tr-0062`), NFC'ye dönülür. Böylece `â î û` ve `ç ğ ö ş ü` katlanır. Sözcük sayısı ve sırası dar anahtarla aynıdır. Rapor bu iki anahtarı ister: düzeltme işaretsiz geniş anahtar ve âlem/alem, hâlâ/hala gibi çiftleri ayıran dar anahtar (rapor). [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) dosyasındaki `keys()` örneği yalnız düzeltme işaretlerini katlıyor; tek tanım bu dosyadır.
+7. **Gövde** (`tr_stem`, yalnız Python; K-36 madde 6): hat, dar anahtarın her sözcüğünde yalnız `â → a`, `î → i`, `û → u` katlar (ç ğ ı ö ş ü korunur), Snowball Türkçe gövdesini alır ve geniş katlamadan geçirir; sonuç boşsa ya da harf/rakam taşımıyorsa sözcüğün geniş biçimi kullanılır. Ön katlamanın sebebi: Snowball Türkçe algoritmasının sesli harf tanımı yalnız `a e ı i o ö u ü`'dür, `â î û` sesli sayılmaz. Gövdeleyici `snowballstemmer` 3.1.1'dir (BSD-3-Clause, saf Python), tam sürümle sabitlenir ve `snowballstemmer.turkish_stemmer.TurkishStemmer` doğrudan içe aktarılır. PostgreSQL'in `turkish_stem` sözlüğü de Snowball'dur ([PostgreSQL docs](https://www.postgresql.org/docs/19/textsearch-psql.html)). **Çözüldü (25 Ekim 2026):** paket, lisans ve sürüm kaynakları [PyPI snowballstemmer](https://pypi.org/pypi/snowballstemmer/json) ve [Snowball Türkçe algoritması](https://snowballstem.org/algorithms/turkish/stemmer.html); `arastirmaci` okuması 25 Ekim 2026 ([K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) gerekçe bölümü). Lisans notu hukuki görüş değildir. Snowball bazı sözcükleri agresif keser (`kuran` → `kura`, `mümin` → `mum`, `iman` → `ima`); `tr_stem` sütunu bm25'te düşük ağırlıklıdır (bölüm 4) ve bu gövdelerin etkisi A12'de arama ölçümüyle gözden geçirilir. zeyrek (MIT, 0.1.3, alfa) lemma için ayrıca kullanılır ([PyPI zeyrek](https://pypi.org/project/zeyrek)). Değişmez kural: `tr_wide` ve `tr_stem` aynı sayıda sözcük taşır ve sıraları aynıdır; pytest bunu sınar.
 
 ### 1.3 Arapça
 
+Arapça parça, bölmeden sonra (bölüm 1.1) şu sırayla işlenir ([K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) madde 4):
+
 1. Silinir: U+064B–U+065F (harekeler, hemze üstü ve altı işaretleri dahil), U+0670 (üstteki elif), U+06D6–U+06ED (Kur'an işaretleri), U+0640 (tatvil).
-2. Birleştirilir: `أ إ آ ٱ → ا`, `ى → ي`, `ة → ه`, `ؤ → و`, `ئ → ي`.
-3. Arapça noktalama (`، ؛ ؟ « » ﴾ ﴿`) boşluğa döner.
-4. Öneri (kaynakta görülürse, Doğrulanacak): Arapça-Hint rakamları ASCII'ye, Farsça `ی` (U+06CC) `ي`'ye, `ک` (U+06A9) `ك`'ye çevrilir. QA, bu kurallardan sonra Arapça bloklarında kalan her birleşen işareti (Mn) raporlar.
+2. Birleştirilir: `أ إ آ ٱ → ا`, `ى → ي`, `ة → ه`, `ؤ → و`, `ئ → ي`. Yalın hemze (U+0621) ve U+06C0 değişmez.
+3. Sözcük, `Lu Ll Lt Lm Lo Mn Mc Me Nd Nl No` kategorilerindeki kod noktalarının en uzun dizisidir; L, M, N dışı her kod noktası ayırıcıdır (Arapça noktalama `، ؛ ؟ ﴾ ﴿` bunun içindedir; Arapça parçada U+0027 sözcük karakteri değildir). L ya da N taşımayan sözcük atılır. `«` ve `»` Arapça blokta değildir: Türkçe parçada ayırıcı olurlar.
+4. 1.0'da **değişmeyenler** (önceki taslakta öneriydi): Farsça `ی` (U+06CC) ve `ک` (U+06A9), Arapça-Hint rakamlar, silme aralığı dışındaki işaretler (U+0610–U+061A, U+08D3–U+08FF), sunum biçimleri (NFKC uygulanmaz). Bu kurallar kaynakta görülürse yeni küçük sürümle eklenir; AR-8 ve QA raporu A10'dadır. QA, bu kurallardan sonra Arapça bloklarında kalan her birleşen işareti (Mn) raporlar.
 
 Kurallar IAJIT 2022 tarifine dayanır: harekeler, Kur'an işaretleri ve keşide silinir; hemze ve medli elif biçimleri elife, elif maksûre ye'ye, tâ merbûta he'ye indirilir ([IAJIT 2022](https://www.ccis2k.org/iajit/images/Year2022/No.4/20568.pdf)).
 
@@ -67,22 +72,27 @@ Vektör satırları `id`, `input`, `expected` ve isteğe bağlı `note` alanlar�
 
 ```jsonl
 {"id":"tr-0001","input":"Işık","expected":{"dar":"ışık","genis":"isik"},"note":"I → ı"}
-{"id":"tr-0004","input":"Kur'ân'ın","expected":{"dar":"kurân","genis":"kuran"},"note":"iç kesme + ek"}
+{"id":"tr-0004","input":"Kur'ân'ın","expected":{"dar":"kurân","genis":"kuran"},"note":"iç kesme listesi + ek"}
 ```
 
-| Girdi | Dar | Geniş | Sınanan kural |
-|---|---|---|---|
-| `Işık` | `ışık` | `isik` | I → ı |
-| `İMAN` | `iman` | `iman` | İ → i |
-| `ışığın` | `ışığın` | `isigin` | Türkçe harf katlama |
-| `Kur'ân'ın` | `kurân` | `kuran` | iç kesme listesi + ek |
-| `Kur’an’dan` | `kuran` | `kuran` | tipografik kesme |
-| `mü'min` · `Lem'alar` | `mümin` · `lemalar` | `mumin` · `lemalar` | iç kesme listesi |
-| `Sözler'de` | `sözler` | `sozler` | ek atılır |
-| `âlem` · `alem` | `âlem` · `alem` | `alem` · `alem` | dar anahtar ayırır |
-| `hâlâ` · `hala` | `hâlâ` · `hala` | `hala` · `hala` | dar anahtar ayırır |
-| `Âl-i İmrân` | `âl i imrân` | `al i imran` | tire |
-| `a` + U+0302 + `lem` | `âlem` | `alem` | NFC |
+A05'te `tr.jsonl` 86, `ar.jsonl` 62 satırdır. Beklenen değerler elle yazılmıştır; üreteç yalnız biçimi, kaçışı ve kimlik düzenini denetler. Aşağıdaki Türkçe tablonun her satırı `tr.jsonl` içinde birebir vardır; kimlikler gerçek vektörlerdir (`IŞIK` büyük harf örneği `tr-0015`'tir).
+
+| Kimlik | Girdi | Dar | Geniş | Sınanan kural |
+|---|---|---|---|---|
+| `tr-0001` | `Işık` | `ışık` | `isik` | I → ı |
+| `tr-0002` | `İMAN` | `iman` | `iman` | İ → i |
+| `tr-0003` | `ışığın` | `ışığın` | `isigin` | Türkçe harf katlama |
+| `tr-0004` | `Kur'ân'ın` | `kurân` | `kuran` | iç kesme listesi + ek |
+| `tr-0005` | `Kur’an’dan` | `kuran` | `kuran` | tipografik kesme |
+| `tr-0006` · `tr-0007` | `mü'min` · `Lem'alar` | `mümin` · `lemalar` | `mumin` · `lemalar` | iç kesme listesi |
+| `tr-0008` | `Sözler'de` | `sözler` | `sozler` | ek atılır |
+| `tr-0009` · `tr-0010` | `âlem` · `alem` | `âlem` · `alem` | `alem` · `alem` | dar anahtar ayırır |
+| `tr-0011` · `tr-0012` | `hâlâ` · `hala` | `hâlâ` · `hala` | `hala` · `hala` | dar anahtar ayırır |
+| `tr-0013` | `Âl-i İmrân` | `âl i imrân` | `al i imran` | tire |
+| `tr-0014` | `a` + U+0302 + `lem` | `âlem` | `alem` | NFC |
+| `tr-0015` | `IŞIK` | `ışık` | `isik` | büyük harf I → ı |
+
+`ar.jsonl` satırları (`ar-0001` … `ar-0062`) `\u` kaçışıyla kurulan **sentetik** harf ve işaret dizileridir; besmele, âyet ya da başka bir metinden alıntı değildir. Her satır bir kuralı sınar (silme aralığının uçları ve dışı, birleştirme, NFC olmayan sıra, ayırıcılar, biçim karakterleri, bölme). Aşağıdaki tablo Kur'an kelimeleriyle yazılmıştır; bu girdilerin Tanzil baytlarıyla satırları A10.7'de betikle eklenir. Tablodaki yazım Tanzil baytlarıyla aynı olmayabilir ve vektöre kopyalanmaz.
 
 | Girdi | `ar` | Sınanan kural |
 |---|---|---|
@@ -94,7 +104,13 @@ Vektör satırları `id`, `input`, `expected` ve isteğe bağlı `note` alanlar�
 | `شَىْءٍ` | `شيء` | yalın hemze korunur |
 | `يَسْـَٔلُونَكَ` | `يسلونك` | tatvil ve hemze işareti; imlâî `يسألونك` → `يسالونك` farkı |
 
-Vektörler CI'da Python (`pytest`), TypeScript (`vitest` ve Hermes) ve C# (`xUnit`) ile koşar ([Test stratejisi](../07-yayin/03-test-stratejisi.md)).
+Vektörler CI'da Python (`pytest`), TypeScript (`vitest` ve Hermes) ve C# (`xUnit`) ile koşar ([Test stratejisi](../07-yayin/03-test-stratejisi.md)). A05'te Vitest, xUnit ve pytest yerelde koşuyor; CI A08'dedir, Hermes koşumu A21 ve A32'dedir. Eşsiz vekil JSONL'de yazılamaz; üç dilin birim testleriyle kilitlidir.
+
+### 1.6 Çalışma zamanı farkları ve bilinen sınırlar
+
+- **Unicode verisi (K-36 madde 8).** Kategoriler, küçük harf eşlemesi ve NFC çalışma zamanının verisinden gelir: Python 3.13 Unicode 15.1, Node Unicode 17.0, .NET kategori verisi çalışma zamanı tablosundan, `Normalize` işletim sisteminin ICU/NLS kitaplığından. Sabit tablo tutulmaz. Vektörler yalnız eski, yerleşik kod noktalarını kullanır. Python 15.1 ile Node ve .NET'in daha yeni harfleri (ör. U+A7CB–U+A7CD, U+A7DA–U+A7DC, U+1C89) paket üretimi ile cihaz sorgusu arasında ayrışabilir; Linux CI (A08) ve Hermes (A21) bunu gözler.
+- **Son sigma.** Yukarıda (bölüm 1.2 madde 1): bilinen ve kayıtlı sınırdır.
+- **En uzun iç kesme eşleşmesi.** Birim testleriyle sınanır; liste büyüyünce vektöre taşınır (AR-1).
 
 ## 2. FTS5 tabloları
 
@@ -129,7 +145,7 @@ CREATE VIRTUAL TABLE unit_tri USING fts5(ar_norm, content='', tokenize='trigram'
 ```
 
 - **`remove_diacritics 0`.** Varsayılan değer Latin aksanlarını siler. Normalleştirme katlamayı zaten yapar; belirteçleyici yalnız boşluktan böler.
-- **Kategoriler.** `unicode61` varsayılan olarak `L* N* Co` kategorilerini sözcük sayar; harekeler `Mn` kategorisindedir ve normalize metinde kalmaz.
+- **Kategoriler.** `unicode61` varsayılan olarak `L* N* Co` kategorilerini sözcük sayar; U+064B–U+065F aralığındaki harekeler `Mn` kategorisindedir ve normalize metinde kalmaz. Silme aralığı dışındaki işaretler (U+0610–U+061A, U+08D3–U+08FF gibi) `ar_norm`'da kalır; bunlar `Mn` olduğu için `unicode61` onları ayırıcı sayıp sözcüğü bölebilir. Bu durum A10/A11 QA notudur (bölüm 1.3 madde 4).
 - **Önek indeksi.** `prefix='2 3 4'` 2–4 karakterlik önek sorgularını hızlandırır. Türkçe ekler için gövde sütunu da vardır.
 - **Trigram.** 3 karakterden kısa alt dizeler hiçbir satırı eşlemez. `remove_diacritics` açık değilse LIKE ve GLOB indeksle hızlanır ([SQLite FTS5](https://sqlite.org/fts5.html)). İçeriksiz tabloda trigram araması `MATCH` ile yapılır. Arapça bitişik ekler (و ف ب ل ال) bu tabloyla bulunur: `الصابرين` araması `والصابرين` geçen âyeti de getirir.
 - **`detail=full`.** Varsayılandır ve ifade sorgusu için gereklidir. `detail=none` bir denemede indeksi 743 MiB'den 134 MiB'ye indirdi ama ifade sorgusunu kapatır ([SQLite FTS5](https://sqlite.org/fts5.html)). İçeriksiz tablo arama metnini ikinci kez saklamaz; büyük paketlerde boyuta göre seçilir (Açık soru).
@@ -219,14 +235,14 @@ SELECT * FROM (SELECT r.pack_id, r.anchor, 'risale', r.ord, r.label, bm25(unit_f
 
 | No | Konu | Durum |
 |---|---|---|
-| AR-1 | İç kesme listesinin derlenmesi ve editör onayı | Öneri |
-| AR-2 | TypeScript Snowball Türkçe gövdeleyicisi; Python Snowball uygulaması | Doğrulanacak |
+| AR-1 | İç kesme listesinin derlenmesi ve editör onayı | Öneri (A05'te 7 girdilik başlangıç listesi var) |
+| AR-2 | TypeScript Snowball Türkçe gövdeleyicisi; Python Snowball uygulaması | Python yarısı çözüldü (25 Ekim 2026, `snowballstemmer` 3.1.1, [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) madde 6); TypeScript yarısı Doğrulanacak (A12) |
 | AR-3 | İçeriksiz ya da dış içerikli FTS seçimi (boyut ve Tanzil yazışması) | Açık soru, hukuki görüş değildir |
 | AR-4 | Uthmani biçimlerinin Kur'an `ar_norm` sütununa eklenmesi | Öneri |
 | AR-5 | bm25 sütun ağırlıkları, RRF kaynak ağırlıkları ve ek puanlar | Ölçülecek |
 | AR-6 | expo-sqlite'ta `SQLITE_MAX_ATTACHED` ve şema nitelemeli `MATCH` | Doğrulanacak |
 | AR-7 | Referans orta seviye Android cihaz | Açık soru |
-| AR-8 | Farsça `ی` ve `ک` ile Arapça-Hint rakamlarının kaynaklarda görülmesi | Doğrulanacak |
+| AR-8 | Farsça `ی` ve `ک` ile Arapça-Hint rakamlarının kaynaklarda görülmesi (1.0'da değişmez, bölüm 1.3 madde 4) | Doğrulanacak (A10) |
 
 ## İlgili dosyalar
 

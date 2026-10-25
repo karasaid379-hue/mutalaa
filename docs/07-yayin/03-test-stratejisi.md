@@ -1,7 +1,7 @@
 # Test stratejisi
 
-> **Sürüm:** 1.4 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
+> **Sürüm:** 1.5 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
 
 Bu dosya neyin, hangi araçla, ne zaman test edildiğini tanımlar. Eşik değerlerinin çoğu bu dosyanın önerisidir; ilk ölçümden sonra kalibre edilir ve öyle işaretlidir.
 
@@ -36,17 +36,17 @@ Düzenin tamamı [Proje yapısı](../02-mimari/03-proje-yapisi.md) §1'dedir. He
 
 Çapa vektörleri [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)'teki ayrıntıları da kilitler: hata kodlarının önceliği, Kur'an'da okuma sırasına göre `compare`, `contains` ekleri, birim işlevleri (`unitOf`, `toUnitSpan`, `coveredAyahs`), rota kuralları, ofset işlevlerinin hataları ve kendi metnimizin ilk kayıt adım sırası ([Çapa şeması](../03-veri/01-capa-semasi.md) §2, §7, §11). Bir işlevi uygulayan her dil aynı vektörde aynı sonucu verir; `content-hash/` TypeScript'te koşmaz, çünkü cihaz özet hesaplamaz.
 
-Örnekler (çıktılar yerel Python denemesiyle doğrulandı; kesin kurallar [Arama](../03-veri/05-arama-fts5.md) ve [Çapa şeması](../03-veri/01-capa-semasi.md) dosyalarındadır). Satırlar farklı dosyalardandır: `tr-` ve `ar-` `normalize/`, `an-0001` ve `an-0004` `anchors/valid.jsonl`, `an-0002`, `an-0003`, `an-0005` ve `an-0006` `anchors/invalid.jsonl`, `of-` `offsets/offsets.jsonl`. Kimlik önekleri: `valid` ve `invalid` tek ortak `an-` dizisini paylaşır; `cm-` `compare`, `ct-` `contains`, `ro-` `route`, `of-` `offsets`, `ch-` `content-hash` dosyasındadır. Üretilen sınır satırları `an-s…` ve `an-u-…` kimliklidir; birden çok kuralı bozan öncelik satırları `invalid` içindedir (A04, K-35 madde 1). Aşağıdaki satırlar biçimi gösterir; gerçek vektörlerde `expected` ayrıca `unit`, `unit_span` ve `ayahs` taşır ve not alanı dayanak gösterir.
+Örnekler (çıktılar yerel Python denemesiyle doğrulandı; kesin kurallar [Arama](../03-veri/05-arama-fts5.md) ve [Çapa şeması](../03-veri/01-capa-semasi.md) dosyalarındadır). Satırlar farklı dosyalardandır: `tr-` ve `ar-` `normalize/`, `an-0001` ve `an-0004` `anchors/valid.jsonl`, `an-0002`, `an-0003`, `an-0005` ve `an-0006` `anchors/invalid.jsonl`, `of-` `offsets/offsets.jsonl`. Kimlik önekleri: `valid` ve `invalid` tek ortak `an-` dizisini paylaşır; `cm-` `compare`, `ct-` `contains`, `ro-` `route`, `of-` `offsets`, `ch-` `content-hash` dosyasındadır. Üretilen sınır satırları `an-s…` ve `an-u-…` kimliklidir; birden çok kuralı bozan öncelik satırları `invalid` içindedir (A04, K-35 madde 1). Aşağıdaki satırlar biçimi gösterir; gerçek vektörlerde `expected` ayrıca `unit`, `unit_span` ve `ayahs` taşır ve not alanı dayanak gösterir. `tr-` ve `ar-` satırları gerçek vektörlerden aynen alınmıştır (A05, [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)): `tr.jsonl` 86, `ar.jsonl` 62 satırdır; `expected` değerleri elle yazılır ve `uv run mutalaa export test-vectors` yalnız biçimi, kaçışı ve kimlik düzenini denetler. Arapça satırlar `\u` kaçışlı sentetik harf ve işaret dizileridir, Kur'an metni değildir; Arama §1.5'teki Kur'an kelimeli Arapça tablonun Tanzil baytlarıyla satırları A10.7'de eklenir.
 
 ```jsonl
-{"id":"tr-0001","input":"Işık","expected":{"dar":"ışık","genis":"isik"}}
-{"id":"tr-0002","input":"IŞIK","expected":{"dar":"ışık","genis":"isik"}}
-{"id":"tr-0003","input":"ışığın","expected":{"dar":"ışığın","genis":"isigin"}}
-{"id":"tr-0004","input":"İMAN","expected":{"dar":"iman","genis":"iman"},"note":"Python str.lower() burada i + U+0307 üretir"}
-{"id":"tr-0005","input":"hâlâ","expected":{"dar":"hâlâ","genis":"hala"},"note":"dar anahtar hâlâ/hala çiftini ayırır"}
-{"id":"ar-0001","input":"بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ","expected":"بسم الله الرحمن الرحيم"}
-{"id":"ar-0002","input":"إِنَّ","expected":"ان"}
-{"id":"ar-0003","input":"عَلَىٰ","expected":"علي"}
+{"id":"tr-0001","input":"Işık","expected":{"dar":"ışık","genis":"isik"},"note":"I → ı"}
+{"id":"tr-0002","input":"İMAN","expected":{"dar":"iman","genis":"iman"},"note":"İ → i"}
+{"id":"tr-0003","input":"ışığın","expected":{"dar":"ışığın","genis":"isigin"},"note":"Türkçe harf katlama"}
+{"id":"tr-0011","input":"hâlâ","expected":{"dar":"hâlâ","genis":"hala"},"note":"dar anahtar ayırır"}
+{"id":"tr-0015","input":"IŞIK","expected":{"dar":"ışık","genis":"isik"},"note":"büyük harf I → ı (Test stratejisi 2)"}
+{"id":"ar-0001","input":"بًب","expected":"بب","note":"U+064B (silme aralığının başı) silinir, harfler birleşir"}
+{"id":"ar-0002","input":"بٟب","expected":"بب","note":"U+065F (silme aralığının sonu) silinir"}
+{"id":"ar-0003","input":"بٰب","expected":"بب","note":"U+0670 (üstteki elif) silinir"}
 {"id":"an-0001","input":"q:2:255:3-7","expected":{"ref":{"anchor":{"t":"q","sure":2,"ayet":255,"ilk":3,"son":7}},"canonical":"q:2:255:3-7"}}
 {"id":"an-0002","input":"q:2:255:7-3","expected":"TERS_ARALIK","note":"ilk > son"}
 {"id":"an-0003","input":"q:2:287","expected":"AYET_ARALIGI","note":"Bakara 286 âyet"}
@@ -57,33 +57,36 @@ Düzenin tamamı [Proje yapısı](../02-mimari/03-proje-yapisi.md) §1'dedir. He
 ```
 
 ```python
-# pipeline/tests/test_vectors.py  (modül adları örnek)
-@pytest.mark.parametrize("v", load("normalize/tr.jsonl"), ids=lambda v: v["id"])
-def test_normalize_tr(v):
-    assert {k: normalize_tr(v["input"], key=k) for k in ("dar", "genis")} == v["expected"]
+# pipeline/tests/test_normalize_vectors.py
+@pytest.mark.parametrize("vektor", TR, ids=[v["id"] for v in TR])
+def test_turkce_vektoru(vektor):
+    assert normalize_tr(vektor["input"], "dar") == vektor["expected"]["dar"]
+    assert normalize_tr(vektor["input"], "genis") == vektor["expected"]["genis"]
 ```
 
 ```ts
-// packages/search/test/vectors.test.ts
-test.each(load('normalize/tr.jsonl'))('$id', (v) => {
-  expect({ dar: normalizeTr(v.input, 'dar'), genis: normalizeTr(v.input, 'genis') }).toEqual(v.expected);
+// packages/search/test/normalize.test.ts
+test.each(rows)('$id', ({ input, expected }) => {
+  expect(normalizeTr(input, 'dar')).toBe(expected.dar);
+  expect(normalizeTr(input, 'genis')).toBe(expected.genis);
 });
 ```
 
 ```csharp
-[Theory, MemberData(nameof(Vectors.NormalizeTr), MemberType = typeof(Vectors))]
-public void Normalize_tr(TrVector v)
-{
-    Assert.Equal(v.Expected.Dar, TurkishNormalizer.Normalize(v.Input, "dar"));
-    Assert.Equal(v.Expected.Genis, TurkishNormalizer.Normalize(v.Input, "genis"));
-}
+// server/tests/Mutalaa.Domain.Tests/NormalizeVectorTests.cs: her vektör Invariant ve tr-TR olarak ayrı koşar
+[Theory]
+[MemberData(nameof(TrIds))]
+public void Turkish_trTR(string id) => CultureScope.Turkish(() => CheckTurkish(id));
+// CheckTurkish: SearchNormalizer.TurkishNarrow(input) == dar, SearchNormalizer.TurkishWide(input) == genis
 ```
 
 | Tuzak | Örnek | Önlem |
 |---|---|---|
-| Python küçük harf | `"İ".lower()` iki kod noktası verir (`i` + U+0307); `"I".lower()` `i` verir | Önce `I→ı`, `İ→i` açık eşlemesi |
-| .NET küçük harf | `ToLower()` geçerli kültüre bağlıdır | Kültüre bırakılmaz; açık eşleme |
-| JS küçük harf | `toLowerCase()` Türkçe kurala uymaz; `toLocaleLowerCase('tr')` davranışı Hermes'te Doğrulanacak | Açık eşleme; cihazda öz test |
+| Python küçük harf | `"İ".lower()` iki kod noktası verir (`i` + U+0307); `"I".lower()` `i` verir | Önce `I→ı`, `İ→i` açık eşlemesi, sonra kod noktası başına küçük harf |
+| .NET küçük harf | `ToLower()` geçerli kültüre bağlıdır | Kültüre bırakılmaz; açık eşleme ve `Rune.ToLowerInvariant` (`SearchNormalizer.LowerTurkish`) |
+| JS küçük harf | `toLowerCase()` Türkçe kurala uymaz; `toLocaleLowerCase('tr')` kullanılmaz (Hermes davranışı: [Mobil mimari](../06-mobil/01-mobil-mimari.md) MM-11) | Açık eşleme; cihazda öz test |
+| Son sigma | Dize düzeyinde `lower()` ve `toLowerCase()` son sigma bağlamı uygular, .NET uygulamaz (`ΟΔΟΣ`) | Kod noktası başına küçük harf; `tr-0025` bilinen sınırı kilitler |
+| Unicode sürümü | Python 15.1, Node 17.0, .NET kendi tablosu: yeni harf ve işaretler ayrışabilir | Vektörler yalnız eski, yerleşik kod noktalarını kullanır; Linux CI (A08) ve Hermes (A21) gözler |
 | Ofset | Python kod noktası sayar, JS ve C# UTF-16 birimi sayar (`of-0001`: 6 ve 7) | Ofset kod noktasıdır; dönüştürücü vektörle sınanır |
 | FTS5 varsayılanı | unicode61, "Işık"ı `ışık`, `IŞIK`, `isik` sorgularıyla bulamadı; harekeli besmele parçalandı ([SQLite FTS5](https://sqlite.org/fts5.html), rapordaki yerel deneme) | İndeks normalize `search_text` üzerinde |
 

@@ -1,6 +1,6 @@
 # İçerik Hattı
-> **Sürüm:** 1.3 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)
+> **Sürüm:** 1.4 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)
 
 İçerik hattı, kaynak dosyaları alır, normalize eder, kalıcı adres (çapa) verir, zenginleştirir, denetler ve editoryal veritabanına (PostgreSQL 18) yükler. Python 3.13 ile yazılır, paketleri `uv` yönetir. Hat yalnız geliştirme makinesinde çalışır, üretim sunucusunda çalışmaz (K-12). SQLite içerik paketlerini hat üretmez; paketleri editör onayından sonra .NET yayınlayıcı (`server/Mutalaa.Publisher`) lisans kapısından geçirerek üretir.
 
@@ -32,11 +32,12 @@ pipeline/
 ├─ sources/                # kaynak kayıtları (TOML) ve tarihli lisans kopyaları
 │  └─ licenses/
 ├─ prompts/                # sürümlü yapay zekâ istemleri: {iş}/v{n}.md
+├─ stubs/                  # tip bilgisi taşımayan paketler için mypy taslakları (snowballstemmer)
 ├─ src/mutalaa_pipeline/
 │  ├─ cli.py               # `mutalaa` komutu
 │  ├─ config.py · runctx.py · lineage.py · db.py · logs.py
 │  ├─ ingest/              # kaynak başına bağdaştırıcı: tanzil, qac, qul, quran_align, scans, hadith_ar
-│  ├─ normalize/           # arabic, turkish, unicode; search_text ve arama anahtarları
+│  ├─ normalize/           # unicode.py, turkish.py, arabic.py; arama anahtarları (A05, K-36)
 │  ├─ anchor/              # quran, meal, tefsir, hadith, risale; content_hash
 │  ├─ enrich/              # morphology, citations, hadith_refs, glosses, ocr, llm
 │  ├─ qa/                  # kapılar, örneklem, metrikler (CER, kappa)
@@ -47,7 +48,7 @@ pipeline/
 | Modül | Sorumluluk | Yazdığı yer |
 |---|---|---|
 | `ingest` | İndirme ya da tarama kaydı, SHA-256, kaynağa özgü ayrıştırma | `data/raw`, `data/staged` |
-| `normalize` | `search_text`, Arapça ve Türkçe arama anahtarları ([Arama](../03-veri/05-arama-fts5.md)) | `data/staged` |
+| `normalize` | Arama anahtarları: `tr_narrow`, `tr_wide`, `tr_stem` (`snowballstemmer` 3.1.1), `ar_norm`; `search_keys(metin)` hepsini üretir ([Arama](../03-veri/05-arama-fts5.md) §1, [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)). Kaynak metne dokunmaz. Hat komutu (`normalize --source`) A10'dadır | `data/staged` |
 | `anchor` | Çapa ataması, `content_hash`, önceki sürümle karşılaştırma ([Çapa şeması](../03-veri/01-capa-semasi.md)) | `data/staged` |
 | `enrich` | Morfoloji, iktibas ve atıf adayları, kelime anlamı taslakları, OCR | `data/staged`, `data/llm-cache` |
 | `qa` | Kapılar ve ölçümler | `data/reports` |
@@ -69,6 +70,7 @@ dependencies = [
   "rapidfuzz",          # bulanık eşleşme
   "httpx",              # indirme
   "anthropic",          # yapay zekâ taslakları
+  "snowballstemmer==3.1.1",  # Türkçe gövde (tr_stem; K-36 madde 6); tam sürüm sabit
 ]
 
 [project.optional-dependencies]
@@ -131,14 +133,15 @@ Ortam değişkenleri: `MUTALAA_DB_URL`, `ANTHROPIC_API_KEY`. Değerler ortamdan 
 | `uv run mutalaa qa run --source <kimlik> [--gate G-CAP]` | QA kapıları |
 | `uv run mutalaa export pg --source <kimlik> [--dry-run]` | PostgreSQL'e yükler |
 | `uv run mutalaa export review-queue --task glosses` | İnceleme kuyruğu üretir |
-| `uv run mutalaa export test-vectors [--check] [--kok <dizin>]` | `shared/test-vectors/anchors`, `offsets` ve `content-hash` dosyalarının hesaplanan alanlarını (`codepoints`, `utf16`, `cp_to_utf16`, `sha256`) ve sınır satırlarını (`an-s…`, `an-u-…`) üretir; elle yazılan beklentilere dokunmaz. `--check` yazmadan karşılaştırır, fark varsa 1 (A04) |
+| `uv run mutalaa export test-vectors [--check] [--kok <dizin>]` | `shared/test-vectors/anchors`, `offsets` ve `content-hash` dosyalarının hesaplanan alanlarını (`codepoints`, `utf16`, `cp_to_utf16`, `sha256`) ve sınır satırlarını (`an-s…`, `an-u-…`) üretir; elle yazılan beklentilere dokunmaz. `normalize/tr.jsonl` ve `normalize/ar.jsonl` tamamen elle yazılır (`expected` hesaplanmaz); komut bunlar için yalnız biçimi, `\u` kaçışını ve kimlik düzenini denetler ve normalizasyon modülünü içe aktarmaz. `--check` yazmadan karşılaştırır, fark varsa 1 (A04, A05) |
+| `uv run mutalaa export ic-kesme [--check] [--kok <dizin>]` | `shared/data/ic-kesme.txt` listesini katı denetler (BOM, CR, boş satır, yineleme, sıra ve `^[a-z]+('[a-z]+)+$` deseni; hata kodu 2) ve TypeScript ile C# kopyalarını (`packages/search/src/generated/ic-kesme.ts`, `server/Mutalaa.Domain/Text/IcKesme.g.cs`) üretir. `--check` yazmadan karşılaştırır, fark varsa 1 (A05) |
 | `uv run mutalaa export ayet-sayilari --kaynak <xml> --url <adres> --tarih <YYYY-AA-GG> [--check]` | Tanzil üst veri dosyasından sure başına âyet sayısını okur; `shared/data/ayet-sayilari.json` ve üç dilde kopyasını (`packages/anchors/src/generated/`, `anchor/ayet_sayilari.py`, `Anchors/AyetSayilari.g.cs`) üretir (A04) |
 | `uv run mutalaa llm estimate --task glosses --sample 50` | Örneklemde token sayar, maliyet tahmini verir |
 | `uv run mutalaa runs list` · `runs show <run_id>` | Çalıştırma kayıtları |
 
 Tarama ve OCR komutları baskı kimliği (`--edition elmalili-1935`), birim komutları kaynak kimliği (`--source elmalili-meal`) alır; kimlikler [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) dosyasındadır. Ortak bayraklar: `--dry-run`, `--force` (parmak izi aynı olsa da çalıştır), `--limit N`, `--config <dosya>`. Çıkış kodları: `0` başarılı, `1` QA kapısı kaldı, `2` girdi ya da yapılandırma hatası, `3` lisans kapısı (kaynak `kapali`).
 
-Aşama dosyaları şu `uv run mutalaa` komutlarını öneri olarak ekler; komut uygulanınca bu listeye işlenir (A04'ün `export ayet-sayilari` ve `export test-vectors` komutları uygulandı ve yukarıdaki tabloya işlendi): `ingest tanzil --variant ust-veri` (Tanzil üst veri dosyası, A11); `ingest sure-adlari --dosya <tsv>` ve `export sure-adlari` (sure adlarının içe ve dışa aktarımı, A11); `ingest fikstur --source <test-kaynak>` (sentetik fikstürler: `test-kucuk` A13, `test-risale-ornek` A20); `enrich morphology` (QAC segmentlerinden kelime düzeyi kök ve lemma, A17); `enrich tr-roots --source <kimlik>` (Türkçe kelime → Arapça kök, A18); `qa gold --type <tür>` (altın set ölçümü, ör. `kok`; A18). Kur'an içi `kok`, `lemma` ve `benzer_ayet` bağlantılarını üreten komutun adı A18'de henüz verilmedi. Hadis eşleme komutları (`enrich hadith-map`, `enrich hadith-refs`) [Hadis hazırlığı](./04-hadis-hazirligi.md#7-ocr-ihtiyacı) §7'dedir.
+Aşama dosyaları şu `uv run mutalaa` komutlarını öneri olarak ekler; komut uygulanınca bu listeye işlenir (A04'ün `export ayet-sayilari` ve `export test-vectors` komutları ile A05'in `export ic-kesme` komutu uygulandı ve yukarıdaki tabloya işlendi): `ingest tanzil --variant ust-veri` (Tanzil üst veri dosyası, A11); `ingest sure-adlari --dosya <tsv>` ve `export sure-adlari` (sure adlarının içe ve dışa aktarımı, A11); `ingest fikstur --source <test-kaynak>` (sentetik fikstürler: `test-kucuk` A13, `test-risale-ornek` A20); `enrich morphology` (QAC segmentlerinden kelime düzeyi kök ve lemma, A17); `enrich tr-roots --source <kimlik>` (Türkçe kelime → Arapça kök, A18); `qa gold --type <tür>` (altın set ölçümü, ör. `kok`; A18). Kur'an içi `kok`, `lemma` ve `benzer_ayet` bağlantılarını üreten komutun adı A18'de henüz verilmedi. Hadis eşleme komutları (`enrich hadith-map`, `enrich hadith-refs`) [Hadis hazırlığı](./04-hadis-hazirligi.md#7-ocr-ihtiyacı) §7'dedir.
 
 ## 5. Veri soyu: raw → staged → PostgreSQL
 
