@@ -1,0 +1,13 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "test": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/packages/*/package.json",
+        "$TURBO_ROOT$/shared/data/ic-kesme.txt",
+        "$TURBO_ROOT$/shared/test-vectors/**/*.jsonl"
+      ]
+    }
+  }
+}
