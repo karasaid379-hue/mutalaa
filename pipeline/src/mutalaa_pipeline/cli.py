@@ -5,7 +5,7 @@ from typing import Annotated
 
 import typer
 
-from mutalaa_pipeline.export import ayet_sayilari, test_vectors
+from mutalaa_pipeline.export import ayet_sayilari, ic_kesme, test_vectors
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kok_coz
 
 app = typer.Typer(
@@ -95,3 +95,30 @@ def export_test_vectors(
         typer.echo(f"yazildi: {yol}")
     if not yazilanlar:
         typer.echo("test-vectors: degisiklik yok")
+
+
+@export_app.command("ic-kesme")
+def export_ic_kesme(
+    check: Annotated[
+        bool, typer.Option("--check", help="Yazmadan diskle karsilastirir; fark varsa 1.")
+    ] = False,
+    kok: KokSecenegi = None,
+) -> None:
+    """`shared/data/ic-kesme.txt` listesinden TypeScript ve C# kopyalarini uretir."""
+    try:
+        depo = kok_coz(kok)
+        if check:
+            farklar = ic_kesme.denetle(depo)
+            if farklar:
+                for yol in farklar:
+                    typer.echo(f"fark: {yol}")
+                raise typer.Exit(code=1)
+            typer.echo("ic-kesme: fark yok")
+            return
+        yazilanlar = ic_kesme.uret(depo)
+    except GirdiHatasi as hata:
+        raise _hata(hata) from hata
+    for yol in yazilanlar:
+        typer.echo(f"yazildi: {yol}")
+    if not yazilanlar:
+        typer.echo("ic-kesme: degisiklik yok")

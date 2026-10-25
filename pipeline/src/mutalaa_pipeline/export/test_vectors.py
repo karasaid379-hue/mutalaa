@@ -8,6 +8,12 @@ dokunulmaz; yalniz bicimleri denetlenir ve anahtar sirasi normalize edilir.
 Sinir satirlari (`an-s...`, `an-u-...`) her calistirmada atilip yeniden kurulur. Ayet sayilari
 `shared/data/ayet-sayilari.json` dosyasindan okunur. Bu modul capa ayristiricisini ice aktarmaz:
 beklenen degerler ayristiricidan uretilirse vektor kendini dogrular (totoloji).
+
+Normalizasyon vektorleri (`normalize/tr.jsonl`, `normalize/ar.jsonl`, A05.2) tamamen elle
+yazilir; `expected` hesaplanmaz. Uretec yalniz bicimi (Turkce: kapali `dar`/`genis` iki
+dizgi; Arapca: dizgi), kimlik duzenini ve kacisi denetler ve yeniden yazar. Bu modul
+normalizasyon modulunu ice aktarmaz: beklenen deger normallestiriciden uretilirse vektor
+kendini dogrular.
 """
 
 import hashlib
@@ -30,7 +36,19 @@ CONTAINS: Final = "anchors/contains.jsonl"
 ROUTE: Final = "anchors/route.jsonl"
 OFFSETS: Final = "offsets/offsets.jsonl"
 HASH: Final = "content-hash/hash.jsonl"
-DOSYALAR: Final = (VALID, INVALID, COMPARE, CONTAINS, ROUTE, OFFSETS, HASH)
+NORMALIZE_TR: Final = "normalize/tr.jsonl"
+NORMALIZE_AR: Final = "normalize/ar.jsonl"
+DOSYALAR: Final = (
+    VALID,
+    INVALID,
+    COMPARE,
+    CONTAINS,
+    ROUTE,
+    OFFSETS,
+    HASH,
+    NORMALIZE_TR,
+    NORMALIZE_AR,
+)
 
 _ONEKLER: Final = {
     VALID: "an",
@@ -40,9 +58,20 @@ _ONEKLER: Final = {
     ROUTE: "ro",
     OFFSETS: "of",
     HASH: "ch",
+    NORMALIZE_TR: "tr",
+    NORMALIZE_AR: "ar",
 }
 # Kimlik benzersizligi bu gruplarin her birinde ayri ayri aranir (valid ve invalid birlikte).
-_KIMLIK_GRUPLARI: Final = ((VALID, INVALID), (COMPARE,), (CONTAINS,), (ROUTE,), (OFFSETS,), (HASH,))
+_KIMLIK_GRUPLARI: Final = (
+    (VALID, INVALID),
+    (COMPARE,),
+    (CONTAINS,),
+    (ROUTE,),
+    (OFFSETS,),
+    (HASH,),
+    (NORMALIZE_TR,),
+    (NORMALIZE_AR,),
+)
 
 HATA_KODLARI: Final = frozenset(
     {"BICIM", "SURE_ARALIGI", "AYET_ARALIGI", "TERS_ARALIK", "KANONIK_DEGIL", "UZUNLUK"}
@@ -280,6 +309,15 @@ def _normalize(dosya: str, satir: Satir) -> Satir:
         girdi, beklenen = metin, yeni
     elif dosya == HASH:
         girdi, beklenen = _hash(satir, b)
+    elif dosya == NORMALIZE_TR:
+        girdi = _dizgi(satir.input, f"{b} input")
+        anahtarlar = _nesne(satir.expected, ("dar", "genis"), ("dar", "genis"), f"{b} expected")
+        _dizgi(anahtarlar["dar"], f"{b} expected.dar")
+        _dizgi(anahtarlar["genis"], f"{b} expected.genis")
+        beklenen = anahtarlar
+    elif dosya == NORMALIZE_AR:
+        girdi = _dizgi(satir.input, f"{b} input")
+        beklenen = _dizgi(satir.expected, f"{b} expected")
     else:  # pragma: no cover - DOSYALAR disinda dosya yok
         raise GirdiHatasi(f"bilinmeyen vektor dosyasi: {dosya}")
     return Satir(satir.id, girdi, beklenen, satir.note, satir.konum)
@@ -497,7 +535,7 @@ def dosya_metni(satirlar: Sequence[Satir]) -> str:
 
 
 def hazirla(kok: Path) -> dict[str, list[Satir]]:
-    """Yedi dosyayi okur, denetler, sinir satirlarini yeniler; dosya -> siralanmis satirlar."""
+    """Dokuz dosyayi okur, denetler, sinir satirlarini yeniler; dosya -> siralanmis satirlar."""
     belge = json_oku(kok)
     okunan = {dosya: _dosya_oku(kok, dosya) for dosya in DOSYALAR}
     # Eski sinir satirlari normalize edilmeden atilir; her calistirmada yeniden kurulur.
@@ -516,7 +554,7 @@ def hazirla(kok: Path) -> dict[str, list[Satir]]:
 
 
 def uret(kok: Path) -> list[str]:
-    """Yedi dosyayi yazar; degisen dosyalarin goreli yollarini dondurur."""
+    """Dokuz dosyayi yazar; degisen dosyalarin goreli yollarini dondurur."""
     yazilan: list[str] = []
     for dosya, satirlar in hazirla(kok).items():
         goreli = f"{VEKTOR_KLASORU}/{dosya}"

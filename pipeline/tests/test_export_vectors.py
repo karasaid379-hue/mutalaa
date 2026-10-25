@@ -6,6 +6,7 @@ yazilmis tek tek Arapca harf ve isaretler, BMP disi bir harf. Kaynak yalniz ASCI
 ASCII disi karakterler `\\x..`, `\\N{...}` ve `\\U........` kacisiyla yazilir.
 """
 
+import ast
 import hashlib
 import json
 from pathlib import Path
@@ -285,11 +286,13 @@ def test_iki_kez_calistirmak_ayni_bayti_verir(tmp_path: Path) -> None:
         assert icerik == b"" or icerik.endswith(b"}\n")
 
 
-def test_eksik_dosyalar_bos_sayilir_ve_yedi_dosya_yazilir(tmp_path: Path) -> None:
+def test_eksik_dosyalar_bos_sayilir_ve_dokuz_dosya_yazilir(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
     assert calistir(kok).exit_code == 0
     baytlar = tum_baytlar(kok)
-    assert len(baytlar) == 7
+    assert len(baytlar) == 9
+    assert baytlar[tv.NORMALIZE_TR] == b""
+    assert baytlar[tv.NORMALIZE_AR] == b""
     assert baytlar[tv.COMPARE] == b""
     assert len(satirlari_oku(kok, tv.VALID)) == 114 + 4
     assert len(satirlari_oku(kok, tv.INVALID)) == 114 + 4
@@ -431,6 +434,52 @@ def test_check_ayet_sayilari_json_yoksa_iki(tmp_path: Path) -> None:
         ),
         (tv.OFFSETS, ['{"id":"of-0001","input":"\\ud835","expected":{}}'], "vekil"),
         (tv.ROUTE, [{"id": "ro-0001", "input": {"capa": "q:1:1"}, "expected": {}}], "eksik alan"),
+        (
+            tv.NORMALIZE_TR,
+            [{"id": "tr-0001", "input": "a", "expected": "a"}],
+            "expected: nesne bekleniyor",
+        ),
+        (
+            tv.NORMALIZE_TR,
+            [{"id": "tr-0001", "input": "a", "expected": {"dar": "a"}}],
+            "eksik alan: genis",
+        ),
+        (
+            tv.NORMALIZE_TR,
+            [{"id": "tr-0001", "input": "a", "expected": {"dar": "a", "genis": "a", "stem": "a"}}],
+            "tanimsiz alan: stem",
+        ),
+        (
+            tv.NORMALIZE_TR,
+            [{"id": "tr-0001", "input": "a", "expected": {"dar": "a", "genis": 1}}],
+            "expected.genis: dizgi bekleniyor",
+        ),
+        (
+            tv.NORMALIZE_TR,
+            [{"id": "tr-0001", "input": ["a"], "expected": {"dar": "a", "genis": "a"}}],
+            "input: dizgi bekleniyor",
+        ),
+        (tv.NORMALIZE_TR, [{"id": "ar-0001", "input": "a", "expected": {}}], "'tr-'"),
+        (
+            tv.NORMALIZE_TR,
+            [
+                {"id": "tr-0001", "input": "a", "expected": {"dar": "a", "genis": "a"}},
+                {"id": "tr-0001", "input": "b", "expected": {"dar": "b", "genis": "b"}},
+            ],
+            "yinelenen id tr-0001",
+        ),
+        (
+            tv.NORMALIZE_AR,
+            [{"id": "ar-0001", "input": "a", "expected": {"dar": "a", "genis": "a"}}],
+            "expected: dizgi bekleniyor",
+        ),
+        (tv.NORMALIZE_AR, [{"id": "ar-0001", "input": 1, "expected": "a"}], "input: dizgi"),
+        (tv.NORMALIZE_AR, [{"id": "tr-0001", "input": "a", "expected": "a"}], "'ar-'"),
+        (
+            tv.NORMALIZE_AR,
+            [{"id": "ar-0001", "input": "a", "expected": "a", "ek": 1}],
+            "tanimsiz alan: ek",
+        ),
     ],
     ids=[
         "json-hatasi",
@@ -448,6 +497,17 @@ def test_check_ayet_sayilari_json_yoksa_iki(tmp_path: Path) -> None:
         "snap-araligi",
         "tek-vekil",
         "route-eksik",
+        "tr-expected-dizgi",
+        "tr-genis-eksik",
+        "tr-fazla-anahtar",
+        "tr-genis-sayi",
+        "tr-input-dizi",
+        "tr-yanlis-onek",
+        "tr-yinelenen-id",
+        "ar-expected-nesne",
+        "ar-input-sayi",
+        "ar-yanlis-onek",
+        "ar-fazla-alan",
     ],
 )
 def test_girdi_hatalari_iki(tmp_path: Path, dosya: str, satirlar: list[object], ileti: str) -> None:
@@ -549,6 +609,23 @@ def test_uretec_capa_ayristiricisini_ice_aktarmaz() -> None:
     assert "ayet_sayilari import json_oku" in kaynak
 
 
+def test_uretec_normalizasyon_modulunu_ice_aktarmaz() -> None:
+    """`expected` elle yazilir; normallestiriciden uretilirse vektor kendini dogrular."""
+    kaynak = Path(tv.__file__).read_text(encoding="utf-8")
+    ice_aktarilan: list[str] = []
+    for dugum in ast.walk(ast.parse(kaynak)):
+        if isinstance(dugum, ast.Import):
+            ice_aktarilan += [oge.name for oge in dugum.names]
+        elif isinstance(dugum, ast.ImportFrom):
+            modul = dugum.module or ""
+            ice_aktarilan.append(modul)
+            ice_aktarilan += [f"{modul}.{oge.name}" for oge in dugum.names]
+    assert ice_aktarilan
+    assert not [ad for ad in ice_aktarilan if "normalize" in ad.split(".")]
+    assert not [ad for ad in ice_aktarilan if ad.startswith("mutalaa_pipeline.anchor")]
+    assert "from mutalaa_pipeline.normalize" not in kaynak
+
+
 def test_uzunluk_denetimi_girdi_hatasidir() -> None:
     with pytest.raises(GirdiHatasi):
         tv._uzunluk_denetle("abc", 4)
@@ -567,3 +644,125 @@ def test_sinir_capasi_uzunluk_hatasi_cikis_ikidir(
     kok = kok_kur(tmp_path)
     assert calistir(kok).exit_code == 2
     assert calistir(kok, "--check").exit_code == 2
+
+
+# --- Normalizasyon vektorleri (A05.2): elle yazilan expected, yalniz bicim -----------------
+
+# Sentetik girdiler: Turkce harfler ve tek tek Arapca harf/isaretler; hicbiri metin alintisi degil.
+ISARETLI_I = "\N{LATIN CAPITAL LETTER I WITH DOT ABOVE}"
+BA = "\N{ARABIC LETTER BEH}"
+ELIF = "\N{ARABIC LETTER ALEF}"
+FETHA = "\N{ARABIC FATHA}"
+SEDDE = "\N{ARABIC SHADDA}"
+YUMUSAK_TIRE = "\N{SOFT HYPHEN}"
+SIFIR_GENISLIK_BOSLUK = "\N{ZERO WIDTH SPACE}"
+TEK_VEKIL = "\ud835"
+OK = "\N{RIGHTWARDS ARROW}"
+TERS = "\\"
+
+
+def tr_satiri(kimlik: str, girdi: str, dar: str, genis: str) -> dict[str, object]:
+    return {"id": kimlik, "input": girdi, "expected": {"dar": dar, "genis": genis}}
+
+
+def test_normalize_tr_ar_kacis_ve_anahtar_sirasi(tmp_path: Path) -> None:
+    kok = kok_kur(tmp_path)
+    karisik = {
+        "note": f"I {OK} {NOKTASIZ_I}; {ISARETLI_I} {OK} i",
+        "expected": {"genis": "isik", "dar": f"{NOKTASIZ_I}{CENGELLI_S}{NOKTASIZ_I}k"},
+        "input": f"I{CENGELLI_S}{NOKTASIZ_I}k {ISARETLI_I}",
+        "id": "tr-0001",
+    }
+    satirlari_yaz(
+        kok,
+        tv.NORMALIZE_TR,
+        [
+            tr_satiri("tr-0003", f"a{SAPKA}lem", "alem", "alem"),
+            karisik,
+            tr_satiri("tr-0002", f"x{YUMUSAK_TIRE}y{SIFIR_GENISLIK_BOSLUK}z", "xy z", "xy z"),
+            tr_satiri("tr-0004", f"a{TEK_VEKIL}b", "a b", "a b"),
+        ],
+    )
+    satirlari_yaz(
+        kok,
+        tv.NORMALIZE_AR,
+        [
+            {"id": "ar-0002", "input": ELIF, "expected": ELIF},
+            {"id": "ar-0001", "input": BA + FETHA + SEDDE, "expected": BA, "note": "isaret silme"},
+        ],
+    )
+    sonuc = calistir(kok)
+    assert sonuc.exit_code == 0, sonuc.output
+
+    tr_ham = ham_satirlar(kok, tv.NORMALIZE_TR)
+    assert [json.loads(s)["id"] for s in tr_ham] == ["tr-0001", "tr-0002", "tr-0003", "tr-0004"]
+    # Anahtar sirasi: id, input, expected{dar, genis}, note. Turkce harfler duz; bicim
+    # karakterleri, birlesen isaretler ve tek vekil \u kacisli.
+    assert tr_ham[0] == (
+        f'{{"id":"tr-0001","input":"I{CENGELLI_S}{NOKTASIZ_I}k {ISARETLI_I}",'
+        f'"expected":{{"dar":"{NOKTASIZ_I}{CENGELLI_S}{NOKTASIZ_I}k","genis":"isik"}},'
+        f'"note":"I {OK} {NOKTASIZ_I}; {ISARETLI_I} {OK} i"}}'
+    )
+    assert f"x{TERS}u00ady{TERS}u200bz" in tr_ham[1]
+    assert f"a{TERS}u0302lem" in tr_ham[2]
+    assert f"a{TERS}ud835b" in tr_ham[3]
+    for ham in tr_ham:
+        assert SAPKA not in ham
+        assert YUMUSAK_TIRE not in ham
+        assert SIFIR_GENISLIK_BOSLUK not in ham
+    assert json.loads(tr_ham[3])["input"] == f"a{TEK_VEKIL}b"  # gidis-donus
+
+    ar_ham = ham_satirlar(kok, tv.NORMALIZE_AR)
+    assert [json.loads(s)["id"] for s in ar_ham] == ["ar-0001", "ar-0002"]
+    assert ar_ham[0] == (
+        f'{{"id":"ar-0001","input":"{TERS}u0628{TERS}u064e{TERS}u0651",'
+        f'"expected":"{TERS}u0628","note":"isaret silme"}}'
+    )
+    assert BA not in ar_ham[0]
+    assert ar_ham[1] == f'{{"id":"ar-0002","input":"{TERS}u0627","expected":"{TERS}u0627"}}'
+
+    ikinci = calistir(kok)
+    assert ikinci.exit_code == 0
+    assert "degisiklik yok" in ikinci.output
+    assert calistir(kok, "--check").exit_code == 0
+
+
+def test_normalize_expected_hesaplanmaz_oldugu_gibi_yazilir(tmp_path: Path) -> None:
+    """Yanlis gorunen expected da degistirilmez: uretec normalizasyon hesaplamaz."""
+    kok = kok_kur(tmp_path)
+    satirlari_yaz(kok, tv.NORMALIZE_TR, [tr_satiri("tr-0001", "Abc", "YANLIS", "yanlis")])
+    satirlari_yaz(kok, tv.NORMALIZE_AR, [{"id": "ar-0001", "input": "x", "expected": "y"}])
+    assert calistir(kok).exit_code == 0
+    (tr,) = satirlari_oku(kok, tv.NORMALIZE_TR)
+    (ar,) = satirlari_oku(kok, tv.NORMALIZE_AR)
+    assert tr["expected"] == {"dar": "YANLIS", "genis": "yanlis"}
+    assert ar["expected"] == "y"
+
+
+def test_normalize_dosyalari_ayri_kimlik_gruplari(tmp_path: Path) -> None:
+    """tr ve ar farkli onek tasir; ikisi birlikte sorunsuz yazilir."""
+    kok = kok_kur(tmp_path)
+    satirlari_yaz(kok, tv.NORMALIZE_TR, [tr_satiri("tr-0001", "a", "a", "a")])
+    satirlari_yaz(kok, tv.NORMALIZE_AR, [{"id": "ar-0001", "input": "a", "expected": "a"}])
+    assert calistir(kok).exit_code == 0
+
+
+def test_normalize_check_fark_ve_bicim(tmp_path: Path) -> None:
+    kok = kok_kur(tmp_path)
+    satirlari_yaz(
+        kok,
+        tv.NORMALIZE_TR,
+        [tr_satiri("tr-0002", "b", "b", "b"), tr_satiri("tr-0001", "a", "a", "a")],
+    )
+    ilk = calistir(kok, "--check")  # sirasiz ve bicimsiz (json.dumps) yazildi
+    assert ilk.exit_code == 1
+    assert "normalize/tr.jsonl (ilk farkli id: tr-0001)" in ilk.output
+    assert calistir(kok).exit_code == 0
+    assert calistir(kok, "--check").exit_code == 0
+    yol = vektor_yolu(kok, tv.NORMALIZE_TR)
+    # expected elle yazildigi icin deger degisikligi fark degildir; bicim (bosluk) farki fark olur.
+    yol.write_bytes(yol.read_bytes().replace(b'"dar":"b"', b'"dar": "b"'))
+    denetim = calistir(kok, "--check")
+    assert denetim.exit_code == 1
+    assert "normalize/tr.jsonl (ilk farkli id: tr-0002)" in denetim.output
+    assert "normalize/ar.jsonl" not in denetim.output
