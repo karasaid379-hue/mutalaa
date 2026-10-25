@@ -12,6 +12,10 @@ data/
 AGENTS.md
 CLAUDE.md
 pnpm-lock.yaml
+# Uretilen dosyalar: `uv run mutalaa export ayet-sayilari` yazar; bicimi uretec belirler,
+# Prettier yeniden bicimlendirirse uretecin ciktisiyla ayrisir.
+shared/data/
+packages/anchors/src/generated/
 **/dist/
 **/.turbo/
 **/node_modules/
