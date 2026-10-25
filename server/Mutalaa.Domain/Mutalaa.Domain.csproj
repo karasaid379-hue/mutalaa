@@ -1,3 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- Uretilmis ic kesme listesi ve ic islevler birim testlerine acilir; yeni proje basvurusu olusturmaz. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Mutalaa.Domain.Tests" />
+  </ItemGroup>
+
 </Project>
