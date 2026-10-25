@@ -1,7 +1,7 @@
 # Mobil Ekranlar
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları)
+> **Sürüm:** 1.2 · **Tarih:** 24 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları)
 
 Bu dosya mobil uygulamanın sekmelerini, rotalarını, ekranlarını, alt sayfalarını, ilk açılışını, ayarlarını, derin bağlantılarını ve gezinme kurallarını tanımlar. Rota ağacının temeli [Mobil mimari §4](../06-mobil/01-mobil-mimari.md#4-rotalar-expo-router) dosyasıdır; bu dosya o ağaca yalnız ekleme yapar ve eklemeleri işaretler. Okuma davranışı [Okuma deneyimi](./02-okuma-deneyimi.md), görünüş [Tasarım sistemi](./04-tasarim-sistemi.md) dosyasındadır.
 
@@ -225,7 +225,7 @@ Hizalama notları:
 2. Geçerli hedef bir atlamadır. Bulunulan konum önce geri dönüş yığınına başlangıç olarak yazılır, sonra hedef açılır; "↩ Okuduğun yere dön" çipi görünür ([Okuma deneyimi §9](./02-okuma-deneyimi.md#9-atla-ve-dön)). Mobil mimarideki işleyici `router.replace('/oku')` öncesinde bu kaydı yazacak biçimde genişler.
 3. Geçersiz ya da aralık dışı adres (`q/2/300`) en yakın âyete yuvarlanmaz. Oku açılır ve "Bağlantı geçersiz" uyarısı görünür.
 4. Hedefin paketi cihazda yoksa indirme önerisi, derlemede yoksa lisans paneli açılır.
-5. Web gelince `https://…/kuran/2/255` aynı çözücüye bağlanır. Evrensel bağlantılar alan adı seçilince kurulur ([Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md)).
+5. `fromRoute` bugün yalnız üç yerel şemayı çözer ([K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)). Web gelince `https://…/kuran/2/255` biçiminin bu çözücüye nasıl bağlanacağı web rotalarıyla birlikte A38'de kesinleşir ([belge çelişkileri](../10-claude-code/07-belge-celiskileri.md) BÇ-36). Evrensel bağlantılar alan adı seçilince kurulur ([Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md)).
 
 ## 8. Gezinme kuralları
 

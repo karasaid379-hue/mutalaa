@@ -1,7 +1,7 @@
 # Editoryal Veritabanı
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · K-12 ([karar defteri](../00-ozet/02-karar-defteri.md))
+> **Sürüm:** 1.2 · **Tarih:** 24 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · K-12 ([karar defteri](../00-ozet/02-karar-defteri.md))
 
 Editoryal veritabanı içeriğin tek doğruluk kaynağıdır. Python içerik hattı yazar, editör paneli onaylar, .NET yayınlayıcı okuyup SQLite paketlerini üretir. Mobil uygulama bu veritabanına bağlanmaz. Seçim PostgreSQL 18'dir; Türkçe ve Arapça tam metin yapılandırmaları hazırdır, anlamsal katman için pgvector eklenir (K-11). Geliştirme yerel Docker Compose'ta `postgres:18` ile çalışır ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)). Bu dosya diğer belgelerin önerdiği tabloları da kesin DDL olarak toplar (bölüm 11).
 
@@ -10,7 +10,7 @@ Editoryal veritabanı içeriğin tek doğruluk kaynağıdır. Python içerik hat
 - Kaynak metin değiştirilmez. QAC dosyası "CHANGING IT IS NOT ALLOWED" der ([QAC indirme](https://corpus.quran.com/download/)); Tanzil şartları da değiştirmeyi yasaklar ([Tanzil metni, OpenITI kopyası](https://raw.githubusercontent.com/OpenITI/0025AH/master/data/0001Quran/0001Quran.Mushaf/0001Quran.Mushaf.Tanzil001-ara1.mARkdown)). Düzeltmeler ayrı katmanda durur.
 - Her satır bir kaynağa, kaynak da lisans durumuna bağlanır. Yayın kapısı bu zincirle karar verir (K-06). Kapı metinlere ve veri setlerine aynı biçimde uygulanır.
 - Tablo adları brifteki gibi İngilizcedir; enum değerleri Türkçedir. Lisans defterinin TOML alanları ve Backend API'nin JSON alanları sütun adlarıyla aynıdır. Bu belgelerin Türkçe adlandırdığı sütunlar (`source` alanlarının çoğu, `unit.metin`, `unit.metin_durumu`, `review` ve `release`) aynı adı taşır. Tablolar `icerik` şemasındadır; v1.x kullanıcı tabloları `kullanici` şemasında durur ([Kullanıcı verisi ve senkron](./04-kullanici-verisi-ve-senkron.md)).
-- Çapa sütunları `COLLATE "C"` kullanır; bayt sıralaması `LIKE 'rn:sozler:%'` önek sorgularının B-ağacı dizinini kullanmasını sağlar. Aralıklar `int4range` olarak tutulur; PostgreSQL'in kanonik `[)` biçimi çapa şemasındaki yarı açık aralıkla aynıdır ([Çapa şeması](./01-capa-semasi.md)).
+- Çapa sütunları `COLLATE "C"` kullanır; bayt sıralaması `LIKE 'rn:sozler:%'` önek sorgularının B-ağacı dizinini kullanmasını sağlar. Bu bayt sırası çapa API'sinin `compare` sırası değildir ([Çapa şeması](./01-capa-semasi.md) §11, K-35); okuma sırası `unit.ord` sütunundadır. Aralıklar `int4range` olarak tutulur; PostgreSQL'in kanonik `[)` biçimi çapa şemasındaki yarı açık aralıkla aynıdır ([Çapa şeması](./01-capa-semasi.md)).
 - `root.id`, `lemma.id` ve `xref.id` çapalar gibi kalıcıdır; satır silinip yeniden yaratılmaz.
 
 ```mermaid
@@ -124,7 +124,7 @@ CREATE TABLE unit (
   parent_path   text COLLATE "C",                    -- 'rn:sozler:soz-10:hakikat-3' (içindekiler)
   ord           bigint NOT NULL,                     -- okuma sırası; her yayında yeniden hesaplanabilir
   ayah_range    int4range,                           -- küresel âyet sırası 1..6236; âyete bağlı değilse NULL
-  metin         text NOT NULL,                       -- kanonik metin (K-26: kaynak aynen; kendi metnimiz NFC); pakette text
+  metin         text NOT NULL,                       -- kanonik metin (K-26: kaynak aynen; kendi metnimiz ilk kayıtta Çapa şeması §7 adımlarıyla, K-35); pakette text
   marks         jsonb NOT NULL DEFAULT '[]',         -- [{"s":0,"e":14,"t":"ar"},{"s":88,"t":"hasiye","a":"rn:…"}]
   sentences     int4range[],                         -- s1, s2, … sınırları (Risale)
   attrs         jsonb NOT NULL DEFAULT '{}',         -- türe özgü öznitelikler: {"cilt":1,"sayfa":214,…}; pakette attrs
@@ -320,9 +320,9 @@ CREATE TABLE xref_vote (                           -- v1.x; canlıda genel kip v
 );
 ```
 
-- Sütunlar brifteki listeyle ve [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) DDL'iyle aynıdır. Uçlar birim düzeyindedir. Kur'an ucunda `q:2:255:3-7` seçimi `dst_anchor = 'q:2:255'`, `dst_span = '[3,8)'` (kelime konumu) olur; metin biriminde aralık kod noktasıdır.
+- Sütunlar brifteki listeyle ve [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) DDL'iyle aynıdır. Uçlar birim düzeyindedir. Kur'an ucunda `q:2:255:3-7` seçimi `dst_anchor = 'q:2:255'`, `dst_span = '[3,8)'` (kelime konumu) olur; metin biriminde aralık kod noktasıdır. Dönüşümü üç dilde `toUnitSpan` (`to_unit_span`, `ToUnitSpan`) yapar ([Çapa şeması](./01-capa-semasi.md) §11, K-35).
 - `license` iki ucun ve bağlantı verisinin kaynaklarının en kısıtlayıcısıdır. Sorunlu çıkan bir veri seti tek sorguyla kapanır (rapor).
-- Âyet aralığı çapası (`q:2:255-257`) bir birim olmadığı için `xref` ucu olmaz; aralık atıfları âyet başına satıra bölünür ve `evidence.group` ile bağlanır.
+- Âyet aralığı çapası (`q:2:255-257`) bir birim olmadığı için `xref` ucu olmaz; aralık atıfları âyet başına satıra bölünür ve `evidence.group` ile bağlanır. Âyetleri `coveredAyahs` verir; `toUnitSpan` âyet aralığında ve cümle çapasında hata verir (K-35).
 - `xref_vote` hesap kimliğini açık tutmaz. Tablo canlıdaki genel kip veritabanında durur; oy `PUT` ve `DELETE /api/v1/xrefs/{id}/vote` ile yazılır ([Genel mimari](../02-mimari/01-genel-mimari.md); [Backend API](../02-mimari/05-backend-api.md) §5). Gece işi oyları editoryal veritabanındaki `votes_up` ve `votes_down` sayaçlarına işler; hesap silinince oylar silinir (K-25, [KVKK](../07-yayin/02-kvkk-ve-gizlilik.md)).
 
 ## 8. `review` ve inceleme akışı

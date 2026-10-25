@@ -1,7 +1,7 @@
 # Yerel geliştirme
 
-> **Sürüm:** 1.4 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)
+> **Sürüm:** 1.5 · **Tarih:** 24 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)
 
 Geliştirme ekibin kendi Windows bilgisayarında yapılır ([K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma)). PostgreSQL ve S3 deposu Docker'da çalışır. API, editör ve Yayınlayıcı isteğe bağlı olarak Docker'da ya da doğrudan ana makinede çalışır. Node, .NET ve Python araçları ana makinededir. Uygulama telefonda ya da Android emülatöründe geliştirme derlemesiyle açılır.
 
@@ -505,7 +505,8 @@ Kurallar:
 - `.gitattributes` metin dosyalarında LF, `*.ps1` ve `*.cmd` dosyalarında CRLF kullanır. CRLF'li kabuk betiği konteynerde `/bin/sh^M` hatası verir.
 - Dosyalar BOM'suz UTF-8 kaydedilir. BOM'lu JSONL test vektörü Python'da ilk satırı bozar.
 - Hazır kaynak metni dağıtıldığı gibi saklanır. Tanzil'e NFC bile uygulanmaz, çünkü NFC şedde ile harekenin sırasını değiştirir. NFC yalnız kendi ürettiğimiz metinlere (transkripsiyon, kelime anlamı) ilk kayıtta uygulanır ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)). Editörde ya da betikte kaynak metni açıp kaydetmek onu sessizce normalize edebilir; Tanzil dosyaları yalnız hat üzerinden okunur.
-- Çapa ofsetleri kanonik metnin kod noktalarıdır. JavaScript ve C# dizeleri UTF-16 olduğu için ofset `Array.from` ya da `Rune` ile hesaplanır. Arama için normalize metin ayrı `search_text` sütunundadır.
+- Kendi metnimizin ilk kaydı sırayla siler, NFC uygular, sonra satır sonu ve boşluğu düzenler ([Çapa şeması](../03-veri/01-capa-semasi.md) §7, [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)). Windows'tan gelen CRLF ve tek CR U+000A olur; kırpma yalnız U+0020, U+0009 ve U+000A'yı keser. Dillerin hazır `trim`, `strip` ve `Trim` işlevleri U+00A0'ı da kestiği için kullanılmaz; U+2028, U+2029 ve U+0085'e dokunulmaz.
+- Çapa ofsetleri kanonik metnin kod noktalarıdır. JavaScript ve C# dizeleri UTF-16 olduğu için ofset `Array.from` ya da `Rune` ile hesaplanır; uygulama kodu dönüşümü `packages/anchors` (`cpToUtf16`, `utf16ToCp`) ve ortak uygulamalar üzerinden yapar. Bu işlevler sınır dışı ofsette ya da bir vekil çiftin ortasında hata verir (K-35). Arama için normalize metin ayrı `search_text` sütunundadır.
 - Depodaki dosya adları ASCII'dir. Windows büyük ve küçük harfi ayırmaz; yalnız harf büyüklüğünü değiştiren yeniden adlandırma `git mv` ile yapılır.
 
 ### 10.3 Port, ağ ve güvenlik duvarı

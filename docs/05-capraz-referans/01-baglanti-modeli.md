@@ -1,7 +1,7 @@
 # Bağlantı Modeli
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Sürüm:** 1.2 · **Tarih:** 24 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 
 Bu dosya bağlantıların veri modelini, puanlamasını, yayın kuralını, seçim çözümleme akışlarını, **Bağlantılar** panelinin sözleşmesini ve geri dönüş yığınını tanımlar. Ayrıntılar: [iktibas tespiti](./02-iktibas-tespiti.md), [kök ve lemma](./03-kok-ve-lemma.md), [anlamsal katman](./04-anlamsal-katman.md).
 
@@ -70,8 +70,8 @@ CREATE INDEX xref_dst ON xref (dst_anchor, type);
 CREATE INDEX xref_queue ON xref (type, confidence DESC) WHERE status = 'aday';
 ```
 
-1. **Uçlar birim düzeyindedir** (âyet, paragraf, hadis); kelime ve karakter ayrıntısı aralıktadır. `q:2:255:3-7` seçimi `dst_anchor = 'q:2:255'`, `dst_span = '[3,8)'` olur.
-2. **Aralık yarı açıktır.** Metin biriminde kanonik metindeki Unicode kod noktası ofsetidir (kanonik metin: kaynağın dağıttığı hâli, kendi ürettiğimiz metinlerde NFC; [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)) (çapadaki `@başlangıç-bitiş` sayıları); Kur'an biriminde QAC/QUL kelime konumudur. NULL birimin tamamıdır. UTF-16 dönüşümünü `packages/anchors` yapar.
+1. **Uçlar birim düzeyindedir** (âyet, paragraf, hadis); kelime ve karakter ayrıntısı aralıktadır. `q:2:255:3-7` seçimi `dst_anchor = 'q:2:255'`, `dst_span = '[3,8)'` olur. Dönüşümü hatta, sunucuda ve cihazda `toUnitSpan` yapar; âyet aralığı ve cümle çapası bu dönüşümde hata verir, âyet aralığı `coveredAyahs` ile âyetlere bölünür ([Çapa şeması §11](../03-veri/01-capa-semasi.md#11-packagesanchors-api), [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)).
+2. **Aralık yarı açıktır.** Metin biriminde kanonik metindeki Unicode kod noktası ofsetidir (kanonik metin: kaynağın dağıttığı hâli, kendi ürettiğimiz metinlerde ilk kayıtta Çapa şeması §7 adımlarından geçmiş metin; [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)) (çapadaki `@başlangıç-bitiş` sayıları); Kur'an biriminde QAC/QUL kelime konumudur. NULL birimin tamamıdır. UTF-16 dönüşümünü `packages/anchors` yapar.
 3. **Doğal anahtar tektir.** Hat aynı satırı günceller; `id`, `status` ve editör satırları korunur:
    ```sql
    INSERT INTO xref AS x (src_anchor, src_span, dst_anchor, dst_span, type, score, confidence, evidence, origin, status, data_version, license)

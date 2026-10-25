@@ -1,7 +1,7 @@
 # Proje yapısı
 
-> **Sürüm:** 1.4 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
+> **Sürüm:** 1.5 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
 
 Kod tek depoda durur: TypeScript uygulamaları ve paketleri pnpm + Turborepo ile, .NET projeleri `server/` altındaki çözümle, Python içerik hattı `pipeline/` altında uv ile yönetilir. Bu dosya klasörleri, bağımlılık kurallarını, araçları, kod biçimini, Git kurallarını ve CI iş akışlarını tanımlar.
 
@@ -31,7 +31,7 @@ mutalaa/
 │  │  └─ vite.config.ts          /api vekili → http://localhost:5080
 │  └─ web/                       Next.js 16; Faz 5'te açılır
 ├─ packages/
-│  ├─ anchors/                   çapa ayrıştırma, biçimlendirme, doğrulama
+│  ├─ anchors/                   çapa ayrıştırma, biçimlendirme, doğrulama; src/generated/ayet-sayilari.ts (üretilir, elle düzenlenmez)
 │  ├─ content-schema/            sql/ (paket DDL'i), manifest.schema.json, user.db Drizzle şeması
 │  ├─ search/                    Türkçe ve Arapça normalizasyon, FTS5 sorgu kurucu
 │  ├─ reader-core/               sayfa, satır, kelime modelleri; seçim; içerik sorguları
@@ -59,7 +59,8 @@ mutalaa/
 │  ├─ offsets/                   offsets.jsonl (kod noktası ofsetleri, snapSpan)
 │  ├─ fts-query/                 query.jsonl
 │  └─ arama/                     olcum.jsonl (arama ölçüm kümesi; vektör koşucuları okumaz)
-├─ shared/data/                  sure-adlari.json (114 kayıt; Çapa şeması §12)
+├─ shared/data/                  ayet-sayilari.json (114 eleman; Tanzil üst verisinden üretilir, A04; üç kopyası src/generated/ayet-sayilari.ts, anchor/ayet_sayilari.py, Anchors/AyetSayilari.g.cs)
+│                                sure-adlari.json (114 kayıt; Çapa şeması §12; A11'de gelir)
 ├─ infra/local/                  yerel konteyner yapılandırması (s3.example.json; s3.json git dışı)
 ├─ data/                         git dışı: raw/, gelen/, staged/, ocr/, gold/, llm-cache/, reports/, logs/, packs/, kurul/, backups/ (§1.1)
 ├─ docs/                         proje belgeleri (eski adıyla mutalaa-docs); Claude Code rehberi docs/10-claude-code/
@@ -94,7 +95,9 @@ Editör rotaları [Backend API](./05-backend-api.md#41-i̇nceleme-kuyrukları) �
 
 ### 1.2 Test vektörü biçimi
 
-Her dosya JSONL'dir: UTF-8, BOM yok, LF satır sonu, satır başına bir JSON nesnesi. Python, TypeScript ve C# koşucuları aynı dosyaları okur. Vektörler `uv run mutalaa export test-vectors` ile üretilir ve elle gözden geçirilir ([İçerik hattı](../04-icerik/02-icerik-hatti.md)). Bir normalizasyon kuralı değişmeden önce o kuralı gösteren vektör eklenir.
+Her dosya JSONL'dir: UTF-8, BOM yok, LF satır sonu, satır başına bir JSON nesnesi. Python, TypeScript ve C# koşucuları aynı dosyaları okur. Vektörlerin hesaplanan alanları (`codepoints`, `utf16`, `cp_to_utf16`, `sha256`) ve sınır satırları `uv run mutalaa export test-vectors` ile üretilir; anlamsal beklentiler elle yazılır ve gözden geçirilir ([İçerik hattı](../04-icerik/02-icerik-hatti.md) §4). `--check` kipi diskle karşılaştırır. Âyet sayısı dizisi `uv run mutalaa export ayet-sayilari` ile üretilir (A04). Bir normalizasyon kuralı değişmeden önce o kuralı gösteren vektör eklenir.
+
+Kimlik önekleri: `tr-` ve `ar-` (`normalize/`); `an-` (`anchors/valid` ve `anchors/invalid` tek ortak dizi), `cm-` (`compare`), `ct-` (`contains`), `ro-` (`route`), `of-` (`offsets`), `ch-` (`content-hash`). Üretilen sınır satırları `an-s…` ve `an-u-…` kimliklidir. Hata önceliğini sınayan çok ihlalli satırlar `invalid` içindedir ([K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)).
 
 ```json
 {"id":"tr-0001","input":"IŞIK","expected":{"dar":"ışık","genis":"isik"},"note":"Türkçe küçük harf, sonra gevşek katlama"}

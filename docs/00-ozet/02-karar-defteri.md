@@ -1,7 +1,7 @@
 # Karar Defteri
 
 > **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Onaylı
-> **Kapsam:** 16–18 Ekim 2026 beyin fırtınası oturumunda verilen bütün kararlar ve sonraki eklemeler (K-31, 19 Ekim 2026; K-32, K-33 ve K-34, 21 Ekim 2026).
+> **Kapsam:** 16–18 Ekim 2026 beyin fırtınası oturumunda verilen bütün kararlar ve sonraki eklemeler (K-31, 19 Ekim 2026; K-32, K-33 ve K-34, 21 Ekim 2026; K-35, 24 Ekim 2026).
 > **Kural:** Bir karar değişirse eski satır silinmez; "Geçersiz" olarak işaretlenir ve yeni karara bağlantı verilir.
 
 Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrıntılandırır ama değiştiremez. Çelişki görülürse bu dosya geçerlidir.
@@ -46,6 +46,7 @@ Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrı
 | K-32 | pnpm kurulumu ve düzeni | npm ile kurulur (Corepack yok); sürüm yalnız `devEngines.packageManager` ile sabitlenir; `node_modules` düzeni izole (varsayılan) | [Proje yapısı](../02-mimari/03-proje-yapisi.md) |
 | K-33 | .NET test çalıştırıcısı | xunit.v3 4.x + Microsoft.Testing.Platform; komut `dotnet test --solution server/Mutalaa.slnx`; çözüm biçimi `.slnx` | [Teknoloji yığını](../02-mimari/02-teknoloji-yigini.md) |
 | K-34 | TypeScript sürümü | Tek sürüm TypeScript 6.0.x; TS 7 (native) kullanılmaz, geçiş araçlar desteklenince | [Teknoloji yığını](../02-mimari/02-teknoloji-yigini.md) |
+| K-35 | Çapa API ayrıntıları | Hata önceliği, §3 desenlerinin önceliği, Kur'an'da okuma sırası, birim ve rota işlevleri üç dilde, ilk kayıt adım sırası | [Çapa şeması](../03-veri/01-capa-semasi.md) |
 
 ---
 
@@ -187,6 +188,7 @@ Eski plandan aynen devralınır:
 ### K-26 · Kalıcı adresler (çapa şeması)
 - **Karar:** Her metin birimi tek bir gramere göre kalıcı bir adres alır: `q:2:255`, `q:2:255-257` (âyet aralığı), `q:2:255:3-7` (kelime aralığı), `meal:elmalili:2:255`, `tf:elmalili:…`, `rn:sozler:…`, `h:{koleksiyon}:{no}`, `ht:{ceviri}:{koleksiyon}:{no}`, `konu:{slug}`, `…@120-184`.
 - **Kural:** Adresler hiçbir sürümde yeniden numaralanmaz; her birim metin özeti (hash) taşır. Karakter aralığı `@başlangıç-bitiş` yarı açıktır: başlangıç dahil, bitiş hariç.
+- **Güncelleme (2026-10-24):** Uygulama ayrıntıları (hata önceliği, sıralama, birim ve rota işlevleri, ilk kayıt adım sırası) [K-35](#k-35--çapa-api-ayrıntıları) ile belirlendi; bu karar değişmedi.
 - **Kanonik metin:** Kaynaktan alınan metin, kaynağın dağıttığı hâliyle saklanır; Tanzil metni bayt bayt değiştirilmez (NFC bile uygulanmaz, çünkü NFC şedde ile harekenin sırasını değiştirir ve Tanzil "değiştirmek yasak" şartı koyar). NFC yalnız kendi ürettiğimiz metinlere (transkripsiyonlar, kelime anlamları) ilk kayıtta uygulanır. Ofsetler kanonik metindeki Unicode kod noktalarıdır; arama için normalize edilmiş metin ayrı sütunda tutulur.
 
 ### K-27 · Tek bağlantı tablosu
@@ -256,6 +258,20 @@ Eski planın okuyucu tasarımları, "okuma simetrisi" çekirdeği (son okunan ye
 - **Değerlendirilen alternatifler:** İki derleyici (`typescript` adına `@typescript/typescript6`, `tsc` için `@typescript/native` = TS 7.0.2). Hız kazancı yedi boş pakette önemsiz, bakım yükü ve kırılganlık fazla.
 - **Not:** TS 7'ye geçiş typescript-eslint, Expo ve Next desteği belgelenince tek satırlık yükseltmedir; o zaman bu karar `/karar` ile güncellenir.
 - **Kaynak:** Proje sahibinin kararı (21 Ekim 2026, A02).
+
+### K-35 · Çapa API ayrıntıları
+- **Karar:** [K-26](#k-26--kalıcı-adresler-çapa-şeması)'nın uygulama ayrıntıları TypeScript, C# ve Python'da aynıdır ve ortak test vektörleriyle kilitlenir:
+  1. **Hata önceliği.** `[a-z0-9:@-]` dışı karakter → `BICIM`; toplam uzunluk 256'yı aşarsa → `UZUNLUK`; Çapa şeması §3 desenine uymayan → `BICIM`; slug 64 karakteri, derinlik 8'i (yol uzunluğu, kitap dahil), bir sayı alanı 2.147.483.647'yi aşarsa → `UZUNLUK`; sonra sırayla `SURE_ARALIGI`, `AYET_ARALIGI`, `TERS_ARALIK`, `KANONIK_DEGIL`.
+  2. **Desen önce gelir.** §3 desenleri §2 EBNF'den dardır ve bağlayıcıdır: sure, âyet ve kelime en çok üç hanedir (`q:1000:1`, `q:2:255:1000` → `BICIM`); aralık bitişi 0 olamaz (`…@0-0`, `…@5-0` → `BICIM`).
+  3. **`compare`.** Kur'an çapaları okuma sırasıyla dizilir: önce sure ve başlangıç âyeti; eşitlikte âyet, sonra kelimeler ve kelime aralıkları başlangıç kelimesine göre (aynı başlangıçta tek kelime önce, sonra bitişe göre), en sonda âyet aralıkları bitişe göre. Örnek: `q:2:255 < q:2:255:2 < q:2:255:2-3 < q:2:255:9 < q:2:255-256 < q:2:255-257 < q:2:256`. Diğer türlerde alanlar kanonik dizgideki soldan sağa sırayla karşılaştırılır; yol öğe öğe ASCII olarak, kısa önek önce; olmayan isteğe bağlı alan olandan önce; aralık önce başlangıç, sonra bitişle. Örnek: `rn:…:p4 < rn:…:p4@0-5 < rn:…:p4:s1`.
+  4. **`contains`.** §11'e ek olarak: kelime aralığı kendi alt aralıklarını, âyet aralığı içindeki kelime aralıklarını da kapsar; aralıklı paragraf cümle çapasını kapsamaz; cümle çapası yalnız kendini kapsar.
+  5. **Birim işlevleri.** `unitOf`: kelime ve kelime aralığı → âyet; `@` aralığı atılır; cümle → paragraf; âyet aralığı ve konu aynen kalır. `toUnitSpan`: kelime ya da kelime aralığı → âyet + `[ilk, son + 1)`; `@a-b` → taban çapa + `[a, b)`; aralıksız birim → yalnız `unit`; âyet aralığı ve cümle çapası → hata (âyet aralığı `coveredAyahs` ile âyetlere bölünür; cümle sınırı içerik verisi ister). `coveredAyahs`: `q`, `qa`, `tf` ve `meal` için kapsanan âyetler; diğer türlerde boş liste. Üç işlev Python (`unit_of`, `to_unit_span`, `covered_ayahs`) ve C#'ta (`UnitOf`, `ToUnitSpan`, `CoveredAyahs`) da yazılır.
+  6. **Rotalar.** Yerel rota her türde mekaniktir; şema `mutalaa`, `mutalaa-internal` ya da `mutalaa-dev` olur; Python ve C# da isteğe bağlı şema alır. Web rotası yalnız §11 tablosundaki biçimler için üretilir (Kur'an âyeti, kelime aralığı ve âyet aralığı; konu; aralıksız meal; aralıksız âyetli tefsir; Risale paragrafı, aralığı atılarak; aralıksız hadis). Diğer biçimler hata verir; web rotaları ÇŞ-7 ile Faz 5'te kesinleşir. `fromRoute` yalnız üç yerel şemayı çözer.
+  7. **İlk kayıt kanonikleştirmesi (§7).** Adımlar şu sırayla uygulanır: silinecek karakterler silinir; NFC; satır sonları (CRLF ve tek CR) U+000A olur, U+0020 ve U+0009 dizileri tek U+0020'ye iner, metnin başı ve sonu yalnız U+0020, U+0009 ve U+000A'dan kırpılır. U+00A0 kenarda da korunur; U+2028, U+2029 ve U+0085'e dokunulmaz.
+  8. **Ofset işlevleri.** `snapSpan` `0 ≤ başlangıç ≤ bitiş ≤ uzunluk` dışında; `cpToUtf16` `[0, kod noktası sayısı]` dışında; `utf16ToCp` `[0, UTF-16 uzunluğu]` dışında ya da bir vekil çiftin ortasında hata verir.
+- **Gerekçe:** Çapa şeması bu durumları açık bırakıyordu ya da kendi içinde ayrışıyordu. §2 EBNF sayıyı sınırsız ve aralık bitişini 0 olabilir yazarken §3 desenleri bunları dışlıyor. §11'deki "eşitlikte âyet, kelime, kelime aralığı, âyet aralığı" ile "okuma sırasıyla aynıdır" ifadeleri `q:2:255:9` ve `q:2:255:2-3` için farklı sonuç veriyor. §7 adımları yazılı sırayla uygulanınca silmeden sonra NFC olmayan dizi, kırpmadan sonra baştaki boşluk kalabiliyor. Sayı sınırı JavaScript'in tam sayı kesinliğini ve C# `int`'ini korur; uzunluk karakter kümesi denetiminden sonra ölçüldüğü için üç dilde aynı sayılır. Kaynak: A04 tasarım incelemesi (24 Ekim 2026).
+- **Değerlendirilen alternatifler:** Kur'an'da belgenin harfi (önce tür: bütün tek kelimeler, sonra bütün kelime aralıkları; okuma sırasından sapar). Belirsiz durumları açık soru bırakıp vektöre koymamak (diller arasında fark kalabilirdi). `unitOf`, `toUnitSpan`, `coveredAyahs` yalnız TypeScript'te (hat ve sunucu `xref` yazacak).
+- **Kaynak:** Proje sahibinin kararı (24 Ekim 2026, A04).
 
 ---
 

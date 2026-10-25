@@ -1,7 +1,7 @@
 # Çapa Şeması
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü)
+> **Sürüm:** 1.2 · **Tarih:** 24 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü)
 
 Her metin birimi tek bir gramere göre kalıcı bir adres (çapa) alır. Vurgular, notlar, yer imleri, `xref` bağlantıları, sayfa eşlemeleri, derin bağlantılar ve arama sonuçları bu adresle çalışır. Eski plan aynı içerik için en az beş uyumsuz biçim kullanıyordu (`2:255`, `quran:2:255`, `sozler:32:612`, `risale:sozler:13:para:42`). Bu dosya hepsinin yerini alır (`quran-app-docs/03-veri-modeli/03-polymorphic-content-ref.md`, `quran-app-docs/03-veri-modeli/02-tam-sql-ddl.md`).
 
@@ -52,15 +52,25 @@ ayrilmis     ::= ( "p" | "s" ) [0-9]+
 
 Gramere uyan bir dizgi şu anlam kurallarını da sağlamalıdır:
 
-1. `sure` 1–114 arasındadır. `ayet` o surenin âyet sayısını aşmaz; toplam 6.236 âyet vardır ([PyPI ijaza](https://pypi.org/project/ijaza/)). `packages/anchors` 114 elemanlı âyet sayısı dizisini gömülü taşır.
+1. `sure` 1–114 arasındadır. `ayet` o surenin âyet sayısını aşmaz; toplam 6.236 âyet vardır ([PyPI ijaza](https://pypi.org/project/ijaza/)). Üç uygulama 114 elemanlı âyet sayısı dizisini gömülü taşır. Dizi hafızadan yazılmaz; Tanzil üst veri dosyasından üretilen `shared/data/ayet-sayilari.json` dosyasından gelir ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.1).
 2. `kelime` âyetin kelime sayısını aşmaz. Bu denetim içerik verisiyle (`quran_word`) yapılır; ayrıştırıcı yapmaz.
 3. Kelime aralığında ve âyet aralığında `ilk < son`. Tek kelime `q:2:255:3`, tek âyet `q:2:255` yazılır; `q:2:255:3-3` ve `q:2:255-255` kanonik sayılmaz. Âyet aralığı yapısı gereği tek sure içindedir ve `son` o surenin âyet sayısını aşmaz.
 4. Tefsir âyet aralığında `ilk ≤ son` olur ve iki uç her zaman yazılır (`2-255-255`). Aralık sure sınırını geçmez; kaynak geçerse hat bölümü ikiye ayırır.
 5. Kesin aralık yarı açıktır: başlangıç dahil, bitiş hariç, `[başlangıç, bitiş)` (K-26). `başlangıç < bitiş ≤ metin uzunluğu` koşulu birim metniyle denetlenir.
 6. `@` Kur'an, konu ve cümle çapalarına eklenmez (gramer bunu yapısal olarak dışarıda bırakır). Âyet aralığı ve konu çapası birer başvurudur; kendi metinleri ve `content_hash` değerleri yoktur. Kur'an'da kesin aralık kelime aralığıyla yazılır. Mod A glif çiziminde karakter ofseti yoktur ve bir vurgu üç modda da aynı yeri göstermelidir (K-07). Cümle çapası paragraf üzerindeki bir aralığın adıdır; aynı aralığı ikinci bir yoldan yazmak kanonik biçimi bozar.
 7. `p` ya da `s` ile başlayıp yalnız rakamla süren adlar (`p4`, `s12`) bölüm adı olamaz.
-8. Slug en çok 64 karakter, bölüm derinliği en çok 8, çapanın tamamı en çok 256 karakterdir.
+8. Slug en çok 64 karakter, bölüm derinliği en çok 8, çapanın tamamı en çok 256 karakterdir. Bölüm derinliği yolun uzunluğudur ve kitabı da sayar, çünkü EBNF'de kitap da bir `bolum`'dur: `rn:sozler:soz-10:hakikat-3:p4` çapasının derinliği 3'tür. Bir sayı alanı en çok 2.147.483.647 olur (K-35); sınır pratikte paragraf, cümle, hadis numarası ve ofsette işler, çünkü sure, âyet ve kelime en çok üç hanedir (bölüm 3). Bu sınır JavaScript'in tam sayı kesinliğini ve C# `int`'ini korur.
 9. Çapa yalnız küçük harf ASCII içerir. "Bakara 255" ya da "2:255" gibi insan yazımları ayrı bir ayrıştırıcıyla çapaya çevrilir (bölüm 12).
+
+EBNF yapıyı gösterir. Hane sayısı ve aralık bitişi için bölüm 3'teki desenler daha dardır ve bağlayıcıdır (K-35).
+
+**Hata önceliği (K-35).** Bir dizgi birden çok kuralı bozuyorsa denetimler şu sırayla yapılır ve ilk bozulan denetimin kodu döner. Üç dil aynı sırayı izler.
+
+1. `[a-z0-9:@-]` dışında bir karakter varsa `BICIM`.
+2. Toplam uzunluk 256'yı aşarsa `UZUNLUK`. Uzunluk karakter kümesi denetiminden sonra ölçülür; dizgi bu noktada yalnız ASCII olduğu için üç dilde aynı sayılır.
+3. Dizgi bölüm 3'teki desene uymuyorsa `BICIM`.
+4. Bir slug 64 karakteri, derinlik 8'i ya da bir sayı alanı 2.147.483.647'yi aşarsa `UZUNLUK`.
+5. Anlam denetimleri sırayla: `SURE_ARALIGI`, `AYET_ARALIGI`, `TERS_ARALIK`, `KANONIK_DEGIL`.
 
 ## 3. Doğrulama düzenli ifadeleri
 
@@ -81,6 +91,7 @@ ht   ^ht:(?<ceviri>SLUG):(?<koleksiyon>SLUG):(?<no>SAYI)ARA$
 k    ^k:(?<yol>SEG(?::SEG)*):p(?<p>SAYI)ARA$
 ```
 
+- **Desen önce gelir (K-35).** Bu desenler bölüm 2'deki EBNF'den dardır ve bağlayıcıdır. Sure, âyet ve kelime en çok üç hanedir (`K3`); aralık bitişi 0 olamaz (`bit` grubu `[1-9][0-9]*`). Bu yüzden `q:1000:1`, `q:2:255:1000`, `…@0-0` ve `…@5-0` `BICIM` verir; `UZUNLUK` ya da anlam denetimine sıra gelmez.
 - Yer tutucular yerine konarak her tür için tek desen derlenir. Önek (`q:`, `konu:`, `meal:`, `tf:`, `rn:`, `h:`, `ht:`, `k:`) türü belirlediği için desenler çakışmaz. `rn` deseninde `yol` grubunun ilk parçası kitaptır. `q` desenindeki grup adları ayrıdır, çünkü eski JavaScript motorları aynı adı iki dalda kabul etmez.
 - `\d` kullanılmaz. .NET'te ve Python 3'ün `str` desenlerinde `\d` başka yazı sistemlerinin rakamlarını da eşler; `[0-9]` yalnız ASCII rakamı kabul eder.
 - Python'un `re` modülünde adlı grup `(?P<ad>…)` yazılır. .NET'te `RegexOptions.CultureInvariant` kullanılır, `IgnoreCase` kullanılmaz.
@@ -161,12 +172,18 @@ Kanonik metin, birimin kelimesi kelimesine düz metnidir. Biçimlendirme, dil i�
 | Kaynaktan alınan metin | Kaynağın dağıttığı hâliyle, bayt bayt saklanır. NFC dahil hiçbir dönüşüm uygulanmaz. Birim metni kaynak dosyanın aynen bir parçasıdır. | Tanzil Uthmani ve Simple Clean, hazır Arapça hadis metinleri |
 | Kendi ürettiğimiz metin | İlk kayıtta bir kez kanonikleştirilir, sonra bir daha değiştirilmez. | Elmalılı ve Risale transkripsiyonları, kelime anlamları, Ahmed Naim çevirisinin aktarımı |
 
-Kendi ürettiğimiz metinde ilk kayıt adımları şunlardır:
+Kendi ürettiğimiz metinde ilk kayıt adımları şu sırayla uygulanır (K-35):
 
-1. Unicode NFC.
-2. Satır sonu yalnız U+000A olur. Baştaki ve sondaki boşluk kırpılır. U+0020 ve U+0009 dizileri tek U+0020'ye iner; U+00A0 korunur.
-3. Şu karakterler silinir: U+FEFF, U+00AD, U+200E, U+200F, U+202A–U+202E, U+2066–U+2069, U+061C. U+200C ve U+200D korunur.
+1. Şu karakterler silinir: U+FEFF, U+00AD, U+200E, U+200F, U+202A–U+202E, U+2066–U+2069, U+061C. U+200C ve U+200D korunur.
+2. Unicode NFC.
+3. Satır sonu ve boşluk:
+   - CRLF ve tek CR U+000A olur.
+   - U+0020 ve U+0009 dizileri tek U+0020'ye iner.
+   - Metnin başı ve sonu yalnız U+0020, U+0009 ve U+000A'dan kırpılır. Dillerin hazır `trim`, `strip` ve `Trim` işlevleri kullanılmaz, çünkü U+00A0'ı da keserler.
+   - U+00A0 metnin kenarında da korunur. U+2028, U+2029 ve U+0085'e dokunulmaz.
 4. Kesme işaretleri, harekeler ve düzeltme işaretleri basılı kaynaktaki gibi yazılır.
+
+Sıranın gerekçesi: silme NFC'den önce gelir, çünkü NFC'den sonra silinen bir karakter NFC olmayan bir dizi bırakabilir. Kırpma silmeden sonra gelir, çünkü önce kırpılıp sonra silinen bir karakter metnin başında boşluk bırakabilir.
 
 ```python
 content_hash = hashlib.sha256(kanonik_metin.encode("utf-8")).hexdigest()  # 64 küçük harf onaltılık
@@ -180,11 +197,11 @@ content_hash = hashlib.sha256(kanonik_metin.encode("utf-8")).hexdigest()  # 64 k
 ## 8. Ofsetler
 
 - Ofset, kanonik metindeki Unicode kod noktası sırasıdır; 0'dan başlar, aralık yarı açıktır. Tanzil metninde kod noktaları kaynakta nasılsa öyle sayılır.
-- Python `str` kod noktasıyla indeksler. JavaScript ve C# UTF-16 birimiyle indeksler. Dönüşüm yalnız `packages/anchors` üzerinden yapılır (`cpToUtf16`, `utf16ToCp`).
+- Python `str` kod noktasıyla indeksler. JavaScript ve C# UTF-16 birimiyle indeksler. Dönüşüm yalnız `packages/anchors` üzerinden yapılır (`cpToUtf16`, `utf16ToCp`); geçersiz konumda bu işlevler hata verir (bölüm 11, K-35).
 - Sınır hizalama: başlangıç bir birleşen işaretin (Unicode `Mn`) üstüne düşerse geriye, bitiş bir `Mn` öncesine düşerse ileriye kayar. Böylece bir harf harekesinden ayrılmaz. Kural üç dilde aynı test vektörleriyle sınanır.
 - Hat, içerikte BMP dışı karakter olup olmadığını raporlar (Doğrulanacak). Yoksa iki ofset sayısı eşittir; dönüşüm yine API'den geçer, çünkü not metinleri BMP dışı karakter içerebilir.
 - Mod C'de yapılan Kur'an seçimi kelime sınırlarına genişletilir ve `q:{s}:{a}:{ilk}-{son}` olarak saklanır. Dönüşüm `quran_word.char_start` ve `char_end` ile yapılır.
-- Depolama tablolarında (`xref`, `xref_idx`) uç birim düzeyindedir. Kur'an ucunda kelime aralığı âyet çapasına ve kelime konumu aralığına çevrilir: `q:2:255:3-7` → `q:2:255` + `[3,8)`. Metin birimlerinde aralık kod noktasıdır. Dönüşümü `toUnitSpan` yapar ([Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md)). Âyet aralığı çapası depolamada âyet başına satıra bölünür.
+- Depolama tablolarında (`xref`, `xref_idx`) uç birim düzeyindedir. Kur'an ucunda kelime aralığı âyet çapasına ve kelime konumu aralığına çevrilir: `q:2:255:3-7` → `q:2:255` + `[3,8)`. Metin birimlerinde aralık kod noktasıdır. Dönüşümü `toUnitSpan` yapar ([Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md)). Âyet aralığı çapası depolamada âyet başına satıra bölünür; bölmeyi `coveredAyahs` verir, `toUnitSpan` âyet aralığında hata verir (bölüm 11).
 
 ## 9. İçerik güncellemesinden sonra yeniden çapalama
 
@@ -254,17 +271,27 @@ export function compare(a: AnchorRef, b: AnchorRef): -1 | 0 | 1;
 export function contains(dis: AnchorRef, ic: AnchorRef): boolean;
 export function toRoute(r: AnchorRef, hedef: 'native' | 'web', sema?: string): string;
 export function fromRoute(url: string): AnchorRef | null;
-export function unitOf(r: AnchorRef): AnchorRef;             // q:2:255:3-7 → q:2:255; aralığı atar
-export function coveredAyahs(r: AnchorRef): Array<{ sure: number; ayet: number }>; // qa, tf ve meal
-export function toUnitSpan(r: AnchorRef): { unit: string; span?: [number, number] }; // xref depolama biçimi
-export function cpToUtf16(text: string, cp: number): number;
-export function utf16ToCp(text: string, i: number): number;
-export function snapSpan(text: string, s: Span): Span;      // bölüm 8'deki Mn hizalaması
+export function unitOf(r: AnchorRef): AnchorRef;             // q:2:255:3-7 → q:2:255; cümle → paragraf; aralığı atar
+export function coveredAyahs(r: AnchorRef): Array<{ sure: number; ayet: number }>; // q, qa, tf ve meal; diğerleri boş
+export function toUnitSpan(r: AnchorRef): { unit: string; span?: [number, number] }; // xref depolama biçimi; qa ve cümlede hata
+export function cpToUtf16(text: string, cp: number): number; // cp ∉ [0, kod noktası sayısı] → hata
+export function utf16ToCp(text: string, i: number): number;  // i ∉ [0, UTF-16 uzunluğu] ya da vekil çiftin ortası → hata
+export function snapSpan(text: string, s: Span): Span;      // bölüm 8'deki Mn hizalaması; 0 ≤ start ≤ end ≤ uzunluk değilse hata
 ```
 
-- **`compare`** belirlenimci bir anahtar sırasıdır. Kur'an çapaları (`q`, `qa`) sure ve başlangıç âyetine göre birlikte dizilir; eşitlikte âyet, kelime, kelime aralığı, âyet aralığı sırası izlenir. Ardından türler `meal < tf < tfb < rn < h < ht < k < konu` sırasıyla gelir. Aynı türde sayısal alanlar sayı olarak, slug'lar ASCII olarak karşılaştırılır; aralıksız kayıt aralıklıdan önce gelir. Kur'an'da bu sıra okuma sırasıyla aynıdır. Tefsir, Risale ve kitapta okuma sırası `unit.ord` sütunundan okunur, çünkü bölünme sonrası numaralar sırayı izlemez.
-- **`contains`**: aynı çapa her zaman kapsar. `q:2:255-257` aralıktaki âyetleri, kelimelerini ve iç âyet aralıklarını kapsar. `q:2:255` kendi kelimelerini ve kelime aralıklarını, bir kelime aralığı içindeki kelimeleri kapsar. Aralıksız birim kendi aralıklarını, `[a, b)` aralığı içindeki `[c, d)` aralığını kapsar. Paragraf kendi cümle çapalarını yapısal olarak kapsar. Farklı türler birbirini kapsamaz; meal ve tefsirin âyetle ilişkisi `coveredAyahs` ile sorulur.
-- **`toRoute`**: yerel biçim mekaniktir. Ön ek `{sema}://`, ardından çapanın `:` işaretleri `/` olur, aralık `?aralik=` sorgusuna gider. Şema derleme türüne göre `mutalaa`, `mutalaa-internal` ya da `mutalaa-dev` olur ([Mobil mimari](../06-mobil/01-mobil-mimari.md)). Bu biçim mobil mimarideki MM-14 için öneridir; Expo Router'da tek bir yakalayıcı rota (`[...capa].tsx`) bütün türleri çözer.
+- **`compare`** belirlenimci bir anahtar sırasıdır (K-35). Önce Kur'an çapaları (`q`, `qa`) gelir, ardından türler `meal < tf < tfb < rn < h < ht < k < konu` sırasıyla.
+  - Kur'an çapaları okuma sırasıyla dizilir. Önce sure ve başlangıç âyeti karşılaştırılır. Eşitlikte önce âyetin kendisi gelir. Sonra kelimeler ve kelime aralıkları başlangıç kelimesine göre dizilir; aynı başlangıçta tek kelime önce gelir, kelime aralıkları bitişe göre dizilir. En sonda âyet aralıkları bitişe göre gelir. Örnek: `q:2:255 < q:2:255:2 < q:2:255:2-3 < q:2:255:9 < q:2:255-256 < q:2:255-257 < q:2:256`.
+  - Diğer türlerde alanlar kanonik dizgideki soldan sağa sırayla karşılaştırılır. Sayısal alanlar sayı olarak, slug'lar ASCII olarak karşılaştırılır. Yol öğe öğe ASCII olarak karşılaştırılır; biri öbürünün önekiyse kısa olan önce gelir. Olmayan isteğe bağlı alan, olandan önce gelir. Aralık önce başlangıca, sonra bitişe göre karşılaştırılır. Örnek: `rn:…:p4 < rn:…:p4@0-5 < rn:…:p4:s1`; örnekteki gibi cümle numarası aralıktan önce karşılaştırılır.
+  - Tefsir, Risale ve kitapta okuma sırası `unit.ord` sütunundan okunur, çünkü bölünme sonrası numaralar sırayı izlemez; `compare` bu sırayı vermez.
+- **`contains`**: aynı çapa her zaman kapsar. `q:2:255-257` aralıktaki âyetleri, kelimelerini, kelime aralıklarını ve iç âyet aralıklarını kapsar. `q:2:255` kendi kelimelerini ve kelime aralıklarını kapsar. Bir kelime aralığı içindeki kelimeleri ve kendi alt aralıklarını kapsar (`q:2:255:3-7`, `q:2:255:4-6`'yı kapsar). Aralıksız birim kendi aralıklarını, `[a, b)` aralığı içindeki `[c, d)` aralığını kapsar. Aralıksız paragraf kendi cümle çapalarını yapısal olarak kapsar; aralıklı paragraf (`…:p4@0-50`) cümle çapasını kapsamaz. Cümle çapası yalnız kendini kapsar (K-35). Farklı türler birbirini kapsamaz; meal ve tefsirin âyetle ilişkisi `coveredAyahs` ile sorulur.
+- **Birim işlevleri (K-35).** Üç işlev Python ve C#'ta da yazılır (aşağıdaki tablo).
+  - `unitOf`: kelime ve kelime aralığı âyete iner (`q:2:255:3-7` → `q:2:255`). `@` aralığı atılır. Cümle paragrafına iner (`…:p4:s2` → `…:p4`). Âyet aralığı, konu ve diğer çapalar aynen kalır.
+  - `toUnitSpan`: depolama biçimini verir (`xref`, `xref_idx`; bölüm 8). Kelime ya da kelime aralığı âyet ve kelime konumu aralığı `[ilk, son + 1)` olur: `q:2:255:3-7` → `q:2:255` + `[3, 8)`, `q:2:255:3` → `q:2:255` + `[3, 4)`. `@a-b` taşıyan çapa taban çapa + `[a, b)` olur. Aralıksız birim yalnız `unit` döner. Âyet aralığı ve cümle çapası hata verir: âyet aralığı `coveredAyahs` ile âyetlere bölünür, cümle sınırı ise içerik verisi ister.
+  - `coveredAyahs`: `q`, `qa`, `tf` ve `meal` için kapsanan âyetleri verir. `q:2:255:3-7` için 2:255; `q:2:255-257` ve `tf:elmalili:2-255-257:p3` için 2:255, 2:256 ve 2:257. Diğer türlerde boş liste döner.
+- **`toRoute`** (K-35): yerel biçim her türde mekaniktir. Ön ek `{sema}://`, ardından çapanın `:` işaretleri `/` olur, aralık `?aralik=` sorgusuna gider. Şema `mutalaa`, `mutalaa-internal` ya da `mutalaa-dev` olur ve derleme türüne göre seçilir ([Mobil mimari](../06-mobil/01-mobil-mimari.md)). Python ve C# da isteğe bağlı şema alır. Bu biçim mobil mimarideki MM-14 için öneridir; Expo Router'da tek bir yakalayıcı rota (`[...capa].tsx`) bütün türleri çözer.
+- **Web rotası** yalnız aşağıdaki tablodaki biçimler için üretilir: Kur'an âyeti, kelime aralığı ve âyet aralığı; konu; aralıksız meal; aralıksız, âyetli tefsir paragrafı; Risale paragrafı (aralık atılır); aralıksız hadis. Diğer biçimler hata verir (ör. `tfb`, Risale cümlesi, `ht`, `k`, aralıklı meal, tefsir ya da hadis). Web rotaları ÇŞ-7 ile Faz 5'te kesinleşir.
+- **`fromRoute`** yalnız üç yerel şemayı (`mutalaa`, `mutalaa-internal`, `mutalaa-dev`) çözer; başka adreste `null` döner (K-35).
+- **Ofset işlevleri (K-35).** `snapSpan`, `0 ≤ başlangıç ≤ bitiş ≤ uzunluk` koşulu tutmazsa hata verir. `cpToUtf16`, ofset `[0, kod noktası sayısı]` dışındaysa hata verir. `utf16ToCp`, ofset `[0, UTF-16 uzunluğu]` dışındaysa ya da bir vekil çiftin (surrogate pair) ortasına düşüyorsa hata verir.
 
 | Çapa | Yerel | Web (Faz 5'te kesinleşir) |
 |---|---|---|
@@ -287,17 +314,20 @@ Web rotaları raporun önerdiği `/kuran/[sure]/[ayet]`, `/meal/[meal]/[sure]`, 
 | Biçimleme | `format(r)` | `format(r)`, `str(r)` | `r.ToString()` |
 | Sıralama | `compare(a, b)` | `sort_key(r)` | `IComparable<AnchorRef>` |
 | Kapsama | `contains(a, b)` | `contains(a, b)` | `a.Contains(b)` |
-| Rota | `toRoute`, `fromRoute` | `to_route(r, hedef)` | `r.ToRoute(hedef)` |
+| Rota | `toRoute`, `fromRoute` | `to_route(r, hedef, sema?)` | `r.ToRoute(hedef, sema?)` |
+| Birim | `unitOf(r)` | `unit_of(r)` | `r.UnitOf()` |
+| Depolama biçimi | `toUnitSpan(r)` | `to_unit_span(r)` | `r.ToUnitSpan()` |
+| Kapsanan âyetler | `coveredAyahs(r)` | `covered_ayahs(r)` | `r.CoveredAyahs()` |
 
 Python'da değişmez `dataclass(frozen=True)`, C#'ta `sealed record` kullanılır. C# tarafı EF Core değer dönüştürücüsüyle `text` sütunlarına eşlenir ([Editoryal veritabanı](./02-editoryal-veritabani.md)).
 
 ```text
 shared/test-vectors/            input → expected
-  anchors/valid.jsonl           çapa dizesi → nesne (ref) ve kanonik dize (canonical)
-  anchors/invalid.jsonl         dize → hata kodu
+  anchors/valid.jsonl           çapa dizesi → nesne (ref), kanonik dize (canonical), birim işlevlerinin sonucu
+  anchors/invalid.jsonl         dize → hata kodu (öncelik bölüm 2)
   anchors/compare.jsonl         [a, b] → -1, 0 ya da 1
   anchors/contains.jsonl        [dış, iç] → true ya da false
-  anchors/route.jsonl           çapa → yerel ve web rota
+  anchors/route.jsonl           çapa (isteğe bağlı şema) → yerel ve web rota
   offsets/offsets.jsonl         metin → kod noktası ↔ UTF-16, snapSpan
   content-hash/hash.jsonl       metin → content_hash (bölüm 7)
 ```
@@ -340,11 +370,12 @@ CI üç test koşucusunu aynı dosyalarla çalıştırır. TypeScript vektörler
 | ÇŞ-6 | Mod A satır düzeni verisinin kaynağı ve lisansı (mobil mimari MM-2) | Açık soru |
 | ÇŞ-7 | Web rotaları | Faz 5'te kesinleşir |
 | ÇŞ-8 | Konu düğümlerinin slug listesi ve tabloları (v1.x) | Açık soru |
+| ÇŞ-9 | Çapa API ayrıntıları (hata önceliği, sıralama, birim ve rota işlevleri, ilk kayıt sırası) | Çözüldü (2026-10-24, [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)) |
 
 ## İlgili dosyalar
 
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Sözlük](../00-ozet/03-sozluk.md)
 - [Editoryal veritabanı](./02-editoryal-veritabani.md) · [İçerik paketleri](./03-icerik-paketleri.md) · [Kullanıcı verisi ve senkron](./04-kullanici-verisi-ve-senkron.md) · [Arama (FTS5)](./05-arama-fts5.md)
 - [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) · [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md)
-- [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) · [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md)
+- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) · [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md)
 - [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) · [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)
