@@ -27,6 +27,10 @@ const ANCHOR_VALID_LINE =
   '"canonical":"q:2:255","unit":"q:2:255","unit_span":{"unit":"q:2:255"},' +
   '"ayahs":[{"sure":2,"ayet":255}]}}\n';
 
+// Lines that pass the field rules of normalize/tr.jsonl and normalize/ar.jsonl.
+const TR_LINE = '{"id":"tr-0001","input":"x","expected":{"dar":"x","genis":"x"}}\n';
+const AR_LINE = '{"id":"ar-0001","input":"x","expected":""}\n';
+
 /**
  * Wraps raw bytes in an otherwise valid JSONL line.
  * @param {number[]} bytes
@@ -280,7 +284,7 @@ describe('test-vectors default scan (no argument)', () => {
 
   it('finds .jsonl files in nested vector folders and catches a broken one', () => {
     const root = fakePackage('nested-broken', {
-      'normalize/tr.jsonl': GOOD,
+      'normalize/tr.jsonl': TR_LINE,
       'anchors/valid.jsonl': ANCHOR_VALID_LINE,
       'anchors/deep/er/route.jsonl': GOOD + GOOD,
     });
@@ -299,8 +303,8 @@ describe('test-vectors default scan (no argument)', () => {
 
   it('passes a clean tree and counts every vector file', () => {
     const root = fakePackage('clean-tree', {
-      'normalize/tr.jsonl': GOOD,
-      'normalize/ar.jsonl': GOOD,
+      'normalize/tr.jsonl': TR_LINE,
+      'normalize/ar.jsonl': AR_LINE,
       'fts-query/query.jsonl': GOOD,
     });
     const result = runDefault(root);
@@ -357,6 +361,8 @@ const CT = 'anchors/contains.jsonl';
 const RO = 'anchors/route.jsonl';
 const OF = 'offsets/offsets.jsonl';
 const CH = 'content-hash/hash.jsonl';
+const NT = 'normalize/tr.jsonl';
+const NA = 'normalize/ar.jsonl';
 
 /**
  * @param {string} text
@@ -579,7 +585,7 @@ const fieldAccepted = [
   // Files outside VECTOR_KINDS get the basic rules only: free keys, any order, any numbers.
   [
     'unknown-normalize-file',
-    'normalize/tr.jsonl',
+    'normalize/tr-old.jsonl',
     '{"id":"tr-0002","input":"x","expected":{"dar":"x","genis":"x"},"extra":1.5}\n{"id":"tr-0001","input":"y"}\n',
   ],
   [
@@ -1228,6 +1234,399 @@ const fieldRejected = [
   ],
 ];
 
+// ---------------------------------------------------------------------------------------------
+// normalize/tr.jsonl and normalize/ar.jsonl (A05.2): closed expected object / string, the escape
+// rule and the key invariants. Lines that carry escapes are written with String.raw so that the
+// file holds the backslash sequences (JSON.stringify would write the marks raw).
+// ---------------------------------------------------------------------------------------------
+
+/** @type {Row} */
+const trRow = {
+  id: 'tr-0001',
+  input: 'Işık',
+  expected: { dar: 'ışık', genis: 'isik' },
+  note: 'I → ı',
+};
+/** @type {Row} */
+const arRow = { id: 'ar-0001', input: String.raw`\u0628\u064b\u0628`, expected: 'x' };
+
+/**
+ * A normalize/tr line with the given raw text for input, expected.dar, expected.genis and note
+ * (written as is, so escapes stay escapes).
+ * @param {string} input
+ * @param {string} dar
+ * @param {string} genis
+ * @param {string} [note]
+ * @returns {string}
+ */
+function trText(input, dar, genis, note = '') {
+  const tail = note === '' ? '' : `,"note":"${note}"`;
+  return `{"id":"tr-0001","input":"${input}","expected":{"dar":"${dar}","genis":"${genis}"}${tail}}\n`;
+}
+
+/**
+ * @param {string} input
+ * @param {string} expected
+ * @param {string} [note]
+ * @returns {string}
+ */
+function arText(input, expected, note = '') {
+  const tail = note === '' ? '' : `,"note":"${note}"`;
+  return `{"id":"ar-0001","input":"${input}","expected":"${expected}"${tail}}\n`;
+}
+
+/** @type {[string, string, string][]} */
+const normalizeAccepted = [
+  ['normalize-tr-minimal', NT, jsonl(trRow)],
+  ['normalize-tr-escaped-combining-mark', NT, trText(String.raw`a\u0302lem`, 'âlem', 'alem')],
+  [
+    'normalize-tr-escaped-astral-pair',
+    NT,
+    trText(String.raw`\ud801\udc00`, String.raw`\ud801\udc28`, String.raw`\ud801\udc28`),
+  ],
+  ['normalize-tr-empty-keys', NT, trText('', '', '')],
+  ['normalize-tr-whitespace-only-input', NT, trText('   ', '', '')],
+  ['normalize-tr-equal-word-counts', NT, trText('Âl-i İmrân', 'âl i imrân', 'al i imran')],
+  // Raw characters outside the escaped categories stay raw: Latin and Greek letters, No, Nl, Pi/Pf, Sm.
+  ['normalize-tr-raw-letters-and-symbols', NT, trText('«½ ⅻ ΟΔΟΣ ß»', 'x', 'x', 'a → b')],
+  // Only U+0300-U+036F is folded away in the wide key: Me (U+20DD) and other marks may stay.
+  [
+    'normalize-tr-wide-keeps-enclosing-mark',
+    NT,
+    trText('a', String.raw`a\u20dd`, String.raw`a\u20dd`),
+  ],
+  ['normalize-tr-dar-may-hold-dotless-i', NT, trText('x', 'ışık', 'isik')],
+  ['normalize-tr-dar-may-hold-combining-mark', NT, trText('x', String.raw`i\u0307`, 'i')],
+  [
+    'normalize-tr-raw-space-and-escaped-nbsp',
+    NT,
+    trText(String.raw`Deneme\u00a0metni`, 'deneme metni', 'deneme metni'),
+  ],
+  ['normalize-ar-minimal', NA, jsonl(arRow)],
+  [
+    'normalize-ar-escaped-letters',
+    NA,
+    arText(String.raw`\u0628\u064b\u0628`, String.raw`\u0628\u0628`),
+  ],
+  ['normalize-ar-empty-expected', NA, arText('', '')],
+  [
+    'normalize-ar-latin-and-single-space',
+    NA,
+    arText(String.raw`abc \u0628`, String.raw`\u0628 \u062a`),
+  ],
+  ['normalize-ar-raw-guillemets', NA, arText(String.raw`«\u0628»`, String.raw`\u0628`)],
+  [
+    'normalize-ar-two-ids-in-order',
+    NA,
+    `${arText('', '')}${arText('', '').replace('ar-0001', 'ar-0002')}`,
+  ],
+  // The escape rule belongs to the normalize files; other recognized files are not held to it.
+  ['escape-rule-not-applied-to-offsets', OF, jsonl(offsetsRow)],
+];
+
+/**
+ * A raw (unescaped) character inside the input of a normalize/tr line.
+ * @param {string} name
+ * @param {string} ch
+ * @param {RegExp} message
+ * @returns {[string, string, string, Expect[]]}
+ */
+function rawInTr(name, ch, message) {
+  return [name, NT, trText(`a${ch}b`, 'x', 'x'), [[message, 1]]];
+}
+
+/** @type {[string, string, string, Expect[]][]} */
+const normalizeRejected = [
+  // Field shapes of normalize/tr.
+  [
+    'normalize-tr-expected-string',
+    NT,
+    jsonl(patch(trRow, 'expected', 'x')),
+    [[/^expected: must be an object, got "x"$/, 1]],
+  ],
+  [
+    'normalize-tr-missing-genis',
+    NT,
+    jsonl(patch(trRow, 'expected.genis', undefined)),
+    [[/^expected: missing key "genis"$/, 1]],
+  ],
+  [
+    'normalize-tr-missing-dar',
+    NT,
+    jsonl(patch(trRow, 'expected.dar', undefined)),
+    [[/^expected: missing key "dar"$/, 1]],
+  ],
+  [
+    'normalize-tr-unknown-expected-key',
+    NT,
+    jsonl(patch(trRow, 'expected.stem', 'isik')),
+    [[/^expected: unknown key "stem"$/, 1]],
+  ],
+  [
+    'normalize-tr-dar-not-string',
+    NT,
+    jsonl(patch(trRow, 'expected.dar', 5)),
+    [[/^expected\.dar: must be a string, got 5$/, 1]],
+  ],
+  [
+    'normalize-tr-genis-null',
+    NT,
+    jsonl(patch(trRow, 'expected.genis', null)),
+    [[/^expected\.genis: must be a string, got null$/, 1]],
+  ],
+  [
+    'normalize-tr-input-not-string',
+    NT,
+    jsonl(patch(trRow, 'input', ['Işık'])),
+    [[/^input: must be a string, got an array$/, 1]],
+  ],
+  // Spaces of the keys.
+  [
+    'normalize-tr-dar-leading-space',
+    NT,
+    jsonl(patch(trRow, 'expected.dar', ' ışık')),
+    [[/^expected\.dar: must not start or end with U\+0020$/, 1]],
+  ],
+  [
+    'normalize-tr-dar-trailing-space',
+    NT,
+    jsonl(patch(trRow, 'expected.dar', 'ışık ')),
+    [[/^expected\.dar: must not start or end with U\+0020$/, 1]],
+  ],
+  [
+    'normalize-tr-genis-leading-space',
+    NT,
+    jsonl(patch(trRow, 'expected.genis', ' isik')),
+    [[/^expected\.genis: must not start or end with U\+0020$/, 1]],
+  ],
+  [
+    'normalize-tr-genis-trailing-space',
+    NT,
+    jsonl(patch(trRow, 'expected.genis', 'isik ')),
+    [[/^expected\.genis: must not start or end with U\+0020$/, 1]],
+  ],
+  [
+    'normalize-tr-dar-single-space-only',
+    NT,
+    jsonl(patch(patch(trRow, 'expected.dar', ' '), 'expected.genis', '')),
+    [[/^expected\.dar: must not start or end with U\+0020$/, 1]],
+  ],
+  [
+    'normalize-tr-dar-double-space',
+    NT,
+    jsonl(patch(patch(trRow, 'expected.dar', 'a  b'), 'expected.genis', 'a b')),
+    [[/^expected\.dar: must not contain two U\+0020 in a row$/, 1]],
+  ],
+  [
+    'normalize-tr-genis-double-space',
+    NT,
+    jsonl(patch(patch(trRow, 'expected.dar', 'a b'), 'expected.genis', 'a  b')),
+    [[/^expected\.genis: must not contain two U\+0020 in a row$/, 1]],
+  ],
+  // The wide key is folded.
+  [
+    'normalize-tr-genis-has-combining-circumflex',
+    NT,
+    trText('x', 'x', String.raw`a\u0302`),
+    [[/^expected\.genis: must not contain a character of U\+0300-U\+036F$/, 1]],
+  ],
+  [
+    'normalize-tr-genis-has-first-of-range',
+    NT,
+    trText('x', 'x', String.raw`a\u0300`),
+    [[/^expected\.genis: must not contain a character of U\+0300-U\+036F$/, 1]],
+  ],
+  [
+    'normalize-tr-genis-has-last-of-range',
+    NT,
+    trText('x', 'x', String.raw`a\u036f`),
+    [[/^expected\.genis: must not contain a character of U\+0300-U\+036F$/, 1]],
+  ],
+  [
+    'normalize-tr-genis-has-dotless-i',
+    NT,
+    jsonl(patch(trRow, 'expected.genis', 'ışik')),
+    [[/^expected\.genis: must not contain dotless i \(U\+0131\)$/, 1]],
+  ],
+  // Same number of words.
+  [
+    'normalize-tr-word-counts-differ',
+    NT,
+    jsonl(patch(patch(trRow, 'expected.dar', 'a b'), 'expected.genis', 'a')),
+    [
+      [
+        /^expected: dar has 2 word\(s\) but genis has 1 \(both keys must have the same number\)$/,
+        1,
+      ],
+    ],
+  ],
+  [
+    'normalize-tr-empty-dar-nonempty-genis',
+    NT,
+    jsonl(patch(patch(trRow, 'expected.dar', ''), 'expected.genis', 'a')),
+    [[/^expected: dar has 0 word\(s\) but genis has 1 /, 1]],
+  ],
+  // Field shapes and spaces of normalize/ar.
+  [
+    'normalize-ar-expected-object',
+    NA,
+    jsonl(patch(arRow, 'expected', { dar: 'x', genis: 'x' })),
+    [[/^expected: must be a string, got an object$/, 1]],
+  ],
+  [
+    'normalize-ar-expected-number',
+    NA,
+    jsonl(patch(arRow, 'expected', 3)),
+    [[/^expected: must be a string, got 3$/, 1]],
+  ],
+  [
+    'normalize-ar-missing-expected',
+    NA,
+    jsonl(patch(arRow, 'expected', undefined)),
+    [[/^missing key "expected"$/, 1]],
+  ],
+  [
+    'normalize-ar-input-not-string',
+    NA,
+    jsonl(patch(arRow, 'input', 1)),
+    [[/^input: must be a string, got 1$/, 1]],
+  ],
+  [
+    'normalize-ar-leading-space',
+    NA,
+    arText('', ' a'),
+    [[/^expected: must not start or end with U\+0020$/, 1]],
+  ],
+  [
+    'normalize-ar-trailing-space',
+    NA,
+    arText('', 'a '),
+    [[/^expected: must not start or end with U\+0020$/, 1]],
+  ],
+  [
+    'normalize-ar-double-space',
+    NA,
+    arText('', 'a  b'),
+    [[/^expected: must not contain two U\+0020 in a row$/, 1]],
+  ],
+  // Escape rule: one message per distinct code point of a line, with the escape to write.
+  rawInTr('escape-raw-mn', '\u0301', /^raw U\+0301 \(Mn\) must be written as \\u0301$/),
+  rawInTr('escape-raw-mc', '\u0903', /^raw U\+0903 \(Mc\) must be written as \\u0903$/),
+  rawInTr('escape-raw-me', '\u20dd', /^raw U\+20DD \(Me\) must be written as \\u20dd$/),
+  rawInTr('escape-raw-cc-del', '\u007f', /^raw U\+007F \(Cc\) must be written as \\u007f$/),
+  rawInTr('escape-raw-cf-zwsp', '\u200b', /^raw U\+200B \(Cf\) must be written as \\u200b$/),
+  rawInTr('escape-raw-cf-soft-hyphen', '\u00ad', /^raw U\+00AD \(Cf\) must be written as \\u00ad$/),
+  rawInTr('escape-raw-zl', '\u2028', /^raw U\+2028 \(Zl\) must be written as \\u2028$/),
+  rawInTr('escape-raw-zp', '\u2029', /^raw U\+2029 \(Zp\) must be written as \\u2029$/),
+  rawInTr('escape-raw-zs-nbsp', '\u00a0', /^raw U\+00A0 \(Zs\) must be written as \\u00a0$/),
+  rawInTr(
+    'escape-raw-zs-ideographic-space',
+    '\u3000',
+    /^raw U\+3000 \(Zs\) must be written as \\u3000$/,
+  ),
+  rawInTr('escape-raw-co', '\ue000', /^raw U\+E000 \(Co\) must be written as \\ue000$/),
+  rawInTr('escape-raw-cn', '\u0378', /^raw U\+0378 \(Cn\) must be written as \\u0378$/),
+  rawInTr(
+    'escape-raw-astral-letter',
+    '\u{1d400}',
+    /^raw U\+1D400 \(outside the BMP\) must be written as \\ud835\\udc00$/,
+  ),
+  rawInTr(
+    'escape-raw-astral-emoji',
+    '\u{1f600}',
+    /^raw U\+1F600 \(outside the BMP\) must be written as \\ud83d\\ude00$/,
+  ),
+  rawInTr(
+    'escape-raw-astral-cf',
+    '\u{e0001}',
+    /^raw U\+E0001 \(outside the BMP\) must be written as \\udb40\\udc01$/,
+  ),
+  // The Arabic blocks, both ends of each (all five blocks of Arama 1.1).
+  ...[0x0600, 0x06ff, 0x0750, 0x077f, 0x08a0, 0x08ff, 0xfb50, 0xfdff, 0xfe70, 0xfeff].map((cp) => {
+    const hex = cp.toString(16).padStart(4, '0');
+    return rawInTr(
+      `escape-raw-arabic-block-edge-${hex}`,
+      String.fromCodePoint(cp),
+      new RegExp(
+        `^raw U\\+${hex.toUpperCase()} \\(Arabic block\\) must be written as \\\\u${hex}$`,
+      ),
+    );
+  }),
+  [
+    'escape-raw-arabic-letter-in-ar-input',
+    NA,
+    arText('\u0628', 'x'),
+    [[/^raw U\+0628 \(Arabic block\) must be written as \\u0628$/, 1]],
+  ],
+  [
+    'escape-raw-arabic-letter-in-ar-expected',
+    NA,
+    arText('x', '\u0628'),
+    [[/^raw U\+0628 \(Arabic block\) must be written as \\u0628$/, 1]],
+  ],
+  [
+    'escape-raw-mark-in-ar-input',
+    NA,
+    arText('\u0301', 'x'),
+    [[/^raw U\+0301 \(Mn\) must be written as \\u0301$/, 1]],
+  ],
+  // Input, expected and note are all covered.
+  [
+    'escape-raw-mn-in-dar',
+    NT,
+    trText('x', 'a\u0301', 'a'),
+    [[/^raw U\+0301 \(Mn\) must be written as \\u0301$/, 1]],
+  ],
+  [
+    'escape-raw-mn-in-note',
+    NT,
+    trText('x', 'x', 'x', 'a\u0301'),
+    [[/^raw U\+0301 \(Mn\) must be written as \\u0301$/, 1]],
+  ],
+  [
+    'escape-raw-mn-in-ar-note',
+    NA,
+    arText('x', 'x', 'a\u0301'),
+    [[/^raw U\+0301 \(Mn\) must be written as \\u0301$/, 1]],
+  ],
+  // The same code point twice in a line is reported once; two different ones twice.
+  [
+    'escape-same-code-point-reported-once',
+    NT,
+    trText('a\u0301b\u0301', 'a\u0301', 'a'),
+    [[/^raw U\+0301 \(Mn\) must be written as \\u0301$/, 1]],
+  ],
+  [
+    'escape-two-code-points-reported-twice',
+    NT,
+    trText('a\u0301\u0302', 'x', 'x'),
+    [
+      [/^raw U\+0301 \(Mn\) /, 1],
+      [/^raw U\+0302 \(Mn\) /, 1],
+    ],
+  ],
+  // Each line is judged on its own: the clean first line does not hide the second.
+  [
+    'escape-reported-on-the-right-line',
+    NT,
+    `${trText('x', 'x', 'x')}${trText('a\u0301', 'x', 'x').replace('tr-0001', 'tr-0002')}`,
+    [[/^raw U\+0301 \(Mn\) /, 2]],
+  ],
+  // A bad shape and a raw mark in the same line give both messages.
+  [
+    'escape-and-field-problem-together',
+    NT,
+    trText('a\u0301', 'x', 'xx yy'),
+    [
+      [/^raw U\+0301 \(Mn\) /, 1],
+      [/^expected: dar has 1 word\(s\) but genis has 2 /, 1],
+    ],
+  ],
+];
+
+fieldAccepted.push(...normalizeAccepted);
+fieldRejected.push(...normalizeRejected);
+
 describe('test-vectors field checks (recognized files)', () => {
   const fieldScratch = fileURLToPath(new URL('../../../.tmp/vektor-test-alan/', import.meta.url));
 
@@ -1278,8 +1677,8 @@ describe('test-vectors field checks (recognized files)', () => {
     rmSync(fieldScratch, { recursive: true, force: true });
   });
 
-  it('recognizes exactly the seven files of the specification', () => {
-    assert.deepEqual([...VECTOR_KINDS].sort(), [CM, CT, I, RO, V, CH, OF].sort());
+  it('recognizes exactly the nine files of the specification', () => {
+    assert.deepEqual([...VECTOR_KINDS].sort(), [CM, CT, I, RO, V, CH, OF, NT, NA].sort());
   });
 
   for (const [name] of fieldAccepted) {

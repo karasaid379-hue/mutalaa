@@ -1,0 +1,62 @@
+{"id":"ar-0001","input":"\u0628\u064b\u0628","expected":"\u0628\u0628","note":"U+064B (silme aralığının başı) silinir, harfler birleşir"}
+{"id":"ar-0002","input":"\u0628\u065f\u0628","expected":"\u0628\u0628","note":"U+065F (silme aralığının sonu) silinir"}
+{"id":"ar-0003","input":"\u0628\u0670\u0628","expected":"\u0628\u0628","note":"U+0670 (üstteki elif) silinir"}
+{"id":"ar-0004","input":"\u0628\u06d6\u0628","expected":"\u0628\u0628","note":"U+06D6 (Kur'an işaret aralığının başı) silinir"}
+{"id":"ar-0005","input":"\u0628\u06ed\u0628","expected":"\u0628\u0628","note":"U+06ED (Kur'an işaret aralığının sonu) silinir"}
+{"id":"ar-0006","input":"\u0628\u0640\u0628","expected":"\u0628\u0628","note":"U+0640 (tatvil) silinir"}
+{"id":"ar-0007","input":"\u0628\u0652\u0628","expected":"\u0628\u0628","note":"U+0652 (hareke aralığının ortası) silinir"}
+{"id":"ar-0008","input":"\u0628\u06dc\u0628","expected":"\u0628\u0628","note":"U+06DC (Kur'an işaret aralığının ortası) silinir"}
+{"id":"ar-0009","input":"\u0628\u06de\u0628","expected":"\u0628\u0628","note":"U+06DE sözcük içinde silinir, harfler birleşir"}
+{"id":"ar-0010","input":"\u0628\u06e9\u0628","expected":"\u0628\u0628","note":"U+06E9 sözcük içinde silinir, harfler birleşir"}
+{"id":"ar-0011","input":"\u0628\u064a\u0628","expected":"\u0628\u064a\u0628","note":"U+064A silme aralığının hemen dışında: korunur"}
+{"id":"ar-0012","input":"\u0628\u0660\u0628","expected":"\u0628\u0660\u0628","note":"U+0660 (Arapça-Hint sıfır) silme aralığının hemen dışında: korunur"}
+{"id":"ar-0013","input":"\u0628\u06d5\u0628","expected":"\u0628\u06d5\u0628","note":"U+06D5 Kur'an işaret aralığının hemen dışında: korunur"}
+{"id":"ar-0014","input":"\u0628\u06ee\u0628","expected":"\u0628\u06ee\u0628","note":"U+06EE Kur'an işaret aralığının hemen dışında: korunur"}
+{"id":"ar-0015","input":"\u0628\u0610\u0628","expected":"\u0628\u0610\u0628","note":"U+0610 silme aralığı dışındaki işaret: korunur (1.0)"}
+{"id":"ar-0016","input":"\u0628\u08d3\u0628","expected":"\u0628\u08d3\u0628","note":"U+08D3 silme aralığı dışındaki işaret: korunur (1.0)"}
+{"id":"ar-0017","input":"\u0628\u0651\u064e\u062a","expected":"\u0628\u062a","note":"şedde + fetha, NFC olmayan sıra: ikisi de silinir"}
+{"id":"ar-0018","input":"\u0628\u064e\u0651\u062a","expected":"\u0628\u062a","note":"fetha + şedde, NFC sırası: ikisi de silinir"}
+{"id":"ar-0019","input":"\u0628\u0623\u0628","expected":"\u0628\u0627\u0628","note":"U+0623 → U+0627"}
+{"id":"ar-0020","input":"\u0628\u0625\u0628","expected":"\u0628\u0627\u0628","note":"U+0625 → U+0627"}
+{"id":"ar-0021","input":"\u0628\u0622\u0628","expected":"\u0628\u0627\u0628","note":"U+0622 → U+0627"}
+{"id":"ar-0022","input":"\u0628\u0671\u0628","expected":"\u0628\u0627\u0628","note":"U+0671 → U+0627"}
+{"id":"ar-0023","input":"\u0628\u0649\u0628","expected":"\u0628\u064a\u0628","note":"U+0649 → U+064A"}
+{"id":"ar-0024","input":"\u0628\u0629\u0628","expected":"\u0628\u0647\u0628","note":"U+0629 → U+0647"}
+{"id":"ar-0025","input":"\u0628\u0624\u0628","expected":"\u0628\u0648\u0628","note":"U+0624 → U+0648"}
+{"id":"ar-0026","input":"\u0628\u0626\u0628","expected":"\u0628\u064a\u0628","note":"U+0626 → U+064A"}
+{"id":"ar-0027","input":"\u0628\u0627\u0654\u0628","expected":"\u0628\u0627\u0628","note":"ayrışık U+0623 (U+0627 + U+0654): NFC birleştirir, sonra U+0627"}
+{"id":"ar-0028","input":"\u0628\u0627\u0655\u0628","expected":"\u0628\u0627\u0628","note":"ayrışık U+0625 (U+0627 + U+0655): NFC birleştirir, sonra U+0627"}
+{"id":"ar-0029","input":"\u0628\u0627\u0653\u0628","expected":"\u0628\u0627\u0628","note":"ayrışık U+0622 (U+0627 + U+0653): NFC birleştirir, sonra U+0627"}
+{"id":"ar-0030","input":"\u0628\u0648\u0654\u0628","expected":"\u0628\u0648\u0628","note":"ayrışık U+0624 (U+0648 + U+0654): NFC birleştirir, sonra U+0648"}
+{"id":"ar-0031","input":"\u0628\u064a\u0654\u0628","expected":"\u0628\u064a\u0628","note":"ayrışık U+0626 (U+064A + U+0654): NFC birleştirir, sonra U+064A"}
+{"id":"ar-0032","input":"\u0628\u06d5\u0654\u0628","expected":"\u0628\u06c0\u0628","note":"NFC U+06D5 + U+0654 → U+06C0 üretir; birleştirme listesinde yok, değişmez"}
+{"id":"ar-0033","input":"\u0628\u0621\u0628","expected":"\u0628\u0621\u0628","note":"yalın hemze (U+0621) korunur"}
+{"id":"ar-0034","input":"\u0628\u0640\u064e\u0654\u0628","expected":"\u0628\u0628","note":"tatvil + fetha + hemze işareti silinir"}
+{"id":"ar-0035","input":"\u0628\u060c\u0628","expected":"\u0628 \u0628","note":"U+060C Arapça virgül ayırıcı"}
+{"id":"ar-0036","input":"\u0628\u061b\u0628","expected":"\u0628 \u0628","note":"U+061B Arapça noktalı virgül ayırıcı"}
+{"id":"ar-0037","input":"\u0628\u061f\u0628","expected":"\u0628 \u0628","note":"U+061F Arapça soru işareti ayırıcı"}
+{"id":"ar-0038","input":"\u0628\ufd3e\u0628","expected":"\u0628 \u0628","note":"U+FD3E ayırıcı"}
+{"id":"ar-0039","input":"\u0628\ufd3f\u0628","expected":"\u0628 \u0628","note":"U+FD3F ayırıcı"}
+{"id":"ar-0040","input":"\u0628\u06d4\u0628","expected":"\u0628 \u0628","note":"U+06D4 Arapça tam durak ayırıcı"}
+{"id":"ar-0041","input":"\u060c\u0628\u060c","expected":"\u0628","note":"baştaki ve sondaki ayırıcı boşluk üretmez"}
+{"id":"ar-0042","input":"(\u0628)","expected":"\u0628","note":"Latin noktalama Türkçe parçaya gider; Arapça çıktıda ayırıcı"}
+{"id":"ar-0043","input":"\u0628\u06cc\u0628","expected":"\u0628\u06cc\u0628","note":"Farsça ye (U+06CC) 1.0'da değişmez (AR-8)"}
+{"id":"ar-0044","input":"\u0628\u06a9\u0628","expected":"\u0628\u06a9\u0628","note":"Farsça kef (U+06A9) 1.0'da değişmez (AR-8)"}
+{"id":"ar-0045","input":"\u0660\u0661\u0669","expected":"\u0660\u0661\u0669","note":"Arapça-Hint rakamlar 1.0'da değişmez (AR-8)"}
+{"id":"ar-0046","input":"\u0628\ufefb\u0628","expected":"\u0628\ufefb\u0628","note":"U+FEFB sunum biçimi değişmez (NFKC yok)"}
+{"id":"ar-0047","input":"\u0628\ufeff\u0628","expected":"\u0628\u0628","note":"U+FEFF sözcük içinde silinir"}
+{"id":"ar-0048","input":"\u0628\u200c\u0628","expected":"\u0628\u0628","note":"U+200C sözcük içinde silinir"}
+{"id":"ar-0049","input":"\u0628\u0600\u0628","expected":"\u0628\u0628","note":"Cf U+0600 silinir, ayırıcı olmaz"}
+{"id":"ar-0050","input":"\u0628\u061c\u0628","expected":"\u0628\u0628","note":"Cf U+061C silinir, ayırıcı olmaz"}
+{"id":"ar-0051","input":"\u0628\u06dd\u0628","expected":"\u0628\u0628","note":"U+06DD silinir"}
+{"id":"ar-0052","input":"\u0628\u200b\u0628","expected":"\u0628 \u0628","note":"U+200B boşluk olur"}
+{"id":"ar-0053","input":"abc \u0628\u0628 def","expected":"\u0628\u0628","note":"Latin kısım ar_norm çıktısına girmez"}
+{"id":"ar-0054","input":"\u0628abc\u062a","expected":"\u0628 \u062a","note":"bitişik Latin kısım ayırıcı olur"}
+{"id":"ar-0055","input":"\u0628  \u00a0 \u062a","expected":"\u0628 \u062a","note":"boşluk dizileri ve U+00A0 tek boşluğa iner"}
+{"id":"ar-0056","input":"","expected":"","note":"boş girdi"}
+{"id":"ar-0057","input":"   ","expected":"","note":"yalnız boşluk"}
+{"id":"ar-0058","input":"\u0652","expected":"","note":"yalnız silinen işaret: boş çıktı"}
+{"id":"ar-0059","input":"\u0610","expected":"","note":"harf ya da rakam taşımayan sözcük atılır (yalnız işaret)"}
+{"id":"ar-0060","input":"\u0628 \u064b \u0628","expected":"\u0628 \u0628","note":"hareke silinince boşalan sözcük atılır"}
+{"id":"ar-0061","input":"\u0628\ufffe\u0628","expected":"\u0628 \u0628","note":"U+FFFE (Cn) Arapça bloğunda değil: Türkçe parçada, Arapçada ayırıcı"}
+{"id":"ar-0062","input":"\u0628\ufdd0\u0628","expected":"\u0628 \u0628","note":"U+FDD0 (Cn) Arapça bloğunda: L, M, N dışı olduğu için ayırıcı"}

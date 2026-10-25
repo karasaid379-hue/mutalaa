@@ -2,9 +2,9 @@
 // Basic rules (every .jsonl file): UTF-8, no BOM, LF only, final newline, no blank lines,
 // one JSON object per line, unique non-empty string "id" per file, no duplicate keys,
 // no lone surrogates.
-// Field rules (A04 vector specification 1-2) apply to the recognized files only, which are
-// named by their path relative to the package root (VECTOR_KINDS). Other files (normalize/,
-// fts-query/, arama/olcum.jsonl ...) get the basic rules only.
+// Field rules (A04 vector specification 1-2, A05.2 for normalize/) apply to the recognized files
+// only, which are named by their path relative to the package root (VECTOR_KINDS). Other files
+// (fts-query/, arama/olcum.jsonl ...) get the basic rules only.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 
@@ -342,11 +342,151 @@ function hashTextRule(line, out) {
   }
 }
 
+// ---------------------------------------------------------------------------------------------
+// Escape rule (A04 vector specification 1; same rule as dizgi_yaz in the Python generator):
+// these categories, characters outside the BMP and the Arabic blocks are never written raw in a
+// line, only as lower-case \uXXXX (a surrogate pair outside the BMP). U+0020 is written raw.
+// Only the kinds with `escapes: true` are checked (normalize/tr and normalize/ar).
+// ---------------------------------------------------------------------------------------------
+
+/** @type {readonly (readonly [string, RegExp])[]} */
+const ESCAPED_CATEGORIES = Object.freeze(
+  ['Mn', 'Mc', 'Me', 'Cc', 'Cf', 'Zl', 'Zp', 'Zs', 'Co', 'Cs', 'Cn'].map(
+    (name) => /** @type {const} */ ([name, new RegExp(`^\\p{${name}}$`, 'u')]),
+  ),
+);
+
+/** Arabic blocks (Arama 1.1): such a code point is always written as an escape. */
+const ARABIC_BLOCKS = Object.freeze([
+  [0x0600, 0x06ff],
+  [0x0750, 0x077f],
+  [0x08a0, 0x08ff],
+  [0xfb50, 0xfdff],
+  [0xfe70, 0xfeff],
+]);
+
+/**
+ * @param {number} value
+ * @returns {string} four lower-case hex digits (at least)
+ */
+function hex4(value) {
+  return value.toString(16).padStart(4, '0');
+}
+
+/**
+ * Raw characters of one line that must have been written as escapes.
+ * @param {string} content the line as written
+ * @returns {string[]} one message per distinct code point
+ */
+function rawEscapeProblems(content) {
+  /** @type {string[]} */
+  const out = [];
+  const seen = new Set();
+  for (const ch of content) {
+    const cp = ch.codePointAt(0) ?? 0;
+    if (cp === 0x20 || seen.has(cp)) {
+      continue;
+    }
+    /** @type {string | null} */
+    let reason = null;
+    let escape = `\\u${hex4(cp)}`;
+    if (cp > 0xffff) {
+      const offset = cp - 0x10000;
+      reason = 'outside the BMP';
+      escape = `\\u${hex4(0xd800 + (offset >> 10))}\\u${hex4(0xdc00 + (offset & 0x3ff))}`;
+    } else if (ARABIC_BLOCKS.some(([first, last]) => cp >= (first ?? 0) && cp <= (last ?? 0))) {
+      reason = 'Arabic block';
+    } else {
+      reason = ESCAPED_CATEGORIES.find(([, pattern]) => pattern.test(ch))?.[0] ?? null;
+    }
+    if (reason !== null) {
+      seen.add(cp);
+      out.push(`raw U+${hex4(cp).toUpperCase()} (${reason}) must be written as ${escape}`);
+    }
+  }
+  return out;
+}
+
+/**
+ * A search key: no leading, trailing or doubled U+0020.
+ * @param {unknown} value
+ * @param {string} path
+ * @param {string[]} out
+ * @returns {boolean} true when the value is a string without such a problem
+ */
+function cleanSpaces(value, path, out) {
+  if (typeof value !== 'string') {
+    return false;
+  }
+  let clean = true;
+  if (value.startsWith(' ') || value.endsWith(' ')) {
+    out.push(at(path, 'must not start or end with U+0020'));
+    clean = false;
+  }
+  if (value.includes('  ')) {
+    out.push(at(path, 'must not contain two U+0020 in a row'));
+    clean = false;
+  }
+  return clean;
+}
+
+/**
+ * @param {string} text a key that passed cleanSpaces
+ * @returns {number} words separated by U+0020 (the empty key has none)
+ */
+function wordCount(text) {
+  return text === '' ? 0 : text.split(' ').length;
+}
+
+/**
+ * normalize/tr: both keys are well-formed, the wide key is folded (K-36 article 2) and both keys
+ * carry the same number of words.
+ * @param {Record<string, unknown>} line
+ * @param {string[]} out
+ */
+function normalizeTrRule(line, out) {
+  const expected = line['expected'];
+  if (!isRecord(expected)) {
+    return;
+  }
+  const dar = expected['dar'];
+  const genis = expected['genis'];
+  const darClean = cleanSpaces(dar, 'expected.dar', out);
+  const genisClean = cleanSpaces(genis, 'expected.genis', out);
+  if (typeof genis === 'string') {
+    if (/[\u0300-\u036f]/.test(genis)) {
+      out.push('expected.genis: must not contain a character of U+0300-U+036F');
+    }
+    if (genis.includes('\u0131')) {
+      out.push('expected.genis: must not contain dotless i (U+0131)');
+    }
+  }
+  if (darClean && genisClean && typeof dar === 'string' && typeof genis === 'string') {
+    const darWords = wordCount(dar);
+    const genisWords = wordCount(genis);
+    if (darWords !== genisWords) {
+      out.push(
+        `expected: dar has ${darWords} word(s) but genis has ${genisWords} (both keys must have the same number)`,
+      );
+    }
+  }
+}
+
+/**
+ * normalize/ar: the key has no leading, trailing or doubled U+0020.
+ * @param {Record<string, unknown>} line
+ * @param {string[]} out
+ */
+function normalizeArRule(line, out) {
+  cleanSpaces(line['expected'], 'expected', out);
+}
+
 /**
  * @typedef {object} Kind
  * @property {Rule} input
  * @property {Rule} expected
  * @property {(line: Record<string, unknown>, out: string[]) => void} [extra] cross-field rule
+ * @property {boolean} [escapes] apply the escape rule to the whole line
  */
 
 /**
@@ -405,6 +545,19 @@ const KINDS = new Map([
       extra: hashTextRule,
     },
   ],
+  [
+    'normalize/tr.jsonl',
+    {
+      input: string,
+      expected: object({ dar: req(string), genis: req(string) }),
+      extra: normalizeTrRule,
+      escapes: true,
+    },
+  ],
+  [
+    'normalize/ar.jsonl',
+    { input: string, expected: string, extra: normalizeArRule, escapes: true },
+  ],
 ]);
 
 /** Package-relative paths of the recognized vector files. */
@@ -458,6 +611,9 @@ function checkFields(content, value, kind) {
   }
   lineRule(kind)(value, '', out);
   kind.extra?.(value, out);
+  if (kind.escapes === true) {
+    out.push(...rawEscapeProblems(content));
+  }
   return out;
 }
 

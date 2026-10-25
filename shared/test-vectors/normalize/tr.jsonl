@@ -1,0 +1,86 @@
+{"id":"tr-0001","input":"Işık","expected":{"dar":"ışık","genis":"isik"},"note":"I → ı"}
+{"id":"tr-0002","input":"İMAN","expected":{"dar":"iman","genis":"iman"},"note":"İ → i"}
+{"id":"tr-0003","input":"ışığın","expected":{"dar":"ışığın","genis":"isigin"},"note":"Türkçe harf katlama"}
+{"id":"tr-0004","input":"Kur'ân'ın","expected":{"dar":"kurân","genis":"kuran"},"note":"iç kesme listesi + ek"}
+{"id":"tr-0005","input":"Kur’an’dan","expected":{"dar":"kuran","genis":"kuran"},"note":"tipografik kesme U+2019"}
+{"id":"tr-0006","input":"mü'min","expected":{"dar":"mümin","genis":"mumin"},"note":"iç kesme listesi"}
+{"id":"tr-0007","input":"Lem'alar","expected":{"dar":"lemalar","genis":"lemalar"},"note":"iç kesme listesi"}
+{"id":"tr-0008","input":"Sözler'de","expected":{"dar":"sözler","genis":"sozler"},"note":"ek atılır"}
+{"id":"tr-0009","input":"âlem","expected":{"dar":"âlem","genis":"alem"},"note":"dar anahtar ayırır"}
+{"id":"tr-0010","input":"alem","expected":{"dar":"alem","genis":"alem"},"note":"dar anahtar ayırır"}
+{"id":"tr-0011","input":"hâlâ","expected":{"dar":"hâlâ","genis":"hala"},"note":"dar anahtar ayırır"}
+{"id":"tr-0012","input":"hala","expected":{"dar":"hala","genis":"hala"},"note":"dar anahtar ayırır"}
+{"id":"tr-0013","input":"Âl-i İmrân","expected":{"dar":"âl i imrân","genis":"al i imran"},"note":"tire sözcük ayırır"}
+{"id":"tr-0014","input":"a\u0302lem","expected":{"dar":"âlem","genis":"alem"},"note":"NFC: a + U+0302"}
+{"id":"tr-0015","input":"IŞIK","expected":{"dar":"ışık","genis":"isik"},"note":"büyük harf I → ı (Test stratejisi 2)"}
+{"id":"tr-0016","input":"İ","expected":{"dar":"i","genis":"i"},"note":"İ tek başına → i"}
+{"id":"tr-0017","input":"İıIi","expected":{"dar":"iııi","genis":"iiii"},"note":"İ → i, ı → ı, I → ı, i → i; geniş anahtar ı → i"}
+{"id":"tr-0018","input":"İman","expected":{"dar":"iman","genis":"iman"},"note":"İ ile başlayan karışık harf"}
+{"id":"tr-0019","input":"I\u0307","expected":{"dar":"i","genis":"i"},"note":"NFC önce: I + U+0307 → İ → i"}
+{"id":"tr-0020","input":"i\u0307","expected":{"dar":"i\u0307","genis":"i"},"note":"ayrışık i + U+0307: dar anahtarda kalır, geniş anahtarda silinir"}
+{"id":"tr-0021","input":"Í","expected":{"dar":"í","genis":"i"},"note":"Í → í; geniş anahtar katlar"}
+{"id":"tr-0022","input":"ÇĞÖŞÜ","expected":{"dar":"çğöşü","genis":"cgosu"},"note":"Türkçe büyük harfler"}
+{"id":"tr-0023","input":"ẞ","expected":{"dar":"ß","genis":"ß"},"note":"U+1E9E → ß; ASCII'ye katlanmaz"}
+{"id":"tr-0024","input":"\ud801\udc00","expected":{"dar":"\ud801\udc28","genis":"\ud801\udc28"},"note":"BMP dışı büyük harf (Deseret), kod noktası başına"}
+{"id":"tr-0025","input":"ΟΔΟΣ","expected":{"dar":"οδοσ","genis":"οδοσ"},"note":"Σ → σ: son sigma bağlamı uygulanmaz (bilinen sınır, K-36 madde 5)"}
+{"id":"tr-0026","input":"Ⅻ","expected":{"dar":"ⅻ","genis":"ⅻ"},"note":"U+216B → U+217B; Nl sözcük karakteridir"}
+{"id":"tr-0027","input":"Kur’an’ın","expected":{"dar":"kuran","genis":"kuran"},"note":"kesme biçimi U+2019: sözcük içinde (liste) ve ek"}
+{"id":"tr-0028","input":"Kur‘an‘ın","expected":{"dar":"kuran","genis":"kuran"},"note":"kesme biçimi U+2018: sözcük içinde (liste) ve ek"}
+{"id":"tr-0029","input":"Kurʼanʼın","expected":{"dar":"kuran","genis":"kuran"},"note":"kesme biçimi U+02BC: sözcük içinde (liste) ve ek"}
+{"id":"tr-0030","input":"Kurʾanʾın","expected":{"dar":"kuran","genis":"kuran"},"note":"kesme biçimi U+02BE: sözcük içinde (liste) ve ek"}
+{"id":"tr-0031","input":"Kurʿanʿın","expected":{"dar":"kuran","genis":"kuran"},"note":"kesme biçimi U+02BF: sözcük içinde (liste) ve ek"}
+{"id":"tr-0032","input":"Kur´an´ın","expected":{"dar":"kuran","genis":"kuran"},"note":"kesme biçimi U+00B4: sözcük içinde (liste) ve ek"}
+{"id":"tr-0033","input":"Kur`an`ın","expected":{"dar":"kuran","genis":"kuran"},"note":"kesme biçimi U+0060: sözcük içinde (liste) ve ek"}
+{"id":"tr-0034","input":"rahmet-i İlâhiye","expected":{"dar":"rahmet i ilâhiye","genis":"rahmet i ilahiye"},"note":"tire ayırıcı (Arama 1.2 madde 4)"}
+{"id":"tr-0035","input":"Merhaba, dünya! (Deneme); ok?","expected":{"dar":"merhaba dünya deneme ok","genis":"merhaba dunya deneme ok"},"note":"noktalama ayırıcı"}
+{"id":"tr-0036","input":"  Deneme   metni  ","expected":{"dar":"deneme metni","genis":"deneme metni"},"note":"boşluk dizileri teke iner, baş ve son kırpılır"}
+{"id":"tr-0037","input":"Deneme\tmetni\nsatır","expected":{"dar":"deneme metni satır","genis":"deneme metni satir"},"note":"sekme ve satır sonu ayırıcı"}
+{"id":"tr-0038","input":"Deneme\u00a0metni","expected":{"dar":"deneme metni","genis":"deneme metni"},"note":"U+00A0 ayırıcı"}
+{"id":"tr-0039","input":"a_b","expected":{"dar":"a b","genis":"a b"},"note":"alt çizgi (Pc) ayırıcı; sözcük karakteri sayılmaz"}
+{"id":"tr-0040","input":"a–b","expected":{"dar":"a b","genis":"a b"},"note":"kısa çizgi U+2013 ayırıcı"}
+{"id":"tr-0041","input":"m²","expected":{"dar":"m²","genis":"m²"},"note":"U+00B2 (No) sözcük karakteridir"}
+{"id":"tr-0042","input":"½","expected":{"dar":"½","genis":"½"},"note":"U+00BD (No) rakam sayılır; sözcük atılmaz"}
+{"id":"tr-0043","input":"3,5","expected":{"dar":"3 5","genis":"3 5"},"note":"virgül ayırıcı; rakam sözcükleri kalır"}
+{"id":"tr-0044","input":"«Söz»","expected":{"dar":"söz","genis":"soz"},"note":"« » ayırıcı"}
+{"id":"tr-0045","input":"a\ud83d\ude00b","expected":{"dar":"a b","genis":"a b"},"note":"BMP dışı simge ayırıcı"}
+{"id":"tr-0046","input":"''Söz''","expected":{"dar":"söz","genis":"soz"},"note":"baş ve sondaki kesme dizileri atılır"}
+{"id":"tr-0047","input":"Mü'min'","expected":{"dar":"mümin","genis":"mumin"},"note":"son kesme atılır, sonra iç kesme"}
+{"id":"tr-0048","input":"kur''an","expected":{"dar":"kur","genis":"kur"},"note":"ardışık kesme liste girdisiyle eşleşmez: ilk kesmeden sonrası ek"}
+{"id":"tr-0049","input":"ma'\u0302na","expected":{"dar":"mâna","genis":"mana"},"note":"kesme silinince NFC birleştirir; geniş biçimde işaret silinir, liste eşleşir"}
+{"id":"tr-0050","input":"Deneme'ler","expected":{"dar":"deneme","genis":"deneme"},"note":"listede olmayan iç kesme: ilk kesmeden sonrası ek"}
+{"id":"tr-0051","input":"Ma'ni","expected":{"dar":"ma","genis":"ma"},"note":"liste girdisiyle (ma'na) tam başlamıyor: ek atılır"}
+{"id":"tr-0052","input":"1'inci","expected":{"dar":"1","genis":"1"},"note":"rakam sözcüğü + ek"}
+{"id":"tr-0053","input":"KUR'AN'IN","expected":{"dar":"kuran","genis":"kuran"},"note":"büyük harf: önce küçük harf, sonra iç kesme ve ek"}
+{"id":"tr-0054","input":"San'atın","expected":{"dar":"sanatın","genis":"sanatin"},"note":"iç kesme listesi"}
+{"id":"tr-0055","input":"Ma'nâ'sı","expected":{"dar":"manâ","genis":"mana"},"note":"iç kesme + ek; düzeltme işareti dar anahtarda kalır"}
+{"id":"tr-0056","input":"i'câz","expected":{"dar":"icâz","genis":"icaz"},"note":"iç kesme listesi, geniş biçimle eşleşir"}
+{"id":"tr-0057","input":"te'sîr","expected":{"dar":"tesîr","genis":"tesir"},"note":"iç kesme listesi, geniş biçimle eşleşir"}
+{"id":"tr-0058","input":"'","expected":{"dar":"","genis":""},"note":"yalnız kesmeden oluşan sözcük atılır"}
+{"id":"tr-0059","input":"Deneme ' metin","expected":{"dar":"deneme metin","genis":"deneme metin"},"note":"kesme sözcüğü atılır"}
+{"id":"tr-0060","input":"\u0301'de","expected":{"dar":"","genis":""},"note":"yalnız birleşen işaret taşıyan sözcük atılır; baştaki işaret kesmeyi 'baş' yapmaz"}
+{"id":"tr-0061","input":"Deneme \u0301 metin","expected":{"dar":"deneme metin","genis":"deneme metin"},"note":"yalnız birleşen işaret taşıyan sözcük atılır"}
+{"id":"tr-0062","input":"a\u20dd","expected":{"dar":"a\u20dd","genis":"a\u20dd"},"note":"Me geniş anahtarda kalır (yalnız U+0300–U+036F silinir)"}
+{"id":"tr-0063","input":"","expected":{"dar":"","genis":""},"note":"boş girdi"}
+{"id":"tr-0064","input":"   ","expected":{"dar":"","genis":""},"note":"yalnız boşluk"}
+{"id":"tr-0065","input":"Dene\u00adme","expected":{"dar":"deneme","genis":"deneme"},"note":"U+00AD silinir; sözcük bölünmez"}
+{"id":"tr-0066","input":"Dene\u200bme","expected":{"dar":"dene me","genis":"dene me"},"note":"U+200B boşluk olur"}
+{"id":"tr-0067","input":"Dene\u200c\u200d\u200e\u200fme","expected":{"dar":"deneme","genis":"deneme"},"note":"Cf U+200C–U+200F silinir"}
+{"id":"tr-0068","input":"D\u2060e\u2066n\u2067e\u2068m\u2069e","expected":{"dar":"deneme","genis":"deneme"},"note":"Cf U+2060 ve U+2066–U+2069 silinir"}
+{"id":"tr-0069","input":"De\ufeffneme","expected":{"dar":"deneme","genis":"deneme"},"note":"U+FEFF sözcük içinde silinir"}
+{"id":"tr-0070","input":"Dene\udb40\udc01me","expected":{"dar":"deneme","genis":"deneme"},"note":"BMP dışı Cf U+E0001 silinir"}
+{"id":"tr-0071","input":"e\u200e\u0301","expected":{"dar":"é","genis":"e"},"note":"Cf silinir, sonra NFC: e + U+0301 → é"}
+{"id":"tr-0072","input":"De\u0600neme","expected":{"dar":"deneme","genis":"deneme"},"note":"Arapça bloğundaki Cf (U+0600) önce silinir, ayırıcı olmaz"}
+{"id":"tr-0073","input":"De\u061cneme","expected":{"dar":"deneme","genis":"deneme"},"note":"Arapça bloğundaki Cf (U+061C) önce silinir, ayırıcı olmaz"}
+{"id":"tr-0074","input":"Deneme\u0628Deneme","expected":{"dar":"deneme deneme","genis":"deneme deneme"},"note":"Arapça harf Türkçe parçada ayırıcı"}
+{"id":"tr-0075","input":"\u0628\u062a Deneme \u062a","expected":{"dar":"deneme","genis":"deneme"},"note":"Arapça parça Türkçe anahtara girmez"}
+{"id":"tr-0076","input":"De\u064eneme","expected":{"dar":"de neme","genis":"de neme"},"note":"Arapça işaret (U+064E) Türkçe parçada ayırıcı"}
+{"id":"tr-0077","input":"a\u060cb","expected":{"dar":"a b","genis":"a b"},"note":"Arapça virgül Türkçe parçada ayırıcı"}
+{"id":"tr-0078","input":"a\u0661b","expected":{"dar":"a b","genis":"a b"},"note":"Arapça-Hint rakam Türkçe parçada ayırıcı"}
+{"id":"tr-0079","input":"\u0628\u062a","expected":{"dar":"","genis":""},"note":"yalnız Arapça girdi: Türkçe anahtar boş"}
+{"id":"tr-0080","input":"a\ufffeb","expected":{"dar":"a b","genis":"a b"},"note":"U+FFFE (Cn) sözcük karakteri değil: ayırıcı"}
+{"id":"tr-0081","input":"\ufffe","expected":{"dar":"","genis":""},"note":"yalnız U+FFFE: boş anahtar"}
+{"id":"tr-0082","input":"ab'\u0301","expected":{"dar":"ab","genis":"ab"},"note":"sözcük U+0301 ile bitiyor: sondaki kesme 'son' sayılmaz, ilk kesmeden sonrası ek"}
+{"id":"tr-0083","input":"ǅ","expected":{"dar":"ǆ","genis":"ǆ"},"note":"Lt harfi U+01C5 → U+01C6, kod noktası başına"}
+{"id":"tr-0084","input":"aʰb","expected":{"dar":"aʰb","genis":"aʰb"},"note":"Lm harfi (U+02B0) sözcük karakteridir"}
+{"id":"tr-0085","input":"a\ufdd0b","expected":{"dar":"a b","genis":"a b"},"note":"U+FDD0 (Cn, Arapça bloğunda) Türkçe parçada ayırıcı"}
+{"id":"tr-0086","input":"x\ue000y","expected":{"dar":"x y","genis":"x y"},"note":"Co (özel kullanım) sözcük karakteri değil: ayırıcı"}
