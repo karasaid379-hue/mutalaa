@@ -13,7 +13,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "enums.json"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
