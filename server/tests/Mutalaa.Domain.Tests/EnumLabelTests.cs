@@ -1,8 +1,9 @@
 using System.Globalization;
-using System.Text.Json.Nodes;
 using Mutalaa.Domain.Content;
 using Mutalaa.Domain.Licensing;
 using Mutalaa.Domain.Links;
+using Mutalaa.Domain.Releases;
+using Mutalaa.Domain.Reviews;
 using Mutalaa.Domain.Tests.Support;
 
 namespace Mutalaa.Domain.Tests;
@@ -24,32 +25,19 @@ public class EnumLabelTests
         ["xref_origin"] = labels => Check<XrefOrigin>(labels, XrefOriginLabels.ToLabel, XrefOriginLabels.TryParseLabel),
         ["source_kind"] = labels => Check<SourceKind>(labels, SourceKindLabels.ToLabel, SourceKindLabels.TryParseLabel),
         ["derleme_turu"] = labels => Check<BuildFlavor>(labels, BuildFlavorLabels.ToLabel, BuildFlavorLabels.TryParseLabel),
+        ["unit_kind"] = labels => Check<UnitKind>(labels, UnitKindLabels.ToLabel, UnitKindLabels.TryParseLabel),
+        ["unit_status"] = labels => Check<UnitStatus>(labels, UnitStatusLabels.ToLabel, UnitStatusLabels.TryParseLabel),
+        ["metin_durumu"] = labels => Check<TextStatus>(labels, TextStatusLabels.ToLabel, TextStatusLabels.TryParseLabel),
+        ["inceleme_durumu"] = labels => Check<ReviewStatus>(labels, ReviewStatusLabels.ToLabel, ReviewStatusLabels.TryParseLabel),
+        ["surum_durumu"] = labels => Check<ReleaseStatus>(labels, ReleaseStatusLabels.ToLabel, ReleaseStatusLabels.TryParseLabel),
     };
 
     public static TheoryData<string> Keys => new(Checks.Keys.Order(StringComparer.Ordinal));
 
-    private static Dictionary<string, string[]> LoadEnums()
-    {
-        string path = Path.Combine(AppContext.BaseDirectory, "data", "enums.json");
-        if (!File.Exists(path))
-        {
-            throw new FileNotFoundException("packages/content-schema/enums.json cikti klasorune kopyalanmamis: " + path);
-        }
-
-        JsonObject enums = JsonNode.Parse(File.ReadAllText(path))!.AsObject()["enums"]!.AsObject();
-        Dictionary<string, string[]> result = new(StringComparer.Ordinal);
-        foreach (KeyValuePair<string, JsonNode?> entry in enums)
-        {
-            result[entry.Key] = [.. entry.Value!.AsArray().Select(n => n!.GetValue<string>())];
-        }
-
-        return result;
-    }
-
     [Fact]
     public void All_json_enum_keys_are_covered()
     {
-        string[] jsonKeys = [.. LoadEnums().Keys.Order(StringComparer.Ordinal)];
+        string[] jsonKeys = [.. EnumsJson.Load().Keys.Order(StringComparer.Ordinal)];
         string[] testKeys = [.. Checks.Keys.Order(StringComparer.Ordinal)];
 
         Assert.Equal(jsonKeys, testKeys);
@@ -82,6 +70,11 @@ public class EnumLabelTests
         Assert.Throws<ArgumentOutOfRangeException>(() => ((XrefType)8).ToLabel());
         Assert.Throws<ArgumentOutOfRangeException>(() => ((XrefStatus)3).ToLabel());
         Assert.Throws<ArgumentOutOfRangeException>(() => ((XrefOrigin)3).ToLabel());
+        Assert.Throws<ArgumentOutOfRangeException>(() => ((UnitKind)7).ToLabel());
+        Assert.Throws<ArgumentOutOfRangeException>(() => ((UnitStatus)2).ToLabel());
+        Assert.Throws<ArgumentOutOfRangeException>(() => ((TextStatus)3).ToLabel());
+        Assert.Throws<ArgumentOutOfRangeException>(() => ((ReviewStatus)4).ToLabel());
+        Assert.Throws<ArgumentOutOfRangeException>(() => ((ReleaseStatus)5).ToLabel());
     }
 
     [Fact]
@@ -93,7 +86,7 @@ public class EnumLabelTests
 
     private static void Run(string key)
     {
-        Dictionary<string, string[]> json = LoadEnums();
+        Dictionary<string, string[]> json = EnumsJson.Load();
         Assert.True(json.TryGetValue(key, out string[]? labels), $"enums.json icinde '{key}' yok.");
         Checks[key](labels!);
     }

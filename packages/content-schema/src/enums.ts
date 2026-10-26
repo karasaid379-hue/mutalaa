@@ -46,3 +46,32 @@ export type SourceKind = (typeof SOURCE_KIND)[number];
 
 export const DERLEME_TURU = ['dev', 'internal', 'public'] as const;
 export type DerlemeTuru = (typeof DERLEME_TURU)[number];
+
+export const UNIT_KIND = [
+  'ayet',
+  'meal',
+  'tefsir',
+  'risale',
+  'hadis',
+  'hadis_ceviri',
+  'kitap',
+] as const;
+export type UnitKind = (typeof UNIT_KIND)[number];
+
+export const UNIT_STATUS = ['etkin', 'kullanim_disi'] as const;
+export type UnitStatus = (typeof UNIT_STATUS)[number];
+
+export const METIN_DURUMU = ['taslak', 'incelemede', 'onayli'] as const;
+export type MetinDurumu = (typeof METIN_DURUMU)[number];
+
+export const INCELEME_DURUMU = ['acik', 'onaylandi', 'reddedildi', 'geri_alindi'] as const;
+export type IncelemeDurumu = (typeof INCELEME_DURUMU)[number];
+
+export const SURUM_DURUMU = [
+  'hazirlaniyor',
+  'dogrulandi',
+  'yayinlandi',
+  'basarisiz',
+  'geri_cekildi',
+] as const;
+export type SurumDurumu = (typeof SURUM_DURUMU)[number];

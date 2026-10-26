@@ -2,8 +2,13 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   DERLEME_TURU,
+  INCELEME_DURUMU,
   LICENSE_STATUS,
+  METIN_DURUMU,
   SOURCE_KIND,
+  SURUM_DURUMU,
+  UNIT_KIND,
+  UNIT_STATUS,
   XREF_ORIGIN,
   XREF_STATUS,
   XREF_TYPE,
@@ -26,6 +31,11 @@ const IN_CODE: Record<string, readonly string[]> = {
   xref_origin: XREF_ORIGIN,
   source_kind: SOURCE_KIND,
   derleme_turu: DERLEME_TURU,
+  unit_kind: UNIT_KIND,
+  unit_status: UNIT_STATUS,
+  metin_durumu: METIN_DURUMU,
+  inceleme_durumu: INCELEME_DURUMU,
+  surum_durumu: SURUM_DURUMU,
 };
 
 describe('enums.json <-> src/enums.ts', () => {

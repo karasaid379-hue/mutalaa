@@ -8,8 +8,13 @@ import pytest
 
 from mutalaa_pipeline.enums import (
     DerlemeTuru,
+    IncelemeDurumu,
     LicenseStatus,
+    MetinDurumu,
     SourceKind,
+    SurumDurumu,
+    UnitKind,
+    UnitStatus,
     XrefOrigin,
     XrefStatus,
     XrefType,
@@ -25,6 +30,11 @@ SINIFLAR: dict[str, type[StrEnum]] = {
     "xref_origin": XrefOrigin,
     "source_kind": SourceKind,
     "derleme_turu": DerlemeTuru,
+    "unit_kind": UnitKind,
+    "unit_status": UnitStatus,
+    "metin_durumu": MetinDurumu,
+    "inceleme_durumu": IncelemeDurumu,
+    "surum_durumu": SurumDurumu,
 }
 
 BEKLENEN_SAYILAR = {
@@ -32,6 +42,11 @@ BEKLENEN_SAYILAR = {
     "xref_type": 8,
     "xref_status": 3,
     "xref_origin": 3,
+    "unit_kind": 7,
+    "unit_status": 2,
+    "metin_durumu": 3,
+    "inceleme_durumu": 4,
+    "surum_durumu": 5,
 }
 
 

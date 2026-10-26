@@ -69,3 +69,39 @@ class XrefOrigin(StrEnum):
     HAT = "hat"
     EDITOR = "editor"
     KULLANICI_OYU = "kullanici_oyu"
+
+
+class UnitKind(StrEnum):
+    AYET = "ayet"
+    MEAL = "meal"
+    TEFSIR = "tefsir"
+    RISALE = "risale"
+    HADIS = "hadis"
+    HADIS_CEVIRI = "hadis_ceviri"
+    KITAP = "kitap"
+
+
+class UnitStatus(StrEnum):
+    ETKIN = "etkin"
+    KULLANIM_DISI = "kullanim_disi"
+
+
+class MetinDurumu(StrEnum):
+    TASLAK = "taslak"
+    INCELEMEDE = "incelemede"
+    ONAYLI = "onayli"
+
+
+class IncelemeDurumu(StrEnum):
+    ACIK = "acik"
+    ONAYLANDI = "onaylandi"
+    REDDEDILDI = "reddedildi"
+    GERI_ALINDI = "geri_alindi"
+
+
+class SurumDurumu(StrEnum):
+    HAZIRLANIYOR = "hazirlaniyor"
+    DOGRULANDI = "dogrulandi"
+    YAYINLANDI = "yayinlandi"
+    BASARISIZ = "basarisiz"
+    GERI_CEKILDI = "geri_cekildi"
