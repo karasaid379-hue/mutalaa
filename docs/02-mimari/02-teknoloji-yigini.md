@@ -1,6 +1,6 @@
 # Teknoloji yığını
 
-> **Sürüm:** 1.5 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.6 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-34](../00-ozet/02-karar-defteri.md#k-34--typescript-tek-sürüm-60x) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)
 
 Bu dosya her katmanın teknolojisini, sürümünü, seçilme nedenini ve reddedilen seçenekleri listeler. Sürüm ve fiyatlar 16 Ekim 2026 araştırmasından gelir ([araştırma raporu](../09-kaynakca.md), araştırma notu 05). Kaynağı olmayan sürüm numaraları "Doğrulanacak" diye işaretlidir ve kurulum günü kilit dosyasına yazılır.
@@ -21,8 +21,8 @@ Bu dosya her katmanın teknolojisini, sürümünü, seçilme nedenini ve reddedi
 | Hata izleme | Sentry (`@sentry/react-native`) | Çökme ve hata kaydı; `dev` derlemede kapalı | Expo eklentisi var ([Mobil mimari](../06-mobil/01-mobil-mimari.md)) | Application Insights (K-30) |
 | Derleme ve dağıtım | EAS Build, EAS Update | Bulutta iOS derlemesi, iç dağıtım, yalnız JavaScript güncellemesi | Geliştirme bilgisayarı Windows; iOS yerelde derlenemez | Yerel Xcode: Mac gerekir |
 | Uçtan uca test | Maestro CLI; sürüm kurulum günü yazılır, Windows kurulumu Doğrulanacak | Mobil akışlar (`apps/mobile/e2e/*.yaml`) | Test stratejisinin aracı ([Test stratejisi](../07-yayin/03-test-stratejisi.md) §9); iOS koşusunun yeri Açık soru (aynı dosya §14 madde 7) | — |
-| Arka uç | ASP.NET Core 10 LTS Minimal API; son yama 10.0.13 (13 Ekim 2026); destek 14 Kasım 2028 ([.NET destek politikası](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core)) | Editör uçları, yayın; v1.x'te hesap ve senkron | K-10; .NET 8 ve 9'un desteği 10 Kasım 2026'da biter | Supabase, Cloudflare Workers + D1, güncellenmiş Azure (K-10). .NET 11: kısa süreli destek (STS) |
-| ORM | EF Core 10 + Npgsql (sağlayıcı sürümü Doğrulanacak) | Editoryal veritabanı erişimi, göçler | K-10 | DbUp ile karma göç (eski plan): iki göç yolu bakım yükü getirir |
+| Arka uç | ASP.NET Core 10 LTS Minimal API; son yama 10.0.14 (25 Ekim 2026, plan dışı güvenlik sürümü; kilit dosyasında EF Core paketleri ve `dotnet-ef` aynı sürümdedir); destek 14 Kasım 2028 ([.NET destek politikası](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core)) | Editör uçları, yayın; v1.x'te hesap ve senkron | K-10; .NET 8 ve 9'un desteği 10 Kasım 2026'da biter | Supabase, Cloudflare Workers + D1, güncellenmiş Azure (K-10). .NET 11: kısa süreli destek (STS) |
+| ORM | EF Core 10.0.14 + Npgsql EF Core 10.0.3 (A07, 27 Ekim 2026) | Editoryal veritabanı erişimi, göçler | K-10 | DbUp ile karma göç (eski plan): iki göç yolu bakım yükü getirir |
 | Veritabanı | PostgreSQL 18 (Docker `postgres:18`) | Editoryal veri; v1.x'te kullanıcı verisi | K-11; hazır `turkish` ve `arabic` Snowball yapılandırmaları ([PostgreSQL 18](https://docs.w3cub.com/postgresql~18/textsearch-psql)) | MSSQL (K-11). PostgreSQL 19: RC1 15 Ekim 2026'da çıktı ([PG 19](https://www.postgresql.org/docs/19/release-19.html)); kararlı sürüm ve eklenti desteğinden sonra |
 | Kimlik | ASP.NET Core Identity | v1'de editör rolleri, v1.x'te okur hesabı | Ek servis gerektirmez | Azure AD B2C: 1 Mayıs 2025'ten beri yeni müşteriye satılmıyor ([Microsoft Learn](https://learn.microsoft.com/en-my/azUre/active-directory-b2c/faq)) |
 | İçerik hattı | Python 3.13 + uv | OCR ve düzeltme, Arapça NLP, gömme, toplu etiketleme | K-12 | .NET 10 + ZemberekDotNet; TypeScript (K-12) |
@@ -37,7 +37,7 @@ Bu dosya her katmanın teknolojisini, sürümünü, seçilme nedenini ve reddedi
 
 ## 2. Uygulama başına kitaplıklar
 
-Lisans sütunu: bağlantılı değerler araştırmadan gelir. "beyan" yazan değerler paket kayıtlarındaki beyandır; CI lisans denetimiyle doğrulanır (Doğrulanacak).
+Lisans sütunu: bağlantılı değerler araştırmadan gelir. "beyan" yazan değerler paket kayıtlarındaki beyandır; CI lisans denetimiyle doğrulanır (Doğrulanacak). "nuspec doğrulandı (27 Ekim 2026)" yazan paketlerin lisansı paketin `.nuspec` dosyasından okundu (A07; hukuki görüş değildir). THIRD_PARTY_NOTICES dosyası A34'e kalır ([A34](../10-claude-code/asamalar/A34-magaza-yayini.md)).
 
 ### 2.1 Mobil (`apps/mobile`)
 
@@ -57,18 +57,26 @@ Lisans sütunu: bağlantılı değerler araştırmadan gelir. "beyan" yazan değ
 | `@noble/ed25519` | Manifest imzasını doğrulama (öneri) | MIT (beyan) | İmzasız manifest reddedilir; kitaplık seçimi Doğrulanacak ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) IP-7) |
 | `jest-expo`, `@testing-library/react-native` | Test | MIT (beyan) | |
 
-### 2.2 API (`server/Mutalaa.Api`)
+### 2.2 API ve altyapı (`server/Mutalaa.Api`, `server/Mutalaa.Infrastructure`)
 
-| Paket | Görev | Lisans |
-|---|---|---|
-| `Microsoft.AspNetCore.OpenApi` | Yerleşik OpenAPI belgesi | MIT (beyan) |
-| `Scalar.AspNetCore` | OpenAPI arayüzü (yalnız geliştirme) | MIT (beyan) |
-| `Microsoft.AspNetCore.Identity.EntityFrameworkCore` | Editör ve (v1.x) okur kimliği | MIT (beyan) |
-| `Npgsql.EntityFrameworkCore.PostgreSQL` | EF Core sağlayıcısı | PostgreSQL License (beyan) |
-| `EFCore.NamingConventions` | snake_case tablo ve sütun adları | Apache-2.0 (beyan) |
-| `Serilog.AspNetCore` | Yapılandırılmış günlük | Apache-2.0 (beyan) |
-| `OpenTelemetry.Extensions.Hosting`, `OpenTelemetry.Instrumentation.AspNetCore`, `OpenTelemetry.Exporter.OpenTelemetryProtocol`, `Npgsql.OpenTelemetry` | İz ve ölçü | Apache-2.0, PostgreSQL License (beyan) |
-| `xunit.v3`, `Microsoft.AspNetCore.Mvc.Testing`, `Testcontainers.PostgreSql` | Birim ve tümleşik test | Apache-2.0, MIT (beyan) |
+Veri erişimi paketleri `Mutalaa.Infrastructure` projesindedir (`Microsoft.EntityFrameworkCore.Design` yalnız `Mutalaa.Api` projesindedir, `PrivateAssets=all`). Sürümler `server/Directory.Packages.props` içinde sabittir.
+
+| Paket | Görev | Sürüm | Lisans |
+|---|---|---|---|---|
+| `Microsoft.EntityFrameworkCore`, `Microsoft.EntityFrameworkCore.Relational` (Infrastructure) | EF Core çekirdeği | 10.0.14 | MIT (nuspec doğrulandı, 27 Ekim 2026) |
+| `Microsoft.EntityFrameworkCore.Design` (Api) | `dotnet ef` tasarım zamanı | 10.0.14 (`dotnet-ef` aracı da 10.0.14) | MIT (nuspec doğrulandı, 27 Ekim 2026) |
+| `Microsoft.AspNetCore.Identity.EntityFrameworkCore` (Infrastructure) | Editör ve (v1.x) okur kimliği | 10.0.14 | MIT (nuspec doğrulandı, 27 Ekim 2026) |
+| `Npgsql.EntityFrameworkCore.PostgreSQL` (Infrastructure) | EF Core sağlayıcısı | 10.0.3 | PostgreSQL License (nuspec doğrulandı, 27 Ekim 2026) |
+| `EFCore.NamingConventions` (Infrastructure) | snake_case tablo ve sütun adları | 10.0.1 | Apache-2.0 (nuspec doğrulandı, 27 Ekim 2026) |
+| `Microsoft.AspNetCore.OpenApi` | Yerleşik OpenAPI belgesi (A14) | | MIT (beyan) |
+| `Scalar.AspNetCore` | OpenAPI arayüzü (yalnız geliştirme; A14) | | MIT (beyan) |
+| `Serilog.AspNetCore` | Yapılandırılmış günlük (A14) | | Apache-2.0 (beyan) |
+| `OpenTelemetry.Extensions.Hosting`, `OpenTelemetry.Instrumentation.AspNetCore`, `OpenTelemetry.Exporter.OpenTelemetryProtocol`, `Npgsql.OpenTelemetry` | İz ve ölçü (A14) | | Apache-2.0, PostgreSQL License (beyan) |
+| `xunit.v3` | Birim ve tümleşik test | 4.0.2 | Apache-2.0 (beyan) |
+| `Testcontainers.PostgreSql` | Test kabı (`postgres:18.6-trixie`; yalnız test) | 4.16.0 | MIT (nuspec doğrulandı, 27 Ekim 2026) |
+| `Microsoft.AspNetCore.Mvc.Testing` | Uç testleri (A14) | | MIT (beyan) |
+
+`Testcontainers.PostgreSql` geçişli bağımlılıkları (`Docker.DotNet.Enhanced`, `SSH.NET`, `BouncyCastle`, `SharpZipLib`) da MIT lisanslıdır (nuspec doğrulandı, 27 Ekim 2026); yalnız test projesine girer, dağıtılan ürüne girmez. THIRD_PARTY_NOTICES dosyasına Npgsql (PostgreSQL License telif bildirimi), EFCore.NamingConventions (Apache-2.0), EF Core ve Identity (MIT) A34'te yazılır ([A34](../10-claude-code/asamalar/A34-magaza-yayini.md)).
 
 Test çalıştırıcısı ([K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)): `xunit.v3` 4.x, Microsoft.Testing.Platform (MTP v2) üzerinde koşar. `Microsoft.NET.Test.Sdk` ve `xunit.runner.visualstudio` eklenmez. MTP kipi kökteki `global.json` içindeki `test.runner` ile açılır; komut `dotnet test --solution server/Mutalaa.slnx`. Paket sürümü yalnız `server/Directory.Packages.props` içinde yazılır (A02.4'te `xunit.v3` 4.0.2). Neden: `xunit.v3` 4.0, VSTest hedefini .NET 10 SDK'da desteklemiyor ([xunit.v3 4.0.0](https://xunit.net/releases/v3/4.0.0), [dotnet test belgesi](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test), okuma 21 Ekim 2026).
 

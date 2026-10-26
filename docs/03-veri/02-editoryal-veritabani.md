@@ -1,6 +1,6 @@
 # Editoryal Veritabanı
 
-> **Sürüm:** 1.3 · **Tarih:** 26 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.4 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · K-12 ([karar defteri](../00-ozet/02-karar-defteri.md))
 
 Editoryal veritabanı içeriğin tek doğruluk kaynağıdır. Python içerik hattı yazar, editör paneli onaylar, .NET yayınlayıcı okuyup SQLite paketlerini üretir. Mobil uygulama bu veritabanına bağlanmaz. Seçim PostgreSQL 18'dir; Türkçe ve Arapça tam metin yapılandırmaları hazırdır, anlamsal katman için pgvector eklenir (K-11). Geliştirme yerel Docker Compose'ta `postgres:18` ile çalışır ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)). Bu dosya diğer belgelerin önerdiği tabloları da kesin DDL olarak toplar (bölüm 11).
@@ -27,7 +27,7 @@ erDiagram
   source ||--o{ audio_timing : "hafiz"
 ```
 
-`xref`, `review`, `tr_root_index` ve `embedding` birimlere çapa dizgisiyle bağlanır; yabancı anahtar yoktur. Bütünlüğü hat QA'sı ve yayın kapısı denetler.
+Birim çapalarına (`unit.anchor`) yabancı anahtar yoktur: `xref`, `review.hedef_anahtar`, `tr_root_index` ve `embedding` birimlere çapa dizgisiyle bağlanır. Bütünlüğü hat QA'sı ve yayın kapısı denetler. Çapa olmayan bağlar gerçek yabancı anahtardır: `review.xref_id` → `xref.id`; `tr_root_index.root_id` → `root.id`; `tr_root_index.tr_lemma_id` → `lemma.id`.
 
 ## 2. Türler
 
@@ -156,7 +156,7 @@ CREATE INDEX unit_tsv_ar     ON unit USING gin (tsv_ar);
 - Kur'an âyetleri, mealler, tefsir, Risale, hadis ve kitap paragrafları bu tabloda durur; Kur'an kelimeleri `quran_word` tablosundadır.
 - Âyet ↔ meal ve âyet ↔ tefsir aralığı ilişkileri çapadan türetilir, `xref`'e yazılmaz (K-27). Sorgu için `ayah_range` yeter: "2:255'i açıklayan tefsir paragrafları" `ayah_range @> 262` olur (2:255'in küresel sırası 7 + 255 = 262).
 - Diğer belgelerin `search_text` dediği normalize arama metni bu tabloda dört sütundur: `tr_narrow`, `tr_wide`, `tr_stem`, `ar_norm`. Hat onları [Arama](./05-arama-fts5.md) dosyasındaki kurallarla üretir. `tsv_tr` dar anahtarı kullanır, çünkü Snowball Türkçe gövdeleyicisi Türkçe harfleri bekler; PostgreSQL `turkish` ve `arabic` yapılandırmalarını hazır getirir ([PostgreSQL](https://docs.w3cub.com/postgresql~18/textsearch-psql)). Bu sütunlar editör paneli ve sonraki web araması içindir.
-- PostgreSQL 18'in üretilen sütunlarda varsayılanı sanal (VIRTUAL) yaptığı bilgisi Doğrulanacak; dizinlenen sütunlar bu yüzden açıkça `STORED` yazılır.
+- ~~PostgreSQL 18'in üretilen sütunlarda varsayılanı sanal (VIRTUAL) yaptığı bilgisi Doğrulanacak.~~ **Çözüldü (27 Ekim 2026):** PostgreSQL 18'de üretilen sütunun varsayılanı `VIRTUAL`'dır ve sanal sütun dizinlenemez. Dizinlenen sütunlar bu yüzden açıkça `STORED` yazılır. Kaynaklar: [CREATE TABLE](https://www.postgresql.org/docs/18/sql-createtable.html), [Üretilen sütunlar](https://www.postgresql.org/docs/18/ddl-generated-columns.html) (okuma 26 Ekim 2026).
 - `metin_durumu`: Tanzil ve hazır metinler `onayli` girer; Elmalılı OCR metni `taslak` başlar ve editör onayından geçer. `public` derlemeye yalnız `onayli` metin girer (Backend API kapı kuralı P-10).
 - `attrs` birim türüne özgü öznitelikleri taşır; paketteki `unit.attrs` bu sütundan gelir ([İçerik paketleri](./03-icerik-paketleri.md) §3.2) ve hattın `staged` satırındaki `attrs` alanı buraya yüklenir. Basılı kaynaktan aktarılan birimde cilt, sayfa, bölge kutusu ve kaynak satırları; birleşik mealde `kapsam` ve `birlesik_ile`; sure başındaki besmele mealinde `besmele_meali`; dipnotta `dipnotlar` ([Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md#6-meali-âyetlere-bölme-ve-hizalama) §6). Satırın kökeni ayrıca `provenance` içindedir (bölüm 10).
 
@@ -245,7 +245,7 @@ CREATE TABLE quran_word_fix (
 - QAC 77.429 kelimeyi yaklaşık %99 doğrulukla etiketler ve veri hâlâ düzeltilmektedir ([QAC SSS](https://corpus.quran.com/faq.jsp)). Kelime bölme, metin ve ofsetler Tanzil'den türetilir (`source_id`); kök, lemma ve sözcük türü QAC'den gelir (`morph_source`). Bu ayrım paket bölünmesini taşır: QAC kaynaklı veri `core` paketine girmez, `kelime-kok` paketine girer ([İçerik paketleri](./03-icerik-paketleri.md); K-06 uygulama notu).
 - Yayınlayıcı QAC tabanını okur ve yalnız `status = 'onayli'` düzeltmeleri üstüne uygular; künye "QAC v0.4 + Mütâlaa düzeltmeleri (N adet)" yazar ([Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)).
 - Türkçe anlam alanları [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md) kılavuzundaki adları aynen taşır: `anlam_kisa`, `kuran_anlamlari`, `turkce_es_kelime`, `yalnizca_etimolojik`, `editor_notu`; kökün temel anlamı `root.kok_anlami` sütunundadır. İş yükü farklı lemma sayısına bağlıdır (K-19).
-- PostgreSQL 18'in `uuidv7()` işlevi Doğrulanacak; yoksa kimliği hat üretir.
+- ~~PostgreSQL 18'in `uuidv7()` işlevi Doğrulanacak; yoksa kimliği hat üretir.~~ **Çözüldü (27 Ekim 2026):** `uuidv7()` PostgreSQL 18.0'da eklendi ([UUID işlevleri](https://www.postgresql.org/docs/18/functions-uuid.html)). Yerel kapta (18.6) çalışır; `uuid_extract_version` 7 verir. `xref.id` ve `quran_word_fix.id` için `DEFAULT uuidv7()` göçtedir.
 
 ## 6. Türkçe → kök indeksi ve sure adları
 
@@ -377,7 +377,7 @@ stateDiagram-v2
 - Yapay zekâ taslakları `yz_modeli` ve `yz_kaydi` taşır ve onaylanana kadar "doğrulanmamış" rozetiyle görünür ([K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)). G-YZ kaydının ([İçerik hattı](../04-icerik/02-icerik-hatti.md) §9–§10) alanları şöyle eşlenir ([K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)):
   - `ai_model` → `yz_modeli`; `prompt_id`, `prompt_sha256` ve `input_sha256` → `yz_kaydi` nesnesinin anahtarları; `review_id` → `review.id`; `created_at` → `review.created_at`.
   - `review_yz_kaydi_check`: `yz_modeli` ile `yz_kaydi` ya ikisi birden boştur ya ikisi birden doludur. Doluysa `yz_kaydi` üç anahtarı taşıyan bir JSON nesnesidir; iki özet 64 küçük harfli onaltılık karakterdir.
-  - `dogrulanmis` saklanmaz; hedef satırın onaylı durumundan türetilir. `xref_status` türünde `status` sütunu olan tablolarda (`lemma`, `lemma_gloss`, `quran_word_fix`, `surah_alias`, `xref`) `status = 'onayli'`, `unit`'te `metin_durumu = 'onayli'` doğrulanmış demektir.
+  - `dogrulanmis` saklanmaz; hedef satırın onaylı durumundan türetilir. `xref_status` türünde `status` sütunu olan tablolarda (`lemma`, `lemma_gloss`, `quran_word_fix`, `surah_alias`, `xref`) `status = 'onayli'`, `unit`'te `metin_durumu = 'onayli'` doğrulanmış demektir. Durum sütunu olmayan hedefler (`source`, `root`, `tr_root_index`, `tr_form`, `page_map`, `ayah_box`, `audio_timing`) yalnız onaylı veri taşır; hat bunlara taslak yazmaz. Bu hedeflerde `dogrulanmis`, ilgili `review` satırının `durum = 'onaylandi'` olması demektir. Bu kural K-37'nin anlamını değiştirmez, boşluğu kapatır.
 - `oneren` ve `inceleyen` alanlarına ASP.NET Core Identity kullanıcı adı yazılır; roller `editor` ve `admin`'dir ([Backend API](../02-mimari/05-backend-api.md) §6).
 
 ## 9. Mushaf, ses ve gömme tabloları
@@ -503,7 +503,7 @@ ALTER TABLE unit ADD FOREIGN KEY (run_id) REFERENCES pipeline_run (run_id);
 | [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) | `baski` | `source.tur = 'baski'` + `baski_bilgisi` |
 | [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md) | `hadis_numara_esleme`, `hadis_konum` | Aşağıda, İngilizce adlarla |
 | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) | TOML alanları; `izinli_derleme`; örnek satırlar | Bölüm 3, aynı adlarla; `izinli_derleme` yerine K-06 derleme kuralı; örnek satırlar defterle aynıdır (`risale-asil-nusha` ve `tecrid-miras` `kapali`) |
-| [İçerik hattı](../04-icerik/02-icerik-hatti.md) | `pipeline_run`, `run_id`; `xref` tekillik anahtarına `origin`; örnekteki `unit.text` ve `status = 'aday'` | Bölüm 10; `xref_natural_key` bağlantı modelindeki gibi `origin` içermez, reddedilen anahtarı `red` satırı korur; `unit.metin` ve `metin_durumu = 'taslak'` |
+| [İçerik hattı](../04-icerik/02-icerik-hatti.md) | `pipeline_run`, `run_id`; `xref` tekillik anahtarına `origin`; örnekteki `unit.text` ve `status = 'aday'` | Bölüm 10; `xref_natural_key` bağlantı modelindeki gibi `origin` içermez, reddedilen anahtarı `red` satırı korur; `unit.metin` ve `metin_durumu = 'taslak'`; G-YZ kaydı (K-37, bölüm 8): `ai_model` → `review.yz_modeli`; `prompt_id`, `prompt_sha256`, `input_sha256` → `review.yz_kaydi` (`review_yz_kaydi_check`); `review_id` → `review.id`; `created_at` → `review.created_at`; `dogrulanmis` saklanmaz |
 | [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) | `kurul_onay`, `kurul_onay_tarihi`, `kurul_onay_ozeti`, `atif_metni` | Bölüm 3, aynı adlarla |
 | [Genel mimari](../02-mimari/01-genel-mimari.md) | `xref_vote` canlı veritabanında, editoryal tarafta yalnız toplamlar | Bölüm 7 |
 | [Backend API](../02-mimari/05-backend-api.md) | `search_text`; kelime anlamı alanı; lisans ve bağlantı durumu türleri; paket üst veri tablosu; `kisitlar.hazir_vt_yasak` | Bölüm 4'teki dört arama sütunu; `lemma_gloss.anlam_kisa`; `license_status`, `xref_status` (bölüm 2); `pack_meta` ([İçerik paketleri](./03-icerik-paketleri.md)); bölüm 3. Backend API bu adları aynen kullanır (ED-7 çözüldü) |
@@ -526,11 +526,27 @@ CREATE TABLE hadith_location (                    -- hadis_konum: kitap › bâb
 
 ## 12. EF Core eşleme notları ve göç politikası
 
-- `Mutalaa.Infrastructure` içinde `IcerikDbContext` tabloları eşler; yayınlayıcı ve editör uçları aynı bağlamı kullanır ([Proje yapısı](../02-mimari/03-proje-yapisi.md)). C# adlandırması PascalCase, veritabanı adları snake_case'tir (`EFCore.NamingConventions`; EF Core 10 desteği Doğrulanacak).
-- Enum'lar Npgsql enum eşlemesiyle bağlanır (`LicenseStatus`, `BuildFlavor` yayın kapısı belgesindeki C# türleridir); Npgsql EF Core 10'daki yapılandırma API'sinin adı Doğrulanacak.
-- Tür eşlemeleri: `int4range` → `NpgsqlRange<int>`, `jsonb` → sahipli tür (`ToJson`) ya da `JsonDocument`, `tsvector` → `NpgsqlTsVector`, `halfvec` → pgvector .NET türü (Doğrulanacak). Üretilen sütunlar `HasComputedColumnSql("…", stored: true)`, `COLLATE "C"` `UseCollation("C")`, GiST/GIN/HNSW `HasMethod(…)` ile tanımlanır.
-- Çapa sütunları `Mutalaa.Domain/Anchors` içindeki `AnchorRef` türüne değer dönüştürücüsüyle bağlanır; geçersiz çapa yazılamaz. Yayınlayıcı okumaları `AsNoTracking()` ve `AsAsyncEnumerable()` ile akış hâlinde yapar.
-- Şemanın tek sahibi EF Core göçleridir (`server/Mutalaa.Infrastructure/Migrations`). Python hattı şema değiştirmez. Göçler `dotnet ef migrations bundle` ile uygulanır; API açılışında otomatik göç yoktur. EF'nin ifade edemediği yapılar (`UNIQUE NULLS NOT DISTINCT`, `ALTER TYPE … ADD VALUE`, HNSW) göç içinde ham SQL'dir.
+Bu bölüm A07 koduyla doğrulandı (27 Ekim 2026; [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)). Kod `server/Mutalaa.Infrastructure/Persistence` altındadır.
+
+- `Mutalaa.Infrastructure` içinde `IcerikDbContext` tabloları eşler; yayınlayıcı ve editör uçları aynı bağlamı kullanır ([Proje yapısı](../02-mimari/03-proje-yapisi.md)). Seçenekler tek yoldan kurulur (`IcerikDbContextOptions.Configure`). C# adlandırması PascalCase, veritabanı adları snake_case'tir.
+- **`EFCore.NamingConventions`: Çözüldü (27 Ekim 2026).** 10.0.1 sürümü EF Core 10 ile çalışır (Apache-2.0; [depo](https://github.com/efcore/EFCore.NamingConventions)). `UseSnakeCaseNamingConvention(CultureInfo.InvariantCulture)` çağrılır; kültür verilmezse de Invariant kullanılır. Açıkça verilen adları ezmez.
+- **Enum eşlemesi.** Her tür `HasPostgresEnum(şema, ad, etiketler)` ile açık sırayla tanımlanır; etiketler enum'un sayısal sırasıdır ve `packages/content-schema/enums.json` sırasıdır. `MapEnum` yalnız C# değeri ile etiket arasındaki ad çevirmenini kurar. Sebep: Npgsql 10 `MapEnum` etiketlerini alfabetik sıraya dizer ([efcore.pg #3390](https://github.com/npgsql/efcore.pg/issues/3390), [#3667](https://github.com/npgsql/efcore.pg/issues/3667)); `license_status` sırası kapının davranışını belirlediği için buna bırakılamaz. Çevirmenler tek statik örnektir. `SetPostgresVersion(18, 0)` verilir (varsayılan 14'tür). Bağlantı dizesi `UseNpgsql(...)` çağrısına doğrudan verilir; sonradan verilirse enum eşlemesi kaybolur. C# türleri Domain'dedir: `LicenseStatus`, `BuildFlavor` (`derleme_turu`), `SourceKind`, `UnitKind`, `UnitStatus`, `TextStatus` (`metin_durumu`), `XrefType`, `XrefStatus`, `XrefOrigin`, `ReviewStatus` (`inceleme_durumu`), `ReleaseStatus` (`surum_durumu`).
+- **Tür eşlemeleri.** `int4range` → `AnchorSpan` (değer dönüştürücü; `NpgsqlRange<int>` sağlayıcı türü), `int4range[]` → `AnchorSpan[]` (`HasColumnType("int4range[]")` şarttır, yoksa Npgsql `int4multirange` seçer), `tsvector` → gölge `NpgsqlTsVector` özelliği, `halfvec` → pgvector .NET türü (v1.x; Doğrulanacak). jsonb sütunları C#'ta `string` olur (`HasColumnType("jsonb")`); `ToJson` ve `JsonDocument` kullanılmaz, çünkü `JsonDocument` havuzdan bellek kiralar ve değişiklik izlemede sorun çıkarır. Üretilen sütunlar `HasComputedColumnSql("…", stored: true)`, `COLLATE "C"` `UseCollation("C")`, GiST/GIN/HNSW `HasMethod(…)` ile tanımlanır.
+- **`xmin`.** Eşzamanlılık belirteci gölge `uint` özelliktir (`HasColumnType("xid")`, `IsRowVersion()`); Domain'e alan eklenmez. `xmin` sistem sütunudur, göçte sütun üretilmez. `ExecuteUpdateAsync` `xmin` denetimi eklemez ve `updated_at` değerini kendiliğinden yazmaz; `updated_at` yalnız `UpdatedAtInterceptor` ile `SaveChanges` sırasında yazılır ([Backend API](../02-mimari/05-backend-api.md) §7).
+- **Çapa sütunları.** `Mutalaa.Domain/Anchors` içindeki `AnchorRef` türüne değer dönüştürücüsüyle bağlanır; geçersiz çapa yazılamaz. Yayınlayıcı okumaları `AsNoTracking()` ve `AsAsyncEnumerable()` ile akış hâlinde yapar.
+  - Dönüştürücü yalnız `@` aralığını reddeder (aralık ayrı `int4range` sütunundadır). Birim düzeyi yazım kuralı (xref uçları `q:2:255:3-7` → `q:2:255` + span) dönüştürücüde denetlenmez; hat QA'sı ve A10/A14 doğrulaması `toUnitSpan` ile yapar.
+  - Dönüştürülmüş sütunlarda (`AnchorRef`, `AnchorSpan`) LINQ ile `LIKE` ve aralık işleci SQL'e çevrilmez. A13 ve A14 bu sorgular için ham SQL ya da projeksiyon kullanır. `unit` okumaları `tsv_tr` ve `tsv_ar` gölge sütunlarını da seçer; bu yüzden yayınlayıcı ve uç okumaları `AsNoTracking()` ile projeksiyon yapar.
+  - `AnchorSpan` üç anlam taşır: `unit.ayah_range` küresel âyet sırasıdır (1..6236); `xref.src_span` ve `dst_span` Kur'an ucunda kelime konumudur, metin ucunda kod noktasıdır; `unit.sentences` kod noktasıdır.
+- Şemanın tek sahibi EF Core göçleridir (`server/Mutalaa.Infrastructure/Migrations`). Python hattı şema değiştirmez. Göçler `dotnet ef migrations bundle` ile uygulanır; API açılışında otomatik göç yoktur.
+- **Ham SQL.** Bugünkü göçte ham SQL yalnız `xref_natural_key`'dir (gerçek `UNIQUE NULLS NOT DISTINCT` kısıtı). Hat bu kısıtı `ON CONFLICT ON CONSTRAINT xref_natural_key` ile hedefler. `page_map` üzerindeki `NULLS NOT DISTINCT` EF'de `AreNullsDistinct(false)` ile adlı tekil dizin olarak kurulur. İleride `ALTER TYPE … ADD VALUE` ve HNSW (v1.x) göçleri ham SQL içerir.
+- **DDL'den kasıtlı sapmalar (K-37).** Göçün ürettiği şema, bu belgedeki DDL'den şu farklarla ayrılır. Anlık görüntü [Test stratejisi](../07-yayin/03-test-stratejisi.md) §6'daki yoldadır.
+  - Belgede `UNIQUE` yazılanlar adlı tekil dizindir: `unit_anchor_key`, `root_letters_key`, `quran_word_surah_ayah_word_key`, `quran_word_fix_anchor_field_key`, `release_surum_derleme_key`, `page_map_source_id_volume_page_line_key`. Yalnız `xref_natural_key` gerçek kısıttır. Bu yüzden hat `ON CONFLICT`'i sütun listesiyle yazar (`ON CONFLICT (anchor)` gibi); kısıt adıyla hedef yalnız `xref` içindir.
+  - EF birincil anahtar sütunlarını önce yazar ve üretilen sütunları (`tsv_*`) sona koyar; sütun sırası bu belgedeki DDL'den farklıdır. Yüklemeler (`COPY`, `INSERT`) her zaman sütun listesiyle yapılır.
+  - `CREATE TYPE` sırası tür adına göre alfabetiktir. Etiket sırası ise `pg_enum.enumsortorder` içinde JSON sırasıdır.
+  - `icerik."__EFMigrationsHistory"` ek tablodur ve 19 tabloya dahil değildir. Birincil anahtarı `pk___ef_migrations_history` adını taşır; ad politikasının `pk_` önekli tek `icerik` istisnasıdır.
+  - Kimlik şeması (`kimlik`) 7 tablodur: `users`, `roles`, `user_roles`, `user_claims`, `user_logins`, `user_tokens`, `role_claims`. Passkey tablosu yoktur. Bu şemada EF adları (`pk_`, `ix_`) kalır.
+  - `review_yz_kaydi_check` birden çok sütuna baktığı hâlde açık adlıdır (`review_check` olmaz).
+- **Biçim denetimi olmayan sütunlar.** `source.kurul_onay_ozeti` ve öteki özet sütunlarının (`dosya_sha256`, `lisans_sha256`, `file_sha256`) biçim CHECK'i yoktur. Kapı bütünlüğü için ileride eklenmesi değerlendirilebilir (Açık soru; [belge çelişkileri](../10-claude-code/07-belge-celiskileri.md) BÇ-41); o zamana kadar A14 ikinci onayda özetin biçimini doğrular.
 - Yıkıcı değişiklik tek adımda yapılmaz: sütun eklenir, doldurulur, okuyucular geçirilir, eski sütun sonraki göçte kalkar. Enum'a eklenen değer geri alınamaz.
 - CI `postgres:18` konteyneri açar, göç paketini uygular, hat ve yayınlayıcı testlerini aynı veritabanında koşar ([Test stratejisi](../07-yayin/03-test-stratejisi.md)).
 
@@ -540,7 +556,7 @@ CREATE TABLE hadith_location (                    -- hadis_konum: kitap › bâb
 |---|---|---|
 | ED-1 | Editör panelinin v1 kimlik doğrulaması | Cevaplandı: ASP.NET Core Identity ([Backend API](../02-mimari/05-backend-api.md) §6) |
 | ED-2 | İkinci onay gereken alanların kesin listesi | Öneri; Backend API §4.1 ile aynı |
-| ED-3 | PostgreSQL 18'de `uuidv7()` ve üretilen sütun varsayılanı | Doğrulanacak |
+| ED-3 | PostgreSQL 18'de `uuidv7()` ve üretilen sütun varsayılanı | **Çözüldü (27 Ekim 2026):** `uuidv7()` 18.0'da eklendi ([UUID işlevleri](https://www.postgresql.org/docs/18/functions-uuid.html)); üretilen sütun varsayılanı `VIRTUAL`'dır, dizinlenenler `STORED` yazılır ([CREATE TABLE](https://www.postgresql.org/docs/18/sql-createtable.html), [Üretilen sütunlar](https://www.postgresql.org/docs/18/ddl-generated-columns.html)) |
 | ED-4 | QAC lisansı; gelmezse kelime anlamlarının kelime çapasına göre `core`'a alınması (avukat) | Açık soru, hukuki görüş değildir |
 | ED-5 | Mod A düzen ve glif verisinin kaynağı (`medine-604-duzen`) | Açık soru |
 | ED-6 | Konu düğümü tabloları (`konu:{slug}`, v1.x) | Açık soru |

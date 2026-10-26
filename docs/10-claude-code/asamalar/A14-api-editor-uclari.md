@@ -1,6 +1,6 @@
 # A14 · API editör uçları
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A07](./A07-editoryal-veritabani.md) · **İnsan adımı:** yok
 > **Ajanlar:** `sunucu-gelistirici` · `test-yazari` · `arastirmaci` · `inceleyici` · **Beceriler:** `ef-goc` · `lisans-kapisi` · `windows-sorun` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A14`
@@ -17,7 +17,7 @@ Editör kipindeki ASP.NET Core 10 Minimal API kurulur: ASP.NET Core Identity ile
 
 ## Kapsam
 **Yapılır**
-- `Program.cs` iskeleti, Identity (`EditorUser`, `editor` ve `admin` rolleri), `seed` komutu, `DevAutoLogin`.
+- `Program.cs` iskeletinin kalanı (Serilog, ProblemDetails, sağlık, OpenAPI), çerezli oturum, yetki politikaları (`Editor`, `Admin`) ve `DevAutoLogin`. Identity (`EditorUser`, `editor` ve `admin` rolleri, `kimlik` şeması, parola ve kilit ayarları), `seed` komutu ve `Program.cs` iskeletinin `AddIcerikDb`, `AddEditorIdentity` ve `seed` kısmı A07'de teslim edildi ([K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)); A14 bunları yeniden kurmaz, yalnız uçları ve oturumu ekler.
 - [Backend API](../../02-mimari/05-backend-api.md) §4 tablosundaki bütün v1 uçları, §4.1 kuyrukları ve ikinci onay, §4.2 uç kuralları, §6 hata kodları.
 - Derlemede üretilip depoya giren `server/Mutalaa.Api/openapi/v1.json`; sağlık uçları; Serilog.
 - Uç başına yetki matrisi testleri.
@@ -29,15 +29,17 @@ Editör kipindeki ASP.NET Core 10 Minimal API kurulur: ASP.NET Core Identity ile
 
 ## Adımlar
 ### A14.1 · Doğrulamalar
-- `arastirmaci` resmî kaynaktan doğrular: .NET 10 Minimal API doğrulaması (`AddValidation()`); Npgsql EF Core 10 enum eşleme API'si; `xmin` eşzamanlılık belirteci yapılandırması (`IsRowVersion()`); derlemede OpenAPI belgesi üretimi (`Microsoft.Extensions.ApiDescription.Server`); `Scalar.AspNetCore` uç adı; `EFCore.NamingConventions` EF Core 10 desteği; çerez kimlik doğrulamasında API isteklerine yönlendirme yerine 401 ve 403 döndürmenin yolu. Bunlar Backend API §2, §3, §6, §7 ve Editoryal veritabanı §12'de "Doğrulanacak" diye işaretlidir.
+- `arastirmaci` resmî kaynaktan doğrular: .NET 10 Minimal API doğrulaması (`AddValidation()`); derlemede OpenAPI belgesi üretimi (`Microsoft.Extensions.ApiDescription.Server`); `Scalar.AspNetCore` uç adı; çerez kimlik doğrulamasında API isteklerine yönlendirme yerine 401 ve 403 döndürmenin yolu. Bunlar Backend API §2, §3 ve §6'da "Doğrulanacak" diye işaretlidir.
+- Npgsql enum eşlemesi, `xmin` (`IsRowVersion()`) ve `EFCore.NamingConventions` desteği A07'de çözüldü (27 Ekim 2026; [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md) §12); burada yeniden doğrulanmaz.
 - Kararlar `/karar` ile, çözülen maddeler `/belge-esitle` ile işlenir.
 - **Bitti sayılır:** her madde kaynak bağlantısıyla raporlu.
 
 ### A14.2 · İskelet, kimlik ve tohumlama
 - `server/Mutalaa.Api/Program.cs` §3 iskeletini izler: varsayılan kültür `InvariantCulture`, Serilog, `Mutalaa:Features:Editor`, ProblemDetails, `DomainExceptionHandler`, OpenAPI, `/health/live` ve `/health/ready`, `Editor` ve `Admin` politikaları; yalnız `Development`'ta `/openapi/v1.json` ve `/scalar/v1`.
-- Identity: `EditorUser`, roller `editor` ve `admin`; tablolar `kimlik` şemasında (öneri). Göç `ef-goc` becerisiyle eklenir; SQL `dotnet ef migrations script --idempotent` ile gözden geçirilir.
-- Çerez `HttpOnly`, `SameSite=Strict`, canlıda `Secure`. Parola en az 12 karakter, 5 hatalı denemede 15 dakika kilit, 8 saat kayan oturum (öneri).
-- `seed` idempotenttir; e-posta ve parola `Mutalaa:Seed:*` kullanıcı sırlarından okunur. `Mutalaa:Auth:DevAutoLogin` yalnız `Development` ortamında ve geri döngü isteğinde çalışır; başka ortamda açık bulunursa açılış hata verir.
+- Identity (`EditorUser`, roller `editor` ve `admin`, `kimlik` şeması, `seed`) A07'de hazırdır; yeni Identity göçü gerekmez. Bir göç gerekirse `ef-goc` becerisiyle eklenir ve SQL `dotnet ef migrations script --idempotent` ile gözden geçirilir.
+- Çerez `HttpOnly`, `SameSite=Strict`, canlıda `Secure`; 8 saat kayan oturum (öneri). Parola kuralı (yalnız uzunluk >= 12) ve kilit (5 hatalı deneme, 15 dakika) A07'de `AddEditorIdentity` ile ayarlıdır.
+- Giriş ucu kilit için yanlış parolayı `CheckPasswordSignInAsync(..., lockoutOnFailure: true)` üzerinden denetler (ya da `AccessFailedAsync` çağırır); başka bir parola denetimi sayacı artırmaz. Uç testi bunu kilitler: beşinci hatalı denemeden sonra doğru parola da reddedilir.
+- `seed` A07'de teslim edildi ve idempotenttir; e-posta ve parola `Mutalaa:Seed:*` kullanıcı sırlarından okunur. `Mutalaa:Auth:DevAutoLogin` yalnız `Development` ortamında ve geri döngü isteğinde çalışır; başka ortamda açık bulunursa açılış hata verir.
 - API `127.0.0.1:5080` adresine bağlanır; CORS kapalıdır.
 - Uçlar: `POST /api/v1/auth/login`, `/auth/logout`; `GET /auth/me`; `GET`, `POST /api/v1/users`; `PUT /users/{id}/roles` (admin; kendi kendine kayıt yok).
 - **Bitti sayılır:** `seed` iki kez çalışınca aynı sonuç; oturum ve kullanıcı uçlarının testleri yeşil.
@@ -48,6 +50,7 @@ Editör kipindeki ASP.NET Core 10 Minimal API kurulur: ASP.NET Core Identity ile
 - `GET /api/v1/units?source=&prefix=&q=&cursor=&limit=`: `q` A05'in C# normalizasyonundan geçer ve arama sütunlarında aranır; `prefix` çapa önekidir; imleçli sayfalama, en çok 200, yanıt `{ "items": [...], "next_cursor": "..." }`.
 - `GET /units/{anchor}`: çapa `AnchorRef` ile doğrulanır; geçersizse 400 `capa-gecersiz`.
 - `POST /units/{anchor}/corrections`: yalnız kendi ürettiğimiz metinde; önerilen metin NFC'ye çevrilir ve `review` satırı olur. Hazır kaynak metninde (Tanzil) 422 `degistirilemez-metin`. Hazır kaynak, `source.kisitlar.degistirme_yasak` alanıyla tanınır (öneri).
+- Not (EF sınırı, [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md) §12): `prefix` ve çapa aralığı sorguları dönüştürülmüş çapa sütunlarında LINQ ile `LIKE` ya da aralık işlecine çevrilmez; ham SQL ya da `AsNoTracking()` ile projeksiyon kullanılır. `unit` okumaları `tsv_tr` ve `tsv_ar` gölge sütunlarını da seçeceği için projeksiyon yapılır.
 - **Bitti sayılır:** uç testleri yeşil; Tanzil birimine düzeltme 422 dönüyor.
 
 ### A14.4 · İnceleme kuyrukları ve ikinci onay
@@ -55,7 +58,7 @@ Editör kipindeki ASP.NET Core 10 Minimal API kurulur: ASP.NET Core Identity ile
 - `POST /reviews/{id}/decision` (`{karar: onaylandi|reddedildi, onerilen?, gerekce}`) ve `POST /reviews/decisions` (toplu, en çok 100). `If-Match` zorunludur; ETag `xmin`'dir; uyuşmazsa 412 `surum-uyusmazligi`.
 - Onay `onerilen` değerini hedefe aynı işlemde uygular; ret hedefi değiştirmez. Kendi `status` alanı olan tablolarda onay `onayli`, ret `red` yazar. Birim metni onayında `metin_durumu = 'onayli'` olur.
 - İkinci onay gereken alanlar: meal ve tefsir metni, `license_status`, `kurul_onay`, `embed_ok`. İlk onay `inceleyen` alanını doldurur, kayıt `acik` kalır; farklı bir editörün onayı değeri uygular ve `ikinci_inceleyen` alanını doldurur. Aynı kişinin ikinci onayı reddedilir (hata kodu öneri: 409 `durum-gecisi-gecersiz`).
-- `oneren` ve `inceleyen` alanlarına Identity kullanıcı adı yazılır. Kur'an metni için metin incelemesi açılmaz. `yz_modeli` dolu kayıt yanıtta "doğrulanmamış" olarak işaretlenir (K-25).
+- `oneren` ve `inceleyen` alanlarına Identity kullanıcı adı yazılır. Kur'an metni için metin incelemesi açılmaz. `yz_modeli` dolu kayıt yanıtta "doğrulanmamış" olarak işaretlenir (K-25). `review` yanıtı `yz_kaydi` alanını da döndürür. `dogrulanmis` saklanmaz; hedefin onaylı durumundan türetilir ([Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md) §8 notu, K-37): `status` sütunu olan tabloda `status = 'onayli'`, `unit`'te `metin_durumu = 'onayli'`, durum sütunu olmayan hedefte `review.durum = 'onaylandi'`. İkinci onayda `source.kurul_onay_ozeti` değerinin biçimi (64 küçük harfli onaltılık) doğrulanır; veritabanında bu sütunda biçim CHECK'i yoktur.
 - OCR kuyruğu sayfa görseli ister. Backend API §4 bu ucu öneri olarak taşır: yalnız editör kipinde, yalnız `data/raw/{baskı}/` altından okuyan, salt okunur bir görsel ucu; yöntemi ve yolu henüz yoktur ve `/karar` ile belirlenir. Karar verilmezse A15'in OCR ekranı görselsiz kalır ve konu A16'dan önce kapanır.
 - **Bitti sayılır:** karar, toplu karar ve ikinci onay testleri yeşil.
 
@@ -79,7 +82,8 @@ Editör kipindeki ASP.NET Core 10 Minimal API kurulur: ASP.NET Core Identity ile
 - [ ] Eski ETag ile karar 412, Tanzil düzeltmesi 422, süren yayın 409 dönüyor (test).
 - [ ] `server/Mutalaa.Api/openapi/v1.json` güncel; `git diff --exit-code server/Mutalaa.Api/openapi` 0.
 - [ ] Yerelde `/health/ready` başarılı; oturumsuz `GET /api/v1/sources` 401 ProblemDetails dönüyor (yönlendirme değil).
-- [ ] `seed` idempotent; `DevAutoLogin` yalnız `Development` ve geri döngüde çalışıyor.
+- [ ] `seed` (A07'de teslim edildi) idempotent; `DevAutoLogin` yalnız `Development` ve geri döngüde çalışıyor.
+- [ ] Giriş ucunda yanlış parola `CheckPasswordSignInAsync(..., lockoutOnFailure: true)` üzerinden gidiyor; beşinci hatalı denemeden sonra doğru parola da reddediliyor (uç testi).
 - [ ] Görsel ucu ve terfi/geri alma talebi kararları karar defterinde ya da açık soru olarak ilerleme notunda.
 
 ## Doğrulama
@@ -110,7 +114,7 @@ Son iki komut API ayrı bir terminalde `dotnet watch --project server/Mutalaa.Ap
 
 ## Çıktılar
 - `server/Mutalaa.Api/Program.cs`, `Endpoints/*`, `Problems/*`, `openapi/v1.json`
-- `server/Mutalaa.Infrastructure/Identity/*` ve Identity göçü; inceleme ve ikinci onay kuralları (`Mutalaa.Domain/Review`)
+- İnceleme ve ikinci onay kuralları (`Mutalaa.Domain/Reviews`); Identity (`server/Mutalaa.Infrastructure/Identity/*`) A07'den gelir
 - Api test projesinde yetki matrisi ve akış testleri
 - Karar defterinde doğrulama sonuçları, görsel ucu ve terfi/geri alma talebi kayıtları
 

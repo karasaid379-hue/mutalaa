@@ -1,7 +1,7 @@
 # Backend API
 
-> **Sürüm:** 1.3 · **Tarih:** 26 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)
+> **Sürüm:** 1.4 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)
 
 Bu dosya ASP.NET Core 10 çözümünü, uçları, kimlik doğrulamayı, hata modelini, EF Core kurallarını ve Yayınlayıcı konsolunu tanımlar. Tablolar [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md), paket ve manifest biçimi [İçerik paketleri](../03-veri/03-icerik-paketleri.md), kapı kuralları [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) dosyasındadır.
 
@@ -22,13 +22,13 @@ Genel kipte editör uçları hiç eşlenmez. v1'de okur uygulaması API'ye bağl
 server/
 ├─ Mutalaa.slnx · Directory.Build.props · Directory.Packages.props
 ├─ Mutalaa.Domain/          bağımlılıksız çekirdek
-│  ├─ Anchors/              AnchorRef, ayrıştırıcı ([GeneratedRegex], CultureInvariant)
-│  ├─ Content/ Links/       Source, Unit, QuranWord, Lemma, Root, Xref, enum'lar
-│  ├─ Licensing/            LicenseStatus, BuildFlavor, LicenseGate (saf fonksiyonlar)
-│  ├─ Releases/ Review/     içerik özeti, inceleme ve ikinci onay kuralları
+│  ├─ Anchors/              AnchorRef, AnchorSpan, ayrıştırıcı ([GeneratedRegex], CultureInvariant)
+│  ├─ Content/ Links/       Source, Unit, QuranWord, Lemma, Root, Xref ve öteki tablo varlıkları, enum'lar
+│  ├─ Licensing/            LicenseStatus, BuildFlavor; LicenseGate (A13; saf fonksiyonlar)
+│  ├─ Releases/ Reviews/    Release, PipelineRun, Review ve durum enum'ları; içerik özeti, inceleme ve ikinci onay kuralları (A13, A14)
 │  └─ Text/                 SearchNormalizer, IcKesme.g.cs (üretilir), ContentHash, kod noktası ofsetleri
-├─ Mutalaa.Infrastructure/  Persistence/ (IcerikDbContext), Migrations/, Identity/,
-│                           Storage/ (S3), Packs/ (SqlitePackWriter, ManifestSigner)
+├─ Mutalaa.Infrastructure/  Persistence/ (IcerikDbContext, Configurations/, Converters/), Identity/, Migrations/,
+│                           Storage/ (S3), Packs/ (SqlitePackWriter, ManifestSigner) (A13)
 ├─ Mutalaa.Api/             Program.cs, Endpoints/, Problems/, openapi/v1.json
 ├─ Mutalaa.Publisher/       Program.cs, Commands/
 └─ tests/                   Domain, Api, Publisher test projeleri
@@ -46,7 +46,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((ctx, cfg) => cfg.ReadFrom.Configuration(ctx.Configuration));
 var features = builder.Configuration.GetSection("Mutalaa:Features").Get<FeatureOptions>() ?? new();
 
-builder.Services.AddInfrastructure(builder.Configuration);   // IcerikDbContext, Identity, S3
+builder.Services.AddIcerikDb(builder.Configuration);         // IcerikDbContext (A07)
+builder.Services.AddEditorIdentity();                          // Identity: parola, kilit (A07)
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 builder.Services.AddValidation();                               // .NET 10 Minimal API doğrulaması (Doğrulanacak)
@@ -57,7 +58,7 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("Admin", p => p.RequireRole("admin"));
 
 var app = builder.Build();
-if (args is ["seed"]) { await Seed.RunAsync(app.Services); return; }
+if (args is ["seed"]) { Environment.ExitCode = await IdentitySeeder.RunAsync(app.Services, CancellationToken.None); return; }
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();
@@ -74,6 +75,8 @@ app.Run();
 
 public sealed class FeatureOptions { public bool Editor { get; set; } = true; public bool Public { get; set; } }
 ```
+
+**Uygulandı (A07, 27 Ekim 2026):** `AddIcerikDb`, `AddEditorIdentity` ve `seed` dalı teslim edildi (`Mutalaa.Api/Program.cs`, `Mutalaa.Infrastructure/DependencyInjection.cs`). Gerisi (Serilog, ProblemDetails, sağlık uçları, OpenAPI, yetki politikaları, uçlar) A14'tedir. `AddIcerikDb` bağlantı dizesi yokken de hata vermez (`dotnet ef` göç üretimi bağlantı istemez); otomatik göç yoktur. `seed` çıkış kodları: `0` başarı, `1` beklenmeyen hata, `2` eksik ayar, `3` Identity reddetti.
 
 ## 4. v1 uçları (editör kipi)
 
@@ -140,7 +143,9 @@ Hat ve editör önerileri tek `review` tablosundan geçer. Onay `onerilen` değe
 ## 6. Kimlik doğrulama, OpenAPI ve hata modeli
 
 **Editör kimliği** ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) ED-1 sorusunun cevabı):
-- ASP.NET Core Identity; kullanıcı tipi `EditorUser`, roller `editor` ve `admin`. Çerez `HttpOnly`, `SameSite=Strict`, canlıda `Secure`; yetkisiz istek 401 ya da 403 alır. Parola en az 12 karakter, 5 hatalı denemede 15 dakika kilit, 8 saat kayan oturum (öneri).
+- ASP.NET Core Identity; kullanıcı tipi `EditorUser`, roller `editor` ve `admin`. Çerez `HttpOnly`, `SameSite=Strict`, canlıda `Secure`; yetkisiz istek 401 ya da 403 alır. 8 saat kayan oturum (öneri; A14).
+- **Parola ve kilit ([K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları), A07'de uygulandı):** parola yalnız en az 12 karakter ister; büyük harf, rakam ya da simge şartı yoktur. 5 hatalı denemede hesap 15 dakika kilitlenir. `RequireUniqueEmail` açıktır; kullanıcı adı e-posta adresidir. Identity tabloları `kimlik` şemasında 7 tablodur (`users`, `roles`, `user_roles`, `user_claims`, `user_logins`, `user_tokens`, `role_claims`; passkey tablosu yok).
+- **A14 notu (kilit):** kilit yalnız `AccessFailedAsync` ya da `CheckPasswordSignInAsync(..., lockoutOnFailure: true)` üzerinden işler. Giriş ucu başka bir parola denetimi kullanırsa sayaç artmaz ve kilit çalışmaz.
 - Kendi kendine kayıt yoktur; ilk yönetici `seed` komutuyla açılır. `review.oneren` ve `inceleyen` alanlarına Identity kullanıcı adı yazılır.
 - **Yalnız yerel kip.** API `127.0.0.1` adresine bağlanır, CORS kapalıdır, editör Vite vekiliyle (`/api`) aynı kökenden çağırır. `Mutalaa:Auth:DevAutoLogin=true` yalnız `Development` ortamında ve geri döngü (loopback) isteğinde yöneticiyle oturum açar; başka ortamda açılışta hata verir. Panel dışarı açılırsa HTTPS, antiforgery başlığı ve iki adımlı doğrulama zorunludur.
 
@@ -161,12 +166,12 @@ Hat ve editör önerileri tek `review` tablosundan geçer. Onay `onerilen` değe
 
 ## 7. EF Core 10 ve Npgsql
 
-- `IcerikDbContext` bütün tabloları eşler; API ve Yayınlayıcı aynı bağlamı kullanır. Adlar `EFCore.NamingConventions` ile snake_case'tir; tablo adları tekildir ve `ToTable("source")` gibi açıkça yazılır. Identity tabloları ayrı `kimlik` şemasında durur (öneri).
-- PostgreSQL enum türleri (`license_status`, `xref_status`, `inceleme_durumu`, `derleme_turu`, `surum_durumu` …) Npgsql enum eşlemesiyle C# enum'larına bağlanır (`IcKullanim` → `ic_kullanim`; API adı Doğrulanacak). Bir Domain testi her değerin etiketini sınar.
-- **Uygulandı (A06, 2026-10-26): etiket eşlemesi Domain'de saftır.** `Mutalaa.Domain/Licensing` içinde `LicenseStatus` ve `BuildFlavor`, `Content` içinde `SourceKind`, `Links` içinde `XrefType`, `XrefStatus` ve `XrefOrigin` bulunur. Her enum için aynı dosyada `...Labels` sınıfı vardır: `ToLabel` (açık `switch`; tanımsız sayısal değerde `ArgumentOutOfRangeException`) ve `TryParseLabel` (Ordinal, büyük-küçük harfe duyarlı, kırpmasız). Yansıma, `Enum.ToString` ve kültürlü dönüşüm yoktur; Domain Npgsql'e bağlanmaz. Bildirim sırası `packages/content-schema/enums.json` sırasıdır ve sayısal değerler bu sıradır (`Serbest = 0` … `Kapali = 3`). `EnumLabelTests` her JSON türünü ve sırasını sınar. Npgsql eşlemesi (veritabanı etiketi ↔ C# enum) A07'dedir.
+- `IcerikDbContext` bütün tabloları eşler; API ve Yayınlayıcı aynı bağlamı kullanır. Adlar `EFCore.NamingConventions` ile snake_case'tir; tablo adları tekildir ve `ToTable("source")` gibi açıkça yazılır. Identity tabloları ayrı `kimlik` şemasında durur (uygulandı, A07; K-37). `icerik` şemasındaki anahtar, yabancı anahtar ve tekil dizin adları PostgreSQL'in varsayılan adlarıdır (`{tablo}_pkey` …); ayrıntı [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §12.
+- PostgreSQL enum türleri (`license_status`, `xref_status`, `inceleme_durumu`, `derleme_turu`, `surum_durumu` …) C# enum'larına bağlanır (`IcKullanim` → `ic_kullanim`). Her tür `HasPostgresEnum(şema, ad, etiketler)` ile açık sırayla tanımlanır; `MapEnum` yalnız ad çevirmenidir, çünkü Npgsql 10 `MapEnum` etiketleri alfabetik dizer ([efcore.pg #3667](https://github.com/npgsql/efcore.pg/issues/3667)). `SetPostgresVersion(18, 0)` verilir. Bir Domain testi her değerin etiketini, bir PostgreSQL testi `pg_enum` sırasını JSON ile karşılaştırır.
+- **Uygulandı (A06, 2026-10-26): etiket eşlemesi Domain'de saftır.** `Mutalaa.Domain/Licensing` içinde `LicenseStatus` ve `BuildFlavor`, `Content` içinde `SourceKind`, `Links` içinde `XrefType`, `XrefStatus` ve `XrefOrigin` bulunur. Her enum için aynı dosyada `...Labels` sınıfı vardır: `ToLabel` (açık `switch`; tanımsız sayısal değerde `ArgumentOutOfRangeException`) ve `TryParseLabel` (Ordinal, büyük-küçük harfe duyarlı, kırpmasız). Yansıma, `Enum.ToString` ve kültürlü dönüşüm yoktur; Domain Npgsql'e bağlanmaz. Bildirim sırası `packages/content-schema/enums.json` sırasıdır ve sayısal değerler bu sıradır (`Serbest = 0` … `Kapali = 3`). `EnumLabelTests` her JSON türünü ve sırasını sınar. **Uygulandı (A07, 27 Ekim 2026):** Npgsql eşlemesi (veritabanı etiketi ↔ C# enum) `Mutalaa.Infrastructure/Persistence/PostgresEnums` içindedir; `PostgresEnumTests` PostgreSQL etiketlerini ve sırasını `enums.json` ile karşılaştırır.
 - **A13 için not (kod incelemesi bulgusu):** `TryParseLabel` başarısız olunca `value = default` verir; `LicenseStatus` için bu en gevşek değer `Serbest`'tir. Lisans kapısı (A13) `TryParseLabel`'in `bool` dönüşünü zorunlu denetlemeli, yalnız `out` değerine bakmamalıdır; başarısız ayrıştırma kapıyı kapalı (en kısıtlayıcı) sonuçlandırmalıdır (öneri; kapı tasarımı A13'tedir).
-- Çapa sütunları `AnchorRef` değer dönüştürücüsüyle bağlanır; zaman `timestamptz` ve UTC'dir; eşzamanlılık belirteci `xmin`'dir (`IsRowVersion()`; Doğrulanacak).
-- Okumalar `AsNoTracking()` ile, toplu karar `ExecuteUpdateAsync` ile, ham SQL yalnız parametreli `FromSql` ile yazılır.
+- Çapa sütunları `AnchorRef` değer dönüştürücüsüyle bağlanır; zaman `timestamptz` ve UTC'dir; eşzamanlılık belirteci `xmin`'dir. **Çözüldü (27 Ekim 2026):** `xmin` gölge `uint` özelliktir (`IsRowVersion()`, `xid`); göçte sütun üretilmez ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §12). Dönüştürülmüş çapa sütunlarında LINQ `LIKE` ve aralık işleci çevrilmez; bu sorgular ham SQL ya da `AsNoTracking()` ile projeksiyon kullanır (A13, A14).
+- Okumalar `AsNoTracking()` ile, toplu karar `ExecuteUpdateAsync` ile, ham SQL yalnız parametreli `FromSql` ile yazılır. `ExecuteUpdateAsync` `xmin` denetimi (`WHERE xmin = …`) eklemez ve `updated_at` değerini kendiliğinden yazmaz: `UpdatedAtInterceptor` yalnız `SaveChanges`te çalışır. Toplu kararda `If-Match` karşılaştırması ve `updated_at = now()` SQL'e açıkça yazılır.
 
 **Göç politikası** ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §12 ile aynı): şemanın tek sahibi `server/Mutalaa.Infrastructure/Migrations` altındaki EF Core göçleridir. Her PR en çok bir göç ekler; SQL `dotnet ef migrations script --idempotent` ile gözden geçirilir; uygulanmış göç değiştirilmez. Yerelde `dotnet ef database update`, CI ve canlıda göç paketi (`migrations bundle`) kullanılır; API açılışında otomatik göç yoktur. Yıkıcı değişiklik genişlet, taşı, daralt adımlarıyla yapılır.
 

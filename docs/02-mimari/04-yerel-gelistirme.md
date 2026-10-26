@@ -1,7 +1,7 @@
 # Yerel geliştirme
 
-> **Sürüm:** 1.5 · **Tarih:** 24 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)
+> **Sürüm:** 1.6 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)
 
 Geliştirme ekibin kendi Windows bilgisayarında yapılır ([K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma)). PostgreSQL ve S3 deposu Docker'da çalışır. API, editör ve Yayınlayıcı isteğe bağlı olarak Docker'da ya da doğrudan ana makinede çalışır. Node, .NET ve Python araçları ana makinededir. Uygulama telefonda ya da Android emülatöründe geliştirme derlemesiyle açılır.
 
@@ -104,6 +104,15 @@ dotnet user-secrets --project server/Mutalaa.Publisher set "Storage:PublicBaseUr
 ```
 
 `Storage:PublicBaseUrl` manifestteki mutlak paket adreslerinin tabanıdır ([Backend API](./05-backend-api.md) §10.5). Bilgisayarın LAN IP adresi değişirse bu değer güncellenir ve `publish` yeniden çalıştırılır.
+
+**`.env` parolasını sonradan değiştirmek.** `.env` değişince çalışan kapsayıcı ve veritabanındaki parola güncellenmez: veritabanı ilk kurulumdaki parolayı saklar. Parolayı sonradan değiştirdiyseniz veritabanını `.env` ile eşitleyin, sonra kapsayıcıları yeniden başlatın ve kullanıcı sırlarındaki bağlantı dizesini de aynı değerle güncelleyin:
+
+```powershell
+docker compose exec -T postgres psql -U <kullanıcı> -d <veritabanı> -c "ALTER USER <kullanıcı> PASSWORD '<parola>'"
+docker compose up -d
+```
+
+`<kullanıcı>`, `<veritabanı>` ve `<parola>` `.env` içindeki değerlerdir.
 
 ## 4. `docker-compose.yml`
 
@@ -294,12 +303,13 @@ PYTHONUTF8=1
    $env:ASPNETCORE_ENVIRONMENT = "Development"
    dotnet ef database update --project server/Mutalaa.Infrastructure --startup-project server/Mutalaa.Api
    ```
-3. **Rolleri ve ilk yöneticiyi oluşturun.** `seed` komutu idempotenttir; e-posta ve parola `Mutalaa:Seed:*` ayarlarından okunur.
+3. **Rolleri ve ilk yöneticiyi oluşturun.** `seed` komutu idempotenttir; e-posta ve parola `Mutalaa:Seed:*` ayarlarından okunur. Parola en az 12 karakter olmalıdır (K-37); başka şart yoktur. Kullanıcı sırları yalnız `Development` ortamında yüklenir; `seed` onları yalnız çalıştığı oturumda görür, bu yüzden `ASPNETCORE_ENVIRONMENT=Development` o oturumda tanımlı olmalıdır (adım 2'deki gibi).
    ```powershell
    dotnet user-secrets --project server/Mutalaa.Api set "Mutalaa:Seed:AdminEmail" "admin@mutalaa.local"
    dotnet user-secrets --project server/Mutalaa.Api set "Mutalaa:Seed:AdminPassword" "yerel-yonetici-sifresi-degistir"
    dotnet run --project server/Mutalaa.Api -- seed
    ```
+   `seed` var olan yöneticinin parolasına dokunmaz. Parolayı değiştirmek için kullanıcıyı silin ya da Identity ile sıfırlayın. Çıkış kodları: `0` başarı, `1` beklenmeyen hata, `2` eksik ayar, `3` Identity reddetti. Günlüğe parola ve e-posta yazılmaz.
 4. **Kur'an metnini yükleyin.** Komutlar [İçerik hattı](../04-icerik/02-icerik-hatti.md) §4'tedir.
    ```powershell
    cd pipeline

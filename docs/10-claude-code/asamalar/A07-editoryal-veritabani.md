@@ -17,9 +17,9 @@
 
 ## Kapsam
 **Yapılır**
-- Domain varlıkları; A06'daki enum'lar kullanılır. Kalan beş tür (`unit_kind`, `unit_status`, `metin_durumu`, `inceleme_durumu`, `surum_durumu`) aynı etiket kuralıyla C#'a ve `packages/content-schema/enums.json` dosyasına eklenir (öneri); böylece 11 türün hepsi tek dosyayla karşılaştırılır.
+- Domain varlıkları; A06'daki enum'lar kullanılır. Kalan beş tür (`unit_kind`, `unit_status`, `metin_durumu`, `inceleme_durumu`, `surum_durumu`) aynı etiket kuralıyla C#'a ve `packages/content-schema/enums.json` dosyasına eklenir ([K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)); böylece 11 türün hepsi tek dosyayla karşılaştırılır.
 - `IcerikDbContext` (`Mutalaa.Infrastructure/Persistence`) ve 19 tablo: `source`, `unit`, `root`, `lemma`, `lemma_gloss`, `quran_word`, `quran_word_fix`, `tr_root_index`, `tr_form`, `surah_alias`, `xref`, `review`, `page_map`, `ayah_box`, `audio_timing`, `release`, `pipeline_run`, `hadith_number_map`, `hadith_location`; §2'deki 11 enum türü.
-- Identity: `EditorUser`, roller `editor` ve `admin`; tablolar `kimlik` şemasında (Backend API §7, öneri).
+- Identity: `EditorUser`, roller `editor` ve `admin`; tablolar `kimlik` şemasında ([K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları), Backend API §7).
 - İlk göç, idempotent SQL betiği, göç paketi denemesi, `seed` komutu ve testler.
 
 **Yapılmaz**
@@ -40,17 +40,17 @@
 - **Bitti sayılır:** altı madde kaynaklı aşama kaydında (xunit maddesi K-33 ile çözüldü; burada yalnız derleme ile teyit edilir).
 
 ### A07.2 · Domain ve `IcerikDbContext` (`sunucu-gelistirici`)
-- Varlıklar `Mutalaa.Domain` altında (`Content/`, `Links/`, `Releases/`, `Review/`; Backend API §2). Domain EF Core'a bağlanmaz.
+- Varlıklar `Mutalaa.Domain` altında (`Content/`, `Links/`, `Releases/`, `Reviews/`; Backend API §2). Domain EF Core'a bağlanmaz.
 - Bağlam: varsayılan şema `icerik`; tablo adları tekil ve `ToTable("source")` gibi açıkça; sütunlar snake_case; zaman `timestamptz` ve UTC; eşzamanlılık `xmin`.
 - Enum'lar §2'deki 11 PostgreSQL türüne eşlenir; etiketler ve sıra `packages/content-schema/enums.json` ve §2 ile aynı.
 - Çapa sütunları (`anchor` ve `_anchor` ile bitenler) `UseCollation("C")` ve `AnchorRef` değer dönüştürücüsüyle bağlanır; geçersiz çapa yazılamaz. `parent_path` ve `review.hedef_anahtar` çapa değildir, düz metindir. `unit.anchor` `@` taşımaz.
 - Tür eşlemeleri §12'deki gibi: `int4range` → `NpgsqlRange<int>`, `jsonb`, `tsvector`. `tsv_tr` ve `tsv_ar` `HasComputedColumnSql(…, stored: true)`; GiST ve GIN dizinleri `HasMethod(…)`; kısmi dizinler (`review_queue`, `xref_queue`, `review_xref`) ve CHECK kısıtları belgedeki ifadelerle.
-- EF'nin ifade edemediği yapılar göçte ham SQL'dir: `xref_natural_key` ve `page_map` üzerindeki `UNIQUE NULLS NOT DISTINCT` (§12).
+- Ham SQL yalnız `xref_natural_key`'dir (gerçek `UNIQUE NULLS NOT DISTINCT` kısıtı; hat `ON CONFLICT ON CONSTRAINT` ile hedefler). `page_map` `AreNullsDistinct(false)` ile adlı tekil dizin olarak EF'de kurulur (§12).
 - **Bitti sayılır:** `dotnet build` uyarısız; her tablo, sütun, kısıt ve dizin belgedeki adla eşlenmiş.
 
 ### A07.3 · Identity ve `seed` (`sunucu-gelistirici`)
-- `EditorUser`, roller `editor` ve `admin`; Identity tabloları `kimlik` şemasında (öneri). Parola en az 12 karakter, 5 hatalı denemede 15 dakika kilit (Backend API §6, öneri).
-- `Mutalaa.Api/Program.cs`'e `AddInfrastructure` ve `seed` dalı eklenir (Backend API §3: `if (args is ["seed"])`). Uçlar A14'tedir.
+- `EditorUser`, roller `editor` ve `admin`; Identity tabloları `kimlik` şemasında. Parola en az 12 karakter (başka şart yok), 5 hatalı denemede 15 dakika kilit, e-posta tekil ([K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları), Backend API §6).
+- `Mutalaa.Api/Program.cs`'e `AddIcerikDb` ve `AddEditorIdentity` çağrıları ile `seed` dalı eklenir (Backend API §3: `if (args is ["seed"])`). Uçlar A14'tedir.
 - `seed` idempotenttir: roller yoksa açılır; yönetici `Mutalaa:Seed:AdminEmail` ve `Mutalaa:Seed:AdminPassword` ayarlarından okunur (kullanıcı sırları; Yerel geliştirme §6 adım 3).
 - **Bitti sayılır:** `seed` art arda iki kez çalışınca iki rol ve tek yönetici var (test).
 
@@ -65,7 +65,7 @@
 - Konum `server/tests/Mutalaa.Api.Tests/` (öneri; Api testleri zaten Testcontainers `postgres:18` kullanır, Backend API §11).
 - `MigrationTests`: boş kaba bütün göçler uygulanır, bekleyen göç kalmaz (Test stratejisi §6).
 - Enum testi: 11 türün `pg_enum` etiketleri `enumsortorder` sırasıyla `enums.json` ile aynı; JSON'daki değerler de §2 ile aynı.
-- Şema dökümü: konteyner içinde `pg_dump --schema-only`; A07.1'deki değişken satırlar ayıklanır; sonuç `server/tests/Mutalaa.Api.Tests/Snapshots/editoryal-sema.sql` (öneri yol) ile karşılaştırılır. Bilinçli değişiklikte anlık görüntü bir ortam değişkeniyle yeniden yazılır (öneri) ve farkı commit'te gözden geçirilir.
+- Şema dökümü: konteyner içinde `pg_dump --schema-only`; A07.1'deki değişken satırlar ayıklanır; sonuç `server/tests/Mutalaa.Api.Tests/Snapshots/editoryal-sema.sql` ile karşılaştırılır. Bilinçli değişiklikte anlık görüntü `MUTALAA_UPDATE_SNAPSHOTS=1` ortam değişkeniyle yeniden yazılır (test bilerek kırmızı biter; `CI` doluysa reddedilir) ve farkı commit'te gözden geçirilir.
 - Kısıt testleri: biçimsiz `content_hash` reddedilir; `kurul_onay` dolu ama tarih ya da özet boşsa reddedilir; `status = 'kullanim_disi'` ve boş `successors` reddedilir; `xref_natural_key` NULL aralıklı kopyayı reddeder; `char_start >= char_end` reddedilir; `tsv_tr` ve `tsv_ar` saklı üretilen sütundur (`pg_attribute.attgenerated = 's'`).
 - Değer dönüştürücü: geçersiz çapa yazma girişimi hata verir. `seed` idempotentliği.
 - **Bitti sayılır:** `dotnet test --solution server/Mutalaa.slnx` yeşil (Docker Desktop açık).
@@ -113,7 +113,7 @@ Komutlar `Development` ortamında koşar (kit ayarı; A07.4). Son satır JSON an
 ## Çıktılar
 - `server/Mutalaa.Domain/` varlıkları ve enum'ları
 - `server/Mutalaa.Infrastructure/Persistence/IcerikDbContext` ve yapılandırmalar; `Identity/`; `Migrations/` (ilk göç ve model anlık görüntüsü)
-- `server/Mutalaa.Api/Program.cs` (`AddInfrastructure`, `seed` dalı)
+- `server/Mutalaa.Api/Program.cs` (`AddIcerikDb`, `AddEditorIdentity`, `seed` dalı)
 - `server/tests/Mutalaa.Api.Tests/` göç, enum, şema dökümü, kısıt ve `seed` testleri; `Snapshots/editoryal-sema.sql`
 - `server/Directory.Packages.props` ve `packages.lock.json` güncellemeleri
 - Git dışı: `.tmp/editoryal-goc.sql`, `.tmp/efbundle.exe`

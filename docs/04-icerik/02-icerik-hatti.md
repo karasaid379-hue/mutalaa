@@ -1,5 +1,5 @@
 # İçerik Hattı
-> **Sürüm:** 1.6 · **Tarih:** 26 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.7 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)
 
 İçerik hattı, kaynak dosyaları alır, normalize eder, kalıcı adres (çapa) verir, zenginleştirir, denetler ve editoryal veritabanına (PostgreSQL 18) yükler. Python 3.13 ile yazılır, paketleri `uv` yönetir. Hat yalnız geliştirme makinesinde çalışır, üretim sunucusunda çalışmaz (K-12). SQLite içerik paketlerini hat üretmez; paketleri editör onayından sonra .NET yayınlayıcı (`server/Mutalaa.Publisher`) lisans kapısından geçirerek üretir.
@@ -176,21 +176,21 @@ data/                                   # git dışı
 
 1. **Parmak izi.** Her adım `SHA-256(girdi hash'leri + yapılandırma bölümü + hat git commit'i + araç sürümleri)` hesaplar. Parmak izi önceki başarılı çalıştırmayla aynıysa adım atlanır; `--force` bunu geçersiz kılar.
 2. **Çapa anahtarı.** Yükleme çapaya göre upsert yapar. Çapa silinmez ve yeniden numaralanmaz (K-26). Önceki sürümde olup yeni çalıştırmada eksik olan çapa G-CAP'i düşürür.
-3. **İnsan kararı korunur.** Hat yalnız `origin = 'hat'` ve `status = 'aday'` satırları günceller. `onayli` ve `red` satırlara dokunmaz. Onaylı bir birimin metni kaynakta değiştiyse yeni metin ayrı bir inceleme kaydı olarak kuyruğa düşer.
+3. **İnsan kararı korunur.** Hat yalnız `origin = 'hat'` ve `status = 'aday'` satırları günceller (`unit` için `metin_durumu = 'taslak'`). `onayli` ve `red` satırlara dokunmaz. Onaylı bir birimin metni kaynakta değiştiyse yeni metin ayrı bir inceleme kaydı olarak kuyruğa düşer.
 4. **Reddedilen aday geri gelmez.** `xref` için tekillik anahtarı `(type, src_anchor, src_span, dst_anchor, dst_span)` olur ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md), `xref_natural_key`). `origin` anahtara girmez; böylece reddedilmiş bir bağlantı başka bir yoldan da yeniden önerilmez.
 5. **Eşzamanlılık.** Aynı kaynak için iki çalıştırma aynı anda yükleme yapamaz: `SELECT pg_advisory_lock(hashtext('mutalaa:' || source_id));`
 6. **İşlem bütünlüğü.** Her `export pg` tek bir veritabanı işlemidir. Hata olursa geri alınır; `staged` yerinde kalır.
 
 ```sql
 -- Örnek; kesin sütunlar Editoryal veritabanı dosyasında
-INSERT INTO unit (anchor, source_id, text, content_hash, run_id, status)
-SELECT anchor, source_id, text, content_hash, run_id, 'aday'
+INSERT INTO unit (anchor, source_id, metin, content_hash, run_id, metin_durumu)
+SELECT anchor, source_id, metin, content_hash, run_id, 'taslak'
 FROM staging_unit
 ON CONFLICT (anchor) DO UPDATE
-SET text = EXCLUDED.text,
+SET metin = EXCLUDED.metin,
     content_hash = EXCLUDED.content_hash,
     run_id = EXCLUDED.run_id
-WHERE unit.status = 'aday'
+WHERE unit.metin_durumu = 'taslak'
   AND unit.content_hash <> EXCLUDED.content_hash;
 ```
 
@@ -259,7 +259,7 @@ Bir birim, aşağıdaki kapıları geçmeden ve editörde onaylanmadan yayına a
 
 ## 10. Yapay zekâ kullanım politikası
 
-1. Yapay zekâ taslak üretir, insan karar verir. Her yapay zekâ çıktısı veritabanına `status = 'aday'` ile girer ve onaylanana kadar `dogrulanmis = false` sayılır (alan saklanmaz, hedefin durumundan türetilir; K-37).
+1. Yapay zekâ taslak üretir, insan karar verir. Her yapay zekâ çıktısı veritabanına aday durumuyla girer: `xref`, `lemma`, `lemma_gloss` ve `quran_word_fix` satırlarında `status = 'aday'`, `unit` satırında `metin_durumu = 'taslak'` (`unit.status` yalnız `etkin` ya da `kullanim_disi` olabilir). Onaylanana kadar `dogrulanmis = false` sayılır; alan saklanmaz, hedefin durumundan türetilir ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §8, K-37).
 2. Onaysız yapay zekâ metni hiçbir pakette doğrulanmış görünmez. Gösterilirse "doğrulanmamış" rozetiyle gösterilir (K-25).
 3. Yapay zekâ ile meal, tefsir ya da hadis çevirisi üretilmez. Meal yayınları Din İşleri Yüksek Kurulu incelemesine açıktır; Arapça metinle gösterilen bir yapay zekâ meali "mealli mushaf" ön onayına girer ve "makine çevirisi" etiketi bu yükümlülüğü kaldırmaz (rapor; [Lexpera, 633](https://www.lexpera.com.tr/mevzuat/kanunlar/diyanet-isleri-baskanligi-kurulus-ve-gorevleri-hakkinda-kanun-633)).
 4. Risale için yapay zekâ özeti üretilmez (K-25, K-30).

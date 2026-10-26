@@ -1,7 +1,7 @@
 # Test stratejisi
 
-> **Sürüm:** 1.6 · **Tarih:** 26 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
+> **Sürüm:** 1.7 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
 
 Bu dosya neyin, hangi araçla, ne zaman test edildiğini tanımlar. Eşik değerlerinin çoğu bu dosyanın önerisidir; ilk ölçümden sonra kalibre edilir ve öyle işaretlidir.
 
@@ -163,12 +163,16 @@ Tanzil metni aynen dağıtılabilir, değiştirilemez ([Tanzil metni, OpenITI ko
 
 ## 6. Veritabanı göç testleri
 
-**Editoryal veritabanı (PostgreSQL 18, EF Core 10).** Bütün göçler boş bir `postgres:18` kabına uygulanır, bekleyen göç kalmaz. Şema dökümü (`pg_dump --schema-only`) depodaki anlık görüntüyle karşılaştırılır. Python hattının bütünleşik testleri aynı şemaya karşı koşar.
+**Editoryal veritabanı (PostgreSQL 18, EF Core 10).** Bütün göçler boş bir `postgres:18.6-trixie` kabına uygulanır, bekleyen göç kalmaz. Şema dökümü (`pg_dump --schema-only`) depodaki anlık görüntüyle karşılaştırılır. Python hattının bütünleşik testleri aynı şemaya karşı koşar.
 
 ```csharp
 public sealed class MigrationTests : IAsyncLifetime
 {
-    readonly PostgreSqlContainer _pg = new PostgreSqlBuilder().WithImage("postgres:18").Build();
+    // Parametresiz new PostgreSqlBuilder() [Obsolete] (CS0618); uyarılar hata olduğu için imaj adı verilir.
+    readonly PostgreSqlContainer _pg = new PostgreSqlBuilder("postgres:18.6-trixie")
+        .WithEnvironment("POSTGRES_INITDB_ARGS", "--encoding=UTF8 --locale=C.UTF-8")
+        .WithEnvironment("TZ", "UTC")
+        .Build();
     public async ValueTask InitializeAsync() => await _pg.StartAsync();   // xunit.v3 imzası (doğrulandı, 21 Ekim 2026)
     public ValueTask DisposeAsync() => _pg.DisposeAsync();
 
@@ -182,9 +186,13 @@ public sealed class MigrationTests : IAsyncLifetime
 }
 ```
 
-Yığın `xunit.v3` kullanır ([Teknoloji yığını](../02-mimari/02-teknoloji-yigini.md)); `IAsyncLifetime` yöntemleri `ValueTask` döndürür. Çözüldü (21 Ekim 2026): imza xunit.v3 kaynağında ve göç kılavuzunda doğrulandı ([IAsyncLifetime.cs](https://raw.githubusercontent.com/xunit/xunit/main/src/xunit.v3.core/IAsyncLifetime.cs), [xunit.v3 göç kılavuzu](https://xunit.net/docs/getting-started/v3/migration), okuma 21 Ekim 2026). Testler Microsoft.Testing.Platform üzerinde koşar; komut `dotnet test --solution server/Mutalaa.slnx` ([K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform), [Proje yapısı](../02-mimari/03-proje-yapisi.md) §4.2). A07'de örnek gerçek `MigrationTests` ile derlenir.
+Yığın `xunit.v3` kullanır ([Teknoloji yığını](../02-mimari/02-teknoloji-yigini.md)); `IAsyncLifetime` yöntemleri `ValueTask` döndürür. Çözüldü (21 Ekim 2026): imza xunit.v3 kaynağında ve göç kılavuzunda doğrulandı ([IAsyncLifetime.cs](https://raw.githubusercontent.com/xunit/xunit/main/src/xunit.v3.core/IAsyncLifetime.cs), [xunit.v3 göç kılavuzu](https://xunit.net/docs/getting-started/v3/migration), okuma 21 Ekim 2026). Testler Microsoft.Testing.Platform üzerinde koşar; komut `dotnet test --solution server/Mutalaa.slnx` ([K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform), [Proje yapısı](../02-mimari/03-proje-yapisi.md) §4.2).
 
-**Enum tutarlılığı.** Tek JSON `packages/content-schema/enums.json` dosyasıdır. Altı tür taşır: `license_status` (4 değer), `xref_type` (8), `xref_status` (3), `xref_origin` (3) ve bunlara ek olarak `source_kind` (kaynak kaydındaki `tur` denetimi için) ile `derleme_turu` (`dev`, `internal`, `public`). Sıra anlamlıdır (ör. `serbest` < `bekliyor` < `ic_kullanim` < `kapali`). TypeScript birleşim tipi (`packages/content-schema/test/enums.test.ts`, Vitest), Python enum'u (`pipeline/tests/test_enums.py`, pytest) ve C# enum'u (`EnumLabelTests`, xUnit v3; etiket ve sıra) bu JSON'la karşılaştırılır; üç dilin testi A06'da uygulandı. PostgreSQL enum'unun JSON'la karşılaştırılması A07'dedir; A07 kalan beş türü de aynı dosyaya ekler (öneri).
+**Uygulandı (A07, 27 Ekim 2026).** Yukarıdaki örnek sadeleştirilmiş biçimdir; gerçek testler `server/tests/Mutalaa.Api.Tests/` altındadır.
+
+- **Kap ve fikstür.** İmaj `postgres:18.6-trixie`'dir. İmajın varsayılan yerel ayarı `en_US.utf8` olduğu için kapta `POSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=C.UTF-8` ve `TZ=UTC` verilir. Fikstür `AssemblyFixture`'dır ve kabı tembel açar: kurucu ve `InitializeAsync` Docker'a dokunmaz, `Build()` ilk veritabanı isteğinde çalışır. Böylece Docker kapalıyken yalnız Docker'lı sınıflar düşer (bir `AssemblyFixture` hatası bütün derlemeyi düşürür).
+- **Enum testi.** Tek JSON `packages/content-schema/enums.json` dosyasıdır. TypeScript birleşim tipi (`packages/content-schema/test/enums.test.ts`, Vitest), Python enum'u (`pipeline/tests/test_enums.py`, pytest) ve C# enum'u (`EnumLabelTests`, xUnit v3; etiket ve sıra) bu JSON'la karşılaştırılır (A06). JSON on bir tür taşır: `license_status` (4 değer), `xref_type` (8), `xref_status` (3), `xref_origin` (3), `source_kind`, `derleme_turu`, `unit_kind`, `unit_status`, `metin_durumu`, `inceleme_durumu`, `surum_durumu` ([K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)). Sıra anlamlıdır (ör. `serbest` < `bekliyor` < `ic_kullanim` < `kapali`). `PostgresEnumTests` PostgreSQL'deki etiketleri `enumsortorder` sırasıyla JSON'la karşılaştırır.
+- **Anlık görüntü.** Dosya `server/tests/Mutalaa.Api.Tests/Snapshots/editoryal-sema.sql`'dir (`SchemaSnapshotTests`). Dökümden her koşuda değişen satırlar atılır: `-- Dumped from database version …`, `-- Dumped by pg_dump version …`, `\restrict …`, `\unrestrict …`. Bilinçli değişiklikte güncelleme `MUTALAA_UPDATE_SNAPSHOTS=1 dotnet test --project server/tests/Mutalaa.Api.Tests --filter-class Mutalaa.Api.Tests.SchemaSnapshotTests` ile yapılır. Test dosyayı yeniden yazar ve bilerek kırmızı biter; `CI` ortam değişkeni doluysa güncelleme reddedilir. Fark commit'te gözden geçirilir.
 
 **Kullanıcı veritabanı (cihazda, expo-sqlite + Drizzle).** Yayımlanmış her şema sürümünden bir fikstür veritabanı saklanır. Göç dosyaları Node'da SQLite üzerinde çalıştırılır ve veri kaybı olmadığı doğrulanır. Her kullanıcı tablosunda `id`, `hlc`, `updated_at`, `deleted_at`, `base_version`, `device_id` sütunlarının bulunduğu test edilir ([K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte)). Bir Maestro akışı eski sürümden güncellemeyi cihazda sınar.
 

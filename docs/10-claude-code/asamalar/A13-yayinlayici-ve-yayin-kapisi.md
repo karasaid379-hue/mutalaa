@@ -1,6 +1,6 @@
 # A13 · Yayınlayıcı ve yayın kapısı (ilk `dev` `core` paketi)
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-05](../../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
+> **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-05](../../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A07](./A07-editoryal-veritabani.md) · [A12](./A12-arama-indeksi-ve-paket-semasi.md) · **İnsan adımı:** yok
 > **Ajanlar:** `sunucu-gelistirici` · `lisans-denetcisi` · `test-yazari` · `hat-gelistirici` (fikstür kaynakları) · `arastirmaci` · `inceleyici` · **Beceriler:** `lisans-kapisi` · `paket-yayini` · `ef-goc` · `windows-sorun` · **Tahmini oturum:** 4–5
 > **Başlat:** `/asama A13`
@@ -39,6 +39,7 @@
 ### A13.2 · Kapı kuralları (Domain)
 - `Mutalaa.Domain/Licensing`: `LicenseStatus` sırası (`serbest < bekliyor < ic_kullanim < kapali`), `BuildFlavor`, `LicenseGate.Check` ([Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md) §4) ve P-01…P-14'ü saf işlev olarak değerlendiren kapı (ad öneri: `GateEvaluator`). Her karar kural koduyla kapı raporu satırı üretir: paket ya da kaynak, "girdi" ya da "girmedi", gerekçe.
 - xUnit: durum × derleme matrisinin her hücresi (`[Theory]`; §5 madde 1); onaysız, onaylı ve onaydan sonra değişmiş Kurul kaynağı; kaynak kaydı olmayan paket; `kurul_gerekli` türetimi; her P kuralı için en az bir olumlu ve bir olumsuz test. Testler `tr-TR` kültüründe de koşar.
+- `LicenseStatusLabels.TryParseLabel` başarısız olunca `out` değeri `default` (`Serbest`, en gevşek değer) verir. Kapı `bool` dönüşünü zorunlu denetler ve başarısız ayrıştırmayı kapalı (en kısıtlayıcı) sayar; test bunu kilitler ([Backend API](../../02-mimari/05-backend-api.md) §7 A13 notu).
 - **Bitti sayılır:** kapı testleri yeşil; kural başına test listesi raporda.
 
 ### A13.3 · Paket yazıcısı ve paket tanımları
@@ -48,6 +49,7 @@
 - `label` birim başlıklarından ve sure adlarından üretilir. Sure adları henüz onaylı değilse (İ-23) sayısal biçim yazılır ve `sure` tablosu boş kalır (öneri); ad uydurulmaz. Onaydan sonra yeniden yayınla düzelir.
 - Tanzil bildiriminin tam metni `core` paketinde `attribution.notice_text` alanına yazılır (Test stratejisi §5 test 6).
 - P-11 için Yayınlayıcı Tanzil birimlerinin `content_hash` değerini `data/raw/tanzil-*` altındaki ham dosyadan yeniden hesaplar (yapılandırma anahtarı öneri: `Publisher:RawDir`). `app` profilindeki konteyner yalnız `data/packs` klasörünü bağlar; ham dosya için birim eklenir ya da Yayınlayıcı ana makinede çalışır (öneri).
+- Okuma notları (EF sınırı, [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md) §12): dönüştürülmüş çapa sütunlarında (`AnchorRef`, `AnchorSpan`) LINQ ile `LIKE` ya da aralık işleci çevrilmez; bu sorgular ham SQL ya da `AsNoTracking()` ile projeksiyon kullanır. `unit` okumaları `tsv_tr` ve `tsv_ar` gölge sütunlarını da seçer; yayınlayıcı yalnız gereken sütunları projekte eder. `dogrulanmis` saklanmaz, hedefin onaylı durumundan türetilir (§8 notu, K-37).
 - **Bitti sayılır:** yazıcı testleri yeşil; aynı veritabanından iki `build` aynı `content_digest` değerlerini veriyor.
 
 ### A13.4 · Manifest, imza ve anahtarlar
