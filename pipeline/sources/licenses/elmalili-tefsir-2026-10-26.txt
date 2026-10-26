@@ -1,0 +1,29 @@
+Kaynak kimliği: elmalili-tefsir
+Kaynak adresi: https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3 ; https://kureansiklopedi.com/tr/detay/hak-dini-kuran-dili-2 ; https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a
+Okuma tarihi: 2026-10-26
+Yöntem: dayanak notu
+Not: Hukuki görüş değildir. Bu dosya lisans/şart metninin kopyasıdır; kaynağın kendi metni değildir.
+
+Kimlik: elmalili-tefsir
+Eser: Hak Dini Kur'an Dili (Elmalılı Muhammed Hamdi Yazır), özgün baskı; baskı kimliği elmalili-1935.
+Eser sahibi: Elmalılı Muhammed Hamdi Yazır.
+Ölüm tarihi: 1942 (yalnız yıl). Kaynak: Küre Ansiklopedi, https://kureansiklopedi.com/tr/detay/hak-dini-kuran-dili-2 ("Elmalılı'nın vefatından (1942) on altı yıl sonra").
+
+FSEK (5846) m. 26-27; mevzuat.gov.tr güncel metin, okuma 2026-10-26 (içerik /anasayfa/MevzuatFihristDetayIframe üzerinden okundu):
+https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3
+- m. 27: "Koruma süresi eser sahibinin yaşadığı müddetçe ve ölümünden itibaren 70 yıl devam eder."
+- m. 26 (ilgili kısım): "eser sahibinin öldüğü seneyi takip eden yılın ilk günü başlangıç tarihi sayılır."
+Hesap kuralı (defter §6): ölüm yılı + 71'inci yılın 1 Ocak'ı.
+
+Hesap: 1942 + 71 = 2013. Koruma süresi 1 Ocak 2013'te sona erer; eser 1 Ocak 2013'ten beri serbest (defter §3.3, §6).
+
+Baskı bilgisi:
+- Küre: "1935-1939 yıllarında İstanbul'da dokuz cilt ve 10.000 takım olarak basılmış" (https://kureansiklopedi.com/tr/detay/hak-dini-kuran-dili-2).
+- Princeton kaydı (defter §3.3, aynen): "8 cilt, 6.442 sayfa, [1935–1938], Matbaai Ebüzziya, "T. C. Diyanet işleri reisliği neşriyatından, no. 5"" (https://catalog.princeton.edu/catalog/SCSB-3946972); fihrist cildi 1939 (https://catalog.princeton.edu/catalog/SCSB-4322432).
+
+Defterin ölüm yılı ve serbest kalma sonucuna dayanak gösterdiği kayıt: MKÜ kaydı, https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a
+
+Doğrulanacak:
+1. MKÜ kaydı 2026-10-26'da açılamadı (HTTP 403). İkincil arama özetine göre kayıt bir bibliyografyadır. Kaydın ölüm yılı ve serbest kalma tarihi için dayanak olup olmadığı Doğrulanacak. Ölüm yılının dayanağı bu notta Küre'dir.
+2. Tarama kaynağı Doğrulanacak (defter §3.3).
+3. Eserin Diyanet sözleşmesiyle yazılmasının hak durumuna etkisi avukata teyit ettirilir (defter §3.3; açık soru 8).

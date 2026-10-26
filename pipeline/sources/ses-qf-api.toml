@@ -1,0 +1,21 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "ses-qf-api"
+tur = "ses"
+baslik = "Quran Foundation ses API'si"
+provider = "quran_foundation"
+kaynak_url = "https://api-docs.quran.foundation/docs/sdk/audio/"
+license_name = "Quran Foundation Developer Terms"
+license_url = "https://api-docs.quran.foundation/legal/developer-terms/"
+license_status = "bekliyor"
+kisitlar = { hazir_vt_yasak = true, onbellek_gun = 7 }
+embed_ok = false
+kurul_gerekli = true
+atif_metni = "Ses ve zamanlama verisi: Quran Foundation API."
+yeniden_kontrol = 2027-01-26
+lisans_kopyasi = "licenses/ses-qf-api-2026-10-26.txt"
+lisans_sha256 = "90181c1b454c55680328f3342be98480fbd9bf5b472826cf25e4cfdfc5952dab"
+notlar = '''
+Akış serbest; çevrimdışı kopya yalnız Content Sync ile.
+Geliştirmedeki ses denemeleri bu yoldan yapılır; ses-{hafiz} paketleri bu kaynaktan üretilmez.
+Hazır veritabanı yasak; önbellek 7 gün.
+Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.'''

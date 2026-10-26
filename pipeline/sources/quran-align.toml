@@ -1,0 +1,23 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "quran-align"
+tur = "zamanlama"
+baslik = "quran-align kelime zamanlamaları"
+yazar = "Collin Fair"
+kaynak_url = "https://github.com/cpfair/quran-align"
+license_name = "CC BY 4.0 (veri), MIT (kod)"
+license_url = "https://raw.githubusercontent.com/cpfair/quran-align/master/LICENSE"
+license_status = "serbest"
+kisitlar = { yalniz_eslesen_ses = true }
+embed_ok = true
+kurul_gerekli = true
+atif_metni = "Kelime zamanlamaları: Collin Fair, quran-align, CC BY 4.0."
+yeniden_kontrol = 2027-04-26
+lisans_kopyasi = "licenses/quran-align-2026-10-26.txt"
+lisans_sha256 = "4277af36e4a57739cdfd8be46543909a8bebc7164c68974d3741e5a806bc921f"
+notlar = '''
+Kurul: ses paketiyle birlikte.
+Veri CC BY 4.0 (README), kod MIT (LICENSE dosyası); yalnız hizalandığı EveryAyah dosyaları için geçerli.
+Ortalama sapma 73 ms altında, kelimelerin %98,5-99,9'u hizalı.
+Tek sürüm etiketi release-2016-11-24, son commit 2017-01-26; surum alanı boş bırakıldı (alım sırasında doldurulur).
+EveryAyah dosyaları kapalı olduğu için bu kaynak eşleşen ses olmadan kullanılmaz.
+Atıf bağlantı ve değişiklik notuyla verilir.'''

@@ -1,0 +1,22 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "lugat-redhouse-1890"
+tur = "sozluk"
+baslik = "Redhouse, A Turkish and English Lexicon"
+yazar = "James W. Redhouse"
+kaynak_url = "https://catalog.hathitrust.org/Record/001771732"
+license_name = "Kamu malı (HathiTrust: rightsCode pd, Full view)"
+license_url = "https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3"
+license_status = "serbest"
+embed_ok = true
+kurul_gerekli = false
+atif_metni = "James W. Redhouse, A Turkish and English Lexicon, 1890."
+yeniden_kontrol = 2027-04-26
+lisans_kopyasi = "licenses/lugat-redhouse-1890-2026-10-26.txt"
+lisans_sha256 = "acb36ad7bc0ec3118ec5acfdc246f80d10b3aee91ebbc5d507c66afef30b7fb2"
+notlar = '''
+HathiTrust API: rightsCode pd, Full view, Michigan State University, Google sayısallaştırması.
+HathiTrust kullanım şartı sayfası 2026-10-26'da okunamadı (403): Doğrulanacak.
+Türkçe tanımları biz yazarız.
+Yaşam yılları ve süre hesabı lisans kopyası notunda koşulludur; yazar_vefat_yili doğrulanmadığı için yazılmadı.
+Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.
+HathiTrust/Google kullanım şartı teyit edilene kadar tarama görüntüsü ve OCR çıktısı pakete girmez; yalnız kendi yazdığımız tanımlar.'''

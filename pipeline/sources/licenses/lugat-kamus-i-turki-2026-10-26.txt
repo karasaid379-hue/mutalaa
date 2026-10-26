@@ -1,0 +1,25 @@
+Kaynak kimliği: lugat-kamus-i-turki
+Kaynak adresi: https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3 ; https://kureansiklopedi.com/tr/detay/semseddin-sami-2
+Okuma tarihi: 2026-10-26
+Yöntem: dayanak notu
+Not: Hukuki görüş değildir. Bu dosya lisans/şart metninin kopyasıdır; kaynağın kendi metni değildir.
+
+Kimlik: lugat-kamus-i-turki
+Eser: Kâmûs-ı Türkî, 1317 (1899-1900), iki cilt.
+Eser sahibi: Şemseddin Sâmi.
+Ölüm tarihi: 18 Haziran 1904. Kaynak: Küre Ansiklopedi, https://kureansiklopedi.com/tr/detay/semseddin-sami-2
+
+FSEK (5846) m. 26-27; mevzuat.gov.tr güncel metin, okuma 2026-10-26 (içerik /anasayfa/MevzuatFihristDetayIframe üzerinden okundu):
+https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3
+- m. 27: "Koruma süresi eser sahibinin yaşadığı müddetçe ve ölümünden itibaren 70 yıl devam eder."
+- m. 26 (ilgili kısım): "eser sahibinin öldüğü seneyi takip eden yılın ilk günü başlangıç tarihi sayılır."
+Hesap kuralı (defter §6): ölüm yılı + 71'inci yılın 1 Ocak'ı.
+
+Hesap: 1904 + 71 = 1975. Koruma süresi 1 Ocak 1975'te sona erer; eser 1 Ocak 1975'ten beri serbest olmalıdır.
+
+Dijital erişim: Dijital erişim kaynağı bulunamadı. Bu yüzden durum bekliyor (defter §2, §7 akışı: "bekliyor: kaynağı araştır ya da kendi kopyanı üret"). embed_ok Hayır (Doğrulanacak).
+
+Doğrulanacak:
+1. Dijital kopyanın kaynağı ve lisansı (defter §3.6: "Kâmûs-ı Türkî ve Lugat-ı Nâci'nin durumu ve dijital erişimi Doğrulanacak").
+2. Kullanılacak baskı ve ciltler.
+3. Şemseddin Sâmi'nin ölüm tarihinin birincil kaynakla teyidi (bu turda yalnız Küre).

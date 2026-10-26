@@ -1,0 +1,16 @@
+Kaynak kimliği: ses-kfgqpc-meal
+Kaynak adresi: https://qurancomplex.gov.sa/en/?p=4973
+Okuma tarihi: 2026-10-26
+Yöntem: okunamadı
+Not: Hukuki görüş değildir. Bu dosya lisans/şart metninin kopyasıdır; kaynağın kendi metni değildir.
+
+UYARI: Bu dosya gerçek lisans/şart metni değildir; sayfa okunamadığı için defter alıntısı ve okuma durumu kaydedilmiştir.
+
+Denenen adres: https://qurancomplex.gov.sa/en/?p=4973
+Alınan durum: HTTP 404. Okuma tarihi 2026-10-26, curl. Yanıt, sitenin kendi "sayfa bulunamadı" sayfasıdır (sayfa başlığı: "الصفحة غير موجودة. – مجمع الملك فهد لطباعة المصحف الشريف"); lisans ya da şart metni içermiyor. Önceki WebFetch denemesi de 404 vermişti.
+
+Defterin bu kaynak için dayandığı bilgi (docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §3.7, aynen):
+"ses-kfgqpc-meal. "free general use in computer apps, broadcasting channels, internet websites" ([KFGQPC](https://qurancomplex.gov.sa/en/?p=4973)). Sayfa dil listesi vermiyor; Türkçe sürüm Doğrulanacak."
+Özet tablo (§2): ses-kfgqpc-meal, license_status bekliyor, embed_ok Hayır (Doğrulanacak), Kurul "Evet (çıkarım)", hüküm "Türkçe sürüm Doğrulanacak".
+
+Doğrulanacak: Sayfa şu anda bu adreste bulunmuyor; sayfanın yeni adresi, serbest kullanım cümlesinin güncel metni ve Türkçe sürümün kapsamda olup olmadığı. Yukarıdaki alıntı defterden gelir ve bu turda teyit edilmedi.

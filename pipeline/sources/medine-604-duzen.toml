@@ -1,0 +1,21 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "medine-604-duzen"
+tur = "mushaf_duzeni"
+baslik = "Mushaf A sayfa düzeni ve kelime-glif eşlemesi"
+provider = "quran_foundation"
+kaynak_url = "https://api-docs.quran.foundation/docs/tutorials/content-sync/getting-started/"
+license_name = "Quran Foundation Developer Terms"
+license_url = "https://api-docs.quran.foundation/legal/developer-terms/"
+license_status = "bekliyor"
+embed_ok = false
+kurul_gerekli = true
+atif_metni = "Mushaf sayfa düzeni verisi: Quran Foundation."
+yeniden_kontrol = 2027-01-26
+lisans_kopyasi = "licenses/medine-604-duzen-2026-10-26.txt"
+lisans_sha256 = "037756cb0df47279e88a26c7c4bbbb495b5c5cf84543df1424940977dc97898c"
+notlar = '''
+embed_ok: Hayır (QF şartı).
+Açık soru: kaynak seçimi (QF Content Sync, QUL ya da KFGQPC izni).
+Açık soru: "prepackaged database" sorusu; düzen verisinden cüz paketi üretmek bu kapsama girer mi.
+Aşamalar: A24, A26.
+Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.'''

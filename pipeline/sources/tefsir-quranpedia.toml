@@ -1,0 +1,21 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "tefsir-quranpedia"
+tur = "tefsir"
+baslik = "Quranpedia klasik Arapça tefsirler"
+license_name = "Quranpedia.net Data License (sürüm 2026-10-24)"
+license_url = "https://quranpedia.net/dumps/LICENSE.md"
+license_status = "serbest"
+embed_ok = true
+kurul_gerekli = false
+atif_metni = "Arapça tefsir metni: Quranpedia.net, döküm sürümü {sürüm}."
+yeniden_kontrol = 2027-04-26
+lisans_kopyasi = "licenses/tefsir-quranpedia-2026-10-26.txt"
+lisans_sha256 = "fec71306087cc09c0ba1148ff8f83c68e0f74b1c912c048eddc624681c3f604d"
+notlar = '''
+embed_ok: Evet (çıkarım). Kurul kapsamı: Açık soru; kurul_gerekli = false yazıldı.
+Hüküm: Sonra (K-03).
+2026-10-26 okumasında lisans sürümü 2026-10-24 (defter 2026-10-14 yazıyordu).
+Kelime morfolojisi (QAC, GNU GPL) ve i'rab sözdizimi (Quranic Treebank, MIT) bu lisansın kapsamı DIŞINDADIR.
+Dağıtıcı kopyalarını "changes" ucuyla güncel tutmalıdır.
+Modern tahkiklerin dipnot, giriş ve fihristi ayıklanır.
+İndirilebilir pakette atıf zorunlu kabul edilir. atıf metnindeki {sürüm} alım sırasında doldurulur.'''

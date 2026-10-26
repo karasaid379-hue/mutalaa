@@ -1,0 +1,21 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "qpc-v2-font"
+tur = "font"
+baslik = "QPC sayfa fontları (V2)"
+provider = "quran_foundation"
+kaynak_url = "https://api-docs.quran.foundation/docs/tutorials/fonts/font-rendering/"
+license_name = "Quran Foundation Developer Terms"
+license_url = "https://api-docs.quran.foundation/legal/developer-terms/"
+license_status = "bekliyor"
+embed_ok = false
+kurul_gerekli = true
+atif_metni = "Mushaf sayfa fontları: King Fahd Glorious Qur'an Printing Complex; Quran Foundation aracılığıyla."
+yeniden_kontrol = 2027-01-26
+lisans_kopyasi = "licenses/qpc-v2-font-2026-10-26.txt"
+lisans_sha256 = "59bab3512f23f7e7eb8c13556f13470fef0c9e722aba340410d8274b87e56952"
+notlar = '''
+embed_ok: Uygulanmaz (font; metin taşımaz); Quran Foundation içeriği false kalır.
+QF Developer Terms okundu (2026-10-26, "Last updated: 2026-10-11").
+Açık soru: cüz paketi (mushaf-a-cuz-*) şartlardaki "integrated part of the Application" kapsamında mı.
+Mushaf A çevrimdışı paketi A26'da ele alınır.
+Atıf için QF kılavuz örneği: "Quran fonts provided by Quran Foundation." Türkçe satırın kabulü QF'ye sorulur (İ-06).'''

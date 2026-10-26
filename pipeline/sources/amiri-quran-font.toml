@@ -1,0 +1,19 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "amiri-quran-font"
+tur = "font"
+baslik = "Amiri Quran"
+kaynak_url = "https://github.com/google/fonts/tree/main/ofl/amiriquran"
+license_name = "SIL Open Font License 1.1"
+license_url = "https://raw.githubusercontent.com/google/fonts/main/ofl/amiriquran/OFL.txt"
+license_status = "serbest"
+embed_ok = false
+kurul_gerekli = true
+atif_metni = "Amiri Quran, SIL Open Font License."
+yeniden_kontrol = 2027-04-26
+lisans_kopyasi = "licenses/amiri-quran-font-2026-10-26.txt"
+lisans_sha256 = "2ce816bc3e8d5c942f4acf5c23e838c301effb14b217336a9eface254d6cb336"
+notlar = '''
+embed_ok: Uygulanmaz (font; metin taşımaz). Kurul kapsamı: Dolaylı.
+Test edilen 65 Kur'an kod noktasının 53'ünü içeriyor; Türkçe Latin harfi yok.
+Alt kümelemede OFL ayrılmış font adı koşulu: Doğrulanacak (A24). 2026-10-26 okumasında OFL.txt'in telif satırı hiçbir adı "Reserved Font Name" olarak ilan etmiyor ("Reserved Font Name" ifadesi yalnız lisansın tanım ve 3. maddesinde geçiyor).
+Hüküm: Mushaf C fontu.'''

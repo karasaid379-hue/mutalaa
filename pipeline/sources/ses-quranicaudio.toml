@@ -1,0 +1,17 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "ses-quranicaudio"
+tur = "ses"
+baslik = "Âyet ses dosyaları (QuranicAudio)"
+license_name = "Açık lisans yok; telif okuyucuda"
+license_url = "https://alquran.cloud/terms-and-conditions"
+license_status = "kapali"
+embed_ok = false
+kurul_gerekli = true
+atif_metni = "Âyet ses kayıtları: QuranicAudio; hak sahibi ilgili okuyucudur."
+yeniden_kontrol = 2027-04-26
+notlar = '''
+Açık lisans yok; telif okuyucuda. Hafız başına yazılı izin gerekir (İ-07).
+AlQuran Cloud şartları: "All audio files … own and retain their respective copyrights" (okuma 2026-10-26, güncelleme 14 Haziran 2026).
+Hatta alınmaz.
+Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.
+Hukuki görüş değildir.'''

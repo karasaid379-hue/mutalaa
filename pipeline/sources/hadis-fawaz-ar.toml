@@ -1,0 +1,20 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "hadis-fawaz-ar"
+tur = "hadis"
+baslik = "fawazahmed0/hadith-api, Arapça"
+kaynak_url = "https://raw.githubusercontent.com/fawazahmed0/hadith-api/1/editions.json"
+license_name = "Unlicense (yalnız yükleyicinin sahip olduğu kapsanır)"
+license_url = "https://raw.githubusercontent.com/fawazahmed0/hadith-api/1/LICENSE"
+license_status = "bekliyor"
+embed_ok = false
+kurul_gerekli = false
+atif_metni = "Arapça hadis metni: fawazahmed0/hadith-api, Unlicense (yalnız prototip)."
+yeniden_kontrol = 2027-04-26
+lisans_kopyasi = "licenses/hadis-fawaz-ar-2026-10-26.txt"
+lisans_sha256 = "1b8235f9adf1c034187fc2a775f613d4901574f3915d9efda71ab001d36963a7"
+notlar = '''
+Hüküm: yalnız prototip.
+Unlicense yalnız yükleyicinin sahip olduğunu kapsar; metin kaynağı belgelenmemiş.
+2026-10-26 okumasında editions.json: 20 Arapça (hareke/harekesiz çiftleriyle, 10 koleksiyon) ve 8 Türkçe sürüm.
+Türkçe sürümler KULLANILMAZ (defter §4).
+Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.'''

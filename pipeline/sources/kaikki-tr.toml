@@ -1,0 +1,21 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "kaikki-tr"
+tur = "sozluk"
+baslik = "Wiktionary / kaikki dökümleri"
+kaynak_url = "https://kaikki.org/dictionary/rawdata.html"
+license_name = "Lisans teyidi bekliyor (kaikki lisans belirtmiyor)"
+license_url = "https://en.wiktionary.org/wiki/Wiktionary:Copyrights"
+license_status = "bekliyor"
+embed_ok = true
+kurul_gerekli = false
+atif_metni = "Sözlük verisi: Wiktionary, kaikki.org aracılığıyla (Tatu Ylonen, Wiktextract, LREC 2022)."
+yeniden_kontrol = 2027-04-26
+lisans_kopyasi = "licenses/kaikki-tr-2026-10-26.txt"
+lisans_sha256 = "9d7fce62a2522939fb72cd8694946d96a7d7ac1747adfb9114592196f8811397"
+notlar = '''
+embed_ok: Evet (çıkarım).
+kaikki lisans belirtmiyor; Ylonen (LREC 2022) atfı ve kaikki.org bağlantısı isteniyor.
+Wiktionary metni CC BY-SA 4.0 ve GFDL ikili lisans (en.wiktionary.org/wiki/Wiktionary:Copyrights, birincil, 2026-10-26).
+Turkish dökümü sayfası "DEPRECATED" işaretli (2026-10-26).
+Lisans teyidi bekleniyor.
+Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.'''

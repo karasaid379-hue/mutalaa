@@ -1,0 +1,19 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "tecrid-miras"
+tur = "hadis_ceviri"
+baslik = "Tecrîd-i Sarîh, Kâmil Miras ciltleri"
+yazar = "Kâmil Miras"
+yazar_vefat_yili = 1957
+license_name = "Koruma süresi dolmadı (1 Ocak 2028'de serbest)"
+license_status = "kapali"
+embed_ok = false
+kurul_gerekli = false
+atif_metni = "Tecrîd-i Sarîh Tercümesi, Kâmil Miras ciltleri. Özgün baskıdan Mütâlaa tarafından aktarılmıştır."
+kamu_mali_tarihi = 2028-01-01
+yeniden_kontrol = 2027-04-26
+notlar = '''
+Kâmil Miras ö. 30 Nisan 1957 (Küre: https://kureansiklopedi.com/tr/detay/miras-kamil); 1 Ocak 2028'de serbest.
+2027'nin son çeyreğinde tarama planı ve araçlar hazırlanır.
+Hatta alınmaz; embed_ok = false (2028'e kadar). Kurul: Gerekmez (çıkarım).
+Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.
+Hukuki görüş değildir.'''

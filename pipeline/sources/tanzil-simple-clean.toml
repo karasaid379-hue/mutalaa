@@ -1,0 +1,51 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "tanzil-simple-clean"
+tur = "kuran_metni"
+baslik = "Tanzil Kur'an metni, Simple Clean"
+surum = "1.1"
+provider = "tanzil"
+kaynak_url = "https://tanzil.net/"
+license_name = "CC BY 3.0 + değiştirme yasağı"
+license_url = "https://tanzil.net/docs/text_license"
+license_status = "serbest"
+kisitlar = { degistirme_yasak = true }
+embed_ok = true
+kurul_gerekli = true
+atif_metni = "Kur'an metni: Tanzil Project, tanzil.net. Metin değiştirilmeden kullanılmıştır."
+atif_url = "https://tanzil.net/"
+notice_text = '''
+  Tanzil Quran Text 
+  Copyright (C) 2007-2021 Tanzil Project
+  License: Creative Commons Attribution 3.0 
+
+  This copy of the Quran text is carefully produced, highly 
+  verified and continuously monitored by a group of specialists 
+  in Tanzil Project.
+
+  TERMS OF USE:
+ 
+  - Permission is granted to copy and distribute verbatim copies 
+    of this text, but CHANGING IT IS NOT ALLOWED.
+
+  - This Quran text can be used in any website or application, 
+    provided that its source (Tanzil Project) is clearly indicated, 
+    and a link is made to tanzil.net to enable users to keep
+    track of changes.
+
+  - This copyright notice shall be included in all verbatim copies 
+    of the text, and shall be reproduced appropriately in all files 
+    derived from or containing substantial portion of this text.
+
+  Please check updates at: http://tanzil.net/updates/
+'''
+yeniden_kontrol = 2027-04-26
+lisans_kopyasi = "licenses/tanzil-simple-clean-2026-10-26.txt"
+lisans_sha256 = "3ac762ac320dba0377da23410e375ec56e69e347f1c7729b4c0881a53a266de4"
+notlar = '''
+embed_ok: Evet (çıkarım).
+Hüküm: arama tabanı.
+2026-10-26 okumasında tanzil.net/updates yalnız Uthmani için açık 1.1 girdisi gösteriyor, Simple Clean için açık girdi yok; surum = 1.1 defter §3.1'e göre yazıldı, Doğrulanacak (A10).
+Açık soru (İ-08, 1. soru): ayrı sütundaki normalize search_text "değiştirme" sayılır mı?
+Açık soru (İ-08, 2. soru): ticari olmayan kullanım ve üst veri dosyası; SSS'deki "non-commercial purposes" cümlesi Kur'an metni ve üst veri dosyaları için de geçerli mi?
+Açık soru (İ-08, 3. soru): sürüm güncelliği ve indirmeler arasındaki fark.
+Aşama: A10 (indirme kullanıcı onayıyla; lisans metni canlı doğrulaması).'''

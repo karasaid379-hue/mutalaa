@@ -1,0 +1,24 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "elmalili-meal"
+tur = "meal"
+baslik = "Hak Dini Kur'an Dili, özgün baskı (meal)"
+yazar = "Elmalılı Muhammed Hamdi Yazır"
+yazar_vefat_yili = 1942
+license_name = "Kamu malı (FSEK m. 26-27)"
+license_url = "https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3"
+license_status = "serbest"
+embed_ok = true
+kurul_gerekli = true
+atif_metni = "Elmalılı Muhammed Hamdi Yazır, Hak Dini Kur'an Dili, İstanbul 1935–1939. Metin özgün baskıdan Mütâlaa tarafından aktarılmıştır. Aktarım sürümü {sürüm}."
+baski_bilgisi = { baski_kimligi = "elmalili-1935" }
+yeniden_kontrol = 2027-04-26
+lisans_kopyasi = "licenses/elmalili-meal-2026-10-26.txt"
+lisans_sha256 = "b1e15db954fed00a82f1c67445a4dcf6846bdb9dc1b89083ec7de34978bf2e09"
+notlar = '''
+Kurul: Evet (meal).
+1 Ocak 2013'ten beri serbest (hesap: 1942+71).
+Defter §3.3'ün dayandığı MKÜ kaydı (openaccess.mku.edu.tr) 2026-10-26'da açılamadı (403); ikincil özete göre bibliyografya: Doğrulanacak.
+Açık soru: tarama kaynağı Doğrulanacak (İ-09, A09).
+Açık soru: Diyanet sözleşmesinin hak durumu avukata sorulur (İ-03).
+Açık soru: aktarımımızın lisansı.
+atif_metni içindeki {sürüm} Yayınlayıcı/alım sırasında doldurulur.'''

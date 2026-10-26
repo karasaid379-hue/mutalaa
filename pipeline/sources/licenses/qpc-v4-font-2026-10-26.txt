@@ -1,0 +1,174 @@
+Kaynak kimliği: qpc-v4-font
+Kaynak adresi: https://api-docs.quran.foundation/legal/developer-terms/
+Okuma tarihi: 2026-10-26
+Yöntem: tam metin
+Not: Hukuki görüş değildir. Bu dosya lisans/şart metninin kopyasıdır; kaynağın kendi metni değildir.
+
+Quran Foundation Developer Terms of Service (“Terms”)
+
+Last updated: 2026-10-11
+
+PLEASE READ CAREFULLY. By accessing or using the Quran Foundation (“QF”) application programming interfaces, software development kits, webhooks, OAuth services, related documentation, and any associated services (collectively, “APIs”), you (“Developer,” “you”) agree to be bound by these Terms, the QF Developer Privacy Policy Requirements, and all other guidelines published in the Developer Privacy Policy Packet (together, the “Developer Policies”).
+
+If you use the APIs on behalf of an organization, you represent that you have authority to bind that organization to these Terms, and “Developer” will refer to that organization.
+
+1. Definitions
+
+Term Meaning
+QF Content Quran text, translations, metadata, audio, reflections, and any other content returned by the APIs.
+Application Any website, service, script, device, or other integration that accesses the APIs by or for the Developer.
+User Data Personal information obtained from or on behalf of an end user through the APIs (e.g., bookmarks, notes, OAuth tokens).
+Brand Features Trade names, trademarks, service marks, logos, domain names, and other distinctive brand elements of a party.
+Derived Materials Outputs made from or using QF Content, including excerpts, compilations, indexes, embeddings, annotations, summaries, transformed media, and AI-generated responses. An output that reproduces or permits reconstruction of QF Content remains subject to the restrictions on that content.
+
+2. License Grant
+
+2.1 API license
+
+Subject to full, continuous compliance with these Terms, QF grants Developer a non-exclusive, revocable, non-transferable, non-sublicensable license to access and use the APIs solely to develop and operate Applications that provide beneficial Quranic experiences to end users.
+
+2.2 QF Content license
+
+Developer may display QF Content to end users within the Application, provided that:
+
+The text of the Quran is not modified in any way.
+QF Content is not sold, sublicensed, or redistributed, except as expressly permitted below.
+QF Content is never used in a context that promotes hate, extremism, or misinformation, nor combined with unlawful, sexual, or other inappropriate material.
+Any snippets of QF Content must be presented in a manner that preserves their original context and meaning, and you may not arrange or display snippets in a way that alters or misrepresents the intended message of the source material.
+
+Allowed under these Terms without a separate commercial license: A Developer may charge for an Application, offer subscriptions or in-app purchases, display advertising, accept donations, or use a freemium model, provided that:
+
+QF Content is displayed only as part of the Application’s end-user experience;
+QF Content and raw API data are not sold, sublicensed, or redistributed; and
+the Application complies with these Terms.
+
+Requires a separate written commercial license: A Developer must obtain a signed commercial license before selling, sublicensing, or redistributing QF Content or raw API data—for example, as a dataset, data feed, API, content package, or other separately distributed product.
+
+Private backend versus redistribution. Serving QF Content from a Developer-controlled backend within the Application's end-user experience is not, by itself, redistribution. Offering QF Content or raw API data to others as data remains subject to the separate commercial-license requirement above.
+
+Social-media videos are not redistribution. Incorporating QF Content into a social-media video is an end-user use, not redistribution, provided that the Developer credits Quran Foundation in a reasonably accessible place, such as in the video itself or its caption, description, or credits. In these Terms, “redistribution” means offering QF Content or raw API data to others as data—for example, through the Developer’s own API, dataset, data feed, download, content package, or similar service.
+
+Derived Materials. Derived Materials that include or permit reconstruction of QF Content remain subject to the same restrictions on that content.
+
+2.3 Reservation of rights
+
+Except for the licenses expressly granted, QF retains its rights in the APIs and QF Content it owns. Developer retains any rights in its original contributions to Derived Materials, subject to the rights in the underlying QF Content.
+
+3. Developer Obligations
+
+3.1 Acceptable use
+
+Developer must NOT:
+
+Attempt to extract, scrape, or index QF Content or User Data outside the API responses.
+Exceed published rate limits or quotas or attempt to circumvent technical restrictions.
+Cache or store QF Content longer than 1 week unless it is obtained and maintained through the Content Sync APIs listed under Content Available for Offline Sync, or consists of font files or Mushaf images cached or bundled as described below. If a content resource is available through Content Sync, Content Sync is the only permitted path for obtaining and maintaining an offline copy of that resource; do not build an offline copy from regular API responses. When using Content Sync, you must perform a next sync at least every 7 days when connectivity to QF permits and apply all available changes. This ongoing obligation applies to copies kept on a backend or an offline device. If connectivity to QF is unavailable for longer than seven days, the Application may continue using its previously synced Content Sync copy; perform a next sync promptly when connectivity returns and apply the available changes.
+Use QF Content or User Data to build advertising profiles, biometric identifiers, or machine-learning models without written consent.
+Display or transmit content that is disparaging to Islam, promotes extremist ideology, or misrepresents the Qurʾān.
+Subvert or disable any security, authentication, or access-control mechanism.
+Mislead users about the source, features, or functionality of the Application or APIs.
+
+Offline content: scholarly review and corrections
+
+Providing scholarly-verified Quranic content is one of Quran Foundation's core goals. Our scholarly team reviews our content, and we publish updates and corrections as that work continues. For resources available through Content Sync, syncing delivers those updates and corrections to your Application's offline copy, helping users read current content rather than an outdated cached version. Follow the synchronization requirements above to keep that copy up to date.
+
+Prepackaged content. The Content Sync storage exception does not itself authorize distributing a prepackaged database or build-time bundle of QF Content. Section 2.2's redistribution terms apply, except for caching and bundling font files and Mushaf images as described below.
+
+A Developer may cache or bundle font files and Mushaf images obtained through QF APIs or documented CDN URLs for use in an Application if the Developer maintains an active account in the Developer Console and credits Quran Foundation in a reasonably accessible place in the Application or its associated credits. The files may be distributed only as an integrated part of the Application. They may not be offered separately to others—for example, through the Developer’s own API, asset package, or standalone download.
+
+AI and retrieval use. Retrieval-augmented generation (RAG) within the Application is distinct from using QF Content or User Data to build a machine-learning model under item 4. QF Content retained for retrieval, including content-derived embeddings that reproduce or permit reconstruction of it, remains subject to the applicable storage and use restrictions in these Terms.
+
+3.2 Security & privacy
+
+Developer must:
+
+Implement industry-standard security (e.g., TLS 1.2+, encryption at rest, least-privilege access, secret rotation).
+Process User Data only for the feature(s) disclosed to and authorised by the user, in line with the Developer Privacy Policy Requirements.
+Provide a publicly reachable Privacy Policy and Terms of Use for the Application. This Privacy Policy must, at a minimum, incorporate all principles and requirements set forth in the QF Developer Privacy Policy Requirements.
+Promptly (within 24 hours) report to [email protected] any actual or suspected unauthorised access, security breach, or data exposure related to the APIs.
+
+3.3 OAuth and scopes
+
+Developer must:
+
+Request only the minimum scopes necessary for each feature and support incremental authorization.
+Provide users a clear method to revoke tokens and delete their data.
+
+3.4 Audit & monitoring
+
+QF may monitor API activity to verify compliance. Developer shall not interfere with such monitoring.
+Upon written notice, Developer will provide logs, architecture diagrams, and other information reasonably required for QF to audit compliance.
+
+4. Updates, Deprecation & Migration
+
+QF may modify or discontinue any API, feature, or endpoint. QF will provide commercially reasonable advance notice (typically 30 days) via the Developer Portal or email when a breaking change or deprecation is scheduled. After the deprecation period, calls may fail. Developer is responsible for timely migration.
+
+5. Suspension & Revocation
+
+QF may suspend or revoke Developer’s API credentials, immediately and without liability, if:
+
+Developer breaches these Terms or the Developer Policies; or
+QF reasonably believes suspension is necessary to protect its systems, users, or the integrity of the Qurʾān; or
+Required by law.
+
+6. Term & Termination
+
+These Terms commence when Developer first accesses the APIs and continue until terminated.
+
+By Developer.
+Developer may terminate by ceasing all API use and deleting all QF Content and User Data (unless retention is legally required).
+
+By QF.
+QF may terminate these Terms upon 30 days’ notice or immediately for breach.
+
+Effect of termination.
+Upon termination, all licenses automatically terminate, and Developer must promptly delete QF Content and User Data in its possession, provided that Developer may provide a mechanism for users to export their own User Data prior to deletion.
+
+7. Confidentiality
+
+Any non-public information disclosed by QF (including access tokens, rate-limit values, or unpublished documentation) is QF Confidential Information. Developer must protect it with reasonable care and use it only to exercise rights under these Terms.
+
+8. Disclaimers & Limitation of Liability
+
+8.1 Disclaimers
+
+THE APIS AND QF CONTENT ARE PROVIDED “AS IS” WITHOUT WARRANTY OF ANY KIND. QF DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND ACCURACY. QF IS NOT RESPONSIBLE AND IS NOT LIABLE FOR YOUR APPLICATION OR FOR ANY INTERPRETATION, USE, AND/OR MISUSE OF ANY QF CONTENT BY YOUR END USERS.
+
+8.2 Limitation of liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, QF’S AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THE APIS OR THESE TERMS IS LIMITED TO THE GREATER OF (A) USD 100 OR (B) THE FEES PAID BY DEVELOPER TO QF FOR API USE IN THE SIX MONTHS PRIOR TO THE EVENT GIVING RISE TO LIABILITY.
+
+9. Indemnification
+
+Developer will defend, indemnify, and hold harmless QF, its affiliates, and their employees and directors from and against any third-party claim, suit, action, or proceeding arising from:
+
+(a) Developer’s misuse of the APIs or QF Content,
+(b) Developer’s breach of these Terms, or
+(c) Developer’s Application, including any content or data processed by it.
+
+10. Governing Law & Venue
+
+These Terms are governed exclusively by the laws of the State of New York, without regard to its conflict-of-laws principles. Any dispute arising under or related to these Terms shall be resolved exclusively in the state or federal courts located in New York County, New York, and Developer consents to personal jurisdiction and venue in those courts.
+
+11. Miscellaneous
+
+Entire agreement.
+These Terms constitute the entire agreement regarding the APIs and supersede all prior or contemporaneous agreements.
+
+Severability.
+If any provision is unenforceable, the remainder remains in effect.
+
+No waiver.
+Failure to enforce any provision is not a waiver.
+
+Assignment.
+Developer may not assign these Terms without QF’s prior written consent. QF may assign these Terms without restriction.
+
+Notices.
+Notices to QF must be in writing and are deemed given when sent to [email protected]. Notices to Developer must be in writing and are deemed given when sent to the email associated with Developer’s account.
+
+12. Contact
+
+If you have any questions, you can email [email protected].
+
+By continuing to access or use the APIs, you acknowledge that you have read, understood, and agree to be bound by these Terms.

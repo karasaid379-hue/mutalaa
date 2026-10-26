@@ -1,0 +1,23 @@
+Kaynak kimliği: tecrid-ar
+Kaynak adresi: https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3
+Okuma tarihi: 2026-10-26
+Yöntem: dayanak notu
+Not: Hukuki görüş değildir. Bu dosya lisans/şart metninin kopyasıdır; kaynağın kendi metni değildir.
+
+Kimlik: tecrid-ar
+Eser: Tecrîd-i Sarîh, Arapça metin (özet tablo hükmü: "Serbest ciltlerden", defter §2).
+Defterin dayanağı (§3.4, aynen): "Arapça metin yaşı itibarıyla serbesttir."
+Ölüm tarihi: yok. Defter özgün Arapça metnin yazarı ya da ölüm tarihi vermiyor; bu turda araştırma yapılmadı.
+
+FSEK (5846) m. 26-27; mevzuat.gov.tr güncel metin, okuma 2026-10-26 (içerik /anasayfa/MevzuatFihristDetayIframe üzerinden okundu):
+https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3
+- m. 27: "Koruma süresi eser sahibinin yaşadığı müddetçe ve ölümünden itibaren 70 yıl devam eder."
+- m. 26 (ilgili kısım): "eser sahibinin öldüğü seneyi takip eden yılın ilk günü başlangıç tarihi sayılır."
+Hesap kuralı (defter §6): ölüm yılı + 71'inci yılın 1 Ocak'ı.
+
+Hesap: yapılamadı (ölüm tarihi bilinmiyor). Defterdeki "yaşı itibarıyla serbest" hükmü bu notta bir FSEK hesabıyla desteklenmiyor.
+
+Doğrulanacak:
+1. Özgün Arapça metnin yazarı ve ölüm tarihi (kaynağıyla birlikte); bu turda araştırılmadı.
+2. FSEK m. 26-27 hesabı: ölüm yılı + 71'inci yılın 1 Ocak'ı.
+3. Kullanılacak Arapça basım ya da dijital kopya, kaynağı ve lisansı; sonraki baskılardaki tahkik, dipnot ve editoryal eklerin ayıklanması (lisans defteri §7 kontrol listesi).

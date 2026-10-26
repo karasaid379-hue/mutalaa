@@ -1,0 +1,20 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "ses-kfgqpc-meal"
+tur = "ses"
+baslik = "KFGQPC sesli meal çevirileri"
+kaynak_url = "https://qurancomplex.gov.sa/en/?p=4973"
+license_name = "KFGQPC sesli meal kullanım şartları (sayfa okunamadı)"
+license_url = "https://qurancomplex.gov.sa/en/?p=4973"
+license_status = "bekliyor"
+embed_ok = false
+kurul_gerekli = true
+atif_metni = "Sesli meal: King Fahd Glorious Qur'an Printing Complex."
+yeniden_kontrol = 2027-01-26
+lisans_kopyasi = "licenses/ses-kfgqpc-meal-2026-10-26.txt"
+lisans_sha256 = "9f4c13253e0341a0e3df17643db2a8ac8da48f06bb812aaf1f9ecdf7fba0e43f"
+notlar = '''
+Kurul: Evet (çıkarım). embed_ok: Doğrulanacak (şimdilik false).
+Türkçe sürüm Doğrulanacak.
+2026-10-26'da qurancomplex.gov.sa/en/?p=4973 404 verdi (sayfa taşınmış olabilir).
+İkincil özet: "free general use in computer apps, broadcasting channels, internet websites": Doğrulanacak.
+Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.'''

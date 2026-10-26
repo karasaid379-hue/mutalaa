@@ -1,0 +1,17 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "risale-asil-nusha"
+tur = "risale"
+baslik = "Diyanet \"asıl nüsha\""
+yazar = "Said Nursî"
+yazar_vefat_yili = 1960
+license_name = "Koruma süresi dolmadı"
+license_status = "kapali"
+embed_ok = false
+kurul_gerekli = false
+atif_metni = "Risale-i Nur Külliyatı, Said Nursî; Diyanet \"asıl nüsha\" karşılaştırma metni."
+yeniden_kontrol = 2027-04-26
+notlar = '''
+Diyanet "asıl nüsha"; 2031'den sonra yalnız karşılaştırma.
+Avukat görüşüne kadar kapalı (K-05).
+Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.
+Hukuki görüş değildir.'''

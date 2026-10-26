@@ -1,0 +1,19 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "hadis-sunnah-api"
+tur = "hadis"
+baslik = "Sunnah.com API"
+kaynak_url = "https://sunnah.com/developers"
+license_name = "Sunnah.com API şartları (okunamadı)"
+license_url = "https://sunnah.com/developers"
+license_status = "bekliyor"
+embed_ok = false
+kurul_gerekli = false
+atif_metni = "Hadis verisi: Sunnah.com API."
+yeniden_kontrol = 2027-01-26
+lisans_kopyasi = "licenses/hadis-sunnah-api-2026-10-26.txt"
+lisans_sha256 = "f2e797314200359c673e9b6192ee398989a1b887a34734db4accf24e144d829d"
+notlar = '''
+Yazılı izin istenir (yazışma listesi madde 6).
+API anahtarı gerekir.
+2026-10-26'da sunnah.com/developers 403 (Cloudflare) verdi, şartlar okunamadı: Doğrulanacak.
+Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.'''

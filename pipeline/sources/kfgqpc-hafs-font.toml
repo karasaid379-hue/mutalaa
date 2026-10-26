@@ -1,0 +1,23 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "kfgqpc-hafs-font"
+tur = "font"
+baslik = "KFGQPC Uthmanic Hafs fontu"
+kaynak_url = "https://fonts.qurancomplex.gov.sa/hafs-reading/"
+license_name = "KFGQPC Hafs fontu EULA (v0.09 font dosyası)"
+license_url = "https://raw.githubusercontent.com/mustafa0x/qpc-fonts/f93bf5f3/various-woff2/UthmanicHafs1%20Ver09.woff2"
+license_status = "bekliyor"
+kisitlar = { degistirme_yasak = true }
+embed_ok = false
+kurul_gerekli = true
+atif_metni = "KFGQPC Uthmanic Script HAFS © King Fahd Glorious Qur'an Printing Complex."
+yeniden_kontrol = 2027-04-26
+lisans_kopyasi = "licenses/kfgqpc-hafs-font-2026-10-26.txt"
+lisans_sha256 = "7f1b3aafa4362b3ebb4e8c2e6417155e1a5148432caf41ae47abc1fe3e729567"
+notlar = '''
+embed_ok: Uygulanmaz (font; metin taşımaz).
+Kurul kapsamı: Dolaylı; dijital karşılığı Açık soru.
+Yazılı izin gelene kadar bekliyor (İ-05).
+Alt kümeleme (subsetting) yapılmaz.
+Açık soru: sürüm numarası.
+2026-10-26 okumasında font dosyası Ver09: name tablosu "Version 0.09", OS/2 fsType = 0.
+Resmî sayfa fonts.qurancomplex.gov.sa/hafs-reading/ açıldı ve sürümleri 3.0 (güncel), 2.2, 0.13 diye listeliyor; sayfada EULA yok.'''

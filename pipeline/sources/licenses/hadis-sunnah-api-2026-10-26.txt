@@ -1,0 +1,16 @@
+Kaynak kimliği: hadis-sunnah-api
+Kaynak adresi: https://sunnah.com/developers
+Okuma tarihi: 2026-10-26
+Yöntem: okunamadı
+Not: Hukuki görüş değildir. Bu dosya lisans/şart metninin kopyasıdır; kaynağın kendi metni değildir.
+
+UYARI: Bu dosya gerçek lisans/şart metni değildir; sayfa okunamadığı için defter alıntısı ve okuma durumu kaydedilmiştir.
+
+Denenen adres: https://sunnah.com/developers
+Alınan durum: HTTP 403. Okuma tarihi 2026-10-26, curl. Yanıt gövdesi Cloudflare doğrulama sayfasıdır (sayfa başlığı "Just a moment..."); lisans ya da şart metni içermiyor. Önceki WebFetch denemesi de 403 vermişti.
+
+Defterin bu kaynak için dayandığı bilgi (docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §3.4, aynen):
+"Sunnah.com: "You will need an API key to access this data"; "Our API offers access to a portion of our data"; kullanım şartları okunmadı ([Sunnah.com](https://sunnah.com/developers))."
+Özet tablo (§2): hadis-sunnah-api, license_status bekliyor, embed_ok Hayır, hüküm "Yazılı izin iste".
+
+Doğrulanacak: Sunnah.com geliştirici sayfası ve kullanım şartları canlı okunamadı. Yukarıdaki alıntı defterden gelir ve bu turda teyit edilmedi.

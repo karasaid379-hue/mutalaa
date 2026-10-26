@@ -1,0 +1,19 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "tecrid-naim"
+tur = "hadis_ceviri"
+baslik = "Tecrîd-i Sarîh, Ahmed Naim Türkçesi"
+yazar = "Babanzâde Ahmed Naim"
+yazar_vefat_yili = 1934
+license_name = "Kamu malı (FSEK m. 26-27)"
+license_url = "https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3"
+license_status = "serbest"
+embed_ok = true
+kurul_gerekli = false
+atif_metni = "Tecrîd-i Sarîh Tercümesi, mütercim Babanzâde Ahmed Naim. Özgün baskıdan Mütâlaa tarafından aktarılmıştır."
+yeniden_kontrol = 2027-04-26
+lisans_kopyasi = "licenses/tecrid-naim-2026-10-26.txt"
+lisans_sha256 = "9d8c710a166e41aac8aff8909ff1c012d3e2f29eddf205cfab2ff7cfeac9f32d"
+notlar = '''
+Naim ö. 13 Ağustos 1934 (Küre: https://kureansiklopedi.com/tr/detay/miras-kamil); 1 Ocak 2005'ten beri serbest. Kurul: Gerekmez (çıkarım).
+Naim'in çevirdiği ciltler Doğrulanacak (A19); o zamana kadar III. cilt Miras kısmı sayılır.
+Sonraki baskılardaki sadeleştirme ve editoryal ek kullanılmaz.'''

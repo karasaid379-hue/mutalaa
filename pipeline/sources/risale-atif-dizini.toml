@@ -1,0 +1,16 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "risale-atif-dizini"
+tur = "baglanti_verisi"
+baslik = "Risale âyet atıf dizini (metinsiz: âyet ↔ Risale yeri, baskı sayfası)"
+license_name = "Metinle birlikte kapalı (hukukçu görüşüne kadar; K-05)"
+license_status = "kapali"
+embed_ok = false
+kurul_gerekli = false
+atif_metni = "Risale-i Nur âyet atıf dizini: Mütâlaa."
+yeniden_kontrol = 2027-04-26
+notlar = '''
+Metinsiz âyet ↔ Risale yeri dizini; metinle birlikte hukukçu görüşüne kadar kapalı (K-05). Kurul: Gerekmez (çıkarım).
+KULLANICI İSTEĞİ (2026-10-26): dizinin bağlantı vermesi yanında parça metinleri de vermesi. Bu, korunan metnin işlenmesi ve dağıtımı olur: K-05 ve İ-03 avukat görüşü ile /karar gerekir (A20).
+Bu kayıt metinsiz dizin olarak kalır.
+Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.
+Hukuki görüş değildir.'''

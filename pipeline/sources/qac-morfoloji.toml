@@ -1,0 +1,24 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "qac-morfoloji"
+tur = "morfoloji"
+baslik = "Quranic Arabic Corpus v0.4"
+surum = "0.4"
+provider = "qac"
+kaynak_url = "https://corpus.quran.com/download/"
+license_name = "GNU GPL (QAC indirme sayfası)"
+license_url = "https://corpus.quran.com/license.jsp"
+license_status = "bekliyor"
+kisitlar = { degistirme_yasak = true }
+embed_ok = true
+kurul_gerekli = false
+atif_metni = "Morfoloji: Quranic Arabic Corpus (corpus.quran.com), GNU GPL."
+atif_url = "https://corpus.quran.com/"
+yeniden_kontrol = 2027-04-26
+lisans_kopyasi = "licenses/qac-morfoloji-2026-10-26.txt"
+lisans_sha256 = "7600f9f40a96eb36686f13e4e0c61ff61bd6e3fa88567cf9e0eb9dfecaa6ca6c"
+notlar = '''
+embed_ok: yalnız lemma, kök ve sözcük türü etiketleri (çıkarım). Kurul: Gerekmez (çıkarım).
+QAC'den yazılı açıklık gelene kadar bekliyor (İ-04, A17). Ayrı paket: kelime-kok.
+Çelişki: GPL ↔ "commercial purposes". QAC SSS'de ayrıca "freely for non-commercial use under the GNU public license" cümlesi geçiyor.
+Açık soru: izin verme yetkisi kimde.
+GPL verinin uygulama paketinde dağıtımı avukata sorulur (İ-03).'''

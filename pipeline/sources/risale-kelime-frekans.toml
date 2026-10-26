@@ -1,0 +1,20 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "risale-kelime-frekans"
+tur = "sozluk"
+baslik = "Kelime-Frekans deposu, sıklık sütunları"
+kaynak_url = "https://github.com/alitekdemir/Risale-i-Nur-Kelime-Frekans"
+license_name = "CC0 1.0"
+license_url = "https://raw.githubusercontent.com/alitekdemir/Risale-i-Nur-Kelime-Frekans/master/LICENSE"
+license_status = "serbest"
+embed_ok = true
+kurul_gerekli = false
+atif_metni = "Kelime sıklıkları: Risale-i-Nur-Kelime-Frekans deposu, CC0 1.0."
+yeniden_kontrol = 2027-04-26
+lisans_kopyasi = "licenses/risale-kelime-frekans-2026-10-26.txt"
+lisans_sha256 = "31a56eb4682a435f5e1571d1bb83f1b8a6133cb59b229fab4b31b9fd6398e5ac"
+notlar = '''
+embed_ok: yalnız kelime ve sıklık/frekans sütunları.
+LICENSE CC0 1.0. `anlam` sütunu erisale.com gibi sitelerden derlenmiş korunan derleme olduğu için KULLANILMAZ (defter §3.5, §4).
+Depodaki sıklık dosyalarının başlığı "frekans" (2026-10-26 okuması); ham CSV'de "anlam" sütunu var. Sürüm ya da sürüm notu yok.
+KULLANICI KARARI (2026-10-26): tur = sozluk; kitap içi anlamlar kendi yazımımızdan ya da serbest lügatlerden gelecek.
+Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.'''

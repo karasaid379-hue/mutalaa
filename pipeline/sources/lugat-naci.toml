@@ -1,0 +1,21 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "lugat-naci"
+tur = "sozluk"
+baslik = "Lugat-ı Nâci"
+yazar = "Muallim Nâci; Müstecâbîzâde İsmet Bey"
+license_name = "Koruma süresi doldu sayılıyor (ortak eser; hesap ikincil kaynağa dayanıyor, Doğrulanacak)"
+license_url = "https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3"
+license_status = "bekliyor"
+embed_ok = false
+kurul_gerekli = false
+atif_metni = "Muallim Nâci; Müstecâbîzâde İsmet Bey, Lugat-ı Nâci."
+yeniden_kontrol = 2027-04-26
+lisans_kopyasi = "licenses/lugat-naci-2026-10-26.txt"
+lisans_sha256 = "d7efac75b5ec07e29153d69f277df5e6753672b61712add3c211d7fb9ffeeec1"
+notlar = '''
+İki yazarlı eser: Muallim Nâci ö. 12 Nisan 1893; tamamlayan Müstecâbîzâde İsmet Bey ö. Mayıs 1917 (ikincil kaynak). Defter tek yazar varsayıyordu; yazar_vefat_yili iki yazar olduğu için yazılmadı.
+İsmet Bey'in ölüm tarihi için bağlantı: https://kureansiklopedi.com/tr/detay/mustecabizade-ismet-bey (sayfa 2026-10-26'da doğrudan okunmadı, ikincil özet).
+Süre son ölene göre → 1 Ocak 1988 (hesap, ikincil).
+Dijital kopya kaynağı: Doğrulanacak.
+embed_ok: Doğrulanacak (şimdilik false).
+Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.'''

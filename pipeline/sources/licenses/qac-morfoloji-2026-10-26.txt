@@ -1,0 +1,63 @@
+Kaynak kimliği: qac-morfoloji
+Kaynak adresi: https://corpus.quran.com/download/ ; https://corpus.quran.com/faq.jsp ; https://corpus.quran.com/license.jsp
+Okuma tarihi: 2026-10-26
+Yöntem: ilgili bölümler
+Not: Hukuki görüş değildir. Bu dosya lisans/şart metninin kopyasıdır; kaynağın kendi metni değildir.
+
+### Bölüm kaynağı: https://corpus.quran.com/download/
+
+To download version 0.4 of the Quranic Arabic Corpus morphological data, please enter a contact e-mail address. This is for verification purposes only, and will not be made public or given to any third parties:
+
+By downloading this data, you agree to the terms and conditions of the GNU License.
+
+#  Quranic Arabic Corpus (Version 0.4)
+#  Copyright (C) 2011 Kais Dukes
+#  License: GNU General Public License
+#
+#  The Quranic Arabic Corpus includes syntactic and morphological
+#  annotation of the Quran, and builds on the verified Arabic text
+#  distributed by the Tanzil project.
+#
+#  TERMS OF USE:
+#
+#  - Permission is granted to copy and distribute verbatim copies
+#    of this file, but CHANGING IT IS NOT ALLOWED.
+#
+#  - This annotation can be used in any website or application,
+#    provided its source (the Quranic Arabic Corpus) is clearly
+#    indicated, and a link is made to http://corpus.quran.com to enable
+#    users to keep track of changes.
+#
+#  - This copyright notice shall be included in all verbatim copies
+#    of the text, and shall be reproduced appropriately in all works
+#    derived from or containing substantial portion of this file.
+#
+#  Please check updates at: http://corpus.quran.com/download
+
+Language Research Group
+University of Leeds __
+
+Copyright © Kais Dukes, 2009-2017. Maintained by the quran.com team. This is an open source project.
+
+The Quranic Arabic Corpus is available under the GNU public license with terms of use.
+
+### Bölüm kaynağı: https://corpus.quran.com/faq.jsp
+
+Can I obtain part-of-speech tagged data for my research project?
+
+The data is still undergoing correction, but morphological annotation has been made publically available for download. We are happy to share the data for research purposes as long as:
+
+You do not use the data for commercial purposes. The data should be used purely for research and is made available under the GNU public license.
+You give a citation in your research publication.
+
+### Bölüm kaynağı: https://corpus.quran.com/license.jsp
+
+GNU General Public License
+
+Version 3, 29 June 2007
+
+[Sayfanin geri kalani GNU GPL v3 metnidir; bu dosyaya kopyalanmadi. Tam metin bu bolumun kaynak adresindedir.]
+
+### Bölüm kaynağı: https://corpus.quran.com/faq.jsp
+
+All data in the Quranic Arabic Corpus is freely available for online viewing through this website. The data is also available on the download page. The final aim of the project will be to produce a highly accurate annotated Quran available freely for non-commercial use under the GNU public license. Although the information is quite accurate already, currently annotators are reviewing the morphological and syntactic annotation, as well as the word by word translation. This website includes a message board where contributors can click on a word and then suggest corrections to the annotation.

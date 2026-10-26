@@ -1,0 +1,19 @@
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md §2-§3
+slug = "tecrid-ar"
+tur = "hadis"
+baslik = "Tecrîd-i Sarîh Arapça metni"
+license_name = "Kamu malı (Arapça metin yaşı itibarıyla)"
+license_url = "https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3"
+license_status = "serbest"
+embed_ok = true
+kurul_gerekli = false
+atif_metni = "Tecrîd-i Sarîh, Arapça metin. Özgün baskıdan Mütâlaa tarafından aktarılmıştır."
+yeniden_kontrol = 2027-04-26
+lisans_kopyasi = "licenses/tecrid-ar-2026-10-26.txt"
+lisans_sha256 = "188c931b19b78df943ada41c82ca16ca0c33297e9dbb5f08128f49c10e133582"
+notlar = '''
+Arapça metin yaşı itibarıyla serbest (defter §3.4). Kurul: Gerekmez (çıkarım).
+Yazarın ölüm tarihi araştırılmadı: Doğrulanacak.
+Hüküm: serbest ciltlerden.
+Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.
+A19'da yazarın ölüm tarihi ve kopya kaynağı doğrulanmadan ingest yapılmaz; doğrulanamazsa durum /karar ile bekliyor'a çekilir.'''
