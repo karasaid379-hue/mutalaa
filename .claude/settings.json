@@ -64,8 +64,6 @@
       "Bash(rm -R *)",
       "Bash(rm -f *)",
       "Bash(docker compose down *)",
-      "Bash(eas build *)",
-      "Bash(eas update *)",
       "Bash(dotnet user-secrets *)",
       "Bash(mkdir *)",
       "Bash(touch *)",
@@ -149,6 +147,8 @@
       "WebFetch(domain:docs.claude.com)"
     ],
     "ask": [
+      "Bash(eas build *)",
+      "Bash(eas update *)",
       "Bash(git config --global *)",
       "Bash(pnpm dlx *)",
       "Bash(dotnet tool install -g *)",
