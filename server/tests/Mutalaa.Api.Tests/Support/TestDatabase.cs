@@ -77,6 +77,20 @@ public sealed class TestDatabase : IAsyncDisposable
         return new RollbackSession(session, transaction);
     }
 
+    /// <summary>
+    /// Model onbellegi atlanan yeni bir saglayici (model ve veri kaynagi cagiranin kulturunde sifirdan kurulur);
+    /// cagiran yok eder. Veritabani onceden goc edilmis olmali (enum turleri yeni veri kaynagi tarafindan yuklenir).
+    /// </summary>
+    public ServiceProvider BuildUncachedServices() => ModelFactory.BuildServices(uncachedModel: true, configuration: Configuration);
+
+    /// <summary>Verilen saglayicidan (ornegin <see cref="BuildUncachedServices"/>) islem acan geri alinan oturum.</summary>
+    public static async Task<RollbackSession> OpenRollbackSessionAsync(ServiceProvider provider, CancellationToken cancellationToken)
+    {
+        DbSession session = new(provider.CreateAsyncScope());
+        IDbContextTransaction transaction = await session.Context.Database.BeginTransactionAsync(cancellationToken);
+        return new RollbackSession(session, transaction);
+    }
+
     /// <summary>Havuzsuz ham baglanti (katalog sorgulari ve test duzenegi).</summary>
     public async Task<NpgsqlConnection> OpenRawConnectionAsync(CancellationToken cancellationToken)
     {
@@ -201,6 +215,17 @@ public sealed class RollbackSession(DbSession session, IDbContextTransaction tra
         TestDatabase.AddParameters(command, parameters);
         object? value = await command.ExecuteScalarAsync(cancellationToken);
         return value is null or DBNull ? default! : (T)value;
+    }
+
+    /// <summary>Sonuc dondurmeyen ham komut; baglamin baglantisi ve islemi uzerinden (parametreli). Ihlalde PostgresException atar.</summary>
+    public async Task<int> ExecuteAsync(string sql, CancellationToken cancellationToken, params (string Name, object? Value)[] parameters)
+    {
+        DbConnection connection = Context.Database.GetDbConnection();
+        await using DbCommand command = connection.CreateCommand();
+        command.CommandText = sql;
+        command.Transaction = transaction.GetDbTransaction();
+        TestDatabase.AddParameters(command, parameters);
+        return await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
     public async ValueTask DisposeAsync()

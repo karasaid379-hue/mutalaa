@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Docker.DotNet.Models;
 using DotNet.Testcontainers.Containers;
 using Npgsql;
 using Testcontainers.PostgreSql;
@@ -113,9 +114,13 @@ public sealed partial class PostgresFixture : IAsyncLifetime
         }
 
         // Parametresiz kurucu [Obsolete] (CS0618); imaj acikca verilir. initdb: UTF8 + C.UTF-8 (imaj varsayilani en_US.utf8), saat dilimi UTC.
+        // Guvenlik (G-01): her kosuda rastgele parola ve yalniz 127.0.0.1'e yayinlanan port (yerel agdan erisilemez).
+        // Kap ici ExecAsync "-U postgres" yerel baglantidir, parolayi kullanmaz; baglanti dizesi her zaman GetConnectionString()'den gelir.
         PostgreSqlContainer container = new PostgreSqlBuilder(Image)
+            .WithPassword(Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
             .WithEnvironment("POSTGRES_INITDB_ARGS", "--encoding=UTF8 --locale=C.UTF-8")
             .WithEnvironment("TZ", "UTC")
+            .WithCreateParameterModifier(BindPortsToLoopback)
             .Build();
         try
         {
@@ -129,6 +134,30 @@ public sealed partial class PostgresFixture : IAsyncLifetime
 
         _container = container;
         return container;
+    }
+
+    /// <summary>Testcontainers'in urettigi butun port yayinlarini (rastgele ana makine portu korunur) 127.0.0.1'e baglar.</summary>
+    private static void BindPortsToLoopback(CreateContainerParameters parameters)
+    {
+        if (parameters.HostConfig?.PortBindings is null)
+        {
+            return;
+        }
+
+        foreach (IList<PortBinding> bindings in parameters.HostConfig.PortBindings.Values)
+        {
+            foreach (PortBinding binding in bindings)
+            {
+                binding.HostIP = "127.0.0.1";
+            }
+        }
+    }
+
+    /// <summary>Kabin yayinlanan portu (guvenlik testi icin); kap baslamadiysa baslatilmaz.</summary>
+    internal async Task<int> PublishedPortAsync(CancellationToken cancellationToken)
+    {
+        PostgreSqlContainer container = await StartedContainerAsync(cancellationToken);
+        return container.GetMappedPublicPort(PostgreSqlBuilder.PostgreSqlPort);
     }
 
     private static async Task ExecuteAdminAsync(PostgreSqlContainer container, string sql, CancellationToken cancellationToken)

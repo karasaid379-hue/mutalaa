@@ -1185,7 +1185,7 @@ CREATE INDEX ix_user_roles_role_id ON kimlik.user_roles USING btree (role_id);
 -- Name: ix_users_normalized_email; Type: INDEX; Schema: kimlik; Owner: -
 --
 
-CREATE INDEX ix_users_normalized_email ON kimlik.users USING btree (normalized_email);
+CREATE UNIQUE INDEX ix_users_normalized_email ON kimlik.users USING btree (normalized_email);
 
 
 --

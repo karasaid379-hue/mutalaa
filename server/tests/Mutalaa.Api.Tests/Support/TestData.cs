@@ -68,6 +68,21 @@ internal static class TestData
         return null;
     }
 
+    /// <summary>Istisna zincirinde (kendisi dahil) kosulu saglayan ilk T'yi bulur; yoksa null.</summary>
+    public static T? FindInChain<T>(Exception exception, Func<T, bool> predicate)
+        where T : Exception
+    {
+        for (Exception? current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is T match && predicate(match))
+            {
+                return match;
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>Eylem EF DbUpdateException ile PostgreSQL hatasi vermeli; SqlState ve kisit adi dogrulanir.</summary>
     public static async Task ExpectViolationAsync(string sqlState, string constraintName, Func<Task> action)
     {

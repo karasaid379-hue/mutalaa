@@ -10,6 +10,15 @@ internal sealed record DdlColumn(string Name, string Type, bool NotNull, string?
 /// <summary>DDL'deki bir tablo; sutunlar bildirim sirasiyla.</summary>
 internal sealed record DdlTable(string Name, IReadOnlyList<DdlColumn> Columns);
 
+/// <summary>Tablodaki bir CHECK; Name yalniz "CONSTRAINT ad CHECK (...)" yazildiysa dolu, Expression bosluklari teke indirilmis ham ifadedir.</summary>
+internal sealed record DdlCheck(string Table, string? Name, string Expression);
+
+/// <summary>Tek sutunlu yabanci anahtar: Table.Column -> ReferencedTable.ReferencedColumn.</summary>
+internal sealed record DdlReference(string Table, string Column, string ReferencedTable, string ReferencedColumn);
+
+/// <summary>Belge DDL'inden ayristirilan CHECK ve yabanci anahtar listesi.</summary>
+internal sealed record DdlConstraints(IReadOnlyList<DdlCheck> Checks, IReadOnlyList<DdlReference> References);
+
 /// <summary>
 /// docs/03-veri/02-editoryal-veritabani.md (DDL'in tek dogruluk kaynagi) okuyucusu ve kucuk bir DDL ayristiricisi.
 /// Yalniz belgede kullanilan bicimleri tanir; tanimadigi bicimde acik hata verir, sessizce atlamaz.
@@ -199,6 +208,63 @@ internal static partial class EditorialDoc
         return tables;
     }
 
+    /// <summary>
+    /// CREATE TABLE govdelerindeki CHECK ifadelerini ve REFERENCES ciftlerini, ayrica "ALTER TABLE t ADD FOREIGN KEY (c) REFERENCES r (k)"
+    /// bildirimlerini ayristirir. Sayilar belgeden turetilir: belgede gecen CHECK, REFERENCES ve FOREIGN KEY sayisi ayristirilanla ayni degilse hata verir.
+    /// </summary>
+    public static DdlConstraints ParseConstraints(string sql)
+    {
+        string clean = StripComments(sql);
+        List<DdlCheck> checks = [];
+        List<DdlReference> references = [];
+        foreach (Match m in CreateTableRegex().Matches(clean))
+        {
+            string name = m.Groups["name"].Value;
+            string body = ReadParenthesized(clean, m.Index + m.Length - 1, name);
+            foreach (string raw in SplitTopLevel(body))
+            {
+                string item = WhitespaceRegex().Replace(raw, " ").Trim();
+                Match check = CheckClauseRegex().Match(item);
+                if (check.Success)
+                {
+                    int open = check.Index + check.Length - 1;
+                    string expression = ReadParenthesized(item, open, name);
+                    checks.Add(new DdlCheck(name, check.Groups["name"].Success ? check.Groups["name"].Value : null, expression.Trim()));
+                }
+
+                foreach (Match reference in ReferencesRegex().Matches(item))
+                {
+                    Match column = ColumnRegex().Match(item);
+                    if (!column.Success)
+                    {
+                        throw new InvalidDataException($"{name}: REFERENCES satirinda sutun adi ayristirilamadi: '{item}'");
+                    }
+
+                    references.Add(new DdlReference(name, column.Groups["name"].Value, reference.Groups["table"].Value, reference.Groups["column"].Value));
+                }
+            }
+        }
+
+        foreach (Match alter in AlterForeignKeyRegex().Matches(clean))
+        {
+            references.Add(new DdlReference(alter.Groups["table"].Value, alter.Groups["column"].Value, alter.Groups["rtable"].Value, alter.Groups["rcolumn"].Value));
+        }
+
+        int declaredChecks = CheckKeywordRegex().Count(clean);
+        if (declaredChecks != checks.Count)
+        {
+            throw new InvalidDataException($"{declaredChecks} CHECK var, {checks.Count} tanesi ayristirildi.");
+        }
+
+        int declaredReferences = ReferencesKeywordRegex().Count(clean);
+        if (declaredReferences != references.Count)
+        {
+            throw new InvalidDataException($"{declaredReferences} REFERENCES var, {references.Count} tanesi ayristirildi.");
+        }
+
+        return new DdlConstraints(checks, references);
+    }
+
     private static DdlColumn ParseColumn(string table, string item)
     {
         Match column = ColumnRegex().Match(item);
@@ -335,6 +401,21 @@ internal static partial class EditorialDoc
 
     [GeneratedRegex(@"\bDEFAULT (?<value>'(?:[^']|'')*'|[a-z0-9_]+\(\)|-?[0-9]+|true|false)(?=$| )", RegexOptions.CultureInvariant)]
     private static partial Regex DefaultRegex();
+
+    [GeneratedRegex(@"(?:^| )(?:CONSTRAINT (?<name>[a-z0-9_]+) )?CHECK ?\(", RegexOptions.CultureInvariant)]
+    private static partial Regex CheckClauseRegex();
+
+    [GeneratedRegex(@"\bCHECK\b", RegexOptions.CultureInvariant)]
+    private static partial Regex CheckKeywordRegex();
+
+    [GeneratedRegex(@"\bREFERENCES (?<table>[a-z0-9_]+) ?\((?<column>[a-z0-9_]+)\)", RegexOptions.CultureInvariant)]
+    private static partial Regex ReferencesRegex();
+
+    [GeneratedRegex(@"\bREFERENCES\b", RegexOptions.CultureInvariant)]
+    private static partial Regex ReferencesKeywordRegex();
+
+    [GeneratedRegex(@"ALTER TABLE (?<table>[a-z0-9_]+) ADD FOREIGN KEY ?\((?<column>[a-z0-9_]+)\) REFERENCES (?<rtable>[a-z0-9_]+) ?\((?<rcolumn>[a-z0-9_]+)\)", RegexOptions.CultureInvariant)]
+    private static partial Regex AlterForeignKeyRegex();
 
     [GeneratedRegex(@"\s+", RegexOptions.CultureInvariant)]
     private static partial Regex WhitespaceRegex();

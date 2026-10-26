@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Mutalaa.Api.Tests.Support;
 using Mutalaa.Domain.Content;
 using Mutalaa.Domain.Licensing;
@@ -85,17 +86,26 @@ public class PostgresEnumTests(EditorialDatabase<PostgresEnumTests> fixture) : I
     public async Task Every_enum_member_round_trips_through_the_database_in_invariant_and_tr_TR()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
-        await RoundTripAsync(ct);
-        await AsyncCultureScope.TurkishAsync(() => RoundTripAsync(ct));
+
+        // Invariant: varsayilan (onbellekli) saglayici.
+        await RoundTripAsync(() => Db.OpenRollbackSessionAsync(ct), ct);
+
+        // tr-TR: model onbellegi atlanan yeni saglayici ve yeni veri kaynagi tr-TR kulturunde sifirdan kurulur
+        // (etiket cevirmeni, model ve Npgsql enum eslemesi kulturle yeniden olusur); onbellekli ilk kosuyu tekrarlamaz.
+        await AsyncCultureScope.TurkishAsync(async () =>
+        {
+            await using ServiceProvider provider = Db.BuildUncachedServices();
+            await RoundTripAsync(() => TestDatabase.OpenRollbackSessionAsync(provider, ct), ct);
+        });
     }
 
     /// <summary>
     /// Her enum'un her uyesi bir kez yazilir ve geri okunur: LabelNameTranslator ve PostgreSQL etiketi tum uyelerde uyusur
     /// (ic_kullanim gibi i/I iceren etiketler tr-TR'de de ayni). Islem geri alinir.
     /// </summary>
-    private async Task RoundTripAsync(CancellationToken ct)
+    private static async Task RoundTripAsync(Func<Task<RollbackSession>> openSession, CancellationToken ct)
     {
-        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+        await using RollbackSession session = await openSession();
         IcerikDbContext context = session.Context;
 
         Source baseSource = TestData.NewSource();

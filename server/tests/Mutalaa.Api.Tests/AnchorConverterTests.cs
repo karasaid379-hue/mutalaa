@@ -7,9 +7,30 @@ using Mutalaa.Domain.Links;
 namespace Mutalaa.Api.Tests;
 
 /// <summary>Capa donusturucusu gercek veritabaniyla (Docker'li): yazma, okuma, bozuk satir ve C siralamasi.</summary>
-public class AnchorConverterTests(EditorialDatabase<AnchorConverterTests> fixture) : IClassFixture<EditorialDatabase<AnchorConverterTests>>
+public class AnchorConverterTests(EditorialDatabase<AnchorConverterTests> fixture) : IClassFixture<EditorialDatabase<AnchorConverterTests>>, IAsyncLifetime
 {
+    private readonly List<string> _slugs = [];
+    private readonly List<Guid> _xrefIds = [];
+
     private TestDatabase Db => fixture.Database;
+
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
+
+    /// <summary>Test sonunda ham ya da EF ile eklenen satirlari siler (bozuk capa dizgili ham satirlar sonraki testlere kalmasin).</summary>
+    public async ValueTask DisposeAsync()
+    {
+        CancellationToken ct = CancellationToken.None;
+        if (_xrefIds.Count > 0)
+        {
+            await Db.ExecuteAsync("DELETE FROM icerik.xref WHERE id = ANY(@ids)", ct, ("ids", _xrefIds.ToArray()));
+        }
+
+        if (_slugs.Count > 0)
+        {
+            await Db.ExecuteAsync("DELETE FROM icerik.unit WHERE source_id = ANY(@slugs)", ct, ("slugs", _slugs.ToArray()));
+            await Db.ExecuteAsync("DELETE FROM icerik.source WHERE slug = ANY(@slugs)", ct, ("slugs", _slugs.ToArray()));
+        }
+    }
 
     private async Task<string> NewSourceAsync(CancellationToken ct)
     {
@@ -17,6 +38,7 @@ public class AnchorConverterTests(EditorialDatabase<AnchorConverterTests> fixtur
         Source source = TestData.NewSource();
         session.Context.Add(source);
         await session.Context.SaveChangesAsync(ct);
+        _slugs.Add(source.Slug);
         return source.Slug;
     }
 
@@ -43,8 +65,11 @@ public class AnchorConverterTests(EditorialDatabase<AnchorConverterTests> fixtur
 
         Exception exception = await Assert.ThrowsAnyAsync<Exception>(() => session.Context.SaveChangesAsync(ct));
 
-        // EF yazma hatasini DbUpdateException ile sarabilir; asil istisna zincirde aranir.
-        Assert.NotNull(TestData.FindInChain<InvalidOperationException>(exception));
+        // EF yazma hatasini DbUpdateException ile sarabilir; asil istisna zincirde aranir ve AnchorRefConverter'in iletisini tasir
+        // (genel bir InvalidOperationException baska bir nedenle de olusabilir, bu yuzden ileti dogrulanir).
+        InvalidOperationException converterFailure = Assert.IsType<InvalidOperationException>(
+            TestData.FindInChain<InvalidOperationException>(exception, e => e.Message.Contains("'@' araligi tasimaz", StringComparison.Ordinal)));
+        Assert.StartsWith("Capa sutunu", converterFailure.Message, StringComparison.Ordinal);
         Assert.Equal(0L, await Db.ScalarAsync<long>("SELECT count(*) FROM icerik.unit WHERE source_id = @s", ct, ("s", slug)));
     }
 
@@ -179,6 +204,7 @@ public class AnchorConverterTests(EditorialDatabase<AnchorConverterTests> fixtur
             Assert.Null(xref.SrcAnchor.Span);
             writer.Context.Add(xref);
             await writer.Context.SaveChangesAsync(ct);
+            _xrefIds.Add(xref.Id);
         }
 
         await using DbSession reader = Db.OpenSession();

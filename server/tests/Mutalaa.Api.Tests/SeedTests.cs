@@ -75,6 +75,81 @@ public class SeedTests(EditorialDatabase<SeedTests> fixture) : IClassFixture<Edi
     }
 
     [Fact]
+    public async Task An_existing_user_who_lost_the_admin_role_gets_it_back_without_a_second_user_or_a_password_change()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        CapturingLoggerProvider logs = new();
+        await using ServiceProvider provider = BuildServices(logs);
+        Assert.Equal(IdentitySeeder.ExitOk, await IdentitySeeder.RunAsync(provider, ct));
+        string hashBefore = await Db.ScalarAsync<string>("SELECT password_hash FROM kimlik.users", ct);
+
+        // Kullanici var ama admin rolunde degil.
+        Assert.Equal(1, await Db.ExecuteAsync("DELETE FROM kimlik.user_roles", ct));
+        Assert.Equal(0L, await CountAsync("user_roles", ct));
+        Assert.Equal(1L, await CountAsync("users", ct));
+
+        Assert.Equal(IdentitySeeder.ExitOk, await IdentitySeeder.RunAsync(provider, ct));
+
+        Assert.Equal(2L, await CountAsync("roles", ct));
+        Assert.Equal(1L, await CountAsync("users", ct));
+        Assert.Equal(1L, await CountAsync("user_roles", ct));
+        Assert.Equal(
+            ["admin"],
+            await Db.ColumnAsync(
+                "SELECT r.name FROM kimlik.user_roles ur JOIN kimlik.roles r ON r.id = ur.role_id JOIN kimlik.users u ON u.id = ur.user_id WHERE u.user_name = @e",
+                ct,
+                ("e", Email)));
+        Assert.Equal(hashBefore, await Db.ScalarAsync<string>("SELECT password_hash FROM kimlik.users", ct));
+    }
+
+    [Fact]
+    public async Task An_existing_user_in_only_the_editor_role_is_also_put_in_the_admin_role()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        CapturingLoggerProvider logs = new();
+        await using ServiceProvider provider = BuildServices(logs);
+        Assert.Equal(IdentitySeeder.ExitOk, await IdentitySeeder.RunAsync(provider, ct));
+        Assert.Equal(1, await Db.ExecuteAsync("DELETE FROM kimlik.user_roles", ct));
+        Assert.Equal(
+            1,
+            await Db.ExecuteAsync(
+                "INSERT INTO kimlik.user_roles (user_id, role_id) SELECT u.id, r.id FROM kimlik.users u, kimlik.roles r WHERE r.name = 'editor'",
+                ct));
+
+        Assert.Equal(IdentitySeeder.ExitOk, await IdentitySeeder.RunAsync(provider, ct));
+
+        Assert.Equal(
+            ["admin", "editor"],
+            await Db.ColumnAsync(
+                "SELECT r.name FROM kimlik.user_roles ur JOIN kimlik.roles r ON r.id = ur.role_id ORDER BY r.name", ct));
+        Assert.Equal(1L, await CountAsync("users", ct));
+    }
+
+    [Fact]
+    public async Task Running_the_seed_twice_under_tr_TR_still_creates_exactly_one_user()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+
+        // E-posta 'i' ve 'I' icerir: normalize ederken kultur kullanilirsa (tr-TR: i -> I yerine dotted capital I) ikinci kosu
+        // kullaniciyi bulamaz, yinelenen kullanici dener ya da hata alirdi.
+        await AsyncCultureScope.TurkishAsync(async () =>
+        {
+            CapturingLoggerProvider logs = new();
+            await using ServiceProvider provider = BuildServices(logs);
+
+            Assert.Equal(IdentitySeeder.ExitOk, await IdentitySeeder.RunAsync(provider, ct));
+            Assert.Equal(IdentitySeeder.ExitOk, await IdentitySeeder.RunAsync(provider, ct));
+        });
+
+        Assert.Equal(1L, await CountAsync("users", ct));
+        Assert.Equal(2L, await CountAsync("roles", ct));
+        Assert.Equal(1L, await CountAsync("user_roles", ct));
+        Assert.Equal("YONETICI@EXAMPLE.TEST", await Db.ScalarAsync<string>("SELECT normalized_user_name FROM kimlik.users", ct));
+        Assert.Equal("YONETICI@EXAMPLE.TEST", await Db.ScalarAsync<string>("SELECT normalized_email FROM kimlik.users", ct));
+        Assert.Equal(["ADMIN", "EDITOR"], await Db.ColumnAsync("SELECT normalized_name FROM kimlik.roles ORDER BY normalized_name", ct));
+    }
+
+    [Fact]
     public async Task A_second_run_with_a_different_password_does_not_change_the_password_hash()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;

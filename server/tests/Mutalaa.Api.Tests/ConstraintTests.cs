@@ -5,6 +5,7 @@ using Mutalaa.Domain.Content;
 using Mutalaa.Domain.Links;
 using Mutalaa.Domain.Reviews;
 using Mutalaa.Infrastructure.Persistence;
+using Npgsql;
 
 namespace Mutalaa.Api.Tests;
 
@@ -397,5 +398,199 @@ public class ConstraintTests(EditorialDatabase<ConstraintTests> fixture) : IClas
         await session.Context.SaveChangesAsync(ct);
 
         Assert.NotEqual(a.Id, b.Id);
+    }
+
+    // --- T-02: unit tekillik ve yabanci anahtar kisitlari ---
+
+    private const string ForeignKey = "23503";
+
+    [Fact]
+    public async Task Unit_anchor_key_rejects_two_units_with_the_same_anchor()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+        Source source = await AddSourceAsync(session.Context, ct);
+        session.Context.Add(TestData.NewUnit(source.Slug, "rn:sozler:soz-10:p1"));
+        await session.Context.SaveChangesAsync(ct);
+
+        session.Context.Add(TestData.NewUnit(source.Slug, "rn:sozler:soz-10:p1"));
+
+        await TestData.ExpectViolationAsync(Unique, "unit_anchor_key", () => session.Context.SaveChangesAsync(ct));
+    }
+
+    [Fact]
+    public async Task Unit_anchor_key_is_global_and_rejects_the_same_anchor_under_another_source()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+        Source first = await AddSourceAsync(session.Context, ct);
+        Source second = await AddSourceAsync(session.Context, ct);
+        session.Context.Add(TestData.NewUnit(first.Slug, "rn:sozler:soz-10:p1"));
+        await session.Context.SaveChangesAsync(ct);
+
+        session.Context.Add(TestData.NewUnit(second.Slug, "rn:sozler:soz-10:p1"));
+
+        await TestData.ExpectViolationAsync(Unique, "unit_anchor_key", () => session.Context.SaveChangesAsync(ct));
+    }
+
+    [Fact]
+    public async Task Unit_source_id_fkey_rejects_an_unknown_source()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+        session.Context.Add(TestData.NewUnit("test-olmayan-kaynak", "rn:sozler:soz-10:p1"));
+
+        await TestData.ExpectViolationAsync(ForeignKey, "unit_source_id_fkey", () => session.Context.SaveChangesAsync(ct));
+    }
+
+    [Fact]
+    public async Task Deleting_a_source_that_has_units_is_rejected_because_the_foreign_keys_are_no_action()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+        Source source = await AddSourceAsync(session.Context, ct);
+        session.Context.Add(TestData.NewUnit(source.Slug, "rn:sozler:soz-10:p1"));
+        await session.Context.SaveChangesAsync(ct);
+
+        // Izlenen bagimli varken EF kaynagi silerken birimin source_id'sini NULL'a ceker (23502, NOT NULL); gercek NoAction davranisini
+        // gormek icin izleme temizlenir ve silme dogrudan SQL'e gider (ExecuteDelete): veritabani yabanci anahtari reddeder.
+        session.Context.ChangeTracker.Clear();
+        string slug = source.Slug;
+
+        PostgresException exception = await Assert.ThrowsAsync<PostgresException>(
+            () => session.Context.Sources.Where(s => s.Slug == slug).ExecuteDeleteAsync(ct));
+
+        Assert.Equal(ForeignKey, exception.SqlState);
+        Assert.Equal("unit_source_id_fkey", exception.ConstraintName);
+    }
+
+    [Fact]
+    public async Task Deleting_a_source_without_children_succeeds()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+        Source source = await AddSourceAsync(session.Context, ct);
+
+        session.Context.Remove(source);
+        await session.Context.SaveChangesAsync(ct);
+
+        Assert.Equal(0L, await session.ScalarAsync<long>("SELECT count(*) FROM icerik.source WHERE slug = @s", ct, ("s", source.Slug)));
+    }
+
+    // --- T-03: page_map tekillik ve kalan CHECK kisitlari (ham SQL; parametreli kaynak kimligi) ---
+
+    private const string InsertPageMap =
+        "INSERT INTO icerik.page_map (source_id, volume, page, line, start_anchor, end_anchor, data_version) "
+        + "VALUES (@s, {0}, 1, {1}, 'q:1:1', 'q:1:1', 'test')";
+
+    private static string PageMapRow(string volume, string line) => InsertPageMap.Replace("{0}", volume, StringComparison.Ordinal).Replace("{1}", line, StringComparison.Ordinal);
+
+    [Fact]
+    public async Task Page_map_key_rejects_a_duplicate_row_whose_nullable_columns_are_both_null()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+        Source source = await AddSourceAsync(session.Context, ct);
+        await session.ExecuteAsync(PageMapRow("NULL", "NULL"), ct, ("s", source.Slug));
+
+        PostgresException exception = await Assert.ThrowsAsync<PostgresException>(
+            () => session.ExecuteAsync(PageMapRow("NULL", "NULL"), ct, ("s", source.Slug)));
+
+        Assert.Equal(Unique, exception.SqlState);
+        Assert.Equal("page_map_source_id_volume_page_line_key", exception.ConstraintName);
+    }
+
+    [Fact]
+    public async Task Page_map_key_rejects_an_exact_duplicate_with_set_volume_and_line()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+        Source source = await AddSourceAsync(session.Context, ct);
+        await session.ExecuteAsync(PageMapRow("2", "7"), ct, ("s", source.Slug));
+
+        PostgresException exception = await Assert.ThrowsAsync<PostgresException>(
+            () => session.ExecuteAsync(PageMapRow("2", "7"), ct, ("s", source.Slug)));
+
+        Assert.Equal(Unique, exception.SqlState);
+        Assert.Equal("page_map_source_id_volume_page_line_key", exception.ConstraintName);
+    }
+
+    [Fact]
+    public async Task Page_map_key_accepts_rows_that_differ_in_volume_or_line()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+        Source source = await AddSourceAsync(session.Context, ct);
+
+        await session.ExecuteAsync(PageMapRow("NULL", "NULL"), ct, ("s", source.Slug));
+        await session.ExecuteAsync(PageMapRow("1", "NULL"), ct, ("s", source.Slug));
+        await session.ExecuteAsync(PageMapRow("2", "NULL"), ct, ("s", source.Slug));
+        await session.ExecuteAsync(PageMapRow("NULL", "1"), ct, ("s", source.Slug));
+        await session.ExecuteAsync(PageMapRow("NULL", "2"), ct, ("s", source.Slug));
+        await session.ExecuteAsync(PageMapRow("1", "1"), ct, ("s", source.Slug));
+
+        Assert.Equal(6L, await session.ScalarAsync<long>("SELECT count(*) FROM icerik.page_map WHERE source_id = @s", ct, ("s", source.Slug)));
+    }
+
+    /// <summary>Ham INSERT sablonu: &lt;v&gt; yer tutucusu ihlal eden (bad) ya da gecerli (good) degerle degisir.</summary>
+    public static TheoryData<string, string, string, string> RemainingChecks => new()
+    {
+        { "unit_role_check", "INSERT INTO icerik.unit (anchor, kind, role, source_id, ord, metin, content_hash, data_version) VALUES ('rn:sozler:soz-10:p1', 'risale', '<v>', @s, 1, 'Deneme paragrafi 1', repeat('a', 64), 'test')", "gecersiz", "siir" },
+        { "lemma_lang_check", "INSERT INTO icerik.lemma (id, lang, text, text_clean, source_id, data_version) VALUES (2, '<v>', 'b', 'b', @s, 'test')", "xx", "tr" },
+        { "quran_word_fix_field_check", "INSERT INTO icerik.quran_word_fix (anchor, field, new_value, reason) VALUES ('q:2:255:3', '<v>', 'N', 'deneme')", "yok", "pos" },
+        { "surah_alias_surah_no_check", "INSERT INTO icerik.surah_alias (surah_no, alias, alias_key, kind) VALUES (<v>, 'a', 'a', 'kanonik')", "0", "1" },
+        { "surah_alias_surah_no_check", "INSERT INTO icerik.surah_alias (surah_no, alias, alias_key, kind) VALUES (<v>, 'a', 'a', 'kanonik')", "115", "114" },
+        { "surah_alias_kind_check", "INSERT INTO icerik.surah_alias (surah_no, alias, alias_key, kind) VALUES (1, 'a', 'a', '<v>')", "yok", "diger_ad" },
+        { "xref_score_check", "INSERT INTO icerik.xref (src_anchor, dst_anchor, type, score, confidence, origin, data_version, license) VALUES ('q:2:255', 'meal:elmalili:2:255', 'atif', <v>, 0.5, 'hat', 'test', 'serbest')", "1.5", "1" },
+        { "xref_score_check", "INSERT INTO icerik.xref (src_anchor, dst_anchor, type, score, confidence, origin, data_version, license) VALUES ('q:2:255', 'meal:elmalili:2:255', 'atif', <v>, 0.5, 'hat', 'test', 'serbest')", "-0.1", "0" },
+        { "xref_confidence_check", "INSERT INTO icerik.xref (src_anchor, dst_anchor, type, score, confidence, origin, data_version, license) VALUES ('q:2:255', 'meal:elmalili:2:255', 'atif', 0.5, <v>, 'hat', 'test', 'serbest')", "1.5", "1" },
+        { "xref_confidence_check", "INSERT INTO icerik.xref (src_anchor, dst_anchor, type, score, confidence, origin, data_version, license) VALUES ('q:2:255', 'meal:elmalili:2:255', 'atif', 0.5, <v>, 'hat', 'test', 'serbest')", "-0.1", "0" },
+        { "review_hedef_tablo_check", "INSERT INTO icerik.review (hedef_tablo, hedef_anahtar, alan, eylem, koken, oneren) VALUES ('<v>', 'x', 'metin', 'onayla', 'editor', 'test-editor')", "yok", "audio_timing" },
+        { "page_map_line_type_check", "INSERT INTO icerik.page_map (source_id, page, line_type, start_anchor, end_anchor, data_version) VALUES (@s, 1, '<v>', 'q:1:1', 'q:1:1', 'test')", "yok", "besmele" },
+        { "pipeline_run_durum_check", "INSERT INTO icerik.pipeline_run (run_id, komut, git_commit, parmak_izi, baslangic, durum) VALUES (uuidv7(), 'komut', 'abc', repeat('a', 64), now(), '<v>')", "yok", "basarili" },
+        { "tr_root_index_check", "INSERT INTO icerik.tr_root_index (anchor, span_start, span_end, root_id, tr_lemma_id, data_version) VALUES ('rn:sozler:soz-10:p1', 5, <v>, 1, 1, 'test')", "5", "6" },
+        { "tr_root_index_check", "INSERT INTO icerik.tr_root_index (anchor, span_start, span_end, root_id, tr_lemma_id, data_version) VALUES ('rn:sozler:soz-10:p1', 5, <v>, 1, 1, 'test')", "4", "6" },
+        { "ayah_box_check", "INSERT INTO icerik.ayah_box (source_id, page, anchor, seq, x, y, w, h, data_version) VALUES (@s, 1, 'q:1:1', 1, 0, 0, <v>, 5, 'test')", "0", "1" },
+        { "ayah_box_check", "INSERT INTO icerik.ayah_box (source_id, page, anchor, seq, x, y, w, h, data_version) VALUES (@s, 1, 'q:1:1', 1, 0, 0, 5, <v>, 'test')", "0", "1" },
+        { "audio_timing_check", "INSERT INTO icerik.audio_timing (source_id, anchor, file, file_sha256, start_ms, end_ms, timing_source, data_version) VALUES (@s, 'q:1:1', '001.mp3', repeat('a', 64), 10, <v>, 'editor', 'test')", "10", "11" },
+        { "audio_timing_check", "INSERT INTO icerik.audio_timing (source_id, anchor, file, file_sha256, start_ms, end_ms, timing_source, data_version) VALUES (@s, 'q:1:1', '001.mp3', repeat('a', 64), 10, <v>, 'editor', 'test')", "9", "11" },
+    };
+
+    [Theory]
+    [MemberData(nameof(RemainingChecks))]
+    public async Task Each_remaining_check_rejects_its_violation_and_accepts_the_valid_value(string constraint, string template, string bad, string good)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+
+        // Gecerli deger: ayni sablon kabul edilir (ihlalin gercekten yalniz bu degerden geldigini kanitlar).
+        await using (RollbackSession accepted = await Db.OpenRollbackSessionAsync(ct))
+        {
+            string slug = await PrepareDependenciesAsync(accepted, ct);
+            Assert.Equal(1, await accepted.ExecuteAsync(template.Replace("<v>", good, StringComparison.Ordinal), ct, ("s", slug)));
+        }
+
+        await using RollbackSession rejected = await Db.OpenRollbackSessionAsync(ct);
+        string rejectedSlug = await PrepareDependenciesAsync(rejected, ct);
+        PostgresException exception = await Assert.ThrowsAsync<PostgresException>(
+            () => rejected.ExecuteAsync(template.Replace("<v>", bad, StringComparison.Ordinal), ct, ("s", rejectedSlug)));
+
+        Assert.Equal(Check, exception.SqlState);
+        Assert.Equal(constraint, exception.ConstraintName);
+    }
+
+    /// <summary>Kaynak, kok (1) ve lemma (1) satirlarini kurar: CHECK sinamalari yabanci anahtarlara takilmaz.</summary>
+    private static async Task<string> PrepareDependenciesAsync(RollbackSession session, CancellationToken ct)
+    {
+        string slug = TestData.UniqueSlug();
+        await session.ExecuteAsync(
+            "INSERT INTO icerik.source (slug, tur, baslik, surum, license_name, atif_metni) VALUES (@s, 'meal', 'Deneme kaynagi', '1', 'Deneme', 'Deneme atfi')",
+            ct,
+            ("s", slug));
+        await session.ExecuteAsync("INSERT INTO icerik.root (id, letters, source_id, data_version) VALUES (1, 'kok-1', @s, 'test')", ct, ("s", slug));
+        await session.ExecuteAsync(
+            "INSERT INTO icerik.lemma (id, lang, text, text_clean, source_id, data_version) VALUES (1, 'ar', 'lemma-1', 'lemma-1', @s, 'test')",
+            ct,
+            ("s", slug));
+        return slug;
     }
 }

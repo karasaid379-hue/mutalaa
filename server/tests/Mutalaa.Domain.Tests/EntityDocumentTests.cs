@@ -22,12 +22,6 @@ public class EntityDocumentTests
     /// <summary>v1.x tablolari; v1 semasinda (19 tablo) yer almaz.</summary>
     private static readonly string[] DeferredTables = ["xref_vote", "embedding"];
 
-    /// <summary>Belge DDL'ine henuz islenmemis olabilecek K-37 sutunlari: (tablo, onceki sutun, sutun).</summary>
-    private static readonly (string Table, string After, DdlColumn Column)[] K37Columns =
-    [
-        ("review", "yz_modeli", new DdlColumn("yz_kaydi", "jsonb", NotNull: false, Default: null, Identity: false, Generated: false)),
-    ];
-
     private static readonly string[] EntityNamespaces =
     [
         "Mutalaa.Domain.Content",
@@ -224,25 +218,8 @@ public class EntityDocumentTests
             Assert.Contains(all, t => string.Equals(t.Name, deferred, StringComparison.Ordinal));
         }
 
-        List<DdlTable> v1 = [];
-        foreach (DdlTable table in all.Where(t => !DeferredTables.Contains(t.Name, StringComparer.Ordinal)))
-        {
-            List<DdlColumn> columns = [.. table.Columns];
-            foreach ((string t, string after, DdlColumn column) in K37Columns)
-            {
-                if (string.Equals(t, table.Name, StringComparison.Ordinal)
-                    && !columns.Any(c => string.Equals(c.Name, column.Name, StringComparison.Ordinal)))
-                {
-                    int index = columns.FindIndex(c => string.Equals(c.Name, after, StringComparison.Ordinal));
-                    Assert.True(index >= 0, $"{t}.{after} DDL'de yok.");
-                    columns.Insert(index + 1, column);
-                }
-            }
-
-            v1.Add(table with { Columns = columns });
-        }
-
-        return v1;
+        // Belge DDL'i tek dogruluk kaynagidir (review.yz_kaydi dahil, K-37): sutunlar belgeden oldugu gibi okunur.
+        return [.. all.Where(t => !DeferredTables.Contains(t.Name, StringComparer.Ordinal))];
     }
 
     private static IEnumerable<Type> EntityTypes() =>

@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Mutalaa.Api.Tests.Support;
 using Mutalaa.Infrastructure.Persistence;
@@ -95,6 +97,82 @@ public class MigrationTests(EditorialDatabase<MigrationTests> fixture, PostgresF
         Assert.Equal(7L, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "kimlik")));
         Assert.Equal(await CatalogAsync(Db, ct), await CatalogAsync(fresh, ct));
     }
+
+    [Fact]
+    public async Task Applying_all_migrations_to_a_fresh_database_under_the_invariant_culture_creates_the_full_schema()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using TestDatabase fresh = await postgres.CreateDatabaseAsync("migrationfresh", ct);
+
+        // Henuz hicbir goc uygulanmadi: bu test goclerin kendisini uygular (fikstur veritabanindan bagimsiz).
+        await using (DbSession before = fresh.OpenSession())
+        {
+            Assert.Empty(await before.Context.Database.GetAppliedMigrationsAsync(ct));
+            Assert.NotEmpty(await before.Context.Database.GetPendingMigrationsAsync(ct));
+        }
+
+        Assert.Equal(0L, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "icerik")));
+
+        await fresh.MigrateAsync(ct);
+
+        await using (DbSession after = fresh.OpenSession())
+        {
+            IReadOnlyList<string> applied = [.. await after.Context.Database.GetAppliedMigrationsAsync(ct)];
+            Assert.NotEmpty(applied);
+            Assert.Equal(after.Context.Database.GetMigrations(), applied);
+            Assert.Empty(await after.Context.Database.GetPendingMigrationsAsync(ct));
+            Assert.False(after.Context.Database.HasPendingModelChanges());
+        }
+
+        Assert.Equal(19L, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "icerik")));
+        Assert.Equal(7L, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "kimlik")));
+        Assert.Equal(11L, await fresh.ScalarAsync<long>(EnumTypes, ct));
+        Assert.Equal(await CatalogAsync(Db, ct), await CatalogAsync(fresh, ct));
+    }
+
+    [Fact]
+    public async Task Migrating_down_to_zero_removes_the_schema_and_migrating_up_again_restores_the_same_catalog()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using TestDatabase fresh = await postgres.CreateDatabaseAsync("migrationdown", ct);
+        await fresh.MigrateAsync(ct);
+        string catalogBefore = await CatalogAsync(fresh, ct);
+        long icerikTables = await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "icerik"));
+        long kimlikTables = await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "kimlik"));
+        Assert.Equal(19L, icerikTables);
+        Assert.Equal(7L, kimlikTables);
+
+        // Down: bos surume ("0") geri al.
+        await using (DbSession down = fresh.OpenSession())
+        {
+            IMigrator migrator = down.Context.GetService<IMigrator>();
+            await migrator.MigrateAsync(Migration.InitialDatabase, ct);
+            Assert.Empty(await down.Context.Database.GetAppliedMigrationsAsync(ct));
+        }
+
+        // Down sonrasi icerik'te yalniz (bos) __EFMigrationsHistory kalir; tablo, enum ve kimlik semasi yok.
+        Assert.Equal(0L, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "icerik")));
+        Assert.Equal(0L, await fresh.ScalarAsync<long>(EnumTypes, ct));
+        Assert.Equal(0L, await fresh.ScalarAsync<long>("SELECT count(*) FROM pg_namespace WHERE nspname = 'kimlik'", ct));
+        Assert.Equal(0L, await fresh.ScalarAsync<long>("SELECT count(*) FROM icerik.\"__EFMigrationsHistory\"", ct));
+
+        // Yeniden yukari: ayni katalog.
+        await fresh.MigrateAsync(ct);
+
+        await using (DbSession up = fresh.OpenSession())
+        {
+            Assert.Empty(await up.Context.Database.GetPendingMigrationsAsync(ct));
+            Assert.False(up.Context.Database.HasPendingModelChanges());
+        }
+
+        Assert.Equal(icerikTables, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "icerik")));
+        Assert.Equal(kimlikTables, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "kimlik")));
+        Assert.Equal(11L, await fresh.ScalarAsync<long>(EnumTypes, ct));
+        Assert.Equal(catalogBefore, await CatalogAsync(fresh, ct));
+    }
+
+    private const string EnumTypes =
+        "SELECT count(*) FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = 'icerik' AND t.typtype = 'e'";
 
     /// <summary>Sutun, kisit ve dizin tanimlarinin sirali dokumu (veritabani adindan bagimsiz).</summary>
     private static async Task<string> CatalogAsync(TestDatabase db, CancellationToken ct)

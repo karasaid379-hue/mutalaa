@@ -110,9 +110,80 @@ public partial class ModelDdlTests
             }
         });
 
-        // 18 kisit x 2 model.
-        Assert.Equal(36, count);
+        // Sabit sayi yok: belgedeki CHECK sayisi x 2 model (onbellekli ve yeni kurulmus).
+        Assert.True(DocConstraints().Checks.Count > 0);
+        Assert.Equal(DocConstraints().Checks.Count * 2, count);
     }
+
+    /// <summary>Belge DDL'indeki (v1 tablolari) CHECK ve yabanci anahtarlar; sayilar belgeden turer.</summary>
+    private static DdlConstraints DocConstraints()
+    {
+        DdlConstraints all = EditorialDoc.ParseConstraints(EditorialDoc.SqlBlocks(EditorialDoc.Read()));
+        return new DdlConstraints(
+            [.. all.Checks.Where(c => !DeferredTables.Contains(c.Table))],
+            [.. all.References.Where(r => !DeferredTables.Contains(r.Table))]);
+    }
+
+    [Fact]
+    public void The_document_checks_and_the_model_checks_are_the_same_set_in_both_directions()
+    {
+        DdlConstraints doc = DocConstraints();
+        string[] expected = [.. doc.Checks.Select(c => c.Table + ": " + WhitespaceFree(c.Expression)).Order(StringComparer.Ordinal)];
+
+        ModelFactory.ForEachModel(model =>
+        {
+            string[] actual =
+            [
+                .. IcerikEntityTypes(model)
+                    .SelectMany(e => e.GetCheckConstraints().Select(c => e.GetTableName() + ": " + WhitespaceFree(c.Sql)))
+                    .Order(StringComparer.Ordinal),
+            ];
+
+            Assert.Equal(expected, actual);
+        });
+
+        // Belgede acik adi olan her CHECK, modelde ayni tabloda ayni adla bulunur.
+        foreach (DdlCheck named in doc.Checks.Where(c => c.Name is not null))
+        {
+            ModelFactory.ForEachModel(model =>
+                Assert.Contains(
+                    IcerikEntityTypes(model).Where(e => string.Equals(e.GetTableName(), named.Table, StringComparison.Ordinal)).SelectMany(e => e.GetCheckConstraints()),
+                    c => string.Equals(c.Name, named.Name, StringComparison.Ordinal)));
+        }
+    }
+
+    [Fact]
+    public void The_document_references_and_the_model_foreign_keys_are_the_same_set_in_both_directions()
+    {
+        DdlConstraints doc = DocConstraints();
+        string[] expected = [.. doc.References.Select(Describe).Order(StringComparer.Ordinal)];
+        Assert.NotEmpty(expected);
+
+        ModelFactory.ForEachModel(model =>
+        {
+            string[] actual =
+            [
+                .. IcerikEntityTypes(model)
+                    .SelectMany(e => e.GetForeignKeys())
+                    .Select(fk => Describe(new DdlReference(
+                        fk.DeclaringEntityType.GetTableName()!,
+                        ColumnOf(fk.Properties.Single(), fk.DeclaringEntityType),
+                        fk.PrincipalEntityType.GetTableName()!,
+                        ColumnOf(fk.PrincipalKey.Properties.Single(), fk.PrincipalEntityType))))
+                    .Order(StringComparer.Ordinal),
+            ];
+
+            Assert.Equal(expected, actual);
+        });
+    }
+
+    private static string Describe(DdlReference r) => $"{r.Table}.{r.Column} -> {r.ReferencedTable}.{r.ReferencedColumn}";
+
+    private static string ColumnOf(IProperty property, IEntityType owner) =>
+        property.GetColumnName(StoreObjectIdentifier.Table(owner.GetTableName()!, owner.GetSchema()))!;
+
+    private static IEnumerable<IEntityType> IcerikEntityTypes(IModel model) =>
+        model.GetEntityTypes().Where(e => string.Equals(e.GetSchema() ?? model.GetDefaultSchema(), "icerik", StringComparison.Ordinal));
 
     private static string WhitespaceFree(string text) => Whitespace().Replace(text, string.Empty);
 

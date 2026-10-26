@@ -25,34 +25,6 @@ public class ContextBehaviorTests
         public override DateTimeOffset GetUtcNow() => now;
     }
 
-    private sealed class CapturingLoggerProvider : ILoggerProvider
-    {
-        public List<string> Messages { get; } = [];
-
-        public ILogger CreateLogger(string categoryName) => new CapturingLogger(Messages);
-
-        public void Dispose()
-        {
-        }
-
-        private sealed class CapturingLogger(List<string> messages) : ILogger
-        {
-            public IDisposable? BeginScope<TState>(TState state)
-                where TState : notnull => null;
-
-            public bool IsEnabled(LogLevel logLevel) => true;
-
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-            {
-                messages.Add(formatter(state, exception));
-                if (exception is not null)
-                {
-                    messages.Add(exception.ToString());
-                }
-            }
-        }
-    }
-
     private static Source NewSource() => new()
     {
         Slug = "test-kaynak",
