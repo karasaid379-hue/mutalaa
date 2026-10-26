@@ -1748,6 +1748,7 @@ namespace Mutalaa.Infrastructure.Migrations
                         .HasName("pk_users");
 
                     b.HasIndex("NormalizedEmail")
+                        .IsUnique()
                         .HasDatabaseName("ix_users_normalized_email");
 
                     b.HasIndex("NormalizedUserName")

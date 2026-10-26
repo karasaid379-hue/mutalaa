@@ -18,7 +18,7 @@ using NpgsqlTypes;
 namespace Mutalaa.Infrastructure.Migrations
 {
     [DbContext(typeof(IcerikDbContext))]
-    [Migration("20261026122359_CreateEditorialSchema")]
+    [Migration("20261026222825_CreateEditorialSchema")]
     partial class CreateEditorialSchema
     {
         /// <inheritdoc />
@@ -1751,6 +1751,7 @@ namespace Mutalaa.Infrastructure.Migrations
                         .HasName("pk_users");
 
                     b.HasIndex("NormalizedEmail")
+                        .IsUnique()
                         .HasDatabaseName("ix_users_normalized_email");
 
                     b.HasIndex("NormalizedUserName")

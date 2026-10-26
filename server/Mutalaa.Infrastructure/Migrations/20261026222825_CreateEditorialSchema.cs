@@ -944,7 +944,8 @@ namespace Mutalaa.Infrastructure.Migrations
                 name: "ix_users_normalized_email",
                 schema: "kimlik",
                 table: "users",
-                column: "normalized_email");
+                column: "normalized_email",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_users_normalized_user_name",
@@ -973,10 +974,9 @@ namespace Mutalaa.Infrastructure.Migrations
                 table: "xref",
                 columns: new[] { "src_anchor", "type" });
 
-            // EF Core ifade edemez: hat bu kisiti ON CONFLICT ON CONSTRAINT ile hedefler (K-37 madde 4).
-            migrationBuilder.Sql(
-                "ALTER TABLE icerik.xref ADD CONSTRAINT xref_natural_key "
-                + "UNIQUE NULLS NOT DISTINCT (type, src_anchor, src_span, dst_anchor, dst_span);");
+            // K-37 madde 4: hat bu kisiti ON CONFLICT ON CONSTRAINT ile hedefler; EF'nin tekil dizini buna uymadigi icin
+            // gercek kisit olarak ham SQL ile eklenir (NULLS NOT DISTINCT: bos aralik da eslesir).
+            migrationBuilder.Sql("ALTER TABLE icerik.xref ADD CONSTRAINT xref_natural_key UNIQUE NULLS NOT DISTINCT (type, src_anchor, src_span, dst_anchor, dst_span);");
         }
 
         /// <inheritdoc />
@@ -1085,6 +1085,21 @@ namespace Mutalaa.Infrastructure.Migrations
             migrationBuilder.DropTable(
                 name: "source",
                 schema: "icerik");
+
+            // Tablolar dusunce enum turleri ve bos kalan kimlik semasi da kaldirilir. icerik semasi kalir:
+            // __EFMigrationsHistory tablosu orada durur ve EF Down sonrasi oradan satir siler.
+            migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.xref_type;");
+            migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.xref_status;");
+            migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.xref_origin;");
+            migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.unit_status;");
+            migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.unit_kind;");
+            migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.surum_durumu;");
+            migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.source_kind;");
+            migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.metin_durumu;");
+            migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.license_status;");
+            migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.inceleme_durumu;");
+            migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.derleme_turu;");
+            migrationBuilder.Sql("DROP SCHEMA IF EXISTS kimlik;");
         }
     }
 }

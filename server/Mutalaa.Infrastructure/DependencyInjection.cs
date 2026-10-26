@@ -14,6 +14,8 @@ public static class DependencyInjection
     /// <summary>
     /// Editoryal veritabani baglami (Api ve Yayinlayici). ConnectionStrings:Editorial yoksa kayit hata vermez
     /// (dotnet ef goc uretimi baglanti istemez); ilk baglantida EF baglanti dizesi eksik hatasi verir.
+    /// Baglanti dizesi kayit aninda degil, baglam ilk olusturulurken DI'daki IConfiguration'dan okunur (kullanici sirlari ve
+    /// sonradan eklenen ayar kaynaklari gorulur). <paramref name="configuration"/> parametresi yalniz eski imza uyumlulugu icindir.
     /// Otomatik goc yoktur.
     /// </summary>
     public static IServiceCollection AddIcerikDb(this IServiceCollection services, IConfiguration configuration)
@@ -21,10 +23,10 @@ public static class DependencyInjection
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        string? connectionString = configuration.GetConnectionString(ConnectionName);
         services.AddSingleton<UpdatedAtInterceptor>();
         services.AddDbContext<IcerikDbContext>((provider, options) =>
         {
+            string? connectionString = provider.GetRequiredService<IConfiguration>().GetConnectionString(ConnectionName);
             IcerikDbContextOptions.Configure(options, string.IsNullOrWhiteSpace(connectionString) ? null : connectionString);
             options.AddInterceptors(provider.GetRequiredService<UpdatedAtInterceptor>());
         });

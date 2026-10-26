@@ -94,7 +94,7 @@ public sealed class IcerikDbContext(DbContextOptions<IcerikDbContext> options)
         {
             b.ToTable("users", IdentitySchema);
             b.HasIndex(u => u.NormalizedUserName).HasDatabaseName("ix_users_normalized_user_name");
-            b.HasIndex(u => u.NormalizedEmail).HasDatabaseName("ix_users_normalized_email");
+            b.HasIndex(u => u.NormalizedEmail).HasDatabaseName("ix_users_normalized_email").IsUnique();
         });
         modelBuilder.Entity<IdentityRole>(b =>
         {

@@ -27,7 +27,9 @@ public sealed class Unit
 
     public long Ord { get; set; }
 
-    /// <summary>Kuresel ayet sirasi araligi [ilk, son+1); ayete bagli degilse null.</summary>
+    /// <summary>
+    /// Kuresel ayet sirasi araligi [ilk, son+1), sira 1..6236 (AnchorSpan anlami 2: kod noktasi degil); ayete bagli degilse null.
+    /// </summary>
     public AnchorSpan? AyahRange { get; set; }
 
     /// <summary>Kanonik metin (K-26).</summary>
@@ -36,7 +38,7 @@ public sealed class Unit
     /// <summary>jsonb.</summary>
     public string Marks { get; set; } = "[]";
 
-    /// <summary>Cumle sinirlari (kod noktasi).</summary>
+    /// <summary>Cumle sinirlari: birim metninde kod noktasi araliklari [baslangic, bitis) (AnchorSpan anlami 1).</summary>
     public AnchorSpan[]? Sentences { get; set; }
 
     /// <summary>jsonb.</summary>

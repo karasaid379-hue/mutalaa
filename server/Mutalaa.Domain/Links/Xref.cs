@@ -14,10 +14,14 @@ public sealed class Xref
 
     public required AnchorRef SrcAnchor { get; set; }
 
+    /// <summary>
+    /// Kaynak ucun araligi: Kur'an ucunda kelime konumu [ilk, son+1) (AnchorSpan anlami 3), metin biriminde kod noktasi (anlam 1).
+    /// </summary>
     public AnchorSpan? SrcSpan { get; set; }
 
     public required AnchorRef DstAnchor { get; set; }
 
+    /// <summary>Hedef ucun araligi; SrcSpan ile ayni anlam kurallari.</summary>
     public AnchorSpan? DstSpan { get; set; }
 
     /// <summary>Veritabaninda varsayilan yok; CLR varsayilanina sessizce dusmesin diye zorunlu.</summary>
