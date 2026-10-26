@@ -71,15 +71,17 @@
 - **Bitti sayılır:** `dotnet test --solution server/Mutalaa.slnx` yeşil (Docker Desktop açık).
 
 ## Kabul ölçütleri
-- [ ] `dotnet build server/Mutalaa.slnx` uyarısız ve hatasız.
-- [ ] `dotnet test --solution server/Mutalaa.slnx` yeşil; `MigrationTests` boş veritabanına bütün göçleri uyguluyor ve bekleyen göç yok.
-- [ ] PostgreSQL'deki 11 enum türünün etiketleri ve sırası `enums.json` ve Editoryal veritabanı §2 ile aynı (test).
-- [ ] Şema dökümü testi yeşil; anlık görüntü dosyası depoda.
-- [ ] `dotnet ef migrations has-pending-model-changes` fark bildirmiyor.
-- [ ] Yerel veritabanında `icerik` şemasında 19 tablo var (göç geçmişi tablosu hariç); Identity tabloları `kimlik` şemasında.
-- [ ] `seed` iki kez çalıştırıldıktan sonra `editor` ve `admin` rolleri ve tek yönetici var.
-- [ ] İdempotent SQL betiği belgedeki DDL ile karşılaştırıldı; fark yok ya da `/belge-esitle` ile işlendi.
-- [ ] `appsettings*.json` dosyalarında parola ya da anahtar değeri yok.
+- [x] `dotnet build server/Mutalaa.slnx` uyarısız ve hatasız.
+- [x] `dotnet test --solution server/Mutalaa.slnx` yeşil; `MigrationTests` boş veritabanına bütün göçleri uyguluyor ve bekleyen göç yok.
+- [x] PostgreSQL'deki 11 enum türünün etiketleri ve sırası `enums.json` ve Editoryal veritabanı §2 ile aynı (test).
+- [x] Şema dökümü testi yeşil; anlık görüntü dosyası depoda.
+- [x] `dotnet ef migrations has-pending-model-changes` fark bildirmiyor.
+- [x] Yerel veritabanında `icerik` şemasında 19 tablo var (göç geçmişi tablosu hariç); Identity tabloları `kimlik` şemasında.
+- [x] `seed` iki kez çalıştırıldıktan sonra `editor` ve `admin` rolleri ve tek yönetici var.
+- [x] İdempotent SQL betiği belgedeki DDL ile karşılaştırıldı; fark yok ya da `/belge-esitle` ile işlendi.
+- [x] `appsettings*.json` dosyalarında parola ya da anahtar değeri yok.
+
+Kanıtlar aşağıdaki "Aşama kaydı"ndadır.
 
 ## Doğrulama
 ```bash
@@ -125,3 +127,50 @@ docs/10-claude-code/asamalar/A07-editoryal-veritabani.md dosyasındaki aşamayı
 
 ## İlgili dosyalar
 - [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A06](./A06-lisans-defteri-ve-enumlar.md) · Sonraki: [A08](./A08-ci-is-akislari.md)
+
+## Aşama kaydı (kapanış 2026-10-27)
+
+Plan kararları (2026-10-26): BÇ-05 `review.yz_kaydi jsonb` olarak çözüldü; `enums.json` 11 türe çıktı; parola yalnız uzunluk >= 12. Üçü, ad politikası ve dizin kuralıyla birlikte [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) olarak kaydedildi.
+
+### A07.1 doğrulamaları (iki `arastirmaci`, 26 Ekim 2026)
+
+| Madde | Sonuç ve kaynak |
+|---|---|
+| EF Core 10 sürümü | 10.0.14 (25 Ekim, plan dışı güvenlik sürümü), `dotnet-ef` 10.0.14; araç eskiyse yalnız uyarı çıkar ([OperationExecutor.cs](https://raw.githubusercontent.com/dotnet/efcore/release/10.0/src/EFCore.Design/Design/OperationExecutor.cs)). Kodda 10.0.14 sabitlendi |
+| Npgsql EF 10.0.3 `MapEnum` | Etiketleri alfabetik dizer, tasarım gereği ([efcore.pg #3390](https://github.com/npgsql/efcore.pg/issues/3390), [#3667](https://github.com/npgsql/efcore.pg/issues/3667)); açık `HasPostgresEnum` ile sıra korunur. `SetPostgresVersion(18, 0)` gerekir ([NpgsqlDbContextOptionsBuilder.cs](https://raw.githubusercontent.com/npgsql/efcore.pg/v10.0.3/src/EFCore.PG/Infrastructure/NpgsqlDbContextOptionsBuilder.cs)) |
+| `EFCore.NamingConventions` | 10.0.1 EF Core 10 destekler (Apache-2.0); kültür verilmezse Invariant; açık adları ezmez ([nuspec](https://api.nuget.org/v3-flatcontainer/efcore.namingconventions/10.0.1/efcore.namingconventions.nuspec)) |
+| `xmin` | `uint` + `IsRowVersion()` -> `xid`, sütun adı `xmin`; göçte sütun üretilmez, gölge özellik çalışır ([Npgsql eşzamanlılık](https://www.npgsql.org/efcore/modeling/concurrency.html)); `DbUpdateConcurrencyException` testle doğrulandı |
+| PostgreSQL 18 `uuidv7()` | 18.0'da eklendi ([functions-uuid](https://www.postgresql.org/docs/18/functions-uuid.html)); yerel kapta 18.6'da çalıştı (`uuid_extract_version` = 7) |
+| Üretilen sütun varsayılanı | VIRTUAL; sanal sütun dizinlenemez, bu yüzden `STORED` açık yazılır ([sql-createtable](https://www.postgresql.org/docs/18/sql-createtable.html), [ddl-generated-columns](https://www.postgresql.org/docs/18/ddl-generated-columns.html)) |
+| `pg_dump` değişken satırlar | `\restrict` ve `\unrestrict` rastgele anahtar taşır; sürüm yorumları ara sürümle değişir ([app-pgdump](https://www.postgresql.org/docs/18/app-pgdump.html), [CVE-2025-8714](https://www.postgresql.org/support/security/CVE-2025-8714/)); dört satır ayıklanır |
+| Testcontainers | `Testcontainers.PostgreSql` 4.16.0 (MIT); parametresiz `PostgreSqlBuilder()` `[Obsolete]` ([NuGet](https://www.nuget.org/packages/Testcontainers.PostgreSql)); imaj `postgres:18.6-trixie` |
+| Identity EF | 10.0.14; çerçeve başvurusu istemez; şema sürümü varsayılanı V1 (passkey tablosu yok, `kimlik` 7 tablo); model `IdentityOptions`'ı DI'dan okur ([IdentityUserContext.cs](https://raw.githubusercontent.com/dotnet/aspnetcore/release/10.0/src/Identity/EntityFrameworkCore/src/IdentityUserContext.cs)) |
+
+### Kabul ölçütleri ve kanıt
+
+| Ölçüt | Kanıt |
+|---|---|
+| Derleme | `dotnet build server/Mutalaa.slnx --no-incremental`: 0 uyarı, 0 hata |
+| Testler | `dotnet test --solution server/Mutalaa.slnx` 1755/1755 (Domain 1544, Publisher 2, Api 209); Debug iki koşu ve Release bir koşu; `dotnet format ... --verify-no-changes` çıkış 0 |
+| Enum sırası | `PostgresEnumTests`: 11 türün `pg_enum` etiketleri `enumsortorder` sırasıyla `enums.json` ile aynı; `EnumDocumentTests`: `enums.json` = belge §2; TypeScript 15, Python `test_enums.py` 33 |
+| Anlık görüntü | `Snapshots/editoryal-sema.sql` (1393 satır) depoda; `SchemaSnapshotTests` ardışık iki koşuda yeşil |
+| Bekleyen değişiklik | `dotnet ef migrations has-pending-model-changes`: "No changes have been made" |
+| Yerel veritabanı | `icerik` 19 tablo (+ göç geçmişi), `kimlik` 7 tablo, 11 enum; göç geçmişinde yalnız `20261026222825_CreateEditorialSchema` |
+| `seed` | İki çalıştırma çıkış 0; `kimlik.roles` 2, `kimlik.users` 1, yönetici `admin` rolünde; günlükte parola, e-posta ve bağlantı dizesi yok |
+| İdempotent betik | `.tmp/editoryal-goc.sql` geçici veritabanında art arda iki kez hatasız uygulandı; Up -> Down -> Up döngüsü çalıştı; belge DDL'i ile `ModelDdlTests` (sütun, tip, NOT NULL, DEFAULT, 18 CHECK, 18 FK) ve DDL sadakati denetçisi karşılaştırdı; kabul edilmiş farklar Editoryal veritabanı §12'de |
+| Gizli değer | `appsettings*.json` taraması boş; diff taramaları boş |
+| Göç paketi | `.tmp/efbundle.exe` üretildi (git dışı) |
+
+### İnceleme
+
+Çok ajanlı denetim (7 bakış açısı: kod doğruluğu, metin bütünlüğü, lisans, DDL sadakati, test yeterliği, güvenlik, belge sapması; 49 ajan, her bulgu çürütülmeye çalışıldı): 50 bulgu, engelleyici yok; 37 onaylı, 6 kısmi, 7 çürütülen. Düzeltilenler: `Down()` 11 enum türünü ve `kimlik` şemasını düşürüyor; `kimlik.users` e-posta dizini tekil; bağlantı dizesi bağlam kurulurken okunuyor; `Api.csproj` biçimi; `AnchorSpan` üç anlamının belgelenmesi; K-26 için `unit.metin` bayt-bayt saklama testi (`TextIntegrityTests`); `unit.anchor`, FK, `page_map` ve kalan 13 CHECK testleri; Down döngüsü testi; test kabının rastgele parolası ve yalnız 127.0.0.1; belge sapmalarının tamamı (Backend API §2/§3/§6/§7, Editoryal veritabanı §1/§4/§5/§8/§11/§12/§13, A13/A14, Test stratejisi §6, Yerel geliştirme, Teknoloji yığını).
+
+Devreden öneriler: `content_hash` ile `metin` tutarlılığı veritabanında denetlenmiyor (A10 yükleme kapısı); `source` özet sütunlarında biçim CHECK'i yok ([BÇ-41](../07-belge-celiskileri.md), A13/A14); kilit yalnız `AccessFailedAsync` / `CheckPasswordSignInAsync(lockoutOnFailure: true)` ile işler (A14 uç testi); `NoAction` FK'de EF izlenen çocuğu NULL'a çektiği için silme 23503 yerine 23502 verebilir (A14 hata eşlemesi); `unit` okumaları `tsv_*` sütunlarını da seçer (A13/A14 projeksiyon); `Program.cs` seed dalı için süreç düzeyi çıkış kodu testi yazılmadı; `THIRD_PARTY_NOTICES` A34'e eklendi; `halfvec` .NET türü v1.x'te doğrulanacak.
+
+### Kullanıcıya bırakıldı
+
+Yok (emülatör işi yok). Kullanıcı üç `dotnet user-secrets` değerini girdi ve veritabanı parolasını `.env` ile eşitledi.
+
+### Sürprizler
+
+Npgsql `MapEnum` etiketleri alfabetik diziyor (lisans kapısı sırasını bozardı); EF göç dosyaları, `dotnet user-secrets init` çıktısı ve kilit dosyaları BOM ve CRLF yazıyor; `migrations bundle` kilit dosyasına `win-x64` ekliyor; `.env` parolası kurulumdan sonra değişince kapsayıcı ve veritabanı eski parolada kalıyor. Hepsi `ef-goc` ve `windows-sorun` becerilerine işlendi.
