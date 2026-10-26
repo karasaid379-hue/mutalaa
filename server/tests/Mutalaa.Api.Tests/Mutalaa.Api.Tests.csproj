@@ -17,4 +17,16 @@
     <ProjectReference Include="..\..\Mutalaa.Api\Mutalaa.Api.csproj" />
   </ItemGroup>
 
+  <!-- Domain.Tests destek dosyalari baglantili eklenir (kopya yok): kultur kapsami, enum JSON ve DDL okuyucusu. -->
+  <ItemGroup>
+    <Compile Include="..\Mutalaa.Domain.Tests\Support\CultureScope.cs" Link="Support\CultureScope.cs" />
+    <Compile Include="..\Mutalaa.Domain.Tests\Support\EditorialDoc.cs" Link="Support\EditorialDoc.cs" />
+    <Compile Include="..\Mutalaa.Domain.Tests\Support\EnumsJson.cs" Link="Support\EnumsJson.cs" />
+  </ItemGroup>
+
+  <!-- Ortak enum JSON'u cikti klasorune kopyalanir (data\enums.json). -->
+  <ItemGroup>
+    <None Include="..\..\..\packages\content-schema\enums.json" Link="data\enums.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
