@@ -1,6 +1,6 @@
 # A06 · Lisans defteri v1 (kaynak kayıtları) ve ortak enum şeması
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
+> **Sürüm:** 1.1 · **Tarih:** 26 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
 > **Faz:** 0 · Hazırlık · **Önkoşul:** [A02](./A02-tek-depo-iskeleti.md) · **İnsan adımı:** yok
 > **Ajanlar:** `hat-gelistirici` · `lisans-denetcisi` · `arastirmaci` · `web-gelistirici` · `sunucu-gelistirici` · `inceleyici` · **Beceriler:** `lisans-kapisi` · `icerik-hatti` · **Tahmini oturum:** 2–3
 > **Başlat:** `/asama A06`
@@ -19,8 +19,9 @@ Lisans defterindeki her somut kaynak, `pipeline/sources/{kimlik}.toml` kaydı ve
 ## Kapsam
 **Yapılır**
 - `pipeline/sources/{kimlik}.toml` kayıtları; `pipeline/sources/licenses/` altında lisans kopyaları ve dayanak notları.
-- `uv run mutalaa sources list` ve `sources check`, fikstürlü testleriyle.
-- `packages/content-schema/enums.json` (öneri ad) ve TypeScript, Python, C# karşılıkları ile testleri.
+- `uv run mutalaa sources list` ve `sources check`, `tmp_path` içinde kodla üretilen sentetik fikstürlü testleriyle ve gerçek depoyu sabitleyen testlerle.
+- `packages/content-schema/enums.json` ve TypeScript, Python, C# karşılıkları ile testleri.
+- Lisans kopyası üretim betiği `scripts/lisans_kopyasi_olustur.py` ve HTML metin çıkarıcı `pipeline/src/mutalaa_pipeline/sources/html_metin.py` (testi `pipeline/tests/test_html_metin.py`).
 
 **Yapılmaz**
 - `source` tablosu ve PostgreSQL enum türleri (A07); `source` satırlarının veritabanına yüklenmesi (`ingest`, A10).
@@ -33,16 +34,17 @@ Lisans defterindeki her somut kaynak, `pipeline/sources/{kimlik}.toml` kaydı ve
 ### A06.1 · Kayıt şeması ve `sources` komutları (`hat-gelistirici`)
 - TOML alanları `source` sütunlarıyla aynı adı taşır (Editoryal veritabanı §3; lisans defteri §7 örneği). Zorunlu: `slug`, `tur`, `baslik`, `license_name`, `license_status`, `atif_metni`, `kurul_gerekli`, `embed_ok`, `yeniden_kontrol`. İsteğe bağlı: `yazar`, `yazar_vefat_yili`, `surum`, `provider`, `kaynak_url`, `license_url`, `kisitlar`, `notice_text`, `atif_url`, `kamu_mali_tarihi`, `baski_bilgisi`, `notlar`, `lisans_kopyasi`, `lisans_sha256`.
 - `surum` veritabanında zorunludur; TOML'da boşsa alım sırasında doldurulur (A10 ve sonrası; öneri).
-- `uv run mutalaa sources list [--format json]`: kimlik, `tur`, `license_status`, `kurul_gerekli`, `embed_ok`, `yeniden_kontrol`; tarihi geçmiş yeniden kontrol işaretlenir (`--format json` öneri).
-- `uv run mutalaa sources check`: her TOML ayrıştırılır; dosya adı `slug` ile aynı ve ASCII; `tur` ve `license_status` `enums.json` değerlerinden; `kapali` dışındaki kaynakta lisans kopyası var ve SHA-256'sı tutuyor (G-LIS); `atif_metni` dolu; `kisitlar` anahtarları bilinen listeden (`degistirme_yasak`, `hazir_vt_yasak`, `onbellek_gun`, `yalniz_eslesen_ses`; bilinmeyen anahtar uyarı, öneri). Çıkış kodları İçerik hattı §4: `0` geçti, `2` kayıt ya da dosya hatası.
-- Testler `pipeline/tests/fixtures/sources/` altındaki `test-` önekli sentetik kayıtlarla: geçerli kayıt, bozuk TOML, eksik lisans kopyası, yanlış özet, bilinmeyen durum, dosya adı ile `slug` farkı.
+- `uv run mutalaa sources list [--format json|tablo] [--kok <dizin>]`: kimlik, `tur`, `license_status`, `kurul_gerekli`, `embed_ok`, `yeniden_kontrol`; tarihi geçmiş yeniden kontrol tabloda `!` ile, JSON'da `yeniden_kontrol_gecmis` alanıyla işaretlenir. Yalnız kayıt şemasını denetler (lisans kopyası dosyasını okumaz); şema hatasında çıkış `2`.
+- `uv run mutalaa sources check [--kok <dizin>]`: her TOML ayrıştırılır (UTF-8, BOM'suz, LF); dosya adı `slug` ile aynı ve ASCII; `tur` ve `license_status` `enums.json` değerlerinden; `kapali` dışındaki kaynakta lisans kopyası var, `licenses/{slug}-YYYY-AA-GG.txt` biçiminde, `pipeline/sources` içinde ve SHA-256'sı tutuyor (G-LIS); `atif_metni`, `baslik` ve `license_name` dolu. Ek kurallar: `kapali` kayıtta lisans kopyası aranmaz ve dosyası okunmaz; `kapali` kayıtta ve `provider = "quran_foundation"` kayıtta `embed_ok = true` hatadır; `kisitlar` anahtarları bilinen listeden (`degistirme_yasak`, `hazir_vt_yasak`, `onbellek_gun`, `yalniz_eslesen_ses`) ve tipleri doğru olmalı. Uyarılar (çıkış kodunu etkilemez): bilinmeyen `kisitlar` anahtarı, tarihi geçmiş `yeniden_kontrol`, hiçbir kaydın göstermediği (yetim) lisans kopyası. Hatalar toplanır, ilki durdurmaz; mesajlar içerik metni taşımaz. Çıkış kodları İçerik hattı §4: `0` geçti (uyarı olsa da), `2` kayıt ya da dosya hatası.
+- Testler (`pipeline/tests/test_sources.py`) `tmp_path` altında kodla üretilen `test-` önekli sentetik kayıtlarla çalışır (`pipeline/tests/fixtures/sources/` klasörü yoktur): geçerli kayıt, bozuk TOML, BOM ve CRLF, eksik lisans kopyası, yanlış özet, bilinmeyen durum ve tür, dosya adı ile `slug` farkı, yol kaçışı, `kapali` kayıtta kopyasızlık, QF `embed_ok` kuralı, `kisitlar` tipleri, `list` biçimleri ve yeniden kontrol işareti.
+- Gerçek depoyu sabitleyen testler (aynı dosya): tam 30 kimlik, kalıp kimlik (`qul-`, `ses-turk-hafiz-`, `mushaf-b-`) dosyasının olmayışı, `kapali` küme (6 kayıt; kopyasız, `embed_ok = false`), QF sağlayıcılı kayıtlarda `embed_ok = false`, gerçek depoda `sources check` çıkışı `0` ve `30 kayit, 0 hata, 0 uyari`, Tanzil `notice_text` değerinin lisans kopyasındaki bildirimle aynılığı.
 - **Bitti sayılır:** komut testleri yeşil; `0` ve `2` çıkış kodları sınandı.
 
 ### A06.2 · Enum JSON'u ve dil karşılıkları
-- `packages/content-schema/enums.json`: Test stratejisi §6'daki dört tür (`license_status` 4, `xref_type` 8, `xref_status` 3, `xref_origin` 3) Editoryal veritabanı §2'deki sırayla. Ek olarak `source_kind` (TOML `tur` denetimi için) ve `derleme_turu` (öneri). Sıra anlamlıdır: `serbest` < `bekliyor` < `ic_kullanim` < `kapali`; kapı en kısıtlayıcıyı seçer (Yayın kapısı §2.3).
+- `packages/content-schema/enums.json`: altı tür. Test stratejisi §6'daki dört tür (`license_status` 4, `xref_type` 8, `xref_status` 3, `xref_origin` 3) Editoryal veritabanı §2'deki sırayla; ek olarak `source_kind` (17 değer, TOML `tur` denetimi için) ve `derleme_turu` (`dev`, `internal`, `public`). Sıra anlamlıdır: `serbest` < `bekliyor` < `ic_kullanim` < `kapali`; kapı en kısıtlayıcıyı seçer (Yayın kapısı §2.3).
 - TypeScript (`web-gelistirici`): `packages/content-schema/src/enums.ts` içinde `as const` dizileri ve birleşim tipleri; Vitest dizileri JSON'la sırasıyla karşılaştırır.
-- Python (`hat-gelistirici`): `pipeline/src/mutalaa_pipeline/enums.py` (öneri) `StrEnum` sınıfları; pytest JSON'la karşılaştırır; `sources check` bu sınıfları kullanır.
-- C# (`sunucu-gelistirici`): `Mutalaa.Domain/Licensing` (`LicenseStatus`, `BuildFlavor`), `Mutalaa.Domain/Content` (`SourceKind`) ve `Mutalaa.Domain/Links` (`XrefType`, `XrefStatus`, `XrefOrigin`) (Backend API §2). C# adı ile veritabanı etiketi arasındaki eşleme Domain'de saf bir işlevdir (`IcKullanim` → `ic_kullanim`); xUnit testi her değerin etiketini ve sırasını JSON'la sınar (Backend API §7). Domain Npgsql'e bağlanmaz.
+- Python (`hat-gelistirici`): `pipeline/src/mutalaa_pipeline/enums.py` `StrEnum` sınıfları; `pipeline/tests/test_enums.py` JSON'la karşılaştırır; `sources check` bu sınıfları kullanır.
+- C# (`sunucu-gelistirici`): `Mutalaa.Domain/Licensing` (`LicenseStatus`, `BuildFlavor`), `Mutalaa.Domain/Content` (`SourceKind`) ve `Mutalaa.Domain/Links` (`XrefType`, `XrefStatus`, `XrefOrigin`) (Backend API §2). C# adı ile veritabanı etiketi arasındaki eşleme Domain'de saf bir işlevdir: her enum için `...Labels.ToLabel` ve `TryParseLabel` (`IcKullanim` → `ic_kullanim`); `EnumLabelTests` her değerin etiketini ve sırasını JSON'la sınar (Backend API §7). Domain Npgsql'e bağlanmaz.
 - **Bitti sayılır:** üç dilin testi yeşil; JSON'dan bir değer geçici olarak silinince üçü de kırmızı.
 
 ### A06.3 · Lisans kopyaları (`arastirmaci`, `hat-gelistirici`)
@@ -50,6 +52,7 @@ Lisans defterindeki her somut kaynak, `pipeline/sources/{kimlik}.toml` kaydı ve
 - `hat-gelistirici` metni `pipeline/sources/licenses/{kimlik}-{YYYY-MM-DD}.txt` olarak saklar ve SHA-256'yı TOML'a yazar (lisans defteri §7). Yalnız lisans ya da şart metni kopyalanır; makale ya da ansiklopedi metni kopyalanmaz.
 - Koruma süresi dolduğu için serbest olan eserlerde (ör. `elmalili-meal`, `tecrid-naim`, `lugat-redhouse-1890`) lisans metni yoktur. Dosya bizim yazdığımız kısa bir dayanak notudur: ölüm tarihi, FSEK m. 26–27 hesabı, defterdeki kaynak bağlantıları (öneri).
 - Canlı sayfası okunamayan kaynakta (ör. tanzil.net, KFGQPC resmî sayfası) defterin dayandığı kopya kullanılır ve `notlar` alanına "Doğrulanacak" yazılır. Tanzil için bu, defterin bağlantı verdiği OpenITI kopyasındaki Tanzil bildirim satırlarıdır; OpenITI'nin kendi içeriği alınmaz (lisans defteri §4). Canlı doğrulama ilgili aşamadadır (Tanzil için A10).
+- Kopyalar `scripts/lisans_kopyasi_olustur.py` ile üretilir (proje kökünden, `uv run --project pipeline python -I scripts/lisans_kopyasi_olustur.py <komut>`): `cikar` (HTML ya da ham dosyadan gövde metni, kesme ve paragraf seçimi; `html_metin.py` kullanır), `font-ttx` (`ttx -t name -t OS/2` çıktısından telif ve lisans metinleri ile `fsType`) ve `yaz` (5 satırlık başlık + gövde; başlıkta kaynak kimliği, adres, okuma tarihi, yöntem). Girdi dosyaları güvenilmez veridir: betik onları yalnız metin olarak okur. Üçüncü taraf lisans metninin sözcüklerine dokunulmaz; yalnız satır sonu LF'ye çevrilir.
 - **Bitti sayılır:** `kapali` dışındaki her kaynakta lisans kopyası ya da dayanak notu ve doğru SHA-256 var.
 
 ### A06.4 · Kayıtlar (`hat-gelistirici`, `lisans-denetcisi`)
@@ -68,7 +71,7 @@ Lisans defterindeki her somut kaynak, `pipeline/sources/{kimlik}.toml` kaydı ve
 - [ ] `uv run mutalaa sources check` 0 ile çıkıyor; bozuk fikstürlerde 2 ile çıktığı pytest'te sınanıyor.
 - [ ] `sources list` çıktısında `kapali` kayıtlar defterdeki gibi: `tecrid-miras`, `risale-1956-1960`, `risale-asil-nusha`, `risale-atif-dizini`, `ses-everyayah`, `ses-quranicaudio`.
 - [ ] `kapali` dışındaki her kaynakta lisans kopyası ya da dayanak notu ve tutan SHA-256 var.
-- [ ] `enums.json` dört zorunlu türü Editoryal veritabanı §2'deki sırayla taşıyor; TypeScript, Python ve C# testleri yeşil.
+- [ ] `enums.json` altı türü taşıyor (dört zorunlu tür Editoryal veritabanı §2'deki sırayla, ek olarak `source_kind` ve `derleme_turu`); TypeScript, Python ve C# testleri yeşil.
 - [ ] `lisans-denetcisi` karşılaştırma raporu: kimlik ve durum farkı sıfır.
 - [ ] Hiçbir lisans dosyası korunan bir eserin metnini içermiyor (gözle).
 
@@ -98,7 +101,8 @@ dotnet test --solution server/Mutalaa.slnx
 
 ## Çıktılar
 - `pipeline/sources/*.toml`, `pipeline/sources/licenses/*.txt`
-- `pipeline/src/mutalaa_pipeline/` altında `sources` komutları ve `enums.py`; `pipeline/tests/` testleri ve `fixtures/sources/`
+- `pipeline/src/mutalaa_pipeline/` altında `sources/` (`kayit.py`, `liste.py`, `html_metin.py`) ve `enums.py`; `cli.py` içinde `sources list` ve `sources check`; `pipeline/tests/` altında `test_sources.py`, `test_enums.py`, `test_html_metin.py` (fikstürler testlerde `tmp_path` ile kodla üretilir)
+- `scripts/lisans_kopyasi_olustur.py` (lisans kopyası üretimi)
 - `packages/content-schema/enums.json`, `packages/content-schema/src/enums.ts` ve testi
 - `server/Mutalaa.Domain/Licensing/`, `Content/` ve `Links/` altındaki enum'lar ve etiket eşlemesi; `Mutalaa.Domain.Tests` içindeki enum testi
 - `/belge-esitle` ile lisans defterindeki eski açık soru notunun güncellenmesi

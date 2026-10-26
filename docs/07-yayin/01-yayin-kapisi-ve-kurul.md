@@ -154,7 +154,7 @@ Ayarlar › Kaynaklar ve lisanslar çevrimdışı açılır. Her içerik kaynağ
 | Kaynak | Şart ve ekranda gösterilen | Dayanak |
 |---|---|---|
 | Tanzil metni (Uthmani, Simple Clean) | Aynen dağıtım, değiştirmek yasak. "Tanzil Project" atfı, tanzil.net bağlantısı, telif bildiriminin tam metni | [Tanzil metni, OpenITI kopyası](https://raw.githubusercontent.com/OpenITI/0025AH/master/data/0001Quran/0001Quran.Mushaf/0001Quran.Mushaf.Tanzil001-ara1.mARkdown) |
-| Elmalılı meali (kendi düzeltilmiş metnimiz) | Eser 1 Ocak 2013'ten beri serbest. Künye, kaynak baskı, OCR ve düzeltme yöntemi; düzeltilmiş metnin lisansı Açık soru | [MKÜ kaydı](https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a) |
+| Elmalılı meali (kendi düzeltilmiş metnimiz) | Eser 1 Ocak 2013'ten beri serbest. Künye, kaynak baskı, OCR ve düzeltme yöntemi; düzeltilmiş metnin lisansı Açık soru | [MKÜ kaydı](https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a) (2026-10-26'da 403 verdi; tarih 1942 + 71 hesabıdır, [lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.3) |
 | QPC sayfa fontları (Mushaf A) | Developer Console hesabı ve erişilebilir bir yerde QF atfı | [QF Developer Terms](https://api-docs.quran.foundation/legal/developer-terms/) |
 | QAC morfolojisi (`kelime-kok` paketi) | Atıf ve corpus.quran.com bağlantısı; paket `bekliyor` (§2.4) | [QAC indirme](https://corpus.quran.com/download/) |
 | quran-align zamanlamaları | CC BY 4.0; Collin Fair atfı, lisans adı ve bağlantısı | [quran-align](https://raw.githubusercontent.com/cpfair/quran-align/master/README.md) |

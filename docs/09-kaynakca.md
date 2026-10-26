@@ -63,7 +63,7 @@ Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo 
 
 ### Meal, tefsir, kitap ve koruma süreleri
 
-- [Elmalılı yaşam tarihleri (MKÜ kaydı)](https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a). 1878–1942; meal 2013'ten beri serbest.
+- [Elmalılı yaşam tarihleri (MKÜ kaydı)](https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a). 1878–1942; meal 2013'ten beri serbest. Kayıt 2026-10-26'da 403 verdi, dayanak olarak doğrulanamadı (Doğrulanacak); 1942 vefat yılı Küre'de doğrulandı.
 - [Hak Dini Kur'an Dili (Küre)](https://kureansiklopedi.com/tr/detay/hak-dini-kuran-dili-2). Yazım sözleşmesi ve 1935–39 baskısı.
 - [Hasan Basri Çantay (Küre)](https://kureansiklopedi.com/tr/detay/cantay-hasan-basri). Vefat tarihi; meal 2035'te serbest.
 - [Ömer Nasuhi Bilmen (Küre)](https://kureansiklopedi.com/tr/detay/bilmen-omer-nasuhi). Vefat tarihi; eserler 2042'de serbest.

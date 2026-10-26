@@ -1,6 +1,6 @@
 # Test stratejisi
 
-> **Sürüm:** 1.5 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.6 · **Tarih:** 26 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
 
 Bu dosya neyin, hangi araçla, ne zaman test edildiğini tanımlar. Eşik değerlerinin çoğu bu dosyanın önerisidir; ilk ölçümden sonra kalibre edilir ve öyle işaretlidir.
@@ -184,7 +184,7 @@ public sealed class MigrationTests : IAsyncLifetime
 
 Yığın `xunit.v3` kullanır ([Teknoloji yığını](../02-mimari/02-teknoloji-yigini.md)); `IAsyncLifetime` yöntemleri `ValueTask` döndürür. Çözüldü (21 Ekim 2026): imza xunit.v3 kaynağında ve göç kılavuzunda doğrulandı ([IAsyncLifetime.cs](https://raw.githubusercontent.com/xunit/xunit/main/src/xunit.v3.core/IAsyncLifetime.cs), [xunit.v3 göç kılavuzu](https://xunit.net/docs/getting-started/v3/migration), okuma 21 Ekim 2026). Testler Microsoft.Testing.Platform üzerinde koşar; komut `dotnet test --solution server/Mutalaa.slnx` ([K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform), [Proje yapısı](../02-mimari/03-proje-yapisi.md) §4.2). A07'de örnek gerçek `MigrationTests` ile derlenir.
 
-**Enum tutarlılığı.** `license_status` (4 değer), `xref.type` (8), `xref.status` (3) ve `origin` (3) değerleri `packages/content-schema` içindeki tek bir JSON'dan okunur. PostgreSQL enum'u, C# enum'u, Python enum'u ve TypeScript birleşim tipi bu JSON'la karşılaştırılır.
+**Enum tutarlılığı.** Tek JSON `packages/content-schema/enums.json` dosyasıdır. Altı tür taşır: `license_status` (4 değer), `xref_type` (8), `xref_status` (3), `xref_origin` (3) ve bunlara ek olarak `source_kind` (kaynak kaydındaki `tur` denetimi için) ile `derleme_turu` (`dev`, `internal`, `public`). Sıra anlamlıdır (ör. `serbest` < `bekliyor` < `ic_kullanim` < `kapali`). TypeScript birleşim tipi (`packages/content-schema/test/enums.test.ts`, Vitest), Python enum'u (`pipeline/tests/test_enums.py`, pytest) ve C# enum'u (`EnumLabelTests`, xUnit v3; etiket ve sıra) bu JSON'la karşılaştırılır; üç dilin testi A06'da uygulandı. PostgreSQL enum'unun JSON'la karşılaştırılması A07'dedir; A07 kalan beş türü de aynı dosyaya ekler (öneri).
 
 **Kullanıcı veritabanı (cihazda, expo-sqlite + Drizzle).** Yayımlanmış her şema sürümünden bir fikstür veritabanı saklanır. Göç dosyaları Node'da SQLite üzerinde çalıştırılır ve veri kaybı olmadığı doğrulanır. Her kullanıcı tablosunda `id`, `hlc`, `updated_at`, `deleted_at`, `base_version`, `device_id` sütunlarının bulunduğu test edilir ([K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte)). Bir Maestro akışı eski sürümden güncellemeyi cihazda sınar.
 

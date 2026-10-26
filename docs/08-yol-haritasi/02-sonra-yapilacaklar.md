@@ -94,7 +94,7 @@ Proje sahibi bu maddenin kayda geçmesini özellikle istedi. [K-22](../00-ozet/0
 
 - **Neden önemli.** K-03 şimdilik yalnız Elmalılı'yı seçti. Diğer kaynakların durumu:
   - Çantay 1 Ocak 2035'te, Bilmen 1 Ocak 2042'de serbest kalıyor. Modern mealler korunuyor; Tanzil'in çeviri dosyaları yalnız ticari olmayan amaçla sunuluyor ([OPUS'taki Tanzil şartları](https://opus.nlpl.eu/Tanzil/corpus/version/Tanzil)).
-  - Arapça klasik tefsirler için en temiz kaynak Quranpedia veri lisansı (sürüm 2026-10-14) ([Quranpedia LICENSE](https://quranpedia.net/dumps/LICENSE.md)). OpenITI CC BY-NC-SA ([Zenodo](https://zenodo.org/records/3082463)).
+  - Arapça klasik tefsirler için en temiz kaynak Quranpedia veri lisansı (sürüm 2026-10-24) ([Quranpedia LICENSE](https://quranpedia.net/dumps/LICENSE.md)). OpenITI CC BY-NC-SA ([Zenodo](https://zenodo.org/records/3082463)).
   - Osmanlı dönemi Türkçe tefsirleri (Tibyân, Mevâkib) serbest, ama yalnız 1899–1906 Osmanlıca baskılarda bulunuyor ([SDÜ kaydı](https://opact.sdu.edu.tr/vufind/Record/7755/Description)). Rapor bunları uzun vadede rakipsiz bir katman olarak görüyor.
   - Arapça tefsirin yapay zekâyla Türkçeye çevrilmesi telif açısından mümkün. İçindeki âyet çevirileri meal sayılabileceği için insan denetimi ve görünür bir "doğrulanmamış çeviri" rozeti gerekir. Modern tahkiklerin dipnot, giriş ve fihristleri ayıklanır.
 - **Tetik.** Elmalılı tefsir paketi yayımlanınca; 2035 ve 2042 tarihleri (Faz 6).

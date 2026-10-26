@@ -1,5 +1,5 @@
 # İçerik Hattı
-> **Sürüm:** 1.4 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.5 · **Tarih:** 26 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)
 
 İçerik hattı, kaynak dosyaları alır, normalize eder, kalıcı adres (çapa) verir, zenginleştirir, denetler ve editoryal veritabanına (PostgreSQL 18) yükler. Python 3.13 ile yazılır, paketleri `uv` yönetir. Hat yalnız geliştirme makinesinde çalışır, üretim sunucusunda çalışmaz (K-12). SQLite içerik paketlerini hat üretmez; paketleri editör onayından sonra .NET yayınlayıcı (`server/Mutalaa.Publisher`) lisans kapısından geçirerek üretir.
@@ -36,6 +36,8 @@ pipeline/
 ├─ src/mutalaa_pipeline/
 │  ├─ cli.py               # `mutalaa` komutu
 │  ├─ config.py · runctx.py · lineage.py · db.py · logs.py
+│  ├─ enums.py · cikis.py  # enums.json'a karşı sınanan StrEnum sınıfları (A06); çıkış kodları
+│  ├─ sources/             # kaynak kaydı okuma ve denetim (kayit.py), liste çıktısı (liste.py), lisans sayfası metni çıkarma (html_metin.py); A06
 │  ├─ ingest/              # kaynak başına bağdaştırıcı: tanzil, qac, qul, quran_align, scans, hadith_ar
 │  ├─ normalize/           # unicode.py, turkish.py, arabic.py; arama anahtarları (A05, K-36)
 │  ├─ anchor/              # quran, meal, tefsir, hadith, risale; content_hash
@@ -119,8 +121,8 @@ Ortam değişkenleri: `MUTALAA_DB_URL`, `ANTHROPIC_API_KEY`. Değerler ortamdan 
 
 | Komut | İş |
 |---|---|
-| `uv run mutalaa sources list` | Kaynakları ve `license_status` değerlerini listeler |
-| `uv run mutalaa sources check` | Her kaynakta TOML, lisans kopyası, SHA-256 ve atıf metni var mı (G-LIS) |
+| `uv run mutalaa sources list [--format json\|tablo] [--kok <dizin>]` | `pipeline/sources/*.toml` kayıtlarını slug sırasında (Ordinal) listeler: `slug`, `tur`, `license_status`, `kurul_gerekli`, `embed_ok`, `yeniden_kontrol`. Varsayılan biçim `tablo`; tarihi geçmiş `yeniden_kontrol` değerinin sonuna `!` eklenir. `json` biçimi ek olarak `yeniden_kontrol_gecmis` alanını taşır (ASCII kaçışlı). Yalnız kayıt şemasını denetler, lisans kopyası dosyalarını okumaz; herhangi bir kayıtta şema hatası varsa hata stderr'e yazılır ve çıkış kodu `2` olur. `--kok` testler içindir; verilmezse `pnpm-workspace.yaml` aranır (A06) |
+| `uv run mutalaa sources check [--kok <dizin>]` | G-LIS denetimi: her TOML ayrıştırılır; `kapali` dışındaki kayıtta lisans kopyası (`licenses/{slug}-YYYY-AA-GG.txt`) bulunur, boş değildir ve SHA-256'sı tutar; `atif_metni`, `baslik` ve `license_name` boş değildir; `tur` ve `license_status` `enums.json` değerlerindendir. **Hata** (çıkış kodu `2`): şema, dosya adı ile `slug` farkı, BOM ya da CRLF, eksik ya da tutmayan lisans kopyası, `kapali` kayıtta ya da `provider = "quran_foundation"` kayıtta `embed_ok = true`. **Uyarı** (çıkış kodunu etkilemez): bilinmeyen `kisitlar` anahtarı, tarihi geçmiş `yeniden_kontrol`, `licenses/` altında hiçbir kaydın göstermediği (yetim) kopya. `kapali` kayıtta lisans kopyası aranmaz ve dosyası okunmaz; kayıt yalnız üst veridir. Son satır özet verir (`N kayıt, H hata, U uyarı`); çıkış `0` ya da `2` (A06) |
 | `uv run mutalaa ingest tanzil --variant uthmani` | İndirir, hash'ler, `data/raw`'a yazar, ayrıştırıp `data/staged` üretir |
 | `uv run mutalaa ingest qac` · `ingest quran-align` · `ingest qul --resource 75` | Diğer bağdaştırıcılar |
 | `uv run mutalaa ingest scans --edition elmalili-1935 --dir <klasör> --cilt <n>` | Bir cildin sayfa görsellerini cilt ve sayfa numarasıyla kaydeder |
@@ -141,7 +143,7 @@ Ortam değişkenleri: `MUTALAA_DB_URL`, `ANTHROPIC_API_KEY`. Değerler ortamdan 
 
 Tarama ve OCR komutları baskı kimliği (`--edition elmalili-1935`), birim komutları kaynak kimliği (`--source elmalili-meal`) alır; kimlikler [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) dosyasındadır. Ortak bayraklar: `--dry-run`, `--force` (parmak izi aynı olsa da çalıştır), `--limit N`, `--config <dosya>`. Çıkış kodları: `0` başarılı, `1` QA kapısı kaldı, `2` girdi ya da yapılandırma hatası, `3` lisans kapısı (kaynak `kapali`).
 
-Aşama dosyaları şu `uv run mutalaa` komutlarını öneri olarak ekler; komut uygulanınca bu listeye işlenir (A04'ün `export ayet-sayilari` ve `export test-vectors` komutları ile A05'in `export ic-kesme` komutu uygulandı ve yukarıdaki tabloya işlendi): `ingest tanzil --variant ust-veri` (Tanzil üst veri dosyası, A11); `ingest sure-adlari --dosya <tsv>` ve `export sure-adlari` (sure adlarının içe ve dışa aktarımı, A11); `ingest fikstur --source <test-kaynak>` (sentetik fikstürler: `test-kucuk` A13, `test-risale-ornek` A20); `enrich morphology` (QAC segmentlerinden kelime düzeyi kök ve lemma, A17); `enrich tr-roots --source <kimlik>` (Türkçe kelime → Arapça kök, A18); `qa gold --type <tür>` (altın set ölçümü, ör. `kok`; A18). Kur'an içi `kok`, `lemma` ve `benzer_ayet` bağlantılarını üreten komutun adı A18'de henüz verilmedi. Hadis eşleme komutları (`enrich hadith-map`, `enrich hadith-refs`) [Hadis hazırlığı](./04-hadis-hazirligi.md#7-ocr-ihtiyacı) §7'dedir.
+Aşama dosyaları şu `uv run mutalaa` komutlarını öneri olarak ekler; komut uygulanınca bu listeye işlenir (A04'ün `export ayet-sayilari` ve `export test-vectors` komutları, A05'in `export ic-kesme` komutu ile A06'nın `sources list` ve `sources check` komutları uygulandı ve yukarıdaki tabloya işlendi): `ingest tanzil --variant ust-veri` (Tanzil üst veri dosyası, A11); `ingest sure-adlari --dosya <tsv>` ve `export sure-adlari` (sure adlarının içe ve dışa aktarımı, A11); `ingest fikstur --source <test-kaynak>` (sentetik fikstürler: `test-kucuk` A13, `test-risale-ornek` A20); `enrich morphology` (QAC segmentlerinden kelime düzeyi kök ve lemma, A17); `enrich tr-roots --source <kimlik>` (Türkçe kelime → Arapça kök, A18); `qa gold --type <tür>` (altın set ölçümü, ör. `kok`; A18). Kur'an içi `kok`, `lemma` ve `benzer_ayet` bağlantılarını üreten komutun adı A18'de henüz verilmedi. Hadis eşleme komutları (`enrich hadith-map`, `enrich hadith-refs`) [Hadis hazırlığı](./04-hadis-hazirligi.md#7-ocr-ihtiyacı) §7'dedir.
 
 ## 5. Veri soyu: raw → staged → PostgreSQL
 
@@ -203,7 +205,7 @@ Toplu yükleme psycopg 3'ün `COPY` desteğiyle önce `staging_unit` tablosuna y
 
 ## 8. Yeni kaynak ekleme
 
-1. [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) kontrol listesi tamamlanır; `pipeline/sources/{kimlik}.toml` açılır.
+1. [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) kontrol listesi tamamlanır; `pipeline/sources/{kimlik}.toml` açılır ve `uv run mutalaa sources check` hatasız (çıkış `0`) geçer. `check` kaydın şemasını ve lisans kopyasını denetler; `kapali` bir kayıt `check`'te hata sayılmaz (yalnız üst veridir), ama `ingest` komutları `kapali` kaynakta `3` koduyla durur (G-LIS).
 2. `ingest/{kimlik}.py` bağdaştırıcısı yazılır.
 3. Normalizasyon ve çapa eşlemesi tanımlanır; yeni çapa biçimi gerekiyorsa önce [Çapa şeması](../03-veri/01-capa-semasi.md) güncellenir.
 4. Kaynağa özgü QA kuralları `qa/checks/{kimlik}.py` dosyasına eklenir.

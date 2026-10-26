@@ -105,7 +105,7 @@ Durumların anlamı K-06'dadır: `serbest` kamu malı, açık lisans ya da yazı
 | `slug` | `tur` | `license_status` | `kurul_gerekli` | Not |
 |---|---|---|---|---|
 | `tanzil-uthmani`, `tanzil-simple-clean` | kuran_metni | `serbest` | evet | CC BY 3.0, değiştirme yasağı ([Tanzil metni](https://raw.githubusercontent.com/OpenITI/0025AH/master/data/0001Quran/0001Quran.Mushaf/0001Quran.Mushaf.Tanzil001-ara1.mARkdown)) |
-| `elmalili-meal`, `elmalili-tefsir` | meal, tefsir | `serbest` | meal evet; tefsir Açık soru | 1 Ocak 2013'ten beri serbest ([MKÜ kaydı](https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a)); baskı kimliği `elmalili-1935` `baski_bilgisi` içinde; kendi aktarımımız |
+| `elmalili-meal`, `elmalili-tefsir` | meal, tefsir | `serbest` | meal evet; tefsir Açık soru | 1 Ocak 2013'ten beri serbest ([MKÜ kaydı](https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a); 2026-10-26'da 403 verdi, tarih 1942 + 71 hesabıdır, [lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.3); baskı kimliği `elmalili-1935` `baski_bilgisi` içinde; kendi aktarımımız |
 | `qac-morfoloji` | morfoloji | `bekliyor` | hayır | QAC'ye yazılı soru ([QAC SSS](https://corpus.quran.com/faq.jsp)) |
 | `tecrid-naim` · `tecrid-miras` | hadis_ceviri | `serbest` · `kapali` | hayır | Miras ciltleri 1 Ocak 2028'de serbest; `kamu_mali_tarihi = 2028-01-01` |
 | `risale-1956-1960`, `risale-asil-nusha` | risale | `kapali` | hayır | Metin avukat görüşüne kadar kapalı; sonra `ic_kullanim`, izinle ya da 1 Ocak 2031'de `serbest`. Asıl nüsha 2031'den sonra yalnız karşılaştırma için |
