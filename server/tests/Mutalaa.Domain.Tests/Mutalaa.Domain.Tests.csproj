@@ -21,6 +21,7 @@
   <ItemGroup>
     <None Include="..\..\..\shared\test-vectors\**\*.jsonl" Exclude="..\..\..\shared\test-vectors\node_modules\**" Link="vectors\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\..\shared\data\ayet-sayilari.json" Link="data\ayet-sayilari.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\packages\content-schema\enums.json" Link="data\enums.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\..\shared\data\ic-kesme.txt" Link="data\ic-kesme.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
