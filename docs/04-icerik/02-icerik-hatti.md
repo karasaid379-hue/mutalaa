@@ -1,6 +1,6 @@
 # İçerik Hattı
-> **Sürüm:** 1.5 · **Tarih:** 26 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)
+> **Sürüm:** 1.6 · **Tarih:** 26 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)
 
 İçerik hattı, kaynak dosyaları alır, normalize eder, kalıcı adres (çapa) verir, zenginleştirir, denetler ve editoryal veritabanına (PostgreSQL 18) yükler. Python 3.13 ile yazılır, paketleri `uv` yönetir. Hat yalnız geliştirme makinesinde çalışır, üretim sunucusunda çalışmaz (K-12). SQLite içerik paketlerini hat üretmez; paketleri editör onayından sonra .NET yayınlayıcı (`server/Mutalaa.Publisher`) lisans kapısından geçirerek üretir.
 
@@ -253,13 +253,13 @@ Bir birim, aşağıdaki kapıları geçmeden ve editörde onaylanmadan yayına a
 | G-HIZ | Her `q:{s}:{a}` için bir `meal:elmalili:{s}:{a}`; tefsir aralıkları âyet sınırında; Tecrîd–Buhârî eşlemesi çelişkisiz. Âyet ↔ meal ve âyet ↔ tefsir ilişkisi adreslerden türetilir, `xref`'e yazılmaz (K-27) | İnceleme kuyruğu |
 | G-MET | OCR ve aktarım: örneklem CER eşiği, imlâ sözlüğü tutarlılığı, belirsiz okuma işareti (`⟦?⟧`) kalmadı | Yayına aday olamaz |
 | G-INC | Yayına aday birimlerin tamamı `onayli`; ikinci okuma örnekleminde hata oranı eşiğin altında | Yayına aday olamaz |
-| G-YZ | Her yapay zekâ çıktısı model, istem sürümü ve `dogrulanmis = false` taşır; onaysız çıktı doğrulanmış işaretlenmemiş; çağrı kayıtlarında `embed_ok = false` bir kaynak yok | Hat durur |
+| G-YZ | Her yapay zekâ çıktısı model, istem sürümü ve girdi özeti taşır (`review.yz_modeli`, `review.yz_kaydi`; K-37); onaysız çıktı doğrulanmış görünmüyor (`dogrulanmis` hedefin onaylı durumundan türetilir); çağrı kayıtlarında `embed_ok = false` bir kaynak yok | Hat durur |
 | G-NOR | `shared/test-vectors/` normalizasyon vektörleri Python uygulamasında geçer | Hat durur |
 | G-KUR | Kurul kapsamındaki bir birimin metni değiştiyse "yeniden onay gerekebilir" işareti üretildi | Uyarı; yayınlayıcıya bilgi |
 
 ## 10. Yapay zekâ kullanım politikası
 
-1. Yapay zekâ taslak üretir, insan karar verir. Her yapay zekâ çıktısı veritabanına `status = 'aday'` ve `dogrulanmis = false` ile girer.
+1. Yapay zekâ taslak üretir, insan karar verir. Her yapay zekâ çıktısı veritabanına `status = 'aday'` ile girer ve onaylanana kadar `dogrulanmis = false` sayılır (alan saklanmaz, hedefin durumundan türetilir; K-37).
 2. Onaysız yapay zekâ metni hiçbir pakette doğrulanmış görünmez. Gösterilirse "doğrulanmamış" rozetiyle gösterilir (K-25).
 3. Yapay zekâ ile meal, tefsir ya da hadis çevirisi üretilmez. Meal yayınları Din İşleri Yüksek Kurulu incelemesine açıktır; Arapça metinle gösterilen bir yapay zekâ meali "mealli mushaf" ön onayına girer ve "makine çevirisi" etiketi bu yükümlülüğü kaldırmaz (rapor; [Lexpera, 633](https://www.lexpera.com.tr/mevzuat/kanunlar/diyanet-isleri-baskanligi-kurulus-ve-gorevleri-hakkinda-kanun-633)).
 4. Risale için yapay zekâ özeti üretilmez (K-25, K-30).
@@ -288,7 +288,7 @@ def require_embed_ok(ctx: "RunContext", source_ids: set[str]) -> None:
 | Lügat tanımı | Serbest sözlüklerden taslak | Yalnız onaylı |
 | Meal, tefsir, hadis çevirisi; Risale özeti | Kullanılmaz | Yok |
 
-Her yapay zekâ çıktısı şu alanları taşır: `ai_model`, `prompt_id`, `prompt_sha256`, `input_sha256`, `created_at`, `dogrulanmis`, `review_id`.
+Her yapay zekâ çıktısı şu alanları taşır: `ai_model`, `prompt_id`, `prompt_sha256`, `input_sha256`, `created_at`, `dogrulanmis`, `review_id`. Editoryal veritabanında bu alanlar taslağın `review` satırındadır ([K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları); [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §8): `ai_model` → `review.yz_modeli`; `prompt_id`, `prompt_sha256` ve `input_sha256` → `review.yz_kaydi`; `review_id` → `review.id`; `created_at` → `review.created_at`. `dogrulanmis` saklanmaz, hedef satırın onaylı durumundan türetilir.
 
 ## 11. LLM maliyet tahmini
 

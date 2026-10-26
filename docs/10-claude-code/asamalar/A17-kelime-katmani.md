@@ -1,6 +1,6 @@
 # A17 · Kelime katmanı: `quran_word`, `kelime-kok` (QAC), Türkçe anlam taslakları
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python)
+> **Sürüm:** 1.1 · **Tarih:** 26 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A10](./A10-tanzil-alimi.md) · [A11](./A11-kuran-yapisi-ve-sayfa-eslemesi.md) (A11.2 yeterli) · [A15](./A15-editor-paneli.md) · **İnsan adımı:** İ-04 · İ-12 · İ-17
 > **Ajanlar:** `hat-gelistirici` · `lisans-denetcisi` · `arastirmaci` · `sunucu-gelistirici` (paket tanımı gerekirse) · `test-yazari` · `inceleyici` · **Beceriler:** `icerik-hatti` · `lisans-kapisi` · `capa-gramer` · `metin-butunlugu` · **Tahmini oturum:** 3–4 Claude Code oturumu; insan dalgaları ayrıca
 > **Başlat:** `/asama A17`
@@ -63,7 +63,7 @@ Kur'an'ın kelime katmanı tamamlanır: A11'in yazdığı Tanzil kelime bölmesi
 - İstem `pipeline/prompts/kelime-anlami/v1.md` (Kelime anlamları §5). Çıktı JSON şemasıyla doğrulanır; kökü QAC kökünden farklı taslak reddedilir; geçersiz çıktı bir kez yeniden denenir, sonra kuyruğa düşer.
 - Girdi: lemma, QAC kökü ve türü, sıklık, en çok 8 örnek âyet (Tanzil Arapçası; Elmalılı meali onaylıysa meal, değilse yalnız Arapça) ve aynı kökün onaylı anlamları. Korumalı mealler, QF içeriği ve kişisel veri girmez; çağrıdan önce `require_embed_ok` çalışır.
 - Pilot: `uv run mutalaa llm estimate --task glosses --sample 50`. Maliyet ve madde başı süre kullanıcıya sunulur; İ-17 bütçesiyle onaylanır.
-- `uv run mutalaa enrich glosses --wave 1`: Batch API, sıcaklık 0. `lemma_gloss` satırları `status = 'aday'` ve `origin = 'yz:{model}'` ile girer; G-YZ alanları A16.4'teki kararla tutulur (`dogrulanmis = false`; A16'dan önce çalışıyorsa karar burada verilir). Her taslağa `review` (`hedef_tablo = 'lemma_gloss'`, `alan = 'anlam_kisa'`).
+- `uv run mutalaa enrich glosses --wave 1`: Batch API, sıcaklık 0. `lemma_gloss` satırları `status = 'aday'` ve `origin = 'yz:{model}'` ile girer. Her taslağa `review` (`hedef_tablo = 'lemma_gloss'`, `alan = 'anlam_kisa'`). G-YZ alanları bu `review` satırındadır ([K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)): model `yz_modeli`'nde; `prompt_id`, `prompt_sha256` ve `input_sha256` `yz_kaydi`'nde. `dogrulanmis` saklanmaz; `lemma_gloss.status = 'onayli'` olmasından türetilir.
 - QA araçları (Kelime anlamları §7): 30 maddelik kalibrasyon seti, 300 lemmalık çift değerlendirme ve Cohen κ (hedef ≥ 0,60), onay sonrası ikinci okuma (en az 300 ya da %10) ve Wilson üst sınırı (öneri ≤ %2), taslak kalite ölçüleri. Kod `pipeline/src/mutalaa_pipeline/qa/` altında.
 - **Bitti sayılır:** dalga 1 taslakları kuyrukta; QA araçlarının birim testleri yeşil.
 
@@ -112,7 +112,7 @@ dotnet run --project server/Mutalaa.Publisher -- publish --flavor internal --dry
 - `pipeline/src/mutalaa_pipeline/ingest/qac.py`, `enrich/morphology.py`, `enrich/glosses.py`, `qa/` uyum ve örneklem hesapları, testler
 - `pipeline/sources/qac-morfoloji.toml` ve lisans kopyası; `pipeline/prompts/kelime-anlami/v1.md`
 - PostgreSQL'de `quran_word` QAC alanları, `root`, `lemma`, `lemma_gloss`, `review` kayıtları
-- `dev` kanalında `kelime-kok` paketi; karar defterinde ÇŞ-1 eşlemesi ve G-YZ kayıtları
+- `dev` kanalında `kelime-kok` paketi; karar defterinde ÇŞ-1 eşlemesi; taslakların `review` satırlarında G-YZ kayıtları (`yz_modeli`, `yz_kaydi`; yer K-37'de)
 
 ## Elle başlatma istemi
 ```text

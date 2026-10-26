@@ -1,7 +1,7 @@
 # Editoryal Veritabanı
 
-> **Sürüm:** 1.2 · **Tarih:** 24 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · K-12 ([karar defteri](../00-ozet/02-karar-defteri.md))
+> **Sürüm:** 1.3 · **Tarih:** 26 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · K-12 ([karar defteri](../00-ozet/02-karar-defteri.md))
 
 Editoryal veritabanı içeriğin tek doğruluk kaynağıdır. Python içerik hattı yazar, editör paneli onaylar, .NET yayınlayıcı okuyup SQLite paketlerini üretir. Mobil uygulama bu veritabanına bağlanmaz. Seçim PostgreSQL 18'dir; Türkçe ve Arapça tam metin yapılandırmaları hazırdır, anlamsal katman için pgvector eklenir (K-11). Geliştirme yerel Docker Compose'ta `postgres:18` ile çalışır ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)). Bu dosya diğer belgelerin önerdiği tabloları da kesin DDL olarak toplar (bölüm 11).
 
@@ -341,6 +341,7 @@ CREATE TABLE review (
   durum            inceleme_durumu NOT NULL DEFAULT 'acik',
   koken            xref_origin NOT NULL,
   yz_modeli        text,
+  yz_kaydi         jsonb,                          -- G-YZ: {"prompt_id","prompt_sha256","input_sha256"} (K-37)
   guven            real,
   oneren           text NOT NULL,
   inceleyen        text,
@@ -348,7 +349,13 @@ CREATE TABLE review (
   sure_ms          integer,                        -- maliyet tahmini için
   gerekce          text,
   created_at       timestamptz NOT NULL DEFAULT now(),
-  incelendi_at     timestamptz
+  incelendi_at     timestamptz,
+  CONSTRAINT review_yz_kaydi_check CHECK (
+    (yz_modeli IS NULL AND yz_kaydi IS NULL)
+    OR (yz_modeli IS NOT NULL AND yz_kaydi IS NOT NULL AND jsonb_typeof(yz_kaydi) = 'object'
+        AND yz_kaydi ?& ARRAY['prompt_id','prompt_sha256','input_sha256']
+        AND coalesce(yz_kaydi->>'prompt_sha256','') ~ '^[0-9a-f]{64}$'
+        AND coalesce(yz_kaydi->>'input_sha256','') ~ '^[0-9a-f]{64}$'))
 );
 CREATE INDEX review_queue ON review (hedef_tablo, created_at) WHERE durum = 'acik';
 CREATE INDEX review_xref  ON review (xref_id) WHERE xref_id IS NOT NULL;
@@ -367,7 +374,10 @@ stateDiagram-v2
 - Hat onaylı alanlara yazmaz. Adayları yazar (`xref.status = 'aday'`, `lemma_gloss.status = 'aday'`, `unit.metin_durumu = 'taslak'`) ve her aday için `review` satırı açar. Yeni çalışmada üretilmeyen `aday` bağlantı silinir; `onayli` bağlantı silinmez, yeniden doğrulama için kuyruğa düşer (bağlantı modeli).
 - Onay `onerilen` değerini hedefe aynı işlemde uygular; kendi `status` alanı olan tablolarda onay `onayli`, ret `red` yazar. Kelime anlamı incelemesi gerçek sütun adlarını kullanır: `hedef_tablo = 'lemma_gloss'`, `alan = 'anlam_kisa'` ([Backend API](../02-mimari/05-backend-api.md) §4.1 kuyruk tablosuyla aynı). Kur'an metni için metin incelemesi açılmaz.
 - İkinci onay gereken alanlar: meal ve tefsir metni, `source.license_status`, `source.kurul_onay`, `source.embed_ok`. İlk onay `inceleyen` alanını doldurur ve kayıt `acik` kalır; farklı bir editörün onayı değeri uygular ve `ikinci_inceleyen` alanını doldurur ([Backend API](../02-mimari/05-backend-api.md) §4.1).
-- Yapay zekâ taslakları `yz_modeli` taşır ve onaylanana kadar "doğrulanmamış" rozetiyle görünür ([K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)).
+- Yapay zekâ taslakları `yz_modeli` ve `yz_kaydi` taşır ve onaylanana kadar "doğrulanmamış" rozetiyle görünür ([K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)). G-YZ kaydının ([İçerik hattı](../04-icerik/02-icerik-hatti.md) §9–§10) alanları şöyle eşlenir ([K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)):
+  - `ai_model` → `yz_modeli`; `prompt_id`, `prompt_sha256` ve `input_sha256` → `yz_kaydi` nesnesinin anahtarları; `review_id` → `review.id`; `created_at` → `review.created_at`.
+  - `review_yz_kaydi_check`: `yz_modeli` ile `yz_kaydi` ya ikisi birden boştur ya ikisi birden doludur. Doluysa `yz_kaydi` üç anahtarı taşıyan bir JSON nesnesidir; iki özet 64 küçük harfli onaltılık karakterdir.
+  - `dogrulanmis` saklanmaz; hedef satırın onaylı durumundan türetilir. `xref_status` türünde `status` sütunu olan tablolarda (`lemma`, `lemma_gloss`, `quran_word_fix`, `surah_alias`, `xref`) `status = 'onayli'`, `unit`'te `metin_durumu = 'onayli'` doğrulanmış demektir.
 - `oneren` ve `inceleyen` alanlarına ASP.NET Core Identity kullanıcı adı yazılır; roller `editor` ve `admin`'dir ([Backend API](../02-mimari/05-backend-api.md) §6).
 
 ## 9. Mushaf, ses ve gömme tabloları

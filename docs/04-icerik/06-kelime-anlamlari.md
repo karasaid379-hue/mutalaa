@@ -1,6 +1,6 @@
 # Kelime Anlamları
-> **Sürüm:** 1.1 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python)
+> **Sürüm:** 1.2 · **Tarih:** 26 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)
 
 K-19 gereği Kur'an kelimelerinin Türkçe anlamlarını kendimiz yazarız: yapay zekâ lemma başına taslak çıkarır, insan onaylar. Yeniden kullanılabilir açık lisanslı bir Türkçe kelime meali yok: QuranWBW "copying them is not allowed" diyor, hablullah/data-quran CC BY-NC-ND lisanslı ([QuranWBW](https://legacy.quranwbw.com/2); [data-quran](https://github.com/hablullah/data-quran)). İş yükü farklı lemma sayısına bağlıdır; 77.429 kelimenin her biri ayrı yazılmaz. K-06 uygulama notu gereği QAC kaynaklı kök ve lemma verisi `core` paketinden ayrı bir pakette tutulur (önerilen ad `kelime-kok`); onaylı Türkçe anlamlar da bu paketle kelime kartına gider ([İçerik paketleri](../03-veri/03-icerik-paketleri.md)).
 
@@ -168,7 +168,7 @@ aynı kökün onaylı anlamları: {kardes_anlamlar}
 }
 ```
 
-Taslaklar veritabanına `status = 'aday'`, `dogrulanmis = false`, model, istem sürümü ve girdi hash'iyle girer ([İçerik hattı, yapay zekâ politikası](./02-icerik-hatti.md)).
+Taslaklar veritabanına `status = 'aday'` ile girer; model, istem sürümü ve girdi hash'i taslağın `review` satırında durur (`yz_modeli`, `yz_kaydi`). `dogrulanmis` saklanmaz; taslak onaylanana kadar `false` sayılır ([İçerik hattı, yapay zekâ politikası](./02-icerik-hatti.md); [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)).
 
 ## 6. Editör panelinde inceleme
 

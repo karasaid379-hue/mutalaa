@@ -1,6 +1,6 @@
 # A16 · Elmalılı meali: OCR, düzeltme kuyruğu, iki düzeltme turu
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)
+> **Sürüm:** 1.1 · **Tarih:** 26 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A09](./A09-elmalili-ocr-pilotu.md) · [A10](./A10-tanzil-alimi.md) · [A15](./A15-editor-paneli.md) · **İnsan adımı:** İ-09 · İ-11 · İ-17
 > **Ajanlar:** `hat-gelistirici` · `metin-denetcisi` · `sunucu-gelistirici` (görsel ucu ve şema eki gerekirse) · `test-yazari` · `inceleyici` · **Beceriler:** `icerik-hatti` · `metin-butunlugu` · `capa-gramer` · **Tahmini oturum:** 3–4 Claude Code oturumu; insan turları ayrıca
 > **Başlat:** `/asama A16`
@@ -54,7 +54,7 @@ Elmalılı'nın özgün baskısından (baskı kimliği `elmalili-1935`) âyet me
 
 ### A16.4 · Kuyruk ve tur 1 (İ-11)
 - Kuyruk A15'in `kuyruk/ocr` rotasıdır (görev adı öneri: `uv run mutalaa export review-queue --task ocr`). Görsel ucu A14.4'te karara bağlanmadıysa bu adımda `sunucu-gelistirici` ile kapanır.
-- G-YZ alanları (`ai_model`, `prompt_id`, `prompt_sha256`, `input_sha256`, `dogrulanmis`, `review_id`) editoryal DDL'de sütun olarak yoktur (Açık soru). A16 ve A17'den önce çalışanı yerlerini `/karar` ile belirler (öneri: `unit.provenance` ve `review.onerilen` içinde ya da EF göçüyle ek sütun).
+- ~~G-YZ alanları (`ai_model`, `prompt_id`, `prompt_sha256`, `input_sha256`, `dogrulanmis`, `review_id`) editoryal DDL'de sütun olarak yoktur (Açık soru). A16 ve A17'den önce çalışanı yerlerini `/karar` ile belirler (öneri: `unit.provenance` ve `review.onerilen` içinde ya da EF göçüyle ek sütun).~~ Çözüldü (26 Ekim 2026, [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)): OCR'da görsel model kullanıldıysa alanlar birimin `review` satırındadır. `ai_model` → `review.yz_modeli`; `prompt_id`, `prompt_sha256` ve `input_sha256` → `review.yz_kaydi` (kısıt `review_yz_kaydi_check`); `review_id` → `review.id`; `created_at` → `review.created_at`. `dogrulanmis` saklanmaz; birimin `metin_durumu = 'onayli'` olmasından türetilir ([Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md) §8; BÇ-05). Göç A07'dedir; burada yalnız hat bu sütunları doldurur.
 - Tur 1 (insan): her birim düzeltilir ve onaylanır. Dört göz kuralı geçerlidir: düzelten ve onaylayan farklıdır; meal metni ikinci onay alanıdır. Claude Code kuyruk sayılarını ve hata desenlerini raporlar, metni kendisi düzeltmez.
 - Bekleme noktası: `/asama` aşamayı ilerleme dosyasında `engelli` durumuna alır, Not sütununa "İ-11 tur 1 bekleniyor" yazar ve durum bloğundaki bekleyen insan adımlarını günceller. Tur bitince aşama `/asama A16` ile sürer.
 - **Bitti sayılır:** `meal:elmalili` birimlerinin tamamı `onayli`; açık `review` kaydı 0.
@@ -74,7 +74,7 @@ Elmalılı'nın özgün baskısından (baskı kimliği `elmalili-1935`) âyet me
 - [ ] Tarama envanteri cilt başına sayfa sayısını, toplamı ve eksik sayfaları gösteriyor; künye denetimi kullanıcı tarafından işaretli.
 - [ ] Her meal sayfasının OCR çıktısı var; yapay zekâ çağrıları model, istem özeti ve maliyetle kayıtlı; `embed_ok = false` kaynağa gönderim yok (G-YZ geçti).
 - [ ] G-HIZ: 6.236 âyetin her birinde meal birimi ya da `birlesik_ile` bağı var.
-- [ ] Sınır durumları ve G-YZ alanlarının yeri karar defterinde.
+- [ ] Sınır durumları karar defterinde. G-YZ alanlarının yeri [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) ile yazıldı (26 Ekim 2026).
 - [ ] Tur 1 sonrası `elmalili-meal` birimlerinin tamamı `onayli`; `unit` hedefli açık `review` kaydı 0 (SQL).
 - [ ] Tur 2 örneklemi en az 600 âyet; üst sınır raporda; G-MET ve G-INC "geçti".
 - [ ] `metin-denetcisi` raporu: NFC yalnız ilk kayıtta, Tanzil metnine dokunulmamış, sadeleştirme yok.
@@ -109,7 +109,7 @@ dotnet run --project server/Mutalaa.Publisher -- verify --flavor dev
 - `pipeline/src/mutalaa_pipeline/ingest/` tarama kaydı, `enrich/` OCR ve bölme modülleri, `qa/checks/elmalili.py`, testler; Yol A ise imlâ sözlüğü
 - `data/raw/elmalili-1935/`, `data/ocr/`, `data/llm-cache/`, `data/reports/` (git dışı)
 - PostgreSQL'de `meal:elmalili` birimleri, `review` kayıtları, `page_map` satırları
-- Karar defterinde sınır durumları, G-YZ alanları ve ikinci tur tanımı; `dev` kanalında yeni `core`
+- Karar defterinde sınır durumları ve ikinci tur tanımı (G-YZ alanları K-37'de); `dev` kanalında yeni `core`
 
 ## Elle başlatma istemi
 ```text
