@@ -21,3 +21,6 @@ dotnet_diagnostic.CA1311.severity = error
 
 [*.{ps1,cmd}]
 end_of_line = crlf
+
+[server/Mutalaa.Infrastructure/Migrations/*.cs]
+generated_code = true
