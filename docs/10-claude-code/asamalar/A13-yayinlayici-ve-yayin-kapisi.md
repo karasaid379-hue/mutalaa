@@ -55,8 +55,8 @@
 ### A13.4 · Manifest, imza ve anahtarlar
 - Manifest İçerik paketleri §5 alanlarıyla yazılır ve `manifest.schema.json`'a karşı doğrulanır. `url` = `{PublicBaseUrl}/packs/{flavor}/{pack_id}/{version}/{pack_id}-{version}.db`.
 - İmza `signature {alg, kid, value}`; girdi, `signature` alanı çıkarılmış manifestin kanonik JSON biçimidir (A13.1 kararı). Her derleme türünde zorunludur.
-- Yayınlayıcı yapılandırmayı .NET genel ana bilgisayarıyla okur (`Host.CreateApplicationBuilder`, öneri); kullanıcı sırları yalnız `Development` ortamında yüklenir. Kit ayarları Claude Code komutlarına `DOTNET_ENVIRONMENT=Development` verir; elle açılan terminalde değer komutun başına yazılır. Yayınlayıcının csproj dosyasında `UserSecretsId` yoksa `dotnet user-secrets init --project server/Mutalaa.Publisher` çalışır (onay ister; yalnız csproj'a kimlik yazar).
-- `keys generate --flavor dev`: özel anahtar ve `kid` kullanıcı sırlarına (`Signing:dev:PrivateKey`, `Signing:dev:Kid`) yazılır, açık anahtar ekrana basılır (öneri). `dotnet user-secrets` kullanıcı onayı ister. Konteynerdeki Yayınlayıcı için `.env` içindeki `PUBLISHER_DEV_SIGNING_KEY` değerini kullanıcı yazar; Claude Code `.env` okumaz.
+- Yayınlayıcı yapılandırmayı .NET genel ana bilgisayarıyla okur (`Host.CreateApplicationBuilder`, öneri); kullanıcı sırları yalnız `Development` ortamında yüklenir. Kit ayarları Claude Code komutlarına `DOTNET_ENVIRONMENT=Development` verir; elle açılan terminalde değer komutun başına yazılır. Yayınlayıcının csproj dosyasında `UserSecretsId` yoksa `dotnet user-secrets init --project server/Mutalaa.Publisher` çalışır (onaysız; yalnız csproj'a kimlik yazar).
+- `keys generate --flavor dev`: özel anahtar ve `kid` kullanıcı sırlarına (`Signing:dev:PrivateKey`, `Signing:dev:Kid`) yazılır, açık anahtar ekrana basılır (öneri). `dotnet user-secrets` onay istemez; `list` alt komutu yasaktır (gizli değer yazar); özel anahtar ekrana ve rapora yazılmaz. Konteynerdeki Yayınlayıcı için `.env` içindeki `PUBLISHER_DEV_SIGNING_KEY` değerini kullanıcı yazar; Claude Code `.env` okumaz.
 - A23'ün çapraz testi için açık anahtar ve imzalı örnek manifest `packages/content-schema/test/fixtures/` altına yazılır; yalnız açık malzeme (öneri).
 - `verify --flavor <f> [--manifest <yol>] [--embedded-core <yol>]`: imza, şema, adres, boyut, sha256 ve kapı kuralları. İmzasız ya da bozuk imzalı manifest 3 ile reddedilir.
 - **Bitti sayılır:** imza gidiş-dönüş, kurcalanmış manifest ve imzasız manifest testleri yeşil.
@@ -110,7 +110,7 @@ dotnet run --project server/Mutalaa.Publisher -- publish --flavor public --dry-r
 - Fikstür metni hiçbir dini metne benzetilmez; `test-` kaynaklar `public`'e hiçbir durumda girmez (P-12).
 
 ## İnsan adımları
-- Yok. `dotnet user-secrets` komutu kullanıcı onayı ister; konteyner için `.env` değerini kullanıcı kendisi yazar. Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
+- Yok. `dotnet user-secrets` komutu onay istemez; konteyner için `.env` değerini kullanıcı kendisi yazar. Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
 
 ## Çıktılar
 - `server/Mutalaa.Domain/Licensing/*`, `server/Mutalaa.Infrastructure/Packs/*`, `server/Mutalaa.Infrastructure/Storage/*`, `server/Mutalaa.Publisher/Program.cs` ve `Commands/*`

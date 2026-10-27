@@ -111,7 +111,7 @@ Son iki komut API ayrı bir terminalde `dotnet watch --project server/Mutalaa.Ap
 - A08'den devir (CI): OpenAPI belgesi (`server/Mutalaa.Api/openapi/v1.json`) `dotnet build -c Release` içinde üretilmelidir. `ci-dotnet.yml` derlemeyi Release ile yapar ve belge varsa `git diff --exit-code server/Mutalaa.Api/openapi` ile farkı arar; belge başka bir yapılandırmada ya da ayrı komutla üretilirse CI farkı göremez. Belge ilk eklendiği PR'da bu adımın çalıştığı Actions'ta görülür ([Proje yapısı §7](../../02-mimari/03-proje-yapisi.md#7-ci-iş-akışları-github-actions)).
 
 ## İnsan adımları
-- Yok. İlk yönetici e-posta ve parolasını kullanıcı `dotnet user-secrets` ile verir (komut onay ister). Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
+- Yok. İlk yönetici e-posta ve parolasını kullanıcı `dotnet user-secrets` ile verir (komut onay istemez; değerleri Claude Code görmez ve yazmaz). Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
 
 ## Çıktılar
 - `server/Mutalaa.Api/Program.cs`, `Endpoints/*`, `Problems/*`, `openapi/v1.json`

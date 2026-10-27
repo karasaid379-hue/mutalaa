@@ -56,7 +56,7 @@
 
 ### A07.4 · İlk göç ve yerel uygulama
 - `dotnet ef migrations add <ad>` ile `server/Mutalaa.Infrastructure/Migrations` altında tek göç. SQL `dotnet ef migrations script --idempotent` ile `.tmp/` altına yazılır; `inceleyici` belgedeki DDL ile tablo tablo karşılaştırır.
-- Bağlantı dizesi kullanıcı sırlarındadır (Yerel geliştirme §3). Api projesinin csproj dosyasında `UserSecretsId` yoksa önce `dotnet user-secrets init --project server/Mutalaa.Api` çalışır (onay ister; yalnız csproj'a kimlik yazar, sır yazmaz). `.env`'deki parola değiştirildiyse `dotnet user-secrets … set` komutunu kullanıcı çalıştırır; Claude Code parolayı görmez.
+- Bağlantı dizesi kullanıcı sırlarındadır (Yerel geliştirme §3). Api projesinin csproj dosyasında `UserSecretsId` yoksa önce `dotnet user-secrets init --project server/Mutalaa.Api` çalışır (onaysız; yalnız csproj'a kimlik yazar, sır yazmaz). `.env`'deki parola değiştirildiyse `dotnet user-secrets … set` komutu onay istemez, ama parolayı kullanıcı verir; Claude Code parolayı görmez ve yazmaz. `dotnet user-secrets list` yasaktır (gizli değer yazar).
 - Komutlar `Development` ortamında çalışır: kit ayarları Claude Code komutlarına `ASPNETCORE_ENVIRONMENT=Development` ve `DOTNET_ENVIRONMENT=Development` verir (`.claude/settings.json` › `env`); kullanıcı sırları yalnız bu ortamda yüklenir. Elle açılan terminalde değer komutun başına yazılır (`ef-goc`).
 - Yerel veritabanına `dotnet ef database update …` ile uygulanır. Göç paketi `dotnet ef migrations bundle` ile `.tmp/` altına üretilerek denenir (CI ve canlı için; Backend API §7).
 - **Bitti sayılır:** yerelde `icerik` ve `kimlik` şemaları ve bütün tablolar var; model ile göç arasında fark yok.
@@ -104,7 +104,7 @@ Komutlar `Development` ortamında koşar (kit ayarı; A07.4). Son satır JSON an
 - Çapa sütunları `COLLATE "C"`; aralıklar `int4range` ve yarı açık `[)`. `metin` sütunu kanonik metindir: hazır kaynak metni (Tanzil) değiştirilemez, NFC yalnız kendi metnimize ilk kayıtta uygulanır (K-26).
 - `license_status` sırası kapının davranışını belirler; etiketler A06'daki JSON'dan sapmaz. Ayrıntı: `lisans-kapisi`.
 - Saat: `timestamptz` sütununa yalnız `DateTimeKind.Utc` değer yazılır (Yerel geliştirme §10.4). Uygulama açılışta `InvariantCulture` kullanır.
-- Gizli değerler `dotnet user-secrets` ile verilir; bu komut kullanıcı onayı ister. Bağlantı dizesi ve yönetici parolası dosyaya ya da commit'e yazılmaz.
+- Gizli değerler `dotnet user-secrets` ile verilir; komut onay istemez, ama değerleri kullanıcı verir (Claude Code görmez, yazmaz). Bağlantı dizesi ve yönetici parolası dosyaya ya da commit'e yazılmaz.
 - Testcontainers Docker Desktop ister; Docker kapalıysa testler kırmızı görünür, bu bir kod hatası sayılmaz.
 - Belge farkları: ED-7 çözüldü (19 Ekim 2026); Backend API Editoryal veritabanının tür adlarını (`license_status`, `xref_status`) ve `basarisiz` değerini kullanır. Backend API §4.1 ve §12 madde 1–2'deki açık sorular da çözüldü (19 Ekim 2026): `hedef_tablo` listesi Editoryal veritabanı §8'de, `basarisiz` değeri §2'dedir. Şema bu belgeyi izler.
 - Commit kapsamı: `Mutalaa.Domain` ve `Mutalaa.Infrastructure` değişiklikleri için `server` ([Proje yapısı](../../02-mimari/03-proje-yapisi.md) §6); ör. `feat(server): add editorial schema and first migration`.

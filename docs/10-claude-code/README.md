@@ -42,7 +42,7 @@ Ayrıntılı katalog: [Ajanlar, beceriler ve kurallar](./03-ajanlar-beceriler-ku
 
 ## Temel ilkeler
 
-- **Klasör sınırı.** Claude Code'un dosya araçları bu klasörün dışını okuyamaz ve yazamaz; kabuk komutlarında görünen dış yollar onay ister. Claude'un çalıştırdığı programlar işletim sistemi düzeyinde sınırlanmaz; ayrıntı ve sınırlar: [Kurulum §7](./01-kurulum.md#7-klasör-sınırı-neyi-engeller-neyi-engellemez). Geçici dosyalar `.tmp/` altındadır. Araçların kendi önbellekleri ve Claude Code'un kendi oturum kayıtları bu kuralın dışındadır.
+- **Klasör sınırı.** Claude Code'un dosya araçları bu klasörün dışını okuyamaz ve yazamaz; kabuk komutlarında görünen dış yollar hâlâ onay ister (proje içindeki komutlar onaysızdır, bkz. [Çalışma düzeni §2](./02-calisma-duzeni.md)). Claude'un çalıştırdığı programlar işletim sistemi düzeyinde sınırlanmaz; ayrıntı ve sınırlar: [Kurulum §7](./01-kurulum.md#7-klasör-sınırı-neyi-engeller-neyi-engellemez). Geçici dosyalar `.tmp/` altındadır. Araçların kendi önbellekleri ve Claude Code'un kendi oturum kayıtları bu kuralın dışındadır.
 - **İçerik etiği.** Kur'an, meal, tefsir, hadis ve Risale metni hiçbir zaman yapay zekâ hafızasından yazılmaz; yalnız kaynak dosyalardan, içerik hattıyla gelir.
 - **Kanıtla bitir.** Bir aşama, kabul ölçütleri komut çıktısıyla kanıtlanmadan ve inceleme yapılmadan bitmiş sayılmaz.
 - **Kararlar defterde.** Yeni karar `/karar` ile [karar defterine](../00-ozet/02-karar-defteri.md) yazılır; kod ve belge sonra uyar.

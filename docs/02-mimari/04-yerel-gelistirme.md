@@ -366,7 +366,7 @@ PYTHONUTF8=1
 | Mobil | `pnpm dev:mobile` |
 | Paketleri yenile | `dotnet run --project server/Mutalaa.Publisher -- publish --flavor dev` ya da editörde "Yayınla" + `docker compose --profile app up -d publisher` |
 | Tüm denetimler | `pnpm lint; pnpm typecheck; pnpm test; dotnet test --solution server/Mutalaa.slnx; cd pipeline; uv run pytest` |
-| Durdur | `docker compose down` (birimler kalır). `docker compose down -v` birimleri ve veritabanını siler; önce yedek alın |
+| Durdur | `docker compose down` (birimler kalır). `docker compose down -v` birimleri ve veritabanını siler; önce yedek alın (Claude Code'un klasör bekçisi, aynı komut satırında önce `scripts/backup-db.ps1` yoksa komutu reddeder) |
 
 ## 8. Örnek veri
 
@@ -483,7 +483,7 @@ Betik dosyaları ASCII ve CRLF'tir: Windows PowerShell 5.1 BOM'suz UTF-8 dosyay�
 - Kullanıcı ve veritabanı adı konteynerin kendi ortam değişkenlerinden (`POSTGRES_USER`, `POSTGRES_DB`) okunur; `.env` değişince betik değişmez. Komut tek tırnak içindedir, bu yüzden değişkenleri PowerShell değil konteynerdeki `sh` açar. İç çift tırnak kullanılmaz, çünkü Windows PowerShell 5.1 yerel komuta geçen bağımsız değişkendeki çift tırnağı kaçışsız aktarır; bu iki değer `.env`'de boşluksuz yazılır.
 - Elle çalıştırılan örnekler (bölüm 3'teki bağlantı dizeleri, aşama dosyalarındaki `psql -U mutalaa -d mutalaa` komutları) `.env.example` varsayılanlarını kullanır; `.env`'de bu adlar değiştiyse komutta da değiştirilir.
 - Döküm konteyner içinde dosyaya yazılıp `docker compose cp` ile alınır; Windows PowerShell 5.1'de ikili çıktı yönlendirmesi (`>`) dosyayı bozabilir.
-- Görev Zamanlayıcı her gün yedek alır; 7 günlük ve 4 haftalık yedek saklanır; haftada bir kopya bilgisayar dışına çıkarılır. Ayda bir yedek boş bir veritabanına geri yüklenip denenir. Büyük göçten ve `docker compose down -v` komutundan önce elle yedek alınır.
+- Görev Zamanlayıcı her gün yedek alır; 7 günlük ve 4 haftalık yedek saklanır; haftada bir kopya bilgisayar dışına çıkarılır. Ayda bir yedek boş bir veritabanına geri yüklenip denenir. Büyük göçten ve `docker compose down -v` komutundan önce yedek alınır; Claude Code yedeksiz `down -v`, `docker volume rm|prune`, `dotnet ef database drop` ve `DROP SCHEMA|DATABASE` komutunu hook ile reddeder.
 
 ## 10. Sık karşılaşılan sorunlar
 

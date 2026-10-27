@@ -54,7 +54,7 @@ Her PR'da üç dilin lint, tip, birim ve vektör denetimleri GitHub Actions'ta k
 
 ### A08.3 · PR başlığı, lisans listesi, Dependabot
 - `pr-title.yml` (öneri): başlık `<tür>(<kapsam>): <özet>` biçimine karşı bash düzenli ifadesiyle sınanır; türler ve kapsamlar §6'daki listeden. Başlık ortam değişkeni üzerinden okunur, komuta doğrudan gömülmez (betik enjeksiyonuna karşı).
-- Lisans listesi: `ci-ts.yml` içinde `pnpm licenses list`, `ci-dotnet.yml` ve `ci-pipeline.yml` içinde A08.1'de seçilen araçlar; çıktı koşu günlüğüne yazılır. GPL, AGPL ya da ticari lisanslı yeni bağımlılıkta PR'ı durdurma kuralı öneridir (Teknoloji yığını §3); kullanıcı onaylarsa açılır. Hat bağımlılıkları dağıtılmaz (`psycopg` LGPL-3.0; Teknoloji yığını §2.4); kural yalnız dağıtılan koda uygulanır.
+- Lisans listesi: `ci-ts.yml` içinde `pnpm licenses list`, `ci-dotnet.yml` ve `ci-pipeline.yml` içinde A08.1'de seçilen araçlar; çıktı koşu günlüğüne yazılır. GPL, AGPL ya da ticari lisanslı yeni bağımlılıkta PR'ı durdurma kuralı açıktır (Teknoloji yığını §3; çözüldü, 27 Ekim 2026, bkz. aşama kaydı). Hat bağımlılıkları dağıtılmaz (`psycopg` LGPL-3.0; Teknoloji yığını §2.4); kural yalnız dağıtılan koda uygulanır.
 - `.github/dependabot.yml` (öneri): npm, NuGet, GitHub Actions ve Docker için haftalık gruplu güncelleme (§4.2). Expo'ya bağlı paketler yalnız SDK yükseltmesiyle güncellenir; bu dışlama mobil gelince A21'de eklenir.
 - **Bitti sayılır:** dosyalar yerel denetleyiciden geçti; durdurma kuralının açık ya da kapalı olduğu aşama kaydında.
 
@@ -218,7 +218,7 @@ Bilerek yapılmayanlar: kit testlerinin CI'da koşması (ilk Linux koşusundan s
 
 ### Sapmalar
 
-- **Adım 0** (kit izin pencerelerinin kaldırılması) A08 kapsamı dışı bir kullanıcı yönergesiydi. Otomatik mod sınıflandırıcısı klasör bekçisi hook'unu gevşeten düzenlemeyi reddettiği için ertelendi; A08 işi buna bağlı değil. Bu aşama dosyasındaki A08.5 ve Dikkat'in `git push` cümleleri CLAUDE.md kural 11'e göre düzeltildi; kit, K-31 ve öteki belgelerdeki aynı hizalama Adım 0 ile birlikte kaldı.
+- **Adım 0** (kit izin pencerelerinin kaldırılması) A08 kapsamı dışı bir kullanıcı yönergesiydi. Otomatik mod sınıflandırıcısı klasör bekçisi hook'unu gevşeten düzenlemeyi (kullanıcı açık talimatı vermeden) reddettiği için A08 sırasında ertelendi; kullanıcı açıkça isteyince A08 sonrasında ayrı dalda (`chore/kit-permissions`) yapıldı (K-31 güncellemesi, 27 Ekim 2026). A08 işi buna bağlı değildi. Bu aşama dosyasındaki A08.5 ve Dikkat'in `git push` cümleleri CLAUDE.md kural 11'e göre düzeltildi; kit, K-31 ve öteki belgelerdeki aynı hizalama Adım 0 ile birlikte kaldı.
 - `gh` kurulu değil. PR açma ve Actions sonucu kullanıcı bildirimine bağlı (A08.5 bekliyor).
 
 ### Devredilenler

@@ -3,7 +3,7 @@
 > **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)
 
-Bu dosya kitin her parçasını listeler. Dosyalar `.claude/` altındadır; değişiklikleri Claude Code onayınızla yapar (`klasor-bekcisi` hook'u ve Claude Code'un korumalı klasör kuralı).
+Bu dosya kitin her parçasını listeler. Dosyalar `.claude/` altındadır; değişiklikleri Claude Code onaysız yapar (K-31, 27 Ekim 2026 güncellemesi). `.claude/` Claude Code'un yerleşik korumalı yoludur: oradaki yazma, hook'tan bağımsız olarak Claude Code'un kendi onayını isteyebilir ve yalnız `bypassPermissions` kipinde kalkar.
 
 ## 1. Alt ajanlar (`.claude/agents/`)
 
@@ -72,10 +72,10 @@ Hook'lar `.claude/settings.json` içinde tanımlıdır ve kabuk kullanmadan `nod
 | Betik | Olay | Davranış |
 |---|---|---|
 | `oturum-baslangici.mjs` | `SessionStart` (açılış, devam, `/clear`, `/compact`, çatallama) | `05-ilerleme.md` içindeki durum bloğunu ve kısa hatırlatmaları bağlama ekler |
-| `klasor-bekcisi.mjs` | `PreToolUse` (Write, Edit, MultiEdit, NotebookEdit, Bash, PowerShell, Monitor); `onFailure: block` | Dosya araçlarında proje dışına ve `data/raw`, `.git` içine yazmayı reddeder; kit dosyaları, `CLAUDE.md` ve karar defteri için onay ister. Kabuk komutlarında proje dışı yol, ev ya da geçici klasör başvurusu için onay ister; yönlendirme, `cp`, `mv`, `rm`, `tee`, `sed -i`, `touch`, `mkdir` hedeflerini aynı kurallardan geçirir; özyinelemeli silme ve geri dönüşü zor git işlemleri için onay ister. Çalışamazsa işlem durur. Çalıştırılan programların içini göremez ([Kurulum §7](./01-kurulum.md#7-klasör-sınırı-neyi-engeller-neyi-engellemez)) |
+| `klasor-bekcisi.mjs` | `PreToolUse` (Write, Edit, MultiEdit, NotebookEdit, Bash, PowerShell, Monitor); `onFailure: block` | Dosya araçlarında proje dışına ve `data/raw`, `.git` içine yazmayı reddeder; kit dosyaları, `CLAUDE.md` ve karar defteri onaysızdır. Kabuk komutlarında proje dışı yol, ev ya da geçici klasör başvurusu ile nadir git işleri (`filter-branch`, `filter-repo`, `update-ref`, `gc`, `reflog expire`, `commit --no-verify`) için onay ister; yönlendirme, `cp`, `mv`, `rm`, `tee`, `sed -i`, `touch`, `mkdir` hedeflerini aynı kurallardan geçirir. Kesin yasakları reddeder: zorla push, `git clean -x`, `data/raw`, `data/gold`, `data/backups` silme, gizli değer dosyalarına kabuktan erişim, `eas submit`, yayımlama, yedeksiz veri silme ve denetçi ajanların `.tmp/` dışına yazması ya da git'i değiştirmesi (`agent_type` alanı); tam liste [Çalışma düzeni §2](./02-calisma-duzeni.md). `mobile-v*` etiketi itmek ücretli derleme başlattığı için sorulur. Çalışamazsa işlem durur. Çalıştırılan programların içini göremez ([Kurulum §7](./01-kurulum.md#7-klasör-sınırı-neyi-engeller-neyi-engellemez)) |
 | `metin-kurali.mjs` | `PostToolUse` (Write, Edit, MultiEdit, NotebookEdit) | BOM, CRLF, ASCII dışı dosya adı, bozuk JSON ve JSONL, kit ön bilgisi hatalarını Claude Code'a geri bildirir |
 
-Testler: `node --test ".claude/hooks/test/*.test.mjs"` (Windows yolları, kabuk komutları, ilerleme dosyası ve kitin kendi tutarlılığı dahil 64 test).
+Testler: `node --test ".claude/hooks/test/*.test.mjs"` (Windows yolları, kabuk komutları, ilerleme dosyası ve kitin kendi tutarlılığı dahil 73 test).
 
 ## 5. Kit nasıl değiştirilir
 

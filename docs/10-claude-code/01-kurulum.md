@@ -1,6 +1,6 @@
 # Kurulum (Windows)
 
-> **Sürüm:** 1.1 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.2 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)
 
 Bu dosya Claude Code'u ve projenin araçlarını Windows'a kurmayı, Claude Code'u proje klasöründe ilk kez açmayı ve kitin çalıştığını doğrulamayı anlatır. Buradaki kurulumlar sistem genelini değiştirdiği için Claude Code değil, siz yaparsınız (insan adımı İ-01). Kurulumdan sonra Claude Code, A00 aşamasında sürümleri denetler.
@@ -79,7 +79,7 @@ A00 aşamasında Claude Code yolu ölçer ve size üç seçenek sunar: (1) klas�
    ```
    **Claude Code'u her zaman proje kökünde başlatın.** Alt klasörde (ör. `docs`, `apps\mobile`) başlatılırsa projenin `.claude/settings.json` dosyası, izin kuralları ve hook'ları yüklenmez; yalnız `CLAUDE.md` okunur ve klasör korumaları çalışmaz.
 2. İlk kez açıyorsanız tarayıcıda Claude hesabınızla giriş yapın.
-3. **Klasöre güven sorusunu onaylayın.** Projenin onaysız çalışacak komut listesi (`permissions.allow`) ancak güvenden sonra etkinleşir.
+3. **Klasöre güven sorusunu onaylayın.** Projenin izin ayarları (`permissions.allow` ve `deny`) ve hook'ları ancak güvenden sonra etkinleşir.
 4. Kitin yüklendiğini denetleyin:
 
 | Komut | Beklenen |
@@ -98,11 +98,11 @@ Oturumun ilk mesajında Claude Code'a ilerleme özeti eklenir ("Mütâlaa · otu
 | Ayar (`.claude/settings.json`) | Değer | Neden |
 |---|---|---|
 | `language` | `turkish` | Claude Code yanıtları Türkçe |
-| `permissions.defaultMode` | `acceptEdits` | Proje içindeki dosya düzenlemeleri sorulmadan uygulanır; komutlar kurallara göre sorulur. `Shift+Tab` ile kip değiştirilir |
-| `permissions.blockReadsOutsideWorkingDirectories` | `true` | Dosya araçları proje dışını okuyamaz; çözümlenemeyen komutlar (ör. `node -e`) onay ister |
-| `permissions.allow` | git'in okuma ve commit komutları, `pnpm`, `npx expo`, `dotnet`, `uv`, `docker compose`, `adb`, `maestro`, `eas`'ın okuma komutları, `node --test` ve bağlantı denetimi; belgeler için web alan adları | Günlük geliştirme sorulmadan yürür. Tek başına `node <betik>` ve `curl` sorulur |
-| `permissions.deny` | `.env` ve `.env.*` okuma (`.env.example` hariç), `.env` ve `.env.local` yazma, anahtar dosyaları; `data/raw` içine yazma; zorla push; `eas submit`; paket yayımlama | Gizli değer, ham kaynak ve geri dönüşsüz işlem koruması |
-| `permissions.ask` | push, `git reset`, `clean`, `restore`, `rebase`, `commit --amend`, `stash drop`, `branch -D`; `eas build` ve `update`; `docker compose down -v`; `dotnet user-secrets`; `rm -rf` ve benzerleri | Onayınız olmadan yapılmaz |
+| `permissions.defaultMode` | `acceptEdits` | Proje içindeki dosya düzenlemeleri sorulmadan uygulanır. `Shift+Tab` ile kip değiştirilir |
+| `permissions.blockReadsOutsideWorkingDirectories` | `true` | Dosya araçları proje dışını okuyamaz |
+| `permissions.allow` | Yalın `Bash`, `WebFetch` ve `WebSearch` | Proje içindeki bütün terminal ve git komutları (`git push`, `reset`, `clean`, `restore`, `rebase`, `commit --amend`, `stash drop`, `branch -D`, `rm -r`, `dotnet user-secrets`, `node -e`, `python -c`, `curl` dahil) onaysızdır. Sınırı `deny` kuralları ve klasör bekçisi hook'u çizer |
+| `permissions.deny` | `.env` ve `.env.*` okuma (`.env.example` hariç), anahtar dosyaları (`*.pem`, `*.key`, `*.p12`, `*.keystore`, `*.jks`); `.env` ve `.env.local` yazma; `data/raw` içine yazma; zorla push (`--force`, `-f`, `--force-with-lease`); `eas submit`; `npm publish`, `pnpm publish`, `dotnet nuget push` | Gizli değer, ham kaynak ve geri dönüşsüz işlem koruması. Kalan yasaklar (kabuktan gizli değer erişimi, `git clean -x`, `data/raw`, `data/gold` ve `data/backups` silme, yedeksiz veri silme, denetçi ajanların yazması ve daha fazlası) klasör bekçisi hook'undadır; ayrıntı [Çalışma düzeni §2](02-calisma-duzeni.md) |
+| `permissions.ask` | `eas build` ve `eas update`; `git config --global`; `dotnet tool install -g`; `uv tool install`; `uv python install` | Ücretli işler ve proje dışına yazan araç kurulumları onayınızla yapılır. Hook ayrıca `mobile-v*` etiketi itmeyi (ücretli derleme başlatır), nadir git işlerini (`filter-branch`, `filter-repo`, `update-ref`, `gc`, `reflog expire`, `commit --no-verify`) ve proje dışını gösteren yolları sorar |
 | `autoMemoryEnabled` | `false` | Proje bilgisi yalnız depodaki dosyalarda tutulur; klasör dışına hafıza yazılmaz |
 | `enableArtifact` | `false` | Claude Code'un proje dışındaki oturum karalama klasörü (scratchpad) ve Artifact aracı kapalı; geçici dosyalar `.tmp/` altında |
 | `plansDirectory` | `.tmp/planlar` | Plan dosyaları proje içinde ve git dışında |
@@ -116,11 +116,11 @@ Kendi bilgisayarınıza özgü bir ayar gerekirse (ör. Git Bash yolu) `.claude/
 | Katman | Ne yapar | Sınırı |
 |---|---|---|
 | Dosya araçları (Read, Write, Edit) | Proje dışını okuyamaz (`blockReadsOutsideWorkingDirectories`) ve yazamaz (klasör bekçisi) | Kesin engel |
-| Kabuk komutları (Git Bash, Monitor) | Komutta görünen proje dışı yol, ev ya da geçici klasör başvurusu (`~`, `$HOME`, `$USERPROFILE`, `$TEMP`, `/tmp` …) onay ister. `data/raw` ve `.git` içine yazma reddedilir; `CLAUDE.md`, kit dosyaları ve karar defterine yazma, özyinelemeli silme ve geri dönüşü zor git işlemleri onay ister | Komut metnine bakar; betiğin içinde kurulan yolu göremez |
+| Kabuk komutları (Git Bash, Monitor) | Komutta görünen proje dışı yol, ev ya da geçici klasör başvurusu (`~`, `$HOME`, `$USERPROFILE`, `$TEMP`, `/tmp` …) onay ister. Klasör bekçisi hook'u kesin yasak listesini de taşır ve reddeder: `data/raw` ve `.git` içine yazma, zorla push, `git clean -x`, `data/raw`, `data/gold`, `data/backups` silme, gizli değer dosyalarına kabuktan erişim, yedeksiz veri silme ve benzerleri. `CLAUDE.md`, kit dosyaları, karar defteri, özyinelemeli silme ve diğer git işlemleri onaysızdır | Komut metnine bakar; betiğin içinde kurulan yolu göremez |
 | Çalıştırılan programlar (`uv run`, `dotnet run`, `pnpm` betikleri, testler, `node <betik>`) | Claude Code bunların açtığı dosyaları sınırlamaz | Windows'ta işletim sistemi düzeyinde kum havuzu (sandbox) yoktur |
 | Claude Code'un ve araçların kendi dosyaları | Oturum kayıtları ve kullanıcı ayarları `%USERPROFILE%\.claude` altındadır; araç önbellekleri (pnpm, NuGet, uv, Docker) ve test çerçevelerinin geçici dosyaları kendi yerlerindedir | Kuralın dışındadır |
 
-Bu yüzden kural 1 (CLAUDE.md) Claude için bağlayıcıdır: yazdığı betik ve komutlar proje dışı yol kullanmaz; `inceleyici` bunu denetler. Satır içi kod (`node -e`, `python -c`) ve tek başına `node <betik>` onay ister: komutu okuyup onaylayın ya da reddedin. İşletim sistemi düzeyinde kesin sınır isterseniz Claude Code'u yalnız bu klasöre erişimi olan ayrı bir Windows kullanıcısıyla ya da WSL2 içinde kum havuzu açıkken çalıştırmanız gerekir; bu kurulum kitin dışındadır (Doğrulanacak).
+Bu yüzden kural 1 (CLAUDE.md) Claude için bağlayıcıdır: yazdığı betik ve komutlar proje dışı yol kullanmaz; `inceleyici` bunu denetler. Satır içi kod (`node -e`, `python -c`) ve `node <betik>` artık onay istemez; hook programın içini görmez, bu sınır sürer. İşletim sistemi düzeyinde kesin sınır isterseniz Claude Code'u yalnız bu klasöre erişimi olan ayrı bir Windows kullanıcısıyla ya da WSL2 içinde kum havuzu açıkken çalıştırmanız gerekir; bu kurulum kitin dışındadır (Doğrulanacak).
 
 ## 8. Güncelleme ve sorun giderme
 
