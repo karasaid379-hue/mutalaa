@@ -40,7 +40,7 @@ Başlık çapası GitHub kuralıyla türetilir: küçük harf, harf-rakam-tire-b
 
 ## 3. Onay
 
-- Taslağı ve etkilenecek belgelerin listesini kullanıcıya göster. Kullanıcı onaylamadan karar defterine yazma. (Hook bu dosyada ayrıca onay ister.)
+- Taslağı ve etkilenecek belgelerin listesini kullanıcıya göster. Kullanıcı onaylamadan karar defterine yazma. (Hook artık bu dosyada ayrıca onay istemez; kural yordamdır.)
 
 ## 4. Yaz ve yay
 

@@ -41,5 +41,5 @@ Henüz kurulmamış bir alanın komutu çalışmazsa bunu not et; hata sayma.
 ## 4. Rapor ve düzeltme
 
 - Bulguları birleştir, tekrarları ayıkla, önem sırasıyla listele: **Engelleyici**, **Önemli**, **Öneri**. Her bulgu `dosya:satır`, sorun, kural ve öneri taşır.
-- Engelleyici ve önemli bulgular için düzeltme planını göster; kullanıcı onaylarsa düzelt ve ilgili denetimi yeniden çalıştır.
+- Engelleyici ve önemli bulguları düzelt (kullanıcıya sorulmaz) ve ilgili denetimi yeniden çalıştır; kapsam değişikliği ya da yeni karar gerektiren bulguyu kullanıcıya göster.
 - Sonuç satırı: "Commit'e hazır" ya da "Hazır değil: … engelleyici bulgu kaldı".

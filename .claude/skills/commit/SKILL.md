@@ -2,7 +2,7 @@
 name: commit
 description: >-
   Mütâlaa değişikliklerini Conventional Commits biçiminde (İngilizce, proje kapsam listesiyle) anlamlı
-  birimlere bölerek commit eder; gizli ve git dışı dosyaları dışarıda bırakır; push yapmaz. Bir aşamanın
+  birimlere bölerek commit eder; gizli ve git dışı dosyaları dışarıda bırakır; `main`'e push yapmaz. Bir aşamanın
   ya da işin sonunda, inceleme yapıldıktan sonra veya kullanıcı /commit yazdığında kullan.
 argument-hint: "[isteğe bağlı: kısa açıklama ya da kapsam]"
 ---
@@ -40,7 +40,7 @@ Biçim ([Proje yapısı](../../../docs/02-mimari/03-proje-yapisi.md) §6):
 
 - Dosyaları adıyla ekle (`git add <yol>`); `git add -A` kullanma.
 - `git commit -m "<özet>" -m "<gövde>"`. Kanca ya da denetim atlama bayrağı (`--no-verify`) kullanma; yayımlanmış commit'i değiştirme (`--amend` yalnız henüz push edilmemiş kendi commit'inde ve kullanıcı isterse).
-- **Push yapma.** Kullanıcı isterse bile önce dalı ve hedefi göster; `git push` her zaman onay ister, zorla gönderme yasaktır.
+- **Yalnız aşama dalına it** (`git push -u origin <dal>`; onay sorulmaz, CLAUDE.md kural 11). `main`'e doğrudan push yok; zorla gönderme yasaktır (hook reddeder).
 
 ## 5. Rapor
 

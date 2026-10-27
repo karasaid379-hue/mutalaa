@@ -14,7 +14,7 @@ Kaynak: [Yerel geliştirme](../../docs/02-mimari/04-yerel-gelistirme.md), [Proje
 
 - **Docker Compose.** Varsayılan servisler `postgres`, `s3`, `s3-init`; `api`, `editor`, `publisher` `app` profilindedir. PostgreSQL portu yalnız `127.0.0.1` adresine açılır; S3 deposu telefonun erişmesi için `0.0.0.0:8333` üzerindedir. PostgreSQL 18 birimi `/var/lib/postgresql` noktasına bağlanır. Veriler adlı birimlerdedir.
 - **Gizli değerler.** Compose dosyası ve `.env.example` yalnız yer tutucu değer taşır (`yerel-sifre-degistir` gibi). Gerçek değerler git dışı `.env` dosyasındadır.
-- **Yıkıcı komutlar.** `docker compose down -v` veritabanını siler; önce `scripts/backup-db.ps1` ile yedek alınır ve kullanıcı onaylar.
+- **Yıkıcı komutlar.** `docker compose down -v` veritabanını siler; önce aynı komut satırında `scripts/backup-db.ps1` ile yedek alınır; yedeksiz komutu klasör bekçisi reddeder (kural 11).
 - **PowerShell betikleri** CRLF satır sonuyla kaydedilir ve `powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/<betik>.ps1` ile çalıştırılır. İkili çıktı `>` ile yönlendirilmez; dosya konteynerde yazılıp `docker compose cp` ile alınır.
 - **CI.** İş akışları `.github/workflows/` altında `ci-ts.yml`, `ci-dotnet.yml`, `ci-pipeline.yml`, `ci-workflows.yml`, `pr-title.yml`, `eas-build.yml` dosyalarıdır; `.github/dependabot.yml` ve `scripts/ci/` (başlık ve lisans betikleri) yanındadır. Eylem sürümleri yazım günü `arastirmaci` ile doğrulanır.
   - Eylemler tam commit SHA'sıyla ve `# vX.Y.Z` yorumuyla sabitlenir; runner'lar `ubuntu-24.04` ve `windows-2025` (`-latest` değil); `uv` ve `eas-cli` sürümleri sabittir.

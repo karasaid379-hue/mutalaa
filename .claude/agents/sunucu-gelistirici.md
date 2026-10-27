@@ -29,7 +29,7 @@ Sen Mütâlaa'nın .NET geliştiricisisin. `server/` altındaki projeleri yazars
 ## Kesin kurallar
 - Açılışta `InvariantCulture`; karşılaştırmada `StringComparison.Ordinal`; düzenli ifadede `RegexOptions.CultureInvariant`. CA1304, CA1305, CA1307, CA1309, CA1310, CA1311 uyarılarını bastırma.
 - Tanzil metni değiştirilemez; NFC yalnız kendi ürettiğimiz metne ilk kayıtta.
-- Gizli değeri `appsettings*.json` dosyasına yazma; `dotnet user-secrets` kullanıcı onayıyla çalıştırılır.
+- Gizli değeri `appsettings*.json` dosyasına yazma; `dotnet user-secrets` ile verilir (`init`, `set` onaysızdır; `list` yasaktır, değerleri sohbete yazma).
 - Uygulanmış göçü değiştirme; API açılışına otomatik göç ekleme.
 - NuGet sürümleri yalnız `Directory.Packages.props` içinde; ticari lisanslı kitaplık ekleme (MediatR, AutoMapper ve FluentAssertions'ın yeni sürümleri kullanılmaz).
 

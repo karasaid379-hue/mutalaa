@@ -78,7 +78,7 @@ Aşamalar `docs/10-claude-code/asamalar/` altındadır. Harita: `docs/10-claude-
 ## 8. Commit
 
 - `/commit` becerisinin kurallarıyla, değişiklikleri anlamlı birimlere bölerek commit at.
-- Push: A08'e kadar aşama bittiğinde dalı ve hedefi göster (`git status -sb`, `git remote -v`), sonra `git push origin main` çalıştır; komut kullanıcıdan onay ister. A08'den sonra aşama dalı açılır, dal itilir ve PR'ı kullanıcı birleştirir ([Proje yapısı](../../../docs/02-mimari/03-proje-yapisi.md) §6). Zorla push yapılmaz.
+- Push: aşama dalı açılır (`chore/aNN-…`, `docs/aNN-…`), dal itilir (`git push -u origin <dal>`; onay sorulmaz, CLAUDE.md kural 11) ve kullanıcıya PR bağlantısı verilir; PR'ı kullanıcı açar ve birleştirir ([Proje yapısı](../../../docs/02-mimari/03-proje-yapisi.md) §6). `main`'e doğrudan push yapılmaz; zorla push yapılmaz.
 
 ## 9. Kapanış raporu
 
@@ -90,5 +90,5 @@ Türkçe ve kısa:
 ## Kurallar
 
 - CLAUDE.md'deki kesin kurallar her adımda geçerlidir (klasör sınırı, içerik etiği, kanonik metin, lisans kapısı).
-- Geri dönüşü zor işlem (push, EAS derlemesi ve güncellemesi, veritabanı birimini silmek) yalnız kullanıcının açık onayıyla yapılır; `eas submit` hiç çalıştırılmaz.
+- Ücretli iş (EAS derlemesi ve güncellemesi, `mobile-v*` etiketi itmek, ücretli bulut ya da API çağrısı) yalnız kullanıcının açık onayıyla yapılır; veri silen iş önce yedek ister (kural 11); `eas submit` hiç çalıştırılmaz.
 - Kullanıcı "onaysız devam" demedikçe her plan değişikliğinde onay al.
