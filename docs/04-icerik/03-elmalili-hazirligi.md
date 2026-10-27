@@ -1,5 +1,5 @@
 # Elmalılı Hazırlığı
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.2 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
 
 Bu dosya Elmalılı Muhammed Hamdi Yazır'ın *Hak Dini Kur'an Dili* eserinin özgün baskısından meal ve tefsir metninin nasıl hazırlanacağını anlatır. K-03 gereği önce âyet meali hazırlanır ve `core` paketine `meal:elmalili:{sure}:{ayet}` çapalarıyla girer. Tefsir metni ikinci aşamadır ve `tefsir-elmalili` paketine `tf:elmalili:…` çapalarıyla girer.
@@ -11,7 +11,7 @@ Bu dosya Elmalılı Muhammed Hamdi Yazır'ın *Hak Dini Kur'an Dili* eserinin ö
 - **Koruma süresi.** Müellif 1942'de vefat etti; eser 1 Ocak 2013'ten beri serbest ([MKÜ kaydı](https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a), 2026-10-26'da 403 verdi ve dayanak olarak doğrulanamadı (Doğrulanacak); tarih 1942 + 71 hesabıdır, bkz. [lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) §3.3; [FSEK m. 26–27](https://www.wipo.int/wipolex/en/text/499171)).
 - **Yazım ve baskı.** Eser Diyanet İşleri Riyâseti ile yapılan bir sözleşmeyle 1926–1938 arasında yazıldı. "1935-1939 yıllarında İstanbul'da dokuz cilt ve 10.000 takım olarak basılmış"; "2000 takımı müellife verilirken geri kalanları ücretsiz dağıtılmıştır" ([Küre](https://kureansiklopedi.com/tr/detay/hak-dini-kuran-dili-2)).
 - **Sadeleştirilmiş baskılar kullanılmaz.** Sadeleştirme FSEK m. 6 anlamında işlenme eseridir; sadeleştirenin hakkı sürer (K-03). Tanzil'deki Elmalılı metni de kullanılmaz: baskı esası doğrulanmadı ve Tanzil çevirileri "for non-commercial purposes only" şartı taşıyor ([OPUS](https://opus.nlpl.eu/Tanzil/corpus/version/Tanzil)).
-- **Kendi aktarımımız.** FSEK m. 6/8 "İlmi bir araştırma ve çalışma mahsulü olmayan alelade transkripsiyonlarla faksimileleri" işlenme saymıyor. Özgün metnin düz aktarımının yeni bir hak doğurmadığı bu yüzden savunulabilir. Bu bir çıkarımdır; avukat teyit eder. Aynı nedenle başkalarının yaptığı "orijinal metin" aktarımlarını kopyalamak yerine kendi aktarımımızı yaparız.
+- **Kendi aktarımımız.** FSEK m. 6/8 işlenme eserler arasında şu hükmü sayar: "Henüz yayımlanmamış olan bir eserin ilmi araştırma ve çalışma neticesinde yayımlanmaya elverişli hale getirilmesi (İlmi bir araştırma ve çalışma mahsulü olmayan alelade transkripsiyonlarla faksimileler bundan müstesnadır.)" ([mevzuat.gov.tr](https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3); alıntı bir okuma aracının aktarımıdır, Resmî Gazete'deki özgün metinle karşılaştırılmadı: Doğrulanacak). Bu bent yalnız **yayımlanmamış** eserler içindir. Elmalılı'nın eseri 1935'te yayımlandığı için bent doğrudan uygulanmaz. Özgün metnin düz aktarımının yeni bir hak doğurmadığı savunusunun dayanağı m. 1/B(a)'daki "hususiyet" ölçütü ve işlenme eserin "işleyenin hususiyetini" taşıması şartıdır. M. 6/8 en çok kıyas dayanağı olarak anılır. Yayımlanmış ve koruma süresi dolmuş bir eserin düz aktarımı için Yargıtay kararı bulunamadı. Bu bir çıkarımdır; **hukuki görüş değildir, avukata sorulur** ([avukat soruları](../yazismalar/avukat-sorulari.md) 3.2). Aynı nedenle başkalarının yaptığı "orijinal metin" aktarımlarını kopyalamak yerine kendi aktarımımızı yaparız.
 - **Kurul.** Meal Arapça metinle birlikte gösterildiğinde "mealli mushaf" sayılır ve Kurul onayı gerekir (633 m. 6). Meal yayınları ayrıca Din İşleri Yüksek Kurulu incelemesine açıktır (m. 5/ı) ([Lexpera, 633](https://www.lexpera.com.tr/mevzuat/kanunlar/diyanet-isleri-baskanligi-kurulus-ve-gorevleri-hakkinda-kanun-633)). Onay belirli bir sürüme bağlandığı için meal metni başvurudan önce dondurulur; sonraki her düzeltme yeniden onay gerektirebilir.
 
 ## 2. Aşamalar
@@ -33,16 +33,26 @@ Bu dosya Elmalılı Muhammed Hamdi Yazır'ın *Hak Dini Kur'an Dili* eserinin ö
 
 **Tarama nereden bulunur (hepsi Doğrulanacak).**
 - Millî Kütüphane, İSAM Kütüphanesi, Diyanet kütüphaneleri ve ilahiyat fakültesi kütüphanelerinin dijital koleksiyonları.
-- Internet Archive, HathiTrust ve Vikikaynak. Araştırma Vikikaynak ve Diyanet portallarını kontrol edemedi.
-- İkinci el bir takım satın alıp kendimiz taramak. Bu yol üçüncü tarafın tarama şartlarını devreden çıkarır ve görüntü kalitesini bizim kontrolümüze bırakır.
+- Internet Archive, HathiTrust ve Vikikaynak. Güncel durum aşağıdaki maddelerdedir. Diyanet portalı hâlâ okunamadı (Doğrulanacak).
+- **Vikikaynak.** Elmalılı için tarama ya da Index sayfası yok. Meal metni 2007'de kaynaksız girilmiş; baskı esası belirsiz (Doğrulanacak). Tarama kaynağı olamaz; en çok karşılaştırma tanığı adayıdır.
+- **HathiTrust.** 1935 baskısı, 8 cilt, yalnız arama (search-only): görüntü yok. Basılı sayfa numaralarını doğrulamaya yarar.
+- **İBB Atatürk Kitaplığı.** 1935 nüshaları var. Dijital nadir eser isteği `nadirdijital@ibb.gov.tr` adresine yapılır. 2026 tarifesi sayfa başına 5,00 TL; bilgi arama özetinden alındı, sayfa açılmadı (Doğrulanacak). Kitaplığın yeniden kullanım şartı bilinmiyor; şart `embed_ok`'u belirler (bölüm 4 sonu).
+- **İSAM.** Katalogda 1935 c. 1 ve Eser 1979 takımı var; tam metin yok.
+- **archive.org `HakDiniKuranDili`.** OCR metninde "3. Baskı, Eser Neşriyat ve Dağıtım, İstanbul 1979" satırı geçiyor. TDV İA'ya göre 1960 ve 1971 baskıları ilk baskıdan ofsettir; 1979 baskısının tıpkıbasım olduğu kanıtlanmadı. Yükleme anonim ve lisans alanı yok (Doğrulanacak).
+- İkinci el bir takım satın alıp kendimiz taramak (sahaftan 1960/1971 ofset takımı dahil). Bu yol üçüncü tarafın tarama şartlarını devreden çıkarır ve görüntü kalitesini bizim kontrolümüze bırakır.
+
+**Sonuç.** Tarama kaynağı hâlâ Doğrulanacak, ama aday listesi somutlaştı: İBB reprodüksiyonu, archive.org taraması (ofset sınamasıyla) ve sahaftan ofset takımı.
 
 Bir kütüphanenin taraması kullanılacaksa kütüphanenin yeniden kullanım şartı okunur ve lisans defterine kaydedilir. Bedii niteliği olmayan bir fotoğrafın yeni eser doğurmadığı savunulabilir; bu da bir çıkarımdır (araştırma notu, FSEK m. 1/B ve m. 2/3).
 
 **Baskı doğrulama listesi.**
 - [ ] Künye sayfası: başlık, cilt numarası, yıl, matbaa ve seri Princeton kaydıyla uyumlu.
 - [ ] Cilt başına sayfa sayısı kayıtla uyumlu; toplam 6.442 sayfa (fihrist hariç).
-- [ ] Sonraki tıpkı ya da yeni baskı olmadığı doğrulandı.
+- [ ] Sonraki tıpkı ya da yeni baskı olmadığı doğrulandı. TDV İA 1960 ve 1971 ofset baskılarını anıyor; bu baskıların varlığı ve sayfa düzeninin 1935 ile aynı olup olmadığı ayrıca doğrulanır.
+- [ ] Cilt ve yıl farkı çözüldü. TDV İA: "1935–1939, dokuz cilt, Ebüzziyâ Matbaası, 10.000 takım; ofset 1960 ve 1971; fihrist 1982". Princeton: "8 cilt [1935–1938]", 1939 fihrist. BÇ-22 künyeyi taramadan çözecek; bu not çözüm değildir.
 - [ ] Eksik ya da hasarlı sayfalar listelendi; eksikler ikinci bir nüshadan tamamlanacak.
+
+**Etiket uyarısı (Pink).** Johanna Pink (GloQur, 16 Nisan 2021, [yazı](https://gloqur.de/?p=2195)), basılı 1935 metninin el yazması müsveddeden "with some editorial interventions" ile Latin harfe aktarıldığını yazıyor. Ona göre 1990'lardan beri Elmalılı adıyla satılan bir mealin atfı yanlış. 1994–96 tarihi Pink'in tespiti değil; yazıda "2016'dan sonra ortaya çıkan iddialar" diye geçiyor. Sonuç: "Elmalılı meali" etiketi 1935 metnini garanti etmez; metnin baskı esası künyeyle ve taramayla doğrulanır.
 
 **Tarama standardı (öneri).** En az 400 dpi gri tonlama, kayıpsız TIFF; küçük puntolu dipnotlar ve harekeli Arapça için 600 dpi denenir. Dosya adı `c{cilt:02d}-s{sayfa:04d}.tif`. Kayıt komutu:
 
@@ -86,7 +96,7 @@ uv run mutalaa ocr eval --edition elmalili-1935 --gold data/gold/elmalili-ocr/
 
 ## 5. Latin harfine aktarım kılavuzu (Yol A)
 
-Hedef okunur bir "alelade transkripsiyon"dur: özgün ifade harf harf Latin yazısına geçer, ifade değişmez. Kılavuz öneridir; düzeltme işaretinin yoğunluğunu proje sahibi onaylar (Açık soru). Arama düzeltme işaretli ve işaretsiz iki anahtarla çalıştığı için bu tercih aramayı bozmaz ([Arama](../03-veri/05-arama-fts5.md)).
+Hedef, ifadeyi değiştirmeyen okunur bir aktarımdır: özgün ifade harf harf Latin yazısına geçer, ifade değişmez. Bu tanım FSEK m. 6/8'deki "alelade transkripsiyon" sözünden esinlenir ama hukuki sonuç o bende dayanmaz (§1; hukuki görüş değildir). Yol B'de iş harf aktarımı değil, yeniden dizgidir: yazı zaten Latin harflidir ve imlâ aynen alınır. Kılavuz öneridir; düzeltme işaretinin yoğunluğunu proje sahibi onaylar (Açık soru). Arama düzeltme işaretli ve işaretsiz iki anahtarla çalıştığı için bu tercih aramayı bozmaz ([Arama](../03-veri/05-arama-fts5.md)).
 
 | # | Kural | Örnek |
 |---|---|---|

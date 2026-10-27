@@ -1,6 +1,6 @@
 # Fikri haklar avukatına sorular
 
-> **Sürüm:** 1.0 · **Tarih:** 20 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak (gönderilmedi)
 > **Bağlı kararlar:** [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 > **Muhatap:** Fikri haklar avukatı · **Dil:** Türkçe · **İnsan adımı:** [İ-03](../10-claude-code/06-insan-adimlari.md)
 > **Kanal:** Kullanıcı belirler; avukatın adı ve iletişim bilgisi depoya yazılmaz.
@@ -40,9 +40,15 @@ Kelimelerin kök ve lemma bilgisini Quranic Arabic Corpus'tan (QAC) almayı dü�
 
 Elmalılı Muhammed Hamdi Yazır'ın Hak Dini Kur'an Dili adlı eseri (meali dahil) Diyanet İşleri Riyâseti ile yapılan bir sözleşmeyle yazıldı. Müellif 1942'de vefat etti; eserin 1 Ocak 2013'ten beri serbest olduğunu düşünüyoruz. Tecrîd-i Sarîh çevirisi de 1925'te sipariş edildi ve Babanzâde Ahmed Naim'e verildi; çevirinin bir kısmını Naim (ö. 1934), kalanını Kâmil Miras (ö. 1957) hazırladı. Hangi ciltlerin kime ait olduğunu henüz kesinleştiremedik. Elmalılı metnini özgün ilk baskının taramalarından, sadeleştirmeden ve ekleme yapmadan aktaracağız.
 
-1. Bir eserin bir kurumla yapılan sözleşmeyle ya da kurumun siparişiyle yazılmış olması hak sahipliğini ya da koruma süresinin hesabını etkiler mi? Soru Elmalılı'nın eseri ve Tecrîd-i Sarîh tercümesi için geçerli.
-2. Özgün baskının sadeleştirilmeden yapılan düz aktarımı FSEK m. 6/8'deki "alelade transkripsiyon" sayılır mı; aktarım, yapana yeni bir hak doğurur mu?
-3. Bir kütüphanenin dijitalleştirdiği sayfa taramalarını kullanmanın hukuki durumu nedir? Kütüphanenin kullanım şartları dışında, taramanın kendisi üzerinde bir hak doğar mı?
+1. Bir eserin bir kurumla yapılan sözleşmeyle ya da kurumun siparişiyle yazılmış olması hak sahipliğini ya da koruma süresinin hesabını etkiler mi? Soru Elmalılı'nın eseri ve Tecrîd-i Sarîh tercümesi için geçerli. Tecrîd 1925'te Diyanet siparişiyle yazıldı; bu durumda FSEK m. 18/2 ya da m. 27/4 uygulanır mı? 1951 öncesi Hakk-ı Telif Kanunu'nun etkisi var mı?
+2. FSEK m. 6/8 yalnız henüz yayımlanmamış eserlerin yayımlanmaya elverişli hale getirilmesini düzenliyor; Elmalılı'nın eseri ise yayımlanmış ve koruma süresi dolmuş. Böyle bir eserin sadeleştirilmeden yapılan düz aktarımı ya da yeniden dizilmesi, m. 6/8 doğrudan uygulanmasa da, m. 1/B(a)'daki hususiyet ölçütüyle ve işlenmenin "işleyenin hususiyetini" taşıması şartıyla yapana yeni bir hak doğurur mu? M. 6/8'in "alelade transkripsiyon" istisnası kıyasen uygulanabilir mi? Yayımlanmış ve koruması dolmuş bir eserin düz aktarımı için Yargıtay kararı bulamadık.
+3. Bir kütüphanenin dijitalleştirdiği sayfa taramalarını kullanmanın hukuki durumu nedir? Kütüphanenin kullanım şartları dışında, taramanın kendisi üzerinde bir hak doğar mı? Kütüphane "her hakkı saklıdır" şartı koyarsa bu şart bizi bağlar mı; bağlarsa taramayı metne çevirmek için yapay zekâ tabanlı bir OCR hizmetine göndermeyi de kısıtlar mı?
+4. Kamu malı bir eserin üçüncü kişilerce yapılmış aktarımı (Vikikaynak, kuranmeali.com, Çağdaş Sözlük gibi sitelerdeki metinler) veri tabanı hakkına (FSEK ek m. 8) takılır mı? Bu aktarımları (a) yalnız karşılaştırma tanığı olarak, metnimize almadan, ve (b) kaynağı gösterilerek, baskıyla karşılaştırıp düzelttikten sonra temel metin olarak kullanabilir miyiz? İkinci durumda atıf ve lisans yükümlülükleri (özellikle Vikikaynak'ın CC BY-SA altbilgisi) neler olur?
+5. Vikikaynak'taki Kur'an meali sayfalarında gövdede kamu malı şablonu, altbilgide CC BY-SA lisansı var. Bu metni kullanana "aynı lisansla paylaş" yükümlülüğü doğar mı?
+6. Kimliği belirsiz kişilerin Internet Archive'a yüklediği taramalar ve bu taramaların OCR katmanları kullanılabilir mi? Yükleyenin kimliği ve lisansı belli değilse hangi özen gösterilmeli?
+7. Tecrîd-i Sarîh'in III. cildi Naim ile Miras'ın ortak eseri midir? Naim'e ait kısımlar ayrılabilir mi?
+8. Google'ın HathiTrust üzerinden ilettiği kullanım şartları (Google taramalarının görüntüsünün ve OCR'ının yeniden dağıtıma ve ticari kullanıma kapalı olması) bizi bağlar mı? Google taraması görüntüsü üzerinde kendi çalıştırdığımız OCR, serbest bırakılan "transcribed text" sayılır mı?
+9. Sadeleştirilmiş bir baskıdan bir parça, hazır bir metin yoluyla metnimize sızarsa sorumluluk kime düşer? Gerekli özen yükümlülüğü nasıl belgelenir?
 
 ### 4. Kendi ürettiğimiz metinlerin lisansı
 
@@ -55,7 +61,7 @@ Elmalılı aktarımımızı ve Kur'an kelimeleri için yazacağımız Türkçe a
 
 QAC'nin şartı 2. başlıkta anlatıldı. Kur'an metnini aldığımız Tanzil projesinin lisans sayfası Creative Commons Atıf 3.0 derken sıkça sorulan sorular sayfası, kaynaklarının "ticari olmayan amaçlarla" kullanılabileceğini söylüyor; bunu Tanzil'e de soruyoruz. Uygulama ücretsiz ve reklamsızdır; bugün bir gelir modeli yoktur.
 
-1. Ücretsiz ve reklamsız olan, bugün bir gelir modeli bulunmayan uygulamamız hem QAC'nin hem Tanzil'in "ticari olmayan" şartlarına uyar mı?
+1. Ücretsiz ve reklamsız olan, bugün bir gelir modeli bulunmayan uygulamamız hem QAC'nin hem Tanzil'in "ticari olmayan" şartlarına uyar mı? Uygulama bir mağazada (ör. Google Play, App Store) ücretsiz ve reklamsız olarak dağıtılırsa, bu dağıtım "ticari olmayan" (NC) şartı anlamında ticari kullanım sayılır mı?
 2. Uygulama ileride bağış kabul ederse bu değerlendirme değişir mi?
 
 ### 6. Kişisel veriler (yalnız hesapsız ilk sürüm)
@@ -98,11 +104,18 @@ Saygılarımızla,
 | 2.3 | [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md) §2.1 ve §9; [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) ED-4; [Belge çelişkileri](../10-claude-code/07-belge-celiskileri.md) BÇ-02 |
 | 2.4 | A01.1 araştırması (2026-10-20): [QAC lisans sorusu](./qac-lisans.md), "A01.1 bulguları" (telif satırı, bakımcı, ikincil kaynaklarda vefat haberi); lisans defteri §3.2 |
 | 3.1 | Lisans defteri §3.3 ve §8 satır 8; [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) §1 ve §11 madde 3; [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md) §1 (Tecrîd-i Sarîh'in siparişi); lisans defteri §3.4 (Naim'in çevirdiği ciltler Doğrulanacak) |
-| 3.2 | Elmalılı hazırlığı §1 (FSEK m. 6/8); lisans defteri §3.3 |
-| 3.3 | Elmalılı hazırlığı §3 (tarama kaynağı; FSEK m. 1/B ve m. 2/3 çıkarımı) |
+| 3.1 (ek) | Tecrîd'in 1925 siparişi: [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md) §1; m. 18/2, m. 27/4 ve Hakk-ı Telif Kanunu sorusu avukata bırakılır (bu dosyada hüküm yazılmadı) |
+| 3.2 | Elmalılı hazırlığı §1 (FSEK m. 6/8 yalnız yayımlanmamış eserler için; dayanak m. 1/B(a) hususiyet ölçütü ve işleyenin hususiyeti, m. 6/8 en çok kıyas dayanağı; Yargıtay kararı bulunamadı); lisans defteri §3.3. Mevzuat metni: [mevzuat.gov.tr](https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3) |
+| 3.3 | Elmalılı hazırlığı §3 (tarama kaynağı; FSEK m. 1/B ve m. 2/3 çıkarımı) ve §4 sonu (`embed_ok`: kütüphane şartı görsel yapay zekâ OCR'ını belirler) |
+| 3.4 | A09 kaynak edinimi planı: Vikikaynak, kuranmeali.com ve Çağdaş Sözlük gibi üçüncü kişi aktarımları (FSEK ek m. 8 sorusu) |
+| 3.5 | Vikikaynak "Kur'an" meali: gövdede kamu malı şablonu, altbilgide CC BY-SA; baskı esası belirsiz ([Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) §3) |
+| 3.6 | archive.org `HakDiniKuranDili` gibi anonim yüklemeler (lisans alanı yok; Elmalılı hazırlığı §3) |
+| 3.7 | Tecrîd'in III. cildi: Hansu'ya (Küre, 2024) göre Naim 477 hadisi 2 ciltte yayımladı, III. cildi Miras gözden geçirdi; lisans defteri §3.4 |
+| 3.8 | HathiTrust "Reusing HathiTrust Content" sayfası (son değişiklik 2024-02-05): Google taramalarının görüntü ve OCR'ı yeniden dağıtıma ve ticari kullanıma kapalı |
+| 3.9 | Sadeleştirilmiş baskıların sızma riski (K-03; Elmalılı hazırlığı §1) |
 | 4.1 | Sonra yapılacaklar S-12; Elmalılı hazırlığı §11 madde 4; Kelime anlamları §9 |
 | 4.2 | Kelime anlamları §9 |
-| 5.1, 5.2 | Kelime anlamları §2.1; lisans defteri §8 satır 4; K-22; Sonra yapılacaklar S-01; A01.1 Tanzil bulgusu ([Tanzil sorusu](./tanzil-arama-metni.md), 2. soru) |
+| 5.1, 5.2 | Kelime anlamları §2.1; lisans defteri §8 satır 4; K-22; Sonra yapılacaklar S-01; A01.1 Tanzil bulgusu ([Tanzil sorusu](./tanzil-arama-metni.md), 2. soru). 5.1'e eklenen mağaza dağıtımı sorusu A09 kaynak edinimi planından gelir; Açık Kuran (CC BY-NC-SA 4.0) gibi NC şartlı adaylar şimdilik kullanılmıyor |
 | 6.1 | [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) §2.1 (indirme isteği IP adresini ve cihaz bilgisini sağlayıcıya ulaştırır), §2.2 madde 5 (hata raporu anahtarı bulunur; varsayılan değeri Açık soru), §2.4 ve §5 madde 1 |
 | 6.2 | KVKK ve gizlilik §2.5 ve §5 madde 3; Sonra yapılacaklar S-11 |
 
