@@ -6,7 +6,7 @@
 Bu dosya aşamaların durumunu tutar. Aşağıdaki durum bloğu her oturumun başında Claude Code'a otomatik verilir (`.claude/hooks/oturum-baslangici.mjs`). Bloğun işaret satırlarını (`<!-- durum:baslangic -->`, `<!-- durum:bitis -->`) silmeyin.
 
 <!-- durum:baslangic -->
-- Aktif aşama: A08 · CI iş akışları (dal `chore/a08-ci-workflows`)
+- Aktif aşama: A08 · CI iş akışları (dal chore/a08-ci-workflows)
 - Son tamamlanan: A07 · Editoryal veritabanı (2026-10-27)
 - Sıradaki: A09 · Elmalılı OCR pilotu
 - Bekleyen insan adımları: İ-01 (Docker ilk açılış, yönetici ayarları); İ-02 … İ-08 taslakları hazır, gönderim ve onay bekliyor (öncelik İ-02; İ-08 artık Tanzil üst veri dosyasını da kapsıyor)

@@ -113,6 +113,7 @@ dotnet run --project server/Mutalaa.Publisher -- verify --flavor internal
 - `internal` derleme `bekliyor` ve `ic_kullanim` paketleri göstermez; bu paketlere dayanan akışlar yalnız `dev`'de koşar.
 - Git Bash'te `adb` ve `maestro` doğrudan çalışır; cihaz yolu içeren argümanlarda yol dönüşümü için `windows-sorun`.
 - Commit kapsamları: `mobile` (akışlar ve düzeltmeler), `docs` (rapor).
+- A08'den devir: EAS ücretsiz planı ayda 15 Android ve 15 iOS derleme verir (kota aşılınca ücret çıkmaz, derleme durur; [Proje yapısı §8](../../02-mimari/03-proje-yapisi.md#8-açık-sorular) madde 3). Faz 2'nin `internal`, ölçüm ve duman derlemeleri bu kotaya karşı planlanır; yeterli değilse sorun `/karar` ile ele alınır. Toplu derleme kotayı korur (`fingerprint`, A21).
 
 ## İnsan adımları
 - İ-21 · Referans cihazların seçimi: A33.3'ten önce gerekir.

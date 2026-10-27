@@ -1,6 +1,6 @@
 # Proje yapısı
 
-> **Sürüm:** 1.6 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.7 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
 
 Kod tek depoda durur: TypeScript uygulamaları ve paketleri pnpm + Turborepo ile, .NET projeleri `server/` altındaki çözümle, Python içerik hattı `pipeline/` altında uv ile yönetilir. Bu dosya klasörleri, bağımlılık kurallarını, araçları, kod biçimini, Git kurallarını ve CI iş akışlarını tanımlar.
@@ -67,9 +67,12 @@ mutalaa/
 ├─ data/                         git dışı: raw/, gelen/, staged/, ocr/, gold/, llm-cache/, reports/, logs/, packs/, kurul/, backups/ (§1.1)
 ├─ docs/                         proje belgeleri (eski adıyla mutalaa-docs); Claude Code rehberi docs/10-claude-code/
 ├─ scripts/                      backup-db.ps1, restore-db.ps1, lan-ip.ps1
+│  └─ ci/                        CI yardımcıları (A08): check-licenses.mjs, pr-title.mjs, license-exceptions.json ve *.test.mjs testleri
 ├─ CLAUDE.md · .claude/          Claude Code kiti: kılavuz, ajanlar, beceriler, kurallar, hook'lar (K-31)
 ├─ .tmp/                         git dışı geçici dosyalar ve Claude Code plan dosyaları
-├─ .github/workflows/            ci-ts.yml, ci-dotnet.yml, ci-pipeline.yml, eas-build.yml
+├─ .github/                      CI (§7)
+│  ├─ workflows/                 ci-ts.yml, ci-dotnet.yml, ci-pipeline.yml, ci-workflows.yml, pr-title.yml, eas-build.yml
+│  └─ dependabot.yml             haftalık gruplu bağımlılık güncellemesi (Teknoloji yığını §4.2)
 ├─ docker-compose.yml · .env.example · .dockerignore
 ├─ package.json · pnpm-workspace.yaml · turbo.json · tsconfig.base.json   (.npmrc yalnız gerekirse, K-32)
 ├─ eslint.config.mjs · .prettierrc.json · .editorconfig · .gitattributes · .gitignore
@@ -204,13 +207,15 @@ pnpm npm ile kurulur, Corepack kullanılmaz. Sürüm kök `package.json` içinde
     "build": { "dependsOn": ["^build"], "outputs": ["dist/**"] },
     "typecheck": { "dependsOn": ["^build"] },
     "lint": {},
-    "test": { "dependsOn": ["^build"] },
+    "test": { "dependsOn": ["^build"], "env": ["LANG", "LC_ALL"] },
     "dev": { "cache": false, "persistent": true }
   }
 }
 ```
 
 `turbo.json` içindeki `globalDependencies` ile kök yapılandırma dosyaları (`tsconfig.base.json`, `eslint.config.mjs`, `.prettierrc.json`) Turborepo önbelleğine girdi olur; ESLint, tsconfig ya da Prettier kuralı değişince önbellek geçersiz sayılır.
+
+`test` görevi `env: ["LANG", "LC_ALL"]` bildirir. Bildirilmezse yerel ayar karşıtı koşu önbellekten gelir: A08'de `--dry=json` özetleri eski `turbo.json`'da `C.UTF-8` ve `tr_TR.UTF-8` için aynı çıktı (`LANG` yerleşik geçiş listesindeydi ama önbellek anahtarına girmiyor, `LC_ALL` ise süzülüyordu), yenisinde farklı çıktı. Bu yüzden `globalEnv: ["LANG"]` önerisi kalktı. Ayrıntı: [A08 aşama kaydı](../10-claude-code/asamalar/A08-ci-is-akislari.md#aşama-kaydı-2026-10-27).
 
 `shared/test-vectors` bir çalışma alanı paketidir ve `build` görevi JSONL biçimini denetler. `search` ve `anchors` bu pakete geliştirme bağımlılığı olarak bağlanır. Böylece bir vektör değişince Turborepo bu paketlerin test önbelleğini geçersiz sayar.
 
@@ -312,8 +317,8 @@ Python için `pyproject.toml` içinde `[tool.ruff] target-version = "py313"`, `l
 
 ## 6. Git kuralları
 
-- **Gövde tabanlı geliştirme.** `main` her zaman derlenir ve korumalıdır; CI yeşil olmadan birleştirme yapılmaz. Dallar kısa ömürlüdür (en çok iki gün): `feat/…`, `fix/…`, `docs/…`, `chore/…`. Birleştirme "squash" ile yapılır. Yarım kalan özellik derleme türü bayrağıyla gizlenir ([Mobil mimari](../06-mobil/01-mobil-mimari.md), `flags.ts`).
-- **Conventional Commits.** Biçim `<tür>(<kapsam>): <özet>`; dil İngilizce (araçlar ve eski plan ile aynı). Türler: `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `data`. Kapsamlar: `mobile`, `editor`, `web`, `api`, `server` (`Mutalaa.Domain`, `Mutalaa.Infrastructure` ve çözüm geneli), `publisher`, `pipeline`, `anchors`, `content-schema`, `search`, `reader-core`, `player`, `ui-tokens`, `test-vectors`, `infra`, `docs`, `kit` (`CLAUDE.md` ve `.claude/`; [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)). Squash birleştirmede PR başlığı commit mesajı olur; CI PR başlığının biçimini denetler.
+- **Gövde tabanlı geliştirme.** `main` her zaman derlenir; CI yeşil olmadan birleştirme yapılmaz. GitHub Free planında özel depoda dal koruması ve kurallar (rulesets) yoktur (docs.github.com "gated features" sayfası, okuma 27 Ekim 2026; kaynak: [A08 aşama kaydı](../10-claude-code/asamalar/A08-ci-is-akislari.md#aşama-kaydı-2026-10-27)); uygulamada kural: PR yeşil görülmeden birleştirilmez. Dallar kısa ömürlüdür (en çok iki gün): `feat/…`, `fix/…`, `docs/…`, `chore/…`. Birleştirme "squash" ile yapılır. Yarım kalan özellik derleme türü bayrağıyla gizlenir ([Mobil mimari](../06-mobil/01-mobil-mimari.md), `flags.ts`).
+- **Conventional Commits.** Biçim `<tür>(<kapsam>): <özet>`; dil İngilizce (araçlar ve eski plan ile aynı). Türler: `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `data`. Kapsamlar: `mobile`, `editor`, `web`, `api`, `server` (`Mutalaa.Domain`, `Mutalaa.Infrastructure` ve çözüm geneli), `publisher`, `pipeline`, `anchors`, `content-schema`, `search`, `reader-core`, `player`, `ui-tokens`, `test-vectors`, `infra`, `docs`, `kit` (`CLAUDE.md` ve `.claude/`; [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)). Squash birleştirmede PR başlığı commit mesajı olur. Başlığın biçimini [pr-title.yml](../../.github/workflows/pr-title.yml) denetler; kural [scripts/ci/pr-title.mjs](../../scripts/ci/pr-title.mjs) içindedir ve yukarıdaki tür ve kapsam listeleriyle birebir aynıdır (kit testi iki listeyi eşit tutar). Özet en çok 72 karakterdir, küçük harf (ya da rakam) ile başlar ve noktayla bitmez; Dependabot başlıkları için uzunluk sınırı yoktur. Dependabot başlıkları var olan kapsamları kullanır: `build(infra)` (npm), `build(pipeline)` (uv), `ci(infra)` (GitHub Actions).
   ```
   feat(publisher): write gate report next to packs
   fix(search): map dotted capital I before lowercasing
@@ -323,133 +328,58 @@ Python için `pyproject.toml` içinde `[tool.ruff] target-version = "py313"`, `l
 
 ## 7. CI iş akışları (GitHub Actions)
 
-| Dosya | Tetikleyici | İşler |
-|---|---|---|
-| `ci-ts.yml` | `apps/**`, `packages/**`, `shared/test-vectors/**` | lint, typecheck, test (Turborepo); `LANG` matrisi `C.UTF-8` ve `tr_TR.UTF-8`; `expo install --check`; editör API istemcisi güncel mi |
-| `ci-dotnet.yml` | `server/**`, `shared/test-vectors/**`, `packages/content-schema/sql/**` | `dotnet format` denetimi, derleme, test (Testcontainers ile `postgres:18`), OpenAPI belgesi güncel mi |
-| `ci-pipeline.yml` | `pipeline/**`, `shared/test-vectors/**` | ruff, pytest; Ubuntu ve Windows matrisi |
-| `eas-build.yml` | Elle başlatma ve `mobile-v*` etiketi | EAS Build; mağazaya gönderim elle yapılır |
+İş akışlarının tek kaynağı [.github/](../../.github/) klasörüdür; bu belge YAML kopyası tutmaz, kopya eskirdi ve koddan ayrışırdı. Tablo yalnız özet verir; ayrıntı dosyadadır. Her iş akışında `pull_request` ve (varsa) `push` aynı `paths` listesini kullanır; `push` yalnız `main` içindir. Aşama kaydı: [A08](../10-claude-code/asamalar/A08-ci-is-akislari.md#aşama-kaydı-2026-10-27).
 
-Eylem sürümleri (`@v4`, `@v6`, `@v8`) yazım günündeki ana sürümlerdir; güncel ana sürümler Doğrulanacak. Henüz var olmayan `@mutalaa/mobile`, `@mutalaa/editor` ve OpenAPI belgesine bağlı adımlar ilgili dosya oluşana kadar `if: hashFiles('…') != ''` koşuluyla atlanır; Turborepo'nun `LANG` değişkenini görevlere geçirip geçirmediği Doğrulanacak (geçirmiyorsa `turbo.json`'a `globalEnv: ["LANG"]` eklenir; öneri, A08).
+| Dosya | Tetikleyici | `paths` özeti | İşler |
+|---|---|---|---|
+| [ci-ts.yml](../../.github/workflows/ci-ts.yml) | `pull_request`, `push` (`main`), elle | `apps/**`, `packages/**`, `shared/test-vectors/**`, `shared/data/**`, `scripts/ci/**`, `server/Mutalaa.Api/openapi/**`, kök TypeScript yapılandırma ve kilit dosyaları, kendi dosyası | Matris `LANG` = `C.UTF-8` ve `tr_TR.UTF-8` (`fail-fast: false`). Her ayakta etkin yerel ayar günlüğe yazılır. `C.UTF-8` ayağı: `turbo run lint typecheck test`, `scripts/ci` testleri, ESLint, `prettier --check .`, pnpm lisans kapısı, `expo install --check` (`apps/mobile` varsa), editör API istemcisi güncel mi (`apps/editor` varsa). `tr_TR.UTF-8` ayağı: `turbo run test` |
+| [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml) | `pull_request`, `push` (`main`), elle | `server/**`, `shared/test-vectors/**`, `shared/data/**`, `packages/content-schema/enums.json`, `docs/03-veri/02-editoryal-veritabani.md`, `global.json`, `.editorconfig`, `.config/dotnet-tools.json`, `scripts/ci/**`, kendi dosyası | `dotnet tool restore`, `restore --locked-mode`, `format --verify-no-changes`, `build -c Release`, `test` (Testcontainers ile PostgreSQL), normalizasyon ortamı günlüğü, OpenAPI belgesi güncel mi (belge varsa), NuGet lisans kapısı |
+| [ci-pipeline.yml](../../.github/workflows/ci-pipeline.yml) | `pull_request`, `push` (`main`), elle | `pipeline/**`, `shared/test-vectors/**`, `shared/data/**`, `packages/content-schema/enums.json`, `pnpm-workspace.yaml`, üretilen kopyalar (`ic-kesme.ts`, `ayet-sayilari.ts`, `IcKesme.g.cs`, `AyetSayilari.g.cs`), kendi dosyası | Matris `ubuntu-24.04` ve `windows-2025` (`fail-fast: false`): `uv sync --locked`, ortam günlüğü, `ruff check`, `ruff format --check`, `mypy`, `pytest`. Yalnız Linux: `mutalaa export test-vectors --check` ve `pip-licenses` listesi (kapı değil) |
+| [ci-workflows.yml](../../.github/workflows/ci-workflows.yml) | `pull_request`, `push` (`main`), elle | `.github/**` | actionlint (ShellCheck ve pyflakes ile); resmî Docker imajı `rhysd/actionlint:1.7.12`, özet (digest) ile sabit |
+| [pr-title.yml](../../.github/workflows/pr-title.yml) | `pull_request` (`opened`, `edited`, `synchronize`, `reopened`) | Yok (her PR) | PR başlığı `scripts/ci/pr-title.mjs` ile denetlenir (§6); başlık yalnız ortam değişkeninden okunur |
+| [eas-build.yml](../../.github/workflows/eas-build.yml) | Elle (`workflow_dispatch`) ve `mobile-v*` etiketi | Yok | EAS Build (`--no-wait`); mağazaya gönderim (`eas submit`) yoktur, elle yapılır |
 
-```yaml
-# .github/workflows/ci-ts.yml
-name: ci-ts
-on:
-  pull_request:
-    paths: ['apps/**', 'packages/**', 'shared/test-vectors/**', 'package.json', 'pnpm-lock.yaml', 'turbo.json', 'eslint.config.mjs']
-  push:
-    branches: [main]
-concurrency:
-  group: ci-ts-${{ github.ref }}
-  cancel-in-progress: true
-jobs:
-  ts:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        lang: ['C.UTF-8', 'tr_TR.UTF-8']   # Türkçe yerel ayar hatalarını yakalar
-    env:
-      LANG: ${{ matrix.lang }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with: { node-version-file: .nvmrc, cache: pnpm }
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm turbo run lint typecheck test
-      - if: matrix.lang == 'C.UTF-8'
-        run: pnpm --filter @mutalaa/mobile exec expo install --check
-      - if: matrix.lang == 'C.UTF-8'
-        name: Editör API istemcisi güncel mi
-        run: pnpm --filter @mutalaa/editor gen:api && git diff --exit-code apps/editor/src/api
-```
+Bağımlılık güncellemesi için [dependabot.yml](../../.github/dependabot.yml) vardır (Teknoloji yığını §4.2). Yerel yardımcılar [scripts/ci/](../../scripts/ci/) altındadır: `check-licenses.mjs` (lisans kapısı), `license-exceptions.json` (istisna listesi; şu an boş), `pr-title.mjs` ve `node --test` testleri.
 
-```yaml
-# .github/workflows/ci-dotnet.yml
-name: ci-dotnet
-on:
-  pull_request:
-    paths: ['server/**', 'shared/test-vectors/**', 'packages/content-schema/sql/**', 'global.json', '.editorconfig']
-  push:
-    branches: [main]
-jobs:
-  dotnet:
-    runs-on: ubuntu-latest
-    env:
-      TESTINGPLATFORM_TELEMETRY_OPTOUT: 1
-      DOTNET_CLI_TELEMETRY_OPTOUT: 1
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with: { global-json-file: global.json }
-      - run: dotnet tool restore
-      - run: dotnet restore server/Mutalaa.slnx --locked-mode
-      - run: dotnet format server/Mutalaa.slnx --verify-no-changes --no-restore
-      - run: dotnet build server/Mutalaa.slnx -c Release --no-restore
-      - run: dotnet test --solution server/Mutalaa.slnx -c Release --no-build
-      - name: OpenAPI belgesi güncel mi
-        run: git diff --exit-code server/Mutalaa.Api/openapi
-```
+**Ortak kurallar**
 
-`dotnet test` burada MTP kipindedir ([K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)). `-c Release --no-build` bayraklarını dotnet test MTP belgesi destekler ([dotnet test belgesi](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test), okuma 21 Ekim 2026), ama yerelde yalnız `--no-build` denendi. Birleşimin CI'da çalıştığı A08'de doğrulanır.
+- **Eylemler tam commit SHA'sı ve sürüm yorumuyla sabittir.** Sürümler A08.1'de GitHub depolarının sürüm sayfalarından okundu (27 Ekim 2026): `actions/checkout` v7.0.1, `pnpm/action-setup` v6.1.0, `actions/setup-node` v7.1.0, `actions/setup-dotnet` v6.0.0, `astral-sh/setup-uv` v10.3.2, `expo/expo-github-action` 9.0.1. `setup-uv` v8'den beri kayan ana sürüm etiketi (`v10`) yayımlamıyor, bu yüzden SHA zorunludur. Kaynaklar: [checkout](https://github.com/actions/checkout/releases), [pnpm/action-setup](https://github.com/pnpm/action-setup/releases), [setup-node](https://github.com/actions/setup-node/releases), [setup-dotnet](https://github.com/actions/setup-dotnet/releases), [setup-uv](https://github.com/astral-sh/setup-uv/releases), [expo-github-action](https://github.com/expo/expo-github-action/releases). Güncellemeleri Dependabot (`github-actions`) önerir.
+- **Runner'lar sabittir:** `ubuntu-24.04` ve `windows-2025`. `ubuntu-latest` 19 Ekim ile 19 Kasım 2026 arasında Ubuntu 26.04'e geçiyor (GitHub changelog, 17 Eylül 2026); sabitleme geçişin bir PR'ı habersiz kırmasını önler.
+- **En az izin ve güvenli tetikleyici.** İş akışı düzeyinde `permissions: contents: read` (`pr-title.yml` iş akışı düzeyinde `{}` verip işte `contents: read` açar). `pull_request_target` kullanılmaz. Her `actions/checkout` adımında `persist-credentials: false` vardır (v7'de varsayılan hâlâ `true`). Sırlar yalnız `secrets` bağlamından okunur; `EXPO_TOKEN` yalnız `eas-build.yml` içindedir.
+- **Eşzamanlılık.** `concurrency` grubu iş akışı adı ve PR için `github.ref`, `main` için commit SHA'sıdır: PR'da yeni itme eskisini iptal eder, `main`'de her commit kendi koşusunu tamamlar. `pr-title.yml` PR başına iptal eder.
+- **`fail-fast: false`** ve her işte `timeout-minutes` (2 ila 25 dakika) vardır; matrisin bir ayağı kırmızı olunca diğeri iptal edilmez, takılan iş saatlerce sürmez.
+- **Betik enjeksiyonu.** PR başlığı ve girdi değerleri komut satırına gömülmez; `env:` ile verilir (`pr-title.yml`, `eas-build.yml`).
+- **Telemetri kapalı:** `TURBO_TELEMETRY_DISABLED`, `TESTINGPLATFORM_TELEMETRY_OPTOUT`, `DOTNET_CLI_TELEMETRY_OPTOUT`.
+- **Kilit dosyaları birebir kullanılır:** `pnpm install --frozen-lockfile`, `dotnet restore --locked-mode`, `uv sync --locked` (`ci-pipeline.yml` ayrıca `UV_LOCKED=1` tanımlar).
+- **Henüz var olmayan uygulamalar.** `@mutalaa/mobile`, `@mutalaa/editor` ve OpenAPI belgesine bağlı adımlar `if: hashFiles('…') != ''` koşuluyla ilgili dosya oluşana kadar atlanır.
 
-```yaml
-# .github/workflows/ci-pipeline.yml
-name: ci-pipeline
-on:
-  pull_request:
-    paths: ['pipeline/**', 'shared/test-vectors/**']
-  push:
-    branches: [main]
-jobs:
-  python:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]   # PYTHONUTF8 bilerek verilmez; kodlama hataları görünür
-    runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        working-directory: pipeline
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
-      - run: uv sync --locked
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
-      - run: uv run pytest
-```
+**ci-ts**
 
-```yaml
-# .github/workflows/eas-build.yml
-name: eas-build
-on:
-  workflow_dispatch:
-    inputs:
-      profile: { type: choice, options: [internal, production], default: internal }
-      platform: { type: choice, options: [android, ios, all], default: all }
-  push:
-    tags: ['mobile-v*']
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with: { node-version-file: .nvmrc, cache: pnpm }
-      - uses: expo/expo-github-action@v8
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-      - run: pnpm install --frozen-lockfile
-      - name: EAS Build
-        working-directory: apps/mobile
-        run: >
-          eas build --non-interactive --no-wait
-          --profile ${{ inputs.profile || 'production' }}
-          --platform ${{ inputs.platform || 'all' }}
-```
+- pnpm sürümünü eylem kök `package.json` içindeki `devEngines.packageManager` alanından okur; `version` girdisi verilmez (K-32 ile uyumlu). Node sürümü `.nvmrc`'den gelir.
+- Yerel ayar karşıtlığı yalnız Linux'ta görülür (Windows'ta Node iki koşuda da `tr-TR`). `packages/anchors` ve `packages/search` Vitest kurulum dosyaları (`test/global-setup.ts`) koşu başında `locale=` ve `unicode=` yazar; Windows dışında `tr_TR` istenip ICU Türkçe çözmediyse test hata verir, böylece `tr_TR.UTF-8` ayağı sessizce İngilizce koşamaz.
+- Turborepo `test` görevi `env: ["LANG","LC_ALL"]` bildirir (§4.1); `tr_TR.UTF-8` ayağı `C.UTF-8` ayağının önbelleğinden gelmez.
+- Lisans kapısı: `pnpm licenses list -r --json --prod | node scripts/ci/check-licenses.mjs pnpm`. Kuralları ve kapsamı: [Teknoloji yığını §3](./02-teknoloji-yigini.md#3-lisans-notları).
+
+**ci-dotnet**
+
+- `dotnet test --solution server/Mutalaa.slnx -c Release --no-build` birleşimi çalışır (MTP kipi, [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform); [dotnet test belgesi](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test)). Yerelde 1755 testin 1755'i geçti. `--no-build` `--no-restore`'u da içerir. SDK 10'da hiç test koşmayan bir proje bütün koşuyu 8 koduyla düşürür.
+- xunit.v3 testi tek başına çalıştırılıp çıktısı görülmek istenirse: `dotnet <test dll> -diagnostics -showLiveOutput -method <test adı>`. İş akışı bunu normalizasyon ortamı günlüğü için kullanır (globalleşme kipi ve kültür; A05).
+- `setup-dotnet` `global.json` içindeki SDK'yı kurar; NuGet önbelleği `packages.lock.json` dosyalarına bağlıdır.
+- Lisans kapısı: `nuget-license` yerel araçtır (`.config/dotnet-tools.json`); test projeleri dışlanır. Ayrıntı: Teknoloji yığını §3.
+
+**ci-pipeline**
+
+- Python sürümünü `setup-uv` kurmaz; `uv` `pipeline/.python-version` dosyasından 3.13'ü ister ve gerekirse indirir. `uv` sürümü `0.13.1` olarak sabittir (`version` girdisi).
+- `PYTHONUTF8` bilerek verilmez; kodlama hataları Windows ayağında görünür. Yerelde `PYTHONUTF8=0` koşusu tercih edilen kodlamayı `cp1254`'e düşürür; GitHub Windows ayağının `cp1252`'sinin tam karşılığı değildir, asıl kanıt CI'dır.
+- `mypy` ruff'tan sonra, `pytest`'ten önce koşar.
+
+**ci-workflows**
+
+- Yerel eşdeğeri: `MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd -W):/repo" -w /repo rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 -color`. Şema denetimi için `uvx check-jsonschema@0.39.0 --builtin-schema vendor.github-workflows <dosya>` ve `vendor.dependabot` kullanılabilir (A08 aşama kaydı).
+
+**eas-build**
+
+- Yalnız elle ya da `mobile-v*` etiketiyle başlar. Etiket itmek ücretli bir üretim derlemesi başlatır (profil girdisi yoksa `production`); CLAUDE.md kural 11 gereği bu kullanıcının kararıdır. `apps/mobile/package.json` yoksa iş, sırrı görecek adımdan önce durur. `eas-cli` 26.0.0 sabittir (`latest` yok); `EXPO_TOKEN` yalnız `secrets.EXPO_TOKEN` olarak geçer.
 
 Gömülü `core` denetimi EAS'in derleme kancasında çalışır. `apps/mobile/package.json` içindeki `eas-build-post-install` betiği `node scripts/fetch-core.mjs` komutunu çağırır. Betik profilin `MANIFEST_URL` değerinden manifesti okur, imzasını derleme türünün açık anahtarıyla doğrular, `core` paketini indirir ve sha256'yı doğrular. İmzasız ya da imzası tutmayan manifestte derleme durur. `production` profilinde `core` için `kurul_onay` boşsa da derleme durur ([Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md), B-05 ve B-06). `development` profilinde `MANIFEST_URL` yerel SeaweedFS'i gösterir ve EAS bulutu ona ulaşamaz; bu profilde kanca indirmeyi atlar, geliştirme derlemesinde `core` Metro üzerinden yerel `assets/db/` klasöründen gelir ([Yerel geliştirme](./04-yerel-gelistirme.md) §6 adım 7; öneri, A23'te doğrulanır ve `/karar` ile yazılır). CI aynı denetimi yapıt üzerinde `verify --flavor public --embedded-core …` ile yineler ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) §5). Mağazaya gönderim (`eas submit`) bu denetimler ve Kurul onayı görüldükten sonra elle yapılır.
 
@@ -457,7 +387,7 @@ Gömülü `core` denetimi EAS'in derleme kancasında çalışır. `apps/mobile/p
 
 1. ~~pnpm `node-linker=hoisted` yerine izole kurulum Expo SDK 57'de çalışıyor mu?~~ Çözüldü (21 Ekim 2026, [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)): izole düzen varsayılandır ([Expo monorepo kılavuzu](https://docs.expo.dev/guides/monorepos/)); SDK 58'e özel tablo yok, A21'de yeniden sınanır.
 2. `Mutalaa.slnx` kullanılan IDE'de ve `dotnet format`'ta sorunsuz mu? Çözüldü (21 Ekim 2026, [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)): `dotnet format` ve komut satırı araçları `.slnx` ile çalışıyor (10.0.402). IDE kısmı Doğrulanacak: kaynaklar çelişkili, kullanıcının IDE'sinde ilk açılışta denenir (VS Code C# Dev Kit için `dotnet.defaultSolution` ayarı gerekebilir).
-3. EAS'in ücretsiz planındaki aylık derleme sınırı Faz 2 temposuna yetiyor mu (Doğrulanacak)?
+3. EAS'in ücretsiz planındaki aylık derleme sınırı Faz 2 temposuna yetiyor mu? Sınır doğrulandı (27 Ekim 2026, A08.1): ücretsiz planda ayda 15 Android ve 15 iOS derleme; kota aşılınca ücret çıkmaz, derleme durur ([expo.dev/pricing](https://expo.dev/pricing), [Planlar ve faturalama](https://docs.expo.dev/billing/plans)). Faz 2 temposuna yetip yetmediği A21 ve A33 planında değerlendirilir (iki aşama dosyasına not düşüldü).
 
 ## İlgili dosyalar
 

@@ -290,7 +290,9 @@ VoiceOver ve TalkBack'in harekeli Kur'an Arapçasıyla davranışı hakkında ka
 | Tetik | Koşanlar |
 |---|---|
 | Her PR | Vektörler (3 dil), birim testleri, tip denetimi, lint, bağımlılık lisans denetimi, Publisher kapı testleri, göç ve enum testleri, kontrast testi |
-| Gece | İçerik hattı tam koşu, altın set değerlendirmesi, değişmezlik testleri, `internal` paket üretimi, emülatörde Maestro |
+| Gece | İçerik hattı tam koşu, altın set değerlendirmesi, değişmezlik testleri, `internal` paket üretimi, emülatörde Maestro. Gece iş akışı henüz yoktur: A08 gece işi kurmaz; iskeleti ilk gece işiyle A10'da açılır ([BÇ-42](../10-claude-code/07-belge-celiskileri.md#1-karar-bekleyenler)) |
+
+**Her PR satırının bugünkü karşılığı (A08, 27 Ekim 2026).** Beş iş akışı koşar ([Proje yapısı §7](../02-mimari/03-proje-yapisi.md#7-ci-iş-akışları-github-actions)): `ci-ts` (TypeScript vektörleri ve birim testleri, lint, tip denetimi, `tr_TR.UTF-8` ve `C.UTF-8` ayakları), `ci-dotnet` (C# vektörleri ve birim testleri, Testcontainers ile veritabanı ve göç testleri, `dotnet format`), `ci-pipeline` (Python vektörleri ve testleri, ruff, mypy; Ubuntu ve Windows), `pr-title` (PR başlığı biçimi) ve `ci-workflows` (iş akışı dosyalarının actionlint denetimi). İki kapı vardır: bağımlılık lisans kapısı (yalnız dağıtılan ve sunulan kodda durdurur; [Teknoloji yığını §3](../02-mimari/02-teknoloji-yigini.md#3-lisans-notları)) ve PR başlığı kapısı. Publisher kapı testleri ve kontrast testi ilgili aşamalar geldikçe bu iş akışlarına eklenir (A13 ve mobil aşamalar); bugünkü koşular yalnız var olan testleri çalıştırır.
 | Sürüm | Hepsi, public yapıt taraması, referans cihazda performans, elle erişilebilirlik, aşağıdaki kontrol listesi |
 
 ## 13. Sürüm kontrol listesi

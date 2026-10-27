@@ -108,6 +108,7 @@ Son iki komut API ayrı bir terminalde `dotnet watch --project server/Mutalaa.Ap
 - `review.hedef_tablo` denetim listesi Editoryal veritabanı §8'de zaten `quran_word_fix`, `tr_root_index`, `tr_form` ve `surah_alias` değerlerini taşır; Backend API §4.1'deki açık soru "Çözüldü (19 Ekim 2026)" olarak işaretlidir.
 - Gizli değerler `dotnet user-secrets` ile verilir; `appsettings*.json` içine parola yazılmaz. Günlüğe parola, belirteç ve çerez yazılmaz.
 - Editör paneli dışarı açılmaz; açılırsa HTTPS, antiforgery ve iki adımlı doğrulama gerekir (§6).
+- A08'den devir (CI): OpenAPI belgesi (`server/Mutalaa.Api/openapi/v1.json`) `dotnet build -c Release` içinde üretilmelidir. `ci-dotnet.yml` derlemeyi Release ile yapar ve belge varsa `git diff --exit-code server/Mutalaa.Api/openapi` ile farkı arar; belge başka bir yapılandırmada ya da ayrı komutla üretilirse CI farkı göremez. Belge ilk eklendiği PR'da bu adımın çalıştığı Actions'ta görülür ([Proje yapısı §7](../../02-mimari/03-proje-yapisi.md#7-ci-iş-akışları-github-actions)).
 
 ## İnsan adımları
 - Yok. İlk yönetici e-posta ve parolasını kullanıcı `dotnet user-secrets` ile verir (komut onay ister). Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
