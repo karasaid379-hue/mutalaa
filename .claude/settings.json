@@ -36,7 +36,17 @@
       "Bash(uv python install *)",
       "Bash(uv tool install *)",
       "PowerShell(uv python install *)",
-      "PowerShell(uv tool install *)"
+      "PowerShell(uv tool install *)",
+      "Bash(npm install -g *)",
+      "Bash(npm install --global *)",
+      "Bash(npm i -g *)",
+      "Bash(pnpm add -g *)",
+      "Bash(pnpm add --global *)",
+      "Bash(pnpm install -g *)",
+      "Bash(pipx install *)",
+      "Bash(dotnet workload install *)",
+      "Bash(winget install *)",
+      "Bash(choco install *)"
     ],
     "deny": [
       "Read(**/.env)",
@@ -63,7 +73,8 @@
       "PowerShell(eas submit *)",
       "PowerShell(npm publish *)",
       "PowerShell(pnpm publish *)",
-      "PowerShell(dotnet nuget push *)"
+      "PowerShell(dotnet nuget push *)",
+      "Read(**/s3.json)"
     ]
   },
   "hooks": {

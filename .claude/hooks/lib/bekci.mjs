@@ -76,6 +76,8 @@ const GITBASH_DRIVE = /^\/[A-Za-z](\/|$)/;
 const UNC = /^\\\\[^\\]/;
 const ENV_ASSIGN = /^[A-Za-z_][A-Za-z0-9_]*=/;
 const WRAPPERS = new Set(['env', 'command', 'builtin', 'exec', 'nice', 'time', 'nohup', 'sudo', 'xargs']);
+// Kabuk anahtar sözcükleri komutun önüne gelebilir: { git push -f; }, if x; then git push -f; fi, ! rm ...
+const SHELL_KEYWORDS = new Set(['{', '}', 'then', 'do', 'else', 'elif', 'if', 'while', 'until', '!', 'fi', 'done', 'esac']);
 
 /** Kabuk komutunu kaba biçimde parçalar: tırnaklara uyar, işleçlerde böler. */
 export function tokenize(cmd) {
@@ -259,17 +261,23 @@ export function simpleCommands(tokens) {
   // Önekteki ortam atamalarını ve sarmalayıcıları at: FOO=1 env nice cmd …
   for (const c of cmds) {
     // Argümansız `env` ortamın tamamını yazar (gizli değerler dahil); sarmalayıcı olarak atılmadan önce işaretlenir.
-    if (c.argv.some((w) => commandName(w) === 'env') && c.argv.every((w) => ENV_ASSIGN.test(w) || commandName(w) === 'env')) {
-      c.dumpEnv = true;
+    if (isEnvDump(c.argv)) c.dumpEnv = true;
+    while (
+      c.argv.length &&
+      (ENV_ASSIGN.test(c.argv[0]) || WRAPPERS.has(commandName(c.argv[0])) || SHELL_KEYWORDS.has(c.argv[0]))
+    ) {
+      c.argv.shift();
     }
-    while (c.argv.length && (ENV_ASSIGN.test(c.argv[0]) || WRAPPERS.has(commandName(c.argv[0])))) c.argv.shift();
   }
   return cmds;
 }
 
 function commandName(word) {
-  const base = String(word).split(/[\\/]/).pop().toLowerCase();
-  return base.replace(/\.(exe|cmd|bat)$/, '');
+  const w = String(word);
+  // Yol biçimli sözcükte son parça alınır; çıplak sözcükteki ters bölüler kabukta kaçıştır (gi\t -> git).
+  const isPath = /^[A-Za-z]:[\\/]/.test(w) || /^[.~]?[\\/]/.test(w) || w.includes('/');
+  const base = isPath ? w.split(/[\\/]/).pop() : w.replace(/\\/g, '');
+  return base.toLowerCase().replace(/\.(exe|cmd|bat)$/, '');
 }
 
 function nonOptions(args) {
@@ -309,10 +317,11 @@ const PS_WRITE = new Set([
 
 /**
  * Bir basit komutun yazdığı ya da sildiği hedefler.
- * @returns {{ targets: string[], deletes: boolean, risky: { decision: 'deny' | 'ask', reason: string } | null }}
+ * targets: yazılan ya da silinen yollar; sources: taşınarak yerinden kaldırılan yollar (silme sayılır).
+ * @returns {{ targets: string[], sources: string[], deletes: boolean, risky: { decision: 'deny' | 'ask', reason: string } | null }}
  */
 export function commandEffects(argv) {
-  const res = { targets: [], deletes: false, risky: null };
+  const res = { targets: [], sources: [], deletes: false, risky: null };
   if (!argv.length) return res;
   const name = commandName(argv[0]);
   const args = argv.slice(1);
@@ -321,9 +330,26 @@ export function commandEffects(argv) {
     case 'rmdir':
     case 'unlink':
     case 'shred':
+    case 'rimraf':
       res.targets = nonOptions(args);
       res.deletes = true;
       return res;
+    case 'find': {
+      const starts = [];
+      for (const a of args) {
+        if (a.startsWith('-') || a === '(' || a === '!') break;
+        starts.push(a);
+      }
+      const eraser = (w) => ['rm', 'rmdir', 'unlink', 'shred', 'rimraf'].includes(commandName(w ?? ''));
+      const deleting =
+        args.includes('-delete') ||
+        args.some((a, i) => ['-exec', '-execdir', '-ok', '-okdir'].includes(a) && eraser(args[i + 1]));
+      if (deleting) {
+        res.targets = starts.length ? starts : ['.'];
+        res.deletes = true;
+      }
+      return res;
+    }
     case 'truncate':
     case 'touch':
     case 'mkdir':
@@ -338,9 +364,13 @@ export function commandEffects(argv) {
       res.targets = dir.length ? dir : pos.slice(-1);
       return res;
     }
-    case 'mv':
-      res.targets = [...optionValue(args, ['-t', '--target-directory']), ...nonOptions(args)];
+    case 'mv': {
+      const dir = optionValue(args, ['-t', '--target-directory']);
+      const pos = nonOptions(args);
+      res.targets = [...dir, ...pos];
+      res.sources = dir.length ? pos : pos.slice(0, -1);
       return res;
+    }
     case 'sed':
       if (args.some((a) => /^-[A-Za-z]*i/.test(a) || a.startsWith('--in-place'))) res.targets = nonOptions(args);
       return res;
@@ -359,11 +389,13 @@ export function commandEffects(argv) {
   }
 }
 
-/** git komut satırından alt komutu ve seçenekleri ayırır (-C ve -c değerleri atlanır). */
+/** git komut satırından alt komutu, seçenekleri ve -c değerlerini ayırır (-C ve -c değerleri alt komut sayılmaz). */
 export function gitParts(args) {
   const rest = [];
+  const configs = [];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
+    if (a === '-c' && args[i + 1] !== undefined) configs.push(args[i + 1]);
     if (a === '-C' || a === '-c' || a === '--git-dir' || a === '--work-tree') {
       i++;
       continue;
@@ -372,14 +404,18 @@ export function gitParts(args) {
   }
   const sub = rest.find((a) => !a.startsWith('-'));
   const opts = sub === undefined ? [] : rest.slice(rest.indexOf(sub) + 1);
-  return { sub, opts };
+  return { sub, opts, configs };
 }
 
-const FORCE_LONG = ['--force', '--force-with-lease', '--force-if-includes', '--mirror'];
+// Git uzun seçenekleri benzersiz kısaltmayla kabul eder (--force-w, --mirr, --del ...).
+const longOpt = (o, full) => o.startsWith('--') && o.length >= 4 && full.startsWith(o);
+const FORCE_FULL = ['--force', '--force-with-lease', '--force-if-includes', '--mirror'];
 const isForceOption = (o) =>
-  FORCE_LONG.includes(o) || o.startsWith('--force-with-lease=') || /^-[A-Za-z]*f[A-Za-z]*$/.test(o);
+  FORCE_FULL.some((f) => longOpt(o, f)) || o.startsWith('--force-with-lease=') || /^-[A-Za-z]*f[A-Za-z]*$/.test(o);
 const MAIN_BRANCH = /(^|\/)(main|master)$/;
-const MOBILE_TAG = /(^|[:/])mobile-v/;
+const MOBILE_TAG = /(^|[:/])mobile-[v*]/;
+// Yerel yapılandırmayla yasakları ya da kancaları aşmak: takma ad, kanca yolu, ssh komutu, uzak push kuralı.
+const RISKY_CONFIG = /^(alias\.|core\.(hookspath|fsmonitor|sshcommand|editor|pager)|remote\.[^.]+\.(push|pushurl)|credential\.helper|filter\.)/i;
 
 /**
  * Git komutunun kararı: kesin yasak (deny), nadir geri dönüşsüz iş ya da ücretli iş için onay (ask) ya da null.
@@ -387,35 +423,55 @@ const MOBILE_TAG = /(^|[:/])mobile-v/;
  * @returns {null | { decision: 'deny' | 'ask', reason: string }}
  */
 export function riskyGit(args) {
-  const { sub, opts } = gitParts(args);
+  const { sub, opts, configs } = gitParts(args);
   const has = (...xs) => opts.some((o) => xs.includes(o));
   const deny = (reason) => ({ decision: 'deny', reason });
   const ask = (reason) => ({ decision: 'ask', reason });
+  if (configs.some((c) => RISKY_CONFIG.test(c))) {
+    return deny('git -c ile takma ad, kanca, ssh ya da uzak push yapılandırması verilemez; yasakları aşmak için kullanılabilir.');
+  }
   switch (sub) {
     case 'push': {
       const refspecs = opts.filter((o) => !o.startsWith('-')).slice(1); // ilki uzak depodur
       if (opts.some(isForceOption)) return deny('Zorla push yasaktır (CLAUDE.md kural 11).');
       if (refspecs.some((r) => r.startsWith('+'))) return deny('"+" önekli refspec zorla push demektir; yasaktır.');
-      const deleting = has('--delete') || opts.some((o) => /^-[A-Za-z]*d[A-Za-z]*$/.test(o));
-      if (refspecs.some((r) => r.startsWith(':') && MAIN_BRANCH.test(r.slice(1))) || (deleting && refspecs.some((r) => MAIN_BRANCH.test(r)))) {
+      const deleting = opts.some((o) => longOpt(o, '--delete') || /^-[A-Za-z]*d[A-Za-z]*$/.test(o));
+      if (
+        refspecs.some((r) => r.startsWith(':') && MAIN_BRANCH.test(r.slice(1))) ||
+        (deleting && refspecs.some((r) => MAIN_BRANCH.test(r)))
+      ) {
         return deny('main dalı silinemez.');
       }
-      if (has('--tags', '--follow-tags') || refspecs.some((r) => MOBILE_TAG.test(r))) {
+      if (opts.some((o) => longOpt(o, '--tags') || longOpt(o, '--follow-tags')) || refspecs.some((r) => MOBILE_TAG.test(r))) {
         return ask('mobile-v* etiketi ücretli bir EAS derlemesi başlatır (CLAUDE.md kural 11); maliyeti söyle.');
       }
       return null;
     }
-    case 'clean':
+    case 'clean': {
+      if (opts.some((o) => o === '--dry-run' || /^-[A-Za-z]*n[A-Za-z]*$/.test(o))) return null; // kuru deneme
       return opts.some((o) => /^-[A-Za-z]*[xX][A-Za-z]*$/.test(o))
         ? deny('git clean -x/-X git dışı klasörleri (data/, .env) siler; yasaktır.')
         : null;
+    }
+    case 'stash':
+      return has('-a', '--all') || opts.some((o) => /^-[A-Za-z]*a[A-Za-z]*$/.test(o) && !o.startsWith('--'))
+        ? deny('git stash --all ignore edilen dosyaları (data/, .env) çalışma ağacından alır; yasaktır.')
+        : null;
+    case 'config': {
+      const key = opts.filter((o) => !o.startsWith('-'))[0] ?? '';
+      return RISKY_CONFIG.test(key)
+        ? deny('git config ile takma ad, kanca, ssh ya da uzak push yapılandırması yazılamaz.')
+        : null;
+    }
     case 'filter-branch':
     case 'filter-repo':
     case 'update-ref':
     case 'gc':
       return ask(`git ${sub} geçmişi ya da nesneleri geri dönüşsüz değiştirir; kullanıcıya göster.`);
     case 'commit':
-      return has('--no-verify', '-n') ? ask('git commit --no-verify denetimleri atlar.') : null;
+      return opts.some((o) => longOpt(o, '--no-verify') || /^-[A-Za-z]*n[A-Za-z]*$/.test(o))
+        ? ask('git commit --no-verify denetimleri atlar.')
+        : null;
     case 'reflog':
       return has('expire', 'delete') ? ask('git reflog expire/delete geri kurtarma yolunu siler.') : null;
     default:
@@ -423,34 +479,101 @@ export function riskyGit(args) {
   }
 }
 
-const AUDITOR_GIT_WRITE = new Set([
-  'add', 'commit', 'push', 'reset', 'restore', 'checkout', 'switch', 'stash', 'rebase', 'merge', 'cherry-pick',
-  'revert', 'tag', 'branch', 'clean', 'rm', 'mv', 'apply', 'am', 'pull', 'fetch', 'init', 'clone', 'worktree',
+// Denetçi ajanlar yalnız okuyan git alt komutlarını kullanabilir.
+const AUDITOR_GIT_READ = new Set([
+  'status', 'diff', 'log', 'show', 'ls-files', 'rev-parse', 'rev-list', 'blame', 'grep', 'describe', 'cat-file',
+  'shortlog', 'check-ignore', 'ls-tree', 'merge-base', 'name-rev', 'diff-tree', 'diff-index', 'for-each-ref',
+  'show-ref', 'var', 'version', 'help', 'range-diff',
 ]);
+const AUDITOR_WRITERS = new Set(['patch', 'unzip', 'install', 'ln', 'dd', 'truncate', 'touch', 'mkdir']);
 
-const SECRET_FILE = /(^|[\\/])\.env([.*?[][^\\/]*)?$|(^|[\\/])s3\.json$/i;
+const SECRET_NAMES = ['.env', '.env.local', 's3.json'];
 const SECRET_KEY_FILE = /\.(pem|key|p12|keystore|jks)$/i;
-const SECRET_READERS = new Set([
+// Dosya içeriğini okuyan ya da kopyalayan komutlar: anahtar uzantıları her yolda denetlenir.
+const FILE_READERS = new Set([
   'cat', 'head', 'tail', 'less', 'more', 'type', 'get-content', 'gc', 'cp', 'mv', 'tee', 'source', '.', 'xxd', 'od',
-  'strings', 'base64', 'sed', 'awk', 'grep', 'rg', 'egrep', 'fgrep', 'openssl', 'copy', 'copy-item', 'move-item',
+  'strings', 'base64', 'openssl', 'copy', 'copy-item', 'move-item',
 ]);
+// Arama komutları: ilk konumsal bağımsız değişken desendir, dosya değildir.
+const SEARCHERS = new Set(['grep', 'rg', 'egrep', 'fgrep', 'awk', 'sed']);
 const EXISTENCE_ONLY = new Set(['test', '[', '[[', 'ls', 'dir']);
 const NO_ARG_SCAN = new Set(['echo', 'printf']);
 const DESTROYS_DATA_TEXT = /\bdrop\s+(schema|database)\b/i;
+const DB_CLIENTS = new Set(['psql', 'sqlcmd', 'docker', 'docker-compose', 'pg_restore']);
 const isEas = (w) => /^(eas|eas-cli)(@.*)?$/.test(commandName(w));
 
-function isSecretFile(word, strict) {
+function globToRegExp(glob) {
+  let re = '';
+  for (let i = 0; i < glob.length; i++) {
+    const ch = glob[i];
+    if (ch === '*') {
+      if (glob[i + 1] === '*') {
+        re += '.*';
+        i++;
+      } else re += '[^/]*';
+    } else if (ch === '?') re += '[^/]';
+    else if (ch === '[') {
+      const j = glob.indexOf(']', i + 1);
+      if (j === -1) re += '\\[';
+      else {
+        re += glob.slice(i, j + 1);
+        i = j;
+      }
+    } else if (ch === '{') {
+      const j = glob.indexOf('}', i + 1);
+      if (j === -1) re += '\\{';
+      else {
+        re += `(${glob.slice(i + 1, j).split(',').map((p) => p.replace(/[.+^$()|\\*?]/g, '\\$&')).join('|')})`;
+        i = j;
+      }
+    } else re += ch.replace(/[.+^$()|\\]/g, '\\$&');
+  }
+  return new RegExp(`^${re}$`, 'i');
+}
+
+const HAS_GLOB = /[*?[{]/;
+
+/** Sözcük bir gizli değer dosyasını gösteriyor mu? */
+function isSecretWord(word, readsFiles) {
   const w = String(word);
-  const base = w.split(/[\\/]/).pop().toLowerCase();
-  if (base.endsWith('.example')) return false;
-  return SECRET_FILE.test(w) || (strict && SECRET_KEY_FILE.test(w));
+  if (w.startsWith('!')) return false; // glob olumsuzlaması: rg --glob '!**/.env'
+  if (/\\\./.test(w)) return false; // düzenli ifade deseni: grep '\.env'
+  if (w.toLowerCase().includes('/proc/self/environ')) return true;
+  const base = w.split(/[\\/]/).pop();
+  if (base.toLowerCase().endsWith('.example')) return false;
+  if (HAS_GLOB.test(base)) {
+    const prefix = base.slice(0, base.search(HAS_GLOB));
+    if (prefix.length < 2) return false; // başı belirsiz glob (*, ?): kabuk .env gibi gizli dosyaları eşleştirmez
+    const re = globToRegExp(base);
+    return SECRET_NAMES.some((n) => n.startsWith(prefix.toLowerCase()) && re.test(n));
+  }
+  const lower = base.toLowerCase();
+  if (SECRET_NAMES.some((n) => lower === n) || /^\.env\./.test(lower)) return true;
+  return SECRET_KEY_FILE.test(w) && (readsFiles || /[\\/]/.test(w));
+}
+
+/** `env` yalnız (seçenekler ve atamalarla) çağrıldıysa ortamı yazdırır. */
+function isEnvDump(argv) {
+  const at = argv.findIndex((w) => commandName(w) === 'env');
+  if (at === -1) return false;
+  if (!argv.slice(0, at).every((w) => ENV_ASSIGN.test(w) || WRAPPERS.has(commandName(w)))) return false;
+  for (let i = at + 1; i < argv.length; i++) {
+    const w = argv[i];
+    if (w === '-u' || w === '-C' || w === '-S') {
+      i++;
+      continue;
+    }
+    if (w.startsWith('-') || ENV_ASSIGN.test(w)) continue;
+    return false;
+  }
+  return true;
 }
 
 /**
- * Bir basit komutun kesin yasakları ve ücretli iş uyarıları (komut başı eşleşmesine bağlı değildir:
- * npx, pnpm dlx, pnpm exec ile sarılmış biçimler de yakalanır).
+ * Bir basit komutun kesin yasakları ve ücretli iş uyarıları. Komut başı eşleşmesine bağlı değildir:
+ * çağıran, sarmalayıcıdan çıkarılmış görünümü de ayrıca verir (npx, pnpm exec, timeout ...).
  * @param {{ argv: string[], writes: string[], reads: string[], dumpEnv?: boolean }} c
- * @param {{ backup: boolean }} state aynı komut satırında yedek betiği daha önce çalıştı mı
+ * @param {{ backup: boolean, auditor?: boolean }} state aynı komut satırında yedek betiği daha önce çalıştı mı
  * @returns {{ deny: string[], ask: string[] }}
  */
 export function commandDanger(c, state) {
@@ -461,65 +584,116 @@ export function commandDanger(c, state) {
   const args = argv.slice(1);
   const pos = nonOptions(args);
 
-  if (argv.some((w) => /backup-db\.ps1$/i.test(w))) state.backup = true;
+  // Gerçek yedek komutu: powershell ... -File scripts/backup-db.ps1 (yalnız adı geçen sözcük sayılmaz).
+  if ((name === 'powershell' || name === 'pwsh') && optionValue(args, ['-file']).some((f) => /backup-db\.ps1$/i.test(f))) {
+    state.backup = true;
+  }
+
+  if (argv.length && (/^\$/.test(argv[0]) || /\$\{?IFS/.test(argv[0]))) {
+    out.ask.push('Komut adı bir değişkenden geliyor; hook neyin çalışacağını göremez, komutu kontrol et.');
+  }
 
   // Mağazaya gönderim ve yayımlama: hiç çalıştırılmaz. Ücretli EAS işi sorulur.
-  const easAt = argv.findIndex(isEas);
-  if (easAt !== -1) {
-    const sub = nonOptions(argv.slice(easAt + 1))[0] ?? '';
-    if (sub === 'submit') out.deny.push('`eas submit` hiç çalıştırılmaz; mağazaya gönderimi kullanıcı elle yapar (CLAUDE.md kural 11).');
-    else if (sub === 'build' || sub === 'update' || (sub.startsWith('build:') && sub !== 'build:list' && sub !== 'build:view')) {
+  argv.forEach((w, at) => {
+    if (!isEas(w)) return;
+    const rest = argv.slice(at + 1);
+    const sub = nonOptions(rest)[0] ?? '';
+    if (sub === 'submit' || rest.includes('--auto-submit')) {
+      out.deny.push('`eas submit` hiç çalıştırılmaz; mağazaya gönderimi kullanıcı elle yapar (CLAUDE.md kural 11).');
+    } else if (/^(build|update|workflow:run|deploy)/.test(sub) && sub !== 'build:list' && sub !== 'build:view') {
       out.ask.push(`Ücretli EAS işi (eas ${sub}); tahmini maliyeti söyle (CLAUDE.md kural 11).`);
     }
-  }
-  if (['npm', 'pnpm', 'yarn', 'npx'].includes(name) && pos.includes('publish')) {
-    out.deny.push('Paket yayımlama hiç çalıştırılmaz; kullanıcı elle yapar (CLAUDE.md kural 11).');
-  }
-  if (name === 'dotnet' && pos.includes('nuget') && pos.includes('push')) {
-    out.deny.push('`dotnet nuget push` hiç çalıştırılmaz; kullanıcı elle yapar (CLAUDE.md kural 11).');
+  });
+  const publishing =
+    (['npm', 'pnpm', 'yarn'].includes(name) &&
+      (pos[0] === 'publish' ||
+        (name === 'pnpm' && pos[1] === 'publish' && args.some((a) => ['--filter', '-F', '-C'].includes(a))))) ||
+    (name === 'uv' && pos[0] === 'publish') ||
+    (name === 'twine' && pos[0] === 'upload') ||
+    (name === 'docker' && (pos[0] === 'push' || (pos[0] === 'image' && pos[1] === 'push'))) ||
+    (name === 'dotnet' && pos.includes('nuget') && pos.includes('push'));
+  if (publishing) {
+    out.deny.push('Paket ya da imaj yayımlama hiç çalıştırılmaz; kullanıcı elle yapar (CLAUDE.md kural 11).');
   }
 
   // Gizli değerler (kural 8).
-  if (c.dumpEnv || ((name === 'printenv' || name === 'set') && args.length === 0)) {
-    out.deny.push('Ortam değişkenlerinin tamamını yazmak gizli değer sızdırabilir (CLAUDE.md kural 8).');
-  }
+  const envDump =
+    c.dumpEnv ||
+    (name === 'printenv' && pos.length === 0) ||
+    (name === 'set' && args.length === 0) ||
+    (name === 'export' && (args.length === 0 || args.every((a) => a === '-p'))) ||
+    ((name === 'declare' || name === 'typeset') && args.includes('-p')) ||
+    (name === 'compgen' && args.some((a) => a === '-v' || a === '-e'));
+  if (envDump) out.deny.push('Ortam değişkenlerinin tamamını yazmak gizli değer sızdırabilir (CLAUDE.md kural 8).');
   if (name === 'dotnet' && pos.includes('user-secrets') && pos.includes('list')) {
     out.deny.push('`dotnet user-secrets list` gizli değerleri yazar; sohbete düşmemeli (CLAUDE.md kural 8, 11).');
   }
-  const gitSubName = name === 'git' ? gitParts(args).sub : undefined;
-  const existenceOnly =
-    EXISTENCE_ONLY.has(name) || (name === 'git' && ['check-ignore', 'status', 'ls-files'].includes(gitSubName));
+  if (
+    (name === 'docker' || name === 'docker-compose') &&
+    pos.includes('config') &&
+    !args.some((a) => ['-q', '--quiet', '--no-interpolate', '--services', '--volumes', '--profiles', '--images'].includes(a))
+  ) {
+    out.deny.push('`docker compose config` .env değerlerini (parolalar dahil) yazar; -q ile çalıştır.');
+  }
+  const gitSub = name === 'git' ? gitParts(args).sub : undefined;
+  const existenceOnly = EXISTENCE_ONLY.has(name) || (name === 'git' && ['check-ignore', 'status', 'ls-files'].includes(gitSub));
+  // git bağımsız değişkenleri (iletiler, --grep=, yol belirtimleri) dosya okumaz; echo/printf yalnız yönlendirmeyle yazar.
+  const skipArgs = NO_ARG_SCAN.has(name) || name === 'git';
   if (!existenceOnly) {
-    const skipArgs = NO_ARG_SCAN.has(name) || (name === 'git' && (gitSubName === 'commit' || gitSubName === 'tag'));
-    const words = [...(skipArgs ? [] : args), ...c.writes, ...c.reads];
+    let scanArgs = skipArgs ? [] : args;
+    if (SEARCHERS.has(name)) {
+      const drop = new Set();
+      scanArgs.forEach((a, i) => {
+        if (['-g', '--glob', '--iglob', '-e', '-f', '--regexp', '--file'].includes(a)) {
+          drop.add(i);
+          drop.add(i + 1);
+        }
+      });
+      scanArgs = scanArgs.filter((_, i) => !drop.has(i));
+      const firstPos = scanArgs.findIndex((a) => !a.startsWith('-'));
+      if (firstPos !== -1 && !args.some((a) => a === '-e' || a === '--regexp')) scanArgs.splice(firstPos, 1); // desen
+    }
+    const words = [...scanArgs, ...c.writes, ...c.reads];
     for (const w of [...words]) {
       const eq = w.indexOf('=');
       if (eq > 0 && eq < w.length - 1) words.push(w.slice(eq + 1));
     }
-    const strict = SECRET_READERS.has(name);
+    const readsFiles = FILE_READERS.has(name);
     for (const w of words) {
-      if (isSecretFile(w, strict)) {
+      if (isSecretWord(w, readsFiles)) {
         out.deny.push(`${w}: gizli değer dosyasına kabuktan erişilmez (CLAUDE.md kural 8). Varlığını test -f ya da git check-ignore ile denetle.`);
       }
     }
   }
 
   // Veri silen işten önce yedek (CLAUDE.md kural 11): aynı komut satırında önce scripts/backup-db.ps1 çalışmalı.
+  const isDocker = name === 'docker' || name === 'docker-compose';
   const destroys =
-    ((name === 'docker' || name === 'docker-compose') &&
-      ((pos.includes('down') && args.some((a) => a === '-v' || a === '--volumes')) ||
-        (pos.includes('volume') && (pos.includes('rm') || pos.includes('remove') || pos.includes('prune'))))) ||
+    (isDocker &&
+      ((pos.includes('down') && args.some((a) => a === '-v' || a.startsWith('--volumes'))) ||
+        (pos.includes('volume') && ['rm', 'remove', 'prune'].some((x) => pos.includes(x))) ||
+        (pos.includes('system') && pos.includes('prune') && args.some((a) => a.startsWith('--volumes'))) ||
+        ((pos[0] === 'rm' || pos.includes('rm')) && args.some((a) => /^-[A-Za-z]*v[A-Za-z]*$/.test(a))))) ||
+    name === 'dropdb' ||
     (name === 'dotnet' && pos.includes('ef') && pos.includes('database') && pos.includes('drop')) ||
-    (!['git', 'echo', 'printf', 'grep', 'rg', 'cat'].includes(name) && args.some((a) => DESTROYS_DATA_TEXT.test(a)));
+    (DB_CLIENTS.has(name) && args.some((a) => DESTROYS_DATA_TEXT.test(a)));
   if (destroys && !state.backup) {
     out.deny.push(
       'Veri silen iş: önce aynı komut satırında yedek al: powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/backup-db.ps1 (CLAUDE.md kural 11).',
     );
   }
 
-  // Denetçi ajanlar git geçmişini ve çalışma ağacını değiştirmez.
-  if (state.auditor && name === 'git' && AUDITOR_GIT_WRITE.has(gitSubName ?? '')) {
-    out.deny.push(`Denetçi ajanlar salt okunurdur; git ${gitSubName} yasak.`);
+  // Denetçi ajanlar yalnız okur: yazan git alt komutları, çıktı dosyası seçenekleri ve yazıcı araçlar yasak.
+  if (state.auditor) {
+    const writesOut = args.some((a) => ['-o', '-O', '--output', '--output-document'].includes(a) || a.startsWith('--output=') || a.startsWith('of='));
+    if (
+      (name === 'git' && (!AUDITOR_GIT_READ.has(gitSub ?? '') || writesOut)) ||
+      AUDITOR_WRITERS.has(name) ||
+      (name === 'tar' && args.some((a) => /^-?[A-Za-z]*x/.test(a))) ||
+      (name !== 'git' && writesOut)
+    ) {
+      out.deny.push(`Denetçi ajanlar salt okunurdur; ${name} ${gitSub ?? pos[0] ?? ''} yazabilir ya da git'i değiştirir.`.replace(/\s+/g, ' '));
+    }
   }
   return out;
 }
@@ -528,18 +702,58 @@ export function commandDanger(c, state) {
 export function isProtectedDelete(key) {
   if (PROTECTED_DELETE.test(key)) return true;
   if (key === '' || key === 'data') return true;
-  if (/[*?[]/.test(key)) {
-    const re = new RegExp(
-      `^${key
-        .replace(/[.+^${}()|\\]/g, (m) => `\\${m}`)
-        .replace(/\*\*/g, '\u0000')
-        .replace(/\*/g, '[^/]*')
-        .replace(/\?/g, '[^/]')
-        .replace(/\u0000/g, '.*')}$`,
-    );
+  if (HAS_GLOB.test(key)) {
+    const re = globToRegExp(key);
     return PROTECTED_DELETE_DIRS.some((d) => re.test(d));
   }
   return false;
+}
+
+// Sarmalayıcı komutlar ve çalıştırıcılar: asıl komut sonraki sözcüklerden birindedir.
+const RUNNERS = new Set([
+  ...WRAPPERS,
+  'pnpm', 'npm', 'npx', 'yarn', 'uv', 'corepack', 'timeout', 'busybox', 'find', 'dlx', 'exec', 'run',
+]);
+const UNWRAP_TARGETS = new Set([
+  'git', 'rm', 'rmdir', 'unlink', 'shred', 'rimraf', 'mv', 'cp', 'tee', 'sed', 'touch', 'mkdir', 'truncate', 'eas',
+  'eas-cli', 'npm', 'pnpm', 'yarn', 'dotnet', 'docker', 'docker-compose', 'cat', 'head', 'tail', 'grep', 'rg',
+  'type', 'uv', 'twine', 'dropdb', 'psql',
+]);
+
+/** `timeout 5 git push -f`, `pnpm exec rm -rf x`, `npx eas-cli submit` gibi sarılmış komutu açar. */
+export function unwrap(argv) {
+  let cur = argv;
+  for (let guard = 0; guard < 4; guard++) {
+    if (!cur.length || !(RUNNERS.has(commandName(cur[0])) || cur[0].startsWith('-'))) break;
+    const i = cur.findIndex((w, idx) => idx > 0 && UNWRAP_TARGETS.has(commandName(w)));
+    if (i < 1) break;
+    cur = cur.slice(i);
+  }
+  return cur;
+}
+
+const SHELLS = new Set(['bash', 'sh', 'zsh', 'dash', 'ash', 'ksh']);
+
+/** `bash -c "..."`, `eval "..."`, `cmd /c ...`, `powershell -Command ...` içindeki komut metinleri. */
+export function nestedCommands(argv) {
+  if (!argv.length) return [];
+  const name = commandName(argv[0]);
+  const args = argv.slice(1);
+  if (SHELLS.has(name)) {
+    const i = args.findIndex((a) => /^-[A-Za-z]*c[A-Za-z]*$/.test(a));
+    return i !== -1 && args[i + 1] !== undefined ? [args[i + 1]] : [];
+  }
+  if (name === 'eval') return [args.join(' ')];
+  if (name === 'cmd') {
+    const i = args.findIndex((a) => /^\/[ck]$/i.test(a));
+    return i !== -1 ? [args.slice(i + 1).join(' ')] : [];
+  }
+  if (name === 'powershell' || name === 'pwsh') {
+    const i = args.findIndex((a) => /^-(c|command)$/i.test(a));
+    return i !== -1 ? [args.slice(i + 1).join(' ')] : [];
+  }
+  if (name === 'wsl' && args.length) return [args.join(' ')];
+  return [];
 }
 
 /** Bir kelimenin proje dışını gösterip göstermediği. 'home' | 'outside' | null */
@@ -627,48 +841,66 @@ export function scanEffects(cmd, { rootC, cwd, platform = process.platform, real
   const deny = [];
   const ask = [];
   const state = { backup: false, auditor };
-  let here = cwd;
-  const stack = [];
-  for (const c of simpleCommands(lex(cmd))) {
-    if (c.open) {
-      stack.push(here);
-      continue;
-    }
-    if (c.close) {
-      if (stack.length) here = stack.pop();
-      continue;
-    }
-    if (c.argv.length >= 2 && commandName(c.argv[0]) === 'cd') {
-      const to = c.argv[1];
-      if (to !== '-' && !HOME_REF.test(to)) here = api.resolve(here, fromGitBashPath(to, platform));
-    }
-    const eff = commandEffects(c.argv);
-    if (eff.risky) (eff.risky.decision === 'deny' ? deny : ask).push(eff.risky.reason);
-    const danger = commandDanger(c, state);
-    deny.push(...danger.deny);
-    ask.push(...danger.ask);
-    const items = [
-      ...c.writes.map((raw) => ({ raw, del: false })),
-      ...eff.targets.map((raw) => ({ raw, del: eff.deletes })),
-    ];
-    for (const { raw, del } of items) {
-      if (!raw || URL_LIKE.test(raw) || SAFE_SPECIAL.has(raw.toLowerCase()) || HOME_REF.test(raw)) continue;
-      if (platform === 'win32' && raw.startsWith('/') && !/^\/[A-Za-z](\/|$)/.test(raw)) continue; // dışarıda; scanCommand yakalar
-      const targetC = canonical(raw, { platform, cwd: here, realpath });
-      if (!isInsideCanonical(rootC, targetC, platform)) continue; // dışarıda; scanCommand yakalar
-      const key = relativeKey(rootC, targetC, platform).toLowerCase();
-      const r = insideRule(key);
-      if (r?.decision === 'deny') deny.push(`${raw}: ${r.reason}`);
-      else if (r?.decision === 'ask') ask.push(`${raw}: ${r.reason}`);
-      if (del && isProtectedDelete(key)) {
-        deny.push(`${raw}: data/raw, data/gold ve data/backups (ham kaynak, insan emeği, yedekler) silinmez; üst klasörleri de silinemez.`);
+
+  const scan = (text, startDir, depth) => {
+    let here = startDir;
+    const stack = [];
+    for (const c of simpleCommands(lex(text))) {
+      if (c.open) {
+        stack.push(here);
+        continue;
       }
-      if (auditor && !AUDITOR_WRITE_OK.test(key)) {
-        deny.push(`${raw}: denetçi ajanlar salt okunurdur; yalnız .tmp/ altına yazabilir.`);
+      if (c.close) {
+        if (stack.length) here = stack.pop();
+        continue;
+      }
+      if (c.argv.length >= 2 && commandName(c.argv[0]) === 'cd') {
+        const to = c.argv[1];
+        if (to !== '-' && !HOME_REF.test(to)) here = api.resolve(here, fromGitBashPath(to, platform));
+      }
+      // Komutun kendisi ve sarmalayıcıdan çıkarılmış hâli (timeout 5 git push -f, pnpm exec rm ...) ayrı ayrı denetlenir.
+      const inner = unwrap(c.argv);
+      const views = inner === c.argv || inner.join('\u0000') === c.argv.join('\u0000') ? [c.argv] : [c.argv, inner];
+      const items = c.writes.map((raw) => ({ raw, del: false }));
+      for (const view of views) {
+        const eff = commandEffects(view);
+        if (eff.risky) (eff.risky.decision === 'deny' ? deny : ask).push(eff.risky.reason);
+        const danger = commandDanger({ ...c, argv: view }, state);
+        deny.push(...danger.deny);
+        ask.push(...danger.ask);
+        items.push(...eff.targets.map((raw) => ({ raw, del: eff.deletes })));
+        items.push(...eff.sources.map((raw) => ({ raw, del: true })));
+        // bash -c "...", eval "...", cmd /c ..., powershell -Command ...: iç komutlar aynı kurallardan geçer.
+        if (depth < 3) {
+          for (const nested of nestedCommands(view)) scan(nested, here, depth + 1);
+        }
+      }
+      for (const { raw, del } of items) {
+        // Çıplak sözcükteki ters bölü kabukta kaçıştır (data/g\old -> data/gold); iki okuma da denetlenir.
+        const variants = [raw];
+        if (/\\[A-Za-z]/.test(raw) && !/^[A-Za-z]:[\\/]/.test(raw)) variants.push(raw.replace(/\\(?=[A-Za-z])/g, ''));
+        for (const v of variants) {
+          if (!v || URL_LIKE.test(v) || SAFE_SPECIAL.has(v.toLowerCase()) || HOME_REF.test(v)) continue;
+          if (platform === 'win32' && v.startsWith('/') && !/^\/[A-Za-z](\/|$)/.test(v)) continue; // dışarıda; scanCommand yakalar
+          const targetC = canonical(v, { platform, cwd: here, realpath });
+          if (!isInsideCanonical(rootC, targetC, platform)) continue; // dışarıda; scanCommand yakalar
+          const key = relativeKey(rootC, targetC, platform).toLowerCase();
+          const r = insideRule(key);
+          if (r?.decision === 'deny') deny.push(`${v}: ${r.reason}`);
+          else if (r?.decision === 'ask') ask.push(`${v}: ${r.reason}`);
+          if (del && isProtectedDelete(key)) {
+            deny.push(`${v}: data/raw, data/gold ve data/backups (ham kaynak, insan emeği, yedekler) silinmez; üst klasörleri de silinemez.`);
+          }
+          if (auditor && !AUDITOR_WRITE_OK.test(key)) {
+            deny.push(`${v}: denetçi ajanlar salt okunurdur; yalnız .tmp/ altına yazabilir.`);
+          }
+        }
       }
     }
-  }
-  return { deny, ask };
+  };
+
+  scan(cmd, cwd, 0);
+  return { deny: [...new Set(deny)], ask: [...new Set(ask)] };
 }
 
 /**
@@ -701,7 +933,7 @@ export function decide(input, { env = process.env, platform = process.platform, 
   if (SHELL_TOOLS.has(tool)) {
     const command = typeof ti.command === 'string' ? ti.command : '';
     if (command === '') return null;
-    const auditor = AUDITOR_AGENTS.has(String(input?.agent_type ?? ''));
+    const auditor = AUDITOR_AGENTS.has(String(input?.agent_type ?? '').split(':').pop());
     const effects = scanEffects(command, { rootC, cwd, platform, realpath, auditor });
     if (effects.deny.length) return { decision: 'deny', reason: effects.deny.slice(0, 3).join(' ') };
     const { outside, homeRefs } = scanCommand(command, { rootC, cwd, platform, realpath });

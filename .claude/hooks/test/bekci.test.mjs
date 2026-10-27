@@ -466,6 +466,168 @@ test('>& dosya ve < dosya yönlendirmeleri yol taramasına girer', () => {
   assert.equal(winDecision('psql -At < .tmp/a03-kontrol.sql'), null);
 });
 
+test('Kabuk sarmalayıcıları yasakları aşamaz: bash -c, eval, cmd /c, powershell -Command', () => {
+  for (const cmd of [
+    'bash -c "git push -f"',
+    "sh -c 'rm -rf data/gold'",
+    'bash -c "cat .env"',
+    'bash -lc "git push --force origin main"',
+    'eval "eas submit"',
+    'cmd /c "rd /s /q data\\gold"',
+    'powershell -Command "Remove-Item -Recurse data\\gold"',
+    'wsl rm -rf data/gold',
+    'bash -c "bash -c \'git push -f\'"',
+  ]) {
+    assert.equal(winDecision(cmd), 'deny', cmd);
+  }
+  assert.equal(winDecision('bash -c "echo merhaba"'), null);
+  assert.equal(winDecision('bash -c "git status"'), null);
+});
+
+test('Çalıştırıcılar ve sarmalayıcılar yasakları aşamaz: timeout, env -i, pnpm exec, uv run, npx', () => {
+  for (const cmd of [
+    'timeout 5 git push -f',
+    'env -i git push --force',
+    'nice -n5 rm -rf data/gold',
+    'command -p git push -f',
+    'pnpm exec rm -rf data/gold',
+    'pnpm --filter x exec git push -f',
+    'uv run git push -f',
+    'npx rimraf data/gold',
+    'npx -p eas-cli eas submit',
+    'timeout 5 npm publish',
+    'corepack pnpm publish',
+    'xargs -n1 git push -f',
+    'find data -delete',
+    'find data/gold -exec rm -rf {} +',
+    'mv data/gold .tmp/x',
+    'mv data x',
+    'uv publish',
+    'twine upload dist/*',
+    'docker push x/y',
+    'eas build --auto-submit',
+  ]) {
+    assert.equal(winDecision(cmd), 'deny', cmd);
+  }
+});
+
+test('Kabuk sözdizimi yasakları aşamaz: anahtar sözcükler, kaçışlar, küme açılımı', () => {
+  for (const cmd of [
+    '{ git push -f; }',
+    'if true; then git push -f; fi',
+    'for i in 1; do rm -rf data/gold; done',
+    '! rm -rf data/gold',
+    'gi\\t push -f',
+    'r\\m -rf data/gold',
+    'rm -rf data/g\\old',
+    'rm -rf data/{raw,gold}',
+    'rm -rf data/{g,r}*',
+  ]) {
+    assert.equal(winDecision(cmd), 'deny', cmd);
+  }
+  // Komut adı değişkenden geliyorsa hook göremez: sorulur.
+  assert.equal(winDecision('$g push origin main'), 'ask');
+  assert.equal(winDecision('rm${IFS}-rf${IFS}x'), 'ask');
+});
+
+test('git yapılandırmasıyla yasaklar aşılamaz: takma ad, kanca, uzak push kuralı, kısaltmalar', () => {
+  for (const cmd of [
+    "git -c alias.p='push --force' p",
+    'git -c core.hooksPath=/dev/null commit -m x',
+    'git -c remote.origin.push=+HEAD:main push origin',
+    'git config alias.x "push -f"',
+    'git config remote.origin.push +HEAD:main',
+    'git push --force-w origin main',
+    'git push --mirr',
+    'git push origin --del main',
+    'git stash --all',
+    'git stash -a',
+  ]) {
+    assert.equal(winDecision(cmd), 'deny', cmd);
+  }
+  assert.equal(winDecision('git commit -nm x'), 'ask');
+  assert.equal(winDecision('git push origin "refs/tags/mobile-*"'), 'ask');
+  for (const cmd of ['git clean -nx', 'git clean -n -x', 'git clean --dry-run -fdx', 'git config user.name x', 'git config --get user.name', 'git stash', 'git stash pop', 'git -c user.name=x commit -m y']) {
+    assert.equal(winDecision(cmd), null, cmd);
+  }
+});
+
+test('Gizli değer dosyası: glob, ortam dökümü ve compose config', () => {
+  for (const cmd of [
+    'cat .e*',
+    'cat .en?',
+    'cat .e[n]v',
+    'tail -n+1 .e[n]v',
+    'cat .e{n,n}v',
+    'cat s3*',
+    'cat /proc/self/environ',
+    'env -0',
+    'env -u X',
+    'printenv -0',
+    'export -p',
+    'declare -p',
+    'compgen -e',
+    'docker compose config',
+    'docker compose -f docker-compose.yml config',
+  ]) {
+    assert.equal(winDecision(cmd), 'deny', cmd);
+  }
+});
+
+test('Günlük işi bozmayan yanlış pozitif düzeltmeleri', () => {
+  for (const cmd of [
+    'grep -rn "\\.env" docs',
+    "rg '\\.env' docs",
+    "sed -i '/\\.env/d' .gitignore",
+    'rg "event.key" apps',
+    'grep -rn "item.key" apps',
+    "rg --glob '!**/.env' x",
+    'git log --grep=.env',
+    'git diff -- .env.example',
+    'git clean -nx',
+    'cat *',
+    'ls *',
+    'grep -rn x *',
+    'pnpm exec dotnet run --project server/Mutalaa.Publisher -- publish --flavor dev',
+    'npm run publish',
+    "sed -n '/DROP SCHEMA/p' docs/a.md",
+    'docker compose config -q',
+    'docker compose config --services',
+    'env FOO=1 node x.mjs',
+    'rg -n timeout',
+  ]) {
+    assert.notEqual(winDecision(cmd), 'deny', cmd);
+  }
+});
+
+test('Yedek yalnız gerçekten çalıştırılan komutla sayılır', () => {
+  for (const cmd of [
+    'echo backup-db.ps1; docker compose down -v',
+    'ls scripts/backup-db.ps1; docker compose down -v',
+    'docker compose down --volumes=true',
+    'docker system prune --volumes -f',
+    'docker compose rm -v',
+    'dropdb mutalaa',
+  ]) {
+    assert.equal(winDecision(cmd), 'deny', cmd);
+  }
+  assert.equal(
+    winDecision('powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/backup-db.ps1 && docker compose down -v'),
+    null,
+  );
+});
+
+test('Denetçi ajanlar: ad alanı öneki, yalnız okuyan git, çıktı dosyası seçenekleri', () => {
+  const as = (agent, cmd) => decision(decide({ ...winInput('Bash', { command: cmd }), agent_type: agent }, win));
+  for (const cmd of ['git config user.name x', 'git submodule update', 'git diff --output=docs/a.md', 'curl -o docs/a.md http://x', 'tar -xf a.tar', 'patch -p1', 'git stash']) {
+    assert.equal(as('inceleyici', cmd), 'deny', cmd);
+  }
+  assert.equal(as('plugin:inceleyici', 'echo x > docs/a.md'), 'deny', 'ad alanı öneki soyulur');
+  for (const cmd of ['git status', 'git diff HEAD~1', 'git log --oneline', 'git show HEAD:docs/a.md', 'git grep x', 'git ls-files']) {
+    assert.equal(as('inceleyici', cmd), null, cmd);
+  }
+});
+
 test('Adı .. ile başlayan proje içi klasör içeride sayılır', () => {
   assert.equal(decide(winInput('Write', { file_path: `${WIN_ROOT}\\..notlar\\a.md` }), win), null);
   assert.equal(decision(decide(winInput('Write', { file_path: `${WIN_ROOT}\\..\\a.md` }), win)), 'deny');
