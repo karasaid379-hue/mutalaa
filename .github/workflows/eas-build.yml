@@ -1,0 +1,57 @@
+name: eas-build
+
+# Starts an EAS cloud build (paid, CLAUDE.md rule 11). Triggers: manual run or a mobile-v* tag.
+# Pushing such a tag starts a production build. Store submission (eas submit) is never run here.
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        type: choice
+        options: [internal, production]
+        default: internal
+      platform:
+        type: choice
+        options: [android, ios, all]
+        default: all
+  push:
+    tags: ['mobile-v*']
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Placed before any step that sees the Expo secret; the app does not exist until A21.
+      - name: Require the mobile app
+        run: |
+          if [ ! -f apps/mobile/package.json ]; then
+            echo "::error::apps/mobile does not exist yet (A21). No EAS build was started."
+            exit 1
+          fi
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: expo/expo-github-action@9da89d3617bb88139671bad31b09c65714c2ee06 # 9.0.1
+        with:
+          eas-version: 26.0.0
+          packager: npm
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: EAS Build
+        working-directory: apps/mobile
+        env:
+          PROFILE: ${{ inputs.profile || 'production' }}
+          PLATFORM: ${{ inputs.platform || 'all' }}
+        run: eas build --non-interactive --no-wait --profile "$PROFILE" --platform "$PLATFORM"

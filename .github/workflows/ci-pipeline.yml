@@ -1,0 +1,84 @@
+name: ci-pipeline
+
+# Content pipeline (Python 3.13, uv): ruff, mypy, pytest on Ubuntu and Windows.
+# PYTHONUTF8 is deliberately NOT set: encoding mistakes must show up on the Windows leg.
+on:
+  pull_request:
+    paths:
+      - 'pipeline/**'
+      - 'shared/test-vectors/**'
+      - 'shared/data/**'
+      - 'packages/content-schema/enums.json'
+      - 'pnpm-workspace.yaml'
+      - 'packages/search/src/generated/ic-kesme.ts'
+      - 'packages/anchors/src/generated/ayet-sayilari.ts'
+      - 'server/Mutalaa.Domain/Text/IcKesme.g.cs'
+      - 'server/Mutalaa.Domain/Anchors/AyetSayilari.g.cs'
+      - '.gitattributes'
+      - '.github/workflows/ci-pipeline.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'pipeline/**'
+      - 'shared/test-vectors/**'
+      - 'shared/data/**'
+      - 'packages/content-schema/enums.json'
+      - 'pnpm-workspace.yaml'
+      - 'packages/search/src/generated/ic-kesme.ts'
+      - 'packages/anchors/src/generated/ayet-sayilari.ts'
+      - 'server/Mutalaa.Domain/Text/IcKesme.g.cs'
+      - 'server/Mutalaa.Domain/Anchors/AyetSayilari.g.cs'
+      - '.gitattributes'
+      - '.github/workflows/ci-pipeline.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+    working-directory: pipeline
+
+env:
+  UV_LOCKED: '1'
+
+jobs:
+  python:
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # uv downloads Python 3.13 from pipeline/.python-version on demand.
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: '0.13.1'
+          enable-cache: true
+          working-directory: pipeline
+      - run: uv sync --locked
+
+      - name: Python environment
+        run: uv run python -c "import locale, sys, unicodedata; print('python', sys.version.split()[0], 'unicode', unicodedata.unidata_version, 'preferred', locale.getpreferredencoding(False), 'stdout', sys.stdout.encoding)"
+
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+      - run: uv run pytest
+
+      - name: Test vectors are current
+        if: runner.os == 'Linux'
+        run: uv run mutalaa export test-vectors --check
+      # Listed only: the pipeline is never distributed (psycopg is LGPL-3.0), so this does not gate.
+      - name: Dependency licenses (listed, not gated)
+        if: runner.os == 'Linux'
+        run: uv run --with "pip-licenses==5.5.5" pip-licenses --from=mixed --format=markdown
