@@ -1,0 +1,46 @@
+# Weekly grouped updates (Teknoloji yığını §4.2). Titles use existing commit scopes so that the
+# pr-title check passes. NuGet and docker-compose are left out on purpose:
+# - NuGet: lock files of projects reached only through ProjectReference are not updated, which breaks
+#   `dotnet restore --locked-mode` (dependabot-core#13950). Update NuGet packages by hand.
+# - docker-compose: image tags come from .env variables, which Dependabot does not read.
+# Expo packages are excluded when apps/mobile is added (A21): they move only with the SDK.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'build(infra)'
+    groups:
+      npm-minor-patch:
+        applies-to: version-updates
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'ci(infra)'
+    groups:
+      actions-minor-patch:
+        applies-to: version-updates
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  - package-ecosystem: uv
+    directory: /pipeline
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'build(pipeline)'
+    groups:
+      uv-minor-patch:
+        applies-to: version-updates
+        patterns: ['*']
+        update-types: [minor, patch]
