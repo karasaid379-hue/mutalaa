@@ -79,8 +79,8 @@ Her PR'da üç dilin lint, tip, birim ve vektör denetimleri GitHub Actions'ta k
 - [x] Eylem ana sürümleri doğrulanmış; kaynak bağlantısı aşama kaydında. Kanıt: aşama kaydı, A08.1 tablosu.
 - [x] A08.4'teki yerel komutların hepsi yeşil (`PYTHONUTF8=0` koşusu dahil). Kanıt: aşama kaydı, A08.4 çıktıları.
 - [x] İş akışlarında düz metin sır yok; `EXPO_TOKEN` yalnız `secrets.EXPO_TOKEN` olarak geçiyor (grep). Kanıt: aşama kaydı, kabul `grep`'leri.
-- [ ] İ-16'dan sonraki ilk PR'da üç iş akışının bütün matris ayakları yeşil; vektör testleri üç dilde CI'da koştu.
-- [ ] Biçimsiz başlıklı deneme PR'ı kırmızı (başlık denetimi açıldıysa).
+- [x] İ-16'dan sonraki ilk PR'da üç iş akışının bütün matris ayakları yeşil; vektör testleri üç dilde CI'da koştu. Kanıt: PR #1 birleştirildi (`0bfc8ac`). İlk koşuda 5 ayak yeşildi (`ci-pipeline` ubuntu-24.04 ve windows-2025, `ci-ts` C.UTF-8 ve tr_TR.UTF-8 ve bir ayak daha); `ci-dotnet` Linux'ta `Environment_is_recorded` testinden düştü (düzeltme `16b196d`, Linux konteynerinde yeniden üretildi), sonraki koşunun yeşil olduğu kullanıcının birleştirmesine dayanır; koşu bağlantıları alınmadı.
+- [x] Biçimsiz başlıklı deneme PR'ı kırmızı (başlık denetimi açıldıysa). Kanıt: PR #1'in ilk koşusunda `pr-title / title` kırmızıydı (biçimsiz başlık); düzeltilen başlıkla birleştirmeye izin verildi. Ayrı bir deneme PR'ı açılmadı (sapma, yukarıda).
 
 ## Doğrulama
 ```bash
@@ -126,7 +126,7 @@ docs/10-claude-code/asamalar/A08-ci-is-akislari.md dosyasındaki aşamayı yür�
 
 ## Aşama kaydı (2026-10-27)
 
-Durum: kod ve yerel doğrulama bitti; A08.5 (GitHub koşusu) kullanıcı bildirimini bekliyor. Aşama kapanmadı.
+Durum: tamam (2026-10-27). PR #1 birleştirildi (merge commit `0bfc8ac`), dal silindi. Birleştirme sonrası ilk `dependabot.yml` koşusu Dependabot sekmesinden izlenir (pnpm 12 kilidi doğrulanmadı).
 
 ### Kararlar ve gerekçeleri
 
