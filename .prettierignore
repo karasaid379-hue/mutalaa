@@ -22,3 +22,5 @@ packages/search/src/generated/
 **/node_modules/
 **/coverage/
 **/*.tsbuildinfo
+# Altyapi dosyasi elle yazilmistir (aciklama satirlari ve tirnak duzeni); A08.
+docker-compose.yml
