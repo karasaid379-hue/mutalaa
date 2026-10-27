@@ -131,14 +131,23 @@ test('settings.json: geçerli JSON, kip, okuma sınırı, hook betikleri var', (
     assert.ok(s.permissions.deny.includes(r), `deny: ${r}`);
   }
   assert.ok(s.permissions.deny.indexOf('Read(!**/.env.example)') > s.permissions.deny.indexOf('Read(**/.env.*)'));
-  for (const r of ['Bash(node *)', 'PowerShell(node *)']) assert.ok(!s.permissions.allow.includes(r), `geniş izin: ${r}`);
+  // Politika (27 Ekim 2026): terminal komutları sorulmaz (yalın Bash), kesin yasaklar deny'dadır,
+  // ücretli EAS işi ve proje dışına yazan kurulumlar sorulur. Klasör bekçisi git ve silme korumalarını taşır.
+  assert.ok(s.permissions.allow.includes('Bash'), 'allow: yalın Bash');
+  for (const r of ['Bash(git push --force *)', 'Bash(git push -f *)', 'Bash(git push --force-with-lease *)', 'Bash(eas submit *)', 'Bash(npm publish *)', 'Bash(pnpm publish *)', 'Bash(dotnet nuget push *)']) {
+    assert.ok(s.permissions.deny.includes(r), `deny: ${r}`);
+  }
+  for (const r of ['Bash(eas build *)', 'Bash(eas update *)']) assert.ok(s.permissions.ask.includes(r), `ask: ${r}`);
+  for (const r of ['Bash(git push *)', 'Bash(git reset *)', 'Bash(rm -rf *)', 'Bash(git rebase *)']) {
+    assert.ok(!s.permissions.ask.includes(r) && !s.permissions.deny.includes(r), `onaysız olmalı: ${r}`);
+  }
   const pre = s.hooks.PreToolUse[0];
   for (const tool of ['Write', 'Edit', 'NotebookEdit', 'Bash', 'PowerShell', 'Monitor']) {
     assert.ok(pre.matcher.split('|').includes(tool), `PreToolUse eşleyicisi: ${tool}`);
   }
   assert.equal(pre.hooks[0].onFailure, 'block', 'klasör bekçisi çalışamazsa işlem durmalı');
   for (const rule of [...s.permissions.allow, ...s.permissions.ask, ...s.permissions.deny]) {
-    assert.match(rule, /^(Bash|PowerShell|Read|Edit|WebFetch)\(.+\)$|^WebSearch$/, `kural biçimi: ${rule}`);
+    assert.match(rule, /^(Bash|PowerShell|Read|Edit|WebFetch)(\(.+\))?$|^WebSearch$/, `kural biçimi: ${rule}`);
     assert.ok(!rule.startsWith('Write('), `Write(...) kuralı denetlenmez; Read/Edit kullan: ${rule}`);
   }
   for (const [event, groups] of Object.entries(s.hooks)) {

@@ -1,13 +1,16 @@
 // Mütâlaa · klasör bekçisinin mantığı (yan etkisiz; testler bunu içe aktarır).
 //
 // 1. Write / Edit / MultiEdit / NotebookEdit: proje klasörünün dışına yazmayı ve
-//    korunan yerlere (data/raw, .git) yazmayı reddeder; kitin ve kararların
-//    dosyalarında kullanıcı onayı ister.
+//    korunan yerlere (data/raw, .git) yazmayı reddeder. Kit ve karar defteri
+//    dosyaları kullanıcı yönergesiyle (27 Ekim 2026, K-31 güncellemesi) serbesttir.
 // 2. Bash / PowerShell / Monitor: komutta proje dışını gösteren bir yol ya da ev
 //    klasörü başvurusu varsa kullanıcı onayı ister. Komutun yazdığı ya da sildiği
 //    hedefleri (yönlendirme, cp, mv, rm, tee, sed -i, touch, mkdir, PowerShell
-//    dosya komutları) aynı korunan yer kurallarından geçirir. Özyinelemeli silme
-//    ve geri dönüşü zor git işlemleri onay ister.
+//    dosya komutları) korunan yer kurallarından geçirir. Git ve silme işleri onay
+//    istemez; yerine kesin yasaklar (deny) vardır: zorla push, git clean -x,
+//    data/raw|gold|backups silme, gizli değer dosyalarına kabuktan erişim, eas
+//    submit ve yayımlama, yedeksiz veri silme, denetçi ajanların yazması. Ücretli
+//    EAS işi (build, update, mobile-v* etiketi itme) onay ister (CLAUDE.md kural 11).
 //
 // Sınır: Claude Code'un çalıştırdığı bir programın (node, python, dotnet …) kendi
 // içinde açtığı dosyaları göremez; bunu yalnız işletim sistemi düzeyinde bir
@@ -38,18 +41,18 @@ const DENY_INSIDE = [
   },
 ];
 
-const ASK_INSIDE = [
-  { re: /^claude\.md$/, why: 'CLAUDE.md projenin anayasasıdır; değişikliği kullanıcı onaylar.' },
-  { re: /^\.claude\/settings(\.local)?\.json$/, why: 'Claude Code ayarları değişiyor; kullanıcı onaylar.' },
-  {
-    re: /^\.claude\/(hooks|agents|skills|rules)(\/|$)/,
-    why: 'Kit dosyası (ajan, beceri, kural ya da hook) değişiyor; kullanıcı onaylar.',
-  },
-  {
-    re: /^docs\/00-ozet\/02-karar-defteri\.md$/,
-    why: 'Karar defteri tek doğruluk kaynağıdır; değişikliği kullanıcı onaylar (/karar).',
-  },
-];
+// Proje içinde onay isteyen yer kalmadı (kullanıcı yönergesi, 27 Ekim 2026): CLAUDE.md,
+// ayarlar, kit dosyaları ve karar defteri Claude Code'un yetkisindedir. Karar defteri
+// yalnız /karar ile değişir; bu bir yordam kuralıdır, teknik engel değil.
+const ASK_INSIDE = [];
+
+// Silinmesi yasak veri klasörleri (ham kaynak, insan emeği, yedekler) ve üst klasörleri.
+const PROTECTED_DELETE = /^data\/(raw|gold|backups)(\/|$)/;
+const PROTECTED_DELETE_DIRS = ['data', 'data/raw', 'data/gold', 'data/backups'];
+
+// Salt okuma sözü veren denetçi ajanlar (hook girdisindeki agent_type): dosya yazmaz, git'i değiştirmez.
+const AUDITOR_AGENTS = new Set(['inceleyici', 'metin-denetcisi', 'lisans-denetcisi', 'arayuz-denetcisi', 'arastirmaci']);
+const AUDITOR_WRITE_OK = /^\.tmp\//;
 
 const SAFE_SPECIAL = new Set(['/dev/null', '/dev/stdin', '/dev/stdout', '/dev/stderr', 'nul', 'con']);
 const POSIX_SAFE_PREFIXES = ['/dev/', '/proc/', '/usr/bin/', '/bin/', '/usr/lib/', '/tmp/'];
@@ -255,6 +258,10 @@ export function simpleCommands(tokens) {
   flush();
   // Önekteki ortam atamalarını ve sarmalayıcıları at: FOO=1 env nice cmd …
   for (const c of cmds) {
+    // Argümansız `env` ortamın tamamını yazar (gizli değerler dahil); sarmalayıcı olarak atılmadan önce işaretlenir.
+    if (c.argv.some((w) => commandName(w) === 'env') && c.argv.every((w) => ENV_ASSIGN.test(w) || commandName(w) === 'env')) {
+      c.dumpEnv = true;
+    }
     while (c.argv.length && (ENV_ASSIGN.test(c.argv[0]) || WRAPPERS.has(commandName(c.argv[0])))) c.argv.shift();
   }
   return cmds;
@@ -302,21 +309,21 @@ const PS_WRITE = new Set([
 
 /**
  * Bir basit komutun yazdığı ya da sildiği hedefler.
- * @returns {{ targets: string[], recursiveDelete: boolean, risky: string | null }}
+ * @returns {{ targets: string[], deletes: boolean, risky: { decision: 'deny' | 'ask', reason: string } | null }}
  */
 export function commandEffects(argv) {
-  const res = { targets: [], recursiveDelete: false, risky: null };
+  const res = { targets: [], deletes: false, risky: null };
   if (!argv.length) return res;
   const name = commandName(argv[0]);
   const args = argv.slice(1);
   switch (name) {
     case 'rm':
-      res.targets = nonOptions(args);
-      res.recursiveDelete = args.some((a) => /^-[A-Za-z]*[rR]/.test(a) || a === '--recursive');
-      return res;
     case 'rmdir':
     case 'unlink':
     case 'shred':
+      res.targets = nonOptions(args);
+      res.deletes = true;
+      return res;
     case 'truncate':
     case 'touch':
     case 'mkdir':
@@ -346,14 +353,14 @@ export function commandEffects(argv) {
           ...optionValue(args, ['-path', '-literalpath', '-destination', '-filepath']),
           ...nonOptions(args),
         ];
-        res.recursiveDelete = ['remove-item', 'ri', 'del', 'erase', 'rd'].includes(name) && args.some((a) => /^-r(ecurse)?$/i.test(a));
+        res.deletes = ['remove-item', 'ri', 'del', 'erase', 'rd'].includes(name);
       }
       return res;
   }
 }
 
-/** Geri dönüşü zor git işlemi mi? Öyleyse kısa açıklama döner. */
-export function riskyGit(args) {
+/** git komut satırından alt komutu ve seçenekleri ayırır (-C ve -c değerleri atlanır). */
+export function gitParts(args) {
   const rest = [];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
@@ -364,36 +371,175 @@ export function riskyGit(args) {
     rest.push(a);
   }
   const sub = rest.find((a) => !a.startsWith('-'));
-  const opts = rest.slice(rest.indexOf(sub) + 1);
+  const opts = sub === undefined ? [] : rest.slice(rest.indexOf(sub) + 1);
+  return { sub, opts };
+}
+
+const FORCE_LONG = ['--force', '--force-with-lease', '--force-if-includes', '--mirror'];
+const isForceOption = (o) =>
+  FORCE_LONG.includes(o) || o.startsWith('--force-with-lease=') || /^-[A-Za-z]*f[A-Za-z]*$/.test(o);
+const MAIN_BRANCH = /(^|\/)(main|master)$/;
+const MOBILE_TAG = /(^|[:/])mobile-v/;
+
+/**
+ * Git komutunun kararı: kesin yasak (deny), nadir geri dönüşsüz iş ya da ücretli iş için onay (ask) ya da null.
+ * Kullanıcı yönergesi (27 Ekim 2026): push, reset, restore, rebase, amend, stash drop, dal silme sorulmaz.
+ * @returns {null | { decision: 'deny' | 'ask', reason: string }}
+ */
+export function riskyGit(args) {
+  const { sub, opts } = gitParts(args);
   const has = (...xs) => opts.some((o) => xs.includes(o));
+  const deny = (reason) => ({ decision: 'deny', reason });
+  const ask = (reason) => ({ decision: 'ask', reason });
   switch (sub) {
-    case 'push':
-    case 'reset':
+    case 'push': {
+      const refspecs = opts.filter((o) => !o.startsWith('-')).slice(1); // ilki uzak depodur
+      if (opts.some(isForceOption)) return deny('Zorla push yasaktır (CLAUDE.md kural 11).');
+      if (refspecs.some((r) => r.startsWith('+'))) return deny('"+" önekli refspec zorla push demektir; yasaktır.');
+      const deleting = has('--delete') || opts.some((o) => /^-[A-Za-z]*d[A-Za-z]*$/.test(o));
+      if (refspecs.some((r) => r.startsWith(':') && MAIN_BRANCH.test(r.slice(1))) || (deleting && refspecs.some((r) => MAIN_BRANCH.test(r)))) {
+        return deny('main dalı silinemez.');
+      }
+      if (has('--tags', '--follow-tags') || refspecs.some((r) => MOBILE_TAG.test(r))) {
+        return ask('mobile-v* etiketi ücretli bir EAS derlemesi başlatır (CLAUDE.md kural 11); maliyeti söyle.');
+      }
+      return null;
+    }
     case 'clean':
-    case 'restore':
-    case 'rebase':
+      return opts.some((o) => /^-[A-Za-z]*[xX][A-Za-z]*$/.test(o))
+        ? deny('git clean -x/-X git dışı klasörleri (data/, .env) siler; yasaktır.')
+        : null;
     case 'filter-branch':
     case 'filter-repo':
     case 'update-ref':
     case 'gc':
-      return `git ${sub}`;
+      return ask(`git ${sub} geçmişi ya da nesneleri geri dönüşsüz değiştirir; kullanıcıya göster.`);
     case 'commit':
-      return has('--amend', '--no-verify', '-n') ? 'git commit --amend / --no-verify' : null;
-    case 'stash':
-      return has('drop', 'clear') ? 'git stash drop / clear' : null;
-    case 'branch':
-      return has('-D', '-d', '--delete', '-f', '--force', '-M') ? 'git branch silme ya da zorlama' : null;
-    case 'switch':
-      return has('--discard-changes', '-f', '--force', '-C') ? 'git switch değişiklikleri atarak' : null;
-    case 'checkout':
-      return has('--', '.', '-f', '--force') ? 'git checkout ile değişiklikleri atma' : null;
+      return has('--no-verify', '-n') ? ask('git commit --no-verify denetimleri atlar.') : null;
     case 'reflog':
-      return has('expire', 'delete') ? 'git reflog expire / delete' : null;
-    case 'tag':
-      return has('-d', '--delete', '-f', '--force') ? 'git tag silme ya da zorlama' : null;
+      return has('expire', 'delete') ? ask('git reflog expire/delete geri kurtarma yolunu siler.') : null;
     default:
       return null;
   }
+}
+
+const AUDITOR_GIT_WRITE = new Set([
+  'add', 'commit', 'push', 'reset', 'restore', 'checkout', 'switch', 'stash', 'rebase', 'merge', 'cherry-pick',
+  'revert', 'tag', 'branch', 'clean', 'rm', 'mv', 'apply', 'am', 'pull', 'fetch', 'init', 'clone', 'worktree',
+]);
+
+const SECRET_FILE = /(^|[\\/])\.env([.*?[][^\\/]*)?$|(^|[\\/])s3\.json$/i;
+const SECRET_KEY_FILE = /\.(pem|key|p12|keystore|jks)$/i;
+const SECRET_READERS = new Set([
+  'cat', 'head', 'tail', 'less', 'more', 'type', 'get-content', 'gc', 'cp', 'mv', 'tee', 'source', '.', 'xxd', 'od',
+  'strings', 'base64', 'sed', 'awk', 'grep', 'rg', 'egrep', 'fgrep', 'openssl', 'copy', 'copy-item', 'move-item',
+]);
+const EXISTENCE_ONLY = new Set(['test', '[', '[[', 'ls', 'dir']);
+const NO_ARG_SCAN = new Set(['echo', 'printf']);
+const DESTROYS_DATA_TEXT = /\bdrop\s+(schema|database)\b/i;
+const isEas = (w) => /^(eas|eas-cli)(@.*)?$/.test(commandName(w));
+
+function isSecretFile(word, strict) {
+  const w = String(word);
+  const base = w.split(/[\\/]/).pop().toLowerCase();
+  if (base.endsWith('.example')) return false;
+  return SECRET_FILE.test(w) || (strict && SECRET_KEY_FILE.test(w));
+}
+
+/**
+ * Bir basit komutun kesin yasakları ve ücretli iş uyarıları (komut başı eşleşmesine bağlı değildir:
+ * npx, pnpm dlx, pnpm exec ile sarılmış biçimler de yakalanır).
+ * @param {{ argv: string[], writes: string[], reads: string[], dumpEnv?: boolean }} c
+ * @param {{ backup: boolean }} state aynı komut satırında yedek betiği daha önce çalıştı mı
+ * @returns {{ deny: string[], ask: string[] }}
+ */
+export function commandDanger(c, state) {
+  const out = { deny: [], ask: [] };
+  const argv = c.argv;
+  if (!argv.length && !c.dumpEnv && !c.writes.length && !c.reads.length) return out;
+  const name = argv.length ? commandName(argv[0]) : '';
+  const args = argv.slice(1);
+  const pos = nonOptions(args);
+
+  if (argv.some((w) => /backup-db\.ps1$/i.test(w))) state.backup = true;
+
+  // Mağazaya gönderim ve yayımlama: hiç çalıştırılmaz. Ücretli EAS işi sorulur.
+  const easAt = argv.findIndex(isEas);
+  if (easAt !== -1) {
+    const sub = nonOptions(argv.slice(easAt + 1))[0] ?? '';
+    if (sub === 'submit') out.deny.push('`eas submit` hiç çalıştırılmaz; mağazaya gönderimi kullanıcı elle yapar (CLAUDE.md kural 11).');
+    else if (sub === 'build' || sub === 'update' || (sub.startsWith('build:') && sub !== 'build:list' && sub !== 'build:view')) {
+      out.ask.push(`Ücretli EAS işi (eas ${sub}); tahmini maliyeti söyle (CLAUDE.md kural 11).`);
+    }
+  }
+  if (['npm', 'pnpm', 'yarn', 'npx'].includes(name) && pos.includes('publish')) {
+    out.deny.push('Paket yayımlama hiç çalıştırılmaz; kullanıcı elle yapar (CLAUDE.md kural 11).');
+  }
+  if (name === 'dotnet' && pos.includes('nuget') && pos.includes('push')) {
+    out.deny.push('`dotnet nuget push` hiç çalıştırılmaz; kullanıcı elle yapar (CLAUDE.md kural 11).');
+  }
+
+  // Gizli değerler (kural 8).
+  if (c.dumpEnv || ((name === 'printenv' || name === 'set') && args.length === 0)) {
+    out.deny.push('Ortam değişkenlerinin tamamını yazmak gizli değer sızdırabilir (CLAUDE.md kural 8).');
+  }
+  if (name === 'dotnet' && pos.includes('user-secrets') && pos.includes('list')) {
+    out.deny.push('`dotnet user-secrets list` gizli değerleri yazar; sohbete düşmemeli (CLAUDE.md kural 8, 11).');
+  }
+  const gitSubName = name === 'git' ? gitParts(args).sub : undefined;
+  const existenceOnly =
+    EXISTENCE_ONLY.has(name) || (name === 'git' && ['check-ignore', 'status', 'ls-files'].includes(gitSubName));
+  if (!existenceOnly) {
+    const skipArgs = NO_ARG_SCAN.has(name) || (name === 'git' && (gitSubName === 'commit' || gitSubName === 'tag'));
+    const words = [...(skipArgs ? [] : args), ...c.writes, ...c.reads];
+    for (const w of [...words]) {
+      const eq = w.indexOf('=');
+      if (eq > 0 && eq < w.length - 1) words.push(w.slice(eq + 1));
+    }
+    const strict = SECRET_READERS.has(name);
+    for (const w of words) {
+      if (isSecretFile(w, strict)) {
+        out.deny.push(`${w}: gizli değer dosyasına kabuktan erişilmez (CLAUDE.md kural 8). Varlığını test -f ya da git check-ignore ile denetle.`);
+      }
+    }
+  }
+
+  // Veri silen işten önce yedek (CLAUDE.md kural 11): aynı komut satırında önce scripts/backup-db.ps1 çalışmalı.
+  const destroys =
+    ((name === 'docker' || name === 'docker-compose') &&
+      ((pos.includes('down') && args.some((a) => a === '-v' || a === '--volumes')) ||
+        (pos.includes('volume') && (pos.includes('rm') || pos.includes('remove') || pos.includes('prune'))))) ||
+    (name === 'dotnet' && pos.includes('ef') && pos.includes('database') && pos.includes('drop')) ||
+    (!['git', 'echo', 'printf', 'grep', 'rg', 'cat'].includes(name) && args.some((a) => DESTROYS_DATA_TEXT.test(a)));
+  if (destroys && !state.backup) {
+    out.deny.push(
+      'Veri silen iş: önce aynı komut satırında yedek al: powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/backup-db.ps1 (CLAUDE.md kural 11).',
+    );
+  }
+
+  // Denetçi ajanlar git geçmişini ve çalışma ağacını değiştirmez.
+  if (state.auditor && name === 'git' && AUDITOR_GIT_WRITE.has(gitSubName ?? '')) {
+    out.deny.push(`Denetçi ajanlar salt okunurdur; git ${gitSubName} yasak.`);
+  }
+  return out;
+}
+
+/** Silinecek hedef korunan veri klasörü ya da onu kapsayan üst klasör mü? (key: kökten göreli, küçük harfli, '/' ayırıcılı) */
+export function isProtectedDelete(key) {
+  if (PROTECTED_DELETE.test(key)) return true;
+  if (key === '' || key === 'data') return true;
+  if (/[*?[]/.test(key)) {
+    const re = new RegExp(
+      `^${key
+        .replace(/[.+^${}()|\\]/g, (m) => `\\${m}`)
+        .replace(/\*\*/g, '\u0000')
+        .replace(/\*/g, '[^/]*')
+        .replace(/\?/g, '[^/]')
+        .replace(/\u0000/g, '.*')}$`,
+    );
+    return PROTECTED_DELETE_DIRS.some((d) => re.test(d));
+  }
+  return false;
 }
 
 /** Bir kelimenin proje dışını gösterip göstermediği. 'home' | 'outside' | null */
@@ -476,10 +622,11 @@ function insideRule(key) {
  * Kabuk komutunun proje içindeki korunan yerlere etkisi.
  * @returns {{ deny: string[], ask: string[] }} gerekçeler
  */
-export function scanEffects(cmd, { rootC, cwd, platform = process.platform, realpath = defaultRealpath }) {
+export function scanEffects(cmd, { rootC, cwd, platform = process.platform, realpath = defaultRealpath, auditor = false }) {
   const api = pathApiFor(platform);
   const deny = [];
   const ask = [];
+  const state = { backup: false, auditor };
   let here = cwd;
   const stack = [];
   for (const c of simpleCommands(lex(cmd))) {
@@ -496,9 +643,15 @@ export function scanEffects(cmd, { rootC, cwd, platform = process.platform, real
       if (to !== '-' && !HOME_REF.test(to)) here = api.resolve(here, fromGitBashPath(to, platform));
     }
     const eff = commandEffects(c.argv);
-    if (eff.risky) ask.push(`Geri dönüşü zor işlem (${eff.risky}); kullanıcı onaylar (CLAUDE.md kural 11).`);
-    if (eff.recursiveDelete) ask.push('Özyinelemeli silme; kullanıcı onaylar (CLAUDE.md kural 11).');
-    for (const raw of [...c.writes, ...eff.targets]) {
+    if (eff.risky) (eff.risky.decision === 'deny' ? deny : ask).push(eff.risky.reason);
+    const danger = commandDanger(c, state);
+    deny.push(...danger.deny);
+    ask.push(...danger.ask);
+    const items = [
+      ...c.writes.map((raw) => ({ raw, del: false })),
+      ...eff.targets.map((raw) => ({ raw, del: eff.deletes })),
+    ];
+    for (const { raw, del } of items) {
       if (!raw || URL_LIKE.test(raw) || SAFE_SPECIAL.has(raw.toLowerCase()) || HOME_REF.test(raw)) continue;
       if (platform === 'win32' && raw.startsWith('/') && !/^\/[A-Za-z](\/|$)/.test(raw)) continue; // dışarıda; scanCommand yakalar
       const targetC = canonical(raw, { platform, cwd: here, realpath });
@@ -507,6 +660,12 @@ export function scanEffects(cmd, { rootC, cwd, platform = process.platform, real
       const r = insideRule(key);
       if (r?.decision === 'deny') deny.push(`${raw}: ${r.reason}`);
       else if (r?.decision === 'ask') ask.push(`${raw}: ${r.reason}`);
+      if (del && isProtectedDelete(key)) {
+        deny.push(`${raw}: data/raw, data/gold ve data/backups (ham kaynak, insan emeği, yedekler) silinmez; üst klasörleri de silinemez.`);
+      }
+      if (auditor && !AUDITOR_WRITE_OK.test(key)) {
+        deny.push(`${raw}: denetçi ajanlar salt okunurdur; yalnız .tmp/ altına yazabilir.`);
+      }
     }
   }
   return { deny, ask };
@@ -542,7 +701,8 @@ export function decide(input, { env = process.env, platform = process.platform, 
   if (SHELL_TOOLS.has(tool)) {
     const command = typeof ti.command === 'string' ? ti.command : '';
     if (command === '') return null;
-    const effects = scanEffects(command, { rootC, cwd, platform, realpath });
+    const auditor = AUDITOR_AGENTS.has(String(input?.agent_type ?? ''));
+    const effects = scanEffects(command, { rootC, cwd, platform, realpath, auditor });
     if (effects.deny.length) return { decision: 'deny', reason: effects.deny.slice(0, 3).join(' ') };
     const { outside, homeRefs } = scanCommand(command, { rootC, cwd, platform, realpath });
     const reasons = [];

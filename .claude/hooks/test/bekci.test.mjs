@@ -55,7 +55,7 @@ test('Windows: data/raw ve .git içine yazma reddedilir', () => {
   assert.equal(decision(decide(winInput('Write', { file_path: `${WIN_ROOT}\\data\\staged\\x.jsonl` }), win)), null);
 });
 
-test('Windows: kit ve karar defteri değişikliği onay ister', () => {
+test('Windows: kit ve karar defteri değişikliği serbesttir (kullanıcı yönergesi, 27 Ekim 2026)', () => {
   for (const rel of [
     'CLAUDE.md',
     '.claude\\settings.json',
@@ -65,10 +65,10 @@ test('Windows: kit ve karar defteri değişikliği onay ister', () => {
     '.claude\\hooks\\lib\\bekci.mjs',
     '.claude\\rules\\mobil.md',
     'docs\\00-ozet\\02-karar-defteri.md',
+    'docs\\10-claude-code\\05-ilerleme.md',
   ]) {
-    assert.equal(decision(decide(winInput('Edit', { file_path: `${WIN_ROOT}\\${rel}` }), win)), 'ask', rel);
+    assert.equal(decide(winInput('Edit', { file_path: `${WIN_ROOT}\\${rel}` }), win), null, rel);
   }
-  assert.equal(decision(decide(winInput('Edit', { file_path: `${WIN_ROOT}\\docs\\10-claude-code\\05-ilerleme.md` }), win)), null);
 });
 
 test('NotebookEdit notebook_path alanıyla denetlenir', () => {
@@ -183,7 +183,7 @@ test('Kabukla korunan yere yazma: data/raw ve .git reddedilir', () => {
   assert.equal(winDecision('cp data/raw/tanzil/x.txt .tmp/'), null, 'data/raw\'dan okumak serbest');
 });
 
-test('Kabukla kit ve karar defteri değişikliği onay ister', () => {
+test('Kabukla kit ve karar defteri değişikliği serbesttir', () => {
   for (const cmd of [
     'echo x >> docs/00-ozet/02-karar-defteri.md',
     "sed -i 's/a/b/' CLAUDE.md",
@@ -191,29 +191,228 @@ test('Kabukla kit ve karar defteri değişikliği onay ister', () => {
     'cd docs/00-ozet && echo x >> 02-karar-defteri.md',
     'cat > .claude/skills/asama/SKILL.md <<EOF\nicerik\nEOF',
   ]) {
-    assert.equal(winDecision(cmd), 'ask', cmd);
+    assert.equal(winDecision(cmd), null, cmd);
   }
 });
 
-test('Özyinelemeli silme ve geri dönüşü zor git işlemleri onay ister', () => {
+test('Git ve silme işleri onay istemez (kural 11, kullanıcı yönergesi)', () => {
   for (const cmd of [
     'rm -fr build-tmp',
     'rm -r -f x',
     'xargs rm -rf < liste.txt',
     'git commit --amend -m x',
-    'git commit -m x --no-verify',
     'git stash drop',
+    'git stash clear',
     'git branch -D eski',
     'git switch --discard-changes main',
     'git checkout -- src/a.ts',
     'git -C . reset --hard',
+    'git reset --hard HEAD~1',
+    'git restore src/a.ts',
+    'git rebase main',
+    'git clean -fd',
     'git push origin main',
+    'git push -u origin chore/a08-ci-workflows',
+    'git push origin --delete chore/a08-ci-workflows',
+    'git commit -m "feat(api): add x"',
+    'git switch -c yeni',
+    'git checkout -b dal',
+    'rm .tmp/a.png',
+  ]) {
+    assert.equal(winDecision(cmd), null, cmd);
+  }
+});
+
+test('Nadir geri dönüşsüz git işleri ve --no-verify sorulur', () => {
+  for (const cmd of [
+    'git commit -m x --no-verify',
+    'git filter-branch --all',
+    'git filter-repo --path x',
+    'git update-ref -d refs/heads/x',
+    'git gc --prune=now',
+    'git reflog expire --all',
   ]) {
     assert.equal(winDecision(cmd), 'ask', cmd);
   }
-  for (const cmd of ['git commit -m "feat(api): add x"', 'git switch -c yeni', 'git stash', 'git checkout -b dal', 'rm .tmp/a.png']) {
+});
+
+test('Zorla push, main silme ve git clean -x kesin yasaktır', () => {
+  for (const cmd of [
+    'git push --force origin main',
+    'git push -f',
+    'git push origin main --force',
+    'git push -fu origin x',
+    'git push --force-with-lease origin main',
+    'git push --force-with-lease=main origin main',
+    'git push --force-if-includes origin x',
+    'git push --mirror',
+    'git push origin +main',
+    'git push origin :main',
+    'git push origin --delete main',
+    'git push -d origin refs/heads/main',
+    'git -C . push --force',
+    'git clean -fdx',
+    'git clean -fX',
+    'git status && git push --force origin main',
+    'pnpm test || git clean -xfd',
+  ]) {
+    assert.equal(winDecision(cmd), 'deny', cmd);
+  }
+});
+
+test('mobile-v* etiketi itmek ücretli EAS derlemesi başlatır: sorulur', () => {
+  for (const cmd of [
+    'git push origin mobile-v1.0.0',
+    'git push origin refs/tags/mobile-v1.0.0',
+    'git push --tags',
+    'git push --follow-tags origin main',
+  ]) {
+    assert.equal(winDecision(cmd), 'ask', cmd);
+  }
+  assert.equal(winDecision('git push origin v1.0.0'), null);
+});
+
+test('data/raw, data/gold ve data/backups silinemez; üst klasörleri de', () => {
+  for (const cmd of [
+    'rm -rf data/gold',
+    'rm -rf data/backups/x.dump',
+    'rm data/raw/tanzil/x.txt',
+    'rm -rf data',
+    'rm -rf data/',
+    'rm -rf .',
+    'rm -rf ./',
+    'rm -rf *',
+    'rm -rf data/*',
+    'rm -rf data/g*',
+    'rmdir data/gold',
+    'cd data && rm -rf gold',
+    'cd data/gold && rm -rf *',
+  ]) {
+    assert.equal(winDecision(cmd), 'deny', cmd);
+  }
+  for (const cmd of ['rm -rf build-tmp', 'rm -rf .tmp/*', 'rm -rf data/staged/x', 'rm -rf data/packs', 'rm -f packages/anchors/dist/a.js']) {
     assert.equal(winDecision(cmd), null, cmd);
   }
+  assert.equal(winDecision('cp data/gold/a.json .tmp/'), null, 'okumak serbest');
+  assert.equal(winDecision('echo x >> data/backups/not.txt'), null, 'yedek klasörüne yazmak serbest');
+});
+
+test('Gizli değer dosyalarına kabuktan erişim yasaktır; varlık denetimi serbesttir', () => {
+  for (const cmd of [
+    'cat .env',
+    'cat infra/local/.env',
+    'head -n 3 .env.local',
+    'grep PASSWORD .env',
+    'cp .env .tmp/e',
+    'mv .env x',
+    'echo x > .env',
+    'echo x >> pipeline/.env',
+    'cat < .env',
+    'source .env',
+    'cat infra/local/s3.json',
+    'cat server/keys/dev.pem',
+    'cp keys/private.key .tmp/',
+    'bash -c "cat .env"; cat .env',
+    'dotnet user-secrets list --project server/Mutalaa.Api',
+    'env',
+    'printenv',
+    'set',
+    'FOO=1 env',
+  ]) {
+    assert.equal(winDecision(cmd), 'deny', cmd);
+  }
+  for (const cmd of [
+    'cat .env.example',
+    'cat infra/local/s3.example.json',
+    'test -f .env && echo var',
+    '[ -f pipeline/.env ] && echo var',
+    'ls -la .env',
+    'git check-ignore -v .env',
+    'git status --short .env',
+    'git ls-files --error-unmatch .env.example',
+    'git commit -m "docs: mention infra/local/.env in the guide"',
+    'echo "see infra/local/.env"',
+    'env FOO=1 node x.mjs',
+    'printenv HOME_FAKE',
+    'dotnet user-secrets set X y --project server/Mutalaa.Api',
+    'dotnet user-secrets init --project server/Mutalaa.Api',
+    'grep -n monkey docs/a.md',
+    'echo monkey.key',
+    'pnpm test -- t.key',
+  ]) {
+    assert.notEqual(winDecision(cmd), 'deny', cmd);
+  }
+});
+
+test('eas submit ve yayımlama her biçimde yasak; ücretli EAS işi sorulur', () => {
+  for (const cmd of [
+    'eas submit --platform android',
+    'npx eas-cli submit',
+    'npx eas-cli@latest submit',
+    'pnpm exec eas submit',
+    'pnpm dlx eas-cli submit',
+    'pnpm --filter @mutalaa/mobile exec eas submit',
+    'npm publish',
+    'pnpm publish -r',
+    'pnpm --filter @mutalaa/anchors publish',
+    'pnpm exec npm publish',
+    'yarn publish',
+    'dotnet nuget push a.nupkg',
+  ]) {
+    assert.equal(winDecision(cmd), 'deny', cmd);
+  }
+  for (const cmd of [
+    'eas build --profile internal',
+    'npx eas-cli build --platform all',
+    'pnpm exec eas update --branch x',
+    'eas build:run',
+  ]) {
+    assert.equal(winDecision(cmd), 'ask', cmd);
+  }
+  for (const cmd of ['eas build:list', 'eas build:view 123', 'eas whoami', 'dotnet publish server/Mutalaa.Api -o .tmp/yayin', 'grep -rn eas docs']) {
+    assert.equal(winDecision(cmd), null, cmd);
+  }
+});
+
+test('Veri silen işlerden önce yedek şart (kural 11)', () => {
+  const backup = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/backup-db.ps1';
+  for (const cmd of [
+    'docker compose down -v',
+    'docker compose down --volumes',
+    'docker-compose down -v',
+    'docker volume rm mutalaa_pgdata',
+    'docker volume prune -f',
+    'dotnet ef database drop --force --project server/Mutalaa.Infrastructure',
+    'docker compose exec postgres psql -U x -c "DROP SCHEMA icerik CASCADE"',
+    'docker compose exec postgres psql -U x -c "drop database mutalaa"',
+    `docker compose down -v && ${backup}`,
+  ]) {
+    assert.equal(winDecision(cmd), 'deny', cmd);
+  }
+  for (const cmd of [
+    `${backup} && docker compose down -v`,
+    `${backup} && docker compose exec postgres psql -U x -c "DROP SCHEMA icerik CASCADE"`,
+    'docker compose down',
+    'docker compose up -d',
+    'git commit -m "docs: explain DROP SCHEMA backup rule"',
+    'echo "DROP DATABASE needs a backup"',
+  ]) {
+    assert.equal(winDecision(cmd), null, cmd);
+  }
+});
+
+test('Denetçi ajanlar salt okunurdur (hook girdisindeki agent_type)', () => {
+  const as = (agent, cmd) => decision(decide({ ...winInput('Bash', { command: cmd }), agent_type: agent }, win));
+  for (const agent of ['inceleyici', 'metin-denetcisi', 'lisans-denetcisi', 'arayuz-denetcisi', 'arastirmaci']) {
+    for (const cmd of ['echo x > docs/a.md', 'rm src/a.ts', 'sed -i s/a/b/ CLAUDE.md', 'git commit -m x', 'git push origin main', 'git add .', 'git checkout -- a', 'cp a.txt b.txt']) {
+      assert.equal(as(agent, cmd), 'deny', `${agent}: ${cmd}`);
+    }
+    for (const cmd of ['git status --short', 'git diff', 'git log --oneline -3', 'node --test .claude/hooks/test/', 'echo x > .tmp/a.txt', 'cat docs/a.md', 'dotnet test --solution server/Mutalaa.slnx']) {
+      assert.equal(as(agent, cmd), null, `${agent}: ${cmd}`);
+    }
+  }
+  assert.equal(as('belge-bekcisi', 'echo x > docs/a.md'), null, 'yazan ajanlar etkilenmez');
+  assert.equal(as(undefined, 'git commit -m x'), null, 'ana oturum etkilenmez');
 });
 
 test('Heredoc gövdesi komut sayılmaz; kabuğa verilen gövde taranır', () => {
@@ -229,19 +428,20 @@ test('Monitor aracı kabuk gibi denetlenir', () => {
 });
 
 test('PowerShell dosya komutları da denetlenir', () => {
-  assert.equal(winDecision('Set-Content -Path CLAUDE.md -Value x', WIN_ROOT, 'PowerShell'), 'ask');
-  assert.equal(winDecision('Remove-Item -Recurse -Force .tmp\\eski', WIN_ROOT, 'PowerShell'), 'ask');
+  assert.equal(winDecision('Set-Content -Path CLAUDE.md -Value x', WIN_ROOT, 'PowerShell'), null);
+  assert.equal(winDecision('Remove-Item -Recurse -Force .tmp\\eski', WIN_ROOT, 'PowerShell'), null);
+  assert.equal(winDecision('Remove-Item -Recurse -Force data\\gold', WIN_ROOT, 'PowerShell'), 'deny');
   assert.equal(winDecision('Copy-Item a.txt -Destination data\\raw\\a.txt', WIN_ROOT, 'PowerShell'), 'deny');
 });
 
 test('&&, ||, & ve | sonraki komutu ayırır; komut kaybolmaz', () => {
   for (const cmd of [
-    'git status && git push origin main',
-    'pnpm test || git reset --hard',
-    'echo a && rm -rf build-tmp',
-    'sleep 1 & git clean -fd',
+    'git status && git push --force origin main',
+    'pnpm test || git clean -fdx',
+    'echo a && rm -rf data/gold',
+    'sleep 1 & git push -f origin x',
   ]) {
-    assert.equal(winDecision(cmd), 'ask', cmd);
+    assert.equal(winDecision(cmd), 'deny', cmd);
   }
   assert.equal(winDecision('true && cp a.txt data/raw/a.txt'), 'deny');
   assert.equal(winDecision('cd pipeline && uv run pytest && cd ..'), null);
