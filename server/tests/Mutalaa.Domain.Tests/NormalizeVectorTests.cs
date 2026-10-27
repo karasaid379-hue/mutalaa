@@ -295,10 +295,12 @@ public class NormalizeVectorTests
             return "Invariant";
         }
 
+        // UseNls ozelligi yalniz Windows'ta vardir. Linux ve macOS'ta Invariant kapaliysa kip her zaman ICU'dur.
         return useNls switch
         {
             true => "NLS",
             false => "ICU",
+            _ when invariant == false && !OperatingSystem.IsWindows() => "ICU",
             _ => "bilinmiyor",
         };
     }
