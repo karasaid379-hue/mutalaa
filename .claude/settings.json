@@ -18,9 +18,7 @@
     "defaultMode": "acceptEdits",
     "blockReadsOutsideWorkingDirectories": true,
     "allow": [
-      "Bash",
-      "WebFetch",
-      "WebSearch"
+      "Bash"
     ],
     "ask": [
       "Bash(eas build *)",
@@ -46,7 +44,9 @@
       "Bash(pipx install *)",
       "Bash(dotnet workload install *)",
       "Bash(winget install *)",
-      "Bash(choco install *)"
+      "Bash(choco install *)",
+      "WebFetch",
+      "WebSearch"
     ],
     "deny": [
       "Read(**/.env)",

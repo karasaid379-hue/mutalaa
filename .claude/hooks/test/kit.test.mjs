@@ -137,7 +137,8 @@ test('settings.json: geçerli JSON, kip, okuma sınırı, hook betikleri var', (
   for (const r of ['Bash(git push --force *)', 'Bash(git push -f *)', 'Bash(git push --force-with-lease *)', 'Bash(eas submit *)', 'Bash(npm publish *)', 'Bash(pnpm publish *)', 'Bash(dotnet nuget push *)']) {
     assert.ok(s.permissions.deny.includes(r), `deny: ${r}`);
   }
-  for (const r of ['Bash(eas build *)', 'Bash(eas update *)']) assert.ok(s.permissions.ask.includes(r), `ask: ${r}`);
+  for (const r of ['Bash(eas build *)', 'Bash(eas update *)', 'WebFetch', 'WebSearch']) assert.ok(s.permissions.ask.includes(r), `ask: ${r}`);
+  for (const r of ['WebFetch', 'WebSearch']) assert.ok(!s.permissions.allow.includes(r), `web erişimi sorulmalı: ${r}`);
   for (const r of ['Bash(git push *)', 'Bash(git reset *)', 'Bash(rm -rf *)', 'Bash(git rebase *)']) {
     assert.ok(!s.permissions.ask.includes(r) && !s.permissions.deny.includes(r), `onaysız olmalı: ${r}`);
   }

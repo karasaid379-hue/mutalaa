@@ -36,6 +36,7 @@ Kit `acceptEdits` kipiyle açılır: proje içindeki dosya düzenlemeleri sorulm
 Onay yalnız bunlarda istenir:
 - Plan (aşama başında ve plan değiştiğinde), karar ve kapsam değişikliği (ekleme, çıkarma, güncelleme).
 - Ücretli işler: `eas build`, `eas update` ve `mobile-v*` etiketi itmek (ücretli derleme başlatır; hook sorar), ücretli bulut ya da API çağrısı. Claude Code tahmini maliyeti söyler.
+- Web erişimi: `WebFetch` ve `WebSearch` her seferinde sorulur (kaynak doğrulamada `arastirmaci` da).
 - Proje dışına yazan araç kurulumları: `git config --global`, `dotnet tool install -g`, `uv tool install`, `uv python install`.
 - Proje klasörünün dışını gösteren yollar (hook sorar).
 - Nadir git işleri: `git filter-branch`, `git filter-repo`, `git update-ref`, `git gc`, `git reflog expire`, `git commit --no-verify` (hook sorar).
