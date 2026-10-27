@@ -199,9 +199,26 @@ Durum: kod ve yerel doğrulama bitti; A08.5 (GitHub koşusu) kullanıcı bildiri
 - `check-jsonschema`: `dependabot.yml` ve 6 iş akışı şema denetiminden geçti.
 - Kabul `grep`'leri: `EXPO_TOKEN` yalnız `secrets.EXPO_TOKEN`; `pull_request_target` yok; `eas-build.yml` içinde `pull_request` ve `branches` yok; düz metin sır yok.
 
+### İnceleme (2026-10-27)
+
+Beş bakış açılı (iş akışı doğruluğu, güvenlik ve lisans, .NET Linux riski, TypeScript ve Python Linux riski, betik kalitesi) ve şüpheci doğrulamalı inceleme: 40 bulgu, 17'si çürütüldü, engelleyici yok. Düzeltilenler:
+
+- **NuGet kapısı sıfır paketle yeşil verebilirdi:** boş NuGet çıktısı artık çıkış kodu 2 (pnpm için boş küme meşru kalır); testi var.
+- **İstisnalar** yalnız `ad@sürüm` biçiminde ve `source` alanıyla kabul edilir; dosya biçimi doğrulanır (yeni sürüm yeniden incelenir).
+- LGPL-2.1 ve LGPL-3.0 (yalın) kimlikleri izinli listeye eklendi.
+- Betiklerin ana modül koruması gerçek yolları karşılaştırır (bağ ve eşlenmiş sürücülerde sessiz "yeşil" riski).
+- Dependabot başlıkları ve `dependabot.yml` önekleri `pr-title` testiyle sınanır.
+- `global-setup.ts` istenen `tr_TR` yerel ayarını üç değişkenden birinde arar (`LC_ALL` tanımlıyken atlanmaz).
+- `ci-pipeline.yml`: iki sistemde `uv run mutalaa sources check` (gerçek süreç, Windows kodlaması); `pip-licenses` ve "Normalizer environment" adımları bilgi amaçlıdır, işi düşüremez.
+- `eas-build.yml`: `concurrency` (derlemeler üst üste binmez).
+- `server/Directory.Build.props`: NuGet denetim uyarıları (NU1901–NU1904) hata sayılmaz; yeni yayımlanan bir bulgu bir gecede CI'ı düşürmesin. Uyarı günlükte görünür, NuGet paketleri elle güncellenir.
+- `.github/` Prettier dışında (actionlint ve şema denetimi var); iş akışı değişikliği `ci-ts`'i tetiklemediği için biçim denetimi orada kopukluk yaratıyordu.
+
+Bilerek yapılmayanlar: kit testlerinin CI'da koşması (ilk Linux koşusundan sonra), Dependabot `cooldown`, Docker imajı için ayrı çekim adımı, `eas-build` için `environment` onayı (A21'de, mobil gelince).
+
 ### Sapmalar
 
-- **Adım 0** (kit izin pencerelerinin kaldırılması) A08 kapsamı dışı bir kullanıcı yönergesiydi. Otomatik mod sınıflandırıcısı klasör bekçisi hook'unu gevşeten düzenlemeyi reddettiği için ertelendi; A08 işi buna bağlı değil. Bu aşama dosyasındaki A08.5 ve Dikkat'in `git push` cümleleri o hizalamaya kadar olduğu gibi kaldı.
+- **Adım 0** (kit izin pencerelerinin kaldırılması) A08 kapsamı dışı bir kullanıcı yönergesiydi. Otomatik mod sınıflandırıcısı klasör bekçisi hook'unu gevşeten düzenlemeyi reddettiği için ertelendi; A08 işi buna bağlı değil. Bu aşama dosyasındaki A08.5 ve Dikkat'in `git push` cümleleri CLAUDE.md kural 11'e göre düzeltildi; kit, K-31 ve öteki belgelerdeki aynı hizalama Adım 0 ile birlikte kaldı.
 - `gh` kurulu değil. PR açma ve Actions sonucu kullanıcı bildirimine bağlı (A08.5 bekliyor).
 
 ### Devredilenler
