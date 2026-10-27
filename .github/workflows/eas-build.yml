@@ -19,6 +19,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: eas-build
+  cancel-in-progress: false
+
 defaults:
   run:
     shell: bash

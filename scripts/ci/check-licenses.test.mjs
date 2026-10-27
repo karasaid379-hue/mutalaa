@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { check, evaluate, fromNuget, fromPnpm } from './check-licenses.mjs';
+import { check, evaluate, fromNuget, fromPnpm, validateExceptions } from './check-licenses.mjs';
 
 const SCRIPT = fileURLToPath(new URL('./check-licenses.mjs', import.meta.url));
 
@@ -90,8 +90,36 @@ test('check reports violations and applies exceptions by name or name@version', 
     wrongVersion.violations.map((v) => v.name),
     ['b', 'c', 'd'],
   );
+  // An exception without a version no longer covers anything: every new version is reviewed again.
   const byName = check(packages, [{ package: 'b' }, { package: 'c' }, { package: 'd' }]);
-  assert.equal(byName.violations.length, 0);
+  assert.equal(byName.violations.length, 3);
+  const exact = check(packages, [
+    { package: 'b@2.0.0' },
+    { package: 'c@3.0.0' },
+    { package: 'd@4.0.0' },
+  ]);
+  assert.equal(exact.violations.length, 0);
+});
+
+test('exceptions file validation: array, name@version and source are required', () => {
+  assert.deepEqual(validateExceptions([]), []);
+  assert.deepEqual(
+    validateExceptions([{ package: 'a@1.0.0', source: 'https://example.invalid/a' }]),
+    [],
+  );
+  assert.equal(validateExceptions({}).length, 1);
+  assert.equal(
+    validateExceptions([{ package: 'a', source: 'https://example.invalid/a' }]).length,
+    1,
+  );
+  assert.equal(validateExceptions([{ package: 'a@1.0.0' }]).length, 1);
+  assert.equal(validateExceptions([{ package: 'a@1.0.0', source: '  ' }]).length, 1);
+});
+
+test('plain LGPL-2.1 and LGPL-3.0 identifiers are allowed', () => {
+  assert.equal(evaluate('LGPL-2.1').ok, true);
+  assert.equal(evaluate('LGPL-3.0').ok, true);
+  assert.equal(evaluate('GPL-3.0').ok, false);
 });
 
 test('validation errors from the nuget tool make a package fail even with a license', () => {
@@ -147,6 +175,8 @@ test('command line: exit codes', () => {
   const bad = run('pnpm', JSON.stringify({ 'GPL-3.0-only': [{ name: 'g', versions: ['1.0.0'] }] }));
   assert.equal(bad.status, 1);
   assert.match(bad.stdout, /DISALLOWED: g@1\.0\.0/);
+  // An empty NuGet result is an error (the server always has dependencies); an empty pnpm result is fine.
+  assert.equal(run('nuget', '[]').status, 2);
   assert.equal(run('pnpm', 'not json').status, 2);
   assert.equal(run('maven', '{}').status, 2);
 });

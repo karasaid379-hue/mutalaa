@@ -2,7 +2,8 @@
 // interpolated into a shell command. Types and scopes mirror docs/02-mimari/03-proje-yapisi.md §6;
 // .claude/hooks/test/kit.test.mjs keeps the two lists in sync.
 
-import { pathToFileURL } from 'node:url';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 export const TYPES = [
   'feat',
@@ -82,6 +83,10 @@ function main() {
   return 1;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+// Node loads the main module by its real path while argv[1] is only resolved, so compare real paths.
+if (
+  process.argv[1] &&
+  fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url))
+) {
   process.exitCode = main();
 }

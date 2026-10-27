@@ -74,6 +74,8 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run mypy
       - run: uv run pytest
+      # Starts a real mutalaa process on both systems (console encoding, file reads).
+      - run: uv run mutalaa sources check
 
       - name: Test vectors are current
         if: runner.os == 'Linux'
@@ -81,4 +83,5 @@ jobs:
       # Listed only: the pipeline is never distributed (psycopg is LGPL-3.0), so this does not gate.
       - name: Dependency licenses (listed, not gated)
         if: runner.os == 'Linux'
+        continue-on-error: true
         run: uv run --with "pip-licenses==5.5.5" pip-licenses --from=mixed --format=markdown

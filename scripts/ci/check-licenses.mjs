@@ -14,7 +14,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 
 export const ALLOWED = new Set(
   [
@@ -32,8 +32,10 @@ export const ALLOWED = new Set(
     'BlueOak-1.0.0',
     'Python-2.0',
     'MPL-2.0',
+    'LGPL-2.1',
     'LGPL-2.1-only',
     'LGPL-2.1-or-later',
+    'LGPL-3.0',
     'LGPL-3.0-only',
     'LGPL-3.0-or-later',
   ].map((s) => s.toLowerCase()),
@@ -112,8 +114,28 @@ export function evaluate(expression) {
   }
 }
 
+// An exception covers exactly one version: "name@version". A new version must be reviewed again.
 function matches(exception, name, version) {
-  return exception.package === name || exception.package === `${name}@${version}`;
+  return exception.package === `${name}@${version}`;
+}
+
+/**
+ * Exceptions file format: [{ "package": "name@version", "license": "...", "source": "https://...",
+ * "date": "YYYY-MM-DD", "note": "..." }]. "package" must carry a version and "source" is required.
+ * @returns {string[]} problems
+ */
+export function validateExceptions(data) {
+  if (!Array.isArray(data)) return ['the exceptions file must contain a JSON array'];
+  const problems = [];
+  data.forEach((e, i) => {
+    if (typeof e?.package !== 'string' || !/^.+@[^@]+$/.test(e.package)) {
+      problems.push(`entry ${i}: "package" must look like "name@version"`);
+    }
+    if (typeof e?.source !== 'string' || e.source.trim() === '') {
+      problems.push(`entry ${i}: "source" is required`);
+    }
+  });
+  return problems;
 }
 
 /**
@@ -166,7 +188,10 @@ export function fromNuget(text) {
 
 function readExceptions(file) {
   if (!fs.existsSync(file)) return [];
-  return JSON.parse(fs.readFileSync(file, 'utf8'));
+  const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const problems = validateExceptions(data);
+  if (problems.length) throw new Error(`license-exceptions.json: ${problems.join('; ')}`);
+  return data;
 }
 
 function main(argv) {
@@ -202,6 +227,14 @@ function main(argv) {
   }
   if (jsonOut) fs.writeFileSync(jsonOut, `${JSON.stringify(packages, null, 2)}\n`, 'utf8');
   if (packages.length === 0) {
+    if (kind === 'nuget') {
+      // The server always has NuGet dependencies; an empty list means the tool or the project
+      // filter produced nothing, and a green gate over nothing would be a false pass.
+      process.stderr.write(
+        'nuget: no packages found; the tool output is empty or every project was excluded\n',
+      );
+      return 2;
+    }
     process.stdout.write(`${kind}: no shipped dependencies to check\n`);
     return 0;
   }
@@ -218,6 +251,10 @@ function main(argv) {
   return result.violations.length ? 1 : 0;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+// Node loads the main module by its real path while argv[1] is only resolved, so compare real paths.
+if (
+  process.argv[1] &&
+  fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url))
+) {
   process.exitCode = main(process.argv);
 }
