@@ -27,7 +27,7 @@
 **Yapılmaz**
 - Sure adları, cüz, secde ve Medine sayfa eşlemesi (A11). Kelime bölmesi ve `quran_word` (A11 ve A17).
 - Paket DDL'i ve FTS5 tabloları (A12). `core` paketinin üretimi ve Tanzil bildiriminin pakete yazılması (A13).
-- Okuyucunun metin seçicisi testi (test 5; `reader-core` ile A24). CI gece işi (A08'de kurulur).
+- Okuyucunun metin seçicisi testi (test 5; `reader-core` ile A24). CI gece işi: A08 gece işi kurmaz; gece iş akışının iskeleti ilk gece işiyle A10'da açılır ([BÇ-42](../07-belge-celiskileri.md#1-karar-bekleyenler)).
 
 ## Adımlar
 ### A10.1 · Adres, sürüm ve lisans doğrulaması

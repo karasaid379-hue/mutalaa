@@ -22,3 +22,8 @@ packages/search/src/generated/
 **/node_modules/
 **/coverage/
 **/*.tsbuildinfo
+# Altyapi dosyasi elle yazilmistir (aciklama satirlari ve tirnak duzeni); A08.
+docker-compose.yml
+
+# GitHub Actions dosyalari actionlint ve JSON semasiyla denetlenir (ci-workflows.yml).
+.github/

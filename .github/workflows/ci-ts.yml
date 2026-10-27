@@ -1,0 +1,113 @@
+name: ci-ts
+
+# TypeScript: lint, typecheck, test (Turborepo) under two locales, script tests, license gate.
+# Locale matrix: C.UTF-8 and tr_TR.UTF-8 (catches Turkish locale bugs; docs/02-mimari/03-proje-yapisi.md §7).
+on:
+  pull_request:
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'shared/test-vectors/**'
+      - 'shared/data/**'
+      - 'scripts/ci/**'
+      - 'server/Mutalaa.Api/openapi/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'turbo.json'
+      - 'eslint.config.mjs'
+      - 'tsconfig.base.json'
+      - '.prettierrc.json'
+      - '.prettierignore'
+      - '.nvmrc'
+      - '.gitattributes'
+      - '.github/workflows/ci-ts.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'shared/test-vectors/**'
+      - 'shared/data/**'
+      - 'scripts/ci/**'
+      - 'server/Mutalaa.Api/openapi/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'turbo.json'
+      - 'eslint.config.mjs'
+      - 'tsconfig.base.json'
+      - '.prettierrc.json'
+      - '.prettierignore'
+      - '.nvmrc'
+      - '.gitattributes'
+      - '.github/workflows/ci-ts.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+
+jobs:
+  ts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        lang: ['C.UTF-8', 'tr_TR.UTF-8']
+    env:
+      LANG: ${{ matrix.lang }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # pnpm/action-setup reads the version from package.json devEngines.packageManager (K-32).
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # The packages' vitest global setup prints locale= and unicode= (and fails if a requested
+      # tr_TR locale is not resolved); this line makes the leg's real locale visible in the log.
+      - name: Effective locale
+        run: node -p "'LANG=' + process.env.LANG + ' locale=' + Intl.DateTimeFormat().resolvedOptions().locale + ' node=' + process.version + ' icu=' + process.versions.icu + ' unicode=' + process.versions.unicode"
+
+      - name: Lint, typecheck and test
+        if: matrix.lang == 'C.UTF-8'
+        run: pnpm turbo run lint typecheck test
+      - name: Test under tr_TR
+        if: matrix.lang != 'C.UTF-8'
+        run: pnpm turbo run test
+
+      - name: CI script tests, lint and format
+        if: matrix.lang == 'C.UTF-8'
+        run: |
+          node --test "scripts/ci/*.test.mjs"
+          pnpm exec eslint scripts/ci
+          pnpm exec prettier --check .
+      - name: Dependency license gate (shipped code)
+        if: matrix.lang == 'C.UTF-8'
+        run: pnpm licenses list -r --json --prod | node scripts/ci/check-licenses.mjs pnpm
+
+      - name: Expo packages match the SDK
+        if: matrix.lang == 'C.UTF-8' && hashFiles('apps/mobile/package.json') != ''
+        run: pnpm --filter @mutalaa/mobile exec expo install --check
+      - name: Editor API client is current
+        if: matrix.lang == 'C.UTF-8' && hashFiles('apps/editor/package.json') != ''
+        run: |
+          pnpm --filter @mutalaa/editor gen:api
+          git diff --exit-code apps/editor/src/api
+          test -z "$(git status --porcelain -- apps/editor/src/api)"

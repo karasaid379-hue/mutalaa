@@ -99,6 +99,7 @@ PowerShell'de: `$env:MANIFEST_URL = "https://<içerik-alanı>/public/manifest.js
 - Türkçe büyük-küçük harf `packages/search` açık eşlemesiyle; argümansız `toLocaleLowerCase` ve `localeCompare` ESLint'te yasak.
 - Rotalar `packages/anchors` ile üretilir ve çözülür; elle dizgi birleştirilmez. Ayrıntı: `capa-gramer`.
 - Windows: `.next/` ve `.content/` çok sayıda dosya üretir; OneDrive eşitlemesi ve uzun yol sorunları için `windows-sorun`.
+- A08'den devir (CI): web iş akışı ya da `ci-ts.yml` içindeki web adımı eklenirken `NEXT_TELEMETRY_DISABLED=1` ortam değişkeni verilir; mevcut iş akışları `TURBO_TELEMETRY_DISABLED`, `TESTINGPLATFORM_TELEMETRY_OPTOUT` ve `DOTNET_CLI_TELEMETRY_OPTOUT` ile aynı ilkeyi izler ([Proje yapısı §7](../../02-mimari/03-proje-yapisi.md#7-ci-iş-akışları-github-actions)).
 
 ## İnsan adımları
 - Kurul'un web görüşü (Yayın kapısı §7.5 soru 3; İ-02 kanalıyla sorulur, gerekirse İ-19 ile başvuru): A38.6'dan önce.

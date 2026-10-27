@@ -137,6 +137,7 @@ PowerShell'de ortam değişkeni `$env:APP_FLAVOR = "internal"` ile verilir; ekra
 - `packages/*` içine `react-native` ve `expo-*` girmez (Proje yapısı §2). Yerel ayarlı büyük-küçük harf çağrıları kök ESLint kuralıyla yasaktır.
 - `MANIFEST_URL` ve `SENTRY_DSN` gizli değildir ama `.env.local` git dışıdır; örnek değer yalnız `.env.example`'da.
 - Commit kapsamı `mobile` (ör. `feat(mobile): add router skeleton and build flavors`).
+- A08'den devir (CI): `apps/mobile` eklendiği PR'da (1) `.github/dependabot.yml` içindeki `npm` girdisine Expo'ya bağlı paketler için `ignore` kuralı yazılır; bu paketler yalnız SDK yükseltmesiyle güncellenir ([Teknoloji yığını §4.2](../../02-mimari/02-teknoloji-yigini.md)). (2) `EXPO_TOKEN` sırrı tanımlanır: Expo robot kullanıcısı, en dar rol; Expo hesabı İ-15'e bağlıdır ([İnsan adımları](../06-insan-adimlari.md)). `eas-build.yml` `apps/mobile` yokken zaten durur. (3) EAS ücretsiz planı ayda 15 Android ve 15 iOS derleme verir; kota aşılınca ücret çıkmaz, derleme durur ([Proje yapısı §8](../../02-mimari/03-proje-yapisi.md#8-açık-sorular) madde 3). `mobile-v*` etiketi itmek ücretli bir üretim derlemesi başlatır (`eas-build.yml`). Ayrıca `ci-ts.yml` içindeki `expo install --check` adımı `apps/mobile/package.json` oluşunca kendiliğinden çalışmaya başlar.
 
 ## İnsan adımları
 - İ-15 · Expo hesabı ve `eas login`: A21.5'teki `eas init` ve A21.7'deki ilk derlemeden önce gerekir. Apple Developer hesabı yalnız iOS derlemesi için.

@@ -1,0 +1,99 @@
+name: ci-dotnet
+
+# .NET: restore (locked), format check, Release build, tests (xunit.v3 on Microsoft.Testing.Platform,
+# Testcontainers with postgres), license gate for shipped projects.
+on:
+  pull_request:
+    paths:
+      - 'server/**'
+      - 'shared/test-vectors/**'
+      - 'shared/data/**'
+      - 'packages/content-schema/enums.json'
+      - 'docs/03-veri/02-editoryal-veritabani.md'
+      - 'global.json'
+      - '.editorconfig'
+      - '.gitattributes'
+      - '.config/dotnet-tools.json'
+      - 'scripts/ci/**'
+      - '.github/workflows/ci-dotnet.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - 'shared/test-vectors/**'
+      - 'shared/data/**'
+      - 'packages/content-schema/enums.json'
+      - 'docs/03-veri/02-editoryal-veritabani.md'
+      - 'global.json'
+      - '.editorconfig'
+      - '.gitattributes'
+      - '.config/dotnet-tools.json'
+      - 'scripts/ci/**'
+      - '.github/workflows/ci-dotnet.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  TESTINGPLATFORM_TELEMETRY_OPTOUT: '1'
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
+
+jobs:
+  dotnet:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: server/**/packages.lock.json
+      - name: SDK in use
+        run: |
+          dotnet --version
+          dotnet --list-sdks
+
+      - run: dotnet tool restore
+      - run: dotnet restore server/Mutalaa.slnx --locked-mode
+      - run: dotnet format server/Mutalaa.slnx --verify-no-changes --no-restore
+      - run: dotnet build server/Mutalaa.slnx -c Release --no-restore
+
+      # --no-build also implies --no-restore. A test project that runs zero tests fails the run
+      # (exit code 8 on SDK 10).
+      - name: Test
+        run: dotnet test --solution server/Mutalaa.slnx -c Release --no-build
+      # Records the globalization mode (ICU/NLS/Invariant) and culture the normalizer vectors ran under (A05).
+      - name: Normalizer environment
+        continue-on-error: true # informational only; the same test already ran in the step above
+        run: dotnet server/tests/Mutalaa.Domain.Tests/bin/Release/net10.0/Mutalaa.Domain.Tests.dll -diagnostics -showLiveOutput -method "Mutalaa.Domain.Tests.NormalizeVectorTests.Environment_is_recorded"
+
+      - name: OpenAPI document is current
+        if: hashFiles('server/Mutalaa.Api/openapi/v1.json') != ''
+        run: |
+          git diff --exit-code server/Mutalaa.Api/openapi
+          test -z "$(git status --porcelain -- server/Mutalaa.Api/openapi)"
+
+      # Test projects are excluded: only code that ships or is served over the network is gated.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - name: Dependency license gate (shipped projects)
+        run: |
+          set +e
+          dotnet tool run nuget-license -i server/Mutalaa.slnx -t -o JsonPretty -exclude-projects "*Tests*" -fo "$RUNNER_TEMP/nuget-licenses.json"
+          echo "nuget-license exit code: $?"
+          set -e
+          node scripts/ci/check-licenses.mjs nuget "$RUNNER_TEMP/nuget-licenses.json"
