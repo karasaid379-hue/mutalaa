@@ -5,8 +5,11 @@
 export default function setup(): void {
   const locale = Intl.DateTimeFormat().resolvedOptions().locale;
   console.log(`[search] locale=${locale} unicode=${process.versions.unicode}`);
-  const requested = process.env.LC_ALL || process.env.LC_MESSAGES || process.env.LANG || '';
-  if (process.platform !== 'win32' && requested.startsWith('tr_TR') && !locale.startsWith('tr')) {
+  const requested =
+    [process.env.LC_ALL, process.env.LC_MESSAGES, process.env.LANG].find((v) =>
+      v?.startsWith('tr_TR'),
+    ) ?? '';
+  if (process.platform !== 'win32' && requested !== '' && !locale.startsWith('tr')) {
     throw new Error(`Requested locale ${requested} but ICU resolved ${locale}.`);
   }
 }
