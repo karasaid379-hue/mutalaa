@@ -1,7 +1,7 @@
 # Karar Defteri
 
 > **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Onaylı
-> **Kapsam:** 16–18 Ekim 2026 beyin fırtınası oturumunda verilen bütün kararlar ve sonraki eklemeler (K-31, 19 Ekim 2026; K-32, K-33 ve K-34, 21 Ekim 2026; K-35, 24 Ekim 2026; K-36, 25 Ekim 2026; K-37, 26 Ekim 2026).
+> **Kapsam:** 16–18 Ekim 2026 beyin fırtınası oturumunda verilen bütün kararlar ve sonraki eklemeler (K-31, 19 Ekim 2026; K-32, K-33 ve K-34, 21 Ekim 2026; K-35, 24 Ekim 2026; K-36, 25 Ekim 2026; K-37, 26 Ekim 2026; K-38, 27 Ekim 2026).
 > **Kural:** Bir karar değişirse eski satır silinmez; "Geçersiz" olarak işaretlenir ve yeni karara bağlantı verilir.
 
 Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrıntılandırır ama değiştiremez. Çelişki görülürse bu dosya geçerlidir.
@@ -49,6 +49,7 @@ Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrı
 | K-35 | Çapa API ayrıntıları | Hata önceliği, §3 desenlerinin önceliği, Kur'an'da okuma sırası, birim ve rota işlevleri üç dilde, ilk kayıt adım sırası | [Çapa şeması](../03-veri/01-capa-semasi.md) |
 | K-36 | Arama normalizasyonu ayrıntıları | Adım sırası, kesme ve sözcük kuralları, biçim karakterleri, Arapça noktalama, küçük harf kod noktası başına; Python gövdeleyicisi `snowballstemmer` 3.1.1 ve `â î û` ön katlaması | [Arama](../03-veri/05-arama-fts5.md) |
 | K-37 | Editoryal şema ayrıntıları | G-YZ kaydı `review.yz_kaydi`; ortak enum JSON'u 11 tür; Identity `kimlik` şemasında, parola yalnız uzunluk ≥ 12; PostgreSQL ad politikası; belgede olmayan dizin yok | [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) |
+| K-38 | Kaynak edinimi | Dijital öncelikli, kanıtla yükseltme; Elmalılı'da kontrollü hazır metin (pilotta OCR ile yarışır); çıkarılmış metin üçüncü kanonik tür; hazır metin `taslak` girer | [Bu dosya, K-38](#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) |
 
 ---
 
@@ -69,6 +70,7 @@ Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrı
 - **Kaynak:** Özgün 1935–39 baskısı (yazar 1942'de vefat etti; eser 1 Ocak 2013'ten beri serbest). Sadeleştirilmiş baskılar kullanılmaz, çünkü sadeleştirenin hakkı sürer.
 - **Düzeltme (18 Ekim 2026):** Oturumda bu baskının Osmanlıca harflerle basıldığı söylenmişti. Bu doğru görünmüyor: baskı 1928 harf devriminden sonra yapıldı ve Princeton kataloğu eseri "Osmanlı Türkçesi" değil "Turkish" olarak kaydediyor (İstanbul: Matbaai Ebüzziya, 1935–1938, 6.442 sayfa). Türkçe metin büyük olasılıkla Latin harfli, âyetler Arapça harflidir. Bu yüzden iş, harf çevirisi değil, 1930'ların dizgisine ve imlasına uygun OCR ve düzeltmedir. Bir tarama nüshası üzerinde doğrulanacak. Kaynak: [Princeton SCSB-3946972](https://catalog.princeton.edu/catalog/SCSB-3946972).
 - **Değerlendirilen alternatifler:** Mevcut bir dijital metni temel almak (sadeleştirme hakkı riski); Elmalılı'ya ek olarak Arapça klasik tefsir (sonraya bırakıldı).
+- **Güncelleme (2026-10-27):** "Mevcut bir dijital metni temel almak" seçeneği [K-38](#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) ile kontrollü biçimde yeniden değerlendirilir: hazır metin A09 pilotunda OCR ile yarışır, eşik geçilirse temel metin olur. Sadeleştirilmiş baskılar yine kullanılmaz.
 
 ### K-04 · Hadis kaynakları
 - **Karar:** Tecrîd-i Sarîh (Arapça + Babanzâde Ahmed Naim'in Türkçesi) ile Kütüb-i Sitte'nin Arapça metni birlikte işlenir.
@@ -192,6 +194,7 @@ Eski plandan aynen devralınır:
 - **Kural:** Adresler hiçbir sürümde yeniden numaralanmaz; her birim metin özeti (hash) taşır. Karakter aralığı `@başlangıç-bitiş` yarı açıktır: başlangıç dahil, bitiş hariç.
 - **Güncelleme (2026-10-24):** Uygulama ayrıntıları (hata önceliği, sıralama, birim ve rota işlevleri, ilk kayıt adım sırası) [K-35](#k-35--çapa-api-ayrıntıları) ile belirlendi; bu karar değişmedi.
 - **Kanonik metin:** Kaynaktan alınan metin, kaynağın dağıttığı hâliyle saklanır; Tanzil metni bayt bayt değiştirilmez (NFC bile uygulanmaz, çünkü NFC şedde ile harekenin sırasını değiştirir ve Tanzil "değiştirmek yasak" şartı koyar). NFC yalnız kendi ürettiğimiz metinlere (transkripsiyonlar, kelime anlamları) ilk kayıtta uygulanır. Ofsetler kanonik metindeki Unicode kod noktalarıdır; arama için normalize edilmiş metin ayrı sütunda tutulur.
+- **Güncelleme (2026-10-27):** HTML, EPUB ya da PDF'ten çıkarılan metin, birebir dilim ve kendi aktarımımızın yanında üçüncü bir kanonik metin türü oldu ([K-38](#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme), madde 3). Tanzil gibi birebir dilimler için bu karar değişmedi.
 
 ### K-27 · Tek bağlantı tablosu
 - **Karar:** Bütün bağlantılar `xref` tablosunda: kaynak ve hedef adres + aralık, tür, puan, güven, kanıt, durum (aday / onaylı / red), lisans.
@@ -300,6 +303,36 @@ Eski planın okuyucu tasarımları, "okuma simetrisi" çekirdeği (son okunan ye
 - **Değerlendirilen alternatifler:** G-YZ için `review` tablosuna ayrı sütunlar (her yeni alan bir göç ister) ya da kararı A16'ya ertelemek. Enum'ları yalnız C# ve PostgreSQL'de tutmak (iki doğruluk kaynağı olurdu). Identity'nin varsayılan parola kuralları. EF'nin ad önekleri ve yabancı anahtar dizinleri.
 - **Kaynak:** Proje sahibinin kararı (26 Ekim 2026, A07): 1–3. maddeler soru-cevapla, 4–5. maddeler plan onayıyla.
 - **Güncelleme (2026-10-27, A07):** Madde 4'ün istisnaları kodla birlikte genişler: `xref_natural_key` (gerçek kısıt, ham SQL); `review_yz_kaydi_check` (çok sütunlu olduğu hâlde açık ad taşır, `review_check` olmaz); `icerik."__EFMigrationsHistory"` (`pk_` önekli birincil anahtar); `kimlik` şemasında EF adları (`pk_`, `fk_`, `ix_`). Durum sütunu olmayan hedeflerde (`source`, `root`, `tr_root_index`, `tr_form`, `page_map`, `ayah_box`, `audio_timing`) `dogrulanmis` = `review.durum = 'onaylandi'` olarak türetilir (madde 1'in anlamı değişmez). Madde 3 kodda uygulandı: parola yalnız uzunluk >= 12 ve `RequireUniqueEmail` açık; e-posta tekilliği veritabanı düzeyinde de kilitlidir: `kimlik.users` üzerinde `ix_users_normalized_email` ve (kullanıcı adı e-posta olduğundan) `ix_users_normalized_user_name` tekil dizinleridir.
+
+### K-38 · Kaynak edinimi: dijital öncelikli, kanıtla yükseltme
+- **Karar:**
+  1. **İlke.** Bir kitap için önce yasal olarak kullanılabilen hazır dijital metin (TXT, EPUB, metin katmanlı PDF, HTML) aranır; tarama ve OCR yedek yoldur.
+     - Hazır metin `bekliyor` durumuyla kaydedilir ve yalnız ekip içi `dev` derlemesinde görünür.
+     - Örneklemi basılı özgün nüshayla karşılaştırılır (CER ve sadeleştirme denetimi). Kaynak ve baskı esası belgelenirse durum yükseltilir; belgelenmezse kendi aktarımımız yapılır.
+     - [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md) §5'teki yol bütün kitaplara uygulanır. Kökeni belgelenmemiş set `serbest` olmaz (R-06).
+     - Otomatik toplu indirme yoktur: dosyayı kullanıcı elle indirir, hat yalnız kayıtlı dosyayı işler.
+  2. **Elmalılı ([K-03](#k-03--tefsir-önce-elmalılı-meali)'ün uygulaması).** Hazır meal metni (aday: Vikikaynak "Kur'an"; tefsir için archive.org metin katmanı) A09 pilotunda OCR motorlarıyla aynı altın örneklemde ölçülür.
+     - Eşik geçilir ve tam metin denetimi temiz çıkarsa hazır metin temel metin olur, iki düzeltme turu yapılır. Başlangıç önerisi: meal bloklarında CER ≤ %1, sadeleştirme izi 0; eşik pilottan sonra kesinleşir.
+     - Tam metin denetimi: 6.236 âyetin kapsamı ve sadeleştirme taraması otomatik; 60 rastgele âyet elle. Bu örneklem metnin %5'ini etkileyen bir sorunu yaklaşık %95 olasılıkla yakalar (0,95^60 ≈ 0,046).
+     - Eşik geçilmezse OCR yoluna dönülür.
+     - Sadeleştirilmiş metinler (GitHub `elmalili-meal/kuran`, Azim) ve ticari kullanımı kapatanlar (Tanzil, Açık Kuran) aday olamaz.
+     - Özgün baskı taraması yine gerekir (örneklem ve Kurul'a sadakat kanıtı). Görsel kaynağı önce archive.org taraması (ofset sınamasından geçerse), yedek sahaftan takım.
+     - Atıf metni "X kaynağından alınmış, Mütâlaa tarafından özgün baskıyla karşılaştırılıp düzeltilmiştir" biçimine döner. `serbest` ve Kurul başvurusu avukat görüşüne ve Kurul onayına bağlıdır.
+  3. **Çıkarılmış metin ([K-26](#k-26--kalıcı-adresler-çapa-şeması)'ya ek).** HTML, EPUB ya da PDF'ten çıkarılan metin kaynak dosyanın birebir dilimi değildir; üçüncü bir kanonik metin türüdür.
+     - Ham dosya `data/raw` altında değişmez (SHA-256), çıkarıcı sürümü sabittir ve dönüşüm deterministiktir.
+     - Dönüşüm ortak test vektörleriyle üç dilde tanımlanır.
+     - İlk kayıt adımları ([K-35](#k-35--çapa-api-ayrıntıları)) uygulanır. `provenance` dosya özetini, dosya içi konumu ve çıkarıcı sürümünü taşır.
+     - G-BUT denetimi bu tür için "ham dosya ve çıkarıcıdan metin yeniden üretilebilir" olur. Birebir dilimlerde (Tanzil) K-26 aynen sürer.
+  4. **Başlangıç durumu.** `metin_durumu = 'onayli'` ile giriş yalnız Tanzil gibi kanonik başvuru kaynakları için geçerlidir. Hazır ve çıkarılmış metinlerin hepsi `taslak` girer ve editör onayından geçer (meal ve tefsirde ikinci onay). Böylece P-10 editör onaysız hazır metni `public` derlemeye sokmaz (BÇ-43).
+  5. **Sınırlar.** Risale-i Nur, Kâmil Miras ciltleri ve hazır Türkçe kelime mealleri bu ilkenin dışındadır; `kapali` kalırlar ve indirilmezler. Genel kitapların fazı değişmez ([K-02](#k-02--i̇lk-içerik-seti), S-02).
+- **Gerekçe:**
+  - Elmalılı için temiz bir hazır metin bulunamadı: her aday ya ticari kullanıma kapalı, ya sadeleştirilmiş, ya da baskı esası belirsiz ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.3 ve §4).
+  - Hazır metni ölçmeden elemek 6.442 sayfalık OCR ve düzeltme yükünü gereksiz yere taşır; ölçmek ise kararı nesnel kanıta bağlar.
+  - FSEK m. 6/8 yalnız yayımlanmamış eserler içindir ([mevzuat.gov.tr](https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3), okuma 2026-10-27). Düz aktarımın hak doğurmadığı savunusu m. 1/B(a)'daki hususiyet ölçütüne dayanır; veri tabanı hakkı (ek m. 8) ve CC BY-SA şartı avukata sorulur ([avukat soruları](../yazismalar/avukat-sorulari.md)).
+  - Hadis yolu zaten bu mantıkla yazılı; K-03'ün alternatif satırı yalnız sadeleştirme hakkı riskini gerekçe gösteriyordu.
+  - Hukuki görüş değildir.
+- **Değerlendirilen alternatifler:** Mevcut yöntem (hazır metne hiç bakmamak). Hazır metni doğrudan `serbest` saymak (baskı esası belirsiz, sadeleştirme sızabilir). Hazır metni yalnız karşılaştırma tanığı yapmak (ilk seçim; proje sahibi kontrollü yolu seçti).
+- **Kaynak:** Proje sahibinin kararı (27 Ekim 2026): 1 ve 2. maddeler seçim sorularıyla, 3–5. maddeler taslağın onayıyla. Kaynak araştırması: Elmalılı, Tecrîd ve lügat adaylarının bağımsız doğrulaması (27 Ekim 2026); sonuçlar lisans defterindedir.
 
 ---
 
