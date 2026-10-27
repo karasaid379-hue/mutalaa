@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { test } from 'node:test';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { checkFile as checkLinks } from '../../skills/belge-esitle/baglanti-denetimi.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
@@ -277,4 +277,29 @@ test('belge çelişkileri: numaralar tekil, aşamalar var, durumlar geçerli', (
     for (const a of ids(asama, /A\d\d/g)) assert.ok(STAGES.includes(a), `${no}: aşama ${a} yok`);
     assert.match(durum, /^(açık|çözüldü \(\d{4}-\d{2}-\d{2}\))/, `${no}: durum "${durum}"`);
   }
+});
+
+test('PR başlığı denetimi: tür ve kapsam listesi Proje yapısı §6 ve /commit ile aynı', async () => {
+  const { TYPES, SCOPES } = await import(pathToFileURL(at('scripts', 'ci', 'pr-title.mjs')).href);
+  // Parantez içi açıklamaları (iç içe olanlar dahil) at, sonra kod biçimli sözcükleri al.
+  const words = (text) => {
+    let t = text;
+    for (let prev = ''; prev !== t; ) {
+      prev = t;
+      t = t.replace(/\([^()]*\)/g, '');
+    }
+    return [...t.matchAll(/`([a-z][a-z-]*)`/g)].map((m) => m[1]);
+  };
+  const doc = read('docs', '02-mimari', '03-proje-yapisi.md');
+  const line = doc.split('\n').find((l) => l.includes('Türler:') && l.includes('Kapsamlar:'));
+  assert.ok(line, 'Proje yapısı §6: "Türler: … Kapsamlar: …" satırı yok');
+  const [typeText, scopeText] = line.split('Kapsamlar:');
+  assert.deepEqual(words(typeText.split('Türler:')[1]), TYPES, 'Proje yapısı §6 türleri');
+  assert.deepEqual(words(scopeText.split('Squash')[0]), SCOPES, 'Proje yapısı §6 kapsamları');
+
+  const skill = read('.claude', 'skills', 'commit', 'SKILL.md').split('\n');
+  const types = skill.find((l) => l.startsWith('- **Türler:**'));
+  const scopes = skill.find((l) => l.startsWith('- **Kapsamlar:**'));
+  assert.deepEqual(words(types.split(':**')[1]), TYPES, '/commit türleri');
+  assert.deepEqual(words(scopes.split(':**')[1]), SCOPES, '/commit kapsamları');
 });
