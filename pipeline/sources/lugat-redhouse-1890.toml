@@ -11,12 +11,14 @@ embed_ok = true
 kurul_gerekli = false
 atif_metni = "James W. Redhouse, A Turkish and English Lexicon, 1890."
 yeniden_kontrol = 2027-04-26
-lisans_kopyasi = "licenses/lugat-redhouse-1890-2026-10-26.txt"
-lisans_sha256 = "acb36ad7bc0ec3118ec5acfdc246f80d10b3aee91ebbc5d507c66afef30b7fb2"
+lisans_kopyasi = "licenses/lugat-redhouse-1890-2026-10-27.txt"
+lisans_sha256 = "056d84e479f080f6705ec94acd591fd0df66919044747b6b9bbfacd7e00b3c5f"
 notlar = '''
 HathiTrust API: rightsCode pd, Full view, Michigan State University, Google sayısallaştırması.
-HathiTrust kullanım şartı sayfası 2026-10-26'da okunamadı (403): Doğrulanacak.
+HathiTrust "Reusing HathiTrust Content" sayfası okundu (son değişiklik 2024-02-05; BÇ-40 çözüldü, 2026-10-27): Google'ın taradığı kitaplar yeniden barındırılamaz, dağıtılamaz ve ticari kullanılamaz; görüntüden aktarılan, özetlenen ya da çevrilen metin için kısıt yoktur (https://hathitrust.atlassian.net/wiki/spaces/GS/pages/2386591873/Reusing+HathiTrust+Content).
 Türkçe tanımları biz yazarız.
-Yaşam yılları ve süre hesabı lisans kopyası notunda koşulludur; yazar_vefat_yili doğrulanmadığı için yazılmadı.
+Redhouse 1811-1892 (TDV İA: https://islamansiklopedisi.org.tr/redhouse-sir-james-william). yazar_vefat_yili alanı yazılmadı: eser İngilizce yazılmış yabancı bir eser sahibine ait olduğundan koruma süresinin hangi hukuka göre hesaplanacağı avukata sorulur (İ-03); 1892 + 71 hesabı yalnız koşulludur.
 Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.
-HathiTrust/Google kullanım şartı teyit edilene kadar tarama görüntüsü ve OCR çıktısı pakete girmez; yalnız kendi yazdığımız tanımlar.'''
+Tarama görüntüsü ve Google OCR çıktısı pakete girmez (HathiTrust şartı); yalnız kendi yazdığımız tanımlar.
+Kapı: Google görüntüsü üzerinde kendi OCR'ımız, avukat cevabına (İ-03) kadar çalıştırılmaz.
+Lisans kopyası 2026-10-27'de yenilendi (önceki okuma kopya içinde korunuyor).'''

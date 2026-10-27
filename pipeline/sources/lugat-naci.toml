@@ -13,9 +13,11 @@ yeniden_kontrol = 2027-04-26
 lisans_kopyasi = "licenses/lugat-naci-2026-10-26.txt"
 lisans_sha256 = "d7efac75b5ec07e29153d69f277df5e6753672b61712add3c211d7fb9ffeeec1"
 notlar = '''
-İki yazarlı eser: Muallim Nâci ö. 12 Nisan 1893; tamamlayan Müstecâbîzâde İsmet Bey ö. Mayıs 1917 (ikincil kaynak). Defter tek yazar varsayıyordu; yazar_vefat_yili iki yazar olduğu için yazılmadı.
-İsmet Bey'in ölüm tarihi için bağlantı: https://kureansiklopedi.com/tr/detay/mustecabizade-ismet-bey (sayfa 2026-10-26'da doğrudan okunmadı, ikincil özet).
-Süre son ölene göre → 1 Ocak 1988 (hesap, ikincil).
-Dijital kopya kaynağı: Doğrulanacak.
+İki yazarlı eser: Muallim Nâci ö. 12 Nisan 1893; tamamlayan Müstecâbîzâde İsmet Bey ö. Mayıs 1917. Defter tek yazar varsayıyordu; yazar_vefat_yili iki yazar olduğu için yazılmadı.
+İsmet Bey'in ölüm tarihi TDV İA ile doğrulandı (2026-10-27): https://islamansiklopedisi.org.tr/mustecabizade-ismet-bey
+Süre son ölene göre → 1 Ocak 1988 (hesap; FSEK m. 27/1 fıkra numarası mevzuat.gov.tr ile teyit Doğrulanacak).
+Baskı: hicrî 1322 baskısında (miladi karşılığı ve baskı tarihi Doğrulanacak) Tâhirülmevlevî (ö. 21 Haziran 1951) maddeleri alfabetik dizdi, bazılarını değiştirdi ve örnek ekledi; yalnız Nâci ve İsmet Bey'in metnini taşıyan 1317 ya da 1318 baskısı önerilir.
+Tarama: archive.org lgatnaci0001na (Duke kopyası, Internet Archive'ın kendi Scribe taraması, 400 ppi, 832 görüntü, Asır Matbaası 1900). IA yazar ve matbaa alanlarında Türkçe karakterler bozuktur ve yazar olarak yalnız Muallim Nâci geçer; atıfta bu alanlar olduğu gibi kullanılmaz.
+Dijital kopya kaynağı ve baskı seçimi: Doğrulanacak.
 embed_ok: Doğrulanacak (şimdilik false).
 Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.'''

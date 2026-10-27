@@ -1,5 +1,5 @@
 # Hadis Hazırlığı
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.2 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
 
 K-04 gereği Tecrîd-i Sarîh (Arapça metin ve Babanzâde Ahmed Naim'in Türkçesi) ile Kütüb-i Sitte'nin Arapça metni birlikte işlenir. Paketler `hadis-tecrid` ve `hadis-kutub-i-sitte` adını taşır. Çapalar `h:{koleksiyon}:{no}` (Arapça) ve `ht:{ceviri}:{koleksiyon}:{no}` (çeviri) biçimindedir; örnek `h:tecrid:15`, `ht:naim:tecrid:15`, `h:buhari:52`.
@@ -38,6 +38,12 @@ Doğrulama listesi:
 
 Kural: doğrulama bitene kadar III. cilt Miras kısmı sayılır ve `kapali` kalır. Her Türkçe birim `ceviri` alanı taşır: `naim` ya da `miras`. Çapalar buna göre `ht:naim:tecrid:{no}` ya da `ht:miras:tecrid:{no}` olur.
 
+**Yeni bulgular (okuma 27 Ekim 2026; Zebîdî'nin vefat tarihi TDV İA ile doğrulandı, diğerleri Doğrulanacak; kural değişmez).** Hukuki sonuç taşımaz; hukuki görüş değildir. Ayrıntı: [lisans defteri §3.4](./01-kaynaklar-ve-lisans-defteri.md).
+- **Naim ve Miras payı.** Hansu'ya göre ([Küre: et-Tecrîdü's-sarîh](https://kureansiklopedi.com/tr/detay/et-tecridus-sarih), 20.11.2024) Naim mukaddimeyle 477 hadisi iki cilt hâlinde yayımladı (İstanbul 1346/1928), III. cildi hazırladı ama yayımlanmadan 1934'te öldü; Kâmil Miras III. cildi gözden geçirip yayımladı. Aynı maddede Naim'in çevirdiği hadis sayısı 589, baskıda görünen 574 olarak geçiyor; fark ve 477 ile ilişki açık. [TDV İA Babanzâde maddesi](https://islamansiklopedisi.org.tr/babanzade-ahmed-naim) "ilk üç cilt"i Naim'e verir. Fark, Miras'ın payının anılıp anılmamasından gelebilir (çıkarım). Yukarıdaki "Miras III. cildin müsveddesini hazırladı" bilgisiyle ([Küre: Miras](https://kureansiklopedi.com/tr/detay/miras-kamil)) Hansu'nun anlatımı uyuşmuyor; ciltlerin künye ve önsözleriyle sınanır (doğrulama listesinin ilk iki maddesi).
+- **Türkçe kopyalar.** İTÜ kaydı: 1926–1928, cilt 1–3, "Osmanlıca"; yalnız üst veri görülebiliyor, "Copyright hakları saklıdır". Diyanet ePUB'ı (yayin.diyanet.gov.tr, 1. cilt ISBN 9789751970602) arama özetine göre ücretli, modern bir baskıdır ve Miras ciltlerini de içerir; birincil sayfa açılmadı. Bu metin kullanılmaz; yalnız izinle karşılaştırma tanığı olabilir. Kendi aktarımımız için 1928 ciltlerinin taraması bir kütüphaneden istenir (İ-14).
+- **Arapça hazır metinler.** OpenITI ([Zenodo](https://zenodo.org/records/3082463), CC BY-NC-SA 4.0) ve Shamela ("haklar sahiplerinde kalır") kopyaları Risâle 2009 baskısına dayanıyor; zevâid hadisleri ve Buhârî numaraları eklenmiş. OpenITI `kapali`dır; Shamela için kayıt açılmadı. Kendi OCR'ımız için aday: archive.org `AAlexandrina-103522` (Kahire, Hayriyye, 1322/1904); kaynağı Doğrulanacak.
+- **Arapça metnin yazarı.** Zebîdî'nin vefatı 893/1488'dir ([TDV İA](https://islamansiklopedisi.org.tr/zebidi-ahmed-b-ahmed)).
+
 ## 4. Kütüb-i Sitte Arapça veri seti seçenekleri
 
 | Seçenek | Ne veriyor | Sorun | Hüküm |
@@ -69,7 +75,11 @@ Kural: doğrulama bitene kadar III. cilt Miras kısmı sayılır ve `kapali` kal
 | C. Kendi sıra numaramız | 1'den başlayan iç numara | Tam denetim | Dışarıda anlamı yok; eşleme tablosu yine gerekir |
 | D. Kitap-bâb-hadis bileşik numarası | ör. 2.12.3 | Okunur konum | Gramerdeki tek `{no}` alanına uymaz; gramer değişikliği ister |
 
-**Öneri.** Kütüb-i Sitte için A seçeneği; Tecrîd için basılı Tecrîd numarası (`h:tecrid:{no}`; numaranın ciltler boyunca sürekli olup olmadığı Doğrulanacak). Diğer numara sistemleri eşleme tablosunda tutulur:
+**Öneri.** Kütüb-i Sitte için A seçeneği; Tecrîd için basılı Tecrîd numarası (`h:tecrid:{no}`; numaranın ciltler boyunca sürekli olup olmadığı Doğrulanacak). Diğer numara sistemleri eşleme tablosunda tutulur.
+
+> **Uyarı (okuma 27 Ekim 2026).** OpenITI ve Shamela'daki Tecrîd Arapçası Risâle 2009 baskısına dayanıyor; editör Buhârî numaralarını ve 105 zevâid hadisini eklemiş (Doğrulanacak). Bu yüzden o kopyaların numaralandırması basılı Tecrîd numarasından farklı olabilir. `h:tecrid` numaralarıyla örtüşmesi sınanmadan bu numaralar eşleme tablosuna ya da çapaya girmez. OpenITI `kapali` olduğu için ham dosyası alınmaz; sınama serbest bir basılı nüshadan (kendi taramamız) yapılır.
+
+Eşleme tablosu:
 
 ```sql
 -- Öneri; kesin şema Editoryal veritabanı dosyasında

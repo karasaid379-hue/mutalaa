@@ -15,6 +15,7 @@ lisans_kopyasi = "licenses/lugat-kamus-i-turki-2026-10-26.txt"
 lisans_sha256 = "2c2cc33ab584b88be41c951864228e7ec20a73714763fdda9ff8dd4e494e7e27"
 notlar = '''
 Şemseddin Sâmi ö. 18 Haziran 1904 (Küre: https://kureansiklopedi.com/tr/detay/semseddin-sami-2) → 1 Ocak 1975 (hesap).
-Dijital kopya kaynağı bulunamadı → bekliyor.
+Taramalı kopya var: archive.org kamusitrki00emse (Toronto kopyası, Internet Archive'ın kendi Scribe taraması, 500 ppi, 1594 görüntü, İkdam Matbaası 1899; lisans alanı yok, "No copyright page found"). Mevcut OCR katmanı kullanılamaz. Kaynak ve baskı seçimi Doğrulanacak → bekliyor.
+Çağdaş Sözlük (turki.cagdassozluk.com; 29.859 madde başı, ayna ottomanlexicons.com 29.881): Osmanlıca başlık, Latin aktarım, tanım ve sayfa konumu var; "© 2003 - Çağdaş Sözlük Projesi", lisans, işleten ve iletişim bilgisi yok. Yazılı izin alınmadan kullanılmaz.
 embed_ok: Doğrulanacak (şimdilik false).
 Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.'''

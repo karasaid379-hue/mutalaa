@@ -1,6 +1,6 @@
 # Kaynakça
 
-> **Sürüm:** 1.0 · **Tarih:** 18 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-06](00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-23](00-ozet/02-karar-defteri.md#k-23--doküman-yeri)
 
 Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo belge sayfası (FileSystem ve Font) raporda yok; mobil dosyalarında kullanıldıkları için eklendi. Notlar kaynakların araştırma tarihindeki hâlini özetler; bir olgu kullanılmadan önce kaynak yeniden açılır. Araştırma ortamında bazı birincil siteler (ör. tanzil.net, mevzuat.gov.tr) doğrudan okunamadı; bu durumda kopyası okunan kaynak notta belirtildi. Eski plan dosyaları `quran-app-docs/` altında arşivdedir ve burada listelenmez.
@@ -68,6 +68,11 @@ Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo 
 - [Hasan Basri Çantay (Küre)](https://kureansiklopedi.com/tr/detay/cantay-hasan-basri). Vefat tarihi; meal 2035'te serbest.
 - [Ömer Nasuhi Bilmen (Küre)](https://kureansiklopedi.com/tr/detay/bilmen-omer-nasuhi). Vefat tarihi; eserler 2042'de serbest.
 - [Kâmil Miras (Küre)](https://kureansiklopedi.com/tr/detay/miras-kamil). Tecrîd ciltleri; 2028.
+- [et-Tecrîdü's-sarîh (Küre)](https://kureansiklopedi.com/tr/detay/et-tecridus-sarih). Naim'in ciltleri, III. cildin yayımı ve Miras'ın payı (Hansu, 20.11.2024).
+- [Babanzâde Ahmed Naim (TDV İA)](https://islamansiklopedisi.org.tr/babanzade-ahmed-naim). Tecrîd çevirisinde "ilk üç cilt".
+- [Hak Dini Kur'an Dili (TDV İA)](https://islamansiklopedisi.org.tr/hak-dini-kuran-dili). 1935–1939 baskısı; 1960 ve 1971 ofset baskıları.
+- [Johanna Pink, GloQur](https://gloqur.de/?p=2195). Elmalılı metninin aktarımı ve adıyla satılan mealin atfı.
+- [Zebîdî (TDV İA)](https://islamansiklopedisi.org.tr/zebidi-ahmed-b-ahmed). Tecrîd-i Sarîh'in Arapça yazarı; vefatı 893/1488.
 - [Ahmed Cevdet Paşa (Kültür ve Turizm Bakanlığı)](https://www.ktb.gov.tr/EN-118064/ahmed-cevdet-pasa.html). Kısas-ı Enbiyâ ve 1973 sadeleştirmesi.
 - [Mevlid (TDV İA)](https://islamansiklopedisi.org.tr/mevlid--suleyman-celebi). Tenkitli neşirler; Latin harfli baskıların güvenilirliği.
 - [QuranEnc Türkçe çeviri](https://quran.islamcontent.com/en/turkish_shaban/112). "Tüm hakları saklıdır" kaydı.
@@ -84,6 +89,14 @@ Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo 
 - [Redhouse 1890 sözlüğü (HathiTrust)](https://catalog.hathitrust.org/Record/001771732). Kamu malı lügat kaynağı.
 - [Risale maddesi (TDV İA, PDF)](https://cdn2.islamansiklopedisi.org.tr/dosya/35/C35011446.pdf). Dört ana mecmuanın 130 parçası.
 - [14 ciltlik büyük boy baskı (kitapyurdu)](https://www.kitapyurdu.com/kitap/risalei-nur-kulliyati-buyuk-boy-14-cilt-takim/429602.html). 7.550 sayfalık ölçek.
+
+### Lügat ve tarama koşulları
+
+- [Reusing HathiTrust Content](https://hathitrust.atlassian.net/wiki/spaces/GS/pages/2386591873/Reusing+HathiTrust+Content). Google taramalarının yeniden dağıtımı ve ticari kullanımı; görüntüden aktarılan metin (son değişiklik 2024-02-05).
+- [Redhouse (TDV İA)](https://islamansiklopedisi.org.tr/redhouse-sir-james-william). Yaşam yılları 1811–1892.
+- [Lugat-ı Nâcî (TDV İA)](https://islamansiklopedisi.org.tr/lugat-i-naci). Yayın tarihleri ve 1322 baskısı.
+- [Müstecâbîzâde İsmet Bey (TDV İA)](https://islamansiklopedisi.org.tr/mustecabizade-ismet-bey). Mayıs 1917'de vefat.
+- [Tâhirülmevlevî (TDV İA)](https://islamansiklopedisi.org.tr/tahirulmevlevi). 21 Haziran 1951'de vefat; Lugat-ı Nâci'nin 1322 baskısındaki düzenleme.
 
 ### Ses ve hadis
 

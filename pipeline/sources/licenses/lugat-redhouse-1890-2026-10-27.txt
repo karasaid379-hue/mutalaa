@@ -1,0 +1,40 @@
+Kaynak kimliği: lugat-redhouse-1890
+Kaynak adresi: https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3 ; https://catalog.hathitrust.org/api/volumes/full/recordnumber/001771732.json ; https://catalog.hathitrust.org/Record/001771732 ; https://hathitrust.atlassian.net/wiki/spaces/GS/pages/2386591873/Reusing+HathiTrust+Content ; https://islamansiklopedisi.org.tr/redhouse-sir-james-william
+Okuma tarihi: 2026-10-27 (önceki okuma: 2026-10-26, aşağıda "Önceki okuma" bölümünde korunur)
+Yöntem: dayanak notu
+Not: Hukuki görüş değildir. Bu dosya lisans/şart metninin kopyasıdır; kaynağın kendi metni değildir.
+
+Kimlik: lugat-redhouse-1890
+Eser: Redhouse, A Turkish and English Lexicon, 1890.
+Eser sahibi: James W. Redhouse. Yaşam yılları 1811-1892 (TDV İA, Findley maddesi: https://islamansiklopedisi.org.tr/redhouse-sir-james-william); 2026-10-27'de doğrulandı.
+
+FSEK (5846) m. 26-27; mevzuat.gov.tr güncel metin, okuma 2026-10-26 (içerik /anasayfa/MevzuatFihristDetayIframe üzerinden okundu):
+https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3
+- m. 27: "Koruma süresi eser sahibinin yaşadığı müddetçe ve ölümünden itibaren 70 yıl devam eder."
+- m. 26 (ilgili kısım): "eser sahibinin öldüğü seneyi takip eden yılın ilk günü başlangıç tarihi sayılır."
+Hesap kuralı (defter §6): ölüm yılı + 71'inci yılın 1 Ocak'ı.
+Hesap (koşullu): 1892 + 71 = 1963, yani 1 Ocak 1963. Eser İngilizce yazılmış, yabancı bir eser sahibine ait olduğundan koruma süresinin hangi hukuka göre hesaplanacağı Doğrulanacak (avukat sorusu).
+
+Dijital kopya (HathiTrust):
+- Katalog: https://catalog.hathitrust.org/Record/001771732; API: https://catalog.hathitrust.org/api/volumes/full/recordnumber/001771732.json
+- API yanıtı (okuma 2026-10-26): iki cilt; rightsCode "pd"; usRightsString "Full view"; kaynak kurum Michigan State University; sayısallaştırma "google".
+
+Kullanım şartı (okuma 2026-10-27):
+- HathiTrust "Reusing HathiTrust Content" sayfası (son değişiklik 2024-02-05). Aşağıdaki iki cümle bir araştırma ajanının WebFetch aktarımıdır; sayfa metniyle birebir karşılaştırılmadı (Doğrulanacak):
+  - Google'ın taradığı kitaplar için: "They may not be re-hosted, re-distributed, or used commercially, as per our access & use policies."
+  - Görüntülerden aktarılan metin için: "There are no restrictions on use of text transcribed from the images, or paraphrased or translated using the images."
+- Sonuç: Google görüntüsü ve OCR çıktısı pakete girmez. Görüntüden kendi yazdığımız tanım için sayfa kısıt koymuyor.
+
+Kapı: Google görüntüsü üzerinde kendi OCR'ımız, avukat cevabına (İ-03) kadar çalıştırılmaz. Kendi çalıştırdığımız OCR'ın serbest bırakılan "transcribed text" sayılıp sayılmadığı ve Google'ın ilettiği şartın bizi bağlayıp bağlamadığı avukata sorulur.
+
+Not: Türkçe tanımları biz yazarız (defter §3.6); bu kaynaktan metin kopyalanmaz, yeniden dağıtılmaz.
+
+Doğrulanacak:
+1. Yukarıdaki iki HathiTrust cümlesinin sayfa metniyle birebir örtüşmesi.
+2. Google'ın ilettiği şartın bizi bağlayıp bağlamadığı; kendi OCR'ımızın "transcribed text" sayılması (avukat).
+3. Eser İngilizce yazılmış, yabancı bir eser sahibine ait olduğundan koruma süresinin hangi hukuka göre hesaplanacağı (avukat).
+
+Önceki okuma (2026-10-26, değiştirilmeden korunur):
+- Ölüm yılı o gün doğrulanmamıştı (şimdi doğrulandı, yukarıya bakın).
+- HathiTrust kullanım şartı sayfası 2026-10-26'da okunamadı (HTTP 403).
+- İkincil kaynak (arama özeti, birincil kaynakta doğrulanmadı): Google'ın görüntü ve OCR çıktısının yeniden dağıtılmaması ve ticari kullanılmaması isteği.

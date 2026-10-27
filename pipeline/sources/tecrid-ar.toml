@@ -13,7 +13,9 @@ lisans_kopyasi = "licenses/tecrid-ar-2026-10-26.txt"
 lisans_sha256 = "188c931b19b78df943ada41c82ca16ca0c33297e9dbb5f08128f49c10e133582"
 notlar = '''
 Arapça metin yaşı itibarıyla serbest (defter §3.4). Kurul: Gerekmez (çıkarım).
-Yazarın ölüm tarihi araştırılmadı: Doğrulanacak.
-Hüküm: serbest ciltlerden.
+Yazar Zebîdî ö. 9 Rebîülâhir 893 / 23 Mart 1488 (TDV İA: https://islamansiklopedisi.org.tr/zebidi-ahmed-b-ahmed); ölüm tarihi doğrulandı (2026-10-27).
+Hüküm: serbest ciltlerden. yazar_vefat_yili bu kayıtta yazılmadı (kayıt yazar alanı taşımıyor; Zebîdî ö. 893/1488 yukarıda).
 Atıf metni taslaktır (2026-10-26); kullanıcı onayı bekler.
-A19'da yazarın ölüm tarihi ve kopya kaynağı doğrulanmadan ingest yapılmaz; doğrulanamazsa durum /karar ile bekliyor'a çekilir.'''
+Hazır dijital kopyalar kullanılmaz: OpenITI (Zenodo sürümü CC BY-NC-SA 4.0) ve Shamela ("haklar sahiplerinde kalır") 2009 tarihli Risâle baskısına dayanır; editör Buhârî numaralarını ve zevâid hadislerini eklemiştir (Doğrulanacak).
+Kendi OCR'ımız için aday: archive.org AAlexandrina-103522 (Kahire, el-Matbaatü'l-Hayriyye, 1322/1904); tarama kaynağı Doğrulanacak.
+A19'da kopya kaynağı doğrulanmadan ingest yapılmaz; doğrulanamazsa durum /karar ile bekliyor'a çekilir.'''
