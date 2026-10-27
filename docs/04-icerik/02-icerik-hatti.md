@@ -1,6 +1,6 @@
 # İçerik Hattı
 > **Sürüm:** 1.7 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)
+> **Bağlı kararlar:** [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
 
 İçerik hattı, kaynak dosyaları alır, normalize eder, kalıcı adres (çapa) verir, zenginleştirir, denetler ve editoryal veritabanına (PostgreSQL 18) yükler. Python 3.13 ile yazılır, paketleri `uv` yönetir. Hat yalnız geliştirme makinesinde çalışır, üretim sunucusunda çalışmaz (K-12). SQLite içerik paketlerini hat üretmez; paketleri editör onayından sonra .NET yayınlayıcı (`server/Mutalaa.Publisher`) lisans kapısından geçirerek üretir.
 
@@ -38,7 +38,7 @@ pipeline/
 │  ├─ config.py · runctx.py · lineage.py · db.py · logs.py
 │  ├─ enums.py · cikis.py  # enums.json'a karşı sınanan StrEnum sınıfları (A06); çıkış kodları
 │  ├─ sources/             # kaynak kaydı okuma ve denetim (kayit.py), liste çıktısı (liste.py), lisans sayfası metni çıkarma (html_metin.py); A06
-│  ├─ ingest/              # kaynak başına bağdaştırıcı: tanzil, qac, qul, quran_align, scans, hadith_ar
+│  ├─ ingest/              # kaynak başına bağdaştırıcı: tanzil, qac, qul, quran_align, scans, hadith_ar; planlı (K-38): biçim okuyucuları (TXT, EPUB, HTML, metin katmanlı PDF) ve register
 │  ├─ normalize/           # unicode.py, turkish.py, arabic.py; arama anahtarları (A05, K-36)
 │  ├─ anchor/              # quran, meal, tefsir, hadith, risale; content_hash
 │  ├─ enrich/              # morphology, citations, hadith_refs, glosses, ocr, llm
@@ -49,7 +49,7 @@ pipeline/
 
 | Modül | Sorumluluk | Yazdığı yer |
 |---|---|---|
-| `ingest` | İndirme ya da tarama kaydı, SHA-256, kaynağa özgü ayrıştırma | `data/raw`, `data/staged` |
+| `ingest` | İndirme ya da tarama kaydı, SHA-256, kaynağa özgü ayrıştırma. Planlı (K-38): kullanıcının elle indirdiği hazır dijital dosyanın kaydı (`register`) ve biçim okuyucuları; otomatik toplu indirme yoktur | `data/raw`, `data/staged` |
 | `normalize` | Arama anahtarları: `tr_narrow`, `tr_wide`, `tr_stem` (`snowballstemmer` 3.1.1), `ar_norm`; `search_keys(metin)` hepsini üretir ([Arama](../03-veri/05-arama-fts5.md) §1, [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)). Kaynak metne dokunmaz. Hat komutu (`normalize --source`) A10'dadır | `data/staged` |
 | `anchor` | Çapa ataması, `content_hash`, önceki sürümle karşılaştırma ([Çapa şeması](../03-veri/01-capa-semasi.md)) | `data/staged` |
 | `enrich` | Morfoloji, iktibas ve atıf adayları, kelime anlamı taslakları, OCR | `data/staged`, `data/llm-cache` |
@@ -126,6 +126,7 @@ Ortam değişkenleri: `MUTALAA_DB_URL`, `ANTHROPIC_API_KEY`. Değerler ortamdan 
 | `uv run mutalaa ingest tanzil --variant uthmani` | İndirir, hash'ler, `data/raw`'a yazar, ayrıştırıp `data/staged` üretir |
 | `uv run mutalaa ingest qac` · `ingest quran-align` · `ingest qul --resource 75` | Diğer bağdaştırıcılar |
 | `uv run mutalaa ingest scans --edition elmalili-1935 --dir <klasör> --cilt <n>` | Bir cildin sayfa görsellerini cilt ve sayfa numarasıyla kaydeder |
+| `uv run mutalaa ingest register --source <kimlik> --file <dosya>` (Planlı; A09 pilotu ve A16 hazır metin dalı, [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)) | Kullanıcının elle indirdiği hazır dijital dosyayı (TXT, EPUB, metin katmanlı PDF, HTML) `data/raw` altına kaydeder: SHA-256 ve `fetch.json`. Kaynak kaydı olmadan çalışmaz; `kapali` kaynakta çıkış kodu `3` (G-LIS). `ingest scans` komutunun görsel dışı dosyalara genellemesidir. Bayrak adları uygulanırken kesinleşir |
 | `uv run mutalaa ocr run --edition elmalili-1935 --engine vision --pages c01:1-40` | OCR çalıştırır; sayfa seçimi cilt niteliklidir (`c01:1-40` = 1. cildin 1–40. sayfaları) |
 | `uv run mutalaa ocr eval --edition elmalili-1935 --gold <klasör>` | Altın örneklemde CER ve WER ölçer |
 | `uv run mutalaa normalize --source <kimlik>` | Arama metnini ve anahtarları üretir |
@@ -150,7 +151,7 @@ Aşama dosyaları şu `uv run mutalaa` komutlarını öneri olarak ekler; komut 
 ```
 data/                                   # git dışı
 ├─ raw/{kaynak}/{YYYY-MM-DD}/           # değişmez indirmeler ve taramalar
-│  └─ fetch.json                        # url, zaman, boyut, sha256, lisans kopyası
+│  └─ fetch.json                        # url, zaman, boyut, sha256, lisans kopyası (elle indirilen hazır dosyada ayrıca dosya adı ve kaydı yapan kişi; planlı, K-38)
 ├─ staged/{kaynak}/{run_id}/            # yeniden üretilebilir ara çıktı
 │  ├─ units.jsonl · xref.jsonl
 │  └─ manifest.json                     # çalıştırma manifesti (bölüm 12)
@@ -167,6 +168,7 @@ data/                                   # git dışı
 ```
 
 - `raw` değişmez. Aynı adres aynı gün farklı SHA-256 verirse yeni klasör açılır ve uyarı yazılır.
+- Çıkarılmış metin (planlı, [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) madde 3). HTML, EPUB ya da PDF'ten çıkarılan metin kaynak dosyanın birebir dilimi değildir. Ham dosya `raw` altında değişmez ve SHA-256'sı `fetch.json`'a yazılır. Her `staged` satırının `provenance` alanı ham dosyanın özetini, dosya içi konumu ve çıkarıcı sürümünü taşır ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §10). Çıkarıcı sürümü sabittir ve dönüşüm deterministiktir; aynı ham dosya aynı metni verir.
 - `staged` her çalıştırmada yeniden üretilir; satırlar çapaya göre sıralanır.
 - `content_hash`, normalize edilmemiş kanonik metnin SHA-256'sıdır (UTF-8 bayt; 64 küçük harfli onaltılık karakter, önek yok: [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §4 CHECK). Kaynaktan alınan metinde kanonik metin, kaynağın dağıttığı hâlidir: Tanzil metni bayt bayt saklanır ve NFC bile uygulanmaz, çünkü NFC şedde ile harekenin sırasını değiştirir (K-26). NFC yalnız kendi ürettiğimiz metinlere (aktarımlar, kelime anlamları) ilk kayıtta uygulanır. İlk kayıt bir kez ve şu sırayla yapılır: silinecek karakterler silinir, NFC uygulanır, satır sonu ve boşluk düzenlenir; karakter listeleri ve kırpma kuralı [Çapa şeması](../03-veri/01-capa-semasi.md) §7'dedir ([K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)). Arama için normalize metin ayrı sütunda (`search_text`) tutulur.
 - Karakter aralıkları (`@{başlangıç}-{bitiş}`) kanonik metinde Unicode kod noktası ofsetidir ve yarı açıktır: başlangıç dahil, bitiş hariç (K-26). Python dilimi `metin[başlangıç:bitiş]` aynı kuralı izler.
@@ -212,6 +214,14 @@ Toplu yükleme psycopg 3'ün `COPY` desteğiyle önce `staging_unit` tablosuna y
 5. Serbest kaynaklar için küçük örnek dosyayla test yazılır. Korumalı kaynaklar için test verisi yapay yer tutucu metindir.
 6. `--dry-run` ile çalıştırılır, rapor incelenir, sonra `export pg`.
 
+**Hazır dijital metin yolu (planlı, [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)).** Önce yasal olarak kullanılabilen hazır dijital metin aranır; tarama ve OCR yedek yoldur. Bu yolda yukarıdaki adımlara şunlar eklenir:
+
+1. Kaynak `bekliyor` durumuyla kaydedilir ve yalnız `dev` derlemesinde görünür. Dosyayı kullanıcı elle indirir; hat `ingest register` ile yalnız kayıtlı dosyayı işler.
+2. Metnin örneklemi basılı özgün nüshayla karşılaştırılır (CER ve sadeleştirme denetimi). Kaynak ve baskı esası belgelenirse durum yükseltilir; belgelenmezse kendi aktarımımız yapılır. Kökeni belgelenmemiş set `serbest` olmaz.
+3. Karşılaştırma bir kilit dosyasına yazılır: ham dosyanın SHA-256'sı, çıkarıcı sürümü ve örneklem sonucu birlikte saklanır (dosyanın yeri ve biçimi uygulanırken kesinleşir).
+4. Metin `taslak` girer ve editör onayından geçer; meal ve tefsirde ikinci onay da gerekir ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §4).
+Risale-i Nur, Kâmil Miras ciltleri ve hazır Türkçe kelime mealleri bu yolun dışındadır; `kapali` kalırlar.
+
 ```python
 # pipeline/src/mutalaa_pipeline/ingest/base.py
 from dataclasses import dataclass, field
@@ -248,10 +258,10 @@ Bir birim, aşağıdaki kapıları geçmeden ve editörde onaylanmadan yayına a
 | Kapı | Denetim | Kalırsa |
 |---|---|---|
 | G-LIS | Kaynak kaydı, tarihli lisans kopyası ve SHA-256'sı, atıf metni var; durum `kapali` değil | Hat durur |
-| G-BUT | Beklenen sayılar (Kur'an: 114 sure, 6.236 âyet); boş birim yok (istisna: `attrs.birlesik_ile` taşıyan birleşik meal birimi boş metinlidir, [Elmalılı hazırlığı](./03-elmalili-hazirligi.md#6-meali-âyetlere-bölme-ve-hizalama) §6); kontrol karakteri yok; üçüncü taraf metni indirilen dosyayla bayt bayt aynı (NFC uygulanmamış); kendi ürettiğimiz metinler NFC | Hat durur |
+| G-BUT | Beklenen sayılar (Kur'an: 114 sure, 6.236 âyet); boş birim yok (istisna: `attrs.birlesik_ile` taşıyan birleşik meal birimi boş metinlidir, [Elmalılı hazırlığı](./03-elmalili-hazirligi.md#6-meali-âyetlere-bölme-ve-hizalama) §6); kontrol karakteri yok; üçüncü taraf metni indirilen dosyayla bayt bayt aynı (NFC uygulanmamış); çıkarılmış metin (K-38) ham dosya ve çıkarıcıdan yeniden üretilebilir; kendi ürettiğimiz metinler NFC | Hat durur |
 | G-CAP | Her çapa gramere uyar (âyet aralığı `q:{s}:{ilk}-{son}` ve `konu:{slug}` dahil) ve tekildir; önceki sürümdeki her çapa durur; `content_hash` yeniden hesaplanınca tutar; `@` aralıkları yarı açık ve metin uzunluğu içinde | Hat durur |
 | G-HIZ | Her `q:{s}:{a}` için bir `meal:elmalili:{s}:{a}`; tefsir aralıkları âyet sınırında; Tecrîd–Buhârî eşlemesi çelişkisiz. Âyet ↔ meal ve âyet ↔ tefsir ilişkisi adreslerden türetilir, `xref`'e yazılmaz (K-27) | İnceleme kuyruğu |
-| G-MET | OCR ve aktarım: örneklem CER eşiği, imlâ sözlüğü tutarlılığı, belirsiz okuma işareti (`⟦?⟧`) kalmadı | Yayına aday olamaz |
+| G-MET | OCR ve aktarım: örneklem CER eşiği (eşik yola göre belirlenir, bkz. Elmalılı hazırlığı §4; hazır metin yolunda meal bloklarında başlangıç önerisi CER ≤ %1 ve sadeleştirme izi 0, eşikler A09 pilotundan sonra kesinleşir, K-38), imlâ sözlüğü tutarlılığı, belirsiz okuma işareti (`⟦?⟧`) kalmadı | Yayına aday olamaz |
 | G-INC | Yayına aday birimlerin tamamı `onayli`; ikinci okuma örnekleminde hata oranı eşiğin altında | Yayına aday olamaz |
 | G-YZ | Her yapay zekâ çıktısı model, istem sürümü ve girdi özeti taşır (`review.yz_modeli`, `review.yz_kaydi`; K-37); onaysız çıktı doğrulanmış görünmüyor (`dogrulanmis` hedefin onaylı durumundan türetilir); çağrı kayıtlarında `embed_ok = false` bir kaynak yok | Hat durur |
 | G-NOR | `shared/test-vectors/` normalizasyon vektörleri Python uygulamasında geçer | Hat durur |

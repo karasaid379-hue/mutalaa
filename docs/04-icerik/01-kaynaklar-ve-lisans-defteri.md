@@ -1,6 +1,6 @@
 # Kaynaklar ve Lisans Defteri
 > **Sürüm:** 1.5 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses)
+> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
 
 Bu defter, Mütâlaa'ya giren ya da girmesi düşünülen her içerik kaynağının lisans durumunu tutar. Editoryal veritabanındaki her `source` satırı buradaki bir kayıtla aynı kimliği taşır. Yayınlayıcının lisans kapısı yalnız `license_status` ve `kurul_onay` alanlarına bakar ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)). Defterde kaydı olmayan kaynak içerik hattına alınmaz.
 
@@ -274,6 +274,9 @@ flowchart TD
   D -- Evet --> E[İznin kapsamı okunur] --> P[ic_kullanim ya da serbest]
   C -- Evet --> F{Dijital kopyanın kaynağı ve lisansı belli mi?}
   F -- Hayır --> G[bekliyor: kaynağı araştır ya da kendi kopyanı üret]
+  G --> G2{"Örneklem özgün baskıyla karşılaştırıldı: CER eşiği geçti, sadeleştirme izi yok, kaynak ve baskı esası belgelendi mi?"}
+  G2 -- Evet --> H
+  G2 -- Hayır --> G3[Kendi aktarımını yap]
   F -- Evet --> H{NC, ND, değiştirme, önbellek ya da gömme kısıtı var mı?}
   H -- Evet --> I[Kısıtı uygula ya da kapali]
   H -- Hayır --> J{Arapça Kur'an metni, meal ya da ses var mı?}
@@ -292,6 +295,18 @@ flowchart TD
 - [ ] Türkçe atıf metni yazıldı ve Ayarlar › Kaynaklar ve lisanslar ekranına eklendi.
 - [ ] Gerekiyorsa avukat görüşü alındı ve dosyaya bağlandı.
 - [ ] Proje sahibi durumu onayladı; bu defter ve `source` satırı aynı değişiklikte güncellendi; yeniden kontrol tarihi girildi.
+
+**Hazır dijital metin maddeleri ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)).** Kaynak TXT, EPUB, metin katmanlı PDF ya da HTML gibi hazır bir dijital metinse yukarıdakilere şunlar eklenir. Hukuki görüş değildir.
+
+- [ ] Dosyayı kullanıcı elle indirdi; otomatik toplu indirme yapılmadı. Ham dosyanın SHA-256'sı ve indirme tarihi kaydedildi.
+- [ ] Dijital metnin kaynağı, yükleyicisi ve dayandığı baskı (`baski_bilgisi.metin_esasi`) belgelendi; baskı esası belirsizse durum `bekliyor` kalır.
+- [ ] Sadeleştirilmiş ya da ticari kullanımı kapatan set aday olamaz; kökeni belgelenmemiş set `serbest` olmaz (R-06).
+- [ ] Örneklem basılı özgün nüshayla karşılaştırıldı (CER ve sadeleştirme denetimi); sonuç ve eşik kayda yazıldı.
+- [ ] Veri tabanı hakkı ve paylaşım şartı (örneğin CC BY-SA) gibi sorular avukat sorularına eklendi.
+- [ ] Metin `taslak` girer ve editör onayından geçer; meal ve tefsirde ikinci onay gerekir.
+- [ ] Risale-i Nur, Kâmil Miras ciltleri ve hazır Türkçe kelime mealleri bu yola alınmaz; `kapali` kalır.
+
+Durum yükseltme karşılaştırma sonucuna ve belgelenen kaynak ile baskı esasına bağlıdır; yükseltme mevcut lisans akışıyla yapılır (`license_status` değişikliği editörde ikinci onayla uygulanır; `lisans-kapisi` becerisi). Akış şemasındaki "Dijital kopyanın kaynağı ve lisansı belli mi? Hayır" dalı bu yola bağlanır: örneklem karşılaştırması geçerse kısıt denetimine (NC, ND, değiştirme) devam edilir, geçmezse kendi aktarımımız yapılır.
 
 **A06'da uygulanan düzen (2026-10-26).** Kayıtlar `pipeline/sources/{kimlik}.toml`, lisans kopyaları `pipeline/sources/licenses/{kimlik}-{YYYY-MM-DD}.txt` konumundadır. Kopya, lisans ya da şart metninin kendisidir; koruma süresi dolduğu için lisansı olmayan ya da sayfası okunamayan kaynakta kopya bir dayanak notu ya da okuma durumu kaydıdır (dosyanın başlığında kaynak adresi, okuma tarihi ve yöntem yazar; gerçek metin değilse dosyada açık uyarı vardır). `uv run mutalaa sources check` her `kapali` olmayan kayıtta kopyanın varlığını ve SHA-256'sını denetler; `kapali` kayıtta kopya aranmaz. Hata ve uyarı kuralları [İçerik hattı](./02-icerik-hatti.md#4-komut-satırı-tasarımı) §4'tedir. 30 kaydın v1 durumu A06'da yazıldı ve proje sahibi tarafından aynen onaylandı (2026-10-26): 11 `serbest`, 13 `bekliyor`, 6 `kapali`; §2 tablosuyla aynıdır. Kayıt ve bu defter aynı değişiklikte güncellenir kuralı geçerlidir. Aşağıdaki örnek TOML kayıt alan adlarını gösterir; `lisans_kopyasi` tarihi gerçek kayıtlarda 2026-10-26'dır.
 

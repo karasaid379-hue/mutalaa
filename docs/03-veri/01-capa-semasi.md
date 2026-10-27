@@ -1,7 +1,7 @@
 # Çapa Şeması
 
 > **Sürüm:** 1.2 · **Tarih:** 24 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü)
+> **Bağlı kararlar:** [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
 
 Her metin birimi tek bir gramere göre kalıcı bir adres (çapa) alır. Vurgular, notlar, yer imleri, `xref` bağlantıları, sayfa eşlemeleri, derin bağlantılar ve arama sonuçları bu adresle çalışır. Eski plan aynı içerik için en az beş uyumsuz biçim kullanıyordu (`2:255`, `quran:2:255`, `sozler:32:612`, `risale:sozler:13:para:42`). Bu dosya hepsinin yerini alır (`quran-app-docs/03-veri-modeli/03-polymorphic-content-ref.md`, `quran-app-docs/03-veri-modeli/02-tam-sql-ddl.md`).
 
@@ -165,12 +165,15 @@ Kur'an âyet çapaları sabittir. Kelime numaraları QAC konumuna sabitlenir. Ke
 
 ## 7. Kanonik metin ve `content_hash`
 
-Kanonik metin, birimin kelimesi kelimesine düz metnidir. Biçimlendirme, dil işaretleri ve haşiye işaretleri metne gömülmez; `unit.marks` alanında kod noktası ofsetleriyle durur. Metnin nereden geldiğine göre iki kural vardır (K-26):
+Kanonik metin, birimin kelimesi kelimesine düz metnidir. Biçimlendirme, dil işaretleri ve haşiye işaretleri metne gömülmez; `unit.marks` alanında kod noktası ofsetleriyle durur. Metnin nereden geldiğine göre üç kural vardır (K-26; üçüncüsü K-38 ile eklendi):
 
 | Metin | Kanonik metin | Örnek |
 |---|---|---|
 | Kaynaktan alınan metin | Kaynağın dağıttığı hâliyle, bayt bayt saklanır. NFC dahil hiçbir dönüşüm uygulanmaz. Birim metni kaynak dosyanın aynen bir parçasıdır. | Tanzil Uthmani ve Simple Clean, hazır Arapça hadis metinleri |
 | Kendi ürettiğimiz metin | İlk kayıtta bir kez kanonikleştirilir, sonra bir daha değiştirilmez. | Elmalılı ve Risale transkripsiyonları, kelime anlamları, Ahmed Naim çevirisinin aktarımı |
+| Çıkarılmış metin ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme), madde 3) | Ham dosya değişmez, çıkarıcı sürümü sabittir, dönüşüm deterministiktir. Çıkarılan metne aşağıdaki ilk kayıt adımları uygulanır; `provenance` dosya özetini, dosya içi konumu ve çıkarıcı sürümünü taşır. Kod henüz yok (planlı). | HTML, EPUB ya da metin katmanlı PDF'ten alınan hazır metin |
+
+HTML, EPUB ya da PDF'ten çıkarılan metin kaynak dosyanın birebir dilimi değildir; bu yüzden ilk iki satırın hiçbirine uymaz. İlk iki kural değişmez.
 
 Kendi ürettiğimiz metinde ilk kayıt adımları şu sırayla uygulanır (K-35):
 

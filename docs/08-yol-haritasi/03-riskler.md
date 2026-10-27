@@ -1,7 +1,7 @@
 # Riskler
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)
+> **Sürüm:** 1.2 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
 
 Bu dosya risk kaydıdır. Olasılık ve etki 1–5 arası puanlanır; skor ikisinin çarpımıdır. Puanlar değerlendirmedir (tahmin) ve gözden geçirmede değişebilir. Hukuki riskler için **hukuki görüş değildir**.
 
@@ -31,7 +31,7 @@ Tek geliştiricili dönemde bir kişi birden çok rolü taşır.
 | R-04 | Quran Foundation şartlarının değişmesi | 2 | 3 | 6 | Orta | Geliştirici |
 | R-05 | QAC lisans belirsizliği | 3 | 3 | 9 | Orta | Proje sahibi |
 | R-06 | Hadis veri setlerinin kökeni | 4 | 2 | 8 | Orta | İçerik editörü |
-| R-07 | Elmalılı OCR kalitesi | 4 | 4 | 16 | Kritik | İçerik editörü |
+| R-07 | Elmalılı metin kalitesi (OCR ya da hazır metin) | 4 | 4 | 16 | Kritik | İçerik editörü |
 | R-08 | Yanlış pozitif bağlantıların güveni aşındırması | 3 | 4 | 12 | Yüksek | İçerik editörü, geliştirici |
 | R-09 | Türkçe yerel ayar hataları | 4 | 3 | 12 | Yüksek | Geliştirici |
 | R-10 | Uygulama boyutu | 3 | 3 | 9 | Orta | Geliştirici |
@@ -45,12 +45,13 @@ Tek geliştiricili dönemde bir kişi birden çok rolü taşır.
 | R-18 | SDK geçişi ve kitaplık ön sürümleri (ek) | 3 | 2 | 6 | Orta | Geliştirici |
 | R-19 | v1'de cihazdaki kullanıcı verisinin kaybı (ek) | 3 | 2 | 6 | Orta | Geliştirici |
 | R-20 | SDK 57'de arka planda sesin kesilmesi (ek) | 4 | 3 | 12 | Yüksek | Geliştirici |
+| R-21 | Hazır metinden sadeleştirme ya da belirsiz baskı sızması (ek) | 3 | 4 | 12 | Yüksek | İçerik editörü, hukuk |
 
 | Olasılık \ Etki | 2 | 3 | 4 | 5 |
 |---|---|---|---|---|
 | 5 | R-11 | | | |
 | 4 | R-06 | R-03, R-09, R-20 | R-07 | R-14 |
-| 3 | R-16, R-18, R-19 | R-05, R-10 | R-02, R-08, R-13 | R-01 |
+| 3 | R-16, R-18, R-19 | R-05, R-10 | R-02, R-08, R-13, R-21 | R-01 |
 | 2 | | R-04, R-12 | R-15, R-17 | |
 
 ## 2. Kayıt
@@ -85,10 +86,10 @@ Tek geliştiricili dönemde bir kişi birden çok rolü taşır.
 - **Önlem.** Türkçe metin yalnız Tecrîd'in Naim kısmından ve kendi transkripsiyonumuzdan gelir. Kökeni belgelenmemiş set `serbest` olmaz. `hadis-kutub-i-sitte` kaynak seçimi netleşene dek `bekliyor` başlar; `hadis-tecrid` serbest ciltlerden yaptığımız aktarımdır (`tecrid-ar`, `tecrid-naim` `serbest`); Tecrîd'in Kâmil Miras ciltleri 1 Ocak 2028'e kadar `kapali` (K-06). Lisansı açık bir Arapça kaynak adayı Açık soru ([Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md)).
 - **Tetik.** Bir hadis paketinin `serbest` durumuna alınma isteği.
 
-### R-07 · Elmalılı OCR kalitesi
-- **Açıklama.** 6.442 sayfalık özgün baskıda (İstanbul 1935–1938) Türkçe metin büyük olasılıkla Latin harfli, âyetler Arapça harfli; iş 1930'ların dizgisine ve imlasına uygun OCR ve düzeltmedir ([K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) düzeltmesi; tarama nüshasında Doğrulanacak). Güvenilir bir dijital özgün baskı bulunamadı; sadeleştirilmiş baskılar kullanılamaz. Meal `core`'un parçası; onaydan sonraki düzeltme yeniden onay demek.
-- **Önlem.** Faz 0'da OCR pilotu, Latin harf doğrulaması ve hata oranı ölçümü; Türkçe ve Arapça kısımlar için ayrı OCR ayarı (öneri); iki tur insan düzeltmesi; editör panelinde düzeltme kuyruğu; her düzeltme hattan geçer ve `content_hash` değişimini kaydeder; düzeltme turları Kurul başvurusundan önce kapanır; tefsir metni meal yolundan ayrı yürür ([Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md)).
-- **Tetik.** Tarama nüshasında baskının Latin harfli çıkmaması; pilotta eşiği aşan karakter hata oranı (eşik Açık soru); düzeltme hızının planın gerisinde kalması.
+### R-07 · Elmalılı metin kalitesi (OCR ya da hazır metin)
+- **Açıklama.** 6.442 sayfalık özgün baskıda (İstanbul 1935–1938) Türkçe metin büyük olasılıkla Latin harfli, âyetler Arapça harfli; iş 1930'ların dizgisine ve imlasına uygun OCR ve düzeltmedir ([K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) düzeltmesi; tarama nüshasında Doğrulanacak). Hazır dijital metin adayları bulundu (meal için Vikikaynak "Kur'an", tefsir için archive.org metin katmanı), ama baskı esasları belirsiz ya da kalitesi bilinmiyor; temiz bir hazır özgün baskı metni yok ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)). Sadeleştirilmiş baskılar ve ticari kullanımı kapatan kaynaklar kullanılamaz. Hazır metin pilotta ölçülür; eşik geçilmezse OCR yolu sürer ve 6.442 sayfalık OCR ve düzeltme yükü aynen kalır. Meal `core`'un parçası; onaydan sonraki düzeltme yeniden onay demek.
+- **Önlem.** Faz 0'da pilot: OCR motorları ve hazır metin adayları aynı altın örneklemde ölçülür (CER), Latin harf doğrulaması yapılır; yol ölçümle seçilir (A09). Türkçe ve Arapça kısımlar için ayrı OCR ayarı (öneri); iki tur insan düzeltmesi; editör panelinde düzeltme kuyruğu; her düzeltme hattan geçer ve `content_hash` değişimini kaydeder; düzeltme turları Kurul başvurusundan önce kapanır; tefsir metni meal yolundan ayrı yürür ([Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md)).
+- **Tetik.** Tarama nüshasında baskının Latin harfli çıkmaması; pilotta hiçbir yolun eşiği geçememesi (eşikler yola göre belirlenir; hazır metin yolu için başlangıç önerisi CER ≤ %1, Elmalılı hazırlığı §4); düzeltme hızının planın gerisinde kalması.
 
 ### R-08 · Yanlış pozitif bağlantıların güveni aşındırması
 - **Açıklama.** En büyük yanlış pozitif kaynağı kısa ve kalıplaşmış ifadeler. QUL 5.641 tekrarlanan ifade listeliyor; "تَجْرِي مِن تَحْتِهَا الْأَنْهَارُ خَالِدِينَ" 18 âyette geçiyor ([QUL](https://qul.tarteel.ai/morphology_phrases?page=61)). Basılı fihristte Kur'an'da karşılığı bulunmayan bir kayıt da not edilmiş ([RİNAP](https://rinap.uskudar.edu.tr/uploads/site/6/content/files/risale-i-nurun-tefsirdeki-yeri-compressed.pdf)).
@@ -154,6 +155,11 @@ Tek geliştiricili dönemde bir kişi birden çok rolü taşır.
 - **Açıklama.** Android'de kilit ekranı kontrolü etkin değilse arka plandaki ses yaklaşık 3 dakika sonra kesiliyor ([expo-audio](https://docs.expo.dev/versions/latest/sdk/audio/)). Kilit ekranında oynatma listesi desteği SDK 58 ile geliyor ([SDK 58 beta](https://expo.dev/changelog/sdk-58-beta)); SDK 57'de oynatma listesi kilit ekranı kontrolüyle çalışmaz.
 - **Önlem.** v1'de tek âyetlik oynatıcı: tek `AudioPlayer` her âyette kaynağını değiştirir ve kilit ekranı aynı oynatıcıda açık kalır. Kesintisiz oynatma listeleri SDK 58'den sonra gelir ([Ses sistemi](../06-mobil/02-ses-sistemi.md)).
 - **Tetik.** İç testte arka planda sesin kesilmesi; SDK 58'in kararlı sürümü.
+
+### R-21 · Hazır metinden sadeleştirme ya da belirsiz baskı sızması (ek)
+- **Açıklama.** Kontrollü hazır metin yolunda ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)) hazır metnin sadeleştirilmiş ya da baskı esası belirsiz bir metne dayanması ve bunun fark edilmeden temel metin olması mümkün. Sadeleştirme FSEK m. 6 anlamında işlenme eseri olabilir; veri tabanı hakkı (ek m. 8) ve CC BY-SA şartı da açık sorudur (hukuki görüş değildir; [avukat soruları](../yazismalar/avukat-sorulari.md)). Metin Kurul kapsamında olduğu için sızan bir hata ya da hak sorunu onay sürecini de etkiler (R-01).
+- **Önlem.** Pilotta CER ve sadeleştirme izi ölçümü (eşik geçilmezse hazır metin girmez); 6.236 âyet kapsam ve sadeleştirme taraması, 60 rastgele âyet elle; hazır metin `bekliyor` kaydı ve `taslak` girişi, ikinci onay; revizyon numarası ve SHA-256 ile kilit dosyası (planlı; henüz yok); özgün baskı görseliyle iki tur karşılaştırma; hazır metin `serbest` olmadan `public` ve `internal` derlemeye girmez (K-06).
+- **Tetik.** Pilotta sadeleştirme izi bulunması; kilitli revizyonla indirilen dosyanın özetinin uyuşmaması; avukattan olumsuz cevap; ikinci okumada sistematik fark.
 
 ## 3. Gözden geçirme
 

@@ -1,6 +1,6 @@
 # Hadis Hazırlığı
 > **Sürüm:** 1.2 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
+> **Bağlı kararlar:** [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
 
 K-04 gereği Tecrîd-i Sarîh (Arapça metin ve Babanzâde Ahmed Naim'in Türkçesi) ile Kütüb-i Sitte'nin Arapça metni birlikte işlenir. Paketler `hadis-tecrid` ve `hadis-kutub-i-sitte` adını taşır. Çapalar `h:{koleksiyon}:{no}` (Arapça) ve `ht:{ceviri}:{koleksiyon}:{no}` (çeviri) biçimindedir; örnek `h:tecrid:15`, `ht:naim:tecrid:15`, `h:buhari:52`.
 
@@ -60,7 +60,7 @@ Kural: doğrulama bitene kadar III. cilt Miras kısmı sayılır ve `kapali` kal
 3. Aynı anda fawazahmed0 bakımcısına Arapça metinlerin kaynağı sorulur ve bir koleksiyonun örneklemi serbest bir basılı nüshayla karşılaştırılır. Kaynak netleşirse lisans defterinde durum güncellenir.
 4. İki yol da sonuç vermezse numaralandırma kararında seçilen baskının serbest nüshasından kendi sayısallaştırmamız yapılır.
 5. Seçilen kaynak `source` kaydıyla ve `license` sütunuyla izlenir; sorun çıkarsa veri seti yayından önce tek hamlede kapatılabilir (K-27).
-6. Üçüncü taraf veri setinden gelen Arapça metin dağıtıldığı hâliyle, NFC uygulanmadan saklanır. Kendi taramamızdan aktarılan metin bizim ürettiğimiz metindir ve ilk kayıtta NFC'ye çevrilir (K-26).
+6. Üçüncü taraf veri setinden gelen Arapça metin dağıtıldığı hâliyle, NFC uygulanmadan saklanır. Kendi taramamızdan aktarılan metin bizim ürettiğimiz metindir ve ilk kayıtta NFC'ye çevrilir (K-26). HTML, EPUB ya da PDF'ten çıkarılan metin için çıkarılmış metin türü geçerlidir ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme), madde 3; [Çapa şeması](../03-veri/01-capa-semasi.md#7-kanonik-metin-ve-content_hash) §7).
 
 ## 5. Numaralandırma kararı: `h:{koleksiyon}:{no}` (Açık soru)
 

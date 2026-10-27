@@ -1,6 +1,6 @@
 # A37 · Elmalılı tefsir paketi (`tefsir-elmalili`)
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-38](../../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
 > **Faz:** 4 · v1.x · **Önkoşul:** [A16](./A16-elmalili-meali.md) · [A18](./A18-baglantilar-ve-altin-setler.md) · **İnsan adımı:** İ-11 (tefsir düzeltme turları) · İ-17 (görsel OCR bütçesi)
 > **Ajanlar:** `hat-gelistirici` · `metin-denetcisi` · `test-yazari` · `sunucu-gelistirici` · `mobil-gelistirici` · `lisans-denetcisi` · `arayuz-denetcisi` · `inceleyici` · **Beceriler:** `icerik-hatti` · `metin-butunlugu` · `capa-gramer` · `paket-yayini` · `mobil-ekran` · **Tahmini oturum:** 6+ (insan düzeltme süresine bağlı)
 > **Başlat:** `/asama A37`
@@ -9,7 +9,7 @@
 *Hak Dini Kur'an Dili*'nin tefsir paragrafları ve haşiyeleri özgün baskıdan, A16'nın OCR, aktarım ve düzeltme araçlarıyla `tf:elmalili:…` çapalarına alınır, iki düzeltme turundan geçer ve `tefsir-elmalili` paketi olarak yayımlanır. v1'de yazılan tefsir görünümü gerçek pakete bağlanır. Tefsirin Kurul kapsamı Açık soru'dur; cevap gelene kadar paket ihtiyatla `kurul_gerekli` taşır ve `internal` ile `public` derlemede görünmez.
 
 ## Okunacak belgeler
-- [Elmalılı hazırlığı](../../04-icerik/03-elmalili-hazirligi.md): §1, §4 OCR, §5 Yol B kuralı, §6 sınır durumları, §7 editör, §8 QA ve örneklem, §9 atıf, §10 tefsir metni
+- [Elmalılı hazırlığı](../../04-icerik/03-elmalili-hazirligi.md): §1, §4 OCR ve hazır metin ölçümü, §5 Yol B kuralı, §6 sınır durumları, §7 editör, §8 QA ve örneklem, §9 atıf, §10 tefsir metni
 - [Çapa şeması](../../03-veri/01-capa-semasi.md): §1, §2 kural 4, §3 `tf` deseni, §4, §5 haşiye adlandırması, §6 kararlılık, §7 kanonik metin, §10 baskı sayfaları, §13 ÇŞ-4
 - [İçerik hattı](../../04-icerik/02-icerik-hatti.md): §4 komutlar, §6 idempotentlik, §9 QA kapıları, §10 yapay zekâ politikası, §11 maliyet
 - [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §1, §3.2, §4 · [Arama](../../03-veri/05-arama-fts5.md): §2 paket tabloları, §5
@@ -41,6 +41,7 @@
 - **Bitti sayılır:** kararlar defterde; yeni vektörler TypeScript, C# ve Python'da yeşil.
 
 ### A37.2 · OCR ve aktarım
+- Metin yolu (K-38): tefsir için hazır metin adayı archive.org metin katmanıdır; kalitesi bilinmiyor. Aday A09'da `bekliyor` olarak kaydedilir ve tefsir düzyazısı örneğinde aynı ölçümle (CER, sadeleştirme izi) sınanır. Aday eşiği geçerse ve A16 hazır metin dalındaki kalıcı içe aktarım araçları (planlı; `ingest register`, okuyucular, çıkarılmış metin vektörü) varsa tefsir metni bu yoldan `taslak` olarak alınır ve özgün baskı görseliyle karşılaştırılır; geçmezse aşağıdaki OCR yolu aynen sürer. Karar A37 başında A09 raporuna ve gerekirse tefsir için yenilenen küçük bir ölçüme bakılarak verilir.
 - Taramalar A16'dakiyle aynıdır (baskı `elmalili-1935`). A16'nın OCR çıktısında `tefsir`, `dipnot` ve `baslik` bölgeleri varsa yeniden OCR yapılmaz (parmak izi aynıysa adım atlanır). Yoksa A09'da seçilen motorla: `uv run mutalaa ocr run --edition elmalili-1935 --engine <seçilen> --pages <aralık>`. Görsel model kullanılacaksa önce `uv run mutalaa llm estimate` ile maliyet ölçülür ve bütçe onaylanır (İ-17).
 - A09'da seçilen yol uygulanır. Yol B (Latin harfli baskı): metin baskıdaki imlâyla aynen alınır; açık dizgi hataları metinde değil ayrı "tashih" katmanında tutulur. Yol A ise Elmalılı hazırlığı §5'teki aktarım kılavuzu ve `elmalili_imla.tsv` sözlüğü kullanılır. Arapça alıntılar Arapça harfle ve baskıdaki harekeyle kalır, `lang="ar"` aralığı olarak işaretlenir.
 - `pipeline/src/mutalaa_pipeline/anchor/tefsir.py`: bölgeleri bölümlere ve paragraflara böler, çapa verir; kendi ürettiğimiz metin olduğu için ilk kayıtta NFC uygular ve `content_hash` hesaplar; `attrs` cilt, sayfa ve bölge kutusunu taşır. Baskı sayfa eşlemesi meal ile aynı biçimde `page_map`'e yazılır (c. ve s. atfı için).
@@ -95,7 +96,7 @@ adb exec-out screencap -p > .tmp/tefsir.png
 
 ## Dikkat
 - İçerik etiği: tefsir, âyet ve meal metni hafızadan yazılmaz, tamamlanmaz, düzeltilmez; testte açıkça sentetik `test-` metin ("Deneme paragrafı 1 …") ya da kaynak dosyadan betikle kesilmiş parça kullanılır.
-- Sadeleştirilmiş baskılar ve başkalarının "orijinal metin" aktarımları kullanılmaz (K-03). Yapay zekâ tefsir üretmez ve çevirmez; görsel model yalnız ham OCR yapar, her çıktı insan onayından geçer.
+- Sadeleştirilmiş baskılar kullanılmaz (K-03). Başkasının "orijinal metin" aktarımı (tefsir için archive.org metin katmanı) yalnız kontrollü yolla girer (K-38): `bekliyor` kaydı, aynı ölçüm (CER, sadeleştirme izi), eşik geçilirse `taslak` giriş ve özgün baskı görseliyle karşılaştırma. Metin katmanının kalitesi bilinmiyor; ölçüm yapılmadan ve eşik geçilmeden hiçbir parçası kopyalanmaz. Yapay zekâ tefsir üretmez ve çevirmez; görsel model yalnız ham OCR yapar, her çıktı insan onayından geçer.
 - `embed_ok`: tarama bir kütüphaneden geldiyse kütüphanenin şartı görsellerin yapay zekâ servisine gönderilmesini belirler (Elmalılı hazırlığı §4).
 - Kanonik metin: kendi aktarımımız ilk kayıtta bir kez NFC olur, sonra değişmez; ofsetler kod noktası, aralık yarı açık. Ayrıntı: `metin-butunlugu`, `capa-gramer`.
 - `public` kararı Kurul cevabına ve aktarımımızın lisansına (S-12, Açık soru) bağlıdır. Hukuki görüş değildir.

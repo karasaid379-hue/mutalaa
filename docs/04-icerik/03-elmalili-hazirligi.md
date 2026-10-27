@@ -1,8 +1,10 @@
 # Elmalılı Hazırlığı
-> **Sürüm:** 1.2 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
+> **Sürüm:** 1.3 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
 
 Bu dosya Elmalılı Muhammed Hamdi Yazır'ın *Hak Dini Kur'an Dili* eserinin özgün baskısından meal ve tefsir metninin nasıl hazırlanacağını anlatır. K-03 gereği önce âyet meali hazırlanır ve `core` paketine `meal:elmalili:{sure}:{ayet}` çapalarıyla girer. Tefsir metni ikinci aşamadır ve `tefsir-elmalili` paketine `tf:elmalili:…` çapalarıyla girer.
+
+**İki yol (K-38).** Metin iki yoldan biriyle hazırlanır. Hazır metin yolu: yasal olarak kullanılabilen bir dijital metin A09 pilotunda ölçülür; eşik geçilirse temel metin olur. OCR yolu (bölüm 4–6): eşik geçilmezse ya da hazır metin bulunamazsa aynen sürer. Hazır metin yolu yalnız eşik geçilirse geçerlidir. Her iki yolda da özgün baskı taraması gerekir (örneklem ve Kurul'a sadakat kanıtı).
 
 ## 1. Hukuki çerçeve
 
@@ -10,17 +12,18 @@ Bu dosya Elmalılı Muhammed Hamdi Yazır'ın *Hak Dini Kur'an Dili* eserinin ö
 
 - **Koruma süresi.** Müellif 1942'de vefat etti; eser 1 Ocak 2013'ten beri serbest ([MKÜ kaydı](https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a), 2026-10-26'da 403 verdi ve dayanak olarak doğrulanamadı (Doğrulanacak); tarih 1942 + 71 hesabıdır, bkz. [lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) §3.3; [FSEK m. 26–27](https://www.wipo.int/wipolex/en/text/499171)).
 - **Yazım ve baskı.** Eser Diyanet İşleri Riyâseti ile yapılan bir sözleşmeyle 1926–1938 arasında yazıldı. "1935-1939 yıllarında İstanbul'da dokuz cilt ve 10.000 takım olarak basılmış"; "2000 takımı müellife verilirken geri kalanları ücretsiz dağıtılmıştır" ([Küre](https://kureansiklopedi.com/tr/detay/hak-dini-kuran-dili-2)).
-- **Sadeleştirilmiş baskılar kullanılmaz.** Sadeleştirme FSEK m. 6 anlamında işlenme eseridir; sadeleştirenin hakkı sürer (K-03). Tanzil'deki Elmalılı metni de kullanılmaz: baskı esası doğrulanmadı ve Tanzil çevirileri "for non-commercial purposes only" şartı taşıyor ([OPUS](https://opus.nlpl.eu/Tanzil/corpus/version/Tanzil)).
-- **Kendi aktarımımız.** FSEK m. 6/8 işlenme eserler arasında şu hükmü sayar: "Henüz yayımlanmamış olan bir eserin ilmi araştırma ve çalışma neticesinde yayımlanmaya elverişli hale getirilmesi (İlmi bir araştırma ve çalışma mahsulü olmayan alelade transkripsiyonlarla faksimileler bundan müstesnadır.)" ([mevzuat.gov.tr](https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3); alıntı bir okuma aracının aktarımıdır, Resmî Gazete'deki özgün metinle karşılaştırılmadı: Doğrulanacak). Bu bent yalnız **yayımlanmamış** eserler içindir. Elmalılı'nın eseri 1935'te yayımlandığı için bent doğrudan uygulanmaz. Özgün metnin düz aktarımının yeni bir hak doğurmadığı savunusunun dayanağı m. 1/B(a)'daki "hususiyet" ölçütü ve işlenme eserin "işleyenin hususiyetini" taşıması şartıdır. M. 6/8 en çok kıyas dayanağı olarak anılır. Yayımlanmış ve koruma süresi dolmuş bir eserin düz aktarımı için Yargıtay kararı bulunamadı. Bu bir çıkarımdır; **hukuki görüş değildir, avukata sorulur** ([avukat soruları](../yazismalar/avukat-sorulari.md) 3.2). Aynı nedenle başkalarının yaptığı "orijinal metin" aktarımlarını kopyalamak yerine kendi aktarımımızı yaparız.
+- **Sadeleştirilmiş baskılar kullanılmaz.** Sadeleştirme FSEK m. 6 anlamında işlenme eseridir; sadeleştirenin hakkı sürer (K-03). Tanzil'deki Elmalılı metni de kullanılmaz: baskı esası doğrulanmadı ve Tanzil çevirileri "for non-commercial purposes only" şartı taşıyor ([OPUS](https://opus.nlpl.eu/Tanzil/corpus/version/Tanzil)). GitHub `elmalili-meal/kuran` ve Azim sadeleştirilmiş, Açık Kuran ticari kullanıma kapalı olduğu için aday olamaz (K-38).
+- **K-03 ile ilişki (K-38).** K-03'ün "mevcut bir dijital metni temel almak" seçeneği kontrollü biçimde yeniden değerlendirilir: hazır metin `bekliyor` kaydıyla alınır, A09 pilotunda OCR ile aynı altın örneklemde ölçülür ve yalnız eşiği geçerse temel metin olur. Sadeleştirilmiş baskılar yine kullanılmaz.
+- **Kendi aktarımımız.** FSEK m. 6/8 işlenme eserler arasında şu hükmü sayar: "Henüz yayımlanmamış olan bir eserin ilmi araştırma ve çalışma neticesinde yayımlanmaya elverişli hale getirilmesi (İlmi bir araştırma ve çalışma mahsulü olmayan alelade transkripsiyonlarla faksimileler bundan müstesnadır.)" ([mevzuat.gov.tr](https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3); alıntı bir okuma aracının aktarımıdır, Resmî Gazete'deki özgün metinle karşılaştırılmadı: Doğrulanacak). Bu bent yalnız **yayımlanmamış** eserler içindir. Elmalılı'nın eseri 1935'te yayımlandığı için bent doğrudan uygulanmaz. Özgün metnin düz aktarımının yeni bir hak doğurmadığı savunusunun dayanağı m. 1/B(a)'daki "hususiyet" ölçütü ve işlenme eserin "işleyenin hususiyetini" taşıması şartıdır. M. 6/8 en çok kıyas dayanağı olarak anılır. Yayımlanmış ve koruma süresi dolmuş bir eserin düz aktarımı için Yargıtay kararı bulunamadı. Bu bir çıkarımdır; **hukuki görüş değildir, avukata sorulur** ([avukat soruları](../yazismalar/avukat-sorulari.md) 3.2). Bu belirsizlik yüzünden başkasının "orijinal metin" aktarımı doğrudan `serbest` sayılmaz (K-38). Aktarım ancak kaydedilip özgün baskıyla karşılaştırıldıktan sonra kullanılır: örneklem ölçülür, kaynağı ve baskı esası belgelenir. Belgelenmezse kendi aktarımımızı yaparız. Veri tabanı hakkı (FSEK ek m. 8) ve CC BY-SA şartı avukata sorulur ([avukat soruları](../yazismalar/avukat-sorulari.md)).
 - **Kurul.** Meal Arapça metinle birlikte gösterildiğinde "mealli mushaf" sayılır ve Kurul onayı gerekir (633 m. 6). Meal yayınları ayrıca Din İşleri Yüksek Kurulu incelemesine açıktır (m. 5/ı) ([Lexpera, 633](https://www.lexpera.com.tr/mevzuat/kanunlar/diyanet-isleri-baskanligi-kurulus-ve-gorevleri-hakkinda-kanun-633)). Onay belirli bir sürüme bağlandığı için meal metni başvurudan önce dondurulur; sonraki her düzeltme yeniden onay gerektirebilir.
 
 ## 2. Aşamalar
 
 | Aşama | İş | Çıktı | Faz |
 |---|---|---|---|
-| 0 | Baskı tespiti ve tarama | Künyesi doğrulanmış sayfa görselleri | Faz 0 · Hazırlık |
-| 1 | OCR değerlendirmesi (pilot) | Altın örneklem, CER tablosu, motor seçimi | Faz 0 · Hazırlık |
-| 2 | Meal aktarımı ve âyetlere bölme | `meal:elmalili:{s}:{a}` adayları | Faz 1 · İçerik hattı |
+| 0 | Baskı tespiti ve tarama; hazır metin adaylarının kaydı (`bekliyor`, revizyon ve SHA-256 kilidi) | Künyesi doğrulanmış sayfa görselleri; kilitli aday dosyalar | Faz 0 · Hazırlık |
+| 1 | OCR ve hazır metin değerlendirmesi (pilot) | Altın örneklem, CER tablosu, motor ya da hazır metin seçimi (yol kararı) | Faz 0 · Hazırlık |
+| 2 | Meal aktarımı ve âyetlere bölme (hazır metin ya da OCR çıktısından) | `meal:elmalili:{s}:{a}` adayları | Faz 1 · İçerik hattı |
 | 3 | Editörde inceleme ve QA | Onaylı meal, QA raporu | Faz 1 · İçerik hattı |
 | 4 | Sürüm dondurma ve Kurul başvurusu | `elmalili-meal` 1.0.0 | Faz 2–3 |
 | 5 | Tefsir metni | `tf:elmalili:…` birimleri | Faz 4 (v1.x); paketin gireceği sürüm [Fazlar](../08-yol-haritasi/01-fazlar.md#6-açık-sorular) §6 soru 4'te açık |
@@ -34,14 +37,14 @@ Bu dosya Elmalılı Muhammed Hamdi Yazır'ın *Hak Dini Kur'an Dili* eserinin ö
 **Tarama nereden bulunur (hepsi Doğrulanacak).**
 - Millî Kütüphane, İSAM Kütüphanesi, Diyanet kütüphaneleri ve ilahiyat fakültesi kütüphanelerinin dijital koleksiyonları.
 - Internet Archive, HathiTrust ve Vikikaynak. Güncel durum aşağıdaki maddelerdedir. Diyanet portalı hâlâ okunamadı (Doğrulanacak).
-- **Vikikaynak.** Elmalılı için tarama ya da Index sayfası yok. Meal metni 2007'de kaynaksız girilmiş; baskı esası belirsiz (Doğrulanacak). Tarama kaynağı olamaz; en çok karşılaştırma tanığı adayıdır.
+- **Vikikaynak.** Elmalılı için tarama ya da Index sayfası yok. Meal metni 2007'de kaynaksız girilmiş; baskı esası belirsiz (Doğrulanacak). Tarama kaynağı olamaz; K-38'e göre temel metin adayıdır ve A09 pilotunda ölçülür. Kayıtta Vikikaynak revizyon numarası (`oldid`) ve dosya SHA-256'sı kilitlenir; baskı esası pilotta örneklemle sınanır.
 - **HathiTrust.** 1935 baskısı, 8 cilt, yalnız arama (search-only): görüntü yok. Basılı sayfa numaralarını doğrulamaya yarar.
 - **İBB Atatürk Kitaplığı.** 1935 nüshaları var. Dijital nadir eser isteği `nadirdijital@ibb.gov.tr` adresine yapılır. 2026 tarifesi sayfa başına 5,00 TL; bilgi arama özetinden alındı, sayfa açılmadı (Doğrulanacak). Kitaplığın yeniden kullanım şartı bilinmiyor; şart `embed_ok`'u belirler (bölüm 4 sonu).
 - **İSAM.** Katalogda 1935 c. 1 ve Eser 1979 takımı var; tam metin yok.
 - **archive.org `HakDiniKuranDili`.** OCR metninde "3. Baskı, Eser Neşriyat ve Dağıtım, İstanbul 1979" satırı geçiyor. TDV İA'ya göre 1960 ve 1971 baskıları ilk baskıdan ofsettir; 1979 baskısının tıpkıbasım olduğu kanıtlanmadı. Yükleme anonim ve lisans alanı yok (Doğrulanacak).
 - İkinci el bir takım satın alıp kendimiz taramak (sahaftan 1960/1971 ofset takımı dahil). Bu yol üçüncü tarafın tarama şartlarını devreden çıkarır ve görüntü kalitesini bizim kontrolümüze bırakır.
 
-**Sonuç.** Tarama kaynağı hâlâ Doğrulanacak, ama aday listesi somutlaştı: İBB reprodüksiyonu, archive.org taraması (ofset sınamasıyla) ve sahaftan ofset takımı.
+**Sonuç.** Tarama kaynağı hâlâ Doğrulanacak, ama aday listesi somutlaştı: İBB reprodüksiyonu, archive.org taraması (ofset sınamasıyla) ve sahaftan ofset takımı. K-38'e göre görsel kaynağı önce archive.org taramasıdır; sayfa numaraları HathiTrust 1935 aramasıyla karşılaştırılır ve ofset sınamasından geçerse kullanılır. Geçmezse yedek, sahaftan alınan takımdır. Dosyaları kullanıcı elle indirir ve `data/gelen/` altına koyar; otomatik toplu indirme yoktur.
 
 Bir kütüphanenin taraması kullanılacaksa kütüphanenin yeniden kullanım şartı okunur ve lisans defterine kaydedilir. Bedii niteliği olmayan bir fotoğrafın yeni eser doğurmadığı savunulabilir; bu da bir çıkarımdır (araştırma notu, FSEK m. 1/B ve m. 2/3).
 
@@ -73,6 +76,12 @@ uv run mutalaa ingest scans --edition elmalili-1935 --dir data/gelen/elmalili-19
 | Görsel yapay zekâ modeli | Uygun | Uygun | Sayfa görselinden doğrudan metin. Harf çevirisi ayrı adımda yapılır; böylece okuma hatası ile aktarım tercihi ayrı ölçülür |
 | Kraken / eScriptorium + Osmanlıca ya da Arapça yazı modeli | Uygun | Uygun | Hazır model, lisans ve Python 3.13 uyumu Doğrulanacak; gerekirse altın sayfalarla ince ayar yapılır |
 | Tesseract | Doğrulanacak | Uygun | Türkçe modelin 1930'lar dizgisindeki doğruluğu ölçülür |
+| Hazır metin adayı (meal: Vikikaynak "Kur'an"; tefsir: archive.org metin katmanı) | Geçerli değil | Uygun | OCR motoru değil, hazır metindir (K-38). Aynı altın örneklemde ve aynı CER ile ölçülür. Tefsir metin katmanının kalitesi bilinmiyor |
+
+**Hazır metin adayının ölçümü (K-38).** Aday `bekliyor` durumuyla kaydedilir; revizyon numarası ve SHA-256 kilitlenir. Altın örneklemin meal blokları, hazır metindeki karşılıklarıyla aynı CER formülüyle karşılaştırılır; ek olarak sadeleştirme izi sayılır (modernleştirilmiş ya da değiştirilmiş kelime). Başlangıç önerisi: meal bloklarında CER ≤ %1 ve sadeleştirme izi 0. Eşik pilottan sonra kesinleşir.
+
+- **Eşik geçilirse** ve tam metin denetimi temiz çıkarsa (bölüm 8) hazır metin temel metin olur; iki düzeltme turu yapılır ve metin `taslak` girer.
+- **Eşik geçilmezse** hazır metin yolu geçerli olmaz; OCR yolu (bölüm 4–6) aynen sürer.
 
 **Değerlendirme.**
 1. Dokuz cildin hepsinden, sayfa türlerine göre tabakalı 40 sayfalık örneklem seçilir: meal blokları, tefsir düzyazısı, Arapça âyet blokları, dipnotlar, başlıklar.
@@ -159,11 +168,15 @@ flowchart TD
 | Ölçüt | Tanım | Hedef (öneri) |
 |---|---|---|
 | OCR CER | Altın örneklemde, sayfa türüne göre | Motor seçimi için |
+| Hazır metin CER ve sadeleştirme izi | Altın örneklemde hazır metnin meal blokları (bölüm 4) | CER ≤ %1, sadeleştirme izi 0 (başlangıç önerisi) |
+| Hazır metin tam denetimi | 6.236 âyetin kapsamı ve sadeleştirme taraması otomatik; 60 rastgele âyet elle | Eksik 0, iz 0 (başlangıç önerisi; pilottan sonra kesinleşir) |
 | Hizalama bütünlüğü | 6.236 âyetin her biri bir meal birimine ya da `birlesik_ile` bağına sahip | %100 |
 | İkinci okuma hata oranı | Rastgele seçilen onaylı âyetlerde ikinci kişinin görselle karşılaştırıp bulduğu hatalı âyet oranı | %95 güvenle < %0,5 |
 | İmlâ tutarlılığı | Sözlük çakışması | 0 |
 | Belirsiz okuma | Kalan `⟦?⟧` işareti | 0 |
 | Sadeleştirme denetimi | Örneklemde modernleştirilmiş ya da değiştirilmiş kelime | 0 |
+
+**Hazır metin denetimi.** Elle okunan 60 âyetlik örneklem, metnin %5'ini etkileyen bir sorunu yaklaşık %95 olasılıkla yakalar (0,95^60 ≈ 0,046). Bu, hazır metnin temel metin olup olmayacağını belirleyen ön denetimdir; ikinci okuma hata oranı ölçütünü (aşağıda) değiştirmez. Sadeleştirme denetimi iki yolda da vardır.
 
 **Örneklem büyüklüğü.** Örneklemde hiç hata çıkmazsa hata oranının %95 güven üst sınırı yaklaşık `3 / n` olur. Üst sınırı %0,5'in altına indirmek için en az 600 âyet okunur. Örneklem cilt ve sureye göre tabakalanır. Hata bulunursa hata deseni düzeltilir, ilgili bölümler taranır ve yeni bir örneklem çekilir.
 
@@ -172,7 +185,8 @@ flowchart TD
 `source` kayıtları (`elmalili-meal`, `elmalili-tefsir`; baskı kimliği `elmalili-1935`) şu alanları taşır: eser, müellif, baskı yeri ve yılları, matbaa, seri, cilt ve sayfa sayıları, tarama kaynağı (kütüphane, yer numarası, tarama tarihi, kullanım şartı), aktarım kılavuzu sürümü, aktarım sürümü, editörler ve aktarımın lisansı.
 
 - **Sürüm.** Meal veri seti `elmalili-meal` adıyla anlamsal sürüm taşır (1.0.0 ilk onaylı sürüm). Kurul'a sunulan sürüm dondurulur; sonraki düzeltmeler yeni sürüm olur ve G-KUR kapısı yeniden onay ihtiyacını işaretler.
-- **Atıf (uygulama).** "Meal: Elmalılı Muhammed Hamdi Yazır, *Hak Dini Kur'an Dili*, İstanbul 1935–1939. Özgün baskıdan Mütâlaa tarafından aktarılmıştır. Sürüm 1.0.0."
+- **Atıf (uygulama, OCR yolu).** "Meal: Elmalılı Muhammed Hamdi Yazır, *Hak Dini Kur'an Dili*, İstanbul 1935–1939. Özgün baskıdan Mütâlaa tarafından aktarılmıştır. Sürüm 1.0.0."
+- **Atıf (uygulama, hazır metin yolu).** "Meal: Elmalılı Muhammed Hamdi Yazır, *Hak Dini Kur'an Dili*, İstanbul 1935–1939. {X} kaynağından alınmış, Mütâlaa tarafından özgün baskıyla karşılaştırılıp düzeltilmiştir. Sürüm 1.0.0." `{X}` kaynağın adı ve revizyonudur. `serbest` durumu ve Kurul başvurusu avukat görüşüne ve Kurul onayına bağlıdır (K-38; hukuki görüş değildir).
 - **Atıf (okur alıntısı).** "Elmalılı, *Hak Dini Kur'an Dili*, c. {cilt}, s. {sayfa}; Mütâlaa aktarımı {sürüm}."
 
 ## 10. Tefsir metni (ikinci aşama)

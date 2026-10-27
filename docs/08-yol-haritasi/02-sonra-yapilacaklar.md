@@ -1,7 +1,7 @@
 # Sonra yapılacaklar
 
-> **Sürüm:** 1.0 · **Tarih:** 18 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-01](../00-ozet/02-karar-defteri.md#k-01--ad-mütâlaa) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma)
+> **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-01](../00-ozet/02-karar-defteri.md#k-01--ad-mütâlaa) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
 
 Bu liste park alanıdır. Bir faza girmeyen ama unutulmaması gereken işler burada durur. Her madde neden önemli olduğunu, ne zaman yeniden açılacağını, ilk somut adımı ve ilgili kararı yazar. Bir madde ele alınınca karar defterine yeni bir karar olarak işlenir ve burada "Kapandı" diye işaretlenir. S-01 ile S-10 brifteki listedir; S-11 ile S-15 bu dosyanın ve koordinasyon notlarının eklediği maddelerdir.
 
@@ -10,7 +10,7 @@ Bu liste park alanıdır. Bir faza girmeyen ama unutulmaması gereken işler bur
 | No | Konu | Tetik | İlgili karar |
 |---|---|---|---|
 | S-01 | Fiyatlandırma ve gelir modeli | Faz 3'ten sonra ya da bir maliyet ve lisans eşiğinde | K-22, K-25 |
-| S-02 | Kitaplar (Kısas-ı Enbiyâ, Mevlid) | Faz 3'ten sonra | K-02, K-26 |
+| S-02 | Kitaplar (Kısas-ı Enbiyâ, Mevlid) | Faz 3'ten sonra | K-02, K-26, K-38 |
 | S-03 | Canlı barındırma seçimi | İçerik deposu Faz 2'den önce, arka uç Faz 4'ten önce | K-20, K-21 |
 | S-04 | Türk hattı lisansı (Mushaf B) | Faz 3'ten sonra ya da lisans veren cevap verince | K-07 |
 | S-05 | Diyanet meali görüşmesi | Faz 3'ten sonra ya da iç testte yoğun talep | K-03, K-25 |
@@ -43,8 +43,8 @@ Proje sahibi bu maddenin kayda geçmesini özellikle istedi. [K-22](../00-ozet/0
 
 - **Neden önemli.** [K-02](../00-ozet/02-karar-defteri.md#k-02--i̇lk-içerik-seti) kitapları sonraki faza bıraktı; `k:` çapası bu iş için hazır. Kısas-ı Enbiyâ'nın Ahmed Cevdet Paşa'ya (ö. 1895) ait özgün metni serbest; Mahir İz'in 1973'te yayımlanan sadeleştirmesi korunuyor ([Kültür ve Turizm Bakanlığı](https://www.ktb.gov.tr/EN-118064/ahmed-cevdet-pasa.html)). Süleyman Çelebi'nin Mevlid'i serbest, ama TDV Latin harfli baskıların çoğunun güvenilir olmadığını söylüyor; tenkitli neşirlerin kurduğu metin işlenme sayılabilir ([TDV İA](https://islamansiklopedisi.org.tr/mevlid--suleyman-celebi)).
 - **Tetik.** Faz 3'ten sonra, içerik hattı ve editör paneli kararlı hâle gelince.
-- **İlk somut adım.** Her eser için telifsiz özgün baskının taramasını bulmak, 10 sayfalık transkripsiyon pilotu yapmak ve lisans defterine `bekliyor` kaydı açmak.
-- **İlgili karar.** K-02, K-26.
+- **İlk somut adım.** Her eser için önce yasal olarak kullanılabilen hazır dijital metin araştırması ve örneklem karşılaştırması ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)): aday `bekliyor` kaydedilir, örneklemi basılı özgün nüshayla karşılaştırılır. Uygun hazır metin yoksa telifsiz özgün baskının taraması ve 10 sayfalık transkripsiyon pilotu yapılır. Her iki durumda lisans defterine `bekliyor` kaydı açılır. Faz değişmez (Faz 3'ten sonra).
+- **İlgili karar.** K-02, K-26, [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme).
 
 ## S-03 · Canlı barındırma seçimi
 
