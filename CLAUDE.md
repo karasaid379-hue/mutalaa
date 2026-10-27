@@ -62,6 +62,7 @@ Bağımlılık kuralları ve klasörlerin tamamı: [Proje yapısı](docs/02-mima
 | Paket yayını | `dotnet run --project server/Mutalaa.Publisher -- publish --flavor dev` |
 | Mobil | `pnpm dev:mobile` · `pnpm --filter @mutalaa/mobile test` |
 | Kit testleri | `node --test ".claude/hooks/test/*.test.mjs"` |
+| CI denetimi | `node --test "scripts/ci/*.test.mjs"` · actionlint ve şema denetimi: [CI kuralları](.claude/rules/altyapi.md) |
 
 ## Çalışma düzeni
 
