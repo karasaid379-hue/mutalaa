@@ -8,3 +8,6 @@
 *.otf binary
 *.woff2 binary
 *.mp3 binary
+
+# Tanzil parcalari: bayt bayt korunur, git donusturmez
+pipeline/tests/fixtures/tanzil/** -text

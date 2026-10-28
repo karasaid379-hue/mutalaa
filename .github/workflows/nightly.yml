@@ -1,0 +1,44 @@
+name: nightly
+
+# Nightly invariance run. Tanzil data is never downloaded here (no terms-of-use consent in CI,
+# and data/ is not in git): only the checks that run on the committed fixture and the source
+# registry execute. The full run on real data is local (scripts/nightly.ps1).
+# Later nightly jobs (golden sets, internal pack, Maestro) are added to this file.
+on:
+  schedule:
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+    working-directory: pipeline
+
+env:
+  UV_LOCKED: '1'
+
+jobs:
+  degismezlik:
+    timeout-minutes: 15
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # uv downloads Python 3.13 from pipeline/.python-version on demand.
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: '0.13.1'
+          enable-cache: true
+          working-directory: pipeline
+      - run: uv sync --locked
+      - run: uv run mutalaa sources check
+      # -rs lists skipped tests: real-data tests are skipped here by design.
+      - run: uv run pytest -m degismezlik -rs

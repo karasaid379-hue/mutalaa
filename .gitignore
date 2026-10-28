@@ -27,3 +27,6 @@ __pycache__/
 .mypy_cache/
 coverage/
 TestResults/
+
+# Hat veri klasoru yanlis cozulurse (cwd=pipeline) yanlislikla izlenmesin
+pipeline/data/
