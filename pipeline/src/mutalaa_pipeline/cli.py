@@ -16,6 +16,8 @@ app = typer.Typer(
     help="Mutalaa icerik hatti.",
     no_args_is_help=True,
     add_completion=False,
+    # Iz (traceback) yerel degiskenleri gosterirse baglanti dizesi sizabilir.
+    pretty_exceptions_show_locals=False,
 )
 
 export_app = typer.Typer(no_args_is_help=True, help="Disa aktarim: veri dosyalari ve vektorler.")
