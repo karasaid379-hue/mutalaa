@@ -16,7 +16,7 @@ Kaynak: [Yerel geliştirme](../../docs/02-mimari/04-yerel-gelistirme.md), [Proje
 - **Gizli değerler.** Compose dosyası ve `.env.example` yalnız yer tutucu değer taşır (`yerel-sifre-degistir` gibi). Gerçek değerler git dışı `.env` dosyasındadır.
 - **Yıkıcı komutlar.** `docker compose down -v` veritabanını siler; önce `scripts/backup-db.ps1` ile yedek alınır ve kullanıcı onaylar.
 - **PowerShell betikleri** CRLF satır sonuyla kaydedilir ve `powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/<betik>.ps1` ile çalıştırılır. İkili çıktı `>` ile yönlendirilmez; dosya konteynerde yazılıp `docker compose cp` ile alınır.
-- **CI.** İş akışları `.github/workflows/` altında `ci-ts.yml`, `ci-dotnet.yml`, `ci-pipeline.yml`, `ci-workflows.yml`, `pr-title.yml`, `eas-build.yml` dosyalarıdır; `.github/dependabot.yml` ve `scripts/ci/` (başlık ve lisans betikleri) yanındadır. Eylem sürümleri yazım günü `arastirmaci` ile doğrulanır.
+- **CI.** İş akışları `.github/workflows/` altında `ci-ts.yml`, `ci-dotnet.yml`, `ci-pipeline.yml`, `ci-workflows.yml`, `pr-title.yml`, `eas-build.yml`, `nightly.yml` dosyalarıdır; `.github/dependabot.yml` ve `scripts/ci/` (başlık ve lisans betikleri) yanındadır. Eylem sürümleri yazım günü `arastirmaci` ile doğrulanır.
   - Eylemler tam commit SHA'sıyla ve `# vX.Y.Z` yorumuyla sabitlenir; runner'lar `ubuntu-24.04` ve `windows-2025` (`-latest` değil); `uv` ve `eas-cli` sürümleri sabittir.
   - `permissions` en dar tutulur (`contents: read`, `pr-title` için iş düzeyinde). `pull_request_target` ve `workflow_run` kullanılmaz. `actions/checkout` `persist-credentials: false` ile çalışır.
   - `${{ github.event.* }}` ve `${{ inputs.* }}` değerleri `run:` içine gömülmez, `env:` ile okunur.

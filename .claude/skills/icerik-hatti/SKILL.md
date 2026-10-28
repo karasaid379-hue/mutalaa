@@ -45,7 +45,7 @@ Ortak bayraklar: `--dry-run`, `--force`, `--limit N`, `--config <dosya>`. Çık�
 - `data/raw/{kaynak}/{YYYY-MM-DD}/` değişmez; aynı gün farklı SHA-256 yeni klasör ve uyarı demektir.
 - `data/staged/{kaynak}/{run_id}/` her çalıştırmada yeniden üretilir; satırlar çapaya göre sıralı; içerik dosyalarına zaman damgası yazılmaz.
 - Her adım parmak izi hesaplar; aynıysa atlanır (`--force` hariç). Her çalıştırma bir manifest yazar.
-- Yükleme çapaya göre upsert; yalnız `origin = 'hat'` ve `status = 'aday'` satırlar güncellenir; `onayli` ve `red` satırlara dokunulmaz. `xref` tekillik anahtarı `(type, src_anchor, src_span, dst_anchor, dst_span)`.
+- Yükleme çapaya göre upsert; `xref` için yalnız `origin = 'hat'` ve `status = 'aday'`, `unit` için yalnız `metin_durumu = 'taslak'` satırlar güncellenir; `onayli` ve `red` satırlara dokunulmaz. Tanzil istisnası: `onayli` satırda yalnız türetilmiş sütunlar güncellenir, `metin` ve `content_hash` hiç (K-39). `xref` tekillik anahtarı `(type, src_anchor, src_span, dst_anchor, dst_span)`.
 - Aynı kaynağa iki yükleme aynı anda yapılmaz (`pg_advisory_lock`); her `export pg` tek işlemdir.
 
 ## QA kapıları
