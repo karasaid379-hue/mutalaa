@@ -8,7 +8,7 @@ Bu dosya aşamaların durumunu tutar. Aşağıdaki durum bloğu her oturumun ba�
 <!-- durum:baslangic -->
 - Aktif aşama: yok
 - Son tamamlanan: A08 · CI iş akışları (2026-10-27)
-- Sıradaki: A09 · Elmalılı OCR pilotu (K-38 ile kapsamı genişledi: hazır metin adayları da ölçülür)
+- Sıradaki: A10 · Tanzil alımı (proje sahibinin tercihi, 2026-10-28: önce omurga A10–A13, sonra mobil A21–A32; kitaplar arkadan ham girip olgunlaşır; A09 insan adımları paralel ilerler)
 - Bekleyen insan adımları: İ-09, İ-10, İ-29 ve İ-17 (A09 için); İ-16 (kalan: EXPO_TOKEN, İ-15 Expo hesabına bağlı; A21/A34); İ-01 (Docker ilk açılış, yönetici ayarları); İ-02 … İ-08 taslakları hazır, gönderim ve onay bekliyor (öncelik İ-02; İ-08 artık Tanzil üst veri dosyasını da kapsıyor; İ-03 avukat soruları genişledi)
 - Son güncelleme: 2026-10-28
 <!-- durum:bitis -->
@@ -78,6 +78,7 @@ Her aşama oturumunun sonunda bir satır eklenir: `YYYY-AA-GG · Aşama · ne ya
 - 2026-10-27 · A07 · K-37 (BÇ-05 çözüldü); 11 enum üç dilde; 19 Domain varlığı; `IcerikDbContext`, Identity, `seed`; ilk göç yerelde uygulandı; 1755 test; 7 bakış açılı denetim ve düzeltmeler; belge eşitleme; yetki devri (kural 11); BÇ-41 açıldı · A08
 - 2026-10-27 · A08 · 6 iş akışı, dependabot, `scripts/ci` betikleri, turbo `LANG`, Linux yerel ayar denetimi; yerel eşdeğer koşular yeşil; 5 bakış açılı inceleme ve düzeltmeler; belge eşitleme; dal itildi · A08.5: PR #1 birleştirildi; sıradaki A09
 - 2026-10-27 · A09 (hazırlık, belge işi) · kitap edinimi analizi: Elmalılı, Tecrîd ve lügat kaynakları araştırıldı, 7 iddia bağımsız ajanlarla doğrulandı; K-38 yazıldı (dijital öncelikli edinim, Elmalılı'da kontrollü hazır metin, çıkarılmış metin kuralı, `taslak` başlangıç durumu; BÇ-43 çözüldü); FSEK m. 6/8 gerekçesi düzeltildi; BÇ-40 çözüldü (hukuki kısmı İ-03'te); 8 kaynak kaydı notu ve Redhouse lisans kopyası güncellendi; A09, A16, A37 ve ilgili belgeler eşitlendi; İ-29 ve R-21 açıldı · A09 kod adımları `/asama A09` ile (İ-09, İ-10, İ-29 ve İ-17 beklenir)
+- 2026-10-28 · Planlama · rakip uygulama incelemesi (Hayrat Risale-i Nur: seçili metni yapay zekâyla özetleme; RNK: yapay zekâ destekli arama; ikisi de soru-cevap yapmıyor); proje sahibi sırayı belirledi: önce omurga (A10–A13) ve mobil (A21–A32), kitaplar arkadan `dev` derlemede ham girip olgunlaşır · A10
 
 ## İlgili dosyalar
 
