@@ -9,7 +9,7 @@ Bu dosya aşamaların durumunu tutar. Aşağıdaki durum bloğu her oturumun ba�
 - Aktif aşama: yok
 - Son tamamlanan: A08 · CI iş akışları (2026-10-27)
 - Sıradaki: A10 · Tanzil alımı (proje sahibinin tercihi, 2026-10-28: önce omurga A10–A13, sonra mobil A21–A32; kitaplar arkadan ham girip olgunlaşır; A09 insan adımları paralel ilerler)
-- Bekleyen insan adımları: İ-09, İ-10, İ-29 ve İ-17 (A09 için); İ-16 (kalan: EXPO_TOKEN, İ-15 Expo hesabına bağlı; A21/A34); İ-01 (Docker ilk açılış, yönetici ayarları); İ-02 … İ-08 taslakları hazır, gönderim ve onay bekliyor (öncelik İ-02; İ-08 artık Tanzil üst veri dosyasını da kapsıyor; İ-03 avukat soruları genişledi)
+- Bekleyen insan adımları: İ-09, İ-10, İ-29 ve İ-17 (A09 için); İ-16 (kalan: EXPO_TOKEN, İ-15 Expo hesabına bağlı; A21/A34); İ-01 tamam (2026-10-28, kullanıcı bildirimi; yönetici ayarları ve Maestro ayrıntıları insan adımları dosyasında doğrulanmadı olarak duruyor); İ-02 … İ-08 taslakları hazır, gönderim ve onay bekliyor (öncelik İ-02; İ-08 artık Tanzil üst veri dosyasını da kapsıyor; İ-03 avukat soruları genişledi)
 - Son güncelleme: 2026-10-28
 <!-- durum:bitis -->
 
