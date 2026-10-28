@@ -109,7 +109,7 @@ dotnet test --solution server/Mutalaa.slnx
 - Riskli adlar (Nûr, Fecr …) yalnız güçlü ipucuyla atıf sayılır; bu kural A18'in ayrıştırıcısında uygulanır, burada yalnız işaretlenir.
 
 ## İnsan adımları
-- AS-10 kaynak seçimi: proje sahibi, A11.1 sonunda. Seçilen kaynak QF ise İ-06 (QF Developer Console hesabı) gerekir.
+- AS-10 kaynak seçimi: proje sahibi, A11.1 sonunda. Seçilen kaynak QF ise İ-06 (QF Developer Console hesabı) tamamdır (2026-10-28, kullanıcı beyanı); ek bekleme yok.
 - İ-23 · Sure adlarının girişi (`.tmp/sure-adlari-girdi.tsv`) ve editör onayı: A11.3'te ([İnsan adımları](../06-insan-adimlari.md)). `/asama` aşamayı ilerleme dosyasında `engelli` durumuna alır, Not sütununa biten adımları ve bekleyen işi yazar (ör. "A11.1, A11.2, A11.4–A11.6 tamam; İ-23 bekleniyor"); A17 ve A24 önkoşul denetiminde bu nota bakar. Onaydan sonra aşama `/asama A11` ile sürer.
 
 ## Çıktılar

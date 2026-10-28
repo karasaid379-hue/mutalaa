@@ -1,7 +1,7 @@
 # A26 · Mushaf A (Medine düzeni, QPC fontları, cüz paketleri)
 
 > **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-07](../../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı)
-> **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A24](./A24-okuyucu-mushaf-c.md) · **İnsan adımı:** [İ-06](../06-insan-adimlari.md) (QF Developer Console; A26.4'ten önce)
+> **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A24](./A24-okuyucu-mushaf-c.md) · **İnsan adımı:** [İ-06](../06-insan-adimlari.md) (QF Developer Console; tamam, 2026-10-28)
 > **Ajanlar:** `mobil-gelistirici` · `lisans-denetcisi` · `arastirmaci` · `hat-gelistirici` ve `sunucu-gelistirici` (yalnız A26.4) · `arayuz-denetcisi` · `inceleyici` · **Beceriler:** `mobil-ekran` · `lisans-kapisi` · `paket-yayini` · **Tahmini oturum:** 2 + bekleme sonrası 2
 > **Başlat:** `/asama A26`
 
@@ -48,7 +48,7 @@ Mod A, basılı Medine mushafıyla satır satır aynı sayfayı QPC sayfa fontla
 
 ### Bekleme noktası
 Aşağıdakilerin hepsi sağlanmadan A26.4'e geçilmez. Biri eksikse aşama ilerleme dosyasında `engelli` olarak, eksik koşul notuyla kaydedilir ve burada durur; A26.1–A26.3 tamamlanmış sayılır. Koşullar sağlanınca `/asama A26.4` ile sürdürülür.
-1. İ-06 tamam: QF Developer Console hesabı açık; şartlar okundu ve kabul edildi.
+1. İ-06 tamam (2026-10-28, kullanıcı beyanıyla onaylandı): QF Developer Console hesabı ve şart kabulü kullanıcıdadır; bu koşul sağlanmış sayılır.
 2. MM-1 (AS-02): fontların kendi depomuzdan cüz paketiyle indirilmesinin QF şartlarına uyduğu yazılı olarak teyit edildi (yazışma 3, `/yazisma`) ve `qpc-v2-font` kaydı `/karar` ile güncellendi.
 3. MM-2 (ÇŞ-6): satır düzeni verisinin kaynağı ve lisansı seçildi; kaynak `kisitlar.hazir_vt_yasak` taşımıyor (P-02). QF API'den gelen düzen verisi bu koşulu sağlamaz (Mobil mimari §7.1).
 
@@ -103,7 +103,7 @@ Yerel depoda `internal` ya da `public` manifesti yoksa son iki `curl` boş döne
 - Commit kapsamları `mobile`, `content-schema`, `pipeline`, `publisher`.
 
 ## İnsan adımları
-- İ-06 · Quran Foundation Developer Console hesabı ve şartların kabulü: A26.4'ten önce gerekir.
+- İ-06 · Quran Foundation Developer Console hesabı ve şartların kabulü: tamam (2026-10-28, kullanıcı beyanı); A26.4 için ek bekleme yok.
 - QF'ye yazışma 3 (fontların cüz paketiyle dağıtımı, düzen verisi, atıf ifadesi): `/yazisma` ile taslak hazırlanır, kullanıcı gönderir; cevap bekleme noktasının 2. koşuludur. Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
 
 ## Çıktılar

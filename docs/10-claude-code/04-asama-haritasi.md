@@ -19,7 +19,7 @@ Bu dosya [Fazlar](../08-yol-haritasi/01-fazlar.md) planını Claude Code'un yür
 | [A07](./asamalar/A07-editoryal-veritabani.md) | Editoryal veritabanı (EF Core 10 + PostgreSQL 18) | 0 | A03, A04, A06 | — |
 | [A08](./asamalar/A08-ci-is-akislari.md) | CI iş akışları (GitHub Actions) | 0 | A05, A07 | İ-16 |
 | [A09](./asamalar/A09-elmalili-ocr-pilotu.md) | Elmalılı OCR pilotu ve yol seçimi (OCR motorları ve hazır metin adayları, K-38) | 0 | A02, A06 | İ-09, İ-10, İ-17, İ-29 |
-| [A10](./asamalar/A10-tanzil-alimi.md) | Tanzil alımı ve değişmezlik testleri | 1 | A05, A06, A07 | — |
+| [A10](./asamalar/A10-tanzil-alimi.md) | Tanzil alımı ve değişmezlik testleri | 1 | A05, A06, A07 | İ-30 |
 | [A11](./asamalar/A11-kuran-yapisi-ve-sayfa-eslemesi.md) | Kur'an yapısı: sure adları, cüz, secde, sayfa eşlemesi | 1 | A10 | İ-23 |
 | [A12](./asamalar/A12-arama-indeksi-ve-paket-semasi.md) | Arama indeksi ve paket şeması | 1 | A05, A10 | — |
 | [A13](./asamalar/A13-yayinlayici-ve-yayin-kapisi.md) | Yayınlayıcı ve yayın kapısı (ilk `dev` `core`) | 1 | A07, A12 | — |

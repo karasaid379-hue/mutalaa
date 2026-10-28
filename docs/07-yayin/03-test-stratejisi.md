@@ -1,7 +1,7 @@
 # Test stratejisi
 
-> **Sürüm:** 1.7 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
+> **Sürüm:** 1.8 · **Tarih:** 28 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
 
 Bu dosya neyin, hangi araçla, ne zaman test edildiğini tanımlar. Eşik değerlerinin çoğu bu dosyanın önerisidir; ilk ölçümden sonra kalibre edilir ve öyle işaretlidir.
 
@@ -148,9 +148,9 @@ def prf(pred: set, gold: set) -> tuple[float, float, float]:
 
 ## 5. Kur'an metni değişmezlik testleri
 
-Tanzil metni aynen dağıtılabilir, değiştirilemez ([Tanzil metni, OpenITI kopyası](https://raw.githubusercontent.com/OpenITI/0025AH/master/data/0001Quran/0001Quran.Mushaf/0001Quran.Mushaf.Tanzil001-ara1.mARkdown)). Kurul onayı da sürüme bağlıdır. Bu testler her gece ve her sürümde koşar:
+Tanzil metni aynen dağıtılabilir, değiştirilemez ([Tanzil metni, OpenITI kopyası](https://raw.githubusercontent.com/OpenITI/0025AH/master/data/0001Quran/0001Quran.Mushaf/0001Quran.Mushaf.Tanzil001-ara1.mARkdown)). Kurul onayı da sürüme bağlıdır. Bu testler her gece ve her sürümde koşar. Sahipleri: 1–4 A10 (`pipeline/tests/test_degismezlik.py`, `degismezlik` işareti; fikstürle koşan sürümleri CI'da, gerçek veriyle koşanlar yerelde `scripts/nightly.ps1` ile), 5 A24, 6 A13, 7 A11, 8 A13.
 
-1. İndirilen Uthmani ve Simple Clean dosyalarının SHA-256'sı `pipeline/src/mutalaa_pipeline/ingest/tanzil.lock.json` içindeki sabit değere eşittir.
+1. Kullanıcının indirdiği Uthmani ve Simple Clean dosyalarının SHA-256'sı `pipeline/src/mutalaa_pipeline/ingest/tanzil.lock.json` içindeki sabit değere eşittir. Kilit ayrıca âyet satırlarının (`metin_sha256`) ve bildirim bloğunun (`bildirim_sha256`) özetini tutar; fark metinde mi bildirimde mi olduğu iletide görünür ([K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) madde 4).
 2. 114 sure ve 6.236 âyet vardır.
 3. Her `q:{sure}:{ayet}` biriminin kanonik metni Tanzil satırıyla bayt bayt aynıdır. Birimlerden Tanzil dosyası yeniden üretilir ve kaynakla karşılaştırılır (bildirim satırları hariç).
 4. Her birimin `content_hash` değeri o metnin SHA-256'sıdır.
@@ -290,10 +290,10 @@ VoiceOver ve TalkBack'in harekeli Kur'an Arapçasıyla davranışı hakkında ka
 | Tetik | Koşanlar |
 |---|---|
 | Her PR | Vektörler (3 dil), birim testleri, tip denetimi, lint, bağımlılık lisans denetimi, Publisher kapı testleri, göç ve enum testleri, kontrast testi |
-| Gece | İçerik hattı tam koşu, altın set değerlendirmesi, değişmezlik testleri, `internal` paket üretimi, emülatörde Maestro. Gece iş akışı henüz yoktur: A08 gece işi kurmaz; iskeleti ilk gece işiyle A10'da açılır ([BÇ-42](../10-claude-code/07-belge-celiskileri.md#1-karar-bekleyenler)) |
+| Gece | İçerik hattı tam koşu, altın set değerlendirmesi, değişmezlik testleri, `internal` paket üretimi, emülatörde Maestro. A08 gece işi kurmaz. Gece işi A10'da `.github/workflows/nightly.yml` olarak açılır (`schedule` ve `workflow_dispatch`; `uv run pytest -m degismezlik` ve `uv run mutalaa sources check`; tanzil.net'ten hiçbir şey indirilmez). CI'da yalnız fikstür testleri koşar, gerçek veriyle koşu yerelde `scripts/nightly.ps1` ile yapılır ([BÇ-42](../10-claude-code/07-belge-celiskileri.md#1-karar-bekleyenler)) |
+| Sürüm | Hepsi, public yapıt taraması, referans cihazda performans, elle erişilebilirlik, aşağıdaki kontrol listesi |
 
 **Her PR satırının bugünkü karşılığı (A08, 27 Ekim 2026).** Beş iş akışı koşar ([Proje yapısı §7](../02-mimari/03-proje-yapisi.md#7-ci-iş-akışları-github-actions)): `ci-ts` (TypeScript vektörleri ve birim testleri, lint, tip denetimi, `tr_TR.UTF-8` ve `C.UTF-8` ayakları), `ci-dotnet` (C# vektörleri ve birim testleri, Testcontainers ile veritabanı ve göç testleri, `dotnet format`), `ci-pipeline` (Python vektörleri ve testleri, ruff, mypy; Ubuntu ve Windows), `pr-title` (PR başlığı biçimi) ve `ci-workflows` (iş akışı dosyalarının actionlint denetimi). İki kapı vardır: bağımlılık lisans kapısı (yalnız dağıtılan ve sunulan kodda durdurur; [Teknoloji yığını §3](../02-mimari/02-teknoloji-yigini.md#3-lisans-notları)) ve PR başlığı kapısı. Publisher kapı testleri ve kontrast testi ilgili aşamalar geldikçe bu iş akışlarına eklenir (A13 ve mobil aşamalar); bugünkü koşular yalnız var olan testleri çalıştırır.
-| Sürüm | Hepsi, public yapıt taraması, referans cihazda performans, elle erişilebilirlik, aşağıdaki kontrol listesi |
 
 ## 13. Sürüm kontrol listesi
 

@@ -1,7 +1,7 @@
 # A10 · Tanzil alımı ve değişmezlik testleri
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5)
-> **Faz:** 1 · İçerik hattı · **Önkoşul:** [A05](./A05-arama-normalizasyonu.md) · [A06](./A06-lisans-defteri-ve-enumlar.md) · [A07](./A07-editoryal-veritabani.md) · **İnsan adımı:** yok
+> **Sürüm:** 1.1 · **Tarih:** 28 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-39](../../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
+> **Faz:** 1 · İçerik hattı · **Önkoşul:** [A05](./A05-arama-normalizasyonu.md) · [A06](./A06-lisans-defteri-ve-enumlar.md) · [A07](./A07-editoryal-veritabani.md) · **İnsan adımı:** İ-30
 > **Ajanlar:** `hat-gelistirici` · `metin-denetcisi` · `arastirmaci` · `test-yazari` · `inceleyici` · **Beceriler:** `icerik-hatti` · `metin-butunlugu` · `capa-gramer` · `windows-sorun` · **Tahmini oturum:** 2–3
 > **Başlat:** `/asama A10`
 
@@ -27,7 +27,7 @@
 **Yapılmaz**
 - Sure adları, cüz, secde ve Medine sayfa eşlemesi (A11). Kelime bölmesi ve `quran_word` (A11 ve A17).
 - Paket DDL'i ve FTS5 tabloları (A12). `core` paketinin üretimi ve Tanzil bildiriminin pakete yazılması (A13).
-- Okuyucunun metin seçicisi testi (test 5; `reader-core` ile A24). CI gece işi: A08 gece işi kurmaz; gece iş akışının iskeleti ilk gece işiyle A10'da açılır ([BÇ-42](../07-belge-celiskileri.md#1-karar-bekleyenler)).
+- Okuyucunun metin seçicisi testi (test 5; `reader-core` ile A24). Gece işi: A08 gece işi kurmaz; A10 `.github/workflows/nightly.yml` dosyasını açar (CI'da yalnız fikstür testleri koşar, tanzil.net'ten hiçbir şey indirilmez); gerçek veriyle koşu yerelde `scripts/nightly.ps1` ile yapılır ([BÇ-42](../07-belge-celiskileri.md#1-karar-bekleyenler)).
 
 ## Adımlar
 ### A10.1 · Adres, sürüm ve lisans doğrulaması
@@ -35,6 +35,7 @@
 - Sonuçlar A06'da açılan `pipeline/sources/tanzil-uthmani.toml` ve `tanzil-simple-clean.toml` dosyalarına işlenir (`kaynak_url`, `lisans_kopyasi`, `lisans_sha256`, `yeniden_kontrol`). Tarihli lisans kopyası `pipeline/sources/licenses/tanzil-{varyant}-{YYYY-MM-DD}.txt` olur. Alan adları değişmez.
 - Şartlar otomatik indirmeye izin vermiyorsa dosyayı kullanıcı indirir ve A09'daki kalıpla `data/gelen/tanzil/` altına koyar (öneri); `data/raw` yalnız `ingest` ile yazılır ve kilit denetimi aynı kalır.
 - Çözülen "Doğrulanacak" maddeleri `/belge-esitle` ile lisans defterine işlenir.
+- **28 Ekim 2026 okuması.** Tanzil lisans metni 26 Ekim kopyasına göre değişmedi. Uthmani için 1.1 (Şubat 2021) güncellemeler sayfasında doğrulandı. Simple Clean için açık bir sürüm girdisi yok ("Version 1.1" metnin tamamı için duyuruluyor); [BÇ-37](../07-belge-celiskileri.md#1-karar-bekleyenler) açık. Dosya bildirim bloğu sürümü söylerse TOML, kilit ve defter ona göre yazılır, söylemezse madde açık kalır ve soru İ-08'e bağlanır. İndirme formu "I agree with Terms of Use" onayı ister; dosyaları kullanıcı indirir ([İ-30](../06-insan-adimlari.md)). Ayrıntı: [lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.1.
 - **Bitti sayılır:** iki TOML doğrulanmış adres, tarihli lisans kopyası ve SHA-256 taşıyor; `uv run mutalaa sources check` 0 ile çıkıyor.
 
 ### A10.2 · Kilit dosyası ve bağdaştırıcı
@@ -47,6 +48,7 @@
 - **Bitti sayılır:** `uv run mutalaa ingest tanzil --variant uthmani` ve `--variant simple-clean` (ikinci varyant adı öneri) 0 ile çıkıyor; `data/staged/` altında 6.236'şar satırlık `units.jsonl` ve çalıştırma manifesti var.
 
 ### A10.3 · Simple Clean'in yeri (karar)
+- **Karar: K-39 (28 Ekim 2026).** Simple Clean `q:` birimi olmaz, yalnız `ar_norm` kaynağıdır; `icerik.source` tablosuna birimsiz bir satır olarak yüklenir. Kanonik kaynakta hat yazma kuralı, `source` satırı güncelleme kuralı, sıkı kilit, AR-4 ve bildirim metni de aynı kararda.
 - Dokümanlarda `q:` çapası yalnız Uthmani metni gösterir ve `unit.anchor` tekildir. `core` paketinde Simple Clean ayrı birim ya da sütun değildir; normalize hâli `unit_search.ar_norm` sütunundadır (İçerik paketleri §3.2, Arama §1.4). Ham Simple Clean metninin editoryal veritabanında duracağı yer tanımlı değildir.
 - Plan aşamasında öneri sunulur, kullanıcı onaylar, `/karar` ile yazılır. Öneri: Simple Clean `data/raw` ve `data/staged` içinde kalır ve yalnız Kur'an birimlerinin `ar_norm` sütununu besler; pakette tutulup tutulmayacağı A12'de karara bağlanır.
 - **Bitti sayılır:** karar defterinde Simple Clean'in yeri yazılı.
@@ -54,9 +56,9 @@
 ### A10.4 · Normalize, çapa ve yükleme
 - Önce `test -f pipeline/.env && echo var`. Dosya yoksa durulur ve kullanıcıdan A03'teki kopyalama istenir; Claude Code `.env` dosyası oluşturamaz ve okuyamaz. Hat yapılandırması `pipeline/src/mutalaa_pipeline/config.py` (pydantic-settings; yoksa bu aşamada eklenir) `MUTALAA_DB_URL` değerini ortamdan ya da `env_file` olarak `pipeline/.env` dosyasından okur (İçerik hattı §3 öncelik sırası). pydantic-settings `.env` değerlerini `os.environ`'a yazmaz; bu yüzden testler ve komutlar bağlantı dizesini yalnız `config.py`'den alır. Dosya yolu paketin konumundan çözülür, çalışma dizinine bağlı değildir (öneri). Değer koda, günlüğe ve rapora yazılmaz.
 - `data/staged` satırlarında `content_hash` 64 küçük harfli onaltılık karakterdir; `sha256:` öneki yazılmaz (Editoryal veritabanı §4'teki CHECK kısıtı).
-- `uv run mutalaa normalize --source tanzil-uthmani`: `ar_norm`, A05'teki Python normalleştiricisiyle Simple Clean âyet metninden üretilir ([Arama](../../03-veri/05-arama-fts5.md) §1.4). Uthmani biçimlerinin sona eklenmesi (AR-4) öneridir; planda kullanıcıya sorulur. Kur'an birimlerinde `tr_*` sütunları boştur.
+- `uv run mutalaa normalize --source tanzil-uthmani`: `ar_norm`, A05'teki Python normalleştiricisiyle Simple Clean âyet metninden üretilir ([Arama](../../03-veri/05-arama-fts5.md) §1.4). Uthmani biçimlerinin sona eklenmesi (AR-4) bu aşamada uygulanır ([K-39](../../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) madde 5). Kur'an birimlerinde `tr_*` sütunları boştur.
 - `uv run mutalaa anchor --source tanzil-uthmani`: `q:{s}:{a}` çapası, `kind = 'ayet'`, `ord` ve `ayah_range` küresel âyet sırası (1..6236), `content_hash` UTF-8 baytların SHA-256'sı, `metin_durumu = 'onayli'`, `data_version = 'tanzil-uthmani@{surum}'`.
-- `uv run mutalaa export pg --source tanzil-uthmani [--dry-run]`: geçici `staging_unit` tablosuna `COPY` (hat şema değiştirmez; şema A07'nin göçlerindedir), tek işlem, `pg_advisory_lock`, `pipeline_run` satırı ve `source` satırının TOML'dan güncellenmesi ([İçerik hattı](../../04-icerik/02-icerik-hatti.md) §6).
+- `uv run mutalaa export pg --source tanzil-uthmani [--dry-run]`: geçici `staging_unit` tablosuna `COPY` (hat şema değiştirmez; şema A07'nin göçlerindedir), tek işlem, `pg_advisory_xact_lock`, `pipeline_run` satırı ve `source` satırının K-39 madde 3 kuralıyla yazılması (yalnız betimleyici alanlar güncellenir; K-39, A10.4'teki "TOML'dan güncellenmesi" ifadesinin yerine geçer) ([İçerik hattı](../../04-icerik/02-icerik-hatti.md) §6).
 - **Bitti sayılır:** `icerik.unit` içinde 6.236 `tanzil-uthmani` satırı; ikinci `export pg` hiçbir satırı değiştirmiyor.
 
 ### A10.5 · QA kapıları ve âyet sayısı çapraz denetimi
@@ -123,7 +125,13 @@ pnpm --filter @mutalaa/search test && dotnet test --solution server/Mutalaa.slnx
 - Kur'an metni ve üst verisi hafızadan yazılmaz. Testler yalnız indirilen dosyadan ya da dosyadan betikle kesilmiş parçadan okur.
 
 ## İnsan adımları
-- Numaralı insan adımı yok. Şartlar otomatik indirmeye izin vermezse kullanıcı dosyayı indirir (A10.1). Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
+- **İ-30 · Tanzil dosyalarını indirmek** (durum: bekliyor). İndirme formu şart onayı ister; bu yüzden dosyaları kullanıcı kendisi indirir. Kod ve sentetik testler indirmeyi beklemeden yazılır; A10.2 kanıtı ve sonrası indirmeye bağlıdır. Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
+  - Tanzil indirme sayfasını gizli pencerede açın. İşaret kutularına dokunmayın; açılıştaki hâl Tanzil'in varsayılanıdır. Beş kutunun durumunu not edin.
+  - Uthmani: "Quran text type" için Uthmani ("Uthmani (Minimal)" değil), "Output file format" için "Text (with aya numbers)". "Include sequential tanweens" işaretli geliyorsa indirmeden durup Claude Code'a bildirin.
+  - Simple Clean: "Simple (Clean)" ve "Text (with aya numbers)".
+  - "I agree with Terms of Use" kutusunu kendiniz işaretleyin. İki dosyayı aynı oturumda indirin.
+  - Dosyaları açmadan ve adlarını değiştirmeden `data/gelen/tanzil/` altına koyun. Dosya adlarını, tarihi ve kutuların durumunu Claude Code'a yazın.
+  - İsteğe bağlı: Tanzil, kritik güncellemeler için Tanzil-Text e-posta listesini öneriyor.
 - `pipeline/.env` A03'te kullanıcı tarafından oluşturulmuş olmalıdır (`MUTALAA_DB_URL`, kök `.env` ile aynı parola); A10.4'ten önce denetlenir.
 
 ## Çıktılar
@@ -131,6 +139,7 @@ pnpm --filter @mutalaa/search test && dotnet test --solution server/Mutalaa.slnx
 - `shared/test-vectors/normalize/ar.jsonl` eki (Tanzil satırları) ve `export test-vectors` seçeneği
 - `pipeline/sources/tanzil-uthmani.toml`, `tanzil-simple-clean.toml` güncellemesi; `pipeline/sources/licenses/tanzil-*-{tarih}.txt`
 - `pipeline/tests/test_degismezlik.py`, bağdaştırıcı testleri ve küçük Tanzil parçası fikstürü; `.gitattributes` eki
+- `.github/workflows/nightly.yml` (CI'da fikstür testleri) ve `scripts/nightly.ps1` (yerelde gerçek veriyle koşu; CRLF)
 - `data/raw/tanzil-*/`, `data/staged/tanzil-*/`, `data/reports/` (git dışı); PostgreSQL'de `source`, `unit`, `pipeline_run` satırları
 - Karar defterinde Simple Clean kaydı; lisans defterinde çözülen "Doğrulanacak" maddeleri
 

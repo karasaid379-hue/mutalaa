@@ -1,7 +1,7 @@
 # A27 · Ses sistemi (expo-audio + XState, `ses-test` fikstürü)
 
 > **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-28](../../00-ozet/02-karar-defteri.md#k-28--ses) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-18](../../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-30](../../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)
-> **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A24](./A24-okuyucu-mushaf-c.md) · **İnsan adımı:** [İ-07](../06-insan-adimlari.md) (yalnız gerçek hafız sesi için; aşamayı durdurmaz)
+> **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A24](./A24-okuyucu-mushaf-c.md) · **İnsan adımı:** [İ-07](../06-insan-adimlari.md) (gerekmiyor: hafız sesi alınmayacak, K-40)
 > **Ajanlar:** `mobil-gelistirici` · `test-yazari` · `arastirmaci` · `lisans-denetcisi` · `hat-gelistirici` ve `sunucu-gelistirici` (yalnız A27.3) · `arayuz-denetcisi` · `inceleyici` · **Beceriler:** `mobil-ekran` · `lisans-kapisi` · `paket-yayini` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A27`
 
@@ -103,7 +103,7 @@ adb exec-out screencap -p > .tmp/a27/calma-q-1-1.png
 `publish --dry-run` yalnız kapı raporu üretir; Kurul onayı olmayan paketler yüzünden `2` (kapı reddi) koduyla çıkabilir. Raporda `test-` önekli kaynağın P-12 ile girmediği okunur. Çalmayı başlatmak için mini oynatıcıdaki "Oynat"a `mobil-ekran` becerisindeki dokunma yöntemiyle basılır.
 
 ## Dikkat
-- Gerçek hafız kaydı yazılı izin olmadan indirilmez, işlenmez, depoya ya da pakete konmaz (İ-07; lisans defteri §1 iç kullanım kuralı). Sesli Kur'an Kurul onayına tabidir.
+- Tilavet kaydı (hafız ya da hazır kaynak) yazılı dayanak ve kaynak şartı olmadan indirilmez, işlenmez, depoya ya da pakete konmaz (İ-07; lisans defteri §1 iç kullanım kuralı). Sesli Kur'an Kurul onayına tabidir.
 - `ses-test` sentetik tondur; Kur'an tilavetine benzetilmez ve öyle adlandırılmaz. Fâtiha'nın âyet sayısı gibi üst veri elle yazılmaz, `core`'dan okunur.
 - react-native-track-player ve expo-av kullanılmaz (K-28, K-30).
 - Android'de kilit ekranı kontrolü yoksa ses yaklaşık 3 dakikada kesilir; v1 tek oynatıcılı `SteppedEngine` ile çıkar (R-20).
@@ -113,7 +113,7 @@ adb exec-out screencap -p > .tmp/a27/calma-q-1-1.png
 - Commit kapsamları `player`, `mobile`, gerekirse `pipeline` ve `publisher`.
 
 ## İnsan adımları
-- İ-07 · Hafız görüşmeleri ve yazılı izin: bu aşamayı durdurmaz; gerçek hafız paketi ancak izin ve Kurul onayıyla, ayrı bir işte eklenir.
+- İ-07 · gerekmiyor (K-40): hafız sesi alınmayacak, hafız görüşmesi ve izni yok. Kaynak seçimi A27 başında yapılır; `kapali` kaynak indirilmez, gerçek paket ancak kaynak şartı ve Kurul onayıyla, ayrı bir işte eklenir.
 - İ-15 · Apple Developer hesabı: yalnız iOS cihaz denemesi için (A27.6). Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
 
 ## Çıktılar

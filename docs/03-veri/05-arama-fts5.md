@@ -1,7 +1,7 @@
 # Arama (SQLite FTS5)
 
-> **Sürüm:** 1.2 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · K-21 ([karar defteri](../00-ozet/02-karar-defteri.md))
+> **Sürüm:** 1.3 · **Tarih:** 28 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · K-21 ([karar defteri](../00-ozet/02-karar-defteri.md))
 
 Arama cihazda SQLite FTS5 ile yapılır. Arama metni içerik hattında normalize edilir ve kanonik metinden ayrı sütunlarda durur; kanonik metin değişmez (K-26). Diğer belgelerdeki `search_text` adı bu sütunların (`tr_narrow`, `tr_wide`, `tr_stem`, `ar_norm`) ortak adıdır. Önek indeksi, Arapça için trigram tablosu ve bm25 sıralaması kullanılır; hedef orta seviye Android'de 50 ms altıdır (K-17). Normalleştirme kuralları yalnız bu dosyada tanımlıdır; Python, TypeScript ve C# uygulamaları `shared/test-vectors/` ile birbirine kilitlenir.
 
@@ -57,7 +57,16 @@ Kurallar IAJIT 2022 tarifine dayanır: harekeler, Kur'an işaretleri ve keşide 
 
 ### 1.4 Kur'an birimleri
 
-Rapor, arama için türetilmiş bir sütun yerine Tanzil'in kendi yayımladığı Simple Clean sürümünün kullanılmasını önerir; bu raporun çıkarımıdır. Kur'an birimlerinde `ar_norm` bu yüzden Simple Clean âyet metninin normalize hâlidir. Uthmani yazımı Simple Clean'den farklı olan kelimelerin normalize biçimleri sona eklenir (öneri); yapıştırılan Uthmani metin de böylece bulunur. Ayrı sütundaki normalize metnin Tanzil şartlarında "değiştirme" sayılıp sayılmadığı Tanzil'e sorulur ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md), yazışma 1; hukuki görüş değildir). Gerekirse Kur'an için içeriksiz FTS tablosu kullanılır; o durumda normalize metin pakette saklanmaz, yalnız indeks taşınır.
+Rapor, arama için türetilmiş bir sütun yerine Tanzil'in kendi yayımladığı Simple Clean sürümünün kullanılmasını önerir; bu raporun çıkarımıdır. Kur'an birimlerinde `ar_norm` bu yüzden Simple Clean âyet metninin normalize hâlidir. Uthmani yazımı Simple Clean'den farklı olan kelimelerin normalize biçimleri sona eklenir; yapıştırılan Uthmani metin de böylece bulunur.
+
+**AR-4 kuralı (A10'da uygulanır, [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) madde 5).**
+
+- `ar_norm` önce `normalize_ar(simple_clean)` değerini alır.
+- Ardına aynı âyetin `normalize_ar(uthmani)` sözcüklerinden, Simple Clean'in normalize sözcük kümesinde olmayanlar eklenir. Sıra Uthmani'de ilk görülme sırasıdır; sözcükler tekrarsızdır ve tek boşlukla ayrılır.
+- Normalleştirici işlevi ve `NORMALIZER_VERSION` değişmez. Kural hattın Kur'an `ar_norm` bileşimidir; bu yüzden üç dilli vektör gerekmez, hat birim testi yeterlidir.
+- Simple Clean `q:` birimi olmaz; yalnız `ar_norm` kaynağıdır. Bağlılık `provenance.ar_norm` içinde tutulur ([Editoryal veritabanı](./02-editoryal-veritabani.md) §10).
+
+Ayrı sütundaki normalize metnin Tanzil şartlarında "değiştirme" sayılıp sayılmadığı Tanzil'e sorulur ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md), yazışma 1; hukuki görüş değildir). Gerekirse Kur'an için içeriksiz FTS tablosu kullanılır; o durumda normalize metin pakette saklanmaz, yalnız indeks taşınır.
 
 ### 1.5 Test vektörleri
 
@@ -238,11 +247,11 @@ SELECT * FROM (SELECT r.pack_id, r.anchor, 'risale', r.ord, r.label, bm25(unit_f
 | AR-1 | İç kesme listesinin derlenmesi ve editör onayı | Öneri (A05'te 7 girdilik başlangıç listesi var) |
 | AR-2 | TypeScript Snowball Türkçe gövdeleyicisi; Python Snowball uygulaması | Python yarısı çözüldü (25 Ekim 2026, `snowballstemmer` 3.1.1, [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) madde 6); TypeScript yarısı Doğrulanacak (A12) |
 | AR-3 | İçeriksiz ya da dış içerikli FTS seçimi (boyut ve Tanzil yazışması) | Açık soru, hukuki görüş değildir |
-| AR-4 | Uthmani biçimlerinin Kur'an `ar_norm` sütununa eklenmesi | Öneri |
+| AR-4 | Uthmani biçimlerinin Kur'an `ar_norm` sütununa eklenmesi | Çözüldü (28 Ekim 2026): A10'da uygulanır, kural bölüm 1.4'te ([K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) madde 5) |
 | AR-5 | bm25 sütun ağırlıkları, RRF kaynak ağırlıkları ve ek puanlar | Ölçülecek |
 | AR-6 | expo-sqlite'ta `SQLITE_MAX_ATTACHED` ve şema nitelemeli `MATCH` | Doğrulanacak |
 | AR-7 | Referans orta seviye Android cihaz | Açık soru |
-| AR-8 | Farsça `ی` ve `ک` ile Arapça-Hint rakamlarının kaynaklarda görülmesi (1.0'da değişmez, bölüm 1.3 madde 4) | Doğrulanacak (A10) |
+| AR-8 | Farsça `ی` ve `ک` ile Arapça-Hint rakamlarının kaynaklarda görülmesi (1.0'da değişmez, bölüm 1.3 madde 4) | Doğrulanacak: A10'da ölçülür; sonuç aşama kaydında |
 
 ## İlgili dosyalar
 

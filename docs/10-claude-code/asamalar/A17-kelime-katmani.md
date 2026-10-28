@@ -31,7 +31,7 @@ Kur'an'ın kelime katmanı tamamlanır: A11'in yazdığı Tanzil kelime bölmesi
 ## Adımlar
 ### A17.1 · Doğrulamalar ve QAC durumu
 - `arastirmaci` resmî kaynaktan doğrular: QAC v0.4 morfoloji dosyasının indirme yolu, biçimi (segment satırları, lemma ve kök alanları) ve iki lisans metni; QAC'de aynı yazılışlı lemmaların ayrımı; QUL lemma kaynağının numarası ve dosya biçimi; Claude Haiku 5.5 model kimliği ve Batch API kullanımı ([İçerik hattı](../../04-icerik/02-icerik-hatti.md) §13 madde 5).
-- İ-04: A01'de gönderilen QAC e-postasına cevap geldiyse `lisans-denetcisi` lisans defterine ve `source` kaydına işler. Gelmediyse `qac-morfoloji` `bekliyor` kalır ve aşama sürer.
+- İ-04 tamam (2026-10-28, kullanıcı beyanıyla onaylandı); yazılı cevap dosyada yok. Cevap ya da belge gelirse `lisans-denetcisi` lisans defterine ve `source` kaydına işler; o zamana kadar `qac-morfoloji` `bekliyor` kalır ve aşama beklemeden sürer.
 - İndirme bir form ya da onay istiyorsa dosyayı kullanıcı indirir ve proje klasörüne koyar.
 - **Bitti sayılır:** A06'da açılan `pipeline/sources/qac-morfoloji.toml` doğrulanmış adres ve tarihli lisans kopyasıyla güncel; `uv run mutalaa sources check` 0.
 
@@ -74,7 +74,7 @@ Kur'an'ın kelime katmanı tamamlanır: A11'in yazdığı Tanzil kelime bölmesi
 
 ## Kabul ölçütleri
 - [ ] A11'in `quran_word` satırları var ve dilim eşitliği testi yeşil; QAC ile kelime sayısı farkları raporda.
-- [ ] QAC dosyasının SHA-256'sı kayıtlı ve yeniden hesapla aynı; `qac-morfoloji` `bekliyor` (ya da İ-04 cevabına göre güncel).
+- [ ] QAC dosyasının SHA-256'sı kayıtlı ve yeniden hesapla aynı; `qac-morfoloji` `bekliyor` (ya da kullanıcının getireceği yazılı dayanağa göre güncel).
 - [ ] Lemma türetme tutarlılığı %100; `root.id` ve `lemma.id` ikinci çalıştırmada değişmiyor (testler).
 - [ ] Onaylı `quran_word_fix` uygulanıyor, aday uygulanmıyor (test).
 - [ ] Dalga tablosu sorgudan üretilmiş; pilot maliyet tahmini kullanıcı onaylı.
@@ -104,7 +104,7 @@ dotnet run --project server/Mutalaa.Publisher -- publish --flavor internal --dry
 - Günlüklere metin yazılmaz; yapay zekâ çağrıları model, istem özeti, token ve maliyetle kaydedilir.
 
 ## İnsan adımları
-- İ-04 · QAC cevabı: cevap gelmezse aşama `bekliyor` durumuyla sürer; olumsuz cevapta yedek yol `/karar` ile planlanır.
+- İ-04 · QAC izni: tamam (2026-10-28, kullanıcı beyanı); aşama bekletilmez. Yazılı dayanak gelirse lisans kaydı güncellenir; olumsuz dayanakta yedek yol `/karar` ile planlanır.
 - İ-17 · Anthropic API anahtarı ve bütçe: A17.6 pilotundan önce gerekir.
 - İ-12 · Kelime anlamı taslaklarının onayı: her dalgada bekleme noktası; ilerleme dosyasına yazılır. Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
 

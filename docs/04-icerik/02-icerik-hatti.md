@@ -1,6 +1,6 @@
 # İçerik Hattı
-> **Sürüm:** 1.7 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
+> **Sürüm:** 1.8 · **Tarih:** 28 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
 
 İçerik hattı, kaynak dosyaları alır, normalize eder, kalıcı adres (çapa) verir, zenginleştirir, denetler ve editoryal veritabanına (PostgreSQL 18) yükler. Python 3.13 ile yazılır, paketleri `uv` yönetir. Hat yalnız geliştirme makinesinde çalışır, üretim sunucusunda çalışmaz (K-12). SQLite içerik paketlerini hat üretmez; paketleri editör onayından sonra .NET yayınlayıcı (`server/Mutalaa.Publisher`) lisans kapısından geçirerek üretir.
 
@@ -123,26 +123,27 @@ Ortam değişkenleri: `MUTALAA_DB_URL`, `ANTHROPIC_API_KEY`. Değerler ortamdan 
 |---|---|
 | `uv run mutalaa sources list [--format json\|tablo] [--kok <dizin>]` | `pipeline/sources/*.toml` kayıtlarını slug sırasında (Ordinal) listeler: `slug`, `tur`, `license_status`, `kurul_gerekli`, `embed_ok`, `yeniden_kontrol`. Varsayılan biçim `tablo`; tarihi geçmiş `yeniden_kontrol` değerinin sonuna `!` eklenir. `json` biçimi ek olarak `yeniden_kontrol_gecmis` alanını taşır (ASCII kaçışlı). Yalnız kayıt şemasını denetler, lisans kopyası dosyalarını okumaz; herhangi bir kayıtta şema hatası varsa hata stderr'e yazılır ve çıkış kodu `2` olur. `--kok` testler içindir; verilmezse `pnpm-workspace.yaml` aranır (A06) |
 | `uv run mutalaa sources check [--kok <dizin>]` | G-LIS denetimi: her TOML ayrıştırılır; `kapali` dışındaki kayıtta lisans kopyası (`licenses/{slug}-YYYY-AA-GG.txt`) bulunur, boş değildir ve SHA-256'sı tutar; `atif_metni`, `baslik` ve `license_name` boş değildir; `tur` ve `license_status` `enums.json` değerlerindendir. **Hata** (çıkış kodu `2`): şema, dosya adı ile `slug` farkı, BOM ya da CRLF, eksik ya da tutmayan lisans kopyası, `kapali` kayıtta ya da `provider = "quran_foundation"` kayıtta `embed_ok = true`. **Uyarı** (çıkış kodunu etkilemez): bilinmeyen `kisitlar` anahtarı, tarihi geçmiş `yeniden_kontrol`, `licenses/` altında hiçbir kaydın göstermediği (yetim) kopya. `kapali` kayıtta lisans kopyası aranmaz ve dosyası okunmaz; kayıt yalnız üst veridir. Son satır özet verir (`N kayıt, H hata, U uyarı`); çıkış `0` ya da `2` (A06) |
-| `uv run mutalaa ingest tanzil --variant uthmani` | İndirir, hash'ler, `data/raw`'a yazar, ayrıştırıp `data/staged` üretir |
+| `uv run mutalaa ingest tanzil --variant {uthmani\|simple-clean} [--dir <klasör>] [--kilit-oner] [--force]` (A10'da eklenir; K-39) | Kullanıcının `data/gelen/tanzil/` altına koyduğu dosyayı alır, indirmez. Dosyanın SHA-256'sını `ingest/tanzil.lock.json` ile karşılaştırır; tutmazsa çıkış `2` verir ve hiçbir şey yazmaz. Tutarsa baytları `data/raw`'a kopyalar, katı biçimde ayrıştırıp `data/staged` üretir. `--kilit-oner` salt okunurdur, önerilen kilit girdisini basar. `--limit` Tanzil'de reddedilir (kısmi alım kilidi ve G-BUT sayılarını bozar) |
 | `uv run mutalaa ingest qac` · `ingest quran-align` · `ingest qul --resource 75` | Diğer bağdaştırıcılar |
 | `uv run mutalaa ingest scans --edition elmalili-1935 --dir <klasör> --cilt <n>` | Bir cildin sayfa görsellerini cilt ve sayfa numarasıyla kaydeder |
 | `uv run mutalaa ingest register --source <kimlik> --file <dosya>` (Planlı; A09 pilotu ve A16 hazır metin dalı, [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)) | Kullanıcının elle indirdiği hazır dijital dosyayı (TXT, EPUB, metin katmanlı PDF, HTML) `data/raw` altına kaydeder: SHA-256 ve `fetch.json`. Kaynak kaydı olmadan çalışmaz; `kapali` kaynakta çıkış kodu `3` (G-LIS). `ingest scans` komutunun görsel dışı dosyalara genellemesidir. Bayrak adları uygulanırken kesinleşir |
 | `uv run mutalaa ocr run --edition elmalili-1935 --engine vision --pages c01:1-40` | OCR çalıştırır; sayfa seçimi cilt niteliklidir (`c01:1-40` = 1. cildin 1–40. sayfaları) |
 | `uv run mutalaa ocr eval --edition elmalili-1935 --gold <klasör>` | Altın örneklemde CER ve WER ölçer |
-| `uv run mutalaa normalize --source <kimlik>` | Arama metnini ve anahtarları üretir |
-| `uv run mutalaa anchor --source <kimlik>` | Çapa ve `content_hash` üretir, önceki sürümle karşılaştırır |
+| `uv run mutalaa normalize --source <kimlik>` (A10'da eklenir) | Arama metnini ve anahtarları üretir. `tanzil-uthmani` için `ar_norm` AR-4 kuralıyla (Simple Clean + Uthmani'ye özgü sözcükler) üretilir, `tr_*` boştur; lisans kapısı iki Tanzil kaynağına birden bakar (K-39) |
+| `uv run mutalaa anchor --source <kimlik>` (A10'da eklenir) | Çapa ve `content_hash` üretir, önceki sürümle karşılaştırır |
 | `uv run mutalaa enrich citations --target elmalili-tefsir` | İktibas ve atıf adayları ([İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md)) |
 | `uv run mutalaa enrich glosses --wave 1` | Kelime anlamı taslakları ([Kelime anlamları](./06-kelime-anlamlari.md)) |
-| `uv run mutalaa qa run --source <kimlik> [--gate G-CAP]` | QA kapıları |
-| `uv run mutalaa export pg --source <kimlik> [--dry-run]` | PostgreSQL'e yükler |
+| `uv run mutalaa qa run --source <kimlik> [--gate G-CAP]` (A10'da eklenir; ilk kapılar Tanzil için) | QA kapıları |
+| `uv run mutalaa export pg --source <kimlik> [--run <run_id>] [--dry-run]` (A10'da eklenir) | PostgreSQL'e yükler. `--run` yoksa en son `anchor` çalıştırması seçilir. Parmak izi atlaması yapmaz (bölüm 6, K-39 madde 8). Zincirdeki çalıştırma için `gecti` diyen QA raporu yoksa çıkış `1` |
 | `uv run mutalaa export review-queue --task glosses` | İnceleme kuyruğu üretir |
-| `uv run mutalaa export test-vectors [--check] [--kok <dizin>]` | `shared/test-vectors/anchors`, `offsets` ve `content-hash` dosyalarının hesaplanan alanlarını (`codepoints`, `utf16`, `cp_to_utf16`, `sha256`) ve sınır satırlarını (`an-s…`, `an-u-…`) üretir; elle yazılan beklentilere dokunmaz. `normalize/tr.jsonl` ve `normalize/ar.jsonl` tamamen elle yazılır (`expected` hesaplanmaz); komut bunlar için yalnız biçimi, `\u` kaçışını ve kimlik düzenini denetler ve normalizasyon modülünü içe aktarmaz. `--check` yazmadan karşılaştırır, fark varsa 1 (A04, A05) |
+| `uv run mutalaa export test-vectors [--check] [--kok <dizin>]` | `shared/test-vectors/anchors`, `offsets` ve `content-hash` dosyalarının hesaplanan alanlarını (`codepoints`, `utf16`, `cp_to_utf16`, `sha256`) ve sınır satırlarını (`an-s…`, `an-u-…`) üretir; elle yazılan beklentilere dokunmaz. `normalize/tr.jsonl` ve `normalize/ar.jsonl` tamamen elle yazılır (`expected` hesaplanmaz; istisna: `ar.jsonl` içindeki `ar-tz-` satırlarını `--tanzil-ornekleri` üretir, A10); komut bunlar için yalnız biçimi, `\u` kaçışını ve kimlik düzenini denetler ve normalizasyon modülünü içe aktarmaz. `--check` yazmadan karşılaştırır, fark varsa 1 (A04, A05) |
+| `uv run mutalaa export test-vectors --tanzil-ornekleri [--check]` (A10'da eklenir) | [Arama](../03-veri/05-arama-fts5.md) §1.5 tablosundaki Arapça örneklerin Tanzil Uthmani dilimlerini `normalize/ar.jsonl` dosyasına `ar-tz-NNNN` kimliğiyle ekler (`input` Tanzil dilimi, `expected` tablonun `ar` sütunu, `note` = `tanzil-uthmani q:s:a`). Yalnız `ar-tz-` satırları baştan üretilir; öteki elle yazılan satırlara dokunulmaz. `normalize_ar(input) != expected` ise durur. Normalleştirici ayrı modülde içe aktarılır; `test_vectors.py` modülünün içe aktarma yasağı korunur |
 | `uv run mutalaa export ic-kesme [--check] [--kok <dizin>]` | `shared/data/ic-kesme.txt` listesini katı denetler (BOM, CR, boş satır, yineleme, sıra ve `^[a-z]+('[a-z]+)+$` deseni; hata kodu 2) ve TypeScript ile C# kopyalarını (`packages/search/src/generated/ic-kesme.ts`, `server/Mutalaa.Domain/Text/IcKesme.g.cs`) üretir. `--check` yazmadan karşılaştırır, fark varsa 1 (A05) |
 | `uv run mutalaa export ayet-sayilari --kaynak <xml> --url <adres> --tarih <YYYY-AA-GG> [--check]` | Tanzil üst veri dosyasından sure başına âyet sayısını okur; `shared/data/ayet-sayilari.json` ve üç dilde kopyasını (`packages/anchors/src/generated/`, `anchor/ayet_sayilari.py`, `Anchors/AyetSayilari.g.cs`) üretir (A04) |
 | `uv run mutalaa llm estimate --task glosses --sample 50` | Örneklemde token sayar, maliyet tahmini verir |
 | `uv run mutalaa runs list` · `runs show <run_id>` | Çalıştırma kayıtları |
 
-Tarama ve OCR komutları baskı kimliği (`--edition elmalili-1935`), birim komutları kaynak kimliği (`--source elmalili-meal`) alır; kimlikler [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) dosyasındadır. Ortak bayraklar: `--dry-run`, `--force` (parmak izi aynı olsa da çalıştır), `--limit N`, `--config <dosya>`. Çıkış kodları: `0` başarılı, `1` QA kapısı kaldı, `2` girdi ya da yapılandırma hatası, `3` lisans kapısı (kaynak `kapali`).
+Tarama ve OCR komutları baskı kimliği (`--edition elmalili-1935`), birim komutları kaynak kimliği (`--source elmalili-meal`) alır; kimlikler [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) dosyasındadır. Ortak bayraklar: `--dry-run`, `--force` (parmak izi aynı olsa da çalıştır), `--limit N` (Tanzil `ingest`'inde reddedilir), `--config <dosya>` (başka bir `mutalaa.toml` verir). Çıkış kodları: `0` başarılı, `1` QA kapısı kaldı, `2` girdi ya da yapılandırma hatası, `3` lisans kapısı (kaynak `kapali`).
 
 Aşama dosyaları şu `uv run mutalaa` komutlarını öneri olarak ekler; komut uygulanınca bu listeye işlenir (A04'ün `export ayet-sayilari` ve `export test-vectors` komutları, A05'in `export ic-kesme` komutu ile A06'nın `sources list` ve `sources check` komutları uygulandı ve yukarıdaki tabloya işlendi): `ingest tanzil --variant ust-veri` (Tanzil üst veri dosyası, A11); `ingest sure-adlari --dosya <tsv>` ve `export sure-adlari` (sure adlarının içe ve dışa aktarımı, A11); `ingest fikstur --source <test-kaynak>` (sentetik fikstürler: `test-kucuk` A13, `test-risale-ornek` A20); `enrich morphology` (QAC segmentlerinden kelime düzeyi kök ve lemma, A17); `enrich tr-roots --source <kimlik>` (Türkçe kelime → Arapça kök, A18); `qa gold --type <tür>` (altın set ölçümü, ör. `kok`; A18). Kur'an içi `kok`, `lemma` ve `benzer_ayet` bağlantılarını üreten komutun adı A18'de henüz verilmedi. Hadis eşleme komutları (`enrich hadith-map`, `enrich hadith-refs`) [Hadis hazırlığı](./04-hadis-hazirligi.md#7-ocr-ihtiyacı) §7'dedir.
 
@@ -151,9 +152,10 @@ Aşama dosyaları şu `uv run mutalaa` komutlarını öneri olarak ekler; komut 
 ```
 data/                                   # git dışı
 ├─ raw/{kaynak}/{YYYY-MM-DD}/           # değişmez indirmeler ve taramalar
-│  └─ fetch.json                        # url, zaman, boyut, sha256, lisans kopyası (elle indirilen hazır dosyada ayrıca dosya adı ve kaydı yapan kişi; planlı, K-38)
+│  └─ fetch.json                        # url, zaman, boyut, sha256, lisans kopyası (elle indirilen dosyada ayrıca dosya_adi, indiren ve sart_onayi: Tanzil'de A10, hazır dijital dosyada planlı, K-38)
 ├─ staged/{kaynak}/{run_id}/            # yeniden üretilebilir ara çıktı
 │  ├─ units.jsonl · xref.jsonl
+│  ├─ notice.txt                        # yalnız Tanzil: dosyadaki bildirim bloğu, bayt bayt (K-39 madde 6)
 │  └─ manifest.json                     # çalıştırma manifesti (bölüm 12)
 ├─ ocr/{kaynak}/{run_id}/               # sayfa başına OCR çıktısı ve koordinatlar
 ├─ llm-cache/{model}/{prompt_sha}/      # yapay zekâ yanıtları
@@ -167,7 +169,8 @@ data/                                   # git dışı
  "attrs": {"cilt": 1, "sayfa": 0}, "origin": "hat", "ai": false, "run_id": "0192…"}
 ```
 
-- `raw` değişmez. Aynı adres aynı gün farklı SHA-256 verirse yeni klasör açılır ve uyarı yazılır.
+- `raw` değişmez. Aynı adres aynı gün farklı SHA-256 verirse yeni klasör açılır ve uyarı yazılır. Aynı baytlar `raw` altında zaten varsa Tanzil `ingest`'i yeni kopya açmaz (gece koşusu `raw`'u şişirmez).
+- **Tanzil `units.jsonl` alanları (A10).** Yukarıdaki alanlara `provenance` eklenir: `{file, sha256, line, bayt: [b, e), steps: []}`. `file` dosya adıdır, tarihli yol girmez; `bayt` aralığı ham dosyada yarı açıktır. `staged` altındaki `notice.txt` baytlarla yazılır; öteki çıktılar `newline="\n"` ile yazılır. Manifest dosyanın satır düzenini (satır sınıfları, bayt aralıkları, son LF durumu) taşır. Ham dosya `\n` ile bölünür; satır sonu yalnız LF'dir, 0x0D, BOM ve tanımsız satır çıkış `2` verir (K-39 madde 7).
 - Çıkarılmış metin (planlı, [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) madde 3). HTML, EPUB ya da PDF'ten çıkarılan metin kaynak dosyanın birebir dilimi değildir. Ham dosya `raw` altında değişmez ve SHA-256'sı `fetch.json`'a yazılır. Her `staged` satırının `provenance` alanı ham dosyanın özetini, dosya içi konumu ve çıkarıcı sürümünü taşır ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §10). Çıkarıcı sürümü sabittir ve dönüşüm deterministiktir; aynı ham dosya aynı metni verir.
 - `staged` her çalıştırmada yeniden üretilir; satırlar çapaya göre sıralanır.
 - `content_hash`, normalize edilmemiş kanonik metnin SHA-256'sıdır (UTF-8 bayt; 64 küçük harfli onaltılık karakter, önek yok: [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §4 CHECK). Kaynaktan alınan metinde kanonik metin, kaynağın dağıttığı hâlidir: Tanzil metni bayt bayt saklanır ve NFC bile uygulanmaz, çünkü NFC şedde ile harekenin sırasını değiştirir (K-26). NFC yalnız kendi ürettiğimiz metinlere (aktarımlar, kelime anlamları) ilk kayıtta uygulanır. İlk kayıt bir kez ve şu sırayla yapılır: silinecek karakterler silinir, NFC uygulanır, satır sonu ve boşluk düzenlenir; karakter listeleri ve kırpma kuralı [Çapa şeması](../03-veri/01-capa-semasi.md) §7'dedir ([K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)). Arama için normalize metin ayrı sütunda (`search_text`) tutulur.
@@ -176,11 +179,13 @@ data/                                   # git dışı
 
 ## 6. Tekrar çalıştırma ve idempotentlik
 
-1. **Parmak izi.** Her adım `SHA-256(girdi hash'leri + yapılandırma bölümü + hat git commit'i + araç sürümleri)` hesaplar. Parmak izi önceki başarılı çalıştırmayla aynıysa adım atlanır; `--force` bunu geçersiz kılar.
+1. **Parmak izi.** Her adım `SHA-256(girdi hash'leri + yapılandırma bölümü + hat git commit'i + araç sürümleri)` hesaplar. Parmak izi önceki başarılı çalıştırmayla aynıysa adım atlanır; `--force` bunu geçersiz kılar. Atlama yalnız dosya adımlarında (`ingest`, `normalize`, `anchor`) olur ve çalışma ağacı kirliyken kapalıdır. `export pg` parmak izi atlaması yapmaz: yükleme idempotenttir ve ucuzdur, atlama veritabanındaki kaymayı gizleyebilir (K-39 madde 8).
 2. **Çapa anahtarı.** Yükleme çapaya göre upsert yapar. Çapa silinmez ve yeniden numaralanmaz (K-26). Önceki sürümde olup yeni çalıştırmada eksik olan çapa G-CAP'i düşürür.
-3. **İnsan kararı korunur.** Hat yalnız `origin = 'hat'` ve `status = 'aday'` satırları günceller (`unit` için `metin_durumu = 'taslak'`). `onayli` ve `red` satırlara dokunmaz. Onaylı bir birimin metni kaynakta değiştiyse yeni metin ayrı bir inceleme kaydı olarak kuyruğa düşer.
+3. **İnsan kararı korunur.** Hat `unit` için yalnız `metin_durumu = 'taslak'` satırlarını günceller (`unit` tablosunda `origin` sütunu yoktur ve `status` yalnız `etkin` ya da `kullanim_disi` olur). `xref` ve benzeri aday tablolarında koşul `origin = 'hat'` ve `status = 'aday'` olur. `onayli` ve `red` satırlara dokunulmaz. Onaylı bir birimin metni kaynakta değiştiyse yeni metin ayrı bir inceleme kaydı olarak kuyruğa düşer.
+   - **Kanonik kaynak istisnası (K-39 madde 2).** Tanzil birimleri `metin_durumu = 'onayli'` girer (K-38 madde 4). Hat `onayli` Tanzil satırında yalnız türetilmiş sütunları günceller: `ar_norm`, `tr_*`, `provenance`, `data_version`, `ord`, `ayah_range`, `run_id`, `updated_at`. `metin`, `content_hash`, `metin_durumu`, `status`, `successors`, `rev`, `marks` ve `source_id` sütunlarına yazılmaz. Var olan çapanın `content_hash` değeri değişmişse işlem geri alınır ve komut `1` ile çıkar; çapa başka bir `source_id` altındaysa çıkış `2`. Yeni Tanzil sürümü yalnız onay treniyle ve `/karar` ile kilit güncellenerek alınır.
+   - **`source` satırı (K-39 madde 3).** Satır yoksa TOML'daki bütün alanlarla eklenir. Satır varsa yalnız betimleyici alanlar güncellenir (`baslik`, `surum`, `kaynak_url`, `license_name`, `license_url`, `atif_metni`, `atif_url`, `notice_text`, `lisans_kopyasi`, `lisans_sha256`, `yeniden_kontrol`, `alinma_tarihi`, `dosya_sha256`). `license_status`, `embed_ok`, `kurul_gerekli` ve `kurul_onay*` güncellenmez; TOML ile veritabanı farklıysa komut durur: veritabanı daha kısıtlayıcıysa ya da `kapali` ise çıkış `3`, öbür durumda çıkış `2` ve "editörde ikinci onay gerekir" iletisi ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §8).
 4. **Reddedilen aday geri gelmez.** `xref` için tekillik anahtarı `(type, src_anchor, src_span, dst_anchor, dst_span)` olur ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md), `xref_natural_key`). `origin` anahtara girmez; böylece reddedilmiş bir bağlantı başka bir yoldan da yeniden önerilmez.
-5. **Eşzamanlılık.** Aynı kaynak için iki çalıştırma aynı anda yükleme yapamaz: `SELECT pg_advisory_lock(hashtext('mutalaa:' || source_id));`
+5. **Eşzamanlılık.** Aynı kaynak için iki çalıştırma aynı anda yükleme yapamaz: `SELECT pg_advisory_xact_lock(hashtext('mutalaa:' || source_id));` İşlem sonunda kilit kendiliğinden bırakılır; hata ya da kesintide kilit takılı kalmaz.
 6. **İşlem bütünlüğü.** Her `export pg` tek bir veritabanı işlemidir. Hata olursa geri alınır; `staged` yerinde kalır.
 
 ```sql
@@ -198,6 +203,13 @@ WHERE unit.metin_durumu = 'taslak'
 
 Toplu yükleme psycopg 3'ün `COPY` desteğiyle önce `staging_unit` tablosuna yapılır, ardından yukarıdaki sorguyla hedef tabloya aktarılır.
 
+Tanzil için yazım iki ayrı ifadedir (A10; yukarıdaki örneğin `DO UPDATE SET metin …` biçimi kanonik kaynakta kullanılmaz):
+
+- `INSERT … SELECT … WHERE NOT EXISTS`: yeni çapaları ekler.
+- `UPDATE unit … FROM staging_unit … WHERE anchor ve source_id eşit AND content_hash eşit AND (türetilmiş sütunlar) IS DISTINCT FROM (…)`: yalnız K-39 madde 2'deki türetilmiş sütunları günceller.
+
+İkisi de IDENTITY değeri harcamaz. `staging_unit` geçici tablodur (`ON COMMIT DROP`); `unit` tablosunda tetikleyici olmadığı için `updated_at` ifadede açıkça yazılır.
+
 ## 7. Günlükleme
 
 - Her kayıt JSON satırıdır: `ts`, `level`, `run_id`, `source_id`, `adim`, `olay`, sayılar. Konsolda okunur bir özet basılır.
@@ -206,6 +218,8 @@ Toplu yükleme psycopg 3'ün `COPY` desteğiyle önce `staging_unit` tablosuna y
 - Günlüklere içerik metni yazılmaz; çapa ve hash yazılır.
 
 ## 8. Yeni kaynak ekleme
+
+**Tanzil için `fetch` (A10).** `fetch` indirmez: kullanıcının `data/gelen/tanzil/` altına koyduğu dosyayı alır. Dosyayı kullanıcı kendisi indirir ve şart onayını kendisi verir ([İnsan adımları](../10-claude-code/06-insan-adimlari.md) İ-30). Dosya kilit denetiminden geçmeden `raw`'a kopyalanmaz. `RawFile`, `StagedUnit` ve `SourceAdapter` tabanı A10'da kurulur; `StagedUnit` `provenance` alanını taşır (aşağıdaki kod örneği).
 
 1. [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) kontrol listesi tamamlanır; `pipeline/sources/{kimlik}.toml` açılır ve `uv run mutalaa sources check` hatasız (çıkış `0`) geçer. `check` kaydın şemasını ve lisans kopyasını denetler; `kapali` bir kayıt `check`'te hata sayılmaz (yalnız üst veridir), ama `ingest` komutları `kapali` kaynakta `3` koduyla durur (G-LIS).
 2. `ingest/{kimlik}.py` bağdaştırıcısı yazılır.
@@ -239,6 +253,7 @@ class StagedUnit:
     anchor: str
     text: str                      # kanonik metin, normalize edilmemiş
     attrs: dict = field(default_factory=dict)
+    provenance: dict | None = None  # {file, sha256, line, bayt: [b, e), steps: []}; A10
 
 class SourceAdapter(Protocol):
     source_id: str

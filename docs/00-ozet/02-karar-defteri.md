@@ -1,7 +1,7 @@
 # Karar Defteri
 
 > **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Onaylı
-> **Kapsam:** 16–18 Ekim 2026 beyin fırtınası oturumunda verilen bütün kararlar ve sonraki eklemeler (K-31, 19 Ekim 2026; K-32, K-33 ve K-34, 21 Ekim 2026; K-35, 24 Ekim 2026; K-36, 25 Ekim 2026; K-37, 26 Ekim 2026; K-38, 27 Ekim 2026).
+> **Kapsam:** 16–18 Ekim 2026 beyin fırtınası oturumunda verilen bütün kararlar ve sonraki eklemeler (K-31, 19 Ekim 2026; K-32, K-33 ve K-34, 21 Ekim 2026; K-35, 24 Ekim 2026; K-36, 25 Ekim 2026; K-37, 26 Ekim 2026; K-38, 27 Ekim 2026; K-39 ve K-40, 28 Ekim 2026).
 > **Kural:** Bir karar değişirse eski satır silinmez; "Geçersiz" olarak işaretlenir ve yeni karara bağlantı verilir.
 
 Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrıntılandırır ama değiştiremez. Çelişki görülürse bu dosya geçerlidir.
@@ -50,6 +50,8 @@ Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrı
 | K-36 | Arama normalizasyonu ayrıntıları | Adım sırası, kesme ve sözcük kuralları, biçim karakterleri, Arapça noktalama, küçük harf kod noktası başına; Python gövdeleyicisi `snowballstemmer` 3.1.1 ve `â î û` ön katlaması | [Arama](../03-veri/05-arama-fts5.md) |
 | K-37 | Editoryal şema ayrıntıları | G-YZ kaydı `review.yz_kaydi`; ortak enum JSON'u 11 tür; Identity `kimlik` şemasında, parola yalnız uzunluk ≥ 12; PostgreSQL ad politikası; belgede olmayan dizin yok | [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) |
 | K-38 | Kaynak edinimi | Dijital öncelikli, kanıtla yükseltme; Elmalılı'da kontrollü hazır metin (pilotta OCR ile yarışır); çıkarılmış metin üçüncü kanonik tür; hazır metin `taslak` girer | [Bu dosya, K-38](#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) |
+| K-39 | Tanzil alımı | Simple Clean `q:` birimi değil, yalnız `ar_norm` kaynağı; hat `onayli` Tanzil satırında yalnız türetilmiş sütunları günceller; `source` satırında ikinci onaylı alanlar ezilmez; sıkı kilit ve tanı; AR-4 A10'da; bildirim metni bayt bayt | [Bu dosya, K-39](#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) |
+| K-40 | Ses kaynağı | Hafız görüşmesi yerine hazır dijital tilavet kaynakları; İ-07 yeniden tanımlandı; `kapali` EveryAyah ve QuranicAudio indirilmez, QF yalnız arka uçtan; Kurul onayı sürer | [Bu dosya, K-40](#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları) |
 
 ---
 
@@ -333,6 +335,36 @@ Eski planın okuyucu tasarımları, "okuma simetrisi" çekirdeği (son okunan ye
   - Hukuki görüş değildir.
 - **Değerlendirilen alternatifler:** Mevcut yöntem (hazır metne hiç bakmamak). Hazır metni doğrudan `serbest` saymak (baskı esası belirsiz, sadeleştirme sızabilir). Hazır metni yalnız karşılaştırma tanığı yapmak (ilk seçim; proje sahibi kontrollü yolu seçti).
 - **Kaynak:** Proje sahibinin kararı (27 Ekim 2026): 1 ve 2. maddeler seçim sorularıyla, 3–5. maddeler taslağın onayıyla. Kaynak araştırması: Elmalılı, Tecrîd ve lügat adaylarının bağımsız doğrulaması (27 Ekim 2026); sonuçlar lisans defterindedir.
+
+### K-39 · Tanzil alımı: Simple Clean'in yeri, kanonik kaynakta hat yazma kuralı, kilit
+- **Karar:**
+  1. **Simple Clean.** `data/raw` ve `data/staged` içinde kalır, `q:` birimi olmaz; yalnız Kur'an birimlerinin `unit.ar_norm` sütununu besler. Pakette tutulup tutulmayacağı A12'de karara bağlanır. `icerik.source` tablosuna birimsiz bir satır olarak yüklenir. `ar_norm` taşıyan paket Simple Clean'i de kaynak sayar: P-01 ve P-03 durum hesabına, `kurul_gerekli` türetimine ve atıf satırlarına girer (A12 ve A13'e not). Bağlılık makinenin okuyacağı yerde tutulur: `provenance.ar_norm = {kaynak, sha256, line, normalizer_version, ar4}`.
+  2. **Kanonik kaynakta hat yazma kuralı ([İçerik hattı](../04-icerik/02-icerik-hatti.md) §6 madde 3'e istisna).** Tanzil birimleri `metin_durumu = 'onayli'` girer. Hat `onayli` Tanzil satırında yalnız türetilmiş sütunları günceller: `ar_norm`, `tr_*`, `provenance`, `data_version`, `ord`, `ayah_range`, `run_id`, `updated_at`. `metin`, `content_hash`, `metin_durumu`, `status`, `successors`, `rev`, `marks` ve `source_id` sütunlarına yazılmaz. Var olan çapanın `content_hash` değeri değişmişse işlem geri alınır (çıkış 1); çapa başka bir `source_id` altındaysa çıkış 2.
+  3. **`source` satırı.** Satır yoksa TOML'daki bütün alanlarla eklenir. Satır varsa yalnız betimleyici alanlar güncellenir (`baslik`, `surum`, `kaynak_url`, `license_name`, `license_url`, `atif_metni`, `atif_url`, `notice_text`, `lisans_kopyasi`, `lisans_sha256`, `yeniden_kontrol`, `alinma_tarihi`, `dosya_sha256`). İkinci onay gerektiren alanlar (`license_status`, `embed_ok`, `kurul_gerekli`, `kurul_onay*`) hat tarafından güncellenmez; TOML ile veritabanı farklıysa komut durur (veritabanı daha kısıtlayıcıysa ya da `kapali` ise çıkış 3, öbür durumda çıkış 2).
+  4. **Kilit.** `tanzil.lock.json` dosya SHA-256'sını, âyet satırlarının özetini (`metin_sha256`) ve bildirim bloğunun özetini (`bildirim_sha256`) tutar. Dosya özeti tutmazsa her durumda çıkış 2; ileti farkın bildirimde mi metinde mi olduğunu söyler. Denetim `data/gelen` dosyası üzerinde, `data/raw`'a kopyalamadan önce yapılır. Kilit yalnız `/karar` ile değişir; yeni Tanzil sürümü yalnız onay treniyle alınır ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) §7.3).
+  5. **AR-4.** `ar_norm` = `normalize_ar(simple_clean)`; ardına aynı âyetin `normalize_ar(uthmani)` sözcüklerinden Simple Clean sözcük kümesinde olmayanlar, Uthmani'deki ilk görülme sırasıyla, tekrarsız, tek boşlukla eklenir. Normalleştirici işlevi ve `NORMALIZER_VERSION` değişmez; kural hattın Kur'an `ar_norm` bileşimidir.
+  6. **Bildirim metni.** `source.notice_text`, dosyadaki bildirim bloğunun baytlarının katı UTF-8 çözümüdür; önek, iç boş satırlar ve LF dahil hiçbir dönüşüm uygulanmaz. TOML'daki `notice_text` buna birebir eşit tutulur (karşılaştırmada `rstrip` yok).
+  7. **Dosya biçimi.** Satır sonu yalnız LF'dir. 0x0D, BOM ya da tanımsız satır görülürse komut çıkış 2 verir ve durur.
+  8. **`export pg` parmak izi atlaması yapmaz.** Yükleme idempotenttir; atlama veritabanındaki kaymayı gizleyebilir. Dosya adımları (`ingest`, `normalize`, `anchor`) parmak izi aynıysa atlanabilir ve çalışma ağacı kirliyken atlanmaz.
+- **Gerekçe:**
+  - A10 aşama dosyası Simple Clean'in yerini ve kilit karşılaştırmasını plan aşamasında sorulacak diye bıraktı; `unit.anchor` tekildir ve `ar_norm` Simple Clean'den üretilir ([Arama](../03-veri/05-arama-fts5.md) §1.4).
+  - İçerik hattı §6 hatın `onayli` satıra dokunmamasını ister; Tanzil `onayli` girer (K-38 madde 4), bu yüzden hatın hangi sütunlara yazabileceği açıkça yazılmalıdır.
+  - [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §8 ve A39 lisans durumu, `embed_ok` ve Kurul alanlarını ikinci onaya bağlar; hat bunları TOML'dan ezemez.
+  - Telif yılı satırı indirmeye göre değişebilir (A01.1; Tanzil'in yanıtı İ-08'de bekliyor): kilidin üç özeti nedeni ayırır. Tanzil lisansı "CHANGING IT IS NOT ALLOWED" der ve bildirimin türetilmiş dosyalarda korunmasını ister ([lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.1). Hukuki görüş değildir.
+- **Değerlendirilen alternatifler:** Kilidin yalnız metin satırlarına bakması (Test stratejisi §5 madde 1'den sapar). Simple Clean'i ayrı `q:` birimi yapmak (`unit.anchor` tekilliğini bozar). `source` satırını her koşuda TOML'dan tam güncellemek (ikinci onayı atlar). AR-4'ü A12'ye ertelemek (kullanıcı A10'da uygulamayı seçti).
+- **Kaynak:** Proje sahibinin kararı (28 Ekim 2026): kilit sıkı ve tanılı, AR-4 A10'da uygulanır, A10 için onay sorulmadan ilerlenir. Plan: A10 planı ve beş açılı bağımsız denetimi (28 Ekim 2026). Resmî okuma: [Tanzil lisansı](https://tanzil.net/docs/text_license) ve [indirme sayfası](https://tanzil.net/download/), 28 Ekim 2026. İlk kilit değerleri indirmeden sonra bu karara tarihli bir notla eklenir.
+
+### K-40 · Ses kaynağı: hazır dijital tilavet kaynakları
+- **Karar:** Hafız sesi alınmayacak: Türk hafızlarla görüşme, hafızdan izin ve yeni kayıt alma tamamen bırakıldı. Kaynak olarak hazır dijital tilavet kaynakları değerlendirilir ve seçilir; İ-07 buna göre yeniden tanımlandı: "hazır tilavet kaynaklarının seçilmesi, seslerin temin edilmesi ve A27 sesli okuma sistemine entegrasyonu". Seçimi A27'nin başında proje sahibi yapar; önce çevrimiçi oynatma (arka uç üzerinden, kaynağın şartı izin verirse), indirme ve çevrimdışı dinleme yalnız kaynağın şartı izin veriyorsa.
+- **Değişmeyenler (K-06 kapısı):**
+  1. `ses-everyayah` ve `ses-quranicaudio` kayıtları `kapali` kalır (açık lisans yok, telif okuyucuda): indirilmez, işlenmez, pakete girmez.
+  2. `ses-qf-api` `bekliyor` kalır ve `embed_ok = false`'tır: istemci kimlik bilgileri yalnız arka uçta durur, içerik toplu depolanmaz, hazır veritabanı olarak dağıtılmaz ve en çok bir hafta önbelleğe alınır ([Ses sistemi](../06-mobil/02-ses-sistemi.md) §12, QF Developer Terms).
+  3. Sesli Kur'an Kurul onayına tabidir (633 sayılı Kanun m. 6); `public` ve `internal` derlemede yalnız `serbest` ve Kurul onaylı ses görünür.
+  4. quran-align zamanlamaları (CC BY 4.0) `serbest` kalır; kaynakta zamanlama yoksa uydurulmaz.
+  5. Bir kaynağın durumu yazılı dayanakla değişirse (ör. proje sahibinin alacağı izin) `/karar` ve `lisans-denetcisi` ile işlenir; beyan tek başına `serbest` yapmaz.
+- **Gerekçe:** Proje sahibinin tercihi: hafız görüşmeleri ve bireysel izinler yerine mevcut dijital kaynaklarla ilerlemek. Yaygın tilavet kaynakları açık lisans vermiyor ve telif okuyucuda kalıyor ([Ses sistemi](../06-mobil/02-ses-sistemi.md) §12); bu yüzden kaynak kayıtlarının durumu ve kapı kuralları değişmiyor, yalnız izin yolu yeniden tanımlanıyor. Hukuki görüş değildir.
+- **Değerlendirilen alternatifler:** Eski yol (hafızlarla görüşme, 3–5 yazılı izinli hafız; Ses sistemi §12 raporunun önerisi): proje sahibi kararıyla tamamen bırakıldı, yedek yol değildir; [hafız izin taslağı](../yazismalar/hafiz-izin.md) iptal edildi ve gönderilmeyecek. Hazır kaynaklardan izinsiz toplu indirme: K-06 ve kaynak kayıtları nedeniyle yapılmaz.
+- **Kaynak:** Proje sahibinin kararı (28 Ekim 2026). Mevcut kayıtlar: `pipeline/sources/ses-*.toml`. Sesli oynatıcı ve kataloğun uygulanması A27'dedir; bu karar yalnız kaynak yolunu ve İ-07'yi değiştirir.
 
 ---
 
