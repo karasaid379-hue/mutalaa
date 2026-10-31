@@ -7,9 +7,6 @@ data/
 .tmp/
 .config/
 .claude/
-.codex/
-.agents/
-AGENTS.md
 CLAUDE.md
 pnpm-lock.yaml
 # Uretilen dosyalar: `uv run mutalaa export ayet-sayilari` ve `export ic-kesme` yazar; bicimi uretec belirler,
