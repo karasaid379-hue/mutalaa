@@ -66,12 +66,12 @@ flowchart LR
 **Amaç.** Rapor şu belirsizliklerin kod yazılmadan kapatılmasını istiyor: Kurul'un dijital eser başvuru usulü ve Medine düzenli fontlara bakışı, Risale haklarını bugün kimin kullandığı, metin içermeyen atıf dizininin hukuki durumu ve Elmalılı'nın kaynak baskısı. Ses için hafız izni gerekmez: hazır kayıtlar kullanılır ([K-40](../00-ozet/02-karar-defteri.md#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları), [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)).
 
 **İşler**
-- Kurul'a ön görüşme talebi ve soru listesi ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)).
-- Fikri haklar avukatına sorular (hukuki görüş değildir): Risale haklarını bugün kim kullanıyor; telifli metin dizin, gömme ve altın set için içeride işlenebilir ve harici bir dil modeli API'sine gönderilebilir mi; metinsiz atıf dizini mağaza derlemesinde yer alabilir mi ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md), §2.4).
+- Kurul'a ön görüşme talebi ve soru listesi ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)).
+- Fikri haklar avukatına sorular (hukuki görüş değildir): Risale haklarını bugün kim kullanıyor; telifli metin dizin, gömme ve altın set için içeride işlenebilir ve harici bir dil modeli API'sine gönderilebilir mi; metinsiz atıf dizini mağaza derlemesinde yer alabilir mi ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md), §2.4).
 - QAC'ye yazılı lisans sorusu (S-15). Cevap gelene dek QAC'den türeyen kök ve lemma ayrı `kelime-kok` paketinde `bekliyor` durumunda kalır ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)).
 - KFGQPC'ye Hafs fontu için yazılı izin talebi; QF Developer Console hesabı ve şartların okunması.
 - Ses kaynağı ve okuyucu araştırması (A27.1, 30 Ekim 2026; [Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md)). Hafızlarla görüşme yapılmaz (K-40); S-07 kapandı.
-- Lisans defteri v1: v1 kaynaklarının hepsi `license_status` taşır ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md)).
+- Lisans defteri v1: v1 kaynaklarının hepsi `license_status` taşır ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md)).
 - Elmalılı özgün baskısının (İstanbul 1935–1938, 6.442 sayfa) tarama envanteri ve OCR pilotu. Türkçe metnin Latin harfli, âyetlerin Arapça harfli olduğu bir tarama nüshasında doğrulanır ([K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) düzeltmesi); karakter hata oranı ölçülür. Pilotta kayıtlı hazır metin adayları da aynı örneklemde ölçülür ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)); hazır metin yolu yalnız eşik geçilirse seçilir.
 - Tek depo iskeleti, Docker Compose (`postgres:18`, `api`, `editor`, SeaweedFS S3 deposu; [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı)), GitHub Actions.
 - `packages/anchors` ve `shared/test-vectors/`; Python, TypeScript ve C# uygulamaları.
@@ -100,7 +100,7 @@ flowchart LR
 - Editör paneli: iktibas, kök etiketi, kelime anlamı ve metin düzeltme kuyrukları; lisans durumu yönetimi.
 - Publisher: lisans kapısı, paket başına `kurul_gerekli` alanı, imzalı manifestler, yerel S3 deposuna (SeaweedFS) yayın.
 - Altın setler ve değerlendirme raporları.
-- Faz 2'yi bloklamayan uzun işler: Risale çapaları, âyet atıf dizini ve baskı sayfa eşlemesi; metin hukukçu görüşüne kadar `kapali`, görüş olumluysa yalnız `dev` derlemede `ic_kullanim`; dizin ve harici API adımı da bu görüşe bağlı ([K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik)); Tecrîd'in Arapça metni ve Naim kısmı `serbest` ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md#2-özet-tablo) §2), Kütüb-i Sitte Arapça metni kaynak belgesi netleşene dek `bekliyor`, Kâmil Miras ciltleri 1 Ocak 2028'e kadar `kapali` ([K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları), [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)); Elmalılı tefsir metninin OCR'ı ya da ölçümü geçerse hazır metin adayı ([K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali), [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)).
+- Faz 2'yi bloklamayan uzun işler: Risale çapaları, âyet atıf dizini ve baskı sayfa eşlemesi; metin hukukçu görüşüne kadar `kapali`, görüş olumluysa yalnız `dev` derlemede `ic_kullanim`; dizin ve harici API adımı da bu görüşe bağlı ([K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik)); Tecrîd'in Arapça metni ve Naim kısmı `serbest` ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md#2-özet-tablo) §2), Kütüb-i Sitte Arapça metni kaynak belgesi netleşene dek `bekliyor`, Kâmil Miras ciltleri 1 Ocak 2028'e kadar `kapali` ([K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları), [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)); Elmalılı tefsir metninin OCR'ı ya da ölçümü geçerse hazır metin adayı ([K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali), [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)).
 
 **Çıkış ölçütleri**
 - `core` paketi aynı girdiyle aynı içerik özetini üretiyor.
@@ -120,7 +120,7 @@ flowchart LR
 - Kütüphane, Ara, Defterim, Ayarlar (Depolama, Kaynaklar ve lisanslar, Kurul onay bilgisi) ([Mobil ekranlar](../01-urun/03-mobil-ekranlar.md)).
 - Paket indirme, özet doğrulama, atomik değiştirme ([Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md)).
 - Ses ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)): 7 okuyucu, 9 kayıt; sure dosyası ve QUD zamanlaması; dosyalar kendi depomuzdaki aynadan; indirmeden çevrimiçi dinleme, sure ya da kaydın tamamını kalıcı indirme. expo-audio ve XState; SDK 58'de `AudioPlaylist` ile kilit ekranında sonraki/önceki sure ([Riskler](./03-riskler.md), R-20; [Ses sistemi](../06-mobil/02-ses-sistemi.md)). Sırası: araştırma (A27.1, tamam), katalog ve ayna (A27.2), mobil geliştirme (A27.3–A27.8), cihaz testi (A27.9, kullanıcı).
-- Kişisel veri içermeyen hata raporu ([KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md)).
+- Kişisel veri içermeyen hata raporu ([KVKK ve gizlilik](../07-yayin/02-gizlilik.md)).
 - Maestro akışları, performans ve erişilebilirlik ölçümleri; ekipten ve izin varsa davetli test kullanıcılarından geri bildirim.
 
 **Çıkış ölçütleri**
@@ -204,6 +204,6 @@ Her olay aynı yolu izler: lisans defteri güncellenir, `license_status` değiş
 ## İlgili dosyalar
 
 - [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) · [Sonra yapılacaklar](./02-sonra-yapilacaklar.md) · [Riskler](./03-riskler.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) · [Proje yapısı](../02-mimari/03-proje-yapisi.md)
+- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [KVKK ve gizlilik](../07-yayin/02-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
+- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) · [Proje yapısı](../02-mimari/03-proje-yapisi.md)
 - [Kaynakça](../09-kaynakca.md) · [Karar defteri](../00-ozet/02-karar-defteri.md)

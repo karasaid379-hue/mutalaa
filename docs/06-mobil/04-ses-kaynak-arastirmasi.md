@@ -148,7 +148,7 @@ Gerekçe:
 2. Android'de `createDownloadTask` sürdürmede `If-Range` ya da ETag göndermiyor; değişen bir dosyaya sürdürme bozuk dosya üretir. Değişmez adres bu riski kaldırır.
 3. Kaynaklar boyut ve sha256 vermiyor; ayna her dosyanın boyutunu ve özetini bilir. İndirme doğrulaması ve boyut gösterimi buna dayanır.
 4. Zamanlama sese yalnız URL ile bağlı; kaynakta dosya değişir ya da adres taşınırsa (MP3Quran #312) zamanlama kayar. Ayna dosyayı sabitler; kaynakta değişiklik içerik hattının denetiminde görülür, yeni `dosya_surumu` olarak gelir.
-5. Kullanıcının IP adresi birden çok üçüncü taraf ses sunucusuna gitmez; yalnız zaten kullanılan içerik deposu ve CDN'e gider ([KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) §2.4).
+5. Kullanıcının IP adresi birden çok üçüncü taraf ses sunucusuna gitmez; yalnız zaten kullanılan içerik deposu ve CDN'e gider ([KVKK ve gizlilik](../07-yayin/02-gizlilik.md) §2.4).
 6. ASP.NET arka ucu ses baytlarını iletmez; depo nesne deposudur.
 
 Bedel: dokuz kayıt için yaklaşık 12–16 GB depolama (kaba tahmin, §4.4). R2 fiyatı ve çıkış ücreti İ-18 ile hesap açılırken doğrulanır; ücretli işlem kural 11 gereği onay ister.
@@ -256,5 +256,5 @@ Okuma tarihi hepsi için 30 Ekim 2026.
 ## İlgili dosyalar
 
 - [Ses sistemi](./02-ses-sistemi.md) · [Mobil mimari](./01-mobil-mimari.md) · [Depolama yöneticisi](./03-depolama-yoneticisi.md)
-- [A27 aşaması](../10-claude-code/asamalar/A27-ses-sistemi.md) · [Karar defteri](../00-ozet/02-karar-defteri.md) · [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md)
-- [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md)
+- [A27 aşaması](../10-claude-code/asamalar/A27-ses-sistemi.md) · [Karar defteri](../00-ozet/02-karar-defteri.md) · [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md)
+- [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [KVKK ve gizlilik](../07-yayin/02-gizlilik.md)

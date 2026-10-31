@@ -246,4 +246,4 @@ Aynı gramer motoru `collection_alias` tablosuyla hadis atıflarını ayrıştı
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Sözlük](../00-ozet/03-sozluk.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [Arama](../03-veri/05-arama-fts5.md)
 - [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) · [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md) · [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md)
-- [Yayın kapısı](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md) · [Kaynakça](../09-kaynakca.md)
+- [Yayın kapısı](../07-yayin/01-yayin-sureci.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md) · [Kaynakça](../09-kaynakca.md)

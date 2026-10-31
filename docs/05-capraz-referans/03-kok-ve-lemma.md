@@ -22,9 +22,9 @@ Bu dosya Kur'an kelimelerinin kök ve lemma verisini, Türkçe kelimeyi Arapça 
 | [QUL SSS](https://qul.tarteel.ai/faq) | Ticari projelerde kullanılabilir, ama her kaynağın lisansı ayrı okunmalı. İncelenen kaynak sayfalarında lisans alanı yok. |
 
 Hukuki görüş değildir. Eylemler:
-1. **QAC'ye yazılır** (rapor ve brif). Sorular aşağıdaki taslakta. Cevap [kaynaklar ve lisans defterine](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) ve `source` satırına işlenir.
+1. **QAC'ye yazılır** (rapor ve brif). Sorular aşağıdaki taslakta. Cevap [kaynaklar ve lisans defterine](../04-icerik/01-kaynaklar.md) ve `source` satırına işlenir.
 2. **Tarteel'e yazılır;** QUL'un morfoloji ve lemma dışa aktarımları için kaynak bazında şart sorulur.
-3. **Ara durum:** QAC kaynağı `license_status = 'bekliyor'` taşır. QAC'den türeyen alanlar (`root_id`, `lemma_id`, `pos`) yalnız ekip içi `dev` derlemede görünür (K-06; [lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §1). `internal` ve `public` derlemede kelime kartı metni ve sesi gösterir; kök, lemma ve anlam satırları cevap gelene kadar kapalıdır (Açık soru 1).
+3. **Ara durum:** QAC kaynağı `license_status = 'bekliyor'` taşır. QAC'den türeyen alanlar (`root_id`, `lemma_id`, `pos`) yalnız ekip içi `dev` derlemede görünür (K-06; [lisans defteri](../04-icerik/01-kaynaklar.md) §1). `internal` ve `public` derlemede kelime kartı metni ve sesi gösterir; kök, lemma ve anlam satırları cevap gelene kadar kapalıdır (Açık soru 1).
 4. **B planı:** QAC ticari olmayan kullanım ya da yalnız aynen dağıtım şartında ısrar ederse üç yol var. (a) Dosya ayrı bir pakette aynen dağıtılır ve tablolar cihazda ilk açılışta kurulur (avukata sorulur). (b) Kendi etiketlerimizi CAMeL Tools (MIT) ve editör onayıyla üretiriz; Kur'an Arapçasındaki başarısı Doğrulanacak. (c) QAC Version 2'nin açık veri setleri beklenir. Not (20 Ekim 2026): Version 2 deposunda veri lisansı ifadesi yok, son işleme 21 Temmuz 2023 tarihli; bu yüzden (c) zayıfladı ([kaisdukes/quranic-corpus](https://github.com/kaisdukes/quranic-corpus)).
 
 Gönderilecek metin [QAC lisans sorusu](../yazismalar/qac-lisans.md) yazısındadır. Yazının hitabı artık "QAC bakımcıları"dır (sitenin altbilgisine göre bakım quran.com ekibindedir; 20 Ekim 2026). Soru sayısı 6'dır. Aşağıdaki taslak kısa özetidir; metin ile çelişirse yazışma dosyası geçerlidir.
@@ -257,5 +257,5 @@ Hadis metinleri ile Risale ve tefsirdeki Kur'an dışı Arapça ibareler CAMeL T
 - [Bağlantı modeli](./01-baglanti-modeli.md) · [İktibas tespiti](./02-iktibas-tespiti.md) · [Anlamsal katman](./04-anlamsal-katman.md)
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Sözlük](../00-ozet/03-sozluk.md)
 - [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Arama](../03-veri/05-arama-fts5.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md)
-- [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) · [Yayın kapısı](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [Kaynakça](../09-kaynakca.md)
+- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md)
+- [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) · [Yayın kapısı](../07-yayin/01-yayin-sureci.md) · [Kaynakça](../09-kaynakca.md)

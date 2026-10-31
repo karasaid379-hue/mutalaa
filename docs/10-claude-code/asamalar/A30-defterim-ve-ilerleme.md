@@ -16,7 +16,7 @@ Eski planın korunan "okuma simetrisi" çekirdeğini (K-30) cihazda kurar: isiml
 - [Tasarım sistemi](../../01-urun/04-tasarim-sistemi.md): §2.3 vurgu renkleri, §6 `HighlightSwatch`, `HatimGrid`, `HatimBar`, `NoteLinkChip`, §7 tezhip kuralı
 - [Depolama yöneticisi](../../06-mobil/03-depolama-yoneticisi.md): §8 çapa denetimi, §9 paketi silinmiş kayıt
 - [Kapsam ve fazlar](../../01-urun/01-kapsam-ve-fazlar.md): §4.8, §4.9, §8 B-08
-- [KVKK ve gizlilik](../../07-yayin/02-kvkk-ve-gizlilik.md): §2.1 veri envanteri, §2.7 dışa aktarma
+- [KVKK ve gizlilik](../../07-yayin/02-gizlilik.md): §2.1 veri envanteri, §2.7 dışa aktarma
 
 ## Kapsam
 **Yapılır**

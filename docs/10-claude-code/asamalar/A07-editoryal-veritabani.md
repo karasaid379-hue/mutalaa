@@ -1,7 +1,7 @@
 # A07 · Editoryal veritabanı (EF Core 10 + PostgreSQL 18)
 
 > **Sürüm:** 1.1 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
-> **Faz:** 0 · Hazırlık · **Önkoşul:** [A03](./A03-yerel-altyapi.md) · [A04](./A04-capa-ve-test-vektorleri.md) · [A06](./A06-lisans-defteri-ve-enumlar.md) · **İnsan adımı:** yok
+> **Faz:** 0 · Hazırlık · **Önkoşul:** [A03](./A03-yerel-altyapi.md) · [A04](./A04-capa-ve-test-vektorleri.md) · [A06](./A06-kaynak-kayitlari-ve-enumlar.md) · **İnsan adımı:** yok
 > **Ajanlar:** `sunucu-gelistirici` · `test-yazari` · `arastirmaci` · `inceleyici` · **Beceriler:** `ef-goc` · `lisans-kapisi` · **Tahmini oturum:** 2–3
 > **Başlat:** `/asama A07`
 
@@ -126,7 +126,7 @@ docs/10-claude-code/asamalar/A07-editoryal-veritabani.md dosyasındaki aşamayı
 ```
 
 ## İlgili dosyalar
-- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A06](./A06-lisans-defteri-ve-enumlar.md) · Sonraki: [A08](./A08-ci-is-akislari.md)
+- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A06](./A06-kaynak-kayitlari-ve-enumlar.md) · Sonraki: [A08](./A08-ci-is-akislari.md)
 
 ## Aşama kaydı (kapanış 2026-10-27)
 

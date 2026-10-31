@@ -30,7 +30,7 @@ Kalıcı adres grameri (K-26) üç dilde aynı davranışla yazılır ve ortak t
 
 ## Adımlar
 ### A04.1 · Âyet sayısı dizisi (Tanzil üst verisi)
-- `arastirmaci` Tanzil üst veri dosyasının resmî adresini, biçimini ve kullanım şartını doğrular. Adres hafızadan yazılmaz. **Çözüldü (2026-10-24):** belge sayfası [tanzil.net/docs/quran_metadata](https://tanzil.net/docs/quran_metadata); dosya [`quran-data.xml`](https://tanzil.net/res/text/metadata/quran-data.xml) (sürüm 1.0). Kullanım şartı belirsiz: dosyadaki lisans satırı CC BY 3.0, Tanzil SSS'si ise "non-commercial purposes" diyor. Kullanıcı kararı D1: devam edilir ve belirsizlik kayda geçer ([lisans defteri §3.1](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md); soru [Tanzil taslağı](../../yazismalar/tanzil-arama-metni.md) 2. soru, [İ-08](../06-insan-adimlari.md)). Hukuki görüş değildir.
+- `arastirmaci` Tanzil üst veri dosyasının resmî adresini, biçimini ve kullanım şartını doğrular. Adres hafızadan yazılmaz. **Çözüldü (2026-10-24):** belge sayfası [tanzil.net/docs/quran_metadata](https://tanzil.net/docs/quran_metadata); dosya [`quran-data.xml`](https://tanzil.net/res/text/metadata/quran-data.xml) (sürüm 1.0). Kullanım şartı belirsiz: dosyadaki lisans satırı CC BY 3.0, Tanzil SSS'si ise "non-commercial purposes" diyor. Kullanıcı kararı D1: devam edilir ve belirsizlik kayda geçer ([lisans defteri §3.1](../../04-icerik/01-kaynaklar.md); soru [Tanzil taslağı](../../yazismalar/tanzil-arama-metni.md) 2. soru, [İ-08](../06-insan-adimlari.md)). Hukuki görüş değildir.
 - `hat-gelistirici` dosyayı `.tmp/tanzil-ust-veri/` altına indirir ve SHA-256'sını hesaplar. `data/raw` altına yazılmaz; kalıcı alım A11'dedir.
 - Üretici `uv run mutalaa export ayet-sayilari --kaynak <xml> --url <adres> --tarih <YYYY-AA-GG> [--check]` sure başına âyet sayısını dosyadan okur (sure adlarını okumaz; DOCTYPE/ENTITY ve UTF-16/NUL girdiyi reddeder) ve `shared/data/ayet-sayilari.json` yazar: `kaynak_url`, `alinma_tarihi`, `sha256`, `lisans`, `telif`, `surum`, 114 elemanlı `sayilar`. Aynı komut üç kopyayı üretir: `packages/anchors/src/generated/ayet-sayilari.ts`, `pipeline/src/mutalaa_pipeline/anchor/ayet_sayilari.py`, `server/Mutalaa.Domain/Anchors/AyetSayilari.g.cs`. `--check` yazmadan diskle karşılaştırır; fark varsa 1 ile çıkar. Üretilmiş dosyalar elle düzenlenmez.
 - Her dilde test: 114 eleman, toplam 6.236, 2. sure 286 (Çapa şeması §2 ve §4); kopya JSON'la aynı.
@@ -164,7 +164,7 @@ Plan kararları (2026-10-24): D1 Tanzil üst veri şartı belirsiz, devam ve kay
 | SHA-256 | `8867c1d88191472adec9db694b3cd9f135b1a2ef580574d32cf888dcb22c5c7a` |
 | Lisans ve telif | dosyada `cc-by`; "(C) 2008-2009 Tanzil.info" |
 | Boyut ve yer | 77.234 bayt; yalnız `.tmp/tanzil-ust-veri/` altında (git dışı); `data/raw` altında yok, kalıcı alım A11'de |
-| Kullanım şartı | Belirsiz: dosyadaki CC BY 3.0 satırı ile SSS'deki "non-commercial purposes" cümlesi uzlaştırılamadı. Karar D1: devam ve kayıt; [lisans defteri §3.1](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md). Hukuki görüş değildir |
+| Kullanım şartı | Belirsiz: dosyadaki CC BY 3.0 satırı ile SSS'deki "non-commercial purposes" cümlesi uzlaştırılamadı. Karar D1: devam ve kayıt; [lisans defteri §3.1](../../04-icerik/01-kaynaklar.md). Hukuki görüş değildir |
 
 ### Bozma denemesi (2026-10-25)
 
@@ -184,7 +184,7 @@ Plan kararları (2026-10-24): D1 Tanzil üst veri şartı belirsiz, devam ve kay
 - **A08.** Turbo `test` görevine `LANG`/`LC_ALL` bildirilmeli (`"env": ["LANG","LC_ALL"]` ya da `passThroughEnv`); şu an `turbo run test` iki `LANG` için aynı özeti veriyor. NFC vektörleri Linux'ta yeniden koşmalı (.NET ICU/NLS ve Python Unicode sürümü farklı olabilir). `LANG` karşıtı koşu Linux CI'dadır.
 - **A21 ve A32.** Hermes'te vektör koşumu; `\p{Mn}`, adlı grup ve ileri bakış desteğinin sınanması.
 - **Hata türleri vektörle sabitlenmedi.** TypeScript `RangeError`; C# `InvalidOperationException`, `NotSupportedException`, `ArgumentException`, `ArgumentOutOfRangeException`; Python `ValueError`. Hata kodu (`AnchorError.code`) yalnız ayrıştırmada vardır. Vektörler yalnız "hata verir" sonucunu kilitler.
-- **A11.** Tanzil üst veri kaynağı kartı ve kalıcı alım; kullanım şartı belirsiz ([lisans defteri §3.1](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md)).
+- **A11.** Tanzil üst veri kaynağı kartı ve kalıcı alım; kullanım şartı belirsiz ([lisans defteri §3.1](../../04-icerik/01-kaynaklar.md)).
 - **A13 ve A34.** Tanzil atfı (CC BY 3.0) paketlenirken eklenir.
 - **İ-08.** Mağaza yayını öncesi Tanzil'e 2. soru (üst veri dosyaları dahil); gönderim kullanıcıdadır ([taslak](../../yazismalar/tanzil-arama-metni.md)).
 

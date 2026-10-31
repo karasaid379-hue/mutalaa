@@ -373,7 +373,7 @@ PYTHONUTF8=1
 | Ne | Nasıl | Kural |
 |---|---|---|
 | `editor` ve `admin` rolleri, ilk yönetici | `Mutalaa.Api -- seed` | İdempotent; parola yalnız kullanıcı sırlarında ya da `.env`'de |
-| `source` satırları ve lisans durumları | Hattın `ingest` adımı | Değerler [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) ile aynı |
+| `source` satırları ve lisans durumları | Hattın `ingest` adımı | Değerler [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) ile aynı |
 | Tanzil metni | `ingest tanzil --variant uthmani` | Metin dağıtıldığı gibi saklanır, NFC bile uygulanmaz; atıf ve tanzil.net bağlantısı korunur ([Tanzil şartları](https://raw.githubusercontent.com/OpenITI/0025AH/master/data/0001Quran/0001Quran.Mushaf/0001Quran.Mushaf.Tanzil001-ara1.mARkdown)) |
 | Elmalılı meali | OCR çıktısı hazır olunca | Uydurma ya da yer tutucu meal metni yazılmaz |
 | Uçtan uca test fikstürleri: metin paketi `test-kucuk`, ses paketi `ses-test` (kaynağı `test-ses`) | Slug `test-` ile başlar, durum `serbest`; içerik kendi ürettiğimiz sentetik metin ve tondur | `dev` ve `internal` derlemeye girer; Yayınlayıcı `test-` kaynaklarını `public` derlemeye hiçbir durumda almaz ([Backend API](./05-backend-api.md) P-12; [Test stratejisi](../07-yayin/03-test-stratejisi.md) §9) |
@@ -557,5 +557,5 @@ Kurallar:
 
 - [Genel mimari](./01-genel-mimari.md) · [Teknoloji yığını](./02-teknoloji-yigini.md) · [Proje yapısı](./03-proje-yapisi.md) · [Backend API](./05-backend-api.md)
 - [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md)
-- [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md)
+- [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md)
 - [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [Arama](../03-veri/05-arama-fts5.md) · [Çapa şeması](../03-veri/01-capa-semasi.md)

@@ -13,10 +13,10 @@ Faz 2'nin çıkış ölçütlerini kanıtlar: 07-yayin/03 §9'daki Maestro akı�
 - [Kapsam ve fazlar](../../01-urun/01-kapsam-ve-fazlar.md): §2.1 derleme türleri, §8 B-01…B-13, §9 AS-08, AS-09, AS-11
 - [Fazlar](../../08-yol-haritasi/01-fazlar.md): Faz 2 çıkış ölçütleri
 - [Mobil mimari](../../06-mobil/01-mobil-mimari.md): §9 bütçeler, §10 derleme türleri ve `isPackVisible`
-- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md): §3 iç test sorusu, §5 yapıt taraması
+- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md): §3 iç test sorusu, §5 yapıt taraması
 - [Arama (FTS5)](../../03-veri/05-arama-fts5.md): §6 ölçüm ve bütçe aşılırsa
 - [Tasarım sistemi](../../01-urun/04-tasarim-sistemi.md): §9 erişilebilirlik kontrol listesi
-- [KVKK ve gizlilik](../../07-yayin/02-kvkk-ve-gizlilik.md): §4 Faz 3 öncesi kontrol listesi
+- [KVKK ve gizlilik](../../07-yayin/02-gizlilik.md): §4 Faz 3 öncesi kontrol listesi
 - [Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md): §1 iOS notu, §6 madde 8 ve HTTPS kuralı
 
 ## Kapsam

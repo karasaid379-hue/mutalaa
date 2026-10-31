@@ -15,7 +15,7 @@ Bu aşama `apps/mobile` altında Expo uygulamasının iskeletini kurar: rota ağ
 - [Proje yapısı](../../02-mimari/03-proje-yapisi.md): §1 (`apps/mobile`), §2 bağımlılık kuralları, §5 lint, §7 `eas-build.yml`, §8
 - [Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md): §1 (EAS CLI, hesaplar), §5 `apps/mobile/.env.example`, §6 adım 8–9, §10.4
 - [Tasarım sistemi](../../01-urun/04-tasarim-sistemi.md): §3.1 yazı tipleri, §10 (`vars()` ile tema yöntemi)
-- [KVKK ve gizlilik](../../07-yayin/02-kvkk-ve-gizlilik.md): §2.2
+- [KVKK ve gizlilik](../../07-yayin/02-gizlilik.md): §2.2
 
 ## Kapsam
 **Yapılır**
@@ -85,7 +85,7 @@ Bu aşama `apps/mobile` altında Expo uygulamasının iskeletini kurar: rota ağ
 - `src/lib/i18n/tr.ts` ve `t()` Mobil mimari §14'teki gibi; ekranlarda düz Türkçe dizgi yazılmaz. `trLower` ve `trUpper` açık eşlemeyle yazılır. Hermes'teki davranış (MM-11) öz test ekranında sınanır (A32). A04'ten devreden: `snapSpan` Hermes'te `\p{Mn}`, adlı grup ve ileri bakış desteğine dayanır; destek A32 öz testinde sınanır, burada yalnız kullanılan düzenli ifade özellikleri listelenir ve `snapSpan` cihazda hesaplanacaksa Unicode sürüm farkı (A04 aşama kaydı) dikkate alınır.
 - `src/lib/telemetry.ts` Mobil mimari §12'deki gibi: `dev`'de `Sentry.init` çağrılmaz; `internal` ve `public`'te `sendDefaultPii: false`, ekran görüntüsü ve görünüm hiyerarşisi kapalı, kırıntı ve olay ayıklaması açık; oturum tekrarı yok.
 - ESLint: kök yapılandırmaya Expo yapılandırması ve React Hooks kuralları eklenir. Yön `app → features → (db, packs, lib) → packages/*` `import/no-restricted-paths` ile; özellik içine derin içe aktarma `no-restricted-imports` deseniyle (öneri) engellenir.
-- Jest ve jest-expo kurulur. Testler: yapılandırma ve EAS (A21.5), bayrak matrisi, `t()` anahtarları, `trLower('IŞIK') === 'ışık'`, `beforeSend` sonrası olayda not metni kalmaması ([KVKK ve gizlilik](../../07-yayin/02-kvkk-ve-gizlilik.md) §2.2), ESLint sınır testi (yasak içe aktarma içeren örnek kod hata verir).
+- Jest ve jest-expo kurulur. Testler: yapılandırma ve EAS (A21.5), bayrak matrisi, `t()` anahtarları, `trLower('IŞIK') === 'ışık'`, `beforeSend` sonrası olayda not metni kalmaması ([KVKK ve gizlilik](../../07-yayin/02-gizlilik.md) §2.2), ESLint sınır testi (yasak içe aktarma içeren örnek kod hata verir).
 - **Bitti sayılır:** `lint`, `typecheck` ve `test` yeşil.
 
 ### A21.7 · Geliştirme derlemesi ve görsel denetim

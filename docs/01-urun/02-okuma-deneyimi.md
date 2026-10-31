@@ -259,7 +259,7 @@ Kurallar [Tasarım sistemi §9](./04-tasarim-sistemi.md#9-erişilebilirlik-kontr
 |---|---|---|
 | OD-1 | İki âyete yayılan seçimin çapası | [Çapa şeması](../03-veri/01-capa-semasi.md) |
 | OD-2 | Mod C ve Türkçe metinde yerel seçimin ofsetini almak | [Mobil mimari](../06-mobil/01-mobil-mimari.md) |
-| OD-3 | Medine düzeninde iki sayfaya bölünen âyet var mı | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) |
+| OD-3 | Medine düzeninde iki sayfaya bölünen âyet var mı | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) |
 | OD-4 | ~~Güven etiketlerinin kesin eşikleri~~ **Çözüldü (19 Ekim 2026):** koşullar ve eşikler Bağlantı modeli §6'dakilerdir; bölüm 8 onları ekrandaki etiketlere bağlar. | [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md#6-puanlama) |
 | OD-5 | Lügat kısa anlamının kelime üstünde (ruby) gösterimi | Prototip |
 | OD-6 | Dizin görünümünde bölüm başlıkları | [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) |

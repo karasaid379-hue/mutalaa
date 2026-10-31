@@ -10,7 +10,7 @@ Bu dosya Elmalılı Muhammed Hamdi Yazır'ın *Hak Dini Kur'an Dili* eserinin ö
 
 > **Hukuki görüş değildir.** Aşağıdaki değerlendirmeler araştırma raporuna dayanır; "çıkarım" ve "Açık soru" işaretli noktalar avukata sorulur.
 
-- **Koruma süresi.** Müellif 1942'de vefat etti; eser 1 Ocak 2013'ten beri serbest ([MKÜ kaydı](https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a), 2026-10-26'da 403 verdi ve dayanak olarak doğrulanamadı (Doğrulanacak); tarih 1942 + 71 hesabıdır, bkz. [lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) §3.3; [FSEK m. 26–27](https://www.wipo.int/wipolex/en/text/499171)).
+- **Koruma süresi.** Müellif 1942'de vefat etti; eser 1 Ocak 2013'ten beri serbest ([MKÜ kaydı](https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a), 2026-10-26'da 403 verdi ve dayanak olarak doğrulanamadı (Doğrulanacak); tarih 1942 + 71 hesabıdır, bkz. [lisans defteri](./01-kaynaklar.md) §3.3; [FSEK m. 26–27](https://www.wipo.int/wipolex/en/text/499171)).
 - **Yazım ve baskı.** Eser Diyanet İşleri Riyâseti ile yapılan bir sözleşmeyle 1926–1938 arasında yazıldı. "1935-1939 yıllarında İstanbul'da dokuz cilt ve 10.000 takım olarak basılmış"; "2000 takımı müellife verilirken geri kalanları ücretsiz dağıtılmıştır" ([Küre](https://kureansiklopedi.com/tr/detay/hak-dini-kuran-dili-2)).
 - **Sadeleştirilmiş baskılar kullanılmaz.** Sadeleştirme FSEK m. 6 anlamında işlenme eseridir; sadeleştirenin hakkı sürer (K-03). Tanzil'deki Elmalılı metni de kullanılmaz: baskı esası doğrulanmadı ve Tanzil çevirileri "for non-commercial purposes only" şartı taşıyor ([OPUS](https://opus.nlpl.eu/Tanzil/corpus/version/Tanzil)). GitHub `elmalili-meal/kuran` ve Azim sadeleştirilmiş, Açık Kuran ticari kullanıma kapalı olduğu için aday olamaz (K-38).
 - **K-03 ile ilişki (K-38).** K-03'ün "mevcut bir dijital metni temel almak" seçeneği kontrollü biçimde yeniden değerlendirilir: hazır metin `bekliyor` kaydıyla alınır, A09 pilotunda OCR ile aynı altın örneklemde ölçülür ve yalnız eşiği geçerse temel metin olur. Sadeleştirilmiş baskılar yine kullanılmaz.
@@ -94,7 +94,7 @@ uv run mutalaa ocr run  --edition elmalili-1935 --engine vision --pages c01:1-40
 uv run mutalaa ocr eval --edition elmalili-1935 --gold data/gold/elmalili-ocr/
 ```
 
-**Görsel model istemi ilkeleri.** Metni aynen yaz; kelimeyi modernleştirme ve düzeltme; okuyamadığın karakteri `⟦?⟧` ile işaretle; her satırı bölge türüyle (`ayet_ar`, `meal`, `tefsir`, `dipnot`, `baslik`, `sayfa_no`) JSON olarak döndür. Sıcaklık 0. Sayfa görselleri telifsiz bir eserin görüntüleri olduğu için `elmalili-meal` ve `elmalili-tefsir` kaynaklarında `embed_ok = true` olur ve görseller yapay zekâ servisine gönderilebilir. Tarama bir kütüphaneden geldiyse kütüphanenin şartı bu değeri belirler ([Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md)).
+**Görsel model istemi ilkeleri.** Metni aynen yaz; kelimeyi modernleştirme ve düzeltme; okuyamadığın karakteri `⟦?⟧` ile işaretle; her satırı bölge türüyle (`ayet_ar`, `meal`, `tefsir`, `dipnot`, `baslik`, `sayfa_no`) JSON olarak döndür. Sıcaklık 0. Sayfa görselleri telifsiz bir eserin görüntüleri olduğu için `elmalili-meal` ve `elmalili-tefsir` kaynaklarında `embed_ok = true` olur ve görseller yapay zekâ servisine gönderilebilir. Tarama bir kütüphaneden geldiyse kütüphanenin şartı bu değeri belirler ([Kaynaklar ve lisans defteri](./01-kaynaklar.md)).
 
 ```json
 {"cilt": 1, "sayfa": 214, "motor": "vision", "bolgeler": [
@@ -208,7 +208,7 @@ flowchart TD
 8. Kurul onayı almamış meal `internal` derlemede (davetli test) gösterilebilir mi? Kurul'a sorulur; cevap gelene kadar dış test kullanıcısı alınmaz (K-06).
 
 ## İlgili dosyalar
-- [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) · [İçerik hattı](./02-icerik-hatti.md) · [Hadis hazırlığı](./04-hadis-hazirligi.md) · [Kelime anlamları](./06-kelime-anlamlari.md)
+- [Kaynaklar ve lisans defteri](./01-kaynaklar.md) · [İçerik hattı](./02-icerik-hatti.md) · [Hadis hazırlığı](./04-hadis-hazirligi.md) · [Kelime anlamları](./06-kelime-anlamlari.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Arama](../03-veri/05-arama-fts5.md)
 - [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md)
-- [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) · [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [Fazlar](../08-yol-haritasi/01-fazlar.md)
+- [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) · [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [Fazlar](../08-yol-haritasi/01-fazlar.md)

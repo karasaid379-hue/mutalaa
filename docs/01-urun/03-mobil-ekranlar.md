@@ -199,7 +199,7 @@ Ayarlar
 Hizalama notları:
 - **Çözüldü (19 Ekim 2026):** `theme` tipi `sistem` değerini taşır ([Mobil mimari §5](../06-mobil/01-mobil-mimari.md#5-durum-yönetimi)).
 - **Çözüldü (19 Ekim 2026):** yazı boyutu deposu çarpan tutar (`arabicScale`, `turkishScale`); kaydırıcı kademeleri bu çarpanlara eşlenir ([Tasarım sistemi §3.2](./04-tasarim-sistemi.md#32-roller-ve-boyutlar), Mobil mimari §5).
-- Hata raporlarının varsayılan açık olup olamayacağı KVKK incelemesine bağlıdır ([KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md)).
+- Hata raporlarının varsayılan açık olup olamayacağı KVKK incelemesine bağlıdır ([KVKK ve gizlilik](../07-yayin/02-gizlilik.md)).
 
 ## 7. Derin bağlantılar
 
@@ -266,7 +266,7 @@ sequenceDiagram
 | ME-1 | Diğer çapa türlerinin derin bağlantı biçimi (öneri: Çapa şeması §11 `toRoute`; bölüm 7 ona uyar; MM-14) | [Çapa şeması](../03-veri/01-capa-semasi.md#11-packagesanchors-api) |
 | ME-2 | Mini oynatıcının Expo Router sekmeleriyle yerleşimi (SDK 57 ve 58) | [Mobil mimari](../06-mobil/01-mobil-mimari.md) (MM-9) |
 | ME-3 | `public` derlemede geliştirici rotalarının pakete hiç girmemesi | Mobil mimari, bayraklar |
-| ME-4 | Hata raporlarının varsayılanı ve rıza metni | [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) |
+| ME-4 | Hata raporlarının varsayılanı ve rıza metni | [KVKK ve gizlilik](../07-yayin/02-gizlilik.md) |
 | ME-5 | İlk açılışı derin bağlantıyla yapan okurun tanıtımı | Okur testi |
 | ME-6 | Mağaza derlemesinde Risale bölümü yokken Kütüphane'de bilgi satırı gösterilsin mi | Proje sahibi |
 
@@ -275,5 +275,5 @@ sequenceDiagram
 - [Kapsam ve fazlar](./01-kapsam-ve-fazlar.md) · [Okuma deneyimi](./02-okuma-deneyimi.md) · [Tasarım sistemi](./04-tasarim-sistemi.md)
 - [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Ses sistemi](../06-mobil/02-ses-sistemi.md) · [Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
+- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [KVKK ve gizlilik](../07-yayin/02-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Sözlük](../00-ozet/03-sozluk.md)

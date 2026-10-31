@@ -1,7 +1,7 @@
 # A27 · Ses sistemi (hazır kayıtlar, ayna, çevrimiçi öncelikli dinleme, isteğe bağlı indirme)
 
 > **Sürüm:** 2.0 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-41](../../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-40](../../00-ozet/02-karar-defteri.md#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları) · [K-28](../../00-ozet/02-karar-defteri.md#k-28--ses) · [K-18](../../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-30](../../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)
-> **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A24](./A24-okuyucu-mushaf-c.md) · [A13](./A13-yayinlayici-ve-yayin-kapisi.md) · [A29](./A29-kutuphane-ve-depolama.md) (A29.4 yeterli; yalnız A27.5 ve sonrası için) · **İnsan adımı:** [İ-07](../06-insan-adimlari.md) (gerekmiyor, K-40) · İ-18 (yalnız `internal` ve `public` ayna için) · İ-15 (yalnız iOS cihaz denemesi)
+> **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A24](./A24-okuyucu-mushaf-c.md) · [A13](./A13-yayinlayici-ve-kalite-kapisi.md) · [A29](./A29-kutuphane-ve-depolama.md) (A29.4 yeterli; yalnız A27.5 ve sonrası için) · **İnsan adımı:** [İ-07](../06-insan-adimlari.md) (gerekmiyor, K-40) · İ-18 (yalnız `internal` ve `public` ayna için) · İ-15 (yalnız iOS cihaz denemesi)
 > **Ajanlar:** `hat-gelistirici` · `sunucu-gelistirici` · `mobil-gelistirici` · `test-yazari` · `arastirmaci` · `arayuz-denetcisi` · `inceleyici` · **Beceriler:** `icerik-hatti` · `ef-goc` · `paket-yayini` · `mobil-ekran` · **Tahmini oturum:** 5–7
 > **Başlat:** `/asama A27`
 
@@ -14,7 +14,7 @@ Mütâlaa'da en çok dinlenen okuyucuların hazır kayıtları indirmeden çevri
 - [Mobil mimari](../../06-mobil/01-mobil-mimari.md): §4 (mini oynatıcı, `ChipSlot`), §5 (oynatıcı aktörü, `usePlayback`), §8 (`USER_SCROLLED`), §10 (bayraklar)
 - [Okuma deneyimi](../../01-urun/02-okuma-deneyimi.md): §9 kural 9, §10 Sesli takip · [Tasarım sistemi](../../01-urun/04-tasarim-sistemi.md): §6 (`MiniPlayer`, `PlayerSheet`, `ReciterRow`, `ChipSlot`, `FollowChip`)
 - [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §3.5 · [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §9.1 `audio_timing` · [İçerik hattı](../../04-icerik/02-icerik-hatti.md): §4–§8
-- [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §3, §8, §9 · [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md): §3.7
+- [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §3, §8, §9 · [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar.md): §3.7
 
 ## Kapsam
 **Yapılır**

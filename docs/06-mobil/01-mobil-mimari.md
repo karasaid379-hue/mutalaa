@@ -431,7 +431,7 @@ CREATE TABLE glyph_word (
 - Fontları kendi depomuzdan cüz paketi olarak indirmek "uygulamaya gömme" sayılır mı?
 - Satır düzeni verisinin kaynağı ne olacak? QF sayfa düzeni API'sinden gelirse ([QF page layout](https://api-docs.quran.foundation/docs/tutorials/fonts/page-layout/)) önbellek ve hazır veritabanı kısıtları çevrimdışı paketle çelişir. QUL düzen verisinde çoğu kaynakta lisans alanı yoktur ([QUL SSS](https://qul.tarteel.ai/faq)).
 
-Kurul'un Medine düzenli fontlara bakışı da belirsizdir. Rapor, mushaf çizim yönteminin bu cevap gelmeden kesinleşmemesini önerir ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)).
+Kurul'un Medine düzenli fontlara bakışı da belirsizdir. Rapor, mushaf çizim yönteminin bu cevap gelmeden kesinleşmemesini önerir ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)).
 
 **Font yükleme.** Quran.com her sayfa için çalışma anında ayrı bir font yükler ([fontFaceHelper.ts](https://github.com/quran/quran.com-frontend-next/blob/production/src/utils/fontFaceHelper.ts)). Uygulama aynı yolu expo-font ile izler:
 
@@ -828,7 +828,7 @@ Ağ durumu tek bir `src/lib/network.ts` modülünden okunur. Bağlantı türü (
 
 ## 12. Hata izleme (Sentry) ve gizlilik
 
-Sentry yalnız çökme ve hata kaydı için kullanılır. Kullanıcı kimliği, cihaz adı, IP, okunan âyet, arama sorgusu, not metni ve ekran görüntüsü gönderilmez. Rapor analitikte kişisel veri bulunmamasını önerir ([araştırma raporu](../09-kaynakca.md)). Okuma alışkanlığı kişinin dinî inancını gösterebilir. KVKK bu tür veriyi özel nitelikli sayar (m. 6; Doğrulanacak, [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md)). Hukuki görüş değildir.
+Sentry yalnız çökme ve hata kaydı için kullanılır. Kullanıcı kimliği, cihaz adı, IP, okunan âyet, arama sorgusu, not metni ve ekran görüntüsü gönderilmez. Rapor analitikte kişisel veri bulunmamasını önerir ([araştırma raporu](../09-kaynakca.md)). Okuma alışkanlığı kişinin dinî inancını gösterebilir. KVKK bu tür veriyi özel nitelikli sayar (m. 6; Doğrulanacak, [KVKK ve gizlilik](../07-yayin/02-gizlilik.md)). Hukuki görüş değildir.
 
 ```ts
 // src/lib/telemetry.ts
@@ -865,7 +865,7 @@ if (flavor !== 'dev') {
 
 - Oturum tekrarı (session replay) eklenmez.
 - Sentry'nin proje ayarında IP saklama kapatılır (Doğrulanacak).
-- Sentry yurt dışında veri işleyen bir hizmettir. KVKK 9. madde kapsamında standart sözleşme ve 5 iş günü içinde Kurum'a bildirim gerekebilir ([EY Türkiye](https://www.ey.com/tr_tr/insights/law/kvkk-degisikliginin-yurt-disi-veri-aktarimina-etkisi); [Cottgroup](https://cottgroup.com/tr/blog/kvkk-gdpr/item/standart-sozlesme-bildirim-yukumlulugu-ve-yaptirimlari)). Hukuki görüş değildir; ayrıntı [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) dosyasında.
+- Sentry yurt dışında veri işleyen bir hizmettir. KVKK 9. madde kapsamında standart sözleşme ve 5 iş günü içinde Kurum'a bildirim gerekebilir ([EY Türkiye](https://www.ey.com/tr_tr/insights/law/kvkk-degisikliginin-yurt-disi-veri-aktarimina-etkisi); [Cottgroup](https://cottgroup.com/tr/blog/kvkk-gdpr/item/standart-sozlesme-bildirim-yukumlulugu-ve-yaptirimlari)). Hukuki görüş değildir; ayrıntı [KVKK ve gizlilik](../07-yayin/02-gizlilik.md) dosyasında.
 
 ## 13. Erişilebilirlik uygulaması
 
@@ -931,8 +931,8 @@ export const trUpper = (s: string) => s.replace(/i/g, 'İ').replace(/ı/g, 'I').
 
 | No | Konu | Tür | Nerede kapanır |
 |---|---|---|---|
-| MM-1 | QPC fontlarını cüz paketi olarak dağıtmak QF şartlarında "gömme" sayılır mı; Kurul'un Medine fontlarına bakışı | Açık soru | [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) |
-| MM-2 | Mod A satır düzeni verisinin kaynağı ve lisansı | Açık soru | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) |
+| MM-1 | QPC fontlarını cüz paketi olarak dağıtmak QF şartlarında "gömme" sayılır mı; Kurul'un Medine fontlarına bakışı | Açık soru | [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) |
+| MM-2 | Mod A satır düzeni verisinin kaynağı ve lisansı | Açık soru | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) |
 | MM-3 | expo-font yerelde woff2 kabul ediyor mu; TTF ile cüz paketi boyutu | Doğrulanacak | Prototip |
 | MM-4 | expo-font ile font boşaltma; 604 sayfalık bellek ölçümü; gerekirse Skia | Doğrulanacak / Açık soru | Prototip, karar defteri |
 | MM-5 | ATTACH sınırı ve Risale kitap paketleriyle arama | Doğrulanacak | [Arama](../03-veri/05-arama-fts5.md) |
@@ -954,5 +954,5 @@ export const trUpper = (s: string) => s.replace(/i/g, 'İ').replace(/ı/g, 'I').
 - [Genel mimari](../02-mimari/01-genel-mimari.md) · [Teknoloji yığını](../02-mimari/02-teknoloji-yigini.md) · [Proje yapısı](../02-mimari/03-proje-yapisi.md) · [Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md) · [Arama (FTS5)](../03-veri/05-arama-fts5.md)
 - [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
+- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [KVKK ve gizlilik](../07-yayin/02-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Sözlük](../00-ozet/03-sozluk.md) · [Kaynakça](../09-kaynakca.md)

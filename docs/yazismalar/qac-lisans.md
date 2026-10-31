@@ -38,7 +38,7 @@ Kind regards,
 
 | Soru | Dayanak |
 |---|---|
-| 1 | [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) §2 (taslak soru 1); [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.2 ve §8 satır 4; [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) AS-01; [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) S-15 |
+| 1 | [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) §2 (taslak soru 1); [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) §3.2 ve §8 satır 4; [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) AS-01; [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) S-15 |
 | 2 | Kök ve lemma §2 (taslak soru 2) ve §3 (içe aktarma); lisans defteri §3.2 ("Dosya değiştirilmez") |
 | 3 | Kök ve lemma §2 (taslak soru 3) ve §4 (düzeltme katmanı) |
 | 4 | Kök ve lemma §2 (taslak soru 4); lisans defteri §3.2 (atıf) |
@@ -66,5 +66,5 @@ Kind regards,
 
 ## İlgili dosyalar
 
-- [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) · [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md)
-- [Avukat soruları](./avukat-sorulari.md) · [İnsan adımları](../10-claude-code/06-insan-adimlari.md) · [A01](../10-claude-code/asamalar/A01-yazisma-paketi.md)
+- [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) · [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md)
+- [Avukat soruları](./avukat-sorulari.md) · [İnsan adımları](../10-claude-code/06-insan-adimlari.md) · [A01](../10-claude-code/asamalar/A01-devre-disi.md)

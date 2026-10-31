@@ -9,11 +9,11 @@
 Lisans defterindeki her somut kaynak, `pipeline/sources/{kimlik}.toml` kaydı ve tarihli lisans kopyasıyla depoya girer; `uv run mutalaa sources list` ve `sources check` çalışır. Bundan sonra kaydı olmayan kaynak içerik hattına alınamaz (G-LIS). Paylaşılan enum değerleri `packages/content-schema` içindeki tek bir JSON dosyasında durur; Python, TypeScript ve C# karşılıkları bu dosyaya karşı test edilir, PostgreSQL tarafı A07'dedir. Faz 0 çıkış ölçütü "Lisans defterinde v1 kaynaklarının durumu dolu" bu aşamayla sağlanır.
 
 ## Okunacak belgeler
-- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md): tamamı (§1 durumlar ve iç kullanım kuralı, §2 özet tablo, §3 kaynak kartları, §6 şart takibi, §7 kontrol listesi ve TOML örneği)
+- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar.md): tamamı (§1 durumlar ve iç kullanım kuralı, §2 özet tablo, §3 kaynak kartları, §6 şart takibi, §7 kontrol listesi ve TOML örneği)
 - [İçerik hattı](../../04-icerik/02-icerik-hatti.md): §4 komutlar ve çıkış kodları, §8 yeni kaynak ekleme, §9 G-LIS
 - [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §2 türler, §3 `source` sütunları (TOML alanları aynı adları taşır)
 - [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §6 enum tutarlılığı
-- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md): §2.1, §2.3 durum sırası, §3 derleme görünürlüğü
+- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md): §2.1, §2.3 durum sırası, §3 derleme görünürlüğü
 - [Backend API](../../02-mimari/05-backend-api.md): §2 (`Content/`, `Links/`, `Licensing/`), §7 (enum etiket testi), §10.3 P-02
 
 ## Kapsam
@@ -109,7 +109,7 @@ dotnet test --solution server/Mutalaa.slnx
 
 ## Elle başlatma istemi
 ```text
-docs/10-claude-code/asamalar/A06-lisans-defteri-ve-enumlar.md dosyasındaki aşamayı yürüt. Önce önkoşulları ve planı göster, onayımı bekle.
+docs/10-claude-code/asamalar/A06-kaynak-kayitlari-ve-enumlar.md dosyasındaki aşamayı yürüt. Önce önkoşulları ve planı göster, onayımı bekle.
 ```
 
 ## İlgili dosyalar

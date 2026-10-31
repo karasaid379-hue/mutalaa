@@ -19,7 +19,7 @@ Bu dosya `Mutalaa.Publisher` içindeki lisans kapısını, **Kaynaklar ve lisans
 | Tebliğ | Kurul'un 09.02.2023 tarihli "Yayınevi ve Matbaalara Tebliğ Edilecek Hususlar" belgesi, 3. maddede "Basılı ve dijital eserlerde" aranan nitelikleri sayar (ayet berkenar, on beş satır, cüz sonları 20'nin katları ve 604 sayfa, geleneksel harekeleme, Türkçe karakter, renklendirme, Kurul'un uygun gördüğü yazı tipi). 3/b'nin ikinci cümlesi, tarihi veya sanat değeri bulunan basılı eserlerin tıpkı basımlarında bu şartların aranmaz olduğunu söyler; istisna yalnız basılı eser içindir, dijital eseri kapsamaz. 2. madde dijital eserlerde hızlandırma ve yavaşlatma ölçülerini ister. Bent harfleri Yönetmelik m. 5/3'tekilerle bir harf kayıktır (§7.5). | [Kurul duyurusu (01.03.2023) ve tebliğ](https://mushaflariinceleme.diyanet.gov.tr/Detay/155/) |
 | Meal incelemesi | Din İşleri Yüksek Kurulu meal yayınlarını inceleyebilir; aykırı yayın toplatılabilir ya da erişime kapatılabilir (m. 5/ı). | Lexpera, 633 |
 
-Telif ekseni bundan ayrıdır. Tanzil metni değiştirilemez, QPC sayfa fontları "All rights reserved" der, Risale-i Nur 31 Aralık 2030'a kadar korunur. Kaynak bazındaki durum [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) dosyasındadır. Kapı iki ekseni birlikte uygular.
+Telif ekseni bundan ayrıdır. Tanzil metni değiştirilemez, QPC sayfa fontları "All rights reserved" der, Risale-i Nur 31 Aralık 2030'a kadar korunur. Kaynak bazındaki durum [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) dosyasındadır. Kapı iki ekseni birlikte uygular.
 
 ## 2. Kapının girdileri
 
@@ -44,7 +44,7 @@ Telif ekseni bundan ayrıdır. Tanzil metni değiştirilemez, QPC sayfa fontlar�
 
 Paketin durumu, içindeki kaynakların en kısıtlayıcısıdır: `serbest` < `bekliyor` < `ic_kullanim` < `kapali`. `bekliyor` ile `ic_kullanim` kapıda aynı davranır. Kaynak kaydı olmayan içerik hiçbir pakete girmez.
 
-`xref` satırı kendi `license` sütununu taşır ([K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)). Publisher bir bağlantıyı üç koşul birlikte sağlanırsa pakete koyar: kaynak çapanın eseri o derlemede görünür; hedef çapanın eseri görünür ya da bağlantı lisans defterinde ayrı kaydı olan bir dizine aittir; bağlantının `license` değeri o derlemeye izin verir. Ayrı kayıt kuralı Risale atıf dizini içindir (`risale-atif-dizini`); dizin metinle birlikte hukukçu görüşüne kadar `kapali` durumundadır ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md#2-özet-tablo) §2; §2.4).
+`xref` satırı kendi `license` sütununu taşır ([K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)). Publisher bir bağlantıyı üç koşul birlikte sağlanırsa pakete koyar: kaynak çapanın eseri o derlemede görünür; hedef çapanın eseri görünür ya da bağlantı lisans defterinde ayrı kaydı olan bir dizine aittir; bağlantının `license` değeri o derlemeye izin verir. Ayrı kayıt kuralı Risale atıf dizini içindir (`risale-atif-dizini`); dizin metinle birlikte hukukçu görüşüne kadar `kapali` durumundadır ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md#2-özet-tablo) §2; §2.4).
 
 ### 2.4 Telif ve işleme açık soruları
 
@@ -154,7 +154,7 @@ Ayarlar › Kaynaklar ve lisanslar çevrimdışı açılır. Her içerik kaynağ
 | Kaynak | Şart ve ekranda gösterilen | Dayanak |
 |---|---|---|
 | Tanzil metni (Uthmani, Simple Clean) | Aynen dağıtım, değiştirmek yasak. "Tanzil Project" atfı, tanzil.net bağlantısı, telif bildiriminin tam metni | [Tanzil metni, OpenITI kopyası](https://raw.githubusercontent.com/OpenITI/0025AH/master/data/0001Quran/0001Quran.Mushaf/0001Quran.Mushaf.Tanzil001-ara1.mARkdown) |
-| Elmalılı meali (kendi düzeltilmiş metnimiz) | Eser 1 Ocak 2013'ten beri serbest. Künye, kaynak baskı, yöntem (OCR ve düzeltme ya da belgelenmiş hazır metnin özgün baskıyla karşılaştırılıp düzeltilmesi, K-38); düzeltilmiş metnin lisansı Açık soru | [MKÜ kaydı](https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a) (2026-10-26'da 403 verdi; tarih 1942 + 71 hesabıdır, [lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.3) |
+| Elmalılı meali (kendi düzeltilmiş metnimiz) | Eser 1 Ocak 2013'ten beri serbest. Künye, kaynak baskı, yöntem (OCR ve düzeltme ya da belgelenmiş hazır metnin özgün baskıyla karşılaştırılıp düzeltilmesi, K-38); düzeltilmiş metnin lisansı Açık soru | [MKÜ kaydı](https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a) (2026-10-26'da 403 verdi; tarih 1942 + 71 hesabıdır, [lisans defteri](../04-icerik/01-kaynaklar.md) §3.3) |
 | QPC sayfa fontları (Mushaf A) | Developer Console hesabı ve erişilebilir bir yerde QF atfı | [QF Developer Terms](https://api-docs.quran.foundation/legal/developer-terms/) |
 | QAC morfolojisi (`kelime-kok` paketi) | Atıf ve corpus.quran.com bağlantısı; paket `bekliyor` (§2.4) | [QAC indirme](https://corpus.quran.com/download/) |
 | quran-align zamanlamaları | CC BY 4.0; Collin Fair atfı, lisans adı ve bağlantısı | [quran-align](https://raw.githubusercontent.com/cpfair/quran-align/master/README.md) |
@@ -265,9 +265,9 @@ Uygulamanın yurt dışındaki mağazalardan dağıtılması Türkiye vitrinini 
 
 ## İlgili dosyalar
 
-- [KVKK ve gizlilik](./02-kvkk-ve-gizlilik.md) · [Test stratejisi](./03-test-stratejisi.md)
+- [KVKK ve gizlilik](./02-gizlilik.md) · [Test stratejisi](./03-test-stratejisi.md)
 - [Kurul ön görüşme talebi](../yazismalar/kurul-on-gorusme.md) · [Belge çelişkileri](../10-claude-code/07-belge-celiskileri.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md)
+- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md)
 - [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) · [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) · [Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md)
 - [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md) · [Genel mimari](../02-mimari/01-genel-mimari.md)

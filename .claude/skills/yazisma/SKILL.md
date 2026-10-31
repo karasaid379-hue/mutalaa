@@ -18,22 +18,22 @@ Taslağı sen hazırlarsın; gönderen ve karar veren kullanıcıdır. Hiçbir e
 
 | Muhatap | Dosya (`docs/yazismalar/`) | İnsan adımı | Dil | Okunacak bölümler |
 |---|---|---|---|---|
-| `kurul` | `kurul-on-gorusme.md` | İ-02 | Türkçe | [Yayın kapısı ve Kurul](../../../docs/07-yayin/01-yayin-kapisi-ve-kurul.md) §7; [Kapsam ve fazlar](../../../docs/01-urun/01-kapsam-ve-fazlar.md) §2.2, AS-03, AS-11 |
-| `avukat` | `avukat-sorulari.md` | İ-03 | Türkçe | [Fazlar](../../../docs/08-yol-haritasi/01-fazlar.md) Faz 0; [Yayın kapısı ve Kurul](../../../docs/07-yayin/01-yayin-kapisi-ve-kurul.md) §2.4; [Risale hazırlığı](../../../docs/04-icerik/05-risale-hazirligi.md); [KVKK ve gizlilik](../../../docs/07-yayin/02-kvkk-ve-gizlilik.md); AS-04 |
-| `qac` | `qac-lisans.md` | İ-04 | İngilizce | [Kök ve lemma](../../../docs/05-capraz-referans/03-kok-ve-lemma.md) §2; [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.2, §8 satır 4; AS-01 |
-| `kfgqpc` | `kfgqpc-hafs-font.md` | İ-05 | İngilizce | [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.1, §8 satır 2 |
-| `qf` | `qf-developer-console.md` | İ-06 | Kontrol listesi Türkçe, sorular İngilizce | [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.1, §8 satır 3; [Mobil mimari](../../../docs/06-mobil/01-mobil-mimari.md) §7.1; AS-02 |
+| `kurul` | `kurul-on-gorusme.md` | İ-02 | Türkçe | [Yayın kapısı ve Kurul](../../../docs/07-yayin/01-yayin-sureci.md) §7; [Kapsam ve fazlar](../../../docs/01-urun/01-kapsam-ve-fazlar.md) §2.2, AS-03, AS-11 |
+| `avukat` | `avukat-sorulari.md` | İ-03 | Türkçe | [Fazlar](../../../docs/08-yol-haritasi/01-fazlar.md) Faz 0; [Yayın kapısı ve Kurul](../../../docs/07-yayin/01-yayin-sureci.md) §2.4; [Risale hazırlığı](../../../docs/04-icerik/05-risale-hazirligi.md); [KVKK ve gizlilik](../../../docs/07-yayin/02-gizlilik.md); AS-04 |
+| `qac` | `qac-lisans.md` | İ-04 | İngilizce | [Kök ve lemma](../../../docs/05-capraz-referans/03-kok-ve-lemma.md) §2; [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar.md) §3.2, §8 satır 4; AS-01 |
+| `kfgqpc` | `kfgqpc-hafs-font.md` | İ-05 | İngilizce | [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar.md) §3.1, §8 satır 2 |
+| `qf` | `qf-developer-console.md` | İ-06 | Kontrol listesi Türkçe, sorular İngilizce | [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar.md) §3.1, §8 satır 3; [Mobil mimari](../../../docs/06-mobil/01-mobil-mimari.md) §7.1; AS-02 |
 | `hafiz` | `hafiz-izin.md` | İ-07 | Türkçe | [Ses sistemi](../../../docs/06-mobil/02-ses-sistemi.md) §12; [Sonra yapılacaklar](../../../docs/08-yol-haritasi/02-sonra-yapilacaklar.md) |
-| `tanzil` | `tanzil-arama-metni.md` | İ-08 | İngilizce | [Çapa şeması](../../../docs/03-veri/01-capa-semasi.md) §7 ve §13 (ÇŞ-2); [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.1, §8 satır 1 |
-| `sunnah` | `sunnah-izin.md` | İ-25 | İngilizce | [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.4, §8 satır 6; [Hadis hazırlığı](../../../docs/04-icerik/04-hadis-hazirligi.md) §4 |
-| `fawaz` | `fawazahmed0-kaynak.md` | İ-25 | İngilizce | [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.4; [Hadis hazırlığı](../../../docs/04-icerik/04-hadis-hazirligi.md) §4 |
-| `qul` | `qul-lisans.md` | İ-26 | İngilizce | [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.2, §8 satır 5 |
+| `tanzil` | `tanzil-arama-metni.md` | İ-08 | İngilizce | [Çapa şeması](../../../docs/03-veri/01-capa-semasi.md) §7 ve §13 (ÇŞ-2); [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar.md) §3.1, §8 satır 1 |
+| `sunnah` | `sunnah-izin.md` | İ-25 | İngilizce | [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar.md) §3.4, §8 satır 6; [Hadis hazırlığı](../../../docs/04-icerik/04-hadis-hazirligi.md) §4 |
+| `fawaz` | `fawazahmed0-kaynak.md` | İ-25 | İngilizce | [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar.md) §3.4; [Hadis hazırlığı](../../../docs/04-icerik/04-hadis-hazirligi.md) §4 |
+| `qul` | `qul-lisans.md` | İ-26 | İngilizce | [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar.md) §3.2, §8 satır 5 |
 
 Muhatap tabloda yoksa dur ve listeyi göster. Bir muhatap için dosya zaten varsa üzerine yazma; farkı göster ve kullanıcıya sor.
 
 ## Taslak dosyasının düzeni
 
-Bu düzen [A01](../../../docs/10-claude-code/asamalar/A01-yazisma-paketi.md) A01.2 ile aynıdır.
+Bu düzen [A01](../../../docs/10-claude-code/asamalar/A01-devre-disi.md) A01.2 ile aynıdır.
 
 1. Dosya başı: muhatap, dil, ilgili insan adımı, iletişim kanalı (resmî sayfadan doğrulanmış; doğrulanamadıysa "Doğrulanacak"), engellediği iş, `Durum:` (`Taslak`, `Onaylandı`, `Gönderildi`, `Cevaplandı`), `Gönderim tarihi:`, `Takip tarihi:` ve `> **Hukuki görüş değildir.**` satırı.
 2. **Gönderilecek metin:** kısa amaç paragrafı (kâr amacı gütmeyen, reklamsız uygulama; K-22, K-25), numaralı ve kısa sorular ya da talepler, ekler listesi (eki uydurma; yoksa "hazırlanacak" yaz), gönderen bilgisi yer tutucuyla (`[Ad Soyad]`, `[e-posta]`, `[telefon]`; kişisel bilgi uydurma).

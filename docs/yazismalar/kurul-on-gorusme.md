@@ -134,7 +134,7 @@ Onaylanan içeriğin sonradan fark edilmeden değişmemesi için şu yöntemi ku
 
 ## İç notlar (gönderilmez)
 
-**Soruların dayanağı** ("§" ile verilen bölümler [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) dosyasına aittir; "Tebliğ" Kurul'un 09.02.2023 tarihli "Yayınevi ve Matbaalara Tebliğ Edilecek Hususlar" belgesidir)
+**Soruların dayanağı** ("§" ile verilen bölümler [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) dosyasına aittir; "Tebliğ" Kurul'un 09.02.2023 tarihli "Yayınevi ve Matbaalara Tebliğ Edilecek Hususlar" belgesidir)
 
 | Soru | Dayanak |
 |---|---|
@@ -149,7 +149,7 @@ Onaylanan içeriğin sonradan fark edilmeden değişmemesi için şu yöntemi ku
 | 9 | §7.5 madde 4; Tebliğ 3/o; §7.1 (QPC ve Unicode yazı tipi satırları); §7.4 |
 | 10 | §7.5 madde 9; Tebliğ 3/k ve 3/l (bu kurallar Cumhuriyet haberinde "basılı mushaf" kuralı diye geçiyordu; tebliğ "Basılı ve dijital eserlerde" diyor) |
 | 11 | Tebliğ 3/n (A01.1 bulgusu); K-07 (Mod A: koyu tema, tecvid renkleri); K-24 (Gece teması) |
-| 12 | §7.5 madde 5 (arama sonuçlarındaki âyet parçaları dahil); §7.1 son üç satır; [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) AS-03 (kelime anlamları); [lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §8 satır 9; [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md) §1; başvuru formundaki "metin kelime meal" içerik türü. Cevap "evet" ise `kelime-kok` paketinin `kurul_gerekli` değeri `true` olur; P-04 ve BÇ-02 bu cevaba bağlıdır |
+| 12 | §7.5 madde 5 (arama sonuçlarındaki âyet parçaları dahil); §7.1 son üç satır; [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) AS-03 (kelime anlamları); [lisans defteri](../04-icerik/01-kaynaklar.md) §8 satır 9; [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md) §1; başvuru formundaki "metin kelime meal" içerik türü. Cevap "evet" ise `kelime-kok` paketinin `kurul_gerekli` değeri `true` olur; P-04 ve BÇ-02 bu cevaba bağlıdır |
 | 13 | §7.5 madde 6; §7.3 tablo satırı 3 (ses kodlaması, vurgu zamanlaması); Tebliğ madde 2 (hız; A01.1 bulgusu); [Ses sistemi](../06-mobil/02-ses-sistemi.md) §1 ve §5.1 (hız 0,75–1,5); Kapsam ve fazlar §4.5; 13.c için Tebliğ "Mühür, onay ve izin" (3) |
 | 14 | Yönetmelik m. 8/1-b, m. 9/1 ve m. 9/2-b (A01.1 bulgusu); §4 (P-04); §7.2 |
 | 15 | §7.5 madde 7; §3 (iç test açık sorusu); Kapsam ve fazlar AS-11; [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) §11 madde 8; Fazlar §6 soru 2 |
@@ -191,7 +191,7 @@ Onaylanan içeriğin sonradan fark edilmeden değişmemesi için şu yöntemi ku
 
 ## İlgili dosyalar
 
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) · [Ürün özeti](../00-ozet/01-urun-ozeti.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) · [Ses sistemi](../06-mobil/02-ses-sistemi.md) · [Fazlar](../08-yol-haritasi/01-fazlar.md)
+- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) · [Ürün özeti](../00-ozet/01-urun-ozeti.md)
+- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) · [Ses sistemi](../06-mobil/02-ses-sistemi.md) · [Fazlar](../08-yol-haritasi/01-fazlar.md)
 - [Hafız izin mektubu](./hafiz-izin.md) · [Avukat soruları](./avukat-sorulari.md) · [QAC lisans sorusu](./qac-lisans.md)
-- [İnsan adımları](../10-claude-code/06-insan-adimlari.md) · [A01](../10-claude-code/asamalar/A01-yazisma-paketi.md)
+- [İnsan adımları](../10-claude-code/06-insan-adimlari.md) · [A01](../10-claude-code/asamalar/A01-devre-disi.md)

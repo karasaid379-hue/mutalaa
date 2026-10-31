@@ -52,7 +52,7 @@ ayrilmis     ::= ( "p" | "s" ) [0-9]+
 
 Gramere uyan bir dizgi şu anlam kurallarını da sağlamalıdır:
 
-1. `sure` 1–114 arasındadır. `ayet` o surenin âyet sayısını aşmaz; toplam 6.236 âyet vardır ([PyPI ijaza](https://pypi.org/project/ijaza/)). Üç uygulama 114 elemanlı âyet sayısı dizisini gömülü taşır. Dizi hafızadan yazılmaz; Tanzil üst veri dosyasından üretilen `shared/data/ayet-sayilari.json` dosyasından gelir ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.1).
+1. `sure` 1–114 arasındadır. `ayet` o surenin âyet sayısını aşmaz; toplam 6.236 âyet vardır ([PyPI ijaza](https://pypi.org/project/ijaza/)). Üç uygulama 114 elemanlı âyet sayısı dizisini gömülü taşır. Dizi hafızadan yazılmaz; Tanzil üst veri dosyasından üretilen `shared/data/ayet-sayilari.json` dosyasından gelir ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) §3.1).
 2. `kelime` âyetin kelime sayısını aşmaz. Bu denetim içerik verisiyle (`quran_word`) yapılır; ayrıştırıcı yapmaz.
 3. Kelime aralığında ve âyet aralığında `ilk < son`. Tek kelime `q:2:255:3`, tek âyet `q:2:255` yazılır; `q:2:255:3-3` ve `q:2:255-255` kanonik sayılmaz. Âyet aralığı yapısı gereği tek sure içindedir ve `son` o surenin âyet sayısını aşmaz.
 4. Tefsir âyet aralığında `ilk ≤ son` olur ve iki uç her zaman yazılır (`2-255-255`). Aralık sure sınırını geçmez; kaynak geçerse hat bölümü ikiye ayırır.
@@ -147,7 +147,7 @@ k    ^k:(?<yol>SEG(?::SEG)*):p(?<p>SAYI)ARA$
 1. Bir çapa bir kez verilir ve hep aynı birimi gösterir. Hiçbir sürüm çapaları yeniden numaralamaz; kullanılmış numara ya da ad başka birime verilmez.
 2. `p{n}` bir kimliktir. Okuma sırası `unit.ord` sütunundadır ve her sürümde yeniden hesaplanabilir. Okuyucunun gösterdiği paragraf numarası (¶) `ord` sırasından türetilir.
 3. Çapa silinmez. Kullanım dışı kalır (`status = 'kullanim_disi'`) ve `successors` alanında yönlendirme taşır.
-4. Her yayında yayınlayıcı, önceki yayının bütün çapalarının etkin ya da yönlendirmeli olduğunu doğrular. Bu denetim yayın kapısının adımlarından biridir ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)).
+4. Her yayında yayınlayıcı, önceki yayının bütün çapalarının etkin ya da yönlendirmeli olduğunu doğrular. Bu denetim yayın kapısının adımlarından biridir ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)).
 
 | Olay | Çapa | Yönlendirme |
 |---|---|---|
@@ -380,5 +380,5 @@ CI üç test koşucusunu aynı dosyalarla çalıştırır. TypeScript vektörler
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Sözlük](../00-ozet/03-sozluk.md)
 - [Editoryal veritabanı](./02-editoryal-veritabani.md) · [İçerik paketleri](./03-icerik-paketleri.md) · [Kullanıcı verisi ve senkron](./04-kullanici-verisi-ve-senkron.md) · [Arama (FTS5)](./05-arama-fts5.md)
 - [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) · [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) · [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md)
-- [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) · [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)
+- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) · [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md)
+- [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) · [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)

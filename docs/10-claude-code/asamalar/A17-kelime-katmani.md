@@ -11,7 +11,7 @@ Kur'an'ın kelime katmanı tamamlanır: A11'in yazdığı Tanzil kelime bölmesi
 ## Okunacak belgeler
 - [Kök ve lemma](../../05-capraz-referans/03-kok-ve-lemma.md): §1–§4, §7 IDF, §8 cihaz verisi (§5 Türkçe → kök hattı A18'dedir)
 - [Kelime anlamları](../../04-icerik/06-kelime-anlamlari.md): tamamı
-- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md): §3.2 QAC ve QUL, §8 yazışma 4
+- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar.md): §3.2 QAC ve QUL, §8 yazışma 4
 - [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §5 `root`, `lemma`, `lemma_gloss`, `quran_word`, `quran_word_fix`; §8 `review`
 - [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §1, §3.2 `core.quran_word`, §3.3 `kelime-kok`, §7
 - [İçerik hattı](../../04-icerik/02-icerik-hatti.md): §9 G-BUT ve G-YZ, §10 yapay zekâ politikası, §11 maliyet

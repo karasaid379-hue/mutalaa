@@ -39,9 +39,9 @@ Kind regards,
 
 | Madde | Dayanak |
 |---|---|
-| 1, 2 | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.1 (`kfgqpc-hafs-font` kartı: EULA alıntıları, "yazılı onay") ve §8 satır 2; [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) §3 (KFGQPC satırı) |
+| 1, 2 | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) §3.1 (`kfgqpc-hafs-font` kartı: EULA alıntıları, "yazılı onay") ve §8 satır 2; [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) §3 (KFGQPC satırı) |
 | 3 | Lisans defteri §3.1 ("Alt kümeleme (subsetting) değişiklik sayılabileceği için yapılmaz.") ve §8 satır 2 |
-| 4 | Lisans defteri §3.1 (atıf; EULA metni Kaynaklar ve lisanslar ekranında); [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) §6 |
+| 4 | Lisans defteri §3.1 (atıf; EULA metni Kaynaklar ve lisanslar ekranında); [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) §6 |
 | 5 | A01.1 araştırması (2026-10-20): güncel sürüm 2.2; sürüm bilgisi kaynaklar arasında çelişkili |
 
 **A01.1 bulguları (2026-10-20)**
@@ -51,7 +51,7 @@ Kind regards,
 - EULA'nın kısıt cümlesi ikincil kopyada şöyle: "cannot be Sold, Modified, Altered, Translated, Reverse Engineered, Decompiled, Disassembled, Reproduced or Attempted to discover the Source Code of this Font in no means." Yazıdaki 2. madde "Reproduced" dışındakileri taahhüt eder; "reproduce" yazılı izinle (1. madde) karşılanır. Tam cümle A06'da resmî zip'ten alınacak lisans dosyasıyla teyit edilir (Çözüldü 2026-10-26: font dosyasının name tablosundan teyit edildi; aşağıya bak).
 - Hiçbir kaynakta gömme ya da alt kümeleme hükmü yok.
 - A06 için: lisans kopyası resmî zip'ten alınır; font dosyasının OS/2 `fsType` alanı (OpenType belirtimindeki "No subsetting" biti) okunur ([OpenType OS/2](https://learn.microsoft.com/en-us/typography/opentype/spec/os2)).
-- **Çözüldü (2026-10-26, A06):** `fsType` font dosyasından (`UthmanicHafs1 Ver09`, name tablosunda "Version 0.09") okundu: `fsType = 0`. EULA metni aynı dosyadaki name tablosundan (nameID 13) okundu ve yukarıdaki kısıt cümlesi birebir uyuşuyor; resmî zip denenmedi. Resmî sayfa [fonts.qurancomplex.gov.sa/hafs-reading](https://fonts.qurancomplex.gov.sa/hafs-reading/) bugün açıldı: sürümleri 3.0 (güncel), 2.2 ve 0.13 listeliyor; sayfada EULA yok. "ECONNREFUSED" notu eskidir. Ver09 (v0.09) eski bir sürüm olabilir; 5. soru (sürüm) bu yüzden geçerli kalır, göndermeden önce kullanıcı gözden geçirir. Ayrıntı: [lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.1.
+- **Çözüldü (2026-10-26, A06):** `fsType` font dosyasından (`UthmanicHafs1 Ver09`, name tablosunda "Version 0.09") okundu: `fsType = 0`. EULA metni aynı dosyadaki name tablosundan (nameID 13) okundu ve yukarıdaki kısıt cümlesi birebir uyuşuyor; resmî zip denenmedi. Resmî sayfa [fonts.qurancomplex.gov.sa/hafs-reading](https://fonts.qurancomplex.gov.sa/hafs-reading/) bugün açıldı: sürümleri 3.0 (güncel), 2.2 ve 0.13 listeliyor; sayfada EULA yok. "ECONNREFUSED" notu eskidir. Ver09 (v0.09) eski bir sürüm olabilir; 5. soru (sürüm) bu yüzden geçerli kalır, göndermeden önce kullanıcı gözden geçirir. Ayrıntı: [lisans defteri](../04-icerik/01-kaynaklar.md) §3.1.
 
 **Notlar**
 - Amiri Quran yedeği yazıda anılmaz (A01.5).
@@ -62,5 +62,5 @@ Kind regards,
 
 ## İlgili dosyalar
 
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) · [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)
-- [Kurul ön görüşme talebi](./kurul-on-gorusme.md) · [İnsan adımları](../10-claude-code/06-insan-adimlari.md) · [A01](../10-claude-code/asamalar/A01-yazisma-paketi.md)
+- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) · [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)
+- [Kurul ön görüşme talebi](./kurul-on-gorusme.md) · [İnsan adımları](../10-claude-code/06-insan-adimlari.md) · [A01](../10-claude-code/asamalar/A01-devre-disi.md)

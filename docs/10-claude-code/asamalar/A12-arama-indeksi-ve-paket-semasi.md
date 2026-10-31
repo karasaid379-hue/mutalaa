@@ -113,4 +113,4 @@ docs/10-claude-code/asamalar/A12-arama-indeksi-ve-paket-semasi.md dosyasındaki 
 ```
 
 ## İlgili dosyalar
-- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A11](./A11-kuran-yapisi-ve-sayfa-eslemesi.md) · Sonraki: [A13](./A13-yayinlayici-ve-yayin-kapisi.md)
+- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A11](./A11-kuran-yapisi-ve-sayfa-eslemesi.md) · Sonraki: [A13](./A13-yayinlayici-ve-kalite-kapisi.md)

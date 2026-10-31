@@ -15,7 +15,7 @@
 - [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §1, §3.2, §4 · [Arama](../../03-veri/05-arama-fts5.md): §2 paket tabloları, §5
 - [Bağlantı modeli](../../05-capraz-referans/01-baglanti-modeli.md): §2, §3 yapısal bağlantılar · [İktibas tespiti](../../05-capraz-referans/02-iktibas-tespiti.md): §1, §2
 - [Okuma deneyimi](../../01-urun/02-okuma-deneyimi.md): §6 tefsir görünümü, §8 Bağlantılar paneli
-- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md): §7.1, §7.5 soru 5 · [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §4 altın setler
+- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md): §7.1, §7.5 soru 5 · [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §4 altın setler
 
 ## Kapsam
 **Yapılır**
@@ -27,7 +27,7 @@
 **Yapılmaz**
 - Meal (A16), kelime katmanı (A17), altın set araçları ve eşik altyapısı (A18; burada yalnız tefsir örneklemi eklenir).
 - Tefsir görünümünün ilk kodu (A24'te sentetik `test-` fikstürüyle yazıldı, ör. `test-tefsir-ornek`).
-- `public` yayın: Kurul cevabı ve kararı gelince [A39](./A39-takvim-ve-lisans-olaylari.md) yordamı ve A34 sürüm yordamıyla. Diğer tefsirler (S-09).
+- `public` yayın: Kurul cevabı ve kararı gelince [A39](./A39-devre-disi.md) yordamı ve A34 sürüm yordamıyla. Diğer tefsirler (S-09).
 
 ## Adımlar
 ### A37.1 · Çapa, kapsam ve Kurul kararları

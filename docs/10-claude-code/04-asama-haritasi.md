@@ -10,19 +10,19 @@ Bu dosya [Fazlar](../08-yol-haritasi/01-fazlar.md) planını Claude Code'un yür
 | No | Aşama | Faz | Önkoşul | İnsan adımı |
 |---|---|---|---|---|
 | [A00](./asamalar/A00-ortam-ve-depo.md) | Ortam, klasör ve depo hazırlığı | 0 | — | İ-01 |
-| [A01](./asamalar/A01-yazisma-paketi.md) | Hukuk ve izin yazışma paketi | 0 | A00 | İ-02 … İ-08 (gönderim) |
+| [A01](./asamalar/A01-devre-disi.md) | Hukuk ve izin yazışma paketi | 0 | A00 | İ-02 … İ-08 (gönderim) |
 | [A02](./asamalar/A02-tek-depo-iskeleti.md) | Tek depo iskeleti (pnpm + Turborepo, .NET çözümü, uv) | 0 | A00 | — |
 | [A03](./asamalar/A03-yerel-altyapi.md) | Yerel altyapı: Docker Compose, PostgreSQL 18, SeaweedFS | 0 | A02 | İ-01 (Docker Desktop) |
 | [A04](./asamalar/A04-capa-ve-test-vektorleri.md) | Çapa grameri ve ortak test vektörleri | 0 | A02 | — |
 | [A05](./asamalar/A05-arama-normalizasyonu.md) | Arama normalizasyonu (TS, C#, Python) | 0 | A04 | — |
-| [A06](./asamalar/A06-lisans-defteri-ve-enumlar.md) | Lisans defteri v1 ve ortak enum şeması | 0 | A02 | — |
+| [A06](./asamalar/A06-kaynak-kayitlari-ve-enumlar.md) | Lisans defteri v1 ve ortak enum şeması | 0 | A02 | — |
 | [A07](./asamalar/A07-editoryal-veritabani.md) | Editoryal veritabanı (EF Core 10 + PostgreSQL 18) | 0 | A03, A04, A06 | — |
 | [A08](./asamalar/A08-ci-is-akislari.md) | CI iş akışları (GitHub Actions) | 0 | A05, A07 | İ-16 |
 | [A09](./asamalar/A09-elmalili-ocr-pilotu.md) | Elmalılı OCR pilotu ve yol seçimi (OCR motorları ve hazır metin adayları, K-38) | 0 | A02, A06 | İ-09, İ-10, İ-17, İ-29 |
 | [A10](./asamalar/A10-tanzil-alimi.md) | Tanzil alımı ve değişmezlik testleri | 1 | A05, A06, A07 | İ-30 |
 | [A11](./asamalar/A11-kuran-yapisi-ve-sayfa-eslemesi.md) | Kur'an yapısı: sure adları, cüz, secde, sayfa eşlemesi | 1 | A10 | İ-23 |
 | [A12](./asamalar/A12-arama-indeksi-ve-paket-semasi.md) | Arama indeksi ve paket şeması | 1 | A05, A10 | — |
-| [A13](./asamalar/A13-yayinlayici-ve-yayin-kapisi.md) | Yayınlayıcı ve yayın kapısı (ilk `dev` `core`) | 1 | A07, A12 | — |
+| [A13](./asamalar/A13-yayinlayici-ve-kalite-kapisi.md) | Yayınlayıcı ve yayın kapısı (ilk `dev` `core`) | 1 | A07, A12 | — |
 | [A14](./asamalar/A14-api-editor-uclari.md) | API editör uçları | 1 | A07 | — |
 | [A15](./asamalar/A15-editor-paneli.md) | Editör paneli | 1 | A14 | — |
 | [A16](./asamalar/A16-elmalili-meali.md) | Elmalılı meali: hazır metin ya da OCR (A09 yol kararına göre), düzeltme kuyruğu, iki tur | 1 | A09, A10, A15 | İ-09, İ-11, İ-17 |
@@ -44,11 +44,11 @@ Bu dosya [Fazlar](../08-yol-haritasi/01-fazlar.md) planını Claude Code'un yür
 | [A32](./asamalar/A32-ayarlar-erisilebilirlik-oz-test.md) | Ayarlar, ilk açılış, erişilebilirlik, kaynaklar, öz test | 2 | A24, A29 | İ-27 |
 | [A33](./asamalar/A33-uctan-uca-test-ve-ic-dagitim.md) | Uçtan uca testler, performans, iç dağıtım | 2 | A24 … A32 | İ-02, İ-21 |
 | [A34](./asamalar/A34-magaza-yayini.md) | Mağaza v1 yayın hazırlığı | 3 | A33 | İ-03, İ-15, İ-18, İ-19, İ-27 |
-| [A35](./asamalar/A35-hesap-ve-kvkk.md) | Hesap ve KVKK | 4 | A34 | İ-03, İ-20 |
+| [A35](./asamalar/A35-hesap-ve-gizlilik.md) | Hesap ve KVKK | 4 | A34 | İ-03, İ-20 |
 | [A36](./asamalar/A36-senkron.md) | Senkron ve bağlantı oyları | 4 | A35 | İ-03, İ-20 (canlıya açılış) |
 | [A37](./asamalar/A37-elmalili-tefsir-paketi.md) | Elmalılı tefsir paketi | 4 | A16, A18 | İ-11, İ-17 |
 | [A38](./asamalar/A38-web.md) | Web (Next.js) | 5 | A34 | Kurul'un web görüşü (İ-02; gerekirse İ-19), İ-18 |
-| [A39](./asamalar/A39-takvim-ve-lisans-olaylari.md) | Takvim ve lisans olayları (tekrar kullanılabilir yordam) | 6 | A13 | olaya göre: İ-03, İ-19 |
+| [A39](./asamalar/A39-devre-disi.md) | Takvim ve lisans olayları (tekrar kullanılabilir yordam) | 6 | A13 | olaya göre: İ-03, İ-19 |
 | [A40](./asamalar/A40-mushaf-b.md) | Mushaf B (Türk hattı) | 6 | A24 | lisans (S-04), İ-03, İ-19 |
 
 Faz numaraları: 0 Hazırlık, 1 İçerik hattı, 2 Mobil v1 (iç test), 3 Mağaza v1, 4 v1.x, 5 Web, 6 Takvime bağlı ([Fazlar](../08-yol-haritasi/01-fazlar.md)).

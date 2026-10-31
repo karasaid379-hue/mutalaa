@@ -14,7 +14,7 @@
 - [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §8 `review` ve inceleme akışı
 - [Elmalılı hazırlığı](../../04-icerik/03-elmalili-hazirligi.md): §7 OCR inceleme ekranı · [Kelime anlamları](../../04-icerik/06-kelime-anlamlari.md): §6 lemma kuyruğu
 - [İktibas tespiti](../../05-capraz-referans/02-iktibas-tespiti.md): §12 bağlantı kuyruğu ve toplu onay · [Kök ve lemma](../../05-capraz-referans/03-kok-ve-lemma.md): §5 madde 7
-- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md): §4 kapı raporu · [Teknoloji yığını](../../02-mimari/02-teknoloji-yigini.md): §2.5
+- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md): §4 kapı raporu · [Teknoloji yığını](../../02-mimari/02-teknoloji-yigini.md): §2.5
 - [Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md): §4 `editor` servisi ve Dockerfile notu, §6 adım 5
 
 ## Kapsam

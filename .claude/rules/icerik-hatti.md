@@ -5,7 +5,7 @@ paths:
 
 # İçerik hattı kuralları (`pipeline/`)
 
-Kaynak: [İçerik hattı](../../docs/04-icerik/02-icerik-hatti.md), [Kaynaklar ve lisans defteri](../../docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md).
+Kaynak: [İçerik hattı](../../docs/04-icerik/02-icerik-hatti.md), [Kaynaklar ve lisans defteri](../../docs/04-icerik/01-kaynaklar.md).
 
 - **Veri soyu.** `data/raw` değişmezdir; yalnız `ingest` yazar. `data/staged` her çalıştırmada yeniden üretilir ve satırlar çapaya göre sıralanır. Her çalıştırma bir manifest yazar.
 - **İdempotentlik.** Yükleme çapaya göre upsert yapar; hat `xref` için yalnız `origin = 'hat'` ve `status = 'aday'` satırları, `unit` için yalnız `metin_durumu = 'taslak'` satırları günceller; `onayli` ve `red` satırlara dokunmaz. Tek istisna Tanzil gibi kanonik kaynaklardır: `onayli` satırda yalnız türetilmiş sütunlar (`ar_norm`, `provenance`, `data_version`, `ord`, `ayah_range`, `run_id`) güncellenir, `metin` ve `content_hash` hiç ([K-39](../../docs/00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)). Reddedilen bağlantı başka yoldan yeniden önerilmez.

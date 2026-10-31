@@ -238,6 +238,6 @@ Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo 
 ## İlgili dosyalar
 
 - [README](README.md) · [Karar defteri](00-ozet/02-karar-defteri.md) · [Sözlük](00-ozet/03-sozluk.md)
-- [Kaynaklar ve lisans defteri](04-icerik/01-kaynaklar-ve-lisans-defteri.md)
-- [Yayın kapısı ve Kurul](07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK ve gizlilik](07-yayin/02-kvkk-ve-gizlilik.md)
+- [Kaynaklar ve lisans defteri](04-icerik/01-kaynaklar.md)
+- [Yayın kapısı ve Kurul](07-yayin/01-yayin-sureci.md) · [KVKK ve gizlilik](07-yayin/02-gizlilik.md)
 - [Fazlar](08-yol-haritasi/01-fazlar.md) · [Riskler](08-yol-haritasi/03-riskler.md)

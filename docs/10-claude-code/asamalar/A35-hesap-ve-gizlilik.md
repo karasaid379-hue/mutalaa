@@ -10,7 +10,7 @@ Okur için isteğe bağlı hesap kurulur: ASP.NET Core Identity ile e-posta ve p
 
 ## Okunacak belgeler
 - [Backend API](../../02-mimari/05-backend-api.md): §1 çalışma kipleri, §3 `Program.cs`, §5 v1.x uçları, §6 kimlik ve hata modeli, §7 EF Core, §8 günlük, §9 kültür
-- [KVKK ve gizlilik](../../07-yayin/02-kvkk-ve-gizlilik.md): §3 tamamı, §4 "Faz 4 öncesi" listesi, §5 açık sorular
+- [KVKK ve gizlilik](../../07-yayin/02-gizlilik.md): §3 tamamı, §4 "Faz 4 öncesi" listesi, §5 açık sorular
 - [Kullanıcı verisi ve senkron](../../03-veri/04-kullanici-verisi-ve-senkron.md): §2 ortak sütunlar ve `device_id`, §6 yedek biçimi, §8 "Gizlilik" maddesi
 - [Genel mimari](../../02-mimari/01-genel-mimari.md): §6.3, §7 ortamlar, §10, §11 soru 3
 - [Mobil mimari](../../06-mobil/01-mobil-mimari.md): §10 bayraklar, §12 Sentry · [Mobil ekranlar](../../01-urun/03-mobil-ekranlar.md): §2 rota ağacı, §6 ayarlar
@@ -48,7 +48,7 @@ Okur için isteğe bağlı hesap kurulur: ASP.NET Core Identity ile e-posta ve p
 - **Bitti sayılır:** `dotnet test` yeşil, yukarıdaki testler raporda adıyla; `git diff --exit-code server/Mutalaa.Api/openapi` temiz.
 
 ### A35.3 · Hesap silme ve veri dökümü
-- `DELETE /api/v1/account` kimliğin yeniden doğrulanmasını ister, hesabı silme işaretiyle kapatır, oturumları ve yenileme belirteçlerini düşürür; bekleme süresi yapılandırmadan okunur (A35.1). Süre dolunca kalıcı silme işi kullanıcının bütün satırlarını, yumuşak silinmiş satırları, değişiklik akışı kayıtlarını, oturumları ve varsa `xref_vote` oylarını (`account_hash` ile) siler; kullanıcıya onay e-postası gider ([KVKK ve gizlilik](../../07-yayin/02-kvkk-ve-gizlilik.md) §3.6).
+- `DELETE /api/v1/account` kimliğin yeniden doğrulanmasını ister, hesabı silme işaretiyle kapatır, oturumları ve yenileme belirteçlerini düşürür; bekleme süresi yapılandırmadan okunur (A35.1). Süre dolunca kalıcı silme işi kullanıcının bütün satırlarını, yumuşak silinmiş satırları, değişiklik akışı kayıtlarını, oturumları ve varsa `xref_vote` oylarını (`account_hash` ile) siler; kullanıcıya onay e-postası gider ([KVKK ve gizlilik](../../07-yayin/02-gizlilik.md) §3.6).
 - Silme testi şemadaki tabloları `information_schema.tables` ile listeler ve her tabloda kullanıcı satırı kalmadığını doğrular; A36'nın ekleyeceği tablolar böylece kendiliğinden kapsanır.
 - `GET /api/v1/account/export` v1 yedek biçimini (`"format": "mutalaa-yedek"`, [Kullanıcı verisi ve senkron](../../03-veri/04-kullanici-verisi-ve-senkron.md) §6) sunucudaki hesap kayıtlarıyla döndürür; A36 senkron tablolarını aynı döküme ekler.
 - **Bitti sayılır:** silme ve döküm testleri yeşil; döküm dosyası v1 içe aktarma koduyla açılıyor.
@@ -114,11 +114,11 @@ grep -n -- "- \[ \]" docs/07-yayin/surum-kayitlari/v1x-kvkk.md | grep -v "İ-"  
 - `server/Mutalaa.Infrastructure/Identity/` (okur kimliği), yeni `DbContext` ve göçleri; `server/Mutalaa.Api/Endpoints/` hesap uçları; `openapi/v1.json`; `server/tests/` hesap testleri
 - `apps/mobile/app/(tabs)/ayarlar/hesap.tsx`, `apps/mobile/src/features/settings/` hesap bileşenleri, `src/lib/flags.ts`, Maestro akışı
 - `docs/07-yayin/aydinlatma-metni.md` ve `docs/07-yayin/surum-kayitlari/v1x-kvkk.md` (öneri), `docs/yazismalar/` avukat taslağı, karar defteri girdileri
-- `docs/07-yayin/02-kvkk-ve-gizlilik.md` ve `docs/01-urun/03-mobil-ekranlar.md` güncellemeleri (`/belge-esitle`)
+- `docs/07-yayin/02-gizlilik.md` ve `docs/01-urun/03-mobil-ekranlar.md` güncellemeleri (`/belge-esitle`)
 
 ## Elle başlatma istemi
 ```text
-docs/10-claude-code/asamalar/A35-hesap-ve-kvkk.md dosyasındaki aşamayı yürüt. Önce önkoşulları ve planı göster, onayımı bekle.
+docs/10-claude-code/asamalar/A35-hesap-ve-gizlilik.md dosyasındaki aşamayı yürüt. Önce önkoşulları ve planı göster, onayımı bekle.
 ```
 
 ## İlgili dosyalar

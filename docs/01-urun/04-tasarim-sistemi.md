@@ -323,7 +323,7 @@ Ekranlardan önce kurulan, yalnız geliştirici derlemelerinde görünen bir ekr
 | No | Soru | Sahibi |
 |---|---|---|
 | TS-1 | Arayüz yazı tipi: brif IBM Plex Sans der, rapor Inter önerir. Seçim karar defterine işlenmeli; IBM Plex Sans'ın Türkçe ve â î û kapsamı ölçülmeli. | Proje sahibi |
-| TS-2 | Sure adı hattı için yazı tipi ve lisansı | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) |
+| TS-2 | Sure adı hattı için yazı tipi ve lisansı | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) |
 | TS-3 | Simge takımı ve lisansı | Bu dosya, sonraki sürüm |
 | TS-4 | Ek rol jetonlarının, vurgu renklerinin ve `bolum-risale` zümrüdünün onayı | Proje sahibi |
 | TS-5 | Tecvid renklerinin (V4) üç temada kontrastı | v1.x |

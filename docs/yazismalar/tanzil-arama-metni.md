@@ -40,9 +40,9 @@ Kind regards,
 
 | Soru | Dayanak |
 |---|---|
-| 1 | [Çapa şeması](../03-veri/01-capa-semasi.md) §13 ÇŞ-2 ve §7; [Arama](../03-veri/05-arama-fts5.md) §1.3, §1.4 ve AR-3; [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.1 (Açık soru) ve §8 satır 1; K-26 |
-| 2 | A01.1 araştırması (2026-10-20): [Tanzil SSS](https://tanzil.net/docs/faq) "They are available for non-commercial purposes."; [kaynaklar sayfası](https://tanzil.net/docs/resources) Kur'an metni için indirme sayfasını gösteriyor; [Text License](https://tanzil.net/docs/text_license) "License: Creative Commons Attribution 3.0"; üst veri (okuma 2026-10-24): [Quran Metadata](https://tanzil.net/docs/quran_metadata) sayfası (sürüm 1.0), [`quran-data.xml`](https://tanzil.net/res/text/metadata/quran-data.xml) kök öğesinde `license="cc-by"`, [`quran-data.js`](https://tanzil.net/res/text/metadata/quran-data.js) içinde `// License: Creative Commons Attribution 3.0`; Text License bildirimi yalnız Kur'an metnine bağlı; SSS "For Developers" bölümü ve [kaynaklar sayfası](https://tanzil.net/docs/resources) üst veriyi de kapsıyor görünüyor; [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.1 |
-| 3 | A01.5 ("Uthmani dosyasının sürüm numarası da sorulur"); [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) §7.2 adım 2 (release kaydı Tanzil dosya özeti taşır) ve §7.3 (Tanzil güncellemesi yeniden onay gerektirir); A10 |
+| 1 | [Çapa şeması](../03-veri/01-capa-semasi.md) §13 ÇŞ-2 ve §7; [Arama](../03-veri/05-arama-fts5.md) §1.3, §1.4 ve AR-3; [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) §3.1 (Açık soru) ve §8 satır 1; K-26 |
+| 2 | A01.1 araştırması (2026-10-20): [Tanzil SSS](https://tanzil.net/docs/faq) "They are available for non-commercial purposes."; [kaynaklar sayfası](https://tanzil.net/docs/resources) Kur'an metni için indirme sayfasını gösteriyor; [Text License](https://tanzil.net/docs/text_license) "License: Creative Commons Attribution 3.0"; üst veri (okuma 2026-10-24): [Quran Metadata](https://tanzil.net/docs/quran_metadata) sayfası (sürüm 1.0), [`quran-data.xml`](https://tanzil.net/res/text/metadata/quran-data.xml) kök öğesinde `license="cc-by"`, [`quran-data.js`](https://tanzil.net/res/text/metadata/quran-data.js) içinde `// License: Creative Commons Attribution 3.0`; Text License bildirimi yalnız Kur'an metnine bağlı; SSS "For Developers" bölümü ve [kaynaklar sayfası](https://tanzil.net/docs/resources) üst veriyi de kapsıyor görünüyor; [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) §3.1 |
+| 3 | A01.5 ("Uthmani dosyasının sürüm numarası da sorulur"); [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) §7.2 adım 2 (release kaydı Tanzil dosya özeti taşır) ve §7.3 (Tanzil güncellemesi yeniden onay gerektirir); A10 |
 | Giriş | Lisans defteri §3.1 (saklama ve atıf); A01.1 (sürüm 1.1, 12 Şubat 2021; Simple Clean için "Suitable for easy search.", [Quran Text Types](https://tanzil.net/docs/quran_text_types)); [İçerik paketleri](../03-veri/03-icerik-paketleri.md) §3.2 (Simple Clean pakette ayrı birim ya da sütun olarak durmaz; yalnız normalize hâli `unit_search.ar_norm` sütunundadır); Arama §1.4 (Uthmani yazımı farklı kelimelerin normalize biçimleri sona eklenir) |
 
 **A01.1 bulguları (2026-10-20)**
@@ -59,5 +59,5 @@ Kind regards,
 
 ## İlgili dosyalar
 
-- [Çapa şeması](../03-veri/01-capa-semasi.md) · [Arama](../03-veri/05-arama-fts5.md) · [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md)
-- [QAC lisans sorusu](./qac-lisans.md) · [Avukat soruları](./avukat-sorulari.md) · [İnsan adımları](../10-claude-code/06-insan-adimlari.md) · [A01](../10-claude-code/asamalar/A01-yazisma-paketi.md)
+- [Çapa şeması](../03-veri/01-capa-semasi.md) · [Arama](../03-veri/05-arama-fts5.md) · [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md)
+- [QAC lisans sorusu](./qac-lisans.md) · [Avukat soruları](./avukat-sorulari.md) · [İnsan adımları](../10-claude-code/06-insan-adimlari.md) · [A01](../10-claude-code/asamalar/A01-devre-disi.md)

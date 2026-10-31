@@ -1,7 +1,7 @@
 # A10 · Tanzil alımı ve değişmezlik testleri
 
 > **Sürüm:** 1.1 · **Tarih:** 28 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-39](../../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
-> **Faz:** 1 · İçerik hattı · **Önkoşul:** [A05](./A05-arama-normalizasyonu.md) · [A06](./A06-lisans-defteri-ve-enumlar.md) · [A07](./A07-editoryal-veritabani.md) · **İnsan adımı:** İ-30
+> **Faz:** 1 · İçerik hattı · **Önkoşul:** [A05](./A05-arama-normalizasyonu.md) · [A06](./A06-kaynak-kayitlari-ve-enumlar.md) · [A07](./A07-editoryal-veritabani.md) · **İnsan adımı:** İ-30
 > **Ajanlar:** `hat-gelistirici` · `metin-denetcisi` · `arastirmaci` · `test-yazari` · `inceleyici` · **Beceriler:** `icerik-hatti` · `metin-butunlugu` · `capa-gramer` · `windows-sorun` · **Tahmini oturum:** 2–3
 > **Başlat:** `/asama A10`
 
@@ -12,7 +12,7 @@
 - [İçerik hattı](../../04-icerik/02-icerik-hatti.md): tamamı; özellikle §4 komutlar ve çıkış kodları, §5 veri soyu, §6 idempotentlik, §8 bağdaştırıcı, §9 QA kapıları, §12 çalıştırma manifesti
 - [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §5 değişmezlik testleri, §14 madde 1
 - [Çapa şeması](../../03-veri/01-capa-semasi.md): §2 anlam kuralları, §7 kanonik metin ve `content_hash`, §8 ofsetler
-- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md): §3.1 Tanzil kartı, §6 şart takibi, §8 yazışma 1
+- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar.md): §3.1 Tanzil kartı, §6 şart takibi, §8 yazışma 1
 - [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §3 `source`, §4 `unit`, §10 `pipeline_run` ve yükleme
 - [Arama](../../03-veri/05-arama-fts5.md): §1.3 Arapça kurallar, §1.4 Kur'an birimleri, §1.5 Arapça tablo (A10.7)
 - [Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md): §6 adım 4, §10.1–§10.2
@@ -35,13 +35,13 @@
 - Sonuçlar A06'da açılan `pipeline/sources/tanzil-uthmani.toml` ve `tanzil-simple-clean.toml` dosyalarına işlenir (`kaynak_url`, `lisans_kopyasi`, `lisans_sha256`, `yeniden_kontrol`). Tarihli lisans kopyası `pipeline/sources/licenses/tanzil-{varyant}-{YYYY-MM-DD}.txt` olur. Alan adları değişmez.
 - Şartlar otomatik indirmeye izin vermiyorsa dosyayı kullanıcı indirir ve A09'daki kalıpla `data/gelen/tanzil/` altına koyar (öneri); `data/raw` yalnız `ingest` ile yazılır ve kilit denetimi aynı kalır.
 - Çözülen "Doğrulanacak" maddeleri `/belge-esitle` ile lisans defterine işlenir.
-- **28 Ekim 2026 okuması.** Tanzil lisans metni 26 Ekim kopyasına göre değişmedi. Uthmani için 1.1 (Şubat 2021) güncellemeler sayfasında doğrulandı. Simple Clean için açık bir sürüm girdisi yok ("Version 1.1" metnin tamamı için duyuruluyor); [BÇ-37](../07-belge-celiskileri.md#1-karar-bekleyenler) açık. Dosya bildirim bloğu sürümü söylerse TOML, kilit ve defter ona göre yazılır, söylemezse madde açık kalır ve soru İ-08'e bağlanır. İndirme formu "I agree with Terms of Use" onayı ister; dosyaları kullanıcı indirir ([İ-30](../06-insan-adimlari.md)). Ayrıntı: [lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.1.
+- **28 Ekim 2026 okuması.** Tanzil lisans metni 26 Ekim kopyasına göre değişmedi. Uthmani için 1.1 (Şubat 2021) güncellemeler sayfasında doğrulandı. Simple Clean için açık bir sürüm girdisi yok ("Version 1.1" metnin tamamı için duyuruluyor); [BÇ-37](../07-belge-celiskileri.md#1-karar-bekleyenler) açık. Dosya bildirim bloğu sürümü söylerse TOML, kilit ve defter ona göre yazılır, söylemezse madde açık kalır ve soru İ-08'e bağlanır. İndirme formu "I agree with Terms of Use" onayı ister; dosyaları kullanıcı indirir ([İ-30](../06-insan-adimlari.md)). Ayrıntı: [lisans defteri](../../04-icerik/01-kaynaklar.md) §3.1.
 - **Bitti sayılır:** iki TOML doğrulanmış adres, tarihli lisans kopyası ve SHA-256 taşıyor; `uv run mutalaa sources check` 0 ile çıkıyor.
 
 ### A10.2 · Kilit dosyası ve bağdaştırıcı
 - `pipeline/src/mutalaa_pipeline/ingest/tanzil.py`: [İçerik hattı](../../04-icerik/02-icerik-hatti.md) §8'deki `SourceAdapter` (`fetch`, `parse`) ve `run_ingest` içindeki `require_status` denetimi.
 - `pipeline/src/mutalaa_pipeline/ingest/tanzil.lock.json`: varyant başına `url`, `sha256`, `boyut`, `surum`, indirme seçenekleri ve alınma tarihi (Test stratejisi §5 madde 1).
-- `fetch` dosyayı `data/raw/tanzil-{varyant}/{YYYY-MM-DD}/` altına yazar ve `fetch.json` üretir. SHA-256 kilitle tutmazsa komut `2` ile çıkar ve "yeni Tanzil sürümü yalnız onay treniyle alınır" uyarısını basar ([Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md) §7.3). Kilit yalnız `/karar` ile güncellenir.
+- `fetch` dosyayı `data/raw/tanzil-{varyant}/{YYYY-MM-DD}/` altına yazar ve `fetch.json` üretir. SHA-256 kilitle tutmazsa komut `2` ile çıkar ve "yeni Tanzil sürümü yalnız onay treniyle alınır" uyarısını basar ([Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md) §7.3). Kilit yalnız `/karar` ile güncellenir.
 - `parse` dosyayı bayt olarak okur, yalnız `b"\n"` ile böler, satırı katı UTF-8 ile çözer. NFC, `strip()`, `str.splitlines()` ve satır sonu çevirisi yoktur; `\r` görülürse raporlanır. Bildirim satırları birimlere girmez; tam metni `source.notice_text` alanına aynen yazılır.
 - Her birimin kaynak dosyadaki yeri (`file`, `line`) `provenance` içinde tutulur; `kaynak[başlangıç:bitiş] == text` eşitliği QA'da denetlenir ([Çapa şeması](../../03-veri/01-capa-semasi.md) §7).
 - Bağdaştırıcı birim testleri depodaki küçük bir Tanzil parçasıyla yazılır. Parça dosyadan betikle kesilir, elle yazılmaz; atıf satırı korunur.

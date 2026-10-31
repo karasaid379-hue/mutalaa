@@ -9,7 +9,7 @@ description: >-
 
 # Lisans ve yayın kapısı (K-06)
 
-Kaynaklar: [Yayın kapısı ve Kurul](../../../docs/07-yayin/01-yayin-kapisi-ve-kurul.md), [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md), [İçerik paketleri](../../../docs/03-veri/03-icerik-paketleri.md) §5–§7, [Backend API](../../../docs/02-mimari/05-backend-api.md) §10.3. Hukuki görüş değildir.
+Kaynaklar: [Yayın kapısı ve Kurul](../../../docs/07-yayin/01-yayin-sureci.md), [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar.md), [İçerik paketleri](../../../docs/03-veri/03-icerik-paketleri.md) §5–§7, [Backend API](../../../docs/02-mimari/05-backend-api.md) §10.3. Hukuki görüş değildir.
 
 ## Durumlar
 
@@ -83,7 +83,7 @@ Her paket satırı: `pack_id, version, sha256, size_bytes, license_status, kurul
 
 ## Yeni kaynak eklerken
 
-1. [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md) kontrol listesi; `pipeline/sources/<kimlik>.toml`, tarihli lisans kopyası ve SHA-256, atıf metni, `license_status`, `kurul_gerekli`, `embed_ok`, `kisitlar`.
+1. [Kaynaklar ve lisans defteri](../../../docs/04-icerik/01-kaynaklar.md) kontrol listesi; `pipeline/sources/<kimlik>.toml`, tarihli lisans kopyası ve SHA-256, atıf metni, `license_status`, `kurul_gerekli`, `embed_ok`, `kisitlar`.
 2. Durum değişikliği editörde ikinci onayla uygulanır (`license_status`, `kurul_onay`, `embed_ok`).
 3. Lisans belirsizse `bekliyor` yaz ve insan adımı aç; hukuki sonuç çıkarma.
 4. `lisans-denetcisi` ajanıyla denetle; `uv run mutalaa sources check` ve `dotnet run --project server/Mutalaa.Publisher -- publish --flavor dev --dry-run` kapı raporunu incele.

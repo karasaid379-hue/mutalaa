@@ -3,7 +3,7 @@
 > **Sürüm:** 1.5 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
-Bu dosya ASP.NET Core 10 çözümünü, uçları, kimlik doğrulamayı, hata modelini, EF Core kurallarını ve Yayınlayıcı konsolunu tanımlar. Tablolar [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md), paket ve manifest biçimi [İçerik paketleri](../03-veri/03-icerik-paketleri.md), kapı kuralları [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) dosyasındadır.
+Bu dosya ASP.NET Core 10 çözümünü, uçları, kimlik doğrulamayı, hata modelini, EF Core kurallarını ve Yayınlayıcı konsolunu tanımlar. Tablolar [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md), paket ve manifest biçimi [İçerik paketleri](../03-veri/03-icerik-paketleri.md), kapı kuralları [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) dosyasındadır.
 
 ---
 
@@ -110,7 +110,7 @@ Hat ve editör önerileri tek `review` tablosundan geçer. Onay `onerilen` değe
 | Kök ve lemma düzeltmesi | `quran_word_fix` | `root_id`, `lemma_id`, `pos`, `features` | [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) §4 |
 | Türkçe kelime → Arapça kök | `tr_root_index`, `tr_form` | eşleme | [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) §5 |
 | Sure adı varyantları | `surah_alias` | `alias` | [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md) |
-| Kaynak lisansı | `source` | `license_status`, `kurul_onay`, `embed_ok` | [Lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) |
+| Kaynak lisansı | `source` | `license_status`, `kurul_onay`, `embed_ok` | [Lisans defteri](../04-icerik/01-kaynaklar.md) |
 
 - **Çözüldü (19 Ekim 2026):** `review.hedef_tablo` denetim listesi `quran_word_fix`, `tr_root_index`, `tr_form` ve `surah_alias` değerlerini taşır ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §8).
 - Kendi `status` alanı olan tablolarda (`xref`, `quran_word_fix`, `surah_alias`) onay `onayli`, ret `red` yazar.
@@ -178,7 +178,7 @@ Hat ve editör önerileri tek `review` tablosundan geçer. Onay `onerilen` değe
 ## 8. Günlük ve telemetri
 
 - Serilog konsola yazar (geliştirmede okunur biçim, konteynerde sıkıştırılmış JSON); `UseSerilogRequestLogging` her isteği tek satırla kaydeder. OpenTelemetry iz ve ölçüleri ASP.NET Core, HttpClient ve Npgsql'den toplar; dışa aktarım yalnız `OTEL_EXPORTER_OTLP_ENDPOINT` verilirse açılır.
-- Günlüğe parola, belirteç, çerez, not içeriği ve e-posta yazılmaz; v1.x'te IP saklama süresi [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) ile belirlenir.
+- Günlüğe parola, belirteç, çerez, not içeriği ve e-posta yazılmaz; v1.x'te IP saklama süresi [KVKK ve gizlilik](../07-yayin/02-gizlilik.md) ile belirlenir.
 
 ## 9. Kültürden bağımsız metin işleme
 
@@ -224,7 +224,7 @@ NFC `LowerTurkish` içinde değildir; yalnız `SplitScripts` ön adımında, bö
 | `upload --flavor <f> --surum <s>` | Üretilmiş yayını depoya yükler |
 | `promote --surum <s> --to public` | İç kanalda test edilen yayını `public` için derler ve yükler |
 | `rollback --flavor <f> --to <surum>` | Manifesti geçmişteki yayına çevirir |
-| `verify --flavor <f> [--manifest <yol>] [--embedded-core <yol>]` | İmza, şema, adres, boyut, sha256 ve kapı kurallarını yeniden denetler ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) §5) |
+| `verify --flavor <f> [--manifest <yol>] [--embedded-core <yol>]` | İmza, şema, adres, boyut, sha256 ve kapı kurallarını yeniden denetler ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) §5) |
 | `watch` | API'nin `hazirlaniyor` bıraktığı talepleri sırayla işler |
 | `keys generate --flavor <f>` | Ed25519 anahtar çifti; özel anahtar kullanıcı sırlarına, açık anahtar ekrana (öneri) |
 
@@ -258,15 +258,15 @@ flowchart TD
 |---|---|---|
 | P-01 | Kaynak kaydı olmayan ya da `kapali` kaynaklı içerik hiçbir pakete girmez | Hepsi |
 | P-02 | `kisitlar.hazir_vt_yasak` taşıyan kaynak hiçbir pakete girmez (QF şartları) | Hepsi |
-| P-03 | Paketin durumu kaynaklarının en kısıtlayıcısıdır (`serbest` < `bekliyor` < `ic_kullanim` < `kapali`). `public` ve `internal` yalnız `serbest` alır; `bekliyor` ve `ic_kullanim` yalnız ekip içi `dev` derlemesine girer (K-06, 18 Ekim 2026 güncellemesi; `LicenseGate.Check`, [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) §4) | Hepsi |
-| P-04 | `kurul_gerekli` kaynakta `kurul_onay` doludur ve yayının içerik özeti `source.kurul_onay_ozeti` ile aynıdır; değilse paket kapı raporunda "girmedi" olur ve `public` derleme durur: manifest yayımlanmaz, çıkış kodu `2` ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) §4) | public |
+| P-03 | Paketin durumu kaynaklarının en kısıtlayıcısıdır (`serbest` < `bekliyor` < `ic_kullanim` < `kapali`). `public` ve `internal` yalnız `serbest` alır; `bekliyor` ve `ic_kullanim` yalnız ekip içi `dev` derlemesine girer (K-06, 18 Ekim 2026 güncellemesi; `LicenseGate.Check`, [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) §4) | Hepsi |
+| P-04 | `kurul_gerekli` kaynakta `kurul_onay` doludur ve yayının içerik özeti `source.kurul_onay_ozeti` ile aynıdır; değilse paket kapı raporunda "girmedi" olur ve `public` derleme durur: manifest yayımlanmaz, çıkış kodu `2` ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) §4) | public |
 | P-05 | Kapı veri setlerine de uygulanır. QAC kaynaklı kök ve lemma verisi `core` paketine yazılmaz; kendi lisans durumuyla ayrı pakete (öneri `kelime-kok`) yazılır ve kaynak `bekliyor` kaldıkça `public`'e girmez (K-06 uygulama notu) | Hepsi |
 | P-06 | `embed_ok = false` kaynaktan türeyen gömme vektörü ve `anlamsal` bağlantı pakete girmez; Quran Foundation içeriği hiç gömülmez ([Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md)) | Hepsi |
 | P-07 | Bağlantı üç koşulla girer: kaynak eser görünür; hedef eser görünür ya da ayrı kayıtlı bir dizine aittir; `xref.license` derlemeye izin verir. `red` hiç girmez; `aday` yalnız `dev` ve `internal`'a girer | Hepsi |
 | P-08 | Onaysız yapay zekâ taslağı `public`'e girmez; iç derlemelere "doğrulanmamış" işaretiyle girer | public |
 | P-09 | `quran_word_fix`, `tr_root_index` ve `tr_form` satırlarından yalnız onaylılar uygulanır | Hepsi |
 | P-10 | Yalnız `metin_durumu = onayli` birimler `public`'e girer | public |
-| P-11 | Tanzil birimlerinin `content_hash` değeri ham Tanzil dosyasından yeniden hesaplananla aynıdır (değiştirme yasağı); her kaynağın `atif_metni` ve `atif_url` değeri pakete aynen yazılır ([Lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md)) | Hepsi |
+| P-11 | Tanzil birimlerinin `content_hash` değeri ham Tanzil dosyasından yeniden hesaplananla aynıdır (değiştirme yasağı); her kaynağın `atif_metni` ve `atif_url` değeri pakete aynen yazılır ([Lisans defteri](../04-icerik/01-kaynaklar.md)) | Hepsi |
 | P-12 | Slug'ı `test-` ile başlayan kaynak `public`'e girmez | public |
 | P-13 | `depends_on` döngüsüzdür; her bağımlılık aynı manifestte görünür | Hepsi |
 | P-14 | Terfide kaynakların içerik özetleri iç kanalda test edilen yayındakiyle aynıdır | public |
@@ -322,7 +322,7 @@ Domain testleri test vektörlerini, `LicenseGate` matrisini ve `tr-TR` kültür�
 3. v1.x'te kullanıcı veritabanının editoryal veritabanından ayrılması ve oy aktarım sıklığı ([Genel mimari](./01-genel-mimari.md)).
 4. İmza algoritması, JSON kanonikleştirme, anahtar saklama ve değişimi ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) IP-7).
 5. **Çözüldü (19 Ekim 2026):** paket adı `kelime-kok`; `tr_form` bu pakettedir. `tr_root_index` QAC'ye bağlıdır: `core`'daki meal birimleri için `kelime-kok`'ta, diğer metin paketlerinde kendi paketinde, Risale için `risale-dizin`'de durur ve kaynağın lisansıyla süzülür ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) §1, §3.2, §3.3).
-6. Hesap silmede bekleme süresi (eski planda 30 gün) ve IP saklama süresi ([KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md)).
+6. Hesap silmede bekleme süresi (eski planda 30 gün) ve IP saklama süresi ([KVKK ve gizlilik](../07-yayin/02-gizlilik.md)).
 
 ## 13. Ses (K-41)
 
@@ -335,4 +335,4 @@ Domain testleri test vektörlerini, `LicenseGate` matrisini ve `tr-TR` kültür�
 - [Genel mimari](./01-genel-mimari.md) · [Teknoloji yığını](./02-teknoloji-yigini.md) · [Proje yapısı](./03-proje-yapisi.md) · [Yerel geliştirme](./04-yerel-gelistirme.md)
 - [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md) · [Arama](../03-veri/05-arama-fts5.md)
 - [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) · [Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
+- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [KVKK ve gizlilik](../07-yayin/02-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)

@@ -1,7 +1,7 @@
 # A09 · Elmalılı OCR pilotu ve yöntem seçimi (OCR motorları ve hazır metin adayları)
 
 > **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-38](../../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
-> **Faz:** 0 · Hazırlık · **Önkoşul:** [A02](./A02-tek-depo-iskeleti.md) · [A06](./A06-lisans-defteri-ve-enumlar.md) · **İnsan adımı:** [İ-09, İ-10, İ-17, İ-29](../06-insan-adimlari.md)
+> **Faz:** 0 · Hazırlık · **Önkoşul:** [A02](./A02-tek-depo-iskeleti.md) · [A06](./A06-kaynak-kayitlari-ve-enumlar.md) · **İnsan adımı:** [İ-09, İ-10, İ-17, İ-29](../06-insan-adimlari.md)
 > **Ajanlar:** `hat-gelistirici` · `metin-denetcisi` · `lisans-denetcisi` · `arastirmaci` · `inceleyici` · **Beceriler:** `icerik-hatti` · `metin-butunlugu` · `lisans-kapisi` · **Tahmini oturum:** 2–4 (insan beklemesi hariç)
 > **Başlat:** `/asama A09`
 
@@ -11,7 +11,7 @@ Elmalılı'nın özgün baskısı (baskı kimliği `elmalili-1935`) için iki be
 ## Okunacak belgeler
 - [Elmalılı hazırlığı](../../04-icerik/03-elmalili-hazirligi.md): §1 hukuki çerçeve, §3 kaynak baskı ve tarama standardı, §4 OCR ve değerlendirme, §5 (yalnız Yol A çıkarsa), §8 QA ölçütleri, §11 açık sorular
 - [İçerik hattı](../../04-icerik/02-icerik-hatti.md): §3 `mutalaa.toml` ve Kraken notu, §4 komutlar, §5 veri soyu, §7 günlük, §10 yapay zekâ politikası, §11 maliyet, §12 çalıştırma manifesti
-- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md): §3.3 (`elmalili-meal`, `elmalili-tefsir`), §4 (hazır metin adaylarının bulguları), §7 kontrol listesi
+- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar.md): §3.3 (`elmalili-meal`, `elmalili-tefsir`), §4 (hazır metin adaylarının bulguları), §7 kontrol listesi
 - [Karar defteri](../../00-ozet/02-karar-defteri.md): K-03 ve 18 Ekim 2026 düzeltmesi; [K-38](../../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) madde 1–4 (kontrollü hazır metin, çıkarılmış metin, `taslak` başlangıç durumu)
 - [Teknoloji yığını](../../02-mimari/02-teknoloji-yigini.md): §2.4 (OCR adayları)
 

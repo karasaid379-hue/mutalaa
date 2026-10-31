@@ -219,7 +219,7 @@ Hetzner fiyatı 15 Haziran 2026 zammından sonra CX23 için ayda 5,49 € ([Priv
 
 ## İlgili dosyalar
 
-- [Yayın kapısı ve Kurul](./01-yayin-kapisi-ve-kurul.md) · [Test stratejisi](./03-test-stratejisi.md)
+- [Yayın kapısı ve Kurul](./01-yayin-sureci.md) · [Test stratejisi](./03-test-stratejisi.md)
 - [Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md) · [Backend API](../02-mimari/05-backend-api.md) · [Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)
 - [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md) · [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md)
 - [Fazlar](../08-yol-haritasi/01-fazlar.md) · [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) · [Riskler](../08-yol-haritasi/03-riskler.md)

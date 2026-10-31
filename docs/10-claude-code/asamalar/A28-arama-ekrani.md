@@ -15,7 +15,7 @@ Ara sekmesini kurar. Arama cihazda, ATTACH edilmiş bütün metin paketlerinin F
 - [Çapa şeması](../../03-veri/01-capa-semasi.md): §12 sure adları ve insan yazımları
 - [Kapsam ve fazlar](../../01-urun/01-kapsam-ve-fazlar.md): §4.7 arama özellikleri, §8 B-02
 - [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §5 madde 5, §9 Arama akışı, §10 performans
-- [KVKK ve gizlilik](../../07-yayin/02-kvkk-ve-gizlilik.md): §2.1 son aramalar satırı, §2.7, §5 madde 8
+- [KVKK ve gizlilik](../../07-yayin/02-gizlilik.md): §2.1 son aramalar satırı, §2.7, §5 madde 8
 
 ## Kapsam
 **Yapılır**

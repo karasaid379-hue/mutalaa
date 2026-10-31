@@ -1,7 +1,7 @@
 # A23 · Cihaz veri katmanı: paketler, ATTACH, `user.db`, `device.db`, gömülü `core`
 
 > **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-41](../../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-15](../../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
-> **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A13](./A13-yayinlayici-ve-yayin-kapisi.md) · [A21](./A21-mobil-iskelet.md) · **İnsan adımı:** yok
+> **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A13](./A13-yayinlayici-ve-kalite-kapisi.md) · [A21](./A21-mobil-iskelet.md) · **İnsan adımı:** yok
 > **Ajanlar:** `mobil-gelistirici` · `test-yazari` · `lisans-denetcisi` · `arastirmaci` · `inceleyici` · **Beceriler:** `paket-yayini` · `lisans-kapisi` · `windows-sorun` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A23`
 
@@ -15,7 +15,7 @@ Cihazdaki üç veri katmanı kurulur: gömülü `core` ve ATTACH edilen metin pa
 - [Depolama yöneticisi](../../06-mobil/03-depolama-yoneticisi.md): §2 `device.db`, §3 dosya düzeni, §5 bütünlük
 - [Proje yapısı](../../02-mimari/03-proje-yapisi.md): §1 (`apps/mobile`), §7 son paragraf (`fetch-core.mjs`)
 - [Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md): §6 adım 6–7, §10.3
-- [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §6 · [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md): §4.3
+- [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §6 · [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md): §4.3
 
 ## Kapsam
 **Yapılır**

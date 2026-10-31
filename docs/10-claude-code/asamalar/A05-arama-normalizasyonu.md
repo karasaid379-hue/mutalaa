@@ -177,4 +177,4 @@ Plan kararları (2026-10-25): D1 Arama §1'in açık bıraktığı ayrıntılar 
 Hermes'te vektör koşumu bu aşamada yapılmadı (CLAUDE.md çalışma düzeni 3); A21 öz testi ve A32 öz test ekranındadır.
 
 ## İlgili dosyalar
-- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A04](./A04-capa-ve-test-vektorleri.md) · Sonraki: [A06](./A06-lisans-defteri-ve-enumlar.md)
+- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A04](./A04-capa-ve-test-vektorleri.md) · Sonraki: [A06](./A06-kaynak-kayitlari-ve-enumlar.md)

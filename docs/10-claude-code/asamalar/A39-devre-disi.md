@@ -1,7 +1,7 @@
 # A39 · Takvim ve lisans olayları (2028, 2031, yeni lisanslar) — tekrar kullanılabilir yordam
 
 > **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-04](../../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-05](../../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
-> **Faz:** 6 · Takvime bağlı · **Önkoşul:** [A13](./A13-yayinlayici-ve-yayin-kapisi.md) · **İnsan adımı:** olaya göre: İ-03 (avukat) · İ-19 (Kurul onay treni) · hak sahibiyle yazışma · ikinci onayı veren editör
+> **Faz:** 6 · Takvime bağlı · **Önkoşul:** [A13](./A13-yayinlayici-ve-kalite-kapisi.md) · **İnsan adımı:** olaya göre: İ-03 (avukat) · İ-19 (Kurul onay treni) · hak sahibiyle yazışma · ikinci onayı veren editör
 > **Ajanlar:** `lisans-denetcisi` · `arastirmaci` · `hat-gelistirici` · `sunucu-gelistirici` · `belge-bekcisi` · `inceleyici` · **Beceriler:** `lisans-kapisi` · `paket-yayini` · `icerik-hatti` · **Tahmini oturum:** olay başına 1–3 (içerik sayısallaştırma işi hariç)
 > **Başlat:** `/asama A39`
 
@@ -10,8 +10,8 @@ Bu aşama bir kez bitmez; her takvim ya da lisans olayında aynı yordamla yenid
 
 ## Okunacak belgeler
 - [Fazlar](../../08-yol-haritasi/01-fazlar.md): Faz 6 tablosu ve ortak yol
-- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md): §1 iç kullanım kuralı, §2, ilgili kaynak kartı (§3), §4, §6 takvim ve şart takibi, §7 yeni kaynak kontrol listesi
-- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md): §2, §4, §6, §7.2–§7.3
+- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar.md): §1 iç kullanım kuralı, §2, ilgili kaynak kartı (§3), §4, §6 takvim ve şart takibi, §7 yeni kaynak kontrol listesi
+- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md): §2, §4, §6, §7.2–§7.3
 - [Backend API](../../02-mimari/05-backend-api.md): §4 `/sources` uçları, §4.1 ikinci onay, §10.1, §10.6 · [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §3 `source` ve `kamu_mali_tarihi`, §8 `review`
 - [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §3.1 `attribution`, §6 sürümleme ve geri çekme
 - Olaya göre: [Hadis hazırlığı](../../04-icerik/04-hadis-hazirligi.md) §1–§3 (2028), [Risale hazırlığı](../../04-icerik/05-risale-hazirligi.md) §1, §4–§5 (2031), [Sonra yapılacaklar](../../08-yol-haritasi/02-sonra-yapilacaklar.md) S-04, S-05, S-06, S-07, S-09
@@ -115,13 +115,13 @@ dotnet run --project server/Mutalaa.Publisher -- verify --flavor public; echo "�
 
 ## Çıktılar
 - `docs/04-icerik/olaylar/{YYYY-MM-DD}-{kimlik}.md` (öneri)
-- `docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md`, `pipeline/sources/{kimlik}.toml`, `pipeline/sources/licenses/…`
+- `docs/04-icerik/01-kaynaklar.md`, `pipeline/sources/{kimlik}.toml`, `pipeline/sources/licenses/…`
 - `source` ve `review` satırları; yeni `release` kayıtları ve paket sürümleri
 - Karar defteri güncelleme satırı ve ilgili belge güncellemeleri
 
 ## Elle başlatma istemi
 ```text
-docs/10-claude-code/asamalar/A39-takvim-ve-lisans-olaylari.md dosyasındaki yordamı şu olay için yürüt: <olay, ör. "tecrid-miras, 1 Ocak 2028">. Önce olay kaydını, önkoşulları ve planı göster, onayımı bekle.
+docs/10-claude-code/asamalar/A39-devre-disi.md dosyasındaki yordamı şu olay için yürüt: <olay, ör. "tecrid-miras, 1 Ocak 2028">. Önce olay kaydını, önkoşulları ve planı göster, onayımı bekle.
 ```
 
 ## İlgili dosyalar

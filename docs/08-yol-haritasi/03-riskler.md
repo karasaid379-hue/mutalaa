@@ -58,11 +58,11 @@ Tek geliştiricili dönemde bir kişi birden çok rolü taşır.
 
 ### R-01 · Kurul onayının gecikmesi ya da reddi
 - **Açıklama.** 633 sayılı Kanun m. 6 elektronik ve sesli Kur'an ile mealli mushafı Kurul onayına bağlıyor ([Lexpera, 633](https://www.lexpera.com.tr/mevzuat/kanunlar/diyanet-isleri-baskanligi-kurulus-ve-gorevleri-hakkinda-kanun-633)). Başvuru usulü, ücret ve süre bilinmiyor. Medine düzenli fontların kabulü belirsiz. Onay sürüme bağlı ([Memurlar.net, 2022](https://www.memurlar.net/haber/1045766/kur-an-i-kerim-basim-ve-yayim-kriterleri-hakkinda-yonetmelik-resmi-gazete-de-yayimlandi.html)). `core` onaysız public derlemeye giremez. Onayın Kur'an metninin yanında gösterilen bağlantı ve dizin verisini de kapsayıp kapsamadığı Açık soru.
-- **Önlem.** Ön görüşme Faz 0'ın ilk işi; içerik dondurma; başvuru dosyası Faz 2 ile paralel; meal düzeltme turları başvurudan önce kapanır; Mushaf C yedek; düzeltmeler onay treniyle ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)).
+- **Önlem.** Ön görüşme Faz 0'ın ilk işi; içerik dondurma; başvuru dosyası Faz 2 ile paralel; meal düzeltme turları başvurudan önce kapanır; Mushaf C yedek; düzeltmeler onay treniyle ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)).
 - **Tetik.** Ön görüşme talebine proje sahibinin belirlediği sürede cevap gelmemesi; düzeltme ya da ret yazısı; font sorusuna olumsuz cevap.
 
 ### R-02 · Risale hakları
-- **Açıklama.** Risale-i Nur 31 Aralık 2030'a kadar korunuyor ve hakları bugün kimin kullandığı belirsiz ([TDV İslâm Ansiklopedisi](https://islamansiklopedisi.org.tr/risale-i-nur-kulliyati); [T24](https://t24.com.tr/haber/aym-risale-i-nur-yasagini-iptal-etti,299364)). Metnin iç test grubuna dahi dağıtılması ihlal sayılabilir. Tek bir topluluğun yayınevinden lisans almak tarafsızlığı zedeler. Telifli metnin dizin, gömme ve altın set için içeride işlenmesi, harici bir dil modeli API'sine gönderilmesi ve metinsiz dizinin mağaza derlemesinde yer alması Açık soru (hukuki görüş değildir; [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md), §2.4).
+- **Açıklama.** Risale-i Nur 31 Aralık 2030'a kadar korunuyor ve hakları bugün kimin kullandığı belirsiz ([TDV İslâm Ansiklopedisi](https://islamansiklopedisi.org.tr/risale-i-nur-kulliyati); [T24](https://t24.com.tr/haber/aym-risale-i-nur-yasagini-iptal-etti,299364)). Metnin iç test grubuna dahi dağıtılması ihlal sayılabilir. Tek bir topluluğun yayınevinden lisans almak tarafsızlığı zedeler. Telifli metnin dizin, gömme ve altın set için içeride işlenmesi, harici bir dil modeli API'sine gönderilmesi ve metinsiz dizinin mağaza derlemesinde yer alması Açık soru (hukuki görüş değildir; [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md), §2.4).
 - **Önlem.** Metin hukukçu görüşü gelene kadar `kapali`: hiçbir derlemeye girmez ve işlenmez. Görüş olumluysa yalnız ekip içi `dev` derlemede `ic_kullanim` olur ([K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik), [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)). Kapı testleri; harici API ve gömme adımları yalnız serbest metinlerde çalışır; metinsiz atıf dizini için avukat görüşü; 2031 hazırlığı ([Sonra yapılacaklar](./02-sonra-yapilacaklar.md), S-06).
 - **Tetik.** Avukat görüşünün gelmesi; hak sahibinden ihtar; Risale içeriğinin `dev` dışındaki bir derlemede görünmesi (kapı testi kırılır).
 
@@ -118,7 +118,7 @@ Tek geliştiricili dönemde bir kişi birden çok rolü taşır.
 
 ### R-13 · Hesaplar gelince KVKK
 - **Açıklama.** Yurt dışına düzenli aktarımda her veri işleyenle standart sözleşme ve 5 iş günü içinde Kurum'a bildirim gerekiyor; bildirim yapmamanın 2026 cezası 90.308–1.806.377 TL ([Cottgroup](https://cottgroup.com/tr/blog/kvkk-gdpr/item/standart-sozlesme-bildirim-yukumlulugu-ve-yaptirimlari)). Rapordaki bütün aday sağlayıcılar veriyi yurt dışında tutuyor. Notların ve okuma ilerlemesinin özel nitelikli veri sayılıp sayılmadığı Açık soru.
-- **Önlem.** Hesap isteğe bağlı ([K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte)); veri en aza indirilir; veri işleyenler listesi, sözleşme ve bildirim akışı, aydınlatma metni, silme ve dışa aktarma; avukat incelemesi ([KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md)).
+- **Önlem.** Hesap isteğe bağlı ([K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte)); veri en aza indirilir; veri işleyenler listesi, sözleşme ve bildirim akışı, aydınlatma metni, silme ve dışa aktarma; avukat incelemesi ([KVKK ve gizlilik](../07-yayin/02-gizlilik.md)).
 - **Tetik.** Faz 4'ün başlaması; yeni bir veri işleyen eklenmesi.
 
 ### R-14 · Tek geliştiricinin tükenmesi
@@ -170,6 +170,6 @@ Tek geliştiricili dönemde bir kişi birden çok rolü taşır.
 ## İlgili dosyalar
 
 - [Fazlar](./01-fazlar.md) · [Sonra yapılacaklar](./02-sonra-yapilacaklar.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md) · [Arama](../03-veri/05-arama-fts5.md)
+- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [KVKK ve gizlilik](../07-yayin/02-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
+- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md) · [Arama](../03-veri/05-arama-fts5.md)
 - [Kaynakça](../09-kaynakca.md) · [Karar defteri](../00-ozet/02-karar-defteri.md)

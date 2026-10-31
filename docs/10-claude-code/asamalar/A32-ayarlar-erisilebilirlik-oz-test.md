@@ -11,9 +11,9 @@ Ayarlar ağacını 01-urun/03 §6'ya göre tamamlar ve erişilebilirlik kurallar
 ## Okunacak belgeler
 - [Mobil ekranlar](../../01-urun/03-mobil-ekranlar.md): §2 `ayarlar/*` ve `onboarding/index.tsx`, §5 ilk açılış, §6 ayarlar ağacı ve hizalama notları, §9 ME-3, ME-4 ve ME-5
 - [Mobil mimari](../../06-mobil/01-mobil-mimari.md): §5 `useSettings`, §10 bayraklar, §11 hata türleri, §12 Sentry, §13 erişilebilirlik, §14 Türkçe harf ve `Intl`
-- [KVKK ve gizlilik](../../07-yayin/02-kvkk-ve-gizlilik.md): tamamı; özellikle §2.2, §2.3, §2.5, §2.7, §4
-- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md): §6 Kaynaklar ve lisanslar, Kurul onay bilgisi
-- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md): §2 özet tablo, §3 atıf satırları
+- [KVKK ve gizlilik](../../07-yayin/02-gizlilik.md): tamamı; özellikle §2.2, §2.3, §2.5, §2.7, §4
+- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md): §6 Kaynaklar ve lisanslar, Kurul onay bilgisi
+- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar.md): §2 özet tablo, §3 atıf satırları
 - [Tasarım sistemi](../../01-urun/04-tasarim-sistemi.md): §3.2 kademeler, §4 dokunma hedefi, §5 hareket, §9 kontrol listesi
 - [Okuma deneyimi](../../01-urun/02-okuma-deneyimi.md): §13 erişilebilirlik
 - [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §2 öz test, §11 erişilebilirlik

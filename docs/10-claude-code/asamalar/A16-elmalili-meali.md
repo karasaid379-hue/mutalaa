@@ -13,10 +13,10 @@ Elmalılı'nın özgün baskısından (baskı kimliği `elmalili-1935`) âyet me
 ## Okunacak belgeler
 - [Elmalılı hazırlığı](../../04-icerik/03-elmalili-hazirligi.md): tamamı (§3 baskı doğrulama, §4 OCR, §5 Yol A, §6 âyetlere bölme, §7 editör, §8 QA ve örneklem, §9 künye ve sürüm)
 - [İçerik hattı](../../04-icerik/02-icerik-hatti.md): §4 komutlar, §5 veri soyu, §9 kapılar (G-HIZ, G-MET, G-INC, G-YZ, G-KUR), §10 yapay zekâ politikası, §11 maliyet, §12 yeniden üretilebilirlik
-- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md): §3.3 Elmalılı kartı, §4 kullanılmayacak kaynaklar
+- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar.md): §3.3 Elmalılı kartı, §4 kullanılmayacak kaynaklar
 - [Çapa şeması](../../03-veri/01-capa-semasi.md): §1 meal çapası, §7 kendi metnimizin ilk kaydı
 - [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §4 `unit` ve `metin_durumu`, §8 `review` ve ikinci onay, §9.1 `page_map`
-- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md): §7.3 değişiklik yönetimi
+- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md): §7.3 değişiklik yönetimi
 - A09'un çıktıları: yol kararı ve OCR yöntemi kararı (karar defteri), altın örneklem (`data/gold/elmalili-ocr/`), hazır metin adayının `bekliyor` kaydı, revizyon numarası ve SHA-256'sı, pilot raporu
 - [Karar defteri](../../00-ozet/02-karar-defteri.md): [K-38](../../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) madde 2–4 (hazır metin eşiği, çıkarılmış metin, `taslak` başlangıç durumu)
 

@@ -143,7 +143,7 @@ Ortam değişkenleri: `MUTALAA_DB_URL`, `ANTHROPIC_API_KEY`. Değerler ortamdan 
 | `uv run mutalaa llm estimate --task glosses --sample 50` | Örneklemde token sayar, maliyet tahmini verir |
 | `uv run mutalaa runs list` · `runs show <run_id>` | Çalıştırma kayıtları |
 
-Tarama ve OCR komutları baskı kimliği (`--edition elmalili-1935`), birim komutları kaynak kimliği (`--source elmalili-meal`) alır; kimlikler [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) dosyasındadır. Ortak bayraklar: `--dry-run`, `--force` (parmak izi aynı olsa da çalıştır), `--limit N` (Tanzil `ingest`'inde reddedilir), `--config <dosya>` (başka bir `mutalaa.toml` verir). Çıkış kodları: `0` başarılı, `1` QA kapısı kaldı, `2` girdi ya da yapılandırma hatası, `3` lisans kapısı (kaynak `kapali`).
+Tarama ve OCR komutları baskı kimliği (`--edition elmalili-1935`), birim komutları kaynak kimliği (`--source elmalili-meal`) alır; kimlikler [Kaynaklar ve lisans defteri](./01-kaynaklar.md) dosyasındadır. Ortak bayraklar: `--dry-run`, `--force` (parmak izi aynı olsa da çalıştır), `--limit N` (Tanzil `ingest`'inde reddedilir), `--config <dosya>` (başka bir `mutalaa.toml` verir). Çıkış kodları: `0` başarılı, `1` QA kapısı kaldı, `2` girdi ya da yapılandırma hatası, `3` lisans kapısı (kaynak `kapali`).
 
 Aşama dosyaları şu `uv run mutalaa` komutlarını öneri olarak ekler; komut uygulanınca bu listeye işlenir (A04'ün `export ayet-sayilari` ve `export test-vectors` komutları, A05'in `export ic-kesme` komutu ile A06'nın `sources list` ve `sources check` komutları uygulandı ve yukarıdaki tabloya işlendi): `ingest tanzil --variant ust-veri` (Tanzil üst veri dosyası, A11); `ingest sure-adlari --dosya <tsv>` ve `export sure-adlari` (sure adlarının içe ve dışa aktarımı, A11); `ingest fikstur --source <test-kaynak>` (sentetik fikstürler: `test-kucuk` A13, `test-risale-ornek` A20); `enrich morphology` (QAC segmentlerinden kelime düzeyi kök ve lemma, A17); `enrich tr-roots --source <kimlik>` (Türkçe kelime → Arapça kök, A18); `qa gold --type <tür>` (altın set ölçümü, ör. `kok`; A18). Kur'an içi `kok`, `lemma` ve `benzer_ayet` bağlantılarını üreten komutun adı A18'de henüz verilmedi. Hadis eşleme komutları (`enrich hadith-map`, `enrich hadith-refs`) [Hadis hazırlığı](./04-hadis-hazirligi.md#7-ocr-ihtiyacı) §7'dedir.
 
@@ -221,7 +221,7 @@ Tanzil için yazım iki ayrı ifadedir (A10; yukarıdaki örneğin `DO UPDATE SE
 
 **Tanzil için `fetch` (A10).** `fetch` indirmez: kullanıcının `data/gelen/tanzil/` altına koyduğu dosyayı alır. Dosyayı kullanıcı kendisi indirir ve şart onayını kendisi verir ([İnsan adımları](../10-claude-code/06-insan-adimlari.md) İ-30). Dosya kilit denetiminden geçmeden `raw`'a kopyalanmaz. `RawFile`, `StagedUnit` ve `SourceAdapter` tabanı A10'da kurulur; `StagedUnit` `provenance` alanını taşır (aşağıdaki kod örneği).
 
-1. [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) kontrol listesi tamamlanır; `pipeline/sources/{kimlik}.toml` açılır ve `uv run mutalaa sources check` hatasız (çıkış `0`) geçer. `check` kaydın şemasını ve lisans kopyasını denetler; `kapali` bir kayıt `check`'te hata sayılmaz (yalnız üst veridir), ama `ingest` komutları `kapali` kaynakta `3` koduyla durur (G-LIS).
+1. [Kaynaklar ve lisans defteri](./01-kaynaklar.md) kontrol listesi tamamlanır; `pipeline/sources/{kimlik}.toml` açılır ve `uv run mutalaa sources check` hatasız (çıkış `0`) geçer. `check` kaydın şemasını ve lisans kopyasını denetler; `kapali` bir kayıt `check`'te hata sayılmaz (yalnız üst veridir), ama `ingest` komutları `kapali` kaynakta `3` koduyla durur (G-LIS).
 2. `ingest/{kimlik}.py` bağdaştırıcısı yazılır.
 3. Normalizasyon ve çapa eşlemesi tanımlanır; yeni çapa biçimi gerekiyorsa önce [Çapa şeması](../03-veri/01-capa-semasi.md) güncellenir.
 4. Kaynağa özgü QA kuralları `qa/checks/{kimlik}.py` dosyasına eklenir.
@@ -268,7 +268,7 @@ def run_ingest(adapter: SourceAdapter, ctx: "RunContext") -> None:
 
 ## 9. QA kapıları
 
-Bir birim, aşağıdaki kapıları geçmeden ve editörde onaylanmadan yayına aday olamaz. Yayınlayıcı lisans kapısını ayrıca uygular ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md); [Test stratejisi](../07-yayin/03-test-stratejisi.md)).
+Bir birim, aşağıdaki kapıları geçmeden ve editörde onaylanmadan yayına aday olamaz. Yayınlayıcı lisans kapısını ayrıca uygular ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md); [Test stratejisi](../07-yayin/03-test-stratejisi.md)).
 
 | Kapı | Denetim | Kalırsa |
 |---|---|---|
@@ -288,7 +288,7 @@ Bir birim, aşağıdaki kapıları geçmeden ve editörde onaylanmadan yayına a
 2. Onaysız yapay zekâ metni hiçbir pakette doğrulanmış görünmez. Gösterilirse "doğrulanmamış" rozetiyle gösterilir (K-25).
 3. Yapay zekâ ile meal, tefsir ya da hadis çevirisi üretilmez. Meal yayınları Din İşleri Yüksek Kurulu incelemesine açıktır; Arapça metinle gösterilen bir yapay zekâ meali "mealli mushaf" ön onayına girer ve "makine çevirisi" etiketi bu yükümlülüğü kaldırmaz (rapor; [Lexpera, 633](https://www.lexpera.com.tr/mevzuat/kanunlar/diyanet-isleri-baskanligi-kurulus-ve-gorevleri-hakkinda-kanun-633)).
 4. Risale için yapay zekâ özeti üretilmez (K-25, K-30).
-5. Harici bir yapay zekâ API'sine gönderilecek ya da gömülecek her birimin kaynağında `source.embed_ok` alanına bakılır. Alan `false` ise metin gönderilmez, gömülmez ve komut 3 çıkış koduyla durur. Gömme yerel bir modelle yapılsa da aynı alana tabidir. Korumalı metinler (ör. Risale-i Nur) hukuki onay olmadan `false` taşır. Quran Foundation içeriği `false`'tur; QF şartları içerikten türetilen gömmeleri de kısıtlıyor ([QF Developer Terms](https://api-docs.quran.foundation/legal/developer-terms/)). Değerler [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) dosyasındadır.
+5. Harici bir yapay zekâ API'sine gönderilecek ya da gömülecek her birimin kaynağında `source.embed_ok` alanına bakılır. Alan `false` ise metin gönderilmez, gömülmez ve komut 3 çıkış koduyla durur. Gömme yerel bir modelle yapılsa da aynı alana tabidir. Korumalı metinler (ör. Risale-i Nur) hukuki onay olmadan `false` taşır. Quran Foundation içeriği `false`'tur; QF şartları içerikten türetilen gömmeleri de kısıtlıyor ([QF Developer Terms](https://api-docs.quran.foundation/legal/developer-terms/)). Değerler [Kaynaklar ve lisans defteri](./01-kaynaklar.md) dosyasındadır.
 6. Hat yalnız içerik işler; istemlere kişisel veri girmez.
 7. İstemler `pipeline/prompts/{iş}/v{n}.md` dosyalarında sürümlüdür. Model kimliği yapılandırmada sabittir, sıcaklık 0'dır, çıktı JSON şemasıyla doğrulanır; geçersiz çıktı bir kez yeniden denenir, sonra kuyruğa düşer.
 
@@ -375,8 +375,8 @@ Görsel OCR'da sayfa başına görsel token sayısı da pilotta ölçülür; Elm
 5. Haiku 5.5 model kimliği Doğrulanacak.
 
 ## İlgili dosyalar
-- [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) · [Elmalılı hazırlığı](./03-elmalili-hazirligi.md) · [Hadis hazırlığı](./04-hadis-hazirligi.md) · [Risale hazırlığı](./05-risale-hazirligi.md) · [Kelime anlamları](./06-kelime-anlamlari.md)
+- [Kaynaklar ve lisans defteri](./01-kaynaklar.md) · [Elmalılı hazırlığı](./03-elmalili-hazirligi.md) · [Hadis hazırlığı](./04-hadis-hazirligi.md) · [Risale hazırlığı](./05-risale-hazirligi.md) · [Kelime anlamları](./06-kelime-anlamlari.md)
 - [Proje yapısı](../02-mimari/03-proje-yapisi.md) · [Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md) · [Teknoloji yığını](../02-mimari/02-teknoloji-yigini.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Arama](../03-veri/05-arama-fts5.md)
 - [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
+- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)

@@ -18,7 +18,7 @@ Sen Mütâlaa'nın .NET geliştiricisisin. `server/` altındaki projeleri yazars
 ## Önce oku
 - Görevle ilgili aşama dosyası ve orada listelenen belgeler.
 - [Backend API](../../docs/02-mimari/05-backend-api.md): çözüm yapısı, uçlar, hata modeli, EF Core kuralları, Yayınlayıcı.
-- Şema işinde [Editoryal veritabanı](../../docs/03-veri/02-editoryal-veritabani.md); paket işinde [İçerik paketleri](../../docs/03-veri/03-icerik-paketleri.md) ve [Yayın kapısı ve Kurul](../../docs/07-yayin/01-yayin-kapisi-ve-kurul.md).
+- Şema işinde [Editoryal veritabanı](../../docs/03-veri/02-editoryal-veritabani.md); paket işinde [İçerik paketleri](../../docs/03-veri/03-icerik-paketleri.md) ve [Yayın kapısı ve Kurul](../../docs/07-yayin/01-yayin-sureci.md).
 
 ## Çalışma biçimi
 1. Domain kuralını önce `Mutalaa.Domain` içinde saf işlev olarak yaz ve testle; altyapıyı sonra bağla.

@@ -5,7 +5,7 @@ paths:
 
 # .NET çözümü kuralları (`server/`)
 
-Kaynak: [Backend API](../../docs/02-mimari/05-backend-api.md), [Editoryal veritabanı](../../docs/03-veri/02-editoryal-veritabani.md), [Yayın kapısı ve Kurul](../../docs/07-yayin/01-yayin-kapisi-ve-kurul.md).
+Kaynak: [Backend API](../../docs/02-mimari/05-backend-api.md), [Editoryal veritabanı](../../docs/03-veri/02-editoryal-veritabani.md), [Yayın kapısı ve Kurul](../../docs/07-yayin/01-yayin-sureci.md).
 
 - **Bağımlılık.** `Mutalaa.Domain` başka projeye ve altyapı paketine (EF Core, Npgsql, AWS) bağlanmaz. `Mutalaa.Api` ile `Mutalaa.Publisher` birbirine bağlanmaz. NuGet sürümleri yalnız `Directory.Packages.props` içindedir.
 - **Kültür.** Uygulama açılışta varsayılan kültürü `InvariantCulture` yapar. CA1304, CA1305, CA1307, CA1309, CA1310 ve CA1311 hata düzeyindedir. Karşılaştırmada `StringComparison.Ordinal`, sayı ve tarihte `CultureInfo.InvariantCulture`, düzenli ifadede `RegexOptions.CultureInvariant`. Domain testleri `tr-TR` kültüründe de geçer.

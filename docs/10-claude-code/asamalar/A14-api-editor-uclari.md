@@ -125,4 +125,4 @@ docs/10-claude-code/asamalar/A14-api-editor-uclari.md dosyasındaki aşamayı y�
 ```
 
 ## İlgili dosyalar
-- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A13](./A13-yayinlayici-ve-yayin-kapisi.md) · Sonraki: [A15](./A15-editor-paneli.md)
+- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A13](./A13-yayinlayici-ve-kalite-kapisi.md) · Sonraki: [A15](./A15-editor-paneli.md)

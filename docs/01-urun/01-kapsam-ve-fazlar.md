@@ -69,21 +69,21 @@ flowchart LR
 
 Bu dosya için sonuçlar:
 - Mağaza v1 (Faz 3), `core` paketindeki Kur'an metni ve meal için Kurul onayı gelmeden yayımlanmaz. Onay gelmezse mağaza sürümü çıkmaz. Faz 2'de dış test kullanıcısı, Kurul onayı bekleyen içeriğin kapalı testte gösterilip gösterilemeyeceğine Kurul ön cevap verince alınır; o zamana kadar test ekip içi `dev` derlemesiyle yapılır (K-06).
-- Onaylı içerik sürümleri dondurulur. Metinde, mealde ya da seste yapılan her değişiklik yeniden onay gerektirebilecek bir olay sayılır ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)).
+- Onaylı içerik sürümleri dondurulur. Metinde, mealde ya da seste yapılan her değişiklik yeniden onay gerektirebilecek bir olay sayılır ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)).
 - Başvuru usulü, ücret ve süre bilinmiyor (Açık soru).
 
 ---
 
 ## 3. İçerik seti
 
-Lisans durumları Ekim 2026 itibarıyladır. Ayrıntı ve güncel kayıt [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) dosyasındadır; çelişki olursa o dosya geçerlidir. Paket yapısı [İçerik paketleri](../03-veri/03-icerik-paketleri.md) dosyasında tanımlıdır.
+Lisans durumları Ekim 2026 itibarıyladır. Ayrıntı ve güncel kayıt [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) dosyasındadır; çelişki olursa o dosya geçerlidir. Paket yapısı [İçerik paketleri](../03-veri/03-icerik-paketleri.md) dosyasında tanımlıdır.
 
 | İçerik | Paket | Kaynak ve lisans | `license_status` | Kurul onayı | Faz |
 |---|---|---|---|---|---|
 | Kur'an metni (Uthmani + Simple Clean) | `core` | Tanzil. Dosya başlığı CC BY 3.0 der; şartlar metni değiştirmeyi yasaklar, atıf ve tanzil.net bağlantısı ister ([Tanzil metni](https://raw.githubusercontent.com/OpenITI/0025AH/master/data/0001Quran/0001Quran.Mushaf/0001Quran.Mushaf.Tanzil001-ara1.mARkdown)) | `serbest` | Gerekli | v1 |
-| Elmalılı meali | `core` | Özgün baskıdan (İstanbul: Matbaai Ebüzziya, 1935–1938) kendi sayısallaştırmamız. Türkçe metin büyük olasılıkla Latin harfli, âyetler Arapça harflidir. İş, 1930'ların dizgisine ve imlasına uygun OCR ve düzeltmedir; harf çevirisi gerekmez (K-03; [Princeton kaydı](https://catalog.princeton.edu/catalog/SCSB-3946972); tarama nüshasında Doğrulanacak). Yazar 1942'de vefat etti; eser 1 Ocak 2013'ten beri serbest ([MKÜ kaydı](https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a); kayıt 2026-10-26'da 403 verdi, tarih 1942 + 71 hesabıdır, bkz. [lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.3). Sadeleştirilmiş baskılar kullanılmaz (K-03). | `serbest` | Gerekli (mealli mushaf) | v1 |
+| Elmalılı meali | `core` | Özgün baskıdan (İstanbul: Matbaai Ebüzziya, 1935–1938) kendi sayısallaştırmamız. Türkçe metin büyük olasılıkla Latin harfli, âyetler Arapça harflidir. İş, 1930'ların dizgisine ve imlasına uygun OCR ve düzeltmedir; harf çevirisi gerekmez (K-03; [Princeton kaydı](https://catalog.princeton.edu/catalog/SCSB-3946972); tarama nüshasında Doğrulanacak). Yazar 1942'de vefat etti; eser 1 Ocak 2013'ten beri serbest ([MKÜ kaydı](https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a); kayıt 2026-10-26'da 403 verdi, tarih 1942 + 71 hesabıdır, bkz. [lisans defteri](../04-icerik/01-kaynaklar.md) §3.3). Sadeleştirilmiş baskılar kullanılmaz (K-03). | `serbest` | Gerekli (mealli mushaf) | v1 |
 | Kelime kök ve lemma etiketleri (QAC kaynaklı) | `kelime-kok` (ayrı paket) | QAC v0.4. İndirme sayfası GPL ve atıf şartıyla izin verir; SSS "ticari amaçla kullanmamak" der ([QAC indirme](https://corpus.quran.com/download/), [QAC SSS](https://corpus.quran.com/faq.jsp)) | `bekliyor` | Açık soru | v1 hedefi. QAC'den yazılı açıklama gelene kadar yalnız `dev`. |
-| Türkçe kelime anlamları (`lemma_gloss`) | `kelime-kok` | Kendi yazımımız: yapay zekâ taslağı ve insan onayı (K-19). Yalnız onaylı satırlar yayına girer. Anlam kelimeye QAC lemma eşlemesiyle bağlandığı için QAC verisiyle aynı pakete girer ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.2). | Anlam metni kendi verimiz; paket `bekliyor` | Açık soru | v1 hedefi. QAC'den yazılı açıklama gelene kadar yalnız `dev`. |
+| Türkçe kelime anlamları (`lemma_gloss`) | `kelime-kok` | Kendi yazımımız: yapay zekâ taslağı ve insan onayı (K-19). Yalnız onaylı satırlar yayına girer. Anlam kelimeye QAC lemma eşlemesiyle bağlandığı için QAC verisiyle aynı pakete girer ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) §3.2). | Anlam metni kendi verimiz; paket `bekliyor` | Açık soru | v1 hedefi. QAC'den yazılı açıklama gelene kadar yalnız `dev`. |
 | Kur'an içi ve meal bağlantı indeksleri | `core` | Kendi üretimimiz. Her `xref` satırı dayandığı verinin lisansını `license` sütununda taşır (K-27). | Satır başına | Uygulanmaz | v1 |
 | Medine 604 sayfa sınırları, sayfa eşlemeleri | `core` | Kaynak Doğrulanacak | Doğrulanacak | Açık soru | v1 |
 | Mushaf C yazı tipi: Amiri Quran | Uygulamaya gömülü | OFL ([google/fonts: Amiri Quran](https://github.com/google/fonts/tree/main/ofl/amiriquran)) | `serbest` | Açık soru: Kurul'un yazı tipi şartı ([Cumhuriyet](https://www.cumhuriyet.com.tr/turkiye/resmi-gazetede-yayimlandi-diyanetten-kuran-karari-1998786)) | v1 |
@@ -283,7 +283,7 @@ Not: QAC kaynaklı kök ve lemma verisi, kendi lisans durumunu taşıyan ayrı `
 | Hesap (ASP.NET Core Identity; Google sunulursa Apple ile Giriş de) | v1.x | |
 | Cihazlar arası senkron (HLC ve veri türüne göre birleştirme) | v1.x | K-16 |
 | Not çakışmasında iki sürümü gösterip kullanıcıya seçtirme | v1.x | |
-| Hesap silme, aydınlatma metni | v1.x | [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) |
+| Hesap silme, aydınlatma metni | v1.x | [KVKK ve gizlilik](../07-yayin/02-gizlilik.md) |
 | Web'de aynı hesapla okuma | Web | |
 | Metin CRDT ile ortak düzenleme | Faz atanmadı | Yalnız ortak düzenleme gelirse |
 
@@ -371,7 +371,7 @@ Faz 3 · Mağaza v1'e geçiş için bu ölçütlerin tamamı sağlanır. "Öneri
 | B-09 | Okuduğun yere dönüş | "↩ Okuduğun yere dön" testlerin %100'ünde başlangıç çapasına ve kaydırma ofsetine döner | Uçtan uca test: 5 adımlı atlama zincirleri, döndürme ve tema değişimiyle | Bu dosya |
 | B-10 | Erişilebilirlik | Bütün metin jetonları ≥ 4,5:1; dokunma hedefleri ≥ 44×44 pt; %200 büyütmede kesilen metin yok; VoiceOver ve TalkBack ile Fâtiha ve Bakara 255 üç çizim yolunda da okunur | [Tasarım sistemi](./04-tasarim-sistemi.md#9-erişilebilirlik-kontrol-listesi) kontrol listesi | K-24 |
 | B-11 | Kararlılık | Faz 2 iç testinin son dört haftasında çökmesiz oturum oranı ≥ %99,5 (öneri) | Sentry | Bu dosya |
-| B-12 | Gizlilik | v1 kişisel veri toplamaz; analitik yok; hata raporları kullanıcı tanımlayıcısı taşımaz | [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) denetimi | K-15 |
+| B-12 | Gizlilik | v1 kişisel veri toplamaz; analitik yok; hata raporları kullanıcı tanımlayıcısı taşımaz | [KVKK ve gizlilik](../07-yayin/02-gizlilik.md) denetimi | K-15 |
 | B-13 | Açılış | Kaldığın yere soğuk açılış, orta seviye Android'de ≤ 2,5 sn (öneri) | Ölçüm betiği, referans cihaz | Bu dosya |
 
 ---
@@ -380,17 +380,17 @@ Faz 3 · Mağaza v1'e geçiş için bu ölçütlerin tamamı sağlanır. "Öneri
 
 | No | Soru | Etkisi | Sahibi dosya |
 |---|---|---|---|
-| AS-01 | QAC kök ve lemma verisini ücretsiz bir uygulamada kullanmaya yazılı izin verir mi? | Kelime kartının kök satırı ve kök bağlantıları mağazaya girer mi | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) |
-| AS-02 | QPC cüz paketlerini kendi depomuzdan dağıtmak QF şartlarındaki izin kapsamına girer mi? Şartlar yazı tipleri için "cache or bundle" der ve dosyaların "only as an integrated part of the Application" dağıtılabileceğini, "the Developer's own API, asset package, or standalone download" ile ayrıca sunulamayacağını söyler; cüz paketinin kendi depodan indirilmesinin bu yasağa girip girmediği bilinmiyor. Satır düzeni verisi Content Sync'in "mushafs" kaynağındadır; çevrimdışı kopya için tek izinli yol Content Sync'tir ve en az 7 günde bir eşitleme ister, Content Sync istisnası "prepackaged database or build-time bundle" dağıtımına izin vermez. Verinin nereden, hangi lisansla geleceği açık. Karar yok; QF'ye sorulur ([QF soruları](../yazismalar/qf-developer-console.md); 20 Ekim 2026 okuması). | Mushaf A mağazaya girer mi | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) |
-| AS-03 | Kurul'un dijital başvuru usulü, ücreti, süresi; Medine yazı tiplerine bakışı; kelime anlamlarını ve tefsir paketini onay kapsamında sayıp saymadığı (hukuki görüş değildir) | Faz 3'ün tarihi ve içeriği | [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) |
+| AS-01 | QAC kök ve lemma verisini ücretsiz bir uygulamada kullanmaya yazılı izin verir mi? | Kelime kartının kök satırı ve kök bağlantıları mağazaya girer mi | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) |
+| AS-02 | QPC cüz paketlerini kendi depomuzdan dağıtmak QF şartlarındaki izin kapsamına girer mi? Şartlar yazı tipleri için "cache or bundle" der ve dosyaların "only as an integrated part of the Application" dağıtılabileceğini, "the Developer's own API, asset package, or standalone download" ile ayrıca sunulamayacağını söyler; cüz paketinin kendi depodan indirilmesinin bu yasağa girip girmediği bilinmiyor. Satır düzeni verisi Content Sync'in "mushafs" kaynağındadır; çevrimdışı kopya için tek izinli yol Content Sync'tir ve en az 7 günde bir eşitleme ister, Content Sync istisnası "prepackaged database or build-time bundle" dağıtımına izin vermez. Verinin nereden, hangi lisansla geleceği açık. Karar yok; QF'ye sorulur ([QF soruları](../yazismalar/qf-developer-console.md); 20 Ekim 2026 okuması). | Mushaf A mağazaya girer mi | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) |
+| AS-03 | Kurul'un dijital başvuru usulü, ücreti, süresi; Medine yazı tiplerine bakışı; kelime anlamlarını ve tefsir paketini onay kapsamında sayıp saymadığı (hukuki görüş değildir) | Faz 3'ün tarihi ve içeriği | [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) |
 | AS-04 | Risale metninin ekip içinde işlenmesi (dizin üretimi dahil) ve metinsiz atıf dizininin yayını için hukukçu görüşü | Metin `dev` derlemesinde işlenebilir mi; mağazada Risale bölümü görünür mü | [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) |
 | AS-05 | Bu dosya, Ürün özeti ile aynı şekilde tefsir paketini v1.x'e, hadis paketlerini v1'e koyar. Hadis veri kaynağı seçimi ya da Naim tercümesinin sayısallaştırılması Faz 2'ye yetişmezse hadis v1.x'e kayar; Fazlar dosyası buna göre eşlenmeli. | Faz planı | [Fazlar](../08-yol-haritasi/01-fazlar.md) |
 | AS-06 | Risale atıf dizini hangi pakette taşınır? | Paket ve manifest yapısı | [İçerik paketleri](../03-veri/03-icerik-paketleri.md) |
 | AS-07 | Türk okurun, özellikle Risale çevrelerinde, tevafuklu mushafa bağlılığı ne ölçüde? Rapor bunun kullanıcı araştırmasıyla ölçülmesini önerir. | Mushaf B'nin önceliği | [Riskler](../08-yol-haritasi/03-riskler.md) |
 | AS-08 | "Orta seviye Android" referans cihazı hangisi? | B-02 ve B-13 ölçümleri | [Test stratejisi](../07-yayin/03-test-stratejisi.md) |
 | AS-09 | "Öneri" işaretli başarı hedefleri (B-03, B-04, B-11, B-13) onaylanacak mı? | Faz 3 geçiş kapısı | Proje sahibi |
-| AS-10 | Medine 604 sayfa sınırlarının kaynağı ve lisansı | Sayfa eşlemesi | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) |
-| AS-11 | Kurul onayı bekleyen Kur'an metni, meal ve ses kapalı testte gösterilebilir mi? (K-06) | Faz 2'de dış test kullanıcısı alınması | [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) |
+| AS-10 | Medine 604 sayfa sınırlarının kaynağı ve lisansı | Sayfa eşlemesi | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) |
+| AS-11 | Kurul onayı bekleyen Kur'an metni, meal ve ses kapalı testte gösterilebilir mi? (K-06) | Faz 2'de dış test kullanıcısı alınması | [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) |
 
 ---
 
@@ -399,9 +399,9 @@ Faz 3 · Mağaza v1'e geçiş için bu ölçütlerin tamamı sağlanır. "Öneri
 - [Ürün özeti](../00-ozet/01-urun-ozeti.md) · [Karar defteri](../00-ozet/02-karar-defteri.md) · [Sözlük](../00-ozet/03-sozluk.md)
 - [Okuma deneyimi](./02-okuma-deneyimi.md) · [Mobil ekranlar](./03-mobil-ekranlar.md) · [Tasarım sistemi](./04-tasarim-sistemi.md)
 - [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md) · [Arama](../03-veri/05-arama-fts5.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) · [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md) · [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) · [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md)
+- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) · [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md) · [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) · [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md)
 - [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) · [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md)
 - [Ses sistemi](../06-mobil/02-ses-sistemi.md) · [Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
+- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
 - [Fazlar](../08-yol-haritasi/01-fazlar.md) · [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) · [Riskler](../08-yol-haritasi/03-riskler.md)
 - [Kaynakça](../09-kaynakca.md)

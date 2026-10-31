@@ -1,7 +1,7 @@
 # A36 · Senkron ve bağlantı oyları (HLC, giden kutusu, `server_seq`, birleştirme)
 
 > **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-16](../../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-15](../../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç)
-> **Faz:** 4 · v1.x · **Önkoşul:** [A35](./A35-hesap-ve-kvkk.md) · **İnsan adımı:** İ-03 · İ-20 (yalnız canlıya açılış adımı için; A35'teki gibi)
+> **Faz:** 4 · v1.x · **Önkoşul:** [A35](./A35-hesap-ve-gizlilik.md) · **İnsan adımı:** İ-03 · İ-20 (yalnız canlıya açılış adımı için; A35'teki gibi)
 > **Ajanlar:** `sunucu-gelistirici` · `mobil-gelistirici` · `test-yazari` · `arastirmaci` · `arayuz-denetcisi` · `inceleyici` · **Beceriler:** `ef-goc` · `test-vektoru` · `mobil-ekran` · **Tahmini oturum:** 5–7
 > **Başlat:** `/asama A36`
 
@@ -11,7 +11,7 @@ Hesabı bağlı cihazlar arasında kullanıcı verisi eşitlenir: UUIDv7 kimlikl
 ## Okunacak belgeler
 - [Kullanıcı verisi ve senkron](../../03-veri/04-kullanici-verisi-ve-senkron.md): tamamı
 - [Backend API](../../02-mimari/05-backend-api.md): §5 senkron uçları, §6 hata modeli, §7 EF Core, §9 kültür
-- [KVKK ve gizlilik](../../07-yayin/02-kvkk-ve-gizlilik.md): §3.2, §3.5 özel nitelikli veri önlemleri, §3.6
+- [KVKK ve gizlilik](../../07-yayin/02-gizlilik.md): §3.2, §3.5 özel nitelikli veri önlemleri, §3.6
 - [Çapa şeması](../../03-veri/01-capa-semasi.md): §8 depolama biçimi, §9 yeniden çapalama (senkronlanan kayıt kendiliğinden değişmez)
 - [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §6 kullanıcı veritabanı göç testleri · [Mobil ekranlar](../../01-urun/03-mobil-ekranlar.md): §6 ayarlar ağacı
 - [Bağlantı modeli](../../05-capraz-referans/01-baglanti-modeli.md): §12 oylar ve inceleme kuyruğu · [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §7 `xref_vote`
@@ -135,4 +135,4 @@ docs/10-claude-code/asamalar/A36-senkron.md dosyasındaki aşamayı yürüt. Ön
 ```
 
 ## İlgili dosyalar
-- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A35](./A35-hesap-ve-kvkk.md) · Sonraki: [A37](./A37-elmalili-tefsir-paketi.md)
+- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A35](./A35-hesap-ve-gizlilik.md) · Sonraki: [A37](./A37-elmalili-tefsir-paketi.md)

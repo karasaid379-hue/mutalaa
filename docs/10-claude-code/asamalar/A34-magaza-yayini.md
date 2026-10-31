@@ -9,15 +9,15 @@
 Kurul onaylı içerikle `public` (mağaza) derlemesini yayına hazır hâle getirmek. [Test stratejisi](../../07-yayin/03-test-stratejisi.md) §13 sürüm kontrol listesinin her maddesi kanıtıyla kapanır: public yapıt taraması yeşil, public manifest imzalı, Kurul kapsamındaki içerik özetleri onaylı özetlerle aynı, atıflar ve `THIRD_PARTY_NOTICES` eksiksiz, gizlilik metni ve mağaza beyanları uygulamanın gerçek davranışıyla uyumlu, geri alma yolları yazılı. Aşama `mobile-vX.Y.Z` etiketiyle biter. Mağazaya gönderim (`eas submit`) ve Kurul başvurusu insan işidir; Claude Code mağazaya hiçbir şey göndermez.
 
 ## Okunacak belgeler
-- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md): tamamı; özellikle §3, §4.2 imza, §5 yapıt taraması, §6 ekranlar, §7.2–§7.3 Kurul adımları ve değişiklik yönetimi, §7.6
-- [KVKK ve gizlilik](../../07-yayin/02-kvkk-ve-gizlilik.md): §2 (v1), §4 "Faz 3 öncesi" listesi, §5
+- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md): tamamı; özellikle §3, §4.2 imza, §5 yapıt taraması, §6 ekranlar, §7.2–§7.3 Kurul adımları ve değişiklik yönetimi, §7.6
+- [KVKK ve gizlilik](../../07-yayin/02-gizlilik.md): §2 (v1), §4 "Faz 3 öncesi" listesi, §5
 - [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §5 test 6 ve 8, §7, §12, §13
 - [Backend API](../../02-mimari/05-backend-api.md): §10.1 komutlar ve çıkış kodları, §10.3 P-01…P-14, §10.5, §10.6 terfi ve geri alma
 - [Proje yapısı](../../02-mimari/03-proje-yapisi.md): §6 etiketler, §7 `eas-build.yml` ve gömülü `core` denetimi
 - [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §5 manifest ve imza, §6 sürümleme ve geri çekme
 - [Kapsam ve fazlar](../../01-urun/01-kapsam-ve-fazlar.md): §2.2, §4 etiketler, §8 B-05, B-06, B-07, B-12
 - [Fazlar](../../08-yol-haritasi/01-fazlar.md): Faz 3, §6 soru 1 · [Teknoloji yığını](../../02-mimari/02-teknoloji-yigini.md): §3 lisans notları, §4.2
-- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md): §6 "Şart takibi" · [Mobil mimari](../../06-mobil/01-mobil-mimari.md): §10, §12
+- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar.md): §6 "Şart takibi" · [Mobil mimari](../../06-mobil/01-mobil-mimari.md): §10, §12
 
 ## Kapsam
 **Yapılır**
@@ -36,14 +36,14 @@ Kurul onaylı içerikle `public` (mağaza) derlemesini yayına hazır hâle geti
 ### A34.1 · Önkoşullar, şart takibi ve sürüm kaydı
 - `/durum` ile A33'ün bittiğini, sürüm adayı commit'ini ve İ-15, İ-18, İ-19 durumunu göster. A33'ün Maestro, performans, erişilebilirlik ve duman testi kanıtları bu aşamanın girdisidir.
 - Sürüm kaydını aç: `docs/07-yayin/surum-kayitlari/mobile-vX.Y.Z.md` (öneri). İçine §13 maddelerini, KVKK §4 "Faz 3 öncesi" listesini ve her madde için "kanıt" alanını yaz; insan gerektiren maddeye İ numarası yazılır.
-- `lisans-denetcisi`: lisans defteri §6 şart takibi: QF şartları (her public sürümden önce), tanzil.net güncellemeler sayfası, QAC metinleri yeniden okunur; tarih ve sonuç kayda girer. Şart değiştiyse aşama durur ve [A39](./A39-takvim-ve-lisans-olaylari.md) yordamı açılır.
+- `lisans-denetcisi`: lisans defteri §6 şart takibi: QF şartları (her public sürümden önce), tanzil.net güncellemeler sayfası, QAC metinleri yeniden okunur; tarih ve sonuç kayda girer. Şart değiştiyse aşama durur ve [A39](./A39-devre-disi.md) yordamı açılır.
 - `arastirmaci` resmî kaynaktan doğrular (KVKK §2.2, §2.5, §2.6'da "Doğrulanacak"): mağazaların gizlilik politikası bağlantısı kuralı; App Privacy ve Veri güvenliği formlarının güncel alan adları; hata raporlama servisinin "hizmet sağlayıcı" sayılması; Sentry'de IP saklamayı kapatan ayarın adı ve servis veri bölgesi; Expo eklentisiyle sürüm ve kaynak eşlemesi yükleme yolu; EAS Update ile `production` kanalına düzeltme gönderme komutu.
 - Proje sahibi kararları kayda ve `/karar` ile deftere: ses izni ya da onayı yoksa Mağaza v1'in sessiz çıkıp çıkmayacağı (Fazlar §6 soru 1); hata raporu anahtarının varsayılanı (KVKK §5 soru 2); veri sorumlusu ve iletişim adresi (S-11).
 - **Bitti sayılır:** sürüm kaydı var; her madde ya kanıt ya da İ numarası taşıyor; `arastirmaci` raporu bağlantılı ve tarihli.
 
 ### A34.2 · İçerik dondurma ve Kurul başvuru dosyası
 - Mealin iki düzeltme turu kapalıdır; `elmalili-meal` birimlerinden `onayli` olmayan kalmaz (SQL aşağıda). Kapanmamışsa başvuru yapılmaz: onaydan sonraki düzeltme yeniden onay ister.
-- Dondurma yayını: `dotnet run --project server/Mutalaa.Publisher -- publish --flavor internal`. Yayın sürümü (`S`, CalVer) ve `release.ozetler` içindeki Kurul içerik özetleri, Tanzil dosya özeti, Elmalılı metin sürümü, ses giriyorsa kayıt başına sure-dosya listesi (bayt, sha256, dosya sürümü) kayda yazılır ([Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md) §7.2 madde 2).
+- Dondurma yayını: `dotnet run --project server/Mutalaa.Publisher -- publish --flavor internal`. Yayın sürümü (`S`, CalVer) ve `release.ozetler` içindeki Kurul içerik özetleri, Tanzil dosya özeti, Elmalılı metin sürümü, ses giriyorsa kayıt başına sure-dosya listesi (bayt, sha256, dosya sürümü) kayda yazılır ([Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md) §7.2 madde 2).
 - Başvuru dosyası `data/kurul/<S>/` altında (git dışı): Tanzil'le bayt bayt eşitlik raporu (A10 değişmezlik testleri), test raporları (A33), üç mushaf modunun ekran görüntüleri, izin belgeleri, Kurul'un istediği biçimde döküm (biçim Açık soru; İ-02 cevabına göre). Ön yazı `/yazisma kurul` ile `docs/yazismalar/` altına taslak olur.
 - **Bitti sayılır:** `data/kurul/<S>/` §7.2 madde 3'teki her belgeyi içeriyor; teslim listesi İ-19 için kullanıcıya gösterildi.
 
@@ -129,7 +129,7 @@ Gömülü `core` dosyasının adı A23'teki BÇ-25 kararıdır (öneri `core.db`
 - İ-19 · Kurul başvurusu ve onayı: A34.2'deki dosya hazır olunca; A34.3'ten önce gerekir.
 - İ-18 · Canlı içerik deposu ve alan adı: A34.4 ve gizlilik sayfasından önce.
 - İ-15 · Expo, Apple Developer ve Google Play hesapları: mağaza adı kontrolü (S-08), beyan formları, test kanalı, `eas submit` ve yayına alma; A34.6'da.
-- İ-03 · KVKK dosyasının avukat incelemesi: [KVKK ve gizlilik](../../07-yayin/02-kvkk-ve-gizlilik.md) başlık notu gereği v1 mağazaya çıkmadan önce.
+- İ-03 · KVKK dosyasının avukat incelemesi: [KVKK ve gizlilik](../../07-yayin/02-gizlilik.md) başlık notu gereği v1 mağazaya çıkmadan önce.
 - İ-27 · Sentry proje ayarında IP saklamanın kapatılması ve kaynak eşlemesi yükleme sırrı.
 - Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
 
@@ -146,4 +146,4 @@ docs/10-claude-code/asamalar/A34-magaza-yayini.md dosyasındaki aşamayı yürü
 ```
 
 ## İlgili dosyalar
-- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A33](./A33-uctan-uca-test-ve-ic-dagitim.md) · Sonraki: [A35](./A35-hesap-ve-kvkk.md)
+- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A33](./A33-uctan-uca-test-ve-ic-dagitim.md) · Sonraki: [A35](./A35-hesap-ve-gizlilik.md)

@@ -9,14 +9,14 @@
 Faz 0'ın kritik yolundaki hukuk ve izin işleri kod beklemeden başlar. Kurul ön görüşmesi, avukat soruları, QAC, KFGQPC, Quran Foundation, hafız izinleri ve Tanzil sorusu için gönderilmeye hazır taslaklar `docs/yazismalar/` altına yazılır. Gönderim kullanıcının işidir; aşama gönderim ve takip tarihlerini kayda geçirir. Faz 0 çıkış ölçütü "Kurul'a talep gitti; cevap ya da takip tarihi kayıtlı" bu aşamayla sağlanır ([Fazlar](../../08-yol-haritasi/01-fazlar.md), Faz 0). Taslaklar soru sorar ve izin ister; hukuki görüş değildir.
 
 ## Okunacak belgeler
-- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md): §2.4 telif soruları, §6 atıf tablosu, §7 Kurul planı (tamamı)
+- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md): §2.4 telif soruları, §6 atıf tablosu, §7 Kurul planı (tamamı)
 - [Fazlar](../../08-yol-haritasi/01-fazlar.md): Faz 0 işleri ve çıkış ölçütleri, §4 kritik yol
-- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md): §3.1 (Tanzil, KFGQPC, QPC), §3.2 (QAC), §3.3 (Elmalılı), §3.7 (ses), §8 yazışma listesi
+- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar.md): §3.1 (Tanzil, KFGQPC, QPC), §3.2 (QAC), §3.3 (Elmalılı), §3.7 (ses), §8 yazışma listesi
 - [Çapa şeması](../../03-veri/01-capa-semasi.md): §13 ÇŞ-2 · [Arama](../../03-veri/05-arama-fts5.md): §1.4 (Tanzil sorusunun bağlamı)
 - [Kök ve lemma](../../05-capraz-referans/03-kok-ve-lemma.md): §2 (QAC'ye hazır İngilizce taslak)
 - [Ses sistemi](../../06-mobil/02-ses-sistemi.md): §12 hafız lisans kapısı
 - [Sonra yapılacaklar](../../08-yol-haritasi/02-sonra-yapilacaklar.md): S-06, S-07, S-11, S-12, S-15
-- [KVKK ve gizlilik](../../07-yayin/02-kvkk-ve-gizlilik.md): §2.4, §5 (v1 için avukata giden sorular)
+- [KVKK ve gizlilik](../../07-yayin/02-gizlilik.md): §2.4, §5 (v1 için avukata giden sorular)
 - [Kapsam ve fazlar](../../01-urun/01-kapsam-ve-fazlar.md): §9 AS-01 … AS-04, AS-11 · [Ürün özeti](../../00-ozet/01-urun-ozeti.md): Kurul'a giden ürün tanımı için
 
 ## Kapsam
@@ -139,7 +139,7 @@ Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
 
 ## Elle başlatma istemi
 ```text
-docs/10-claude-code/asamalar/A01-yazisma-paketi.md dosyasındaki aşamayı yürüt. Önce önkoşulları ve planı göster, onayımı bekle.
+docs/10-claude-code/asamalar/A01-devre-disi.md dosyasındaki aşamayı yürüt. Önce önkoşulları ve planı göster, onayımı bekle.
 ```
 
 ## İlgili dosyalar

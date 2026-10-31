@@ -153,4 +153,4 @@ docs/10-claude-code/asamalar/A00-ortam-ve-depo.md dosyasındaki aşamayı yürü
 
 ## İlgili dosyalar
 
-- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · [Kurulum](../01-kurulum.md) · Sonraki: [A01](./A01-yazisma-paketi.md)
+- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · [Kurulum](../01-kurulum.md) · Sonraki: [A01](./A01-devre-disi.md)

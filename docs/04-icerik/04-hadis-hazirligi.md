@@ -11,7 +11,7 @@ K-04 gereği Tecrîd-i Sarîh (Arapça metin ve Babanzâde Ahmed Naim'in Türkç
 - Tecrîd-i Sarîh çevirisi 1925'te sipariş edildi ve Babanzâde Ahmed Naim'e verildi. Naim 13 Ağustos 1934'te vefat etti; çevirdiği kısım 1 Ocak 2005'ten beri serbest. Kâmil Miras III. cildin müsveddesini hazırladı, IV–XII. ciltleri (İstanbul 1938–1948) tamamladı ve 30 Nisan 1957'de vefat etti; ciltleri 1 Ocak 2028'de serbest kalır ([Küre: Miras](https://kureansiklopedi.com/tr/detay/miras-kamil)).
 - Klasik koleksiyonların Arapça metni yaşı itibarıyla serbesttir. Asıl sorun dijital veri setlerinin kaynak belgelerinin zayıflığıdır (rapor).
 - Modern Türkçe hadis çevirileri korumalı kabul edilir. Sunnah.com'daki İngilizce çeviriler modern ve korumalıdır. Bilmen'in *Hikmet Goncaları* 1 Ocak 2042'de serbest kalır.
-- Miras ciltlerinin metni 1 Ocak 2028'e kadar indirilmez, taranmaz ve hatta işlenmez ([lisans defterindeki iç kullanım kuralı](./01-kaynaklar-ve-lisans-defteri.md)). Araçlar Naim ciltleri üzerinde hazırlanır.
+- Miras ciltlerinin metni 1 Ocak 2028'e kadar indirilmez, taranmaz ve hatta işlenmez ([lisans defterindeki iç kullanım kuralı](./01-kaynaklar.md)). Araçlar Naim ciltleri üzerinde hazırlanır.
 - Hadis metinleri 633 m. 6 kapsamında Kur'an yayını sayılmaz; Kurul onayı gerekmez (çıkarım). Metin içinde geçen âyet çevirilerinin durumu Açık soru.
 
 ## 2. Kapsam ve takvim
@@ -38,7 +38,7 @@ Doğrulama listesi:
 
 Kural: doğrulama bitene kadar III. cilt Miras kısmı sayılır ve `kapali` kalır. Her Türkçe birim `ceviri` alanı taşır: `naim` ya da `miras`. Çapalar buna göre `ht:naim:tecrid:{no}` ya da `ht:miras:tecrid:{no}` olur.
 
-**Yeni bulgular (okuma 27 Ekim 2026; Zebîdî'nin vefat tarihi TDV İA ile doğrulandı, diğerleri Doğrulanacak; kural değişmez).** Hukuki sonuç taşımaz; hukuki görüş değildir. Ayrıntı: [lisans defteri §3.4](./01-kaynaklar-ve-lisans-defteri.md).
+**Yeni bulgular (okuma 27 Ekim 2026; Zebîdî'nin vefat tarihi TDV İA ile doğrulandı, diğerleri Doğrulanacak; kural değişmez).** Hukuki sonuç taşımaz; hukuki görüş değildir. Ayrıntı: [lisans defteri §3.4](./01-kaynaklar.md).
 - **Naim ve Miras payı.** Hansu'ya göre ([Küre: et-Tecrîdü's-sarîh](https://kureansiklopedi.com/tr/detay/et-tecridus-sarih), 20.11.2024) Naim mukaddimeyle 477 hadisi iki cilt hâlinde yayımladı (İstanbul 1346/1928), III. cildi hazırladı ama yayımlanmadan 1934'te öldü; Kâmil Miras III. cildi gözden geçirip yayımladı. Aynı maddede Naim'in çevirdiği hadis sayısı 589, baskıda görünen 574 olarak geçiyor; fark ve 477 ile ilişki açık. [TDV İA Babanzâde maddesi](https://islamansiklopedisi.org.tr/babanzade-ahmed-naim) "ilk üç cilt"i Naim'e verir. Fark, Miras'ın payının anılıp anılmamasından gelebilir (çıkarım). Yukarıdaki "Miras III. cildin müsveddesini hazırladı" bilgisiyle ([Küre: Miras](https://kureansiklopedi.com/tr/detay/miras-kamil)) Hansu'nun anlatımı uyuşmuyor; ciltlerin künye ve önsözleriyle sınanır (doğrulama listesinin ilk iki maddesi).
 - **Türkçe kopyalar.** İTÜ kaydı: 1926–1928, cilt 1–3, "Osmanlıca"; yalnız üst veri görülebiliyor, "Copyright hakları saklıdır". Diyanet ePUB'ı (yayin.diyanet.gov.tr, 1. cilt ISBN 9789751970602) arama özetine göre ücretli, modern bir baskıdır ve Miras ciltlerini de içerir; birincil sayfa açılmadı. Bu metin kullanılmaz; yalnız izinle karşılaştırma tanığı olabilir. Kendi aktarımımız için 1928 ciltlerinin taraması bir kütüphaneden istenir (İ-14).
 - **Arapça hazır metinler.** OpenITI ([Zenodo](https://zenodo.org/records/3082463), CC BY-NC-SA 4.0) ve Shamela ("haklar sahiplerinde kalır") kopyaları Risâle 2009 baskısına dayanıyor; zevâid hadisleri ve Buhârî numaraları eklenmiş. OpenITI `kapali`dır; Shamela için kayıt açılmadı. Kendi OCR'ımız için aday: archive.org `AAlexandrina-103522` (Kahire, Hayriyye, 1322/1904); kaynağı Doğrulanacak.
@@ -118,7 +118,7 @@ Amaç: Tecrîd hadisinden Buhârî'deki tam rivayete geçiş, Naim çevirisini K
 ## 7. OCR ihtiyacı
 
 - **Tecrîd.** Türkçe metin ve harekeli Arapça metin aynı sayfadadır. Ciltlerin yazı türü Doğrulanacak; Osmanlıca harfli çıkarsa Elmalılı aktarım kılavuzu kullanılır ([Elmalılı hazırlığı](./03-elmalili-hazirligi.md)). Değerlendirme yöntemi aynıdır: tabakalı örneklem, altın metin, CER. Arapçada temel harf CER'i ile hareke CER'i ayrı ölçülür.
-- **`embed_ok`.** Naim ciltlerinin görüntüleri ve metni `embed_ok = true` taşır ve görsel modele gönderilebilir. Miras ciltleri 1 Ocak 2028'e kadar `false`'tur. fawazahmed0 ve Sunnah.com verisi kaynak netleşene kadar `false` kalır; gömülmez ve yapay zekâ servisine gönderilmez ([Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md)).
+- **`embed_ok`.** Naim ciltlerinin görüntüleri ve metni `embed_ok = true` taşır ve görsel modele gönderilebilir. Miras ciltleri 1 Ocak 2028'e kadar `false`'tur. fawazahmed0 ve Sunnah.com verisi kaynak netleşene kadar `false` kalır; gömülmez ve yapay zekâ servisine gönderilmez ([Kaynaklar ve lisans defteri](./01-kaynaklar.md)).
 - **Hadis birimlerine bölme.** Hadis numarası işaretleri bulunur; her numara için Arapça blok ile Türkçe blok eşlenir; `h:tecrid:{no}` ve `ht:naim:tecrid:{no}` birimleri üretilir. Sayfa eşlemesi Elmalılı'daki gibi `page_map` tablosuna birimin kaynağıyla (`source_id`), cilt ve sayfayla yazılır; baskı künyesi kaynağın `baski_bilgisi` alanındadır ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md#91-page_map-ayah_box-audio_timing) §9.1).
 - **Kütüb-i Sitte.** OCR yalnız kendi sayısallaştırma yolu seçilirse gerekir. Harekeli Arapça için ayrı CER eşiği konur.
 
@@ -188,7 +188,7 @@ def adaylar(metin: str):
 7. Hadis metinlerindeki âyet çevirilerinin Kurul ve DİYK kapsamı.
 
 ## İlgili dosyalar
-- [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) · [İçerik hattı](./02-icerik-hatti.md) · [Elmalılı hazırlığı](./03-elmalili-hazirligi.md) · [Risale hazırlığı](./05-risale-hazirligi.md)
+- [Kaynaklar ve lisans defteri](./01-kaynaklar.md) · [İçerik hattı](./02-icerik-hatti.md) · [Elmalılı hazırlığı](./03-elmalili-hazirligi.md) · [Risale hazırlığı](./05-risale-hazirligi.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md)
 - [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) · [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md)
 - [Fazlar](../08-yol-haritasi/01-fazlar.md) · [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md)

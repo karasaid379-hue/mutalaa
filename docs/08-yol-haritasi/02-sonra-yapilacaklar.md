@@ -52,7 +52,7 @@ Proje sahibi bu maddenin kayda geçmesini özellikle istedi. [K-22](../00-ozet/0
   - **İçerik deposu ve CDN.** Öneri Cloudflare R2: veri çıkışı ücretsiz, bu yüzden ses trafiği için belirleyici ([R2 fiyatlandırma](https://developers.cloudflare.com/r2/pricing)). Rapora göre en büyük maliyet tuzağı sesi veri çıkışı ücretli bir depodan sunmak.
   - **Arka uç (ASP.NET Core 10 + PostgreSQL 18).** Rapor Hetzner + R2 için 1 bin MAU'da ~6–7 €, 10 bin MAU'da ~6–20 € ve işletme emeği tahmin ediyor; CX23 Haziran 2026 zammından sonra ayda 5,49 € ([PrivateDevOps](https://privatedevops.com/news/hetzner-june-2026-cloud-price-increase-what-to-do)). Rapordaki bütün adaylar veriyi yurt dışında tutuyor; yurt içi sağlayıcılar araştırılmadı.
 - **Tetik.** İçerik deposu Faz 2'den önce; arka uç Faz 4'ten önce.
-- **İlk somut adım.** R2 hesabı, `internal` ve `public` için ayrı önek ya da kova, özel alan adı. Arka uç için KVKK, maliyet ve işletme yükü karşılaştırması; listede en az bir yurt içi sağlayıcı ([KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md)).
+- **İlk somut adım.** R2 hesabı, `internal` ve `public` için ayrı önek ya da kova, özel alan adı. Arka uç için KVKK, maliyet ve işletme yükü karşılaştırması; listede en az bir yurt içi sağlayıcı ([KVKK ve gizlilik](../07-yayin/02-gizlilik.md)).
 - **İlgili karar.** [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma), [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı), [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç).
 
 ## S-04 · Türk hattı lisansı (Mushaf B)
@@ -73,7 +73,7 @@ Proje sahibi bu maddenin kayda geçmesini özellikle istedi. [K-22](../00-ozet/0
 
 - **Neden önemli.** Risale-i Nur 31 Aralık 2030'a kadar korunuyor ([TDV İslâm Ansiklopedisi](https://islamansiklopedisi.org.tr/risale-i-nur-kulliyati)). Bakanlık 2014'te mirasçıların hakları birlikte kullanması gerektiğini söyledi ([AA/Sondakika](https://www.sondakika.com/guncel/haber-risale-i-nur-kulliyati-nin-basimi-6272228/)); hakları Diyanet'e veren düzenlemenin dayandığı hüküm 2015'te iptal edildi ([T24](https://t24.com.tr/haber/aym-risale-i-nur-yasagini-iptal-etti,299364)). 2016–2026 arasında hakların kimde olduğunu gösteren kaynak bulunamadı. GitHub deposundaki CC BY-ND ifadesi geçerli bir lisans sayılmaz, çünkü hak sahibi olmayan bir yükleyici lisans veremez ([README](https://raw.githubusercontent.com/alitekdemir/Risale-i-Nur-Diyanet/master/README.md)). Rapor üç yol sayıyor: lisans, metin yerine dizin, 2031'e hazır katman; dizin ve hazır katmanı birleştirip lisansı paralel müzakere etmeyi öneriyor. Tek bir topluluğun yayınevine bağlanmak tarafsızlığı zedeler. Metin hukukçu görüşü gelene kadar `kapali` durumundadır ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)).
 - **Tetik.** Atıf dizini Faz 1'de üretilince ve avukat görüşü gelince; 2031 hazırlığı en geç 2030 içinde.
-- **İlk somut adım.** Faz 0'da fikri haklar avukatına sorular (hukuki görüş değildir): hakları bugün kim kullanıyor; telifli metin dizin, gömme ve altın set için içeride işlenebilir ve harici bir dil modeli API'sine gönderilebilir mi; metinsiz atıf dizini mağaza derlemesinde yer alabilir mi ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md), §2.4). Cevaba göre belgelenmiş muvafakati olan yayınevleri ya da konsorsiyum listesi.
+- **İlk somut adım.** Faz 0'da fikri haklar avukatına sorular (hukuki görüş değildir): hakları bugün kim kullanıyor; telifli metin dizin, gömme ve altın set için içeride işlenebilir ve harici bir dil modeli API'sine gönderilebilir mi; metinsiz atıf dizini mağaza derlemesinde yer alabilir mi ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md), §2.4). Cevaba göre belgelenmiş muvafakati olan yayınevleri ya da konsorsiyum listesi.
 - **İlgili karar.** [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik), K-25.
 
 ## S-07 · Hafız izinleri
@@ -148,6 +148,6 @@ Proje sahibi bu maddenin kayda geçmesini özellikle istedi. [K-22](../00-ozet/0
 ## İlgili dosyalar
 
 - [Fazlar](./01-fazlar.md) · [Riskler](./03-riskler.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) · [Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md)
+- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) · [Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md)
+- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [KVKK ve gizlilik](../07-yayin/02-gizlilik.md)
 - [Ürün özeti](../00-ozet/01-urun-ozeti.md) · [Karar defteri](../00-ozet/02-karar-defteri.md) · [Kaynakça](../09-kaynakca.md)

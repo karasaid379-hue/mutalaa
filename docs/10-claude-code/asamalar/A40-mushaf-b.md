@@ -11,8 +11,8 @@ Türk hattı sayfa görselleri ve sayfa başına âyet koordinatlarıyla (`ayah_
 ## Okunacak belgeler
 - [Mobil mimari](../../06-mobil/01-mobil-mimari.md): §7 tablo ve ortak sözleşme, §7.2 Mod B, §7.4 eksik paket, §9 bellek, §10 bayraklar, §13, §15 MM-7
 - [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §1 `mushaf-b`, §3.5, §6 içerik özeti · [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §3 `kurul_gerekli` varsayılanı, §8 `review`, §9.1 `page_map` ve `ayah_box`
-- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md): §1 iç kullanım kuralı, §2 `mushaf-b-*`, §3.8, §7 yeni kaynak kontrol listesi
-- [Sonra yapılacaklar](../../08-yol-haritasi/02-sonra-yapilacaklar.md): S-04 · [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md): §7.1
+- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar.md): §1 iç kullanım kuralı, §2 `mushaf-b-*`, §3.8, §7 yeni kaynak kontrol listesi
+- [Sonra yapılacaklar](../../08-yol-haritasi/02-sonra-yapilacaklar.md): S-04 · [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md): §7.1
 - [Okuma deneyimi](../../01-urun/02-okuma-deneyimi.md): §2, §3 Mod B seçimi, §5, §10 vurgu, §13 · [Çapa şeması](../../03-veri/01-capa-semasi.md): §10 Mod B eşleme birimi
 - [Tasarım sistemi](../../01-urun/04-tasarim-sistemi.md): §2.5 Mod B Gece denetimi, §12 TS-6 · [İçerik hattı](../../04-icerik/02-icerik-hatti.md): §8 yeni kaynak
 
@@ -23,7 +23,7 @@ Türk hattı sayfa görselleri ve sayfa başına âyet koordinatlarıyla (`ayah_
 - `mushaf-b` paketinin yazımı ve `dev` yayını; mobil Mod B; Kurul treni ve yayın hazırlığı.
 
 **Yapılmaz**
-- Lisans görüşmesi ve kaynak seçimi (S-04; insan). Lisans durumunun değiştirilmesi ([A39](./A39-takvim-ve-lisans-olaylari.md) yordamı).
+- Lisans görüşmesi ve kaynak seçimi (S-04; insan). Lisans durumunun değiştirilmesi ([A39](./A39-devre-disi.md) yordamı).
 - Görselden metin okumak: Mod B'nin metin katmanı Tanzil'den çapayla gelir; görsel OCR edilmez.
 - Kelime seçimi ve kelime kartı (Mod B'de yok; "Kelimeler" düğmesi âyeti Âyet âyet biçiminde açar). Mağaza sürümü ([A34](./A34-magaza-yayini.md) yordamı).
 
@@ -117,4 +117,4 @@ docs/10-claude-code/asamalar/A40-mushaf-b.md dosyasındaki aşamayı yürüt. Ö
 ```
 
 ## İlgili dosyalar
-- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A39](./A39-takvim-ve-lisans-olaylari.md) · Sonraki: yok
+- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A39](./A39-devre-disi.md) · Sonraki: yok

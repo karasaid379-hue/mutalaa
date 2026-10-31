@@ -134,4 +134,4 @@ docs/10-claude-code/asamalar/A02-tek-depo-iskeleti.md dosyasındaki aşamayı y�
 ```
 
 ## İlgili dosyalar
-- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A01](./A01-yazisma-paketi.md) · Sonraki: [A03](./A03-yerel-altyapi.md)
+- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A01](./A01-devre-disi.md) · Sonraki: [A03](./A03-yerel-altyapi.md)

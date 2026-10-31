@@ -133,7 +133,7 @@ Test çalıştırıcısı ([K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-
 - **react-native-track-player:** v5'ten itibaren ticari lisanslı; kişisel ve eğitim amaçlı kullanım ücretsiz, v4 Apache-2.0 dalında donduruldu ([RNTP](https://github.com/doublesymmetry/react-native-track-player)). "Ticari" ifadesinin ücretsiz bir uygulama için anlamı yazılı netleşmeden kullanılmaz (K-28).
 - **NativeWind v5:** `nativewind@5.0.0-rc.0`, `tailwindcss@4.1.12` sürümüne sabit ve "üretim için değil" ([NativeWind v5](https://www.nativewind.dev/v5/getting-started/installation)). v4 kullanılır (K-29).
 - **Ticari lisansa geçen .NET kitaplıkları:** Eski plan MediatR'ın yeni sürümlerinin ticari olduğunu not eder (`quran-app-docs/02-mimari/03-mimari-karar-loglari.md`, ADR-003). Yeni yapıda MediatR yoktur; işleyiciler Minimal API uçlarındadır. AutoMapper ve FluentAssertions'ın yeni sürümleri için de lisans değişikliği bilinir (Doğrulanacak). Üçü de kullanılmaz.
-- **İçerik lisansları** (Tanzil, QPC fontları, KFGQPC Hafs, QAC) kod lisanslarından ayrıdır ve [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) dosyasında izlenir.
+- **İçerik lisansları** (Tanzil, QPC fontları, KFGQPC Hafs, QAC) kod lisanslarından ayrıdır ve [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) dosyasında izlenir.
 - **Lisans denetimi (A08, 27 Ekim 2026; hukuki görüş değildir).** CI her ekosistem için bağımlılık lisans listesi çıkarır. Araçlar seçildi:
   - TypeScript: `pnpm licenses list -r --json --prod`. pnpm v12.7.0'dan beri proje içinde yalnız o projeyi listeler; çalışma alanının tamamı için kökte `-r` gerekir ([pnpm licenses](https://pnpm.io/cli/licenses)).
   - .NET: `nuget-license` 4.0.18, yerel araç (`.config/dotnet-tools.json`). `.slnx` destekler, restore yapmaz (önce `dotnet restore` gerekir), `-exclude-projects "*Tests*"` ile test projelerini dışlar ([nuget-license](https://github.com/sensslen/nuget-license)).
@@ -214,5 +214,5 @@ Eski plan: `quran-app-docs/02-mimari/01-genel-mimari.md` ve `quran-app-docs/00-b
 
 - [Genel mimari](./01-genel-mimari.md) · [Proje yapısı](./03-proje-yapisi.md) · [Yerel geliştirme](./04-yerel-gelistirme.md) · [Backend API](./05-backend-api.md)
 - [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Ses sistemi](../06-mobil/02-ses-sistemi.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md)
+- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md)
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Kaynakça](../09-kaynakca.md)

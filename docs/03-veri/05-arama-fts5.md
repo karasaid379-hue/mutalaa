@@ -66,7 +66,7 @@ Rapor, arama için türetilmiş bir sütun yerine Tanzil'in kendi yayımladığ�
 - Normalleştirici işlevi ve `NORMALIZER_VERSION` değişmez. Kural hattın Kur'an `ar_norm` bileşimidir; bu yüzden üç dilli vektör gerekmez, hat birim testi yeterlidir.
 - Simple Clean `q:` birimi olmaz; yalnız `ar_norm` kaynağıdır. Bağlılık `provenance.ar_norm` içinde tutulur ([Editoryal veritabanı](./02-editoryal-veritabani.md) §10).
 
-Ayrı sütundaki normalize metnin Tanzil şartlarında "değiştirme" sayılıp sayılmadığı Tanzil'e sorulur ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md), yazışma 1; hukuki görüş değildir). Gerekirse Kur'an için içeriksiz FTS tablosu kullanılır; o durumda normalize metin pakette saklanmaz, yalnız indeks taşınır.
+Ayrı sütundaki normalize metnin Tanzil şartlarında "değiştirme" sayılıp sayılmadığı Tanzil'e sorulur ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md), yazışma 1; hukuki görüş değildir). Gerekirse Kur'an için içeriksiz FTS tablosu kullanılır; o durumda normalize metin pakette saklanmaz, yalnız indeks taşınır.
 
 ### 1.5 Test vektörleri
 

@@ -11,7 +11,7 @@ K-04 gereği Tecrîd-i Sarîh'in Arapça metni ve Ahmed Naim çevirisi ile Küt�
 ## Okunacak belgeler
 - [Hadis hazırlığı](../../04-icerik/04-hadis-hazirligi.md): tamamı
 - [İktibas tespiti](../../05-capraz-referans/02-iktibas-tespiti.md): §13 hadis atıfları; motor için §3–§6
-- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md): §2 (`tecrid-*`, `hadis-*`), §3.4, §4, §7, §8 yazışma 6
+- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar.md): §2 (`tecrid-*`, `hadis-*`), §3.4, §4, §7, §8 yazışma 6
 - [Çapa şeması](../../03-veri/01-capa-semasi.md): §2–§5 (`h`, `ht`, slug kuralları), §13 ÇŞ-3
 - [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §4 `unit`, §9.1 `page_map`, §11 `hadith_number_map` ve `hadith_location`
 - [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §1 hadis paketleri, §7 süzme

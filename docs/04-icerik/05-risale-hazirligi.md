@@ -105,7 +105,7 @@ Otomatik yöntemler Risale metnini işlediği için avukat görüşü gelmeden �
 
 ### 3.5 Lügat
 
-- **Kaynaklar.** Redhouse'un 1890 tarihli *A Turkish and English Lexicon*'u serbesttir ve HathiTrust'ta tam görünümdedir ([HathiTrust](https://catalog.hathitrust.org/Record/001771732)). Kâmûs-ı Türkî (Şemseddin Sâmi ö. 1904) ve Lugat-ı Nâci (iki yazarlı: Muallim Nâci ö. 1893, Müstecâbîzâde İsmet Bey ö. Mayıs 1917, TDV İA ile teyitli) için Internet Archive'ın kendi taramaları var (`kamusitrki00emse`, `lgatnaci0001na`); kullanım şartları ve baskı seçimi Doğrulanacak. Güvenilir bir hazır metin ise belirlenmedi (Çağdaş Sözlük lisanssızdır ve yazılı izin ister). İkisi `bekliyor` kalır ([Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) §3.6). Türkçe tanımları biz yazarız.
+- **Kaynaklar.** Redhouse'un 1890 tarihli *A Turkish and English Lexicon*'u serbesttir ve HathiTrust'ta tam görünümdedir ([HathiTrust](https://catalog.hathitrust.org/Record/001771732)). Kâmûs-ı Türkî (Şemseddin Sâmi ö. 1904) ve Lugat-ı Nâci (iki yazarlı: Muallim Nâci ö. 1893, Müstecâbîzâde İsmet Bey ö. Mayıs 1917, TDV İA ile teyitli) için Internet Archive'ın kendi taramaları var (`kamusitrki00emse`, `lgatnaci0001na`); kullanım şartları ve baskı seçimi Doğrulanacak. Güvenilir bir hazır metin ise belirlenmedi (Çağdaş Sözlük lisanssızdır ve yazılı izin ister). İkisi `bekliyor` kalır ([Kaynaklar ve lisans defteri](./01-kaynaklar.md) §3.6). Türkçe tanımları biz yazarız.
 - **Kopyalanmayanlar.** eRisale'nin ve yayınevlerinin Risale'ye özgü modern lügatleri korunan derlemelerdir. Kelime-Frekans deposunun `anlam` sütunu bu tür lügatlerden derlendiği için kullanılmaz. Tanımı yazan editör bu lügatlere bakmaz.
 - **Başlık söz listesi.** Kelime-Frekans deposunun CC0 lisanslı kelime ve sıklık sütunları olgu niteliğindedir ve kullanılabilir. Ölçek: README'ye göre Sözler'de 56.384 lügatli kelime geçişi ve 12.692 farklı kelime var ([Kelime-Frekans](https://github.com/alitekdemir/Risale-i-Nur-Kelime-Frekans)).
 - **Madde yapısı (öneri).** `lugat_madde(id, basliksoz, basliksoz_norm, osmanlica_yazim, koken_dil, tanim_tr, ar_kok_id, kaynaklar, duzey, status, surum, content_hash)`. `ar_kok_id` QAC kök envanterine bağlanır ve Kur'an'a köprü olur ([Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)). `duzey` okurun "Lügat: Kapalı / Az / Orta / Çok" yoğunluk ayarını besler.
@@ -118,7 +118,7 @@ Sentetik `test-risale-ornek` kaynağı, Külliyat'ın yapısını taklit eden ya
 ## 4. Yayın kuralları
 
 - `risale-*` kaynakları avukat görüşüne kadar `kapali` kalır. Olumlu görüş gelirse en fazla `ic_kullanim` olur.
-- K-06'ya göre `ic_kullanim` içerik yalnız ekip içi `dev` derlemelerinde görünür; `internal` ve `public` derlemelere girmez ([Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md)).
+- K-06'ya göre `ic_kullanim` içerik yalnız ekip içi `dev` derlemelerinde görünür; `internal` ve `public` derlemelere girmez ([Kaynaklar ve lisans defteri](./01-kaynaklar.md)).
 - 1. yolla lisans alınmadıkça mağaza paketlerine 2031'den önce Risale metni girmez.
 - 2. yol dizini yalnız avukat görüşünden sonra yayımlanır ve şunları içerir: kitap ve bölüm adresi, âyet çapası, bağlantı türü, baskı ve sayfa. Metin alıntısı içermez.
 
@@ -149,7 +149,7 @@ Atıf metni (2031, öneri): "Bediüzzaman Said Nursî, Risale-i Nur Külliyatı.
 6. Risale içinde geçen âyetler için Kurul onayı gerekmez (çıkarım); teyit edilecek.
 
 ## İlgili dosyalar
-- [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) · [İçerik hattı](./02-icerik-hatti.md) · [Hadis hazırlığı](./04-hadis-hazirligi.md) · [Kelime anlamları](./06-kelime-anlamlari.md)
+- [Kaynaklar ve lisans defteri](./01-kaynaklar.md) · [İçerik hattı](./02-icerik-hatti.md) · [Hadis hazırlığı](./04-hadis-hazirligi.md) · [Kelime anlamları](./06-kelime-anlamlari.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md)
 - [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) · [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [Fazlar](../08-yol-haritasi/01-fazlar.md) · [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) · [Riskler](../08-yol-haritasi/03-riskler.md)
+- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [Fazlar](../08-yol-haritasi/01-fazlar.md) · [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) · [Riskler](../08-yol-haritasi/03-riskler.md)

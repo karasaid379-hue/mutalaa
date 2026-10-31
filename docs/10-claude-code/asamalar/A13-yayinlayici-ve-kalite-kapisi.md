@@ -10,7 +10,7 @@
 
 ## Okunacak belgeler
 - [Backend API](../../02-mimari/05-backend-api.md): §2 çözüm yapısı, §10 Yayınlayıcı (tamamı), §11 test
-- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md): §2–§6
+- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md): §2–§6
 - [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §1, §3–§7
 - [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §3 `source` (atıf ve Kurul alanları), §10 `release` ve içerik özeti
 - [Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md): §3 kullanıcı sırları, §4 `publisher` servisi ve `s3.json`, §6 adım 6, §8 örnek veri, §10.3–§10.4
@@ -33,11 +33,11 @@
 ### A13.1 · Doğrulamalar ve kararlar
 - `arastirmaci` resmî kaynaktan doğrular: Ed25519 için .NET kitaplığı (NSec ya da BouncyCastle; lisans, bakım, .NET 10 uyumu); JSON kanonikleştirme yöntemi (öneri RFC 8785 JCS) ve .NET uygulaması; aynı baytları üretecek JS yolu A23 için not edilir (`@noble/ed25519` öneri); `System.CommandLine` kararlı sürüm durumu; `AWSSDK.S3` bütünlük sağlaması ayarının SeaweedFS ile davranışı (`RequestChecksumCalculation = WHEN_REQUIRED`), `x-amz-meta-sha256` meta verisi, anonim okuma ve Range isteği ([Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md) §11).
 - Kararlar `/karar` ile yazılır: imza algoritması ve kitaplık, kanonikleştirme, anahtar saklama (İçerik paketleri IP-7).
-- İmzanın yeri: imza ayrı dosyada değil, manifest içindeki `signature` alanındadır ve `dev` dahil her derlemede zorunludur (K-06 uygulama notu; İçerik paketleri §5, Backend API §10.5, [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md) §4.2).
+- İmzanın yeri: imza ayrı dosyada değil, manifest içindeki `signature` alanındadır ve `dev` dahil her derlemede zorunludur (K-06 uygulama notu; İçerik paketleri §5, Backend API §10.5, [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md) §4.2).
 - **Bitti sayılır:** kararlar karar defterinde, doğrulama raporu kaynak bağlantılı.
 
 ### A13.2 · Kapı kuralları (Domain)
-- `Mutalaa.Domain/Licensing`: `LicenseStatus` sırası (`serbest < bekliyor < ic_kullanim < kapali`), `BuildFlavor`, `LicenseGate.Check` ([Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md) §4) ve P-01…P-14'ü saf işlev olarak değerlendiren kapı (ad öneri: `GateEvaluator`). Her karar kural koduyla kapı raporu satırı üretir: paket ya da kaynak, "girdi" ya da "girmedi", gerekçe.
+- `Mutalaa.Domain/Licensing`: `LicenseStatus` sırası (`serbest < bekliyor < ic_kullanim < kapali`), `BuildFlavor`, `LicenseGate.Check` ([Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md) §4) ve P-01…P-14'ü saf işlev olarak değerlendiren kapı (ad öneri: `GateEvaluator`). Her karar kural koduyla kapı raporu satırı üretir: paket ya da kaynak, "girdi" ya da "girmedi", gerekçe.
 - xUnit: durum × derleme matrisinin her hücresi (`[Theory]`; §5 madde 1); onaysız, onaylı ve onaydan sonra değişmiş Kurul kaynağı; kaynak kaydı olmayan paket; `kurul_gerekli` türetimi; her P kuralı için en az bir olumlu ve bir olumsuz test. Testler `tr-TR` kültüründe de koşar.
 - `LicenseStatusLabels.TryParseLabel` başarısız olunca `out` değeri `default` (`Serbest`, en gevşek değer) verir. Kapı `bool` dönüşünü zorunlu denetler ve başarısız ayrıştırmayı kapalı (en kısıtlayıcı) sayar; test bunu kilitler ([Backend API](../../02-mimari/05-backend-api.md) §7 A13 notu).
 - **Bitti sayılır:** kapı testleri yeşil; kural başına test listesi raporda.
@@ -105,7 +105,7 @@ dotnet run --project server/Mutalaa.Publisher -- publish --flavor public --dry-r
 - Windows: SQLite bağlantısı kapanmadan dosya taşınmaz (`Pooling=False`). Proje yolu boşluk ve Türkçe karakter içerir; `Publisher:SchemaDir` göreli verilir.
 - Kurul onayı paket dosyasının sha256'sına değil, içerik özetine bağlanır (Yayın kapısı §2.2).
 - Kapı iki kez uygulanır (Yayınlayıcı ve uygulama). Yayınlayıcıdaki kural hiçbir derlemede gevşetilmez; `public` derleme imza kuralını da gevşetmez.
-- Manifest biçiminin sahibi İçerik paketleri §5'tir: CalVer sürüm, `.db` anahtarı, `kurul_onay` nesne ya da `null` ([Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md) §4.1 örneği de bu biçimdedir).
+- Manifest biçiminin sahibi İçerik paketleri §5'tir: CalVer sürüm, `.db` anahtarı, `kurul_onay` nesne ya da `null` ([Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md) §4.1 örneği de bu biçimdedir).
 - `Storage:PublicBaseUrl` LAN IP'sini taşır; IP değişince `publish` yeniden çalışır ([Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md) §10.3).
 - Fikstür metni hiçbir dini metne benzetilmez; `test-` kaynaklar `public`'e hiçbir durumda girmez (P-12).
 
@@ -121,7 +121,7 @@ dotnet run --project server/Mutalaa.Publisher -- publish --flavor public --dry-r
 
 ## Elle başlatma istemi
 ```text
-docs/10-claude-code/asamalar/A13-yayinlayici-ve-yayin-kapisi.md dosyasındaki aşamayı yürüt. Önce önkoşulları ve planı göster, onayımı bekle.
+docs/10-claude-code/asamalar/A13-yayinlayici-ve-kalite-kapisi.md dosyasındaki aşamayı yürüt. Önce önkoşulları ve planı göster, onayımı bekle.
 ```
 
 ## İlgili dosyalar

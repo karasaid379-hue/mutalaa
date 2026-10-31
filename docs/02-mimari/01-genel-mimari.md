@@ -201,7 +201,7 @@ flowchart LR
 | B. `internal` paketlerini iç test ikilisine gömmek | Barındırma gerekmez | İkili büyür; her içerik değişikliği yeni derleme ister |
 | C. Yerel depoya tünel | Ek hesap gerekmez | Bilgisayar açık kalmalı; dışarıya açılan yerel servis risk taşır |
 
-İç test derlemesi yalnız `serbest` içerik alır (K-06). Kurul onayı bekleyen Kur'an metni, meal ve sesin kapalı testte gösterilip gösterilemeyeceği Kurul'la ön görüşmede sorulur; cevap gelene kadar dış test kullanıcısı alınmaz (Açık soru; hukuki görüş değildir; [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)).
+İç test derlemesi yalnız `serbest` içerik alır (K-06). Kurul onayı bekleyen Kur'an metni, meal ve sesin kapalı testte gösterilip gösterilemeyeceği Kurul'la ön görüşmede sorulur; cevap gelene kadar dış test kullanıcısı alınmaz (Açık soru; hukuki görüş değildir; [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)).
 
 ## 8. Derleme türleri
 
@@ -270,7 +270,7 @@ stateDiagram-v2
 - v1 okur uygulaması hesap açmaz ve kişisel veri göndermez.
 - Editoryal yığın (PostgreSQL, API, editör) yalnız `127.0.0.1` adresine bağlanır. Yerel ağa yalnız S3 deposunun okuma portu açılır.
 - Gizli değerler `.env` ve .NET kullanıcı sırlarında durur, depoya girmez.
-- Canlı API yurt dışında barındırılırsa her veri işleyenle standart sözleşme imzalanır ve sözleşme 5 iş günü içinde Kurum'a bildirilir ([Cottgroup](https://cottgroup.com/tr/blog/kvkk-gdpr/item/standart-sozlesme-bildirim-yukumlulugu-ve-yaptirimlari)). Bu not hukuki görüş değildir; ayrıntı [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md).
+- Canlı API yurt dışında barındırılırsa her veri işleyenle standart sözleşme imzalanır ve sözleşme 5 iş günü içinde Kurum'a bildirilir ([Cottgroup](https://cottgroup.com/tr/blog/kvkk-gdpr/item/standart-sozlesme-bildirim-yukumlulugu-ve-yaptirimlari)). Bu not hukuki görüş değildir; ayrıntı [KVKK ve gizlilik](../07-yayin/02-gizlilik.md).
 
 ## 11. Açık sorular
 
@@ -285,5 +285,5 @@ stateDiagram-v2
 - [Teknoloji yığını](./02-teknoloji-yigini.md) · [Proje yapısı](./03-proje-yapisi.md) · [Yerel geliştirme](./04-yerel-gelistirme.md) · [Backend API](./05-backend-api.md)
 - [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md)
 - [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md) · [Arama](../03-veri/05-arama-fts5.md)
-- [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md)
+- [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [KVKK ve gizlilik](../07-yayin/02-gizlilik.md)
 - [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) · [Karar defteri](../00-ozet/02-karar-defteri.md) · [Kaynakça](../09-kaynakca.md)

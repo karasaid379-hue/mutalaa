@@ -9,7 +9,7 @@ K-19 gereği Kur'an kelimelerinin Türkçe anlamlarını kendimiz yazarız: yapa
 - **İş birimi lemmadır.** Lemma ve kök kimlikleri Quranic Arabic Corpus (QAC) v0.4'ten gelir. Kökün temel anlamı `root` tablosunda kök başına bir kez yazılır; lemmanın Kur'an'daki anlamları `lemma` tablosunda tutulur.
 - **Kelime kartında görünen.** Arapça kelime (Tanzil), Türkçe kısa anlam, kök ve "Bu kök Kur'an'da N yerde geçer" bilgisi, kısa morfoloji satırı. Kartın tasarımı [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) dosyasındadır.
 - **v1 dışı.** Âyet içindeki her geçiş için ayrı bağlam anlamı (Açık soru).
-- **Bağımlılıklar.** `kelime-kok` paketi QAC'den yazılı açıklık gelene kadar `bekliyor` durumundadır; bu sürede yalnız ekip içi `dev` derlemelerinde görünür, `internal` ve `public` derlemelere giremez (K-06; [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md)). Türkçe anlamlar bizim yazımımızdır; ama bir kelimenin anlamını göstermek için QAC'nin kelime → lemma eşlemesine bağlıdır. Bağımlılık ve yedek yol bölüm 2.1'dedir. Kelime anlamlarının Kurul açısından meal sayılıp sayılmadığı Açık soru; cevap paket manifestindeki `kurul_gerekli` değerini belirler.
+- **Bağımlılıklar.** `kelime-kok` paketi QAC'den yazılı açıklık gelene kadar `bekliyor` durumundadır; bu sürede yalnız ekip içi `dev` derlemelerinde görünür, `internal` ve `public` derlemelere giremez (K-06; [Kaynaklar ve lisans defteri](./01-kaynaklar.md)). Türkçe anlamlar bizim yazımımızdır; ama bir kelimenin anlamını göstermek için QAC'nin kelime → lemma eşlemesine bağlıdır. Bağımlılık ve yedek yol bölüm 2.1'dedir. Kelime anlamlarının Kurul açısından meal sayılıp sayılmadığı Açık soru; cevap paket manifestindeki `kurul_gerekli` değerini belirler.
 
 ## 2. Lemma envanteri
 
@@ -227,7 +227,7 @@ Fiyatlar [Claude fiyatlandırma](https://platform.claude.com/docs/en/about-claud
 8. CAMeL veri paketlerinin lisansı ve çıktının paketlenen içeriğe etkisi (Doğrulanacak; bölüm 2.1, BÇ-35).
 
 ## İlgili dosyalar
-- [Kaynaklar ve lisans defteri](./01-kaynaklar-ve-lisans-defteri.md) · [İçerik hattı](./02-icerik-hatti.md) · [Elmalılı hazırlığı](./03-elmalili-hazirligi.md) · [Risale hazırlığı](./05-risale-hazirligi.md)
+- [Kaynaklar ve lisans defteri](./01-kaynaklar.md) · [İçerik hattı](./02-icerik-hatti.md) · [Elmalılı hazırlığı](./03-elmalili-hazirligi.md) · [Risale hazırlığı](./05-risale-hazirligi.md)
 - [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) · [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md)
 - [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Arama](../03-veri/05-arama-fts5.md)
-- [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) · [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) · [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)
+- [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) · [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) · [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)

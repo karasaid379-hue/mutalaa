@@ -11,8 +11,8 @@ Mod A, basılı Medine mushafıyla satır satır aynı sayfayı QPC sayfa fontla
 ## Okunacak belgeler
 - [Mobil mimari](../../06-mobil/01-mobil-mimari.md): §7 ortak sözleşme, §7.1, §7.4, §9, §10 (`mushafA`, `tecvidRenkleri`), §15 (MM-1–MM-4)
 - [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §1, §3.5, §7, §9
-- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md): §2 (`qpc-*-font`, `medine-604-duzen`), §3.1, §8 yazışma 3
-- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md): §7.1, §7.4
+- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar.md): §2 (`qpc-*-font`, `medine-604-duzen`), §3.1, §8 yazışma 3
+- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md): §7.1, §7.4
 - [Okuma deneyimi](../../01-urun/02-okuma-deneyimi.md): §3 (Mod A kelime aralığı), §13
 - [Backend API](../../02-mimari/05-backend-api.md): §10.3 (P-01, P-02, P-03)
 - [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §9.1 (`page_map.glyphs`)

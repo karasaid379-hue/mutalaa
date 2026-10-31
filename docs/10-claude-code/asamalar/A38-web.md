@@ -15,7 +15,7 @@ Next.js 16 ile her âyete (`/kuran/[sure]/[ayet]`, 6.236 sayfa) ve her mushaf sa
 - [Genel mimari](../../02-mimari/01-genel-mimari.md): §3, §8, §10, §11 soru 3 · [Proje yapısı](../../02-mimari/03-proje-yapisi.md): §1, §2, §3
 - [Arama](../../03-veri/05-arama-fts5.md): §1 normalleştirme, §4 sonuç parçası, §5 web araması
 - [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §5 manifest ve imza, §7 süzme ve `page_map` notu
-- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md): §3, §6 atıf ve Kurul bilgisi, §7.5 soru 3
+- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md): §3, §6 atıf ve Kurul bilgisi, §7.5 soru 3
 - [Tasarım sistemi](../../01-urun/04-tasarim-sistemi.md): §2.5, §9, §10 `packages/ui-tokens` · [Mobil ekranlar](../../01-urun/03-mobil-ekranlar.md): §7 kural 5
 
 ## Kapsam
@@ -120,4 +120,4 @@ docs/10-claude-code/asamalar/A38-web.md dosyasındaki aşamayı yürüt. Önce �
 ```
 
 ## İlgili dosyalar
-- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A37](./A37-elmalili-tefsir-paketi.md) · Sonraki: [A39](./A39-takvim-ve-lisans-olaylari.md)
+- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A37](./A37-elmalili-tefsir-paketi.md) · Sonraki: [A39](./A39-devre-disi.md)

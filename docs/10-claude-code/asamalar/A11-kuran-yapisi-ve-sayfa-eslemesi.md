@@ -13,7 +13,7 @@ Okuyucunun, aramanın ve atıf ayrıştırıcısının ihtiyaç duyduğu Kur'an 
 - [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §5 `quran_word`, §6 `surah_alias`, §8 `review`, §9.1 `page_map`
 - [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §3.2 `core` tabloları (`page_map`, `sure`), §7 sayfa eşlemesinin kaynağı, §10 IP-3
 - [İktibas tespiti](../../05-capraz-referans/02-iktibas-tespiti.md): §2 varyant tablosu planı ve riskli adlar
-- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md): §2 `medine-604-duzen`, §3.1 QF ve QUL düzen verisi, §7 kontrol listesi
+- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar.md): §2 `medine-604-duzen`, §3.1 QF ve QUL düzen verisi, §7 kontrol listesi
 - [Kapsam ve fazlar](../../01-urun/01-kapsam-ve-fazlar.md): §4.1 (hizb kaynağı Doğrulanacak), §9 AS-10
 - [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §5 test 7 · [Arama](../../03-veri/05-arama-fts5.md): §1.2 geniş anahtar, §1.3 Kur'an işaretleri
 
@@ -32,7 +32,7 @@ Okuyucunun, aramanın ve atıf ayrıştırıcısının ihtiyaç duyduğu Kur'an 
 
 ## Adımlar
 ### A11.1 · Kaynak ve lisans doğrulaması (AS-10)
-- Tanzil üst veri dosyasının adresi A04'te doğrulandı (`shared/data/ayet-sayilari.json` içindeki `kaynak_url`); kullanım şartı belirsiz ([lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.1, [İ-08](../06-insan-adimlari.md)). Bu aşama dosyayı kalıcı olarak alır ve kaynak kaydını açar.
+- Tanzil üst veri dosyasının adresi A04'te doğrulandı (`shared/data/ayet-sayilari.json` içindeki `kaynak_url`); kullanım şartı belirsiz ([lisans defteri](../../04-icerik/01-kaynaklar.md) §3.1, [İ-08](../06-insan-adimlari.md)). Bu aşama dosyayı kalıcı olarak alır ve kaynak kaydını açar.
 - `arastirmaci` resmî kaynaktan doğrular ve bağlantısıyla raporlar:
   - Üst veri dosyasının içerdiği alanlar (Arapça sure adı, âyet sayısı, cüz, hizb, secde, sayfa başlangıcı) ve lisans metninin tarihli kopyası için kaynak.
   - AS-10: Medine 604 sayfa sınırlarının kaynağı ve lisansı; adaylar Tanzil üst verisi ve `medine-604-duzen` (QUL ya da QF). QF içeriği hazır veritabanı olarak dağıtılamaz (`kisitlar.hazir_vt_yasak`; lisans defteri §3.1).

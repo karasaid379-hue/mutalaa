@@ -3,7 +3,7 @@
 > **Sürüm:** 1.3 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** K-21 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
-İçerik cihaza sürümlü SQLite paketleri olarak iner. Yerelde SeaweedFS'in S3 API'si ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)), canlıda S3 uyumlu bir depo kullanılır; öneri Cloudflare R2'dir (depolama 0,015 $/GB-ay, veri çıkışı ücretsiz; [R2 fiyatlandırma](https://developers.cloudflare.com/r2/pricing)). Yayınlayıcı (`Mutalaa.Publisher`) editoryal veritabanından her derleme türü için ayrı paketler ve ayrı, imzalı bir manifest üretir ([Editoryal veritabanı](./02-editoryal-veritabani.md); [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)).
+İçerik cihaza sürümlü SQLite paketleri olarak iner. Yerelde SeaweedFS'in S3 API'si ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)), canlıda S3 uyumlu bir depo kullanılır; öneri Cloudflare R2'dir (depolama 0,015 $/GB-ay, veri çıkışı ücretsiz; [R2 fiyatlandırma](https://developers.cloudflare.com/r2/pricing)). Yayınlayıcı (`Mutalaa.Publisher`) editoryal veritabanından her derleme türü için ayrı paketler ve ayrı, imzalı bir manifest üretir ([Editoryal veritabanı](./02-editoryal-veritabani.md); [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)).
 
 Cihazda üç tür yerel veritabanı vardır ([Mobil mimari](../06-mobil/01-mobil-mimari.md); [Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md)):
 
@@ -31,7 +31,7 @@ Cihazda üç tür yerel veritabanı vardır ([Mobil mimari](../06-mobil/01-mobil
 
 - `core` QAC verisi taşımaz. Kelime bölmesi, kelime metni ve ofsetler Tanzil metninden türetilir. `kelime-kok` kurulu değilse kelime kartı Arapça kelimeyi, âyeti ve aramayı gösterir; kök, lemma ve Türkçe anlam bu paketle gelir.
 - `risale-dizin` bir kitap değildir; Risale kitap slugları `dizin` adını kullanmaz. Paket ATTACH sınırı yüzünden vardır (bölüm 2).
-- Her kaynağın kesin `license_status` değeri [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) dosyasındadır; bu tablo değer vermez.
+- Her kaynağın kesin `license_status` değeri [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) dosyasındadır; bu tablo değer vermez.
 
 ## 2. ATTACH bütçesi
 
@@ -70,7 +70,7 @@ CREATE TABLE attribution (
 | `normalizer_version` | `1.0` | Arama normalleştiricisiyle eşleşme ([Arama](./05-arama-fts5.md)) |
 | `anchors_version`, `data_version`, `built_at`, `unit_count` | | Tanılama ve duman testi |
 
-Brifteki `meta` tablosu bu dosyada ve mobil mimaride `pack_meta` adını taşır; Backend API §10.4'ün `meta` anahtarları bu tablodadır. `pack_source` paket dosyasının manifestten bağımsız denetlenmesini sağlar; uygulama izin dışı bir durum görürse paketi açmaz. `attribution` Kaynaklar ve lisanslar ekranını besler ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)); sütunların `source` karşılığı [Editoryal veritabanı](./02-editoryal-veritabani.md) §3'tedir.
+Brifteki `meta` tablosu bu dosyada ve mobil mimaride `pack_meta` adını taşır; Backend API §10.4'ün `meta` anahtarları bu tablodadır. `pack_source` paket dosyasının manifestten bağımsız denetlenmesini sağlar; uygulama izin dışı bir durum görürse paketi açmaz. `attribution` Kaynaklar ve lisanslar ekranını besler ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)); sütunların `source` karşılığı [Editoryal veritabanı](./02-editoryal-veritabani.md) §3'tedir.
 
 ### 3.2 Metin paketleri
 
@@ -295,7 +295,7 @@ Aşağıdaki örnek `dev` derlemenin manifestidir; `dev` manifesti yerel Seaweed
 
 - Yayımlanmış bir `(pack_id, version, flavor)` dosyası değişmez; düzeltme yeni sürümle gelir.
 - `schema_version` paket şemasının tamsayı sürümüdür. Uygulama `[PACK_SCHEMA_MIN, PACK_SCHEMA_MAX]` aralığını destekler.
-- **İçerik özeti.** Tek sıralama kuralı vardır: çapaların bayt sırası (`COLLATE "C"`). Her etkin birim için `anchor + "\t" + content_hash + "\n"` satırı, ses ve font dosyaları için yolun bayt sırasıyla `yol + "\t" + sha256 + "\n"` satırı yazılır; özet bu dizginin SHA-256'sıdır. `pack_meta.content_digest` paketin bütün içeriğinden, Kurul özeti yalnız Kurul kapsamındaki kaynaklardan aynı kuralla hesaplanır ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)).
+- **İçerik özeti.** Tek sıralama kuralı vardır: çapaların bayt sırası (`COLLATE "C"`). Her etkin birim için `anchor + "\t" + content_hash + "\n"` satırı, ses ve font dosyaları için yolun bayt sırasıyla `yol + "\t" + sha256 + "\n"` satırı yazılır; özet bu dizginin SHA-256'sıdır. `pack_meta.content_digest` paketin bütün içeriğinden, Kurul özeti yalnız Kurul kapsamındaki kaynaklardan aynı kuralla hesaplanır ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)).
 - `normalizer_version` (`major.minor`) uygulamadaki normalleştiriciyle aynı olmalıdır. Arama kuralı değişirse bütün metin paketleri yeniden üretilir ([Arama](./05-arama-fts5.md)).
 - Geri çekme: yayınlayıcı önceki sürümü gösteren yeni bir manifest yayımlar ve uygulama ona iner. Kullanıcı kayıtları çapa ve `content_hash` ile yeniden çapalanır ([Çapa şeması](./01-capa-semasi.md)).
 - Kurul onayı içerik sürümüne bağlıdır. Gömülü `core` EAS Update ile değişmez; yeni içerik yeni ikiliyle ya da manifestle gelir.
@@ -309,15 +309,15 @@ Aşağıdaki örnek `dev` derlemenin manifestidir; `dev` manifesti yerel Seaweed
 | `ic_kullanim` | Var | Yok | Yok |
 | `kapali` | Yok | Yok | Yok |
 
-`dev` yalnız ekibe, `internal` davetli test kullanıcılarına gider (K-06). Derleme türleri EAS profillerine şöyle bağlanır: `dev` → `development`, `internal` → `internal`, `public` → `production` ([Mobil mimari](../06-mobil/01-mobil-mimari.md)). Kurul onayı bekleyen Kur'an metni, meal ve sesin `internal` derlemede gösterilip gösterilemeyeceği Kurul'a sorulur; cevap gelene kadar dış test kullanıcısı alınmaz. Kuralın sahibi [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) belgesidir. **Çözüldü (19 Ekim 2026):** Mobil mimarideki `isPackVisible` işlevi `internal` için de yalnız `serbest` kabul eder ([Mobil mimari](../06-mobil/01-mobil-mimari.md) §10).
+`dev` yalnız ekibe, `internal` davetli test kullanıcılarına gider (K-06). Derleme türleri EAS profillerine şöyle bağlanır: `dev` → `development`, `internal` → `internal`, `public` → `production` ([Mobil mimari](../06-mobil/01-mobil-mimari.md)). Kurul onayı bekleyen Kur'an metni, meal ve sesin `internal` derlemede gösterilip gösterilemeyeceği Kurul'a sorulur; cevap gelene kadar dış test kullanıcısı alınmaz. Kuralın sahibi [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) belgesidir. **Çözüldü (19 Ekim 2026):** Mobil mimarideki `isPackVisible` işlevi `internal` için de yalnız `serbest` kabul eder ([Mobil mimari](../06-mobil/01-mobil-mimari.md) §10).
 
 - Süzme kaynak düzeyinde yapılır; aynı paket kimliği derleme türüne göre farklı içerik taşıyabilir.
 - `kisitlar.hazir_vt_yasak` taşıyan kaynak hiçbir pakete girmez. Quran Foundation şartları hazır veritabanı dağıtımına izin vermez ([QF Developer Terms](https://api-docs.quran.foundation/legal/developer-terms/)).
 - `xref_idx` satırları bağlantı modelinin yayın kuralıyla süzülür: `red` satır hiçbir pakete girmez, `aday` satır yalnız `dev` ve `internal` derlemeye `approved = 0` ile girer (Backend API P-07) ([Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md)).
-- QAC kaynaklı satırlar (`kelime-kok` paketi ve metin paketlerindeki `tr_root_index`) `bekliyor` durumundadır; QAC'den yazılı açıklık gelene kadar yalnız ekip içi `dev` derlemede görünür. `internal` ve `public` derlemede kök, lemma ve anlam satırları kapalıdır. Bu, K-06 ve lisans defteri §1'in tekrarıdır, yeni karar değildir ([QAC SSS](https://corpus.quran.com/faq.jsp); [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §1). Kelime anlamlarının QAC lemma kimliklerine bağlı olmasının etkisi avukata sorulur (Açık soru, hukuki görüş değildir).
+- QAC kaynaklı satırlar (`kelime-kok` paketi ve metin paketlerindeki `tr_root_index`) `bekliyor` durumundadır; QAC'den yazılı açıklık gelene kadar yalnız ekip içi `dev` derlemede görünür. `internal` ve `public` derlemede kök, lemma ve anlam satırları kapalıdır. Bu, K-06 ve lisans defteri §1'in tekrarıdır, yeni karar değildir ([QAC SSS](https://corpus.quran.com/faq.jsp); [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) §1). Kelime anlamlarının QAC lemma kimliklerine bağlı olmasının etkisi avukata sorulur (Açık soru, hukuki görüş değildir).
 - `core` sayfa eşlemesinin kaynağı Açık soru. Lisans defterinde Mod A düzeni (`medine-604-duzen`) `bekliyor` durumundadır; Medine sayfa başlangıçlarını Tanzil üst verisinden almak Doğrulanacak. Kaynak açılmazsa `public` `core` sayfa eşlemesiz çıkar; Mod C ve 604 sayfalık hatim buna bağlıdır.
 - Durumların anlamı K-06'dadır: `serbest` kamu malı, açık lisans ya da yazılı izin; `bekliyor` izin ya da açıklık istendi, cevap bekleniyor; `ic_kullanim` avukat görüşüyle yalnız ekip işleyebilir; `kapali` hiç kullanılmaz ve işlenmez.
-- Risale metni avukat görüşü gelene kadar `kapali` durumdadır ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md)). Bu sürede Risale metni işlenmez; `risale-{kitap}` ve `risale-dizin` paketleri üretilmez, yalnız kod, şema ve çapa kuralları hazırlanır. Görüş olumlu gelirse durum `ic_kullanim` olur ve Risale yalnız `dev` derlemesinde görünür (K-05); yazılı izinle ya da 1 Ocak 2031'de `serbest` olur.
+- Risale metni avukat görüşü gelene kadar `kapali` durumdadır ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md)). Bu sürede Risale metni işlenmez; `risale-{kitap}` ve `risale-dizin` paketleri üretilmez, yalnız kod, şema ve çapa kuralları hazırlanır. Görüş olumlu gelirse durum `ic_kullanim` olur ve Risale yalnız `dev` derlemesinde görünür (K-05); yazılı izinle ya da 1 Ocak 2031'de `serbest` olur.
 - `risale-dizin` içinde arama indeksi metinden türediği için metnin durumuyla süzülür. Bağlantılar ve sayfa eşlemeleri ayrı bir dizin kaynağıdır; metin içermeyen bir atıf dizininin `internal` ya da `public` derlemeye girmesi avukat görüşüne bağlıdır (rapor; hukuki görüş değildir).
 - `tecrid-miras` 1 Ocak 2028'e kadar `kapali` olduğu için `hadis-tecrid` paketi her derlemede yalnız Arapça metni ve Ahmed Naim çevirisini taşır.
 - `dev` ve `internal` paketleri herkese açık bir adresten indirilemez. `dev` paketleri yerel SeaweedFS deposundadır; `internal` için özel depo ve süreli imzalı URL kullanılır (yöntem Açık soru).
@@ -389,4 +389,4 @@ Değerlerin tamamı tahmindir ve gerçek veriyle ölçülecektir.
 
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Çapa şeması](./01-capa-semasi.md) · [Editoryal veritabanı](./02-editoryal-veritabani.md) · [Kullanıcı verisi ve senkron](./04-kullanici-verisi-ve-senkron.md) · [Arama (FTS5)](./05-arama-fts5.md)
 - [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Ses sistemi](../06-mobil/02-ses-sistemi.md) · [Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)
+- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)

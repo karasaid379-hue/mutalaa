@@ -74,11 +74,11 @@ Dönüşünüzü bekliyor, saygı ve hürmetlerimizi sunuyoruz.
 
 ## İç notlar (gönderilmez)
 
-**Alanlar.** Köşeli ayraçlı alanları göndermeden önce sen doldurursun; "……" alanlarını hafız doldurur. Açılı ayraç (`<…>`) kullanılmadı: ASCII harfle başlayan açılı ayraç önizleyicide HTML etiketi sayılıp kaybolabilir. [A01](../10-claude-code/asamalar/A01-yazisma-paketi.md) A01.6'daki `<hafız adı>` ifadesi buna göre `/belge-esitle` ile güncellenir.
+**Alanlar.** Köşeli ayraçlı alanları göndermeden önce sen doldurursun; "……" alanlarını hafız doldurur. Açılı ayraç (`<…>`) kullanılmadı: ASCII harfle başlayan açılı ayraç önizleyicide HTML etiketi sayılıp kaybolabilir. [A01](../10-claude-code/asamalar/A01-devre-disi.md) A01.6'daki `<hafız adı>` ifadesi buna göre `/belge-esitle` ile güncellenir.
 
 **Görüşme kontrol listesi**
 - [ ] En az iki Türk hafızla görüşüldü ([Fazlar](../08-yol-haritasi/01-fazlar.md) Faz 0; İ-07). Rapor yazılı izinli 3–5 okuyucuyla başlamayı öneriyor ([Ses sistemi](../06-mobil/02-ses-sistemi.md) §12; [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) S-07).
-- [ ] Rapordaki örnek adlar: Osman Şahin ve İshak Danış ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.7; S-07). Adlar yalnız bu notta durur; mektuba görüşülen hafızın adı elle yazılır.
+- [ ] Rapordaki örnek adlar: Osman Şahin ve İshak Danış ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) §3.7; S-07). Adlar yalnız bu notta durur; mektuba görüşülen hafızın adı elle yazılır.
 - [ ] Kayıtların başka bir hak sahibi var mı (ör. kaydı yapan stüdyo ya da kurum)? "İzin veren" bölümündeki hak sahipliği satırı bunu belgeye geçirir (lisans defteri §7: yükleyicinin hak sahibi olup olmadığı).
 - [ ] Mevcut kayıtların biçimi soruldu: dosya türü, bit hızı (Ses sistemi SS-5, Açık soru), âyet başına mı sure başına mı (dosya düzeni [Belge çelişkileri](../10-claude-code/07-belge-celiskileri.md) BÇ-17'de açık).
 - [ ] Kelime zamanlaması konuşuldu: quran-align yalnız hizalandığı EveryAyah dosyalarında geçerli; Türk hafızların kayıtları için yöntem açık (Ses sistemi SS-7).
@@ -92,7 +92,7 @@ Dönüşünüzü bekliyor, saygı ve hürmetlerimizi sunuyoruz.
 |---|---|
 | 1 (a, b) | S-07 (iç test ve mağaza dağıtımı); K-06 |
 | 2 | S-07 (çevrimdışı indirme); Ses sistemi §11 (akış) ve §12 |
-| 3 | S-07 (Kurul'a sunma); Ses sistemi §12 (hukuki durum); [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) §7.1; Kurul yazısı Ek 4, soru 13.c ([Kurul ön görüşme talebi](./kurul-on-gorusme.md)) |
+| 3 | S-07 (Kurul'a sunma); Ses sistemi §12 (hukuki durum); [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) §7.1; Kurul yazısı Ek 4, soru 13.c ([Kurul ön görüşme talebi](./kurul-on-gorusme.md)) |
 | 4 (a, b) | S-07 (zamanlama verisi üretme); Ses sistemi §3 ve §13 (SS-5, SS-6, SS-7); BÇ-17 (âyet başına dosya) |
 | 5 | S-07 (atıf biçimi); Ses sistemi §12 (atıf); Yayın kapısı ve Kurul §6 |
 | 6 | S-07 (ücretli katmana konmama); Ses sistemi §12 |
@@ -109,6 +109,6 @@ Dönüşünüzü bekliyor, saygı ve hürmetlerimizi sunuyoruz.
 
 ## İlgili dosyalar
 
-- [Ses sistemi](../06-mobil/02-ses-sistemi.md) · [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) · [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)
+- [Ses sistemi](../06-mobil/02-ses-sistemi.md) · [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) · [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)
 - [Kurul ön görüşme talebi](./kurul-on-gorusme.md) · [Avukat soruları](./avukat-sorulari.md)
-- [İnsan adımları](../10-claude-code/06-insan-adimlari.md) · [A01](../10-claude-code/asamalar/A01-yazisma-paketi.md)
+- [İnsan adımları](../10-claude-code/06-insan-adimlari.md) · [A01](../10-claude-code/asamalar/A01-devre-disi.md)

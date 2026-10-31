@@ -388,6 +388,6 @@ Apple sesin denetimsiz ve kendiliğinden çalmamasını ister ([Apple HIG Erişi
 - [Ses kaynağı araştırması](./04-ses-kaynak-arastirmasi.md) · [Mobil mimari](./01-mobil-mimari.md) · [Depolama yöneticisi](./03-depolama-yoneticisi.md)
 - [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) · [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) · [Tasarım sistemi](../01-urun/04-tasarim-sistemi.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
+- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)
+- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
 - [A27 aşaması](../10-claude-code/asamalar/A27-ses-sistemi.md) · [Karar defteri](../00-ozet/02-karar-defteri.md) · [Kaynakça](../09-kaynakca.md)

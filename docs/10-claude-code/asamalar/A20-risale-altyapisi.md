@@ -1,7 +1,7 @@
 # A20 · Risale altyapısı (metinsiz: çapa, yapı, sayfa eşleme şeması, sentetik fikstür)
 
 > **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-05](../../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
-> **Faz:** 1 · İçerik hattı · **Önkoşul:** [A07](./A07-editoryal-veritabani.md) · [A13](./A13-yayinlayici-ve-yayin-kapisi.md) · **İnsan adımı:** İ-03 · İ-24 (içindekiler ve baskı sayfa verisi) · İ-28 (lügat maddeleri)
+> **Faz:** 1 · İçerik hattı · **Önkoşul:** [A07](./A07-editoryal-veritabani.md) · [A13](./A13-yayinlayici-ve-kalite-kapisi.md) · **İnsan adımı:** İ-03 · İ-24 (içindekiler ve baskı sayfa verisi) · İ-28 (lügat maddeleri)
 > **Ajanlar:** `hat-gelistirici` · `lisans-denetcisi` · `sunucu-gelistirici` (Yayınlayıcı paket tanımları) · `metin-denetcisi` · `test-yazari` · `inceleyici` · **Beceriler:** `lisans-kapisi` · `capa-gramer` · `paket-yayini` · `metin-butunlugu` · **Tahmini oturum:** 2–3
 > **Başlat:** `/asama A20`
 
@@ -13,8 +13,8 @@ K-05 gereği Risale-i Nur'un altyapısı metne dokunmadan kurulur: kaynak kayıt
 - [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §2 ATTACH bütçesi, §3.2, §3.4 `risale-dizin`, §4 bağlantıların dağılımı, §7 süzme
 - [Çapa şeması](../../03-veri/01-capa-semasi.md): §2–§6 (`rn` grameri, slug kuralları, haşiye önerisi, kararlılık), §10 sayfa eşlemeleri
 - [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §3 (`tur = 'baski'`, `baski_bilgisi`), §4 (`parent_path`, `sentences`, `marks`), §9.1 `page_map`
-- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-kapisi-ve-kurul.md): §2.3 ayrı dizin kaydı, §2.4 açık sorular
-- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md): §1 iç kullanım kuralı, §3.5, §4
+- [Yayın kapısı ve Kurul](../../07-yayin/01-yayin-sureci.md): §2.3 ayrı dizin kaydı, §2.4 açık sorular
+- [Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar.md): §1 iç kullanım kuralı, §3.5, §4
 - [Arama](../../03-veri/05-arama-fts5.md): §2 içeriksiz tablolar · [Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md): §8 sentetik kaynak
 
 ## Kapsam
@@ -67,7 +67,7 @@ K-05 gereği Risale-i Nur'un altyapısı metne dokunmadan kurulur: kaynak kayıt
 - **Bitti sayılır:** `dev` manifestinde iki paket var; kuru çalıştırma raporları beklenen kodları gösteriyor.
 
 ### A20.6 · Lügat altyapısı (metinsiz)
-- Kaynak kayıtları defterle aynı: `lugat-redhouse-1890` (`serbest`), `risale-kelime-frekans` (`serbest`; yalnız kelime ve sıklık sütunları), `lugat-kamus-i-turki` ve `lugat-naci` (`bekliyor`, Doğrulanacak) ([Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §2, §3.6). eRisale ve yayınevi lügatleri ile Kelime-Frekans deposunun `anlam` sütunu hiçbir kayda ve dosyaya girmez.
+- Kaynak kayıtları defterle aynı: `lugat-redhouse-1890` (`serbest`), `risale-kelime-frekans` (`serbest`; yalnız kelime ve sıklık sütunları), `lugat-kamus-i-turki` ve `lugat-naci` (`bekliyor`, Doğrulanacak) ([Kaynaklar ve lisans defteri](../../04-icerik/01-kaynaklar.md) §2, §3.6). eRisale ve yayınevi lügatleri ile Kelime-Frekans deposunun `anlam` sütunu hiçbir kayda ve dosyaya girmez.
 - Şema (`ef-goc`): `lugat_madde(id, basliksoz, basliksoz_norm, osmanlica_yazim, koken_dil, tanim_tr, ar_kok_id, kaynaklar, duzey, status, surum, content_hash)` [Risale hazırlığı](../../04-icerik/05-risale-hazirligi.md) §3.5 önerisiyle; `status` kelime anlamlarındaki gibi `aday` ve `onayli`. Editoryal veritabanı belgesine `/belge-esitle` ile işlenir.
 - Başlık söz listesi: Kelime-Frekans deposundan yalnız kelime ve sıklık alınır (komut öneri: `uv run mutalaa ingest kelime-frekans`); `basliksoz_norm` A05 normalleştiricisiyle üretilir; `anlam` sütununun okunmadığı testle kanıtlanır.
 - Tanımları editör yazar (İ-28). Yapay zekâ taslağı yalnız `embed_ok = true` serbest sözlüklerden ve "doğrulanmamış" rozetiyle üretilebilir; korumalı lügatler isteme girmez ([Kelime anlamları](../../04-icerik/06-kelime-anlamlari.md)). Editör panelinde lügat kuyruğu A15'in kuyruk bileşeniyle açılır (öneri).

@@ -119,7 +119,7 @@ test('âyet ×3 tekrardan sonra sonraki âyete geçer', async () => {
 | Benzer âyet | Örneklem | QUL kaydı, lisansı teyit edilirse |
 | Anlamsal (v1.x) | Alan içi sorgu seti | Türkçe sorgu → paragraf; Arapça ve Türkçe → âyet |
 
-Büyüklük ve tabakalar rapordan gelir. Risale metni hukukçu görüşü gelene kadar `kapali` olduğu için Risale altın seti de bu görüşten sonra kurulur; görüş olumluysa set `data/` altında (git dışı) tutulur ve hiçbir pakete girmez ([K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik), [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)). Harici bir dil modeli API'sine gönderim ayrıca Açık soru; hukuki görüş değildir ([Yayın kapısı ve Kurul](./01-yayin-kapisi-ve-kurul.md#24-telif-ve-işleme-açık-soruları)). Elmalılı ve serbest metinlerdeki iktibas setleri bu görüşü beklemez. Basılı fihristler başlangıç noktasıdır; bir fihrist kaydının Kur'an'da karşılığı bulunmadığı not edilmiştir ([RİNAP](https://rinap.uskudar.edu.tr/uploads/site/6/content/files/risale-i-nurun-tefsirdeki-yeri-compressed.pdf)).
+Büyüklük ve tabakalar rapordan gelir. Risale metni hukukçu görüşü gelene kadar `kapali` olduğu için Risale altın seti de bu görüşten sonra kurulur; görüş olumluysa set `data/` altında (git dışı) tutulur ve hiçbir pakete girmez ([K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik), [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)). Harici bir dil modeli API'sine gönderim ayrıca Açık soru; hukuki görüş değildir ([Yayın kapısı ve Kurul](./01-yayin-sureci.md#24-telif-ve-işleme-açık-soruları)). Elmalılı ve serbest metinlerdeki iktibas setleri bu görüşü beklemez. Basılı fihristler başlangıç noktasıdır; bir fihrist kaydının Kur'an'da karşılığı bulunmadığı not edilmiştir ([RİNAP](https://rinap.uskudar.edu.tr/uploads/site/6/content/files/risale-i-nurun-tefsirdeki-yeri-compressed.pdf)).
 
 Ölçüler âyet düzeyinde ve açıklık (span) düzeyinde kesinlik, duyarlılık ve F1'dir; uzun ve kısa iktibas ayrı raporlanır. Açıklık eşleşmesi aynı hedef çapa ve en az 0,5 örtüşme oranı ister (öneri).
 
@@ -157,7 +157,7 @@ Tanzil metni aynen dağıtılabilir, değiştirilemez ([Tanzil metni, OpenITI ko
 5. Okuyucunun metin seçicisi yalnız kanonik metni okur; `search_text` hiçbir ekranda görünmez (`reader-core` testi).
 6. `core` paketinde Tanzil telif bildiriminin tam metni bulunur.
 7. Sayfa eşlemesi: 1. sayfa Fâtiha 1–7'dir, 604. sayfa Nâs 6 ile biter, 0 ve 605 geçersizdir (`quran-app-docs/04-okuma/01-quran-okuyucu.md` testleri).
-8. Kurul kapsamındaki paketlerde hesaplanan içerik özeti onaylı özete eşittir ([Yayın kapısı](./01-yayin-kapisi-ve-kurul.md)).
+8. Kurul kapsamındaki paketlerde hesaplanan içerik özeti onaylı özete eşittir ([Yayın kapısı](./01-yayin-sureci.md)).
 
 **Çözüldü (NFC, K-26).** Karar defteri kanonik metni kaynağın dağıttığı hâli olarak tanımladı: Tanzil metnine NFC uygulanmaz, NFC yalnız kendi ürettiğimiz metinlerde ilk kayıtta yapılır, ofsetler kanonik metnin kod noktalarıdır. Aşağıdaki not bu kararın gerekçesi olarak kalır. İlk brif kesin karakter aralıklarını NFC kanonik metinde tanımlıyordu. NFC Arapça harekelerin sırasını değiştirebilir: şedde + fetha (U+0651 U+064E) NFC'de fetha + şedde (U+064E U+0651) olur (yerel Python denemesi, 18 Ekim 2026). Tanzil metni NFC değilse NFC'ye çevirmek bayt değiştirir ve "değiştirmek yasak" şartıyla çatışır. Test 3 Kur'an birimlerinde Tanzil baytlarını korur, ayrıca metnin NFC olup olmadığını raporlar. Ofset tanımının Kur'an birimlerine nasıl uygulanacağı [Çapa şeması](../03-veri/01-capa-semasi.md) dosyasında karara bağlanır.
 
@@ -200,7 +200,7 @@ Yığın `xunit.v3` kullanır ([Teknoloji yığını](../02-mimari/02-teknoloji-
 
 ## 7. Yayın kapısı testleri
 
-Ayrıntı [Yayın kapısı ve Kurul](./01-yayin-kapisi-ve-kurul.md#5-public-derleme-hiçbir-zaman-ic_kullanim-bekliyor-kapali-içermez-testi) dosyasındadır. Kapsam: durum × derleme türü matrisi (`internal` ve `public` yalnız `serbest`, `dev` `kapali` dışındaki her durum; [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)); onaysız, onaylı ve onaydan sonra değişmiş Kurul kaynağı; kaynak kaydı olmayan paket; `kurul_gerekli` değerinin kaynaklardan türetilmesi; imzasız ya da bozuk imzalı manifestin public derlemede reddi; `xref` süzgeci (public derlemede `rn:` hedefli bağlantı yalnız ayrı lisanslı dizin kaydıyla girer); manifest ile önek içeriğinin tutarlılığı; public manifestin, public önekteki bütün nesnelerin ve gömülü `core` paketinin yapıt taraması. Bu son test her public sürümde zorunludur.
+Ayrıntı [Yayın kapısı ve Kurul](./01-yayin-sureci.md#5-public-derleme-hiçbir-zaman-ic_kullanim-bekliyor-kapali-içermez-testi) dosyasındadır. Kapsam: durum × derleme türü matrisi (`internal` ve `public` yalnız `serbest`, `dev` `kapali` dışındaki her durum; [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)); onaysız, onaylı ve onaydan sonra değişmiş Kurul kaynağı; kaynak kaydı olmayan paket; `kurul_gerekli` değerinin kaynaklardan türetilmesi; imzasız ya da bozuk imzalı manifestin public derlemede reddi; `xref` süzgeci (public derlemede `rn:` hedefli bağlantı yalnız ayrı lisanslı dizin kaydıyla girer); manifest ile önek içeriğinin tutarlılığı; public manifestin, public önekteki bütün nesnelerin ve gömülü `core` paketinin yapıt taraması. Bu son test her public sürümde zorunludur.
 
 ## 8. Mobil bileşen testleri
 
@@ -303,7 +303,7 @@ VoiceOver ve TalkBack'in harekeli Kur'an Arapçasıyla davranışı hakkında ka
 - [ ] Kapı raporu okundu; public yapıt taraması yeşil; public manifest imzalı ve imza uygulamadaki açık anahtarla doğrulanıyor.
 - [ ] Kurul kapsamındaki içerik özetleri onaylı özetlerle aynı; Kurul onay bilgisi ekranı doğru.
 - [ ] Kaynaklar ve lisanslar ekranı yeni kaynakları ve fontları içeriyor.
-- [ ] Gizlilik metni ve mağaza beyanları uygulamanın davranışıyla aynı ([KVKK ve gizlilik](./02-kvkk-ve-gizlilik.md)).
+- [ ] Gizlilik metni ve mağaza beyanları uygulamanın davranışıyla aynı ([KVKK ve gizlilik](./02-gizlilik.md)).
 - [ ] Maestro akışları iOS ve Android'de yeşil (iOS koşusunun yeri: bölüm 14 madde 7); Öz test ekranı "Geçti".
 - [ ] Performans bütçeleri referans cihazlarda tutuyor; uygulama boyutu kaydedildi.
 - [ ] Erişilebilirlik elle kontrol listesi tamam.
@@ -324,7 +324,7 @@ VoiceOver ve TalkBack'in harekeli Kur'an Arapçasıyla davranışı hakkında ka
 
 ## İlgili dosyalar
 
-- [Yayın kapısı ve Kurul](./01-yayin-kapisi-ve-kurul.md) · [KVKK ve gizlilik](./02-kvkk-ve-gizlilik.md)
+- [Yayın kapısı ve Kurul](./01-yayin-sureci.md) · [KVKK ve gizlilik](./02-gizlilik.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Arama](../03-veri/05-arama-fts5.md)
 - [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)
 - [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Ses sistemi](../06-mobil/02-ses-sistemi.md) · [Tasarım sistemi](../01-urun/04-tasarim-sistemi.md) · [Proje yapısı](../02-mimari/03-proje-yapisi.md)

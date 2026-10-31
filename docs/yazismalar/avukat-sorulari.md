@@ -93,9 +93,9 @@ Saygılarımızla,
 
 | Soru | Dayanak |
 |---|---|
-| 1.1 | [Fazlar](../08-yol-haritasi/01-fazlar.md) Faz 0; [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) S-06; [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) §1; [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.5 |
+| 1.1 | [Fazlar](../08-yol-haritasi/01-fazlar.md) Faz 0; [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) S-06; [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) §1; [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) §3.5 |
 | 1 (giriş) | AYM künyesi A01.1'de düzeltildi: iptal kararı 14.05.2015, E.2014/177, K.2015/49 (RG 11.06.2015, 29383); [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) §1, lisans defteri §3.5 ve kaynakça aynı künyeyle eşitlendi. Künyeyi göndermeden önce [Resmî Gazete fihristinde](https://www.resmigazete.gov.tr/eskiler/2015/06/20150611.htm) kendin teyit et (karar metnine araçla erişilemedi). Bakanlığın 2014 kararı Risale hazırlığı §1'de bandrol başvurularının reddi olarak geçiyor |
-| 1.2 | [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) §2.4 madde 1; K-05; [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) AS-04 |
+| 1.2 | [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) §2.4 madde 1; K-05; [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) AS-04 |
 | 1.3 | Yayın kapısı ve Kurul §2.4 madde 2; lisans defteri §1 (`embed_ok`) |
 | 1.4 | Yayın kapısı ve Kurul §2.4 madde 3; Risale hazırlığı §2 (yol 2) ve §4 |
 | 1.5 | Risale hazırlığı §3.4 (son paragraf) |
@@ -116,7 +116,7 @@ Saygılarımızla,
 | 4.1 | Sonra yapılacaklar S-12; Elmalılı hazırlığı §11 madde 4; Kelime anlamları §9 |
 | 4.2 | Kelime anlamları §9 |
 | 5.1, 5.2 | Kelime anlamları §2.1; lisans defteri §8 satır 4; K-22; Sonra yapılacaklar S-01; A01.1 Tanzil bulgusu ([Tanzil sorusu](./tanzil-arama-metni.md), 2. soru). 5.1'e eklenen mağaza dağıtımı sorusu A09 kaynak edinimi planından gelir; Açık Kuran (CC BY-NC-SA 4.0) gibi NC şartlı adaylar şimdilik kullanılmıyor |
-| 6.1 | [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) §2.1 (indirme isteği IP adresini ve cihaz bilgisini sağlayıcıya ulaştırır), §2.2 madde 5 (hata raporu anahtarı bulunur; varsayılan değeri Açık soru), §2.4 ve §5 madde 1 |
+| 6.1 | [KVKK ve gizlilik](../07-yayin/02-gizlilik.md) §2.1 (indirme isteği IP adresini ve cihaz bilgisini sağlayıcıya ulaştırır), §2.2 madde 5 (hata raporu anahtarı bulunur; varsayılan değeri Açık soru), §2.4 ve §5 madde 1 |
 | 6.2 | KVKK ve gizlilik §2.5 ve §5 madde 3; Sonra yapılacaklar S-11 |
 
 **Notlar**
@@ -124,12 +124,12 @@ Saygılarımızla,
 - Bağış yazıda yalnız soru olarak geçer; karar ya da söz değildir (K-22, S-01).
 - "Kâr amacı gütmeyen" ifadesi kullanılmadı: tüzel kişilik yok (S-11) ve gelir modeli hakkında söz verilmez (K-22).
 - Elmalılı ilk baskısının yılları belgelerde iki biçimde geçiyor ([Belge çelişkileri](../10-claude-code/07-belge-celiskileri.md) BÇ-22, A09'da çözülür); yazıda yıl verilmedi.
-- Avukata ayrıca sorulabilecek, mektuba girmeyen noktalar (karar senin): (a) Mushaf sayfa yazı tiplerinin telif bildirimi yalnız Kral Fahd Kompleksi'ni gösteriyor ve haklar saklı diyor; bu yazı tiplerini dağıtan Quran Foundation'ın geliştirici şartlarındaki izin yeterli dayanak mıdır (A26'dan önce; [Lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §3.1, Riskler R-04)? (b) Hafızların ve diğer hak sahiplerinin adı, iletişim bilgisi ve imzalı izin belgesi (Kurul'la paylaşım dahil) için aydınlatma metni gerekir mi (İ-07)? (c) Hafız izninin ileride kurulacak bir tüzel kişiliğe devri ve Kurul arşivine verilen kopyaların izin geri alındıktan sonraki durumu. (d) Risale hazırlığındaki "Şimdi" işleri (içindekiler, bölüm başı sayfa numaraları, kelime-sıklık listesi) belgelere göre Risale metnini gerektirmiyor; mektuba bu yüzden girmedi.
+- Avukata ayrıca sorulabilecek, mektuba girmeyen noktalar (karar senin): (a) Mushaf sayfa yazı tiplerinin telif bildirimi yalnız Kral Fahd Kompleksi'ni gösteriyor ve haklar saklı diyor; bu yazı tiplerini dağıtan Quran Foundation'ın geliştirici şartlarındaki izin yeterli dayanak mıdır (A26'dan önce; [Lisans defteri](../04-icerik/01-kaynaklar.md) §3.1, Riskler R-04)? (b) Hafızların ve diğer hak sahiplerinin adı, iletişim bilgisi ve imzalı izin belgesi (Kurul'la paylaşım dahil) için aydınlatma metni gerekir mi (İ-07)? (c) Hafız izninin ileride kurulacak bir tüzel kişiliğe devri ve Kurul arşivine verilen kopyaların izin geri alındıktan sonraki durumu. (d) Risale hazırlığındaki "Şimdi" işleri (içindekiler, bölüm başı sayfa numaraları, kelime-sıklık listesi) belgelere göre Risale metnini gerektirmiyor; mektuba bu yüzden girmedi.
 - Cevap gelince: cevabın metni, "İlgili dosyalar" başlığından önce açılacak "## Cevap" bölümüne tarihiyle yazılır. Risale kaynaklarının durumu (K-05, K-06; `kapali` ancak olumlu görüşle `ic_kullanim` olur; `embed_ok` değişikliği), `risale-atif-dizini`, `qac-morfoloji` ve `kelime-kok`, kendi metinlerimizin lisansı (S-12) ve gizlilik metni (KVKK ve gizlilik §2.5) güncellenir. Lisans durumunu değiştiren cevapta A39 yordamı (olay kaydı, ikinci onay), `/karar` ve `/belge-esitle` çalışır; lisans defteri ve `pipeline/sources/<kimlik>.toml` aynı değişiklikte güncellenir (A06'dan sonra). İ-03 satırı güncellenir.
 
 ## İlgili dosyalar
 
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) · [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md)
+- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [KVKK ve gizlilik](../07-yayin/02-gizlilik.md) · [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md)
 - [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) · [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) · [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)
 - [QAC lisans sorusu](./qac-lisans.md) · [Tanzil sorusu](./tanzil-arama-metni.md) · [Hafız izin mektubu](./hafiz-izin.md) · [Kurul ön görüşme talebi](./kurul-on-gorusme.md)
-- [İnsan adımları](../10-claude-code/06-insan-adimlari.md) · [A01](../10-claude-code/asamalar/A01-yazisma-paketi.md)
+- [İnsan adımları](../10-claude-code/06-insan-adimlari.md) · [A01](../10-claude-code/asamalar/A01-devre-disi.md)

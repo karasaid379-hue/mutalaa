@@ -251,7 +251,7 @@ Oy hesap ister ve v1.x'te gelir (K-15). Menü "Yararlı", "Yararsız" ve nedenli
 
 - `n = up + down ≥ 5` ise grup içi sıra `score · (0,8 + 0,4 · wilson(up, n))` olur (Wilson alt sınırı, z = 1,96).
 - Kuyruk: onaylı satırda `n ≥ 5` ve `wilson(down, n) ≥ 0,30` → "yeniden incele"; aday satırda `n ≥ 5` ve `wilson(up, n) ≥ 0,70` → "onay adayı"; en az iki `yanlis_ayet` ya da `iktibas_degil` → yüksek öncelik. Kullanıcının doğruladığı cihaz eşleşmesi `origin = 'kullanici_oyu'`, `status = 'aday'` ile yeni satır olur.
-- Oy durumu kendiliğinden değiştirmez; kararı editör verir. Hesap silinince oylar silinir. Oy sayısı ve katkı sıralaması gösterilmez (K-25). Bkz. [KVKK](../07-yayin/02-kvkk-ve-gizlilik.md).
+- Oy durumu kendiliğinden değiştirmez; kararı editör verir. Hesap silinince oylar silinir. Oy sayısı ve katkı sıralaması gösterilmez (K-25). Bkz. [KVKK](../07-yayin/02-gizlilik.md).
 
 ## 13. Paketleme ve cihazda sorgu
 
@@ -280,7 +280,7 @@ Hedef: ilk grup orta seviye Android'de 100 ms, bütün gruplar 300 ms altında (
 3. **Çözüldü (19 Ekim 2026):** `@başlangıç-bitiş` yarı açıktır: başlangıç dahil, bitiş hariç ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)).
 4. **Çözüldü (19 Ekim 2026):** `xref.license` `license_status` kümesini tutar ([Editoryal veritabanı §7](../03-veri/02-editoryal-veritabani.md#7-xref-ve-xref_vote)).
 5. Risale bağlantıları metin olmadan "dizin" olarak mağaza derlemesinde gösterilebilir mi? Rapor önerir ve avukat görüşü ister; hukuki görüş değildir.
-6. Kurul onayı bağlantı verisini ve Risale içindeki satır içi meal kartını kapsar mı? [Yayın kapısı](../07-yayin/01-yayin-kapisi-ve-kurul.md) ile netleşmeli.
+6. Kurul onayı bağlantı verisini ve Risale içindeki satır içi meal kartını kapsar mı? [Yayın kapısı](../07-yayin/01-yayin-sureci.md) ile netleşmeli.
 7. Konu düğümü tabloları editoryal veritabanında yok (ED-6, v1.x). **Kısmen çözüldü (19 Ekim 2026):** `xref_vote` [Editoryal veritabanı §7](../03-veri/02-editoryal-veritabani.md#7-xref-ve-xref_vote) ve [Backend API](../02-mimari/05-backend-api.md) §5'te; `tr_root_index` ve `tr_form` Editoryal veritabanı §6 ile [İçerik paketleri §3.2–§3.3](../03-veri/03-icerik-paketleri.md#32-metin-paketleri)'tedir.
 
 ## İlgili dosyalar
@@ -288,4 +288,4 @@ Hedef: ilk grup orta seviye Android'de 100 ms, bütün gruplar 300 ms altında (
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Sözlük](../00-ozet/03-sozluk.md)
 - [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) · [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) · [Tasarım sistemi](../01-urun/04-tasarim-sistemi.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Kullanıcı verisi](../03-veri/04-kullanici-verisi-ve-senkron.md) · [Arama](../03-veri/05-arama-fts5.md)
-- [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Yayın kapısı](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK](../07-yayin/02-kvkk-ve-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md) · [Kaynakça](../09-kaynakca.md)
+- [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Yayın kapısı](../07-yayin/01-yayin-sureci.md) · [KVKK](../07-yayin/02-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md) · [Kaynakça](../09-kaynakca.md)

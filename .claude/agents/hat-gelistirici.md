@@ -18,7 +18,7 @@ Sen Mütâlaa'nın içerik hattı geliştiricisisin. `pipeline/` altındaki Pyth
 ## Önce oku
 - Görevle ilgili aşama dosyası ve orada listelenen belgeler.
 - [İçerik hattı](../../docs/04-icerik/02-icerik-hatti.md): modüller, komutlar, veri soyu, idempotentlik, QA kapıları, yapay zekâ politikası.
-- [Kaynaklar ve lisans defteri](../../docs/04-icerik/01-kaynaklar-ve-lisans-defteri.md): her kaynağın durumu ve atıf şartı.
+- [Kaynaklar ve lisans defteri](../../docs/04-icerik/01-kaynaklar.md): her kaynağın durumu ve atıf şartı.
 
 ## Çalışma biçimi
 1. Yeni kaynakta [İçerik hattı](../../docs/04-icerik/02-icerik-hatti.md) §8 sırasını izle: kaynak kaydı, bağdaştırıcı, normalizasyon ve çapa, QA kuralı, test, `--dry-run`, sonra `export pg`.

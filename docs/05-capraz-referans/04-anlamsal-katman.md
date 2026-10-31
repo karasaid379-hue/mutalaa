@@ -136,7 +136,7 @@ GROUP BY anchor ORDER BY rrf DESC LIMIT 20;
 - **API yalnız çapa listesi döndürür.** İstemci metni yüklü paketten okur. Paket yüklü değilse adres ve "İndir" görünür. Sunucu istemcinin derleme türüne göre süzer; mağaza istemcisi yalnız `serbest` kaynakların çapalarını alır (K-06).
 - **Sorgu genişletme:** Osmanlıca ağırlıklı dağarcıkta yoğun modeller zorlanabilir. Tam metin tarafı kök katmanıyla genişletilir: "sabır" → ص ب ر → sabr, sâbir, musâbere (rapor). Sonuç gerekçe çipleri "aynı kök" ya da "anlamca yakın" gösterir.
 - **Yeniden sıralama** başlangıçta kullanılmaz. Cohere'de 1.000 arama yaklaşık 2 $ tutar ve günde 10 bin sorgu ayda yaklaşık 600 $ eder ([apicostcalc](https://apicostcalc.com/cohere-vs-voyage-vs-jina-rerank-cost-calculator.html)). Gerekirse kendi barındırdığımız bir model denenir; Qwen3-Reranker ve bge-reranker-v2-m3 lisansları Doğrulanacak.
-- **KVKK:** sorgu metni hesap kimliğiyle kaydedilmez; yalnız toplu sayaç tutulur, istek sınırı uygulanır. Sunucu konumu ve yurt dışı aktarım [KVKK dosyasına](../07-yayin/02-kvkk-ve-gizlilik.md) ve barındırma kararına (K-20) bağlıdır.
+- **KVKK:** sorgu metni hesap kimliğiyle kaydedilmez; yalnız toplu sayaç tutulur, istek sınırı uygulanır. Sunucu konumu ve yurt dışı aktarım [KVKK dosyasına](../07-yayin/02-gizlilik.md) ve barındırma kararına (K-20) bağlıdır.
 - **Gömme servisi:** sorgu, külliyatla aynı modelle gömülmelidir. Seçenekler: kendi sunucumuzda küçük model (Qwen3-0.6B ya da BGE-M3, CPU gecikmesi ölçülecek) ya da API. API yolu külliyatın da aynı API ile gömülmesini ve metnin üçüncü tarafa gitmesini gerektirir (Açık soru 4).
 
 ## 9. Cihazda isteğe bağlı seçenek
@@ -175,5 +175,5 @@ GROUP BY anchor ORDER BY rrf DESC LIMIT 20;
 - [Bağlantı modeli](./01-baglanti-modeli.md) · [İktibas tespiti](./02-iktibas-tespiti.md) · [Kök ve lemma](./03-kok-ve-lemma.md)
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Genel mimari](../02-mimari/01-genel-mimari.md) · [Backend API](../02-mimari/05-backend-api.md)
 - [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Arama](../03-veri/05-arama-fts5.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [KVKK](../07-yayin/02-kvkk-ve-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
+- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [KVKK](../07-yayin/02-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
 - [Fazlar](../08-yol-haritasi/01-fazlar.md) · [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) · [Kaynakça](../09-kaynakca.md)
