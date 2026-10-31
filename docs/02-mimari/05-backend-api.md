@@ -1,7 +1,7 @@
 # Backend API
 
-> **Sürüm:** 1.4 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
+> **Sürüm:** 1.5 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu dosya ASP.NET Core 10 çözümünü, uçları, kimlik doğrulamayı, hata modelini, EF Core kurallarını ve Yayınlayıcı konsolunu tanımlar. Tablolar [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md), paket ve manifest biçimi [İçerik paketleri](../03-veri/03-icerik-paketleri.md), kapı kuralları [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) dosyasındadır.
 
@@ -323,6 +323,12 @@ Domain testleri test vektörlerini, `LicenseGate` matrisini ve `tr-TR` kültür�
 4. İmza algoritması, JSON kanonikleştirme, anahtar saklama ve değişimi ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) IP-7).
 5. **Çözüldü (19 Ekim 2026):** paket adı `kelime-kok`; `tr_form` bu pakettedir. `tr_root_index` QAC'ye bağlıdır: `core`'daki meal birimleri için `kelime-kok`'ta, diğer metin paketlerinde kendi paketinde, Risale için `risale-dizin`'de durur ve kaynağın lisansıyla süzülür ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) §1, §3.2, §3.3).
 6. Hesap silmede bekleme süresi (eski planda 30 gün) ve IP saklama süresi ([KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md)).
+
+## 13. Ses (K-41)
+
+- **v1'de ses için API ucu yoktur.** Uygulama ses kataloğunu ve zamanlamayı paketlerden (`ses-katalog`, `ses-zaman-{kayit}`), ses dosyalarını içerik deposundaki aynadan (`audio/{kayit}/{dosya_surumu}/{sss}.mp3`) alır; ASP.NET arka ucu ses baytlarını iletmez ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme), [Ses sistemi](../06-mobil/02-ses-sistemi.md)).
+- **Yayınlayıcı** ses paketlerini üretir ve ayna dosyalarını depoya yükler (A27.2). Ses kaynaklarının lisans durumu görünürlüğü kısıtlamaz (K-41 madde 10); P-01 ve P-03 ses kaynak kayıtlarında `serbest` değeriyle geçer. Kurul başvurusu genel yayın sürecidir (A34).
+- **Quran Foundation bağdaştırıcısı (v1.x).** Production erişimi gelince A14 API'sine bir uç eklenir: belirteç ve `client_secret` sunucuda (`dotnet user-secrets`), istemciye yalnız ses adresi ve zamanlama gider; QF içeriği Content Sync kurallarıyla (en az 7 günde bir eşitleme) tutulur ([Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md) §3.5).
 
 ## İlgili dosyalar
 

@@ -1,7 +1,7 @@
 # Tasarım Sistemi: Sade Osmanlı
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-24](../00-ozet/02-karar-defteri.md#k-24--tasarım-dili) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları)
+> **Sürüm:** 1.2 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-24](../00-ozet/02-karar-defteri.md#k-24--tasarım-dili) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu dosya "Sade Osmanlı" tasarım dilinin jetonlarını, tipografisini, ölçeklerini, hareket kurallarını, bileşenlerini, motif ve simge kurallarını, erişilebilirlik kontrol listesini ve jetonların koda nasıl aktığını tanımlar. Brifteki ve rapordaki değerler aynen kullanılır; bu dosyanın eklediği değerler "öneri" diye işaretlidir. Kontrast oranları WCAG formülüyle hesaplandı; rapordaki değerler yeniden hesaplanınca aynı çıktı.
 
@@ -184,7 +184,7 @@ Genel bileşenler React Native Reusables'tan gelir (düğme, iletişim kutusu, s
 | `Breadcrumb` | Kırıntı izi | tek satır; taşarsa baştan "…" | Her öğe düğme |
 | `ChipSlot` | Okuyucunun altındaki tek çip yuvası | geri dönüş · okunan âyet · etkin âyet · boş | Zincir açıkken `BackChip`, yoksa `FollowChip`; iki çip birlikte görünmez ([Okuma deneyimi §9](./02-okuma-deneyimi.md#9-atla-ve-dön)) |
 | `BackChip`, `FollowChip` | "↩ Okuduğun yere dön" ve "Burada kal"; "Okunan âyete dön", "Etkin âyete git" | `ChipSlot` içinde | `BackChip` iki ayrı 44 pt hedef taşır |
-| `MiniPlayer`, `PlayerSheet`, `ReciterRow` | Sekme üstü oynatıcı; Dinleme sayfası (ana, hafız listesi, aralık seçici iç görünümleri); hafız satırı ve ön dinleme | çalıyor · duraklatıldı · yükleniyor · hata · indirilmiş | İlerleme yazıyla da okunur |
+| `MiniPlayer`, `PlayerSheet`, `ReciterRow` | Sekme üstü oynatıcı; Dinleme sayfası (ana, okuyucu listesi, aralık seçici iç görünümleri); okuyucu kaydı satırı, ön dinleme ve "Cihazda" rozeti | çalıyor · duraklatıldı · yükleniyor · hata · indirilmiş | İlerleme yazıyla da okunur |
 | `SegmentedControl`, `FontSizeSlider` | "Sayfa · Meal", "Meal · Tefsir", biçim seçimleri; kademeli boyut ve canlı önizleme | seçili · devre dışı | Radyo grubu rolü; kaydırıcının artı ve eksi düğmeleri de var |
 | `StorageRow` | Paket satırı: ad, boyut, sürüm, lisans | indirilmedi · kuyrukta · iniyor % · duraklatıldı · indirildi · güncelleme var · hata | Yüzde yazıyla |
 | `LicenseBadge`, `LicenseGate` | Lisans durumu rozeti; lisans paneli | Durum adları yalnız `dev` derlemesinde | |
@@ -212,7 +212,7 @@ Kaynak: araştırma raporu ve tasarım notu ([Kaynakça](../09-kaynakca.md)).
 ## 8. İkonografi
 
 - Tek bir çizgi simge takımı kullanılır: 24 pt ızgara, 1,5 pt çizgi, yuvarlak uçlar; IBM Plex Sans'ın ağırlığına uyar. Takım seçimi Doğrulanacak: Expo SDK 56'dan beri `@expo/vector-icons` yerini `@react-native-vector-icons/*` paketlerine bırakıyor ([Expo SDK 56](https://expo.dev/changelog/sdk-56)); React Native Reusables'ın kullandığı takım ve lisansı ayrıca okunmalı.
-- Alana özgü simgeler ayrıca çizilir: mushaf, meal, tefsir, hadis, Risale, kök, iktibas, âyet sonu, secde, cüz, hafız, hatim, lügat, bağlantı, geri dönüş.
+- Alana özgü simgeler ayrıca çizilir: mushaf, meal, tefsir, hadis, Risale, kök, iktibas, âyet sonu, secde, cüz, okuyucu, hatim, lügat, bağlantı, geri dönüş.
 - Sekme simgeleri her zaman yazılı etiketle görünür. Yalnız simgeden oluşan düğme erişilebilirlik etiketi taşır.
 - Anlamlı simgeler yazı boyutuyla büyür ([Apple HIG Tipografi](https://developer.apple.com/design/human-interface-guidelines/typography)).
 - Sağdan sola düzende yalnız gezinme okları (sayfalayıcıdaki ‹ ›) çevrilir. Diğer simgeler çevrilmez ([Apple HIG RTL](https://developer.apple.com/design/human-interface-guidelines/right-to-left)).

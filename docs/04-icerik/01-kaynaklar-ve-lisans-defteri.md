@@ -1,6 +1,6 @@
 # Kaynaklar ve Lisans Defteri
-> **Sürüm:** 1.6 · **Tarih:** 28 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
+> **Sürüm:** 1.7 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu defter, Mütâlaa'ya giren ya da girmesi düşünülen her içerik kaynağının lisans durumunu tutar. Editoryal veritabanındaki her `source` satırı buradaki bir kayıtla aynı kimliği taşır. Yayınlayıcının lisans kapısı yalnız `license_status` ve `kurul_onay` alanlarına bakar ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)). Defterde kaydı olmayan kaynak içerik hattına alınmaz.
 
@@ -52,11 +52,15 @@ K-06 güncellemesine (18 Ekim 2026) göre `internal` derlemeler davetli test kul
 | `risale-kelime-frekans` | Kelime-Frekans deposu, sıklık sütunları | `serbest` | Evet (kelime ve sıklık) | Gerekmez | Sıklık kullan, anlam kullanma |
 | `lugat-redhouse-1890` | Redhouse, A Turkish and English Lexicon | `serbest` | Evet | Gerekmez | Kullan |
 | `lugat-kamus-i-turki`, `lugat-naci` | Kâmûs-ı Türkî, Lugat-ı Nâci | `bekliyor` | Hayır (Doğrulanacak) | Gerekmez | Internet Archive taramaları var; kaynak ve baskı seçimi Doğrulanacak (§3.6) |
-| `ses-everyayah`, `ses-quranicaudio` | Âyet ses dosyaları | `kapali` | Hayır | Evet | Hafız başına yazılı izin |
-| `ses-qf-api` | Quran Foundation ses API'si | `bekliyor` | Hayır (QF şartı) | Evet | Akış için QF şartlarıyla |
-| `ses-turk-hafiz-*` | Türk hafızlar | `kapali` | Hayır | Evet | Doğrudan görüşme |
+| `ses-everyayah`, `ses-quranicaudio` | Âyet ses dosyaları | `kapali` | Hayır | Evet | Kullanılmaz (K-41: sure dosyası yok, kopyalar) |
+| `ses-qf-api` | Quran Foundation ses API'si | `bekliyor` | Hayır (QF şartı) | Evet | v1.x arka uç bağdaştırıcısı (K-41) |
+| `ses-turk-hafiz-*` | Türk hafızlar | `kapali` | Hayır | Evet | Kullanılmaz: hafız sesi alınmaz (K-40) |
 | `ses-kfgqpc-meal` | KFGQPC sesli meal çevirileri | `bekliyor` | Hayır (Doğrulanacak) | Evet (çıkarım) | Türkçe sürüm Doğrulanacak |
-| `quran-align` | quran-align kelime zamanlamaları | `serbest` | Evet | Ses paketiyle | Eşleştiği dosyalarla |
+| `quran-align` | quran-align kelime zamanlamaları | `serbest` | Evet | — | Kullanılmaz (K-41: âyet başına EveryAyah dosyalarına bağlı) |
+| `ses-mp3quran` (A27.2'de açılır) | MP3Quran sure dosyaları (aynaya bir kez alınır) | `serbest` (K-41 madde 10) | Evet | Evet (genel başvuru) | Kullan: ayna kaynağı |
+| `ses-tarteel-cdn` (A27.2'de açılır) | Tarteel CDN sure dosyaları (aynaya bir kez alınır; çalışma anında bağlanılmaz) | `serbest` (K-41 madde 10) | Evet | Evet (genel başvuru) | Kullan: ayna kaynağı |
+| `zamanlama-qud` (A27.2'de açılır) | QUD v4.0.0 âyet ve kelime zamanlaması, katalog | `serbest` | Evet | Evet (genel başvuru) | Kullan: birincil zamanlama, CC BY 4.0 atfı |
+| `zamanlama-mp3quran` (A27.2'de açılır) | MP3Quran `ayat_timing` âyet zamanlaması | `serbest` (K-41 madde 10) | Evet | Evet (genel başvuru) | Kullan: yedek âyet zamanlaması |
 | `kaikki-tr` | Wiktionary / kaikki dökümleri | `bekliyor` | Evet (çıkarım) | Gerekmez | Lisans teyidi |
 | `mushaf-b-*` | Türk hattı sayfa görselleri | `kapali` | Hayır | Evet | Lisans gelince |
 
@@ -188,6 +192,21 @@ Kartlar özet tablodaki hükmün dayanağını, zorunlu atfı ve açık sorular�
   - Durum `bekliyor` kalır. Hukuki görüş değildir.
 
 ### 3.7 Ses ve zamanlama
+
+**K-41 (30 Ekim 2026).** Ses sistemi popüler okuyucuların hazır kayıtlarını kullanır: sure dosyaları MP3Quran ve Tarteel CDN'inden içerik hattıyla bir kez alınıp kendi depomuzdan sunulur, zamanlama QUD v4.0.0 ve MP3Quran'dan gelir ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme); [Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md)). Proje sahibinin kararıyla izin durumu bu yapıyı kısıtlamaz; kullanılan kaynakların kayıtları `serbest` açılır ve `notlar` alanı "proje sahibi kararı (K-41); yazılı izin dosyada yok" der. Sorumluluk proje sahibindedir. Aşağıdaki şart alıntıları bilgi içindir (okuma 30 Ekim 2026). Hukuki görüş değildir.
+
+**`ses-mp3quran` (A27.2'de açılır).** Anahtarsız katalog API'si ve sure başına MP3 ([API](https://www.mp3quran.net/eng/api)). Gizlilik sayfasında: "All rights are available to everyone, and we allow any visitor or developer to copy any material or use any link on the websites" ([privacy](https://www.mp3quran.net/eng/privacy)). Boyut ve özet vermez; adresler geçmişte taşındı.
+- **Atıf (taslak):** "Ses kaydı: {okuyucu}, MP3Quran." Kesin metin A32'de.
+
+**`ses-tarteel-cdn` (A27.2'de açılır).** QUD'un Maher, Sudais, Ghamdi ve Abdul Basit kayıtları bu CDN'deki sure dosyalarına hizalı. QUL belgesi: "do not hotlink audio-cdn.tarteel.ai at runtime" ([QUL](https://qul.tarteel.ai/resources/recitation/118/docs)); bu yüzden dosyalar yalnız içerik hattıyla bir kez alınır, uygulama bu adrese bağlanmaz.
+- **Atıf (taslak):** "Ses kaydı: {okuyucu}, Tarteel." Kesin metin A32'de.
+
+**`zamanlama-qud` (A27.2'de açılır).** QUD v4.0.0 (24 Ekim 2026), 102 kayıt için âyet ve kelime zamanlaması; lisans CC BY 4.0 (QUD'un kendi işi). NOTICE: kayıtlar okuyucunun ve asıl kaynağın malıdır ([NOTICE](https://raw.githubusercontent.com/QUD-Technologies/quranic-universal-audio/main/NOTICE.md)). Taslak PR #266 lisansı değiştirmeyi öneriyor; kayıt v4.0.0'a ve zip sha256'larına sabitlenir.
+- **Atıf:** "Zamanlama: Quranic Universal Audio (QUD), CC BY 4.0." Bağlantı ve sürümle.
+
+**`zamanlama-mp3quran` (A27.2'de açılır).** `/api/v3/ayat_timing` âyet başlangıç ve bitişi (birim belgede yok, değerler ms ile uyumlu); kelime alanı yok. Yalnız aynı MP3Quran dosyasına bağlıysa yedek olarak kullanılır.
+
+**Önceki kayıtlar.** `ses-everyayah`, `ses-quranicaudio` ve `ses-turk-hafiz-*` `kapali` kalır ve kullanılmaz; `quran-align` `serbest` kalır ama kullanılmaz; `ses-qf-api` `bekliyor` kalır ve v1.x bağdaştırıcısıdır. Aşağıdaki eski notlar tarihsel kayıttır.
 
 **`ses-everyayah`, `ses-quranicaudio`, `ses-turk-hafiz-*`.** Açık lisans yok. AlQuran Cloud: "All audio files used on this website and third party libraries own and retain their respective copyrights."; okuyucular "may ask you to remove the conent [sic]" ([AlQuran Cloud](https://alquran.cloud/terms-and-conditions)). Moderatör: "the copyright still remains with the reciter" ([Islamic Network](https://community.islamic.network/d/231-clarification-on-licensing-and-usage-rights-for-quran-recitation-api)). Türk hafızlar için açık kaynak yok; Osman Şahin ve İshak Danış gibi hafızlarla doğrudan görüşülür (rapor).
 - **Atıf (taslak, 2026-10-26; kullanıcı onaylı taslak, kesin metin A34'te gözden geçirilir), `ses-everyayah`:** "Âyet ses kayıtları: EveryAyah; hak sahibi ilgili okuyucudur." (`kapali`.)
@@ -346,7 +365,7 @@ yeniden_kontrol = 2027-04-01
 | 4 | QAC | "commercial purposes" şartı bağışla yürüyen ücretsiz uygulamayı kapsar mı? Segmentlerin kelimede toplanması; yapay zekâ istemlerinde etiketler; hak sahibi kim (6 soru). Yazı: [QAC lisans sorusu](../yazismalar/qac-lisans.md) | `kelime-kok` paketi |
 | 5 | Tarteel (QUL) | Kullanılacak her kaynağın lisansı | QUL verileri |
 | 6 | Sunnah.com | Arapça metin ve numaralandırma izni | `hadis-kutub-i-sitte` |
-| 7 | Hafızlar | Yazılı izin | `ses-{hafiz}` |
+| 7 | — | (İptal: hafız sesi alınmaz, K-40) | — |
 | 8 | Avukat | Risale iç kullanımı ve dizin yolu; GPL verinin dağıtımı; sipariş eserlerin (Elmalılı, Tecrîd) hak durumu; aktarımlarımızın ve kelime anlamlarının lisansı | Risale, `kelime-kok`, Elmalılı |
 | 9 | Kurul | Başvuru usulü, ücret ve süre; Medine fontlarının kabulü; kelime anlamlarının meal sayılıp sayılmadığı. Yazı: [Kurul ön görüşme talebi](../yazismalar/kurul-on-gorusme.md) (20 Ekim 2026 okumasına göre Kurul yönetmeliğinde ücret ya da süre hükmü yok; başvuru, Başkanlıkça belirlenen matbu formla yapılır, mobil uygulamaya özgü hüküm bulunamadı; ayrıntı yazışma dosyasının iç notlarındadır, sorular açık kalır) | Mağaza yayını |
 

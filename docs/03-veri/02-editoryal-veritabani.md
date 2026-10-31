@@ -1,7 +1,7 @@
 # Editoryal Veritabanı
 
-> **Sürüm:** 1.5 · **Tarih:** 28 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) · K-12 ([karar defteri](../00-ozet/02-karar-defteri.md))
+> **Sürüm:** 1.6 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) · K-12 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Editoryal veritabanı içeriğin tek doğruluk kaynağıdır. Python içerik hattı yazar, editör paneli onaylar, .NET yayınlayıcı okuyup SQLite paketlerini üretir. Mobil uygulama bu veritabanına bağlanmaz. Seçim PostgreSQL 18'dir; Türkçe ve Arapça tam metin yapılandırmaları hazırdır, anlamsal katman için pgvector eklenir (K-11). Geliştirme yerel Docker Compose'ta `postgres:18` ile çalışır ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)). Bu dosya diğer belgelerin önerdiği tabloları da kesin DDL olarak toplar (bölüm 11).
 
@@ -24,7 +24,7 @@ erDiagram
   root ||--o{ tr_root_index : "turkce gecis"
   xref ||--o{ xref_vote : "oy"
   source ||--o{ page_map : "duzen veya baski"
-  source ||--o{ audio_timing : "hafiz"
+  source ||--o{ audio_timing : "zamanlama"
 ```
 
 Birim çapalarına (`unit.anchor`) yabancı anahtar yoktur: `xref`, `review.hedef_anahtar`, `tr_root_index` ve `embedding` birimlere çapa dizgisiyle bağlanır. Bütünlüğü hat QA'sı ve yayın kapısı denetler. Çapa olmayan bağlar gerçek yabancı anahtardır: `review.xref_id` → `xref.id`; `tr_root_index.root_id` → `root.id`; `tr_root_index.tr_lemma_id` → `lemma.id`.
@@ -116,7 +116,9 @@ Durumların anlamı K-06'dadır: `serbest` kamu malı, açık lisans ya da yazı
 | `qac-morfoloji` | morfoloji | `bekliyor` | hayır | QAC'ye yazılı soru ([QAC SSS](https://corpus.quran.com/faq.jsp)) |
 | `tecrid-naim` · `tecrid-miras` | hadis_ceviri | `serbest` · `kapali` | hayır | Miras ciltleri 1 Ocak 2028'de serbest; `kamu_mali_tarihi = 2028-01-01` |
 | `risale-1956-1960`, `risale-asil-nusha` | risale | `kapali` | hayır | Metin avukat görüşüne kadar kapalı; sonra `ic_kullanim`, izinle ya da 1 Ocak 2031'de `serbest`. Asıl nüsha 2031'den sonra yalnız karşılaştırma için |
-| `quran-align` | zamanlama | `serbest` | ses paketiyle | CC BY 4.0 ([quran-align](https://raw.githubusercontent.com/cpfair/quran-align/master/README.md)) |
+| `quran-align` | zamanlama | `serbest` | — | CC BY 4.0; K-41 ile kullanılmıyor (âyet başına EveryAyah dosyalarına bağlı) |
+| `zamanlama-qud`, `zamanlama-mp3quran` (A27.2'de açılır) | zamanlama | `serbest` (K-41 madde 10) | `ses-zaman-{kayit}` | QUD v4.0.0 CC BY 4.0 (âyet ve kelime); MP3Quran yedek âyet zamanlaması ([Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md)) |
+| `ses-mp3quran`, `ses-tarteel-cdn` (A27.2'de açılır) | ses | `serbest` (K-41 madde 10) | aynadan, paket dışı | Dosyalar içerik hattıyla bir kez alınır, kendi depomuzdan sunulur |
 | `medine-604-duzen` | mushaf_duzeni | `bekliyor` | evet | Kaynak seçimi Açık soru |
 
 ## 4. `unit`
@@ -423,14 +425,14 @@ CREATE TABLE ayah_box (
 );
 
 CREATE TABLE audio_timing (
-  source_id      text NOT NULL REFERENCES source(slug), -- hafız ses kaynağı
+  source_id      text NOT NULL REFERENCES source(slug), -- zamanlama kaynağı (A07 şeması; A27.2 notuna bakın)
   anchor         text COLLATE "C" NOT NULL,           -- 'q:{sure}:{ayet}'
   file           text NOT NULL,                       -- paket içi yol: '002/255.mp3' ya da '002.mp3'
   file_sha256    char(64) NOT NULL,                   -- zamanlamanın bağlı olduğu bayt dizisi
   start_ms       integer NOT NULL,
   end_ms         integer NOT NULL,
   words          jsonb,                               -- [[kelime, start_ms, end_ms], …]
-  timing_source  text NOT NULL,                       -- 'quran-align' | 'editor'
+  timing_source  text NOT NULL,                       -- A07: 'quran-align' | 'editor'; K-41 sonrası 'qud' | 'mp3quran' | 'editor'
   data_version   text NOT NULL,
   PRIMARY KEY (source_id, anchor),
   CHECK (start_ms < end_ms)
@@ -440,7 +442,8 @@ CREATE TABLE audio_timing (
 - `page_map` satırının anlamı kaynağa göre değişir: Mod A'da satır, Mod B ve C'de sayfa, basılı baskıda sayfa başlangıcı. `sure_adi` ve `besmele` satırlarında çapa olarak surenin ilk âyeti yazılır. `glyphs` Mod A paketindeki `glyph_word` tablosunun kaynağıdır ([Mobil mimari](../06-mobil/01-mobil-mimari.md)). Düzen verisinin kaynağı Açık soru (`medine-604-duzen`, lisans defteri).
 - Basılı baskıda `source_id` şöyle seçilir. Tek baskıdan kendi aktarımımızı yaptığımız kaynakta (Elmalılı, Tecrîd) `source_id` birimin kaynağıdır (`elmalili-meal`, `elmalili-tefsir`, `tecrid-naim` …); baskı kimliği (ör. `elmalili-1935`) o kaynağın `baski_bilgisi` alanındadır ve cilt `volume` sütunundadır. Birden çok baskısı eşlenen eserde (Risale) her baskı `tur = 'baski'` olan ayrı bir kaynaktır ve `source_id` odur (bölüm 3).
 - `ayah_box` koordinatları görsel piksel uzayındadır. Yaklaşım Quran for Android'den alınmıştır, onun veri biçimi doğrulanmadı.
-- quran-align zamanlamaları yalnız hizalandıkları EveryAyah dosyaları için geçerlidir ([quran-align](https://raw.githubusercontent.com/cpfair/quran-align/master/README.md)); `file_sha256` dosya değişince satırın reddedilmesini sağlar. Çıktı biçiminin `words` dizisine dönüşümü Doğrulanacak.
+- **K-41 sonrası (A27.2 göçü).** Ses artık okuyucunun kaydına ait 114 sure dosyasıdır ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)). Aynı zamanlama kaynağı (QUD) birden çok kayda hizmet ettiği için `audio_timing` kayda bağlanır: kayıt kimliği sütunu eklenir ve birincil anahtar kayıt ile çapaya taşınır; `file` `'002.mp3'` biçimindedir, `file_sha256` aynadaki dosyanın özetidir, `words` QUD kelime satırlarıdır (`[kelime_no (1 tabanlı), start_ms, end_ms]`). Kayıtlar ve sure dosyaları (bayt, sha256, süre, `dosya_surumu`) için yeni tablolar eklenir. Tablo ve sütun adları, DDL ve EF göçü A27.2'de (`sunucu-gelistirici`, `ef-goc`) karara bağlanır ve bu bölüme yazılır; o zamana kadar yukarıdaki DDL A07 şemasıdır.
+- `file_sha256` dosya değişince satırın reddedilmesini sağlar; zamanlama yalnız katalogdaki `dosya_surumu` dosyalarıyla geçerlidir. quran-align zamanlamaları yalnız hizalandıkları EveryAyah dosyaları için geçerlidir ve K-41 ile kullanılmaz.
 
 ### 9.2 `embedding` (v1.x)
 

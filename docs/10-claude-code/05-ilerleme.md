@@ -9,8 +9,8 @@ Bu dosya aşamaların durumunu tutar. Aşağıdaki durum bloğu her oturumun ba�
 - Aktif aşama: A10 · Tanzil alımı, sürüyor (dal feat/a10-tanzil-alimi; K-39 yazıldı)
 - Son tamamlanan: A08 · CI iş akışları (2026-10-27)
 - Sıradaki: A11 (proje sahibinin tercihi, 2026-10-28: önce omurga A10–A13, sonra mobil A21–A32; kitaplar arkadan ham girip olgunlaşır; A09 insan adımları paralel ilerler)
-- Bekleyen insan adımları: İ-30 (Tanzil dosyalarının indirilmesi; A10.2 kanıtı için), İ-09, İ-10, İ-29 ve İ-17 (A09 için); İ-16 (kalan: EXPO_TOKEN, İ-15 Expo hesabına bağlı; A21/A34); İ-01 tamam (2026-10-28, kullanıcı bildirimi; yönetici ayarları ve Maestro ayrıntıları insan adımları dosyasında doğrulanmadı olarak duruyor); İ-04, İ-05, İ-06 tamam (2026-10-28, kullanıcı beyanıyla onaylandı; yazılı cevap dosyada yok, lisans durumları değişmedi); İ-07 gerekmiyor (hafız sesi alınmayacak, K-40); İ-02, İ-03, İ-08 taslakları hazır, gönderim ve onay bekliyor (öncelik İ-02; İ-08 artık Tanzil üst veri dosyasını da kapsıyor; İ-03 avukat soruları genişledi)
-- Son güncelleme: 2026-10-28
+- Bekleyen insan adımları: İ-30 (Tanzil dosyalarının indirilmesi; A10.2 kanıtı için), İ-09, İ-10, İ-29 ve İ-17 (A09 için); İ-16 (kalan: EXPO_TOKEN, İ-15 Expo hesabına bağlı; A21/A34); İ-01 tamam (2026-10-28, kullanıcı bildirimi; yönetici ayarları ve Maestro ayrıntıları insan adımları dosyasında doğrulanmadı olarak duruyor); İ-04, İ-05, İ-06 tamam (2026-10-28, kullanıcı beyanıyla onaylandı; yazılı cevap dosyada yok, lisans durumları değişmedi); İ-07 gerekmiyor (hafız sesi alınmayacak, K-40); İ-08 tamam (2026-10-28, kullanıcı beyanı; Tanzil yazılı cevabı dosyada yok); İ-02, İ-03 taslakları hazır, gönderim ve onay bekliyor (öncelik İ-02; İ-03 avukat soruları genişledi)
+- Son güncelleme: 2026-10-31
 <!-- durum:bitis -->
 
 ## Aşama tablosu
@@ -46,7 +46,7 @@ Durum değerleri: `bekliyor`, `sürüyor`, `tamam`, `engelli` (neden Not sütunu
 | A24 | Okuyucu: Mushaf C | bekliyor | | | | |
 | A25 | Seçim, kelime kartı, Bağlantılar | bekliyor | | | | |
 | A26 | Mushaf A | bekliyor | | | | |
-| A27 | Ses sistemi | bekliyor | | | | |
+| A27 | Ses sistemi | bekliyor | | | | A27.1 araştırması 2026-10-30 yapıldı ([Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md)); mimari K-41; belgeler yeni yapıya çekildi. Kod yazılmadı. Önkoşul: A24, A13, A29 (A29.4). Cihaz testleri kullanıcıya bırakılacak |
 | A28 | Arama ekranı | bekliyor | | | | |
 | A29 | Kütüphane ve Depolama yöneticisi | bekliyor | | | | |
 | A30 | Defterim, hatim ve yedekleme | bekliyor | | | | |
@@ -80,6 +80,7 @@ Her aşama oturumunun sonunda bir satır eklenir: `YYYY-AA-GG · Aşama · ne ya
 - 2026-10-27 · A09 (hazırlık, belge işi) · kitap edinimi analizi: Elmalılı, Tecrîd ve lügat kaynakları araştırıldı, 7 iddia bağımsız ajanlarla doğrulandı; K-38 yazıldı (dijital öncelikli edinim, Elmalılı'da kontrollü hazır metin, çıkarılmış metin kuralı, `taslak` başlangıç durumu; BÇ-43 çözüldü); FSEK m. 6/8 gerekçesi düzeltildi; BÇ-40 çözüldü (hukuki kısmı İ-03'te); 8 kaynak kaydı notu ve Redhouse lisans kopyası güncellendi; A09, A16, A37 ve ilgili belgeler eşitlendi; İ-29 ve R-21 açıldı · A09 kod adımları `/asama A09` ile (İ-09, İ-10, İ-29 ve İ-17 beklenir)
 - 2026-10-28 · Planlama · rakip uygulama incelemesi (Hayrat Risale-i Nur: seçili metni yapay zekâyla özetleme; RNK: yapay zekâ destekli arama; ikisi de soru-cevap yapmıyor); proje sahibi sırayı belirledi: önce omurga (A10–A13) ve mobil (A21–A32), kitaplar arkadan `dev` derlemede ham girip olgunlaşır · A10
 - 2026-10-28 · A10 · plan ve beş açılı denetim; K-39; dal feat/a10-tanzil-alimi · hat çatısı, bağdaştırıcı; İ-30 bekleniyor
+- 2026-10-30 · A27 (araştırma, belge işi) · sekiz araştırma (QUD, MP3Quran, Maqra/EveryAyah, Quran Foundation, okuyucu popülerliği, Expo ses ve dosya sistemi, başka sağlayıcılar, açık kaynak uygulama mimarileri); K-41 (7 okuyucu, 9 kayıt, sure dosyası + QUD zamanlaması, ayna, çevrimiçi öncelikli dinleme); BÇ-17, BÇ-33, BÇ-34 çözüldü; Ses sistemi 2.0, A27 2.0 ve ilgili belgeler eşitlendi · A10'a dönülür (İ-30 bekleniyor)
 
 ## İlgili dosyalar
 

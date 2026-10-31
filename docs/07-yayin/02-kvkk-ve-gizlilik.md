@@ -1,7 +1,7 @@
 # KVKK ve gizlilik
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Sürüm:** 1.2 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 > **Hukuki görüş değildir.** KVKK bulguları araştırma raporundan ve raporun dayandığı hukuk bürosu ve danışmanlık özetlerinden gelir. v1 mağazaya çıkmadan ve v1.x'te hesap açılmadan önce bir avukat bu dosyayı inceler.
 
@@ -57,6 +57,8 @@ Ayıklama kuralları birim testiyle kilitlenir: fikstür bir olay içine not met
 ### 2.4 İçerik indirme ve CDN kayıtları
 
 Paket ve ses indirme isteği, her internet isteği gibi cihazın IP adresini içerik deposuna ve CDN'e ulaştırır. Önerilen depo Cloudflare R2'dir ([K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı)); rapordaki bütün aday sağlayıcılar veriyi yurt dışında tutuyor. Sağlayıcının erişim kayıtlarının KVKK açısından nasıl değerlendirileceği ve standart sözleşme gerekip gerekmediği Açık soru; avukata sorulur. Tasarım kuralları: indirme adresine kullanıcıya özgü parametre eklenmez, kendi erişim günlüğümüz açılmaz (öneri).
+
+Ses de aynı yoldan gelir: çevrimiçi dinleme ve indirme yalnız kendi içerik depomuzdaki aynaya istek gönderir; uygulama üçüncü taraf ses sunucularına (MP3Quran, Tarteel CDN vb.) bağlanmaz ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) madde 4). v1.x Quran Foundation bağdaştırıcısında istemci QF ses adreslerine giderse bu bölüm ve veri envanteri güncellenir.
 
 ### 2.5 Gizlilik metni (v1 taslağı)
 

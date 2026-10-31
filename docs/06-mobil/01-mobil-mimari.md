@@ -1,7 +1,7 @@
 # Mobil mimari
 
-> **Sürüm:** 1.2 · **Tarih:** 24 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)
+> **Sürüm:** 1.3 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu dosya Expo uygulamasının iç yapısını tanımlar: klasörler, rotalar, durum yönetimi, veri erişimi, üç mushaf modunun çizimi, sağdan sola sayfalayıcı, performans bütçeleri, derleme türleri, hata yönetimi, hata izleme, erişilebilirlik ve dil. Ses ayrıntısı [Ses sistemi](./02-ses-sistemi.md), paket indirme ve silme ayrıntısı [Depolama yöneticisi](./03-depolama-yoneticisi.md) dosyasındadır. Ekranların görünüşü [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md), okuma akışı [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) dosyasında anlatılır.
 
@@ -39,7 +39,7 @@ Kaynak: [Expo SDK 58 beta](https://expo.dev/changelog/sdk-58-beta).
 
 | Değişiklik | Etkisi | Yapılacak |
 |---|---|---|
-| expo-audio kilit ekranında oynatma listesi | Kesintisiz liste motoru açılabilir | [Ses sistemi](./02-ses-sistemi.md), bölüm 4 |
+| expo-audio kilit ekranında oynatma listesi (SDK 58.0.0) | `PlaylistEngine` varsayılan motor; kilit ekranında sonraki/önceki sure | [Ses sistemi](./02-ses-sistemi.md), bölüm 2 ve 4 ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)) |
 | expo-sqlite libSQL desteği kaldırıldı | Kullanmıyoruz | — |
 | expo-sqlite `NativeArrayBuffer` yerine `ArrayBuffer` | Mushaf A font BLOB okuma kodu etkilenir | Font önbelleği testleri yeniden koşulur |
 | Expo Router yerel sekmeler kararlı | Mini oynatıcı yerleşimi yeniden denenir | Doğrulanacak |
@@ -117,7 +117,7 @@ flowchart TD
   L --> D
   F --> P[src/packs: manifest, kurulum]
   P --> D
-  X --> E[src/features/audio: AudioEngine]
+  X --> E[src/features/audio: AudioEngine (PlaylistEngine, SingleEngine)]
   D --> N1[expo-sqlite]
   E --> N2[expo-audio]
   P --> N3[expo-file-system]
@@ -143,9 +143,9 @@ app/
 │  ├─ ayarlar/index.tsx
 │  ├─ ayarlar/gorunum.tsx              tema, yazı boyutları
 │  ├─ ayarlar/mushaf.tsx               mushaf modu, sayfa çevirme yönü
-│  ├─ ayarlar/hafiz.tsx
+│  ├─ ayarlar/okuyucu.tsx
 │  ├─ ayarlar/depolama/index.tsx       Depolama yöneticisi
-│  ├─ ayarlar/depolama/[packId].tsx    paket ya da hafız ayrıntısı
+│  ├─ ayarlar/depolama/[packId].tsx    paket ya da okuyucu kaydı ayrıntısı
 │  ├─ ayarlar/kaynaklar.tsx            kaynaklar ve lisanslar
 │  └─ ayarlar/kurul.tsx                Kurul onay bilgisi
 ├─ not/[id].tsx                        not düzenleyici; kök düzeyinde tam ekran modal
@@ -168,7 +168,7 @@ Ağacın tamamı ve eklemeleri (Fihrist, Oku içindeki tefsir, hatim modalı, di
 
 | Durum | Yer | Kalıcılık | Örnek |
 |---|---|---|---|
-| Tercihler | Zustand `useSettings` + MMKV; senkrona girenler ayrıca `user.db` `setting` | Kalıcı | Tema, mushaf modu, yazı boyutları, hafız |
+| Tercihler | Zustand `useSettings` + MMKV; senkrona girenler ayrıca `user.db` `setting` | Kalıcı | Tema, mushaf modu, yazı boyutları, ses kaydı (okuyucu) |
 | Okuyucunun geçici durumu | Zustand `useReader` | Bellek | Açık sayfa, seçim, geri dönüş yığını |
 | Okuma konumu | `user.db` `reading_position` (cihaz başına) + MMKV kopyası; atlama zinciri açıkken yazılmaz | Kalıcı | Son âyet ve sayfa |
 | İçerik sorguları | TanStack Query; anahtar paket sürümünü içerir | Bellek önbelleği | Sayfanın âyetleri, meal, tefsir paragrafı |
@@ -252,7 +252,7 @@ Oynatıcı aktörü kökte bir kez oluşur ve gezinmeden etkilenmez. Bileşenler
 | Dosya | İçerik | Bağlantı | Yazma | Konum |
 |---|---|---|---|---|
 | `core-<sürüm>.db` ve ATTACH edilen metin paketleri | Kur'an, meal, bağlantı indeksleri; `tefsir-elmalili`, `hadis-*`, `risale-*`, `kelime-kok` (QAC kaynaklı kök ve lemma ile Türkçe kelime anlamları; bugün yalnız `dev`) | Tek içerik bağlantısı | Yok (`PRAGMA query_only`) | `Paths.document/mutalaa/packs/` |
-| `mushaf-a-cuz-NN`, `mushaf-b`, `ses-{hafiz}` paketleri | Font, görsel, ses dizini, zamanlama | Paket başına ayrı salt okunur bağlantı (LRU) | Yok | Aynı |
+| `mushaf-a-cuz-NN`, `mushaf-b`, `ses-katalog`, `ses-zaman-{kayit}` paketleri | Font, görsel, ses kataloğu, âyet ve kelime zamanlaması (ses dosyaları paket dışında, aynadan) | Paket başına ayrı salt okunur bağlantı (LRU) | Yok | Aynı |
 | `user.db` | `bookmark`, `highlight`, `note`, `reading_position`, `hatim`, `hatim_page`, `collection`, `setting` | Drizzle | Var; WAL | `Paths.document/mutalaa/db/` |
 | `device.db` | `installed_pack`, `download_job`, `audio_file` | Drizzle | Var; WAL | Aynı |
 
@@ -385,7 +385,7 @@ export type WordAnchor = `q:${number}:${number}:${number}`;
 
 export interface HighlightInput {
   activeAyah?: AyahAnchor;        // sesle okunan âyet
-  activeWord?: WordAnchor;        // yalnız zamanlaması olan hafızlarda
+  activeWord?: WordAnchor;        // yalnız kelime zamanlaması olan kayıtlarda, kelimeTakibi açıkken
   selection?: { from: WordAnchor; to: WordAnchor };
   user: { anchor: string; color: string; label: string }[]; // vurgular; renk tek başına anlam taşımaz
 }
@@ -771,6 +771,7 @@ const MATRIX = {
   kelimeKok:         { dev: 'paket', internal: 'paket', public: 'paket' },   // paket `bekliyor`: bugün yalnız dev
   tecvidRenkleri:    { dev: true,  internal: false,   public: false },   // V4 doğrulanmadı
   mealSesi:          { dev: true,  internal: false,   public: false },   // v1.x
+  kelimeTakibi:      { dev: true,  internal: false,   public: false },   // QUD kelime eşlemesi doğrulanınca (K-41 madde 9)
   hesapVeSenkron:    { dev: false, internal: false,   public: false },   // v1.x (K-15)
   tasarimVitrini:    { dev: true,  internal: true,    public: false },
   gelistiriciMenusu: { dev: true,  internal: true,    public: false },

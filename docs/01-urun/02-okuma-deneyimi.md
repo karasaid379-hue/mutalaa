@@ -1,7 +1,7 @@
 # Okuma Deneyimi
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses)
+> **Sürüm:** 1.2 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu dosya okurun gördüğünü ve yaptığını tanımlar. Uygulama ayrıntısı [Mobil mimari](../06-mobil/01-mobil-mimari.md), rota ve ekran listesi [Mobil ekranlar](./03-mobil-ekranlar.md), görsel kurallar [Tasarım sistemi](./04-tasarim-sistemi.md) dosyasındadır.
 
@@ -75,7 +75,7 @@ Ekran döndüğünde ya da panel kapandığında çapa ve ofset geri yüklenir. 
 |          (mushaf sayfası)            |
 | < Sonraki sayfa    42   Önceki >     |  sağdan sola düzende "Sonraki" solda
 | [ <- Okuduğun yere dön (Bakara 255) ]|  tek çip yuvası (bölüm 9, kural 9)
-| > Bakara · 255 · Hafız adı           |  mini oynatıcı
+| > Bakara · 255 · Okuyucu adı         |  mini oynatıcı
 | Oku | Kütüphane | Ara | Defterim | Ayarlar |
 +--------------------------------------+
 ```
@@ -178,11 +178,11 @@ flowchart LR
 
 Durum makinesi [Ses sistemi](../06-mobil/02-ses-sistemi.md) dosyasındadır.
 
-**Mini oynatıcı** sekme çubuğunun üstünde durur: ▶/❚❚, "Bakara · 255", hafız adı, aralık ilerleme halkası. Dokunuş Dinleme sayfasını (modal olmayan alt sayfa) açar; çalma yoksa gizlenir.
+**Mini oynatıcı** sekme çubuğunun üstünde durur: ▶/❚❚, "Bakara · 255", okuyucu adı, aralık ilerleme halkası. Dokunuş Dinleme sayfasını (modal olmayan alt sayfa) açar; çalma yoksa gizlenir.
 
 | Denetim | Seçenekler |
 |---|---|
-| Hafız | Liste, 5 saniyelik ön dinleme, sık kullanılanlar |
+| Okuyucu | Liste (kayıt: murattal ya da mücevved), 5 saniyelik ön dinleme, sık kullanılanlar, "Cihazda" rozeti |
 | Kapsam | Bu âyet · âyet aralığı · sayfa · sure · cüz (Tanzil "Play Scope") |
 | Tekrar | Her âyeti ×1, 2, 3, 5, 10 · aralığı ×1, 2, 3, 5, 10 |
 | Âyet arası bekleme | Kapalı · 0,5× · 1× · 1,5× · 2× âyet süresi ([Ses sistemi §5.1](../06-mobil/02-ses-sistemi.md#51-bağlam); [Quran.com `delayMultiplier`](https://github.com/quran/quran.com-frontend-next/blob/production/src/xstate/actors/repeatMachine/repeatMachine.ts)) |
@@ -193,8 +193,8 @@ Durum makinesi [Ses sistemi](../06-mobil/02-ses-sistemi.md) dosyasındadır.
 - **Vurgu.** Çalan âyet zemin tonu ve kenar çizgisiyle, çalan kelime alt çizgiyle işaretlenir. Kelime vurgusu yalnız kelime zamanlaması olan okuyucularda yapılır ([quran-align](https://raw.githubusercontent.com/cpfair/quran-align/master/README.md)). A'da glifler, B'de âyet kutuları, C'de metin parçaları, Âyet âyet'te âyet öğesi işaretlenir.
 - **Takip et.** Çalan âyet sayfadan çıkınca sayfa çevrilir ya da liste kayar. Elle kaydırınca takip kapanır ve çip yuvasında "Okunan âyete dön" çıkar; atlama zinciri açıksa yuvayı geri dönüş çipi tutar (bölüm 9, kural 9). Hareketi Azalt açıkken doğrudan atlanır.
 - **Oynatma birimi.** v1 Expo SDK 57 üzerinde her âyet dosyasını ayrı çalar. Kesintisiz oynatma listeleri SDK 58 ile gelir ([Expo SDK 58 beta](https://expo.dev/changelog/sdk-58-beta)). Âyet geçişindeki boşluk prototipte ölçülür (Doğrulanacak); ayrıntı [Ses sistemi](../06-mobil/02-ses-sistemi.md).
-- **Arka plan ve kilit ekranı.** Kilit ekranında âyet ve hafız adı görünür; ileri ve geri âyet atlar. Android'de kilit ekranı kontrolü etkin değilse ses yaklaşık 3 dakika sonra kesilir ([expo-audio](https://docs.expo.dev/versions/latest/sdk/audio/)). Telefon görüşmesi ve kulaklık çıkarılması çalmayı duraklatır.
-- **Ses yoksa.** İndirilmemiş surede "Bu sure indirilmedi · İndir". Derlemede izinli hafız yoksa Dinleme sayfası "Bu sürümde izinli hafız sesi yok" der ve mini oynatıcı görünmez. Sesli Kur'an Kurul onayına tabidir ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)).
+- **Arka plan ve kilit ekranı.** Kilit ekranında sure ve okuyucu adı görünür; sonraki ve önceki düğmeleri sureler arasında geçer (expo-audio'da âyet düzeyinde kilit ekranı düğmesi yok; [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)). Sure bitince sonraki sure çalar ("Sonraki sureye geç", varsayılan açık); Nâs'ın sonunda "Bütün Kur'an'ı tekrarla" kapalıysa çalma durur. Android'de kilit ekranı kontrolü etkin değilse ses yaklaşık 3 dakika sonra kesilir ([expo-audio](https://docs.expo.dev/versions/latest/sdk/audio/)). Telefon görüşmesi ve kulaklık çıkarılması çalmayı duraklatır.
+- **Ses yoksa.** İlk kullanımda hiçbir şey indirmeden çevrimiçi dinlenir. Bağlantı yoksa yalnız indirilmiş sureler çalınabilir; indirilmemiş surede "Bu sure indirilmedi · İndir" görünür. Sure ya da okuyucunun bütün Kur'an'ı Dinleme sayfasından indirilir ([Ses sistemi](../06-mobil/02-ses-sistemi.md) §11).
 
 ## 11. Hadis okuyucu
 

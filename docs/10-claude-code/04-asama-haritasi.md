@@ -1,6 +1,6 @@
 # Aşama haritası
 
-> **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.2 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
 
 Bu dosya [Fazlar](../08-yol-haritasi/01-fazlar.md) planını Claude Code'un yürütebileceği aşamalara böler. Her aşamanın kendi dosyası vardır ve `/asama <no>` ile başlatılır. Bir aşama tek oturumda bitmek zorunda değildir; aşama dosyasındaki adımlar (`A07.1`, `A07.2` …) tek oturumluk iştir. Aşamaların durumu [İlerleme](./05-ilerleme.md) dosyasında, Claude Code'un yapamadığı işler [İnsan adımları](./06-insan-adimlari.md) dosyasındadır.
@@ -36,7 +36,7 @@ Bu dosya [Fazlar](../08-yol-haritasi/01-fazlar.md) planını Claude Code'un yür
 | [A24](./asamalar/A24-okuyucu-mushaf-c.md) | Okuyucu: Mushaf C, okuma biçimleri, sayfalayıcı | 2 | A23, A11 (A11.2, A11.4–A11.6) | — |
 | [A25](./asamalar/A25-secim-kelime-karti-baglantilar.md) | Seçim, kelime kartı, Bağlantılar paneli, geri dönüş | 2 | A24 | — |
 | [A26](./asamalar/A26-mushaf-a.md) | Mushaf A (Medine düzeni) | 2 | A24 | İ-06 |
-| [A27](./asamalar/A27-ses-sistemi.md) | Ses sistemi | 2 | A24 | İ-07 (yayın için) |
+| [A27](./asamalar/A27-ses-sistemi.md) | Ses sistemi: hazır kayıtlar, ayna, çevrimiçi öncelikli dinleme, isteğe bağlı indirme | 2 | A24, A13, A29 (A29.4; yalnız ses indirmesi için) | İ-07 (gerekmiyor), İ-18 (canlı ayna), İ-15 (iOS denemesi) |
 | [A28](./asamalar/A28-arama-ekrani.md) | Arama ekranı | 2 | A12, A24 | — |
 | [A29](./asamalar/A29-kutuphane-ve-depolama.md) | Kütüphane ve Depolama yöneticisi | 2 | A23 | — |
 | [A30](./asamalar/A30-defterim-ve-ilerleme.md) | Defterim, hatim ve yedekleme | 2 | A23, A25 | — |
@@ -100,6 +100,8 @@ flowchart LR
   A24 --> A25
   A24 --> A26
   A24 --> A27
+  A13 --> A27
+  A29 --> A27
   A24 --> A28
   A12 --> A28
   A23 --> A29
@@ -127,7 +129,7 @@ A33'ün önkoşulu A24 ile A32 arasındaki bütün aşamalardır; grafikte yaln�
 - **Hukuk önce başlar.** A01'deki yazışmalar Faz 0'ın ilk işidir; Kurul ön görüşmesi ve avukat görüşü haftalar sürebilir. Bekleme süresi teknik aşamalarla doldurulur ([Fazlar](../08-yol-haritasi/01-fazlar.md) §5).
 - **Mobil uzun içerik işlerini beklemez.** A13 ilk `dev` `core` paketini Tanzil metni, A11'in yapı verisi (kelime bölmesi, sayfa eşlemesi, cüz ve secde) ve açıkça sentetik `test-` fikstürleriyle üretir. Mobil aşamaları (A21 sonrası) buna dayanır. Meal (A16), kelime katmanı (A17), bağlantılar (A18) ve hadis (A19) hazır oldukça paketler yeniden yayımlanır.
 - **İnsan beklemesi olan aşamalar yarıda bırakılabilir.** A09, A11, A16, A17, A18, A19, A20 araç ve kuyruğu kurup insan turunu ya da insan verisini bekler; bu sürede başka aşamaya geçilir. İlerleme dosyasında durum `engelli` olur; Not sütununa biten adımlar ve beklenen insan adımı yazılır (ör. "A16.1–A16.3 tamam; İ-11 bekleniyor"). A11'de sure adları (A11.3) İ-23'ü ve A14'ün karar uçlarını bekler; A17 ve A24 yalnız A11'in yapı adımlarına dayanır.
-- **Paralel yürütülebilecek gruplar** (önkoşulları tamamsa): A03 ile A04 ile A06; A14 ile A12; A22 ile A23; A26, A27, A28, A29 birbirinden bağımsızdır.
+- **Paralel yürütülebilecek gruplar** (önkoşulları tamamsa): A03 ile A04 ile A06; A14 ile A12; A22 ile A23; A26, A28, A29 birbirinden bağımsızdır; A27 A29.4 bitince başlar (ses indirmesi A29 kuyruğunu kullanır).
 - **Önerilen sıra:** A00 → A01 → A02 → A04 → A06 → A03 → A05 → A07 → A10 → A11 (A11.3 hariç) → A12 → A13 → A21 → A22 → A23 → A24 → A25 → (A28, A29, A30, A27) → A14 → A15 → A11.3 (sure adları) → A09 → A16 → A17 → A18 → A19 → A20 → A26 → A31 → A32 → A33 → A08 (GitHub hazır olunca daha önce) → A34. Bu sıra bir öneridir; `/durum` başlanabilecek aşamaları önkoşula göre listeler.
 
 ## 4. Fazların çıkış ölçütleriyle eşleşme

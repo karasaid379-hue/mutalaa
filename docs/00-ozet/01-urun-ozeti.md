@@ -1,7 +1,7 @@
 # Ürün Özeti
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Onaylı
-> **Bağlı kararlar:** [K-01, K-02, K-07, K-08, K-25](./02-karar-defteri.md)
+> **Sürüm:** 1.2 · **Tarih:** 31 Ekim 2026 · **Durum:** Onaylı
+> **Bağlı kararlar:** [K-01, K-02, K-07, K-08, K-25](./02-karar-defteri.md) · [K-41](./02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 ## Tek cümlede
 
@@ -66,7 +66,7 @@ Bu kısıtlar araştırma raporundan gelir ve yol haritasını belirler. Hukuki 
 - **Kurul onayı.** 633 sayılı Kanun'un 6. maddesi (4 Haziran 2025'ten beri) uyarınca Mushafları İnceleme ve Kıraat Kurulu onayı olmayan elektronik ve sesli Kur'an ile mealli mushaf yayımlanamaz. Ayrıntı: [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md).
 - **Risale-i Nur.** 31 Aralık 2030'a kadar telifli; hakları bugün kimin kullandığı belirsiz. Ayrıntı: [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md).
 - **Meal.** Klasik Türkçe meallerden yalnız Elmalılı'nınki serbest (2013'ten beri). Çantay 2035'te, Bilmen 2042'de serbest kalır.
-- **Ses.** Popüler kıraat kaynaklarının hiçbiri açık lisans vermiyor; hafız izni gerekiyor.
+- **Ses.** Popüler okuyucuların hazır dijital kayıtları kullanılır, hafız sesi alınmaz; dosyalar kendi içerik deposundan sunulur (K-40, K-41). Sesli Kur'an Kurul onayına tabidir.
 
 ## Referans malzeme
 

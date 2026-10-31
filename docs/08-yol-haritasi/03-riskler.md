@@ -1,7 +1,7 @@
 # Riskler
 
-> **Sürüm:** 1.2 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
+> **Sürüm:** 1.3 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu dosya risk kaydıdır. Olasılık ve etki 1–5 arası puanlanır; skor ikisinin çarpımıdır. Puanlar değerlendirmedir (tahmin) ve gözden geçirmede değişebilir. Hukuki riskler için **hukuki görüş değildir**.
 
@@ -14,7 +14,7 @@ Bu dosya risk kaydıdır. Olasılık ve etki 1–5 arası puanlanır; skor ikisi
 
 | Rol | Sorumluluk |
 |---|---|
-| Proje sahibi | Karar, dış görüşmeler (Kurul, hak sahipleri, hafızlar), faz geçişleri |
+| Proje sahibi | Karar, dış görüşmeler (Kurul, hak sahipleri), faz geçişleri |
 | Geliştirici | Mobil, arka uç, içerik hattı, Publisher, testler |
 | İçerik editörü | OCR düzeltme, bağlantı onayı, lisans defteri |
 | Hukuk danışmanı (dış) | Telif, KVKK ve Kurul konularında görüş |
@@ -27,7 +27,7 @@ Tek geliştiricili dönemde bir kişi birden çok rolü taşır.
 |---|---|---|---|---|---|---|
 | R-01 | Kurul onayının gecikmesi ya da reddi | 3 | 5 | 15 | Kritik | Proje sahibi |
 | R-02 | Risale hakları | 3 | 4 | 12 | Yüksek | Proje sahibi, hukuk |
-| R-03 | Ses lisansı | 4 | 3 | 12 | Yüksek | Proje sahibi |
+| R-03 | Ses kaynağı ve ayna | 4 | 3 | 12 | Yüksek | Proje sahibi |
 | R-04 | Quran Foundation şartlarının değişmesi | 2 | 3 | 6 | Orta | Geliştirici |
 | R-05 | QAC lisans belirsizliği | 3 | 3 | 9 | Orta | Proje sahibi |
 | R-06 | Hadis veri setlerinin kökeni | 4 | 2 | 8 | Orta | İçerik editörü |
@@ -44,7 +44,7 @@ Tek geliştiricili dönemde bir kişi birden çok rolü taşır.
 | R-17 | Tarafsızlık algısı (ek) | 2 | 4 | 8 | Orta | Proje sahibi |
 | R-18 | SDK geçişi ve kitaplık ön sürümleri (ek) | 3 | 2 | 6 | Orta | Geliştirici |
 | R-19 | v1'de cihazdaki kullanıcı verisinin kaybı (ek) | 3 | 2 | 6 | Orta | Geliştirici |
-| R-20 | SDK 57'de arka planda sesin kesilmesi (ek) | 4 | 3 | 12 | Yüksek | Geliştirici |
+| R-20 | Arka planda ses ve kilit ekranı (ek) | 4 | 3 | 12 | Yüksek | Geliştirici |
 | R-21 | Hazır metinden sadeleştirme ya da belirsiz baskı sızması (ek) | 3 | 4 | 12 | Yüksek | İçerik editörü, hukuk |
 
 | Olasılık \ Etki | 2 | 3 | 4 | 5 |
@@ -66,10 +66,10 @@ Tek geliştiricili dönemde bir kişi birden çok rolü taşır.
 - **Önlem.** Metin hukukçu görüşü gelene kadar `kapali`: hiçbir derlemeye girmez ve işlenmez. Görüş olumluysa yalnız ekip içi `dev` derlemede `ic_kullanim` olur ([K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik), [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)). Kapı testleri; harici API ve gömme adımları yalnız serbest metinlerde çalışır; metinsiz atıf dizini için avukat görüşü; 2031 hazırlığı ([Sonra yapılacaklar](./02-sonra-yapilacaklar.md), S-06).
 - **Tetik.** Avukat görüşünün gelmesi; hak sahibinden ihtar; Risale içeriğinin `dev` dışındaki bir derlemede görünmesi (kapı testi kırılır).
 
-### R-03 · Ses lisansı
-- **Açıklama.** Popüler kıraat kaynaklarının hiçbiri açık lisans vermiyor; telif okuyucuda ve okuyucu kaldırma isteyebilir ([AlQuran Cloud](https://alquran.cloud/terms-and-conditions)). Ses ayrıca Kurul onayına tabi. quran-align zamanlamaları yalnız hizalandığı EveryAyah dosyaları için geçerli ([quran-align](https://raw.githubusercontent.com/cpfair/quran-align/master/README.md)).
-- **Önlem.** Yazılı izin şablonu ve 3–5 okuyucu (S-07); QF akışı şartlarıyla yedek; ses ücretli katmana konmaz; kaldırma talebinde kaynak `kapali` olur ve manifestten çıkar. Sesin gecikmesi hâlinde mağaza v1'in sessiz çıkıp çıkmayacağı Açık soru.
-- **Tetik.** İzin reddi; kaldırma talebi; Kurul'un sesi ayrıca incelemesi.
+### R-03 · Ses kaynağı ve ayna
+- **Açıklama.** Hazır tilavet kayıtlarının hakkı okuyucuda ve asıl kaynaktadır; QUD ve MP3Quran bunu açıkça söyler ([Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md) §3). Proje sahibinin kararıyla izin durumu ses yapısını kısıtlamaz; sorumluluk proje sahibindedir ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) madde 10; hukuki görüş değildir). Teknik risk: kaynakta dosyanın değişmesi ya da adresin taşınması zamanlamayı kaydırır; Tarteel CDN çalışma anında bağlanmaya kapalıdır.
+- **Önlem.** Dosyalar içerik hattıyla bir kez alınır, sha256 ile kilitlenir ve kendi depomuzdan değişmez sürümlü adresle sunulur (ayna); kaynak değişirse yeni `dosya_surumu` açılır. Kaldırma talebinde kayıt katalogdan çıkar, çalma durur, dosyalar silinmek üzere işaretlenir. Ses ücretli katmana konmaz. Kurul başvurusu genel yayın sürecidir (A34).
+- **Tetik.** Kaynakta sha256 ya da boyut farkı; hak sahibinin kaldırma talebi; Kurul'un sesi ayrıca incelemesi.
 
 ### R-04 · Quran Foundation şartlarının değişmesi
 - **Açıklama.** QF şartları (son güncelleme 11 Ekim 2026) 30 gün bildirimle feshedilebiliyor. Önbellek en fazla bir hafta, çevrimdışı kopya yalnız Content Sync ile, hazır veritabanı dağıtımı yok; gömmeler aynı kısıtlara tabi ([QF Developer Terms](https://api-docs.quran.foundation/legal/developer-terms/)). Mushaf A'nın QPC fontları bu şartlarla gömülüyor.
@@ -151,10 +151,10 @@ Tek geliştiricili dönemde bir kişi birden çok rolü taşır.
 - **Önlem.** İşletim sistemi yedeği açık (öneri); Verilerimi dışa aktar (öneri); v1.x senkron.
 - **Tetik.** Veri kaybı şikâyetleri.
 
-### R-20 · SDK 57'de arka planda sesin kesilmesi (ek)
-- **Açıklama.** Android'de kilit ekranı kontrolü etkin değilse arka plandaki ses yaklaşık 3 dakika sonra kesiliyor ([expo-audio](https://docs.expo.dev/versions/latest/sdk/audio/)). Kilit ekranında oynatma listesi desteği SDK 58 ile geliyor ([SDK 58 beta](https://expo.dev/changelog/sdk-58-beta)); SDK 57'de oynatma listesi kilit ekranı kontrolüyle çalışmaz.
-- **Önlem.** v1'de tek âyetlik oynatıcı: tek `AudioPlayer` her âyette kaynağını değiştirir ve kilit ekranı aynı oynatıcıda açık kalır. Kesintisiz oynatma listeleri SDK 58'den sonra gelir ([Ses sistemi](../06-mobil/02-ses-sistemi.md)).
-- **Tetik.** İç testte arka planda sesin kesilmesi; SDK 58'in kararlı sürümü.
+### R-20 · Arka planda ses ve kilit ekranı (ek)
+- **Açıklama.** Android'de kilit ekranı denetimi etkin değilse arka plandaki ses yaklaşık 3 dakika sonra kesilir. SDK 58'de kilit ekranı oynatma listesiyle çalışır (expo-audio 58.0.0); tek oynatıcıda sonraki/önceki düğmesi yoktur ([#43538](https://github.com/expo/expo/issues/43538)). Listede kilit ekranı açıldıktan sonra öğe eklemek Android'de çöküyor ([#52192](https://github.com/expo/expo/issues/52192)).
+- **Önlem.** Varsayılan motor `PlaylistEngine` (sure dosyaları parça, kilit ekranında sonraki/önceki sure); liste kilit ekranından önce tam kurulur; oynatıcı modül düzeyindedir. Yedek `SingleEngine` kilit ekranını yine açar ([Ses sistemi](../06-mobil/02-ses-sistemi.md) §4).
+- **Tetik.** İç testte arka planda sesin kesilmesi; listede çökme ya da perde bozulması (cihaz ölçümü, kullanıcı).
 
 ### R-21 · Hazır metinden sadeleştirme ya da belirsiz baskı sızması (ek)
 - **Açıklama.** Kontrollü hazır metin yolunda ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)) hazır metnin sadeleştirilmiş ya da baskı esası belirsiz bir metne dayanması ve bunun fark edilmeden temel metin olması mümkün. Sadeleştirme FSEK m. 6 anlamında işlenme eseri olabilir; veri tabanı hakkı (ek m. 8) ve CC BY-SA şartı da açık sorudur (hukuki görüş değildir; [avukat soruları](../yazismalar/avukat-sorulari.md)). Metin Kurul kapsamında olduğu için sızan bir hata ya da hak sorunu onay sürecini de etkiler (R-01).

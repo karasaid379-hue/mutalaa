@@ -1,6 +1,6 @@
 # Quran Foundation: Developer Console ve sorular
 
-> **Sürüm:** 1.0 · **Tarih:** 20 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.3 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 > **Muhatap:** Quran Foundation geliştirici desteği · **Dil:** Kontrol listesi Türkçe, sorular İngilizce · **İnsan adımı:** [İ-06](../10-claude-code/06-insan-adimlari.md)
 > **Kanal:** developers@quran.com (şartlara göre QF'ye yazılı bildirim adresi; [Connected Apps](https://api-docs.quran.foundation/docs/connected-apps/) sayfası genel sorular için de bu adresi veriyor). Developer Console: [dev-console.quran.foundation](https://dev-console.quran.foundation/projects). Şartlar: [QF Developer Terms](https://api-docs.quran.foundation/legal/developer-terms/), "Last updated: 2026-10-11". Okuma: 2026-10-20.
@@ -39,7 +39,7 @@ Kind regards,
   - QF şartları 30 gün önceden bildirerek ya da ihlalde derhâl feshedebilir; fesihte QF içeriğinin silinmesi gerekir.
   - Şartlarda değişiklik bildirimi maddesi bulunamadı; "Last updated" tarihi izlenir ([lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §6: çeyrekte bir ve her `public` sürümden önce).
 - [ ] Şartlar uygulama için herkese açık bir gizlilik politikası ve kullanım şartları ister ("Provide a publicly reachable Privacy Policy and Terms of Use for the Application."). Sayfa alan adına bağlıdır (İ-18; [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) §2.5).
-- [ ] Content API arka uç (backend/server) uygulaması ister; yeni uygulama pre-live ortamında başlar, production izni ayrıca istenir (pre-live ortamındaki veri kapsamının sınırlı olup olmadığı Doğrulanacak). Kimlik bilgileri depoya yazılmaz.
+- [ ] Content API arka uç (backend/server) uygulaması ister; yeni uygulama pre-live ortamında başlar, production izni ayrıca istenir (pre-live veri kapsamı: yalnız Fâtiha (1) ve Bakara (2); tam veri production onayıyla gelir. Çözüldü 30 Ekim 2026, kaynak: [QF quickstart](https://api-docs.quran.foundation/docs/quickstart/)). Kimlik bilgileri depoya yazılmaz.
 - [ ] Şartların tarihli kopyası A06'da `pipeline/sources/licenses/` altına alınır; bu aşamada alınmaz. Çözüldü (2026-10-26): kopya A06'da alındı (`ses-qf-api-2026-10-26.txt`, `qpc-v1-font-2026-10-26.txt`, `qpc-v2-font-2026-10-26.txt`, `qpc-v4-font-2026-10-26.txt`, `medine-604-duzen-2026-10-26.txt`; "Last updated: 2026-10-11").
 - [ ] Atıfın yeri Ayarlar › Kaynaklar ve lisanslar ("in a reasonably accessible place in the Application or its associated credits"); kesin metin 3. sorunun cevabına göre yazılır.
 - [ ] QF içeriği `embed_ok = false` (lisans defteri §1): gömme vektörüne çevrilmez, yapay zekâ API'sine gönderilmez.

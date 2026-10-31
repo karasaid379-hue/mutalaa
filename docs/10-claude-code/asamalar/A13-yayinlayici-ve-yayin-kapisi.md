@@ -1,6 +1,6 @@
 # A13 · Yayınlayıcı ve yayın kapısı (ilk `dev` `core` paketi)
 
-> **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-05](../../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
+> **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-41](../../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-05](../../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A07](./A07-editoryal-veritabani.md) · [A12](./A12-arama-indeksi-ve-paket-semasi.md) · **İnsan adımı:** yok
 > **Ajanlar:** `sunucu-gelistirici` · `lisans-denetcisi` · `test-yazari` · `hat-gelistirici` (fikstür kaynakları) · `arastirmaci` · `inceleyici` · **Beceriler:** `lisans-kapisi` · `paket-yayini` · `ef-goc` · `windows-sorun` · **Tahmini oturum:** 4–5
 > **Başlat:** `/asama A13`
@@ -26,7 +26,7 @@
 
 **Yapılmaz**
 - `apps/mobile/scripts/fetch-core.mjs`, `keys.ts` ve uygulamadaki imza doğrulaması (A23).
-- `risale-dizin` ve `risale-{kitap}` paket tanımları (A20). `mushaf-a-cuz-*` (A26). `ses-*` paketleri ve `ses-test` fikstürü (A27).
+- `risale-dizin` ve `risale-{kitap}` paket tanımları (A20). `mushaf-a-cuz-*` (A26). `ses-katalog` ve `ses-zaman-{kayit}` paketleri, ayna yüklemesi ve `ses-test` fikstürü (A27.2; K-41).
 - API'nin yayın uçları (A14); `watch` onların bıraktığı kayıtları işler. Canlı depo ve `internal` erişim yöntemi (İ-18, A34).
 
 ## Adımlar

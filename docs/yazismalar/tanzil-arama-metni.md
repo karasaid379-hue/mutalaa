@@ -1,6 +1,6 @@
 # Tanzil sorusu: ayrı arama metni
 
-> **Sürüm:** 1.2 · **Tarih:** 28 Ekim 2026 · **Durum:** Taslak (gönderilmedi; 2. soru genişletildi, 3. soru düzeltildi, gönderimden önce kullanıcı onayı gerekir)
+> **Sürüm:** 1.2 · **Tarih:** 28 Ekim 2026 · **Durum:** Kullanıcı beyanıyla izinler tamam (İ-08, 28 Ekim 2026); gönderim kaydı ve Tanzil cevabı yok
 > **Bağlı kararlar:** [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 > **Muhatap:** Tanzil Project (tanzil.net) · **Dil:** İngilizce · **İnsan adımı:** [İ-08](../10-claude-code/06-insan-adimlari.md)
 > **Kanal:** Doğrulanacak. Tanzil'in gösterdiği tek yol Quran Navigator'daki iletişim menüsü ([tanzil.net](https://tanzil.net/); [katkı sayfası](https://tanzil.net/docs/contribution)); menünün hedefi okunamadı, tarayıcıda açıp doğrula. `tanzil.net/contact/` 404 veriyor. Duyurular için Tanzil-Text e-posta listesi ([groups.google.com/group/tanzil-text](http://groups.google.com/group/tanzil-text)). Okuma: 2026-10-20.

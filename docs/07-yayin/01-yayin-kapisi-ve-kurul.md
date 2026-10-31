@@ -1,7 +1,7 @@
 # Yayın kapısı ve Kurul onayı
 
-> **Sürüm:** 1.3 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
+> **Sürüm:** 1.4 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
 
 > **Hukuki görüş değildir.** Bu dosya araştırma raporundaki mevzuat ve lisans bulgularını mühendislik kurallarına çevirir. Mağaza yayınından önce Kurul'un yazılı cevabı ve bir fikri haklar avukatının görüşü alınır.
 
@@ -149,7 +149,7 @@ Birim testleri `[Theory]` ile `bekliyor`, `ic_kullanim` ve `kapali` durumlarınd
 
 ## 6. Kaynaklar ve lisanslar ekranı
 
-Ayarlar › Kaynaklar ve lisanslar çevrimdışı açılır. Her içerik kaynağını (ad, sürüm, lisans, zorunlu atıf, kaynak bağlantısı, tam bildirim metni), fontları, hafızları, açık kaynak yazılım lisanslarını ve yapay zekâ taslağıyla hazırlanıp insan onayından geçen içerik notunu ([K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları)) listeler. Veri koddan gelmez: Publisher `source.atif_metni` ve ilgili alanlardan her pakete bir `attribution` tablosu yazar (`source_id`, `title`, `version`, `license_name`, `license_url`, `source_url`, `required_credit`, `notice_text`). Ekran `core` ile kurulu paketlerin tablolarını birleştirir. Atıf değişirse paket sürümü artar.
+Ayarlar › Kaynaklar ve lisanslar çevrimdışı açılır. Her içerik kaynağını (ad, sürüm, lisans, zorunlu atıf, kaynak bağlantısı, tam bildirim metni), fontları, ses kayıtlarını (okuyucu, dosya kaynağı, zamanlama kaynağı), açık kaynak yazılım lisanslarını ve yapay zekâ taslağıyla hazırlanıp insan onayından geçen içerik notunu ([K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları)) listeler. Veri koddan gelmez: Publisher `source.atif_metni` ve ilgili alanlardan her pakete bir `attribution` tablosu yazar (`source_id`, `title`, `version`, `license_name`, `license_url`, `source_url`, `required_credit`, `notice_text`). Ekran `core` ile kurulu paketlerin tablolarını birleştirir. Atıf değişirse paket sürümü artar.
 
 | Kaynak | Şart ve ekranda gösterilen | Dayanak |
 |---|---|---|
@@ -160,7 +160,7 @@ Ayarlar › Kaynaklar ve lisanslar çevrimdışı açılır. Her içerik kaynağ
 | quran-align zamanlamaları | CC BY 4.0; Collin Fair atfı, lisans adı ve bağlantısı | [quran-align](https://raw.githubusercontent.com/cpfair/quran-align/master/README.md) |
 | KFGQPC Hafs (izin alınırsa) | Değiştirme ve satış yasak, telif alanı yazılı onay istiyor; EULA metni | [font dosyası](https://raw.githubusercontent.com/mustafa0x/qpc-fonts/f93bf5f3/various-woff2/UthmanicHafs1%20Ver09.woff2) |
 | Öteki fontlar | Amiri Quran, Literata, Noto Naskh Arabic OFL; IBM Plex Sans ve Amiri lisansı font dosyasından okunur (Doğrulanacak) | [google/fonts: Amiri Quran](https://github.com/google/fonts/tree/main/ofl/amiriquran) |
-| Hafız kayıtları | Her hafızdan yazılı izin; hafız adı ve kayıt kaynağı | [AlQuran Cloud](https://alquran.cloud/terms-and-conditions) |
+| Ses kayıtları | Okuyucu adı, dosya kaynağı (MP3Quran, Tarteel) ve zamanlama kaynağı (QUD, CC BY 4.0) atfı; yazılı izin dosyada yok, kayıtlar proje sahibi kararıyla kullanılır ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) madde 10; hukuki görüş değildir) | [Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md) |
 
 Açık kaynak yazılım lisansları derlemede bağımlılık meta verisinden üretilir. CI izin listesi dışındaki lisansı kırar; react-native-track-player v5'in ticari lisansa geçmesi bu denetimin nedenini gösterir ([RNTP](https://github.com/doublesymmetry/react-native-track-player)).
 
@@ -174,7 +174,7 @@ Açık kaynak yazılım lisansları derlemede bağımlılık meta verisinden ür
 |---|---|---|
 | Kur'an metni (Tanzil Unicode) | `core`; akan metin görünümü (C), âyet âyet okuma, arama; Mushaf A'da kopyalama, arama ve ekran okuyucu katmanı. Mushaf A'da ekrandaki yazı QPC sayfa yazı tipinin gliflerdir, Mushaf B'de sayfa görüntüsüdür ([Mobil mimari](../06-mobil/01-mobil-mimari.md) §7; [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md)) | Muhtemelen gerekir ("elektronik ortamda hazırlanan Kur'an-ı Kerim") |
 | Arapça metinle birlikte Elmalılı meali | `core`, Mushaf + Meal | Muhtemelen gerekir ("mealli mushaf"); ayrıca m. 5/ı incelemesi |
-| Hafız kayıtları | `ses-{hafiz}` | Muhtemelen gerekir ("sesli ... Kur'an-ı Kerim") |
+| Ses kayıtları | `ses-katalog`, `ses-zaman-{kayit}` | Muhtemelen gerekir ("sesli ... Kur'an-ı Kerim"); genel başvurunun parçasıdır |
 | QPC sayfa fontları (Medine düzeni) | `mushaf-a-cuz-*` | Gerekir; fontun kabulü Açık soru. Tebliğ 3/o, basılı ve dijital eserlerde "Kurul tarafından uygun görülen yazı tipi (font)" kullanılmasını ister ([tebliğ](https://mushaflariinceleme.diyanet.gov.tr/Detay/155/); haber özeti: [Cumhuriyet](https://www.cumhuriyet.com.tr/turkiye/resmi-gazetede-yayimlandi-diyanetten-kuran-karari-1998786)) |
 | Medine düzeni sayfa düzeni verisi (`medine-604-duzen`) | `mushaf-a-cuz-*` | Kaynak seçimi sürüyor (Açık soru); düzenin Kurul açısından kabulü Tebliğ 3/b ve 3/ç ile birlikte sorulur (§7.4, §7.5) |
 | Türk hattı görselleri | `mushaf-b` | Gerekir; hat lisansı da gerekir |
@@ -200,7 +200,7 @@ flowchart LR
 
 1. **Ön görüşme (Faz 0).** Kurul'a yazılı görüşme talebi gider. **Çözüldü (2026-10-20):** Kurul sitesi açılıyor; iletişim bilgileri [İletişim sayfasında](https://mushaflariinceleme.diyanet.gov.tr/sayfa/90) (okuma: 2026-10-20): birim e-postası `mushaflar@diyanet.gov.tr`; posta adresi Diyanet İşleri Başkanlığı, Üniversiteler Mah. Dumlupınar Blv. No: 147/A 06800 Çankaya/ANKARA. KEP adresi ve iletişim formu bulunamadı (Doğrulanacak). Başvuru usulü Yönetmelik m. 7/1'dedir: Başkanlıkça belirlenen matbu form Kurul'a teslim edilir; internet sitesinde ilan edilecek bağlantıyla elektronik başvuru da öngörülebilir. Tebliğ ve başvuru formu [01.03.2023 duyurusunun](https://mushaflariinceleme.diyanet.gov.tr/Detay/155/) ekidir. Görüşme taslağı: [Kurul ön görüşme talebi](../yazismalar/kurul-on-gorusme.md). Görüşmeye bir sayfalık ürün tanımı, üç mushaf modunun ekran görüntüleri (varsa; uygulama ekranları Faz 2'den önce yoktur, o zaman tasarım vitrini görselleri ya da görüşmede gösterim; görsel uydurulmaz), kaynaklar, sürüm dondurma yaklaşımı ve §7.5'teki sorular götürülür.
 2. **İçerik dondurma.** Kurul kaynakları için bir `release` kaydı açılır: içerik özetleri, Tanzil dosya özeti, Elmalılı metin sürümü, ses dosyası listesi.
-3. **İç tashih ve başvuru dosyası.** Tanzil'le bayt bayt eşitlik raporu, hafız başına âyet-dosya listesi, izin belgeleri, test raporları, ekran görüntüleri ve Kurul'un istediği biçimde bir derleme ya da metin dökümü (biçim Açık soru) hazırlanır. Mealin düzeltme turları bu adımdan önce kapanır, çünkü onaydan sonraki düzeltme yeniden onay gerektirebilir. Başvuru dosyasındaki yöntem beyanı ve atıf metni Elmalılı metninin gerçek edinim yoluna göre yazılır ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)): OCR ve düzeltme ya da hazır metnin kaynağı, baskı esası, karşılaştırma ölçümü ve düzeltme turları. Atıf biçimi "X kaynağından alınmış, Mütâlaa tarafından özgün baskıyla karşılaştırılıp düzeltilmiştir" olabilir; son metin avukat görüşüne ve Kurul onayına bağlıdır (hukuki görüş değildir). Kurul gereklilikleri ve DİYK adımı değişmez. Basılı mushafta üretimi onaya kadar bir hafızın izlemesi kuralı var; dijital iş için de bir hafızın kaydı ve metni baştan sona kontrol etmesi önerilir.
+3. **İç tashih ve başvuru dosyası.** Tanzil'le bayt bayt eşitlik raporu, kayıt başına sure-dosya listesi (bayt, sha256, dosya sürümü), test raporları, ekran görüntüleri ve Kurul'un istediği biçimde bir derleme ya da metin dökümü (biçim Açık soru) hazırlanır. Mealin düzeltme turları bu adımdan önce kapanır, çünkü onaydan sonraki düzeltme yeniden onay gerektirebilir. Başvuru dosyasındaki yöntem beyanı ve atıf metni Elmalılı metninin gerçek edinim yoluna göre yazılır ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)): OCR ve düzeltme ya da hazır metnin kaynağı, baskı esası, karşılaştırma ölçümü ve düzeltme turları. Atıf biçimi "X kaynağından alınmış, Mütâlaa tarafından özgün baskıyla karşılaştırılıp düzeltilmiştir" olabilir; son metin avukat görüşüne ve Kurul onayına bağlıdır (hukuki görüş değildir). Kurul gereklilikleri ve DİYK adımı değişmez. Basılı mushafta üretimi onaya kadar bir hafızın izlemesi kuralı var; dijital iş için de bir hafızın kaydı ve metni baştan sona kontrol etmesi önerilir.
 4. **İnceleme.** Kurul düzeltme isterse düzeltme elle yapılmaz; içerik hattından geçer, testler çalışır, yeni içerik özeti üretilir.
 5. **Onayı sabitleme.** Onay numarası, tarih ve onaylı özet `source.kurul_onay`, `kurul_onay_tarihi` ve `kurul_onay_ozeti` alanlarına yazılır. Publisher onayı public manifestin `kurul_onay` alanına ve paketin `pack_meta` tablosuna koyar. Depoda onaylı sürüm bir etiketle işaretlenir (öneri: `kurul/<onay-no>`).
 
@@ -209,7 +209,7 @@ flowchart LR
 | Değişiklik | Yeniden onay (değerlendirme) |
 |---|---|
 | Kur'an metninde herhangi bir bayt değişikliği, Tanzil güncellemesi dahil | Muhtemelen gerekir |
-| Meal düzeltmesi (yazım dahil); yeni hafız ya da değişen kayıt | Muhtemelen gerekir |
+| Meal düzeltmesi (yazım dahil); yeni ses kaydı ya da değişen kayıt | Muhtemelen gerekir |
 | Ses kodlaması, vurgu zamanlaması, font sürümü, sayfa düzeni verisi | Açık soru |
 | Kur'an içeriğine dokunmayan arayüz ve hata düzeltmeleri | Beklenmez (Doğrulanacak) |
 
@@ -236,7 +236,7 @@ Kurul Medine düzenli fontları kabul etmezse Mushaf A public derlemeye girmez v
 3. **Açık soru:** Onayın birimi uygulama mı, paket mi, içerik sürümü mü? Web sürümü (Faz 5) ayrı başvuru ister mi?
 4. **Açık soru:** Medine düzenli QPC fontları ve Amiri Quran gibi Unicode fontlar kabul ediliyor mu?
 5. **Açık soru:** Onay, Kur'an metninin yanında gösterilen bağlantı ve dizin verisini (Bağlantılar alt sayfası, kök kartı) da kapsıyor mu? §7.1'deki öteki sınır türler (kelime anlamları; tefsir, hadis ve Risale içindeki âyetler; arama sonuçlarındaki âyet parçaları) aynı soruyla sorulur.
-6. **Açık soru:** Her hafız kaydı ayrı mı onaylanır; kodlama ve zamanlama değişikliği yeniden onay ister mi?
+6. **Açık soru:** Her ses kaydı (okuyucu ve tarz) ayrı mı onaylanır; kodlama ve zamanlama değişikliği yeniden onay ister mi?
 7. **Açık soru:** Kapalı test grubuna dağıtım yayım sayılır mı?
 8. **Açık soru:** Onay bilgisi uygulamada nasıl gösterilir? Yönetmelik onaylı eserlerin QR kodlarının değiştirilemeyeceğini söylüyor.
 9. **Açık soru:** Tebliğ 3/l, "Basılı ve dijital eserlerde" aranan nitelikler arasında "Mealsiz eserlerde çerçeve içinde Türkçe karakter yer almaz" der; 3/k sure ismi, cüz ve sayfa numarasının çerçeve dışında gösterilmesini ister. Cumhuriyet haberi bunları "basılı mushaf" kuralı diye aktarmıştı; tebliğ metni dijital eseri de kapsıyor. Mushaf A ve C sayfasındaki Türkçe arayüz öğeleri (sure adı, sayfa numarası) için dijital karşılığı ne? (Kurul yazısı, soru 10.)

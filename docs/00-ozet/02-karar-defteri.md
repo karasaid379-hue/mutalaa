@@ -1,7 +1,7 @@
 # Karar Defteri
 
 > **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Onaylı
-> **Kapsam:** 16–18 Ekim 2026 beyin fırtınası oturumunda verilen bütün kararlar ve sonraki eklemeler (K-31, 19 Ekim 2026; K-32, K-33 ve K-34, 21 Ekim 2026; K-35, 24 Ekim 2026; K-36, 25 Ekim 2026; K-37, 26 Ekim 2026; K-38, 27 Ekim 2026; K-39 ve K-40, 28 Ekim 2026).
+> **Kapsam:** 16–18 Ekim 2026 beyin fırtınası oturumunda verilen bütün kararlar ve sonraki eklemeler (K-31, 19 Ekim 2026; K-32, K-33 ve K-34, 21 Ekim 2026; K-35, 24 Ekim 2026; K-36, 25 Ekim 2026; K-37, 26 Ekim 2026; K-38, 27 Ekim 2026; K-39 ve K-40, 28 Ekim 2026; K-41, 30 Ekim 2026).
 > **Kural:** Bir karar değişirse eski satır silinmez; "Geçersiz" olarak işaretlenir ve yeni karara bağlantı verilir.
 
 Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrıntılandırır ama değiştiremez. Çelişki görülürse bu dosya geçerlidir.
@@ -52,6 +52,7 @@ Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrı
 | K-38 | Kaynak edinimi | Dijital öncelikli, kanıtla yükseltme; Elmalılı'da kontrollü hazır metin (pilotta OCR ile yarışır); çıkarılmış metin üçüncü kanonik tür; hazır metin `taslak` girer | [Bu dosya, K-38](#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) |
 | K-39 | Tanzil alımı | Simple Clean `q:` birimi değil, yalnız `ar_norm` kaynağı; hat `onayli` Tanzil satırında yalnız türetilmiş sütunları günceller; `source` satırında ikinci onaylı alanlar ezilmez; sıkı kilit ve tanı; AR-4 A10'da; bildirim metni bayt bayt | [Bu dosya, K-39](#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) |
 | K-40 | Ses kaynağı | Hafız görüşmesi yerine hazır dijital tilavet kaynakları; İ-07 yeniden tanımlandı; `kapali` EveryAyah ve QuranicAudio indirilmez, QF yalnız arka uçtan; Kurul onayı sürer | [Bu dosya, K-40](#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları) |
+| K-41 | Ses sistemi | 7 popüler okuyucu, 9 kayıt; sure dosyası + QUD zamanlaması; dosyalar kendi depomuzdan (ayna); çevrimiçi öncelikli, isteğe bağlı kalıcı indirme; `PlaylistEngine`; izin yapıyı kısıtlamaz | [Bu dosya, K-41](#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) |
 
 ---
 
@@ -205,6 +206,7 @@ Eski plandan aynen devralınır:
 ### K-28 · Ses
 - **Karar:** expo-audio + XState durum makinesi (tekrar, aralık, âyetler arası bekleme, Kur'an + meal dönüşümü).
 - **Gerekçe:** react-native-track-player v5 ticari kullanım için lisans istiyor; v4 donduruldu.
+- **Güncelleme (2026-10-30):** expo-audio + XState sürer. SDK 58'de varsayılan motor `AudioPlaylist` (kilit ekranı denetimi listeyle çalışıyor), tek oynatıcı yedektir; ses modeli [K-41](#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)'dedir.
 
 ### K-29 · Mobil arayüz kitaplıkları
 - **Karar:** NativeWind v4 (kararlı sürüm) + React Native Reusables + @gorhom/bottom-sheet + Reanimated 4 + Gesture Handler; durum için Zustand + TanStack Query + MMKV.
@@ -365,6 +367,28 @@ Eski planın okuyucu tasarımları, "okuma simetrisi" çekirdeği (son okunan ye
 - **Gerekçe:** Proje sahibinin tercihi: hafız görüşmeleri ve bireysel izinler yerine mevcut dijital kaynaklarla ilerlemek. Yaygın tilavet kaynakları açık lisans vermiyor ve telif okuyucuda kalıyor ([Ses sistemi](../06-mobil/02-ses-sistemi.md) §12); bu yüzden kaynak kayıtlarının durumu ve kapı kuralları değişmiyor, yalnız izin yolu yeniden tanımlanıyor. Hukuki görüş değildir.
 - **Değerlendirilen alternatifler:** Eski yol (hafızlarla görüşme, 3–5 yazılı izinli hafız; Ses sistemi §12 raporunun önerisi): proje sahibi kararıyla tamamen bırakıldı, yedek yol değildir; [hafız izin taslağı](../yazismalar/hafiz-izin.md) iptal edildi ve gönderilmeyecek. Hazır kaynaklardan izinsiz toplu indirme: K-06 ve kaynak kayıtları nedeniyle yapılmaz.
 - **Kaynak:** Proje sahibinin kararı (28 Ekim 2026). Mevcut kayıtlar: `pipeline/sources/ses-*.toml`. Sesli oynatıcı ve kataloğun uygulanması A27'dedir; bu karar yalnız kaynak yolunu ve İ-07'yi değiştirir.
+- **Güncelleme (2026-10-30):** Madde 1, 2, 3 ve 5 ses sistemi için [K-41](#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) ile değişti: kullanılan kaynaklar (MP3Quran, Tarteel CDN, QUD) içerik hattıyla bir kez alınır ve kendi depomuzdan sunulur; izin durumu yapıyı kısıtlamaz (proje sahibinin kararı). EveryAyah ve QuranicAudio kullanılmaz, kayıtları `kapali` kalır. QF v1.x bağdaştırıcısıdır. "Hafız sesi alınmayacak" hükmü aynen sürer.
+
+### K-41 · Ses sistemi: hazır kayıtlar, ayna ve çevrimiçi öncelikli dinleme
+- **Karar:**
+  1. **Kayıt modeli.** Ses, okuyucunun bir kaydına (murattal, mücevved, muallim) ait 114 sure dosyasıdır. Âyetler dosya içinde karedir; sınırlar kayda bağlı zamanlama verisinden gelir. Âyet başına dosyalı kayıt motor modelinde desteklenir ama v1 kataloğunda yoktur. Önceki tasarım (âyet başına dosya, `ses-{hafiz}` paketi, `SteppedEngine`) bırakıldı.
+  2. **Okuyucu seçimi.** Okuyucular popülerlik kanıtıyla seçilir: birbirinden bağımsız en az üç platformda üst sıralarda olmak, 114 sure tam Hafs kaydı ve aynı dosyaya bağlı tam âyet zamanlaması. v1: Mishary Rashid Alafasy, Maher Al-Muaiqly, Abdul Rahman Al-Sudais, Saad Al-Ghamdi, Abdul Basit Abdul Samad (murattal ve mücevved), Mahmoud Khalil Al-Husary, Mohamed Siddiq El-Minshawi (murattal ve mücevved): 7 okuyucu, 9 kayıt. Liste `ses-katalog` paketinin yeni sürümüyle değişir.
+  3. **Kaynaklar.** Sure dosyaları MP3Quran CDN'inden ve Tarteel CDN'inden içerik hattıyla bir kez alınır. Âyet ve kelime zamanlaması QUD v4.0.0'dan gelir (sürüm ve zip sha256'larıyla sabit); MP3Quran `ayat_timing` yedek âyet zamanlamasıdır. EveryAyah, Maqra, QuranicAudio, QDC, Islamic Network ve öteki kopyalar kullanılmaz. Quran Foundation Content API v1.x'te arka uç bağdaştırıcısı olur (production erişimi gelince).
+  4. **Ayna.** Ses dosyaları kendi içerik depomuzdan ([K-21](#k-21--i̇çerik-dağıtımı)) değişmez ve sürümlü adreslerle sunulur: `audio/{kayit}/{dosya_surumu}/{sss}.mp3`. Bayt, sha256, süre ve bit hızı türü katalogdadır. Uygulama üçüncü taraf ses sunucusuna bağlanmaz; ASP.NET arka ucu ses baytlarını iletmez.
+  5. **Dağıtım.** `ses-katalog` paketi manifestle kendiliğinden iner; `ses-zaman-{kayit}` paketi kayıt ilk seçildiğinde kendiliğinden iner. Kullanıcı hiçbir şey indirmeden çevrimiçi dinler.
+  6. **Kaynak seçimi otomatiktir:** doğrulanmış yerel dosya, yoksa bağlantı varsa akış, bağlantı yoksa "indirilmedi" durumu.
+  7. **İndirme.** Tek sure ya da kaydın tamamı; A29 kuyruğunda; boyut ve SHA-256 doğrulaması; Yalnız Wi-Fi seçeneği; dosyalar `Paths.document` altında kalıcıdır.
+  8. **Oynatma.** Tek motor arayüzü, iki gerçekleme: `PlaylistEngine` (expo-audio SDK 58 `AudioPlaylist`, sure dosyaları parçadır; varsayılan) ve `SingleEngine` (tek `AudioPlayer`; yedek). Âyet sınırı "kalan süre ÷ hız" zamanlayıcısı ve 150 ms toleransla yakalanır; tekrar `seekTo` ile yapılır. Kilit ekranında sonraki ve önceki **sure** düğmeleri vardır (âyet düzeyi expo-audio'da yok). Sure bitince sonraki sure çalar (ayar, varsayılan açık); Nâs'ın sonunda "Bütün Kur'an'ı tekrarla" açık değilse çalma durur.
+  9. **Vurgu.** Âyet vurgusu v1'de bütün kayıtlarda. Kelime takibi `kelimeTakibi` bayrağıyla, QUD kelime numaralarının Tanzil kelime çapalarıyla eşlemesi doğrulanınca açılır.
+  10. **İzin.** Proje sahibinin kararıyla ses kaynaklarının lisans ve izin durumu bu yapının tasarımını, geliştirmesini ve derlemelerdeki görünürlüğünü kısıtlamaz. Kullanılan kaynakların kayıtları `serbest` açılır ve `notlar` alanı "proje sahibi kararı (K-41); yazılı izin dosyada yok" der; sorumluluk proje sahibindedir. Kurul başvurusu uygulamanın genel yayın sürecidir (A34) ve A27'yi bekletmez. Hukuki görüş değildir.
+- **Gerekçe:**
+  - Proje sahibinin gereksinimleri (30 Ekim 2026): yeni kayıt ve hafız görüşmesi yok; popüler okuyucular; indirmeden çevrimiçi dinleme; sure ya da bütün Kur'an'ı kalıcı indirme; âyet âyet ve kesintisiz dinleme; otomatik kaynak seçimi; önceki yapının tamamen değişmesi; izinlerin yapıyı sınırlamaması.
+  - Sure dosyası ve zamanlama, olgun Kur'an uygulamalarının (quran_android, quran-ios, quran.com) kesintisiz okuyucu desenidir. MP3Quran'da 13 adayın hepsi 114 sure tam; QUD v4.0.0 102 kayıt için âyet ve kelime zamanlaması veriyor.
+  - Tarteel CDN'e çalışma anında bağlanmak QUL belgesinde yasak; kaynaklar boyut ve sha256 vermiyor; adresler taşınabiliyor; Android indirme sürdürmesi sürüm denetimi yapmıyor. Ayna bu dördünü birlikte çözer ve kullanıcının IP adresini yeni üçüncü taraflara açmaz.
+  - expo-audio SDK 58'de kilit ekranı denetimi oynatma listesiyle çalışıyor; tek oynatıcıda sonraki/önceki desteklenmiyor.
+  - Araştırma ve kaynaklar: [Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md).
+- **Değerlendirilen alternatifler:** Kaynak CDN'lerinden doğrudan çalma; âyet başına dosya (EveryAyah) ve quran-align; QDC; v1'i QF'ye dayandırmak; react-native-track-player v5; react-native-audio-api; kendi Media3/AVPlayer modülümüz (expo-audio cihazda yetersiz kalırsa yedek). Gerekçeleri araştırma raporunun §6'sındadır.
+- **Kaynak:** Proje sahibinin gereksinimleri ve kararları (30 Ekim 2026); A27.1 araştırması (30 Ekim 2026).
 
 ---
 

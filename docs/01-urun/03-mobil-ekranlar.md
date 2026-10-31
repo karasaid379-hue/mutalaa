@@ -1,7 +1,7 @@
 # Mobil Ekranlar
 
-> **Sürüm:** 1.2 · **Tarih:** 24 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları)
+> **Sürüm:** 1.3 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu dosya mobil uygulamanın sekmelerini, rotalarını, ekranlarını, alt sayfalarını, ilk açılışını, ayarlarını, derin bağlantılarını ve gezinme kurallarını tanımlar. Rota ağacının temeli [Mobil mimari §4](../06-mobil/01-mobil-mimari.md#4-rotalar-expo-router) dosyasıdır; bu dosya o ağaca yalnız ekleme yapar ve eklemeleri işaretler. Okuma davranışı [Okuma deneyimi](./02-okuma-deneyimi.md), görünüş [Tasarım sistemi](./04-tasarim-sistemi.md) dosyasındadır.
 
@@ -13,7 +13,7 @@ Bu dosya mobil uygulamanın sekmelerini, rotalarını, ekranlarını, alt sayfal
 | **Kütüphane** | Eser kataloğu | Elmalılı tefsiri, Hadis (Tecrîd-i Sarîh, Kütüb-i Sitte), Risale-i Nur; paket görünürlüğüne göre |
 | **Ara** | Birleşik arama | Kapsam süzgeci, son aramalar, sonuçlar |
 | **Defterim** | Kişisel çalışma | Yer imleri, vurgular, notlar, koleksiyonlar, hatim ve ilerleme |
-| **Ayarlar** | Ayar listesi | Görünüm, okuma, mushaf, hafız, depolama, ilerleme ve gizlilik, erişilebilirlik, kaynaklar ve lisanslar, Kurul onay bilgisi |
+| **Ayarlar** | Ayar listesi | Görünüm, okuma, mushaf, okuyucu ve dinleme, depolama, ilerleme ve gizlilik, erişilebilirlik, kaynaklar ve lisanslar, Kurul onay bilgisi |
 
 - Sekme simgeleri her zaman yazılı etiketle birlikte görünür.
 - Mini oynatıcı sekme çubuğunun üstünde durur ([Mobil mimari §4](../06-mobil/01-mobil-mimari.md#4-rotalar-expo-router)).
@@ -55,9 +55,9 @@ apps/mobile/app/
 │  ├─ ayarlar/gorunum.tsx                   tema, yazı boyutları, yazı tipi
 │  ├─ ayarlar/okuma.tsx                  +  biçim, meal gösterimi, takip, odak, Risale ayarları
 │  ├─ ayarlar/mushaf.tsx                    çizim yolu, sayfa çevirme yönü
-│  ├─ ayarlar/hafiz.tsx                     hafız ve dinleme varsayılanları
+│  ├─ ayarlar/okuyucu.tsx                   okuyucu ve dinleme varsayılanları
 │  ├─ ayarlar/depolama/index.tsx            Depolama yöneticisi
-│  ├─ ayarlar/depolama/[packId].tsx         paket ya da hafız ayrıntısı
+│  ├─ ayarlar/depolama/[packId].tsx         paket ya da okuyucu kaydı ayrıntısı
 │  ├─ ayarlar/ilerleme.tsx               +  ilerleme ve gizlilik, yedek
 │  ├─ ayarlar/erisilebilirlik.tsx        +
 │  ├─ ayarlar/kaynaklar.tsx                 kaynaklar ve lisanslar
@@ -127,7 +127,7 @@ Tek `SheetHost` aynı anda tek alt sayfa açar. Yeni sayfa eskisinin yerini alı
 | Kelime kartı → Bağlantılar | Modal olmayan alt sayfa | Kelimeye dokunuş, "Bağlantılar" | %40 → %90 | Aynı sayfa büyür; panelin kendi iç geri yığını vardır |
 | Lügat, ibare, haşiye kartı | Modal olmayan alt sayfa | Risale'de dokunuş | İçerik kadar, en çok %50 | Genişleyince Bağlantılar'a döner |
 | Okuma ayarları | Modal olmayan alt sayfa | Üst çubuktaki "Aa" | %60 | Değişiklik arkada anında görünür |
-| Dinleme | Modal olmayan alt sayfa | Mini oynatıcı | %90 | Hafız listesi ve aralık seçici aynı sayfanın iç görünümleridir |
+| Dinleme | Modal olmayan alt sayfa | Mini oynatıcı | %90 | Okuyucu listesi ve aralık seçici aynı sayfanın iç görünümleridir |
 | Seçim eylem çubuğu | Yüzen araç çubuğu | Seçim | Uygulanmaz | Alt sayfa sayılmaz; alt sayfayla birlikte görünebilir |
 | Not düzenleyici | Tam ekran modal rota | Eylem çubuğu, Defterim | Tam ekran | Uzun yazı alt sayfaya konmaz |
 | Hatim oluştur | Modal rota | Defterim | Form sayfası | |
@@ -146,7 +146,7 @@ flowchart LR
 1. **Hoş geldin.** Uygulamanın adı ve tek cümlelik tanımı. Üç söz: "Reklam yok. Hesap gerekmez. Notların cihazında kalır."
 2. **Tema ve yazı boyutu.** Kâğıt, Âhar, Gece ve Sistem kartları canlı örnekle görünür: Fâtiha'nın ilk âyeti ve Elmalılı meali. Altında Arapça ve Türkçe boyut kaydırıcıları vardır; yaşlı okur boyutu ilk dakikada ayarlar.
 3. **Mushaf ve okuma biçimi.** Çizim kartları: A "Medine düzeni · cüz başına indirilir" (yalnız paket bu derlemede görünüyorsa), C "Akan metin · büyütünce yeniden akar · en erişilebilir" (önceden seçili). B paketi derlemede yoksa gösterilmez. Altında okuma biçimi seçimi; Mushaf + Meal önceden seçilidir ([Okuma deneyimi §2](./02-okuma-deneyimi.md#2-okuma-biçimleri)). Ekran okuyucu açıksa bu adım "Erişilebilir metin modu"nu önerir.
-4. **İsteğe bağlı paketler.** Bu derlemede görünen paketler boyut ve lisans rozetiyle listelenir: Mod A cüzleri (A seçildiyse; "Hepsi" ya da "İlk cüz"), hadis, tefsir ve Risale paketleri (görünüyorsa), bir hafızın sesi. "Yalnız Wi-Fi ile indir" varsayılan açıktır. "Şimdi değil" geçerli bir seçimdir; seçilen paketler tanıtımdan sonra kuyrukta iner.
+4. **İsteğe bağlı paketler.** Bu derlemede görünen paketler boyut ve lisans rozetiyle listelenir: Mod A cüzleri (A seçildiyse; "Hepsi" ya da "İlk cüz"), hadis, tefsir ve Risale paketleri (görünüyorsa), bir okuyucunun bütün Kur'an'ı (ses; isteğe bağlı, sonradan da indirilebilir). "Yalnız Wi-Fi ile indir" varsayılan açıktır. "Şimdi değil" geçerli bir seçimdir; seçilen paketler tanıtımdan sonra kuyrukta iner.
 
 Tanıtım bitince Oku sekmesi Fâtiha'da açılır. Uygulama bir derin bağlantıyla ilk kez açıldıysa tanıtım kısa yoldan (yalnız 1. adım) geçer ve hedef açılır (öneri).
 
@@ -174,12 +174,12 @@ Ayarlar
 │  ├─ Sayfa çevirme yönü: Sağdan sola* | Soldan sağa
 │  ├─ Secde âyetlerini işaretle: Açık
 │  └─ Tecvid renkleri (v1.x)
-├─ Hafız ve dinleme (ayarlar/hafiz)
-│  ├─ Varsayılan hafız · Tekrar · Âyet arası bekleme · Hız
+├─ Okuyucu ve dinleme (ayarlar/okuyucu)
+│  ├─ Varsayılan okuyucu · Tekrar · Âyet arası bekleme · Hız · Sonraki sureye geç · Bütün Kur'an'ı tekrarla · Hücresel veride akış
 │  ├─ Takip et: Açık · Kelime vurgusu (zamanlama varsa): Açık
 │  └─ Kur'an + meal (v1.x)
 ├─ Depolama (ayarlar/depolama)  (c)
-│  ├─ Alan özeti · Paketler · Hafız sesleri · İndirme kuyruğu (duraklat/sürdür)
+│  ├─ Alan özeti · Paketler · Okuyucu sesleri · İndirme kuyruğu (duraklat/sürdür)
 │  └─ Yalnız Wi-Fi ile indir: Açık · Güncellemeleri denetle
 ├─ İlerleme ve gizlilik (ayarlar/ilerleme)
 │  ├─ Hatim sayfalarını otomatik işaretle: Açık · Seri gösterimi: Kapalı

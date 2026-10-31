@@ -1,6 +1,6 @@
 # Kaynakça
 
-> **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.2 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-06](00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-23](00-ozet/02-karar-defteri.md#k-23--doküman-yeri)
 
 Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo belge sayfası (FileSystem ve Font) raporda yok; mobil dosyalarında kullanıldıkları için eklendi. Notlar kaynakların araştırma tarihindeki hâlini özetler; bir olgu kullanılmadan önce kaynak yeniden açılır. Araştırma ortamında bazı birincil siteler (ör. tanzil.net, mevzuat.gov.tr) doğrudan okunamadı; bu durumda kopyası okunan kaynak notta belirtildi. Eski plan dosyaları `quran-app-docs/` altında arşivdedir ve burada listelenmez.
@@ -103,6 +103,13 @@ Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo 
 - [AlQuran Cloud şartları](https://alquran.cloud/terms-and-conditions). Ses telifinin okuyucuda kalması; kaldırma talebi.
 - [Islamic Network lisans tartışması](https://community.islamic.network/d/231-clarification-on-licensing-and-usage-rights-for-quran-recitation-api). Ücret duvarı ve okuyucu telifi.
 - [quran-align](https://raw.githubusercontent.com/cpfair/quran-align/master/README.md). CC BY 4.0 kelime zamanlamaları ve doğruluğu.
+- [QUD, Quranic Universal Audio v4.0.0](https://github.com/QUD-Technologies/quranic-universal-audio/releases/tag/v4.0.0) ve [NOTICE](https://raw.githubusercontent.com/QUD-Technologies/quranic-universal-audio/main/NOTICE.md). 102 kayıt için âyet ve kelime zamanlaması (CC BY 4.0); kayıtlar okuyucunun ve asıl kaynağın malı (okuma 30 Ekim 2026).
+- [MP3Quran API](https://www.mp3quran.net/eng/api) ve [gizlilik sayfası](https://www.mp3quran.net/eng/privacy). Sure başına MP3, `ayat_timing` âyet zamanlaması; "Copyrights" cümlesi (okuma 30 Ekim 2026).
+- [Tarteel QUL kayıt belgesi](https://qul.tarteel.ai/resources/recitation/118/docs). `audio-cdn.tarteel.ai` adresine çalışma anında bağlanma yasağı.
+- [Quran Foundation quickstart](https://api-docs.quran.foundation/docs/quickstart/), [Content OpenAPI v4](https://api-docs.quran.foundation/openAPI/content/v4.json), [Content Sync](https://api-docs.quran.foundation/docs/tutorials/content-sync/getting-started/) ve [Developer Terms](https://api-docs.quran.foundation/legal/developer-terms/). Prelive yalnız Fâtiha ve Bakara; ses uçları ve 7 günlük eşitleme.
+- [Maqra](https://github.com/Abdalla-Eldoumani/maqra) ve [EveryAyah](https://everyayah.com/). EveryAyah'ın bayt bayt kopyası ve âyet başına dosya düzeni; kullanılmıyor (K-41).
+- [quran_android](https://github.com/quran/quran_android), [quran-ios](https://github.com/quran/quran-ios) ve [quran.com ön yüzü](https://github.com/quran/quran.com-frontend-next). Gapless ses, zamanlama veritabanı ve dosya × kare deseni.
+- [Assabile en iyi sesler](https://www.assabile.com/quran/best-voices), [tvQuran](https://www.tvquran.com/) ve [Way2Quran](https://way2quran.com/reciters). Okuyucu popülerliği; ölçüm türleri birbirinden farklıdır ([Ses kaynağı araştırması](06-mobil/04-ses-kaynak-arastirmasi.md) §4.2).
 - [fawazahmed0 hadith-api editions.json](https://raw.githubusercontent.com/fawazahmed0/hadith-api/1/editions.json). Kaynağı belgelenmemiş Türkçe koleksiyonlar.
 - [AhmedBaset/hadith-json README](https://raw.githubusercontent.com/AhmedBaset/hadith-json/main/README.md). Sunnah.com'dan kazınmış 50.884 hadis.
 - [Sunnah.com geliştirici sayfası](https://sunnah.com/developers). Anahtarlı ve kısmi API.
@@ -130,6 +137,7 @@ Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo 
 ### Kitaplıklar, veri ve arama
 
 - [expo-audio](https://docs.expo.dev/versions/latest/sdk/audio/). Arka plan, kilit ekranı, oynatma listesi; aralık döngüsü yok.
+- [expo-audio v58](https://docs.expo.dev/versions/v58.0.0/sdk/audio/), [expo-audio CHANGELOG](https://github.com/expo/expo/blob/sdk-58/packages/expo-audio/CHANGELOG.md) ve [expo-file-system v58](https://docs.expo.dev/versions/v58.0.0/sdk/filesystem/). `AudioPlaylist` kilit ekranı, `createDownloadTask`, `file.digest` (okuma 30 Ekim 2026).
 - [Expo SQLite (SDK 58 belgesi)](https://docs.expo.dev/versions/v58.0.0/sdk/sqlite.md). Web derlemesinde FTS yok.
 - [Expo FileSystem](https://docs.expo.dev/versions/latest/sdk/filesystem/). Belge ve önbellek klasörleri, indirme görevleri, dosya özeti (mobil dosyalarından).
 - [expo-font](https://docs.expo.dev/versions/latest/sdk/font/). Fontların derleme anında gömülmesi ve çalışma anında yüklenmesi (mobil dosyalarından).

@@ -1,6 +1,6 @@
 # A32 · Ayarlar, ilk açılış tanıtımı, erişilebilirlik, Kaynaklar ve lisanslar, Kurul bilgisi, öz test, hata raporu
 
-> **Sürüm:** 1.1 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-24](../../00-ozet/02-karar-defteri.md#k-24--tasarım-dili) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-15](../../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları)
+> **Sürüm:** 1.1 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-41](../../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-24](../../00-ozet/02-karar-defteri.md#k-24--tasarım-dili) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-15](../../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları)
 > **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A24](./A24-okuyucu-mushaf-c.md) · [A29](./A29-kutuphane-ve-depolama.md) · **İnsan adımı:** İ-27 (Sentry hesabı ve DSN)
 > **Ajanlar:** `mobil-gelistirici` · `arayuz-denetcisi` · `test-yazari` · `lisans-denetcisi` · `arastirmaci` · `inceleyici` · **Beceriler:** `mobil-ekran` · `test-vektoru` · `lisans-kapisi` · `metin-butunlugu` · **Tahmini oturum:** 4–5
 > **Başlat:** `/asama A32`
@@ -29,7 +29,7 @@ Ayarlar ağacını 01-urun/03 §6'ya göre tamamlar ve erişilebilirlik kurallar
 - İlk açılış tanıtımı (`onboarding/index.tsx`): dört adım, her adımda "Atla", derin bağlantıyla ilk açılışta kısa yol; tamamlandı bilgisi MMKV'de; Hakkında'daki "Tanıtımı yeniden göster" onu açar.
 
 **Yapılmaz**
-- Depolama: A29. Hafız ve dinleme: A27. İlerleme satırlarının işlevi ve yedek: A30. Tasarım vitrini: A22. Arama ölçümü: A28. Sentry'nin ilk kurulumu: A21.
+- Depolama: A29. Okuyucu ve dinleme: A27. İlerleme satırlarının işlevi ve yedek: A30. Tasarım vitrini: A22. Arama ölçümü: A28. Sentry'nin ilk kurulumu: A21.
 - Maestro akışları, referans cihazda elle erişilebilirlik ve performans ölçümü: A33. Mağaza beyanları, gizlilik metninin son hâli ve kaynak eşlemesi yüklemesi: A34.
 - Tecvid renkleri, artırılmış kontrast, ek yazı tipleri: v1.x. Başka arayüz dilleri: faz atanmadı. Hesap ve aydınlatma metni: A35.
 
@@ -45,7 +45,7 @@ Ayarlar ağacını 01-urun/03 §6'ya göre tamamlar ve erişilebilirlik kurallar
 - **Bitti sayılır:** Doğrulama sonuçları ve iki karar (madde 1–2) yazılı.
 
 ### A32.2 · Ayarlar ağacı ve depo
-- Ağaç 01-urun/03 §6: Görünüm (tema Sistem* · Kâğıt · Âhar · Gece; Arapça ve Türkçe boyut 10 kademe, varsayılan 5, cihaza özgü; Türkçe yazı tipi Literata), Okuma, Mushaf (görünmeyen çizim yolu listelenmez), Hafız ve dinleme, Depolama, İlerleme ve gizlilik, Erişilebilirlik, Kaynaklar ve lisanslar, Kurul onay bilgisi, Hakkında, Geliştirici (`gelistiriciMenusu`: yalnız `dev` ve `internal`).
+- Ağaç 01-urun/03 §6: Görünüm (tema Sistem* · Kâğıt · Âhar · Gece; Arapça ve Türkçe boyut 10 kademe, varsayılan 5, cihaza özgü; Türkçe yazı tipi Literata), Okuma, Mushaf (görünmeyen çizim yolu listelenmez), Okuyucu ve dinleme, Depolama, İlerleme ve gizlilik, Erişilebilirlik, Kaynaklar ve lisanslar, Kurul onay bilgisi, Hakkında, Geliştirici (`gelistiriciMenusu`: yalnız `dev` ve `internal`).
 - Kademe değerleri 01-urun/04 §3.2'den gelir (Türkçe 14…36 pt, Arapça 22…60 pt); depo çarpan tutar. Cihaza özgü ayarlar yalnız MMKV'dedir; diğerleri 03-veri/04 §7'ye göre `setting` tablosuna da yazılır.
 - `FontSizeSlider` artı ve eksi düğmelidir ve canlı önizleme taşır; değişiklik önizleme bölgesinde anında görünür.
 - Hakkında: sürüm, derleme türü, içerik paket sürümleri, ilkeler (K-25), gizlilik metni (KVKK §2.5 taslağı; veri sorumlusu satırı Açık soru diye işaretli) ve "Tanıtımı yeniden göster".
@@ -62,7 +62,7 @@ Ayarlar ağacını 01-urun/03 §6'ya göre tamamlar ve erişilebilirlik kurallar
 - **Bitti sayılır:** RNTL testleri etiket, rol ve eylemleri doğruluyor; %200 ve Gece görüntüleri `arayuz-denetcisi` onaylı.
 
 ### A32.4 · Kaynaklar ve lisanslar, Kurul onay bilgisi
-- Kaynaklar ve lisanslar çevrimdışı açılır ve verisi koddan gelmez: `core` ile kurulu paketlerin `attribution` tabloları birleştirilir (ad, sürüm, lisans, zorunlu atıf, kaynak bağlantısı, tam bildirim metni). Ekran ayrıca fontları (lisans metni font dağıtımından; IBM Plex Sans ve Amiri Doğrulanacak), hafızları ve quran-align atfını, derlemede üretilen açık kaynak lisans listesini ve K-19 notunu (yapay zekâ taslağıyla hazırlanıp insan onayından geçen içerik) gösterir.
+- Kaynaklar ve lisanslar çevrimdışı açılır ve verisi koddan gelmez: `core` ile kurulu paketlerin `attribution` tabloları birleştirilir (ad, sürüm, lisans, zorunlu atıf, kaynak bağlantısı, tam bildirim metni). Ekran ayrıca fontları (lisans metni font dağıtımından; IBM Plex Sans ve Amiri Doğrulanacak), okuyucuları (MP3Quran, Tarteel) ve QUD zamanlama atfını (CC BY 4.0), derlemede üretilen açık kaynak lisans listesini ve K-19 notunu (yapay zekâ taslağıyla hazırlanıp insan onayından geçen içerik) gösterir.
 - Kurul onay bilgisi: her onayın numarası, tarihi, onaylı sürümü, kapsadığı paketler ve `pack_meta` içindeki içerik özetinin ilk 12 karakteri (`installed_pack.kurul_onay`). Onay bekleyen paket hiçbir derlemede listelenmez (01-urun/03 §3.2, 07-yayin/01 §6); "Kurul onayı bekleniyor" etiketi yoktur. Onayın gösterim biçimi (numara, QR, mühür) Açık soru; numara ve metin gösterilir.
 - B-06'nın `public` derlemedeki ölçümü A34'tedir; burada `dev` verisiyle ekran sınanır.
 - **Bitti sayılır:** `lisans-denetcisi` B-07 kontrol listesi (`.tmp/a32/b07.md`) lisans defterinin §3 atıf satırlarına karşı eksiksiz; Kurul ekranı `dev`'de onaysız `core`'u listelemiyor.

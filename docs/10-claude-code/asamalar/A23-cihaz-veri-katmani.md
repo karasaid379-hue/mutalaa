@@ -1,6 +1,6 @@
 # A23 · Cihaz veri katmanı: paketler, ATTACH, `user.db`, `device.db`, gömülü `core`
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-15](../../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
+> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-41](../../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-15](../../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
 > **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A13](./A13-yayinlayici-ve-yayin-kapisi.md) · [A21](./A21-mobil-iskelet.md) · **İnsan adımı:** yok
 > **Ajanlar:** `mobil-gelistirici` · `test-yazari` · `lisans-denetcisi` · `arastirmaci` · `inceleyici` · **Beceriler:** `paket-yayini` · `lisans-kapisi` · `windows-sorun` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A23`
@@ -44,7 +44,7 @@ Cihazdaki üç veri katmanı kurulur: gömülü `core` ve ATTACH edilen metin pa
 
 ### A23.2 · Şemalar, göçler ve HLC
 - `packages/content-schema/src/user/`: `columns.ts` (`syncColumns`: `id`, `hlc`, `updated_at`, `deleted_at`, `base_version`, `device_id`) ve [Kullanıcı verisi](../../03-veri/04-kullanici-verisi-ve-senkron.md) §2'deki tablolar: `bookmark`, `highlight`, `note`, `reading_position`, `hatim`, `hatim_page`, `collection`, `setting`, `vocab` (v1.x tablosu, şema şimdiden), yalnız yerel `outbox` ve `sync_state`. Dizinler ve `CHECK` kısıtları DDL'deki gibidir.
-- `apps/mobile/src/db/device/schema.ts`: Depolama yöneticisi §2'deki `installed_pack`, `download_job`, `audio_file`.
+- `apps/mobile/src/db/device/schema.ts`: Depolama yöneticisi §2'deki `installed_pack`, `download_job`, `audio_file` (`audio_file` anahtarı `(kayit, sure, dosya_surumu)`, K-41).
 - Göçler drizzle-kit ile `apps/mobile/src/db/migrations/user/` ve `.../device/` altına üretilir; uygulanmış göç değiştirilmez.
 - `packages/reader-core` açılır: içerik sorguları için SQL yürütücü arayüzü (platform kodu içeri verilir) ve `src/sync/hlc.ts` (`tick`, `recv`; biçim `{12 hane}-{4 hane}-{16 hane}` küçük harf onaltılık; son değer `sync_state.hlc_last`).
 - Yazma yardımcısı: her kullanıcı yazımı tek işlemdir; satır UUIDv7 `id`, yeni `hlc`, `updated_at` ve `device_id` alır; `base_version` 0 kalır; v1'de `outbox` yazılmaz. `device_id` ilk açılışta UUIDv4 olarak üretilir ve `sync_state`'te durur (öneri).

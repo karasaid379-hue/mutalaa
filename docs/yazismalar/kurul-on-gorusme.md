@@ -1,6 +1,6 @@
 # Kurul ön görüşme talebi
 
-> **Sürüm:** 1.0 · **Tarih:** 20 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.1 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses)
 > **Muhatap:** Diyanet İşleri Başkanlığı, Mushafları İnceleme ve Kıraat Kurulu Başkanlığı · **Dil:** Türkçe · **İnsan adımı:** [İ-02](../10-claude-code/06-insan-adimlari.md)
 > **Kanal:** Kurul'un [İletişim sayfası](https://mushaflariinceleme.diyanet.gov.tr/sayfa/90): birim e-postası mushaflar@diyanet.gov.tr; posta adresi Diyanet İşleri Başkanlığı, Üniversiteler Mah. Dumlupınar Blv. No: 147/A 06800 Çankaya/ANKARA. Resmî yazının hangi kanaldan kabul edildiği yazmıyor; KEP adresi bulunamadı (Doğrulanacak). Başvuru usulü Yönetmelik m. 7/1'de (Başkanlıkça belirlenen matbu form). Okuma: 2026-10-20.
@@ -17,7 +17,7 @@ Tarih: [gün.ay.yıl]
 
 **Konu:** Mütâlaa mobil uygulaması için ön görüşme talebi
 
-Mütâlaa adıyla, Kur'an-ı Kerîm'i mushaf sayfasında ve Elmalılı Muhammed Hamdi Yazır'ın mealiyle okumayı, hak sahiplerinin izniyle kullanılabilen hafız tilavetlerini dinlemeyi sağlayacak ücretsiz ve reklamsız bir mobil uygulama (iOS ve Android) hazırlıyoruz. Uygulama geliştirme aşamasındadır; yayımlanmış bir sürümü yoktur.
+Mütâlaa adıyla, Kur'an-ı Kerîm'i mushaf sayfasında ve Elmalılı Muhammed Hamdi Yazır'ın mealiyle okumayı, popüler okuyucuların hazır dijital tilavet kayıtlarını dinlemeyi sağlayacak ücretsiz ve reklamsız bir mobil uygulama (iOS ve Android) hazırlıyoruz. Uygulama geliştirme aşamasındadır; yayımlanmış bir sürümü yoktur.
 
 633 sayılı Kanun'un 6. maddesi, Kurulunuzun onay ve mührü bulunmayan mealli mushafların ve sesli, görüntülü ya da elektronik ortamda hazırlanan Kur'an-ı Kerîmlerin basılamayacağını ve yayımlanamayacağını hükme bağlamaktadır. Kur'an-ı Kerim Basım ve Yayım Kriterleri Hakkında Yönetmeliği ve Kurulunuzun 09.02.2023 tarihli tebliğini inceledik. Bir mobil uygulamaya özgü bazı konularda, içerik hazırlığının başında Kurulunuzun yönlendirmesini almak istiyoruz. Uygulamayı, içerik kaynaklarını, onaylanacak içeriğin değişmeden korunması için kullanacağımız yöntemi ve sorularımızı ekte sunuyoruz.
 
@@ -53,7 +53,7 @@ Uygun göreceğiniz bir tarihte ön görüşme yapılması ya da ekteki sorular 
 
 **Meal.** Elmalılı Muhammed Hamdi Yazır'ın Hak Dini Kur'an Dili adlı eserindeki meal, eserin özgün ilk baskısından sadeleştirilmeden aktarılacaktır. Aktarım ve düzeltme turları tamamlandıktan sonra meal metni dondurulup incelemeye sunulacaktır.
 
-**Dinleme.** Hafız kayıtları yalnız hak sahibinin izniyle kullanılacaktır; Türk hafızlarla yazılı izin görüşmeleri hazırlık aşamasındadır. Okunan âyet ekranda işaretlenir; kullanıcı âyeti ya da âyet aralığını tekrarlatabilir ve okuma hızını ayarlayabilir.
+**Dinleme.** Dinleme için popüler okuyucuların hazır dijital tilavet kayıtları kullanılacaktır; kayıtlar kendi içerik deposumuzdan sunulur. Kayıtların kaynağı ve hak durumuna ilişkin bilgi başvuru dosyasında ayrıca bildirilecektir. Okunan âyet ekranda işaretlenir; kullanıcı âyeti ya da âyet aralığını tekrarlatabilir ve okuma hızını ayarlayabilir.
 
 **Çalışma araçları.** Bir kelimeye dokunulduğunda kelimenin Türkçe anlamı, kökü ve Kur'an'daki öteki geçişleri gösterilir; âyetin geçtiği hadis yerlerine (Tecrîd-i Sarîh) bağlantı verilmesi planlanır; tefsir sonraki bir sürümde eklenecektir. Risale-i Nur için yalnız atıf altyapısı hazırlanmaktadır (aşağıdaki "Diğer bölümler" paragrafına bakınız). Kök verisinin ve Risale-i Nur bağlantılarının yer alması, ilgili veri lisanslarının ve hukuki değerlendirmenin sonucuna bağlıdır. Kullanıcı not ve işaret bırakabilir.
 
@@ -67,7 +67,7 @@ Uygun göreceğiniz bir tarihte ön görüşme yapılması ya da ekteki sorular 
 |---|---|---|
 | Kur'an metni (Unicode) | Akan metin görünümü (C), âyet âyet okuma, arama; A görünümünde kopyalama, arama ve ekran okuyucu katmanı | Tanzil (tanzil.net), Uthmani metin; değiştirilmeden |
 | Elmalılı meali, Arapça metinle birlikte | Mushaf ve meal görünümü; âyet âyet okuma | Hak Dini Kur'an Dili, özgün ilk baskı; kendi aktarımımız |
-| Hafız kayıtları | Dinleme | Hak sahibinin izniyle (hafızın yazılı izni) |
+| Ses kayıtları | Dinleme | Hazır dijital kayıtlar; kaynak ve hak bilgisi başvuru dosyasında bildirilecektir |
 | Medine düzeni sayfa yazı tipleri | Mushaf görünümü A (bu görünümde ekrandaki yazı, sayfa yazı tipindeki gliflerdir) | Kral Fahd Kur'an Basım Kompleksi; Quran Foundation aracılığıyla |
 | Medine düzeni sayfa düzeni ve kelime-glif eşlemesi | Mushaf görünümü A | Kaynak seçimi sürüyor |
 | Türk hattı sayfa görüntüleri | Mushaf görünümü B | Lisans alındığında |
@@ -81,7 +81,7 @@ Uygun göreceğiniz bir tarihte ön görüşme yapılması ya da ekteki sorular 
 
 Onaylanan içeriğin sonradan fark edilmeden değişmemesi için şu yöntemi kullanacağız:
 
-1. **İçerik parmak izi.** Onaya konu her içerik biriminin (âyet, meal âyeti, ses dosyası, yazı tipi dosyası) dijital parmak izi (SHA-256 özeti) hesaplanır; bunlardan her kaynak için (Kur'an metni, meal, her hafızın kayıtları, her yazı tipi) o kaynağın tamamını temsil eden tek bir özet üretilir. Tek bir harf ya da işaret değişirse özet de değişir.
+1. **İçerik parmak izi.** Onaya konu her içerik biriminin (âyet, meal âyeti, ses dosyası, yazı tipi dosyası) dijital parmak izi (SHA-256 özeti) hesaplanır; bunlardan her kaynak için (Kur'an metni, meal, her ses kaydının dosyaları, her yazı tipi) o kaynağın tamamını temsil eden tek bir özet üretilir. Tek bir harf ya da işaret değişirse özet de değişir.
 2. **Sürüm kaydı.** Kurulunuza sunulan içerik bir sürüm kaydıyla dondurulur: içerik özetleri, Tanzil dosyasının özeti, meal metninin sürüm numarası ve ses dosyalarının listesi.
 3. **Yayın denetimi.** Mağaza sürümünü hazırlayan yazılım, onay gerektiren her içeriğin özetini onaylanan özetle karşılaştırır. Onay yoksa ya da içerik onaylı sürümden farklıysa mağaza sürümü hazırlanmaz. Yönetmeliğin dijital eserler için öngördüğü inceleme sırasına (m. 8/1-b, m. 9/2-b) göre bu adımı Kurulunuzun yönlendirmesiyle düzenleyeceğiz (Ek 4, soru 14).
 4. **Düzeltmeler.** Onaydan sonra gereken düzeltmeler biriktirilir ve yeni bir sürüm olarak birlikte yeniden onaya sunulur. Tanzil metninin yeni bir sürümü de ancak bu yolla alınır.
@@ -95,7 +95,7 @@ Onaylanan içeriğin sonradan fark edilmeden değişmemesi için şu yöntemi ku
 2. Kurulunuzun Mushaf İnceleme Başvuru Formunda ebat ve matbaa bilgileri gibi basılı esere özgü alanlar var; incelenecek eser türü olarak forma, cüz, ses kaydı ve görüntü seçenekleri sunuluyor, mobil uygulama seçeneği yok. Bir mobil uygulamanın başvurusu bu formla mı yapılır, yoksa dijital eserler için ayrı bir form ya da Yönetmeliğin 7. maddesinin birinci fıkrasında öngörülebileceği belirtilen elektronik başvuru yolu açıldı mı?
 3. Yönetmelik dijital eserlerde her eser için ikişer adet ilgili materyal (m. 7/2) ve onaylanan eserden iki adedin Kurul arşivine gönderilmesini (m. 8/4) öngörüyor. Bir mobil uygulama için materyal olarak ne sunulmalıdır: uygulamanın kurulabilir bir kopyası, metin ve ses dökümü ya da başka bir biçim?
 4. İnceleme için bir ücret öngörülüyor mu? İlk ve son inceleme ne kadar sürüyor?
-5. Yönetmelik dijital eser başvurusunda "her eser için" ikişer adet materyal istiyor (m. 7/2). Bir uygulamada eser neye karşılık gelir: uygulamanın tamamı mı, içerik paketleri mi (ör. Kur'an metni ve meal ile her hafızın kayıtları ayrı paketlerde), içeriğin belirli bir sürümü mü? İleride hazırlanacak web sürümü ayrı bir eser sayılır mı?
+5. Yönetmelik dijital eser başvurusunda "her eser için" ikişer adet materyal istiyor (m. 7/2). Bir uygulamada eser neye karşılık gelir: uygulamanın tamamı mı, içerik paketleri mi (ör. Kur'an metni ve meal ile ses kayıtlarının kataloğu ve zamanlaması ayrı paketlerde), içeriğin belirli bir sürümü mü? İleride hazırlanacak web sürümü ayrı bir eser sayılır mı?
 6. Yönetmeliğin 2/1 ve 4/1-d maddeleri gerçek ve tüzel kişiler ile kurum ve kuruluşların hazırladığı eserleri sayıyor. Başvuruyu bir gerçek kişi yapabilir mi, yoksa başvuru sahibinin tüzel kişi olması mı beklenir? Gerçek kişi başvurabiliyorsa, ileride bir tüzel kişilik (ör. dernek) kurulması hâlinde verilen onay bu tüzel kişiye geçer mi, yoksa yeniden başvuru mu gerekir?
 
 **Görünüm ölçütleri**
@@ -110,9 +110,9 @@ Onaylanan içeriğin sonradan fark edilmeden değişmemesi için şu yöntemi ku
 **Ses**
 
 13. Ses kayıtlarına ilişkin dört sorumuz var:
-    - a) Her hafızın kaydı ayrı ayrı mı onaylanır?
+    - a) Her ses kaydı (okuyucu ve tarz) ayrı ayrı mı onaylanır?
     - b) Kayıtların dosya biçimi (sıkıştırma) ya da âyet işaretlemede kullanılan zaman bilgisi değişirse yeniden onay gerekir mi?
-    - c) Bir hafız iznini geri alırsa kayıtlarının uygulamadan kaldırılması, onaylanan esere "çıkarma" (Tebliğ, "Mühür, onay ve izin" başlığının 3. fıkrası) sayılır mı; Kurulunuza bildirim ya da yeniden başvuru gerekir mi?
+    - c) Bir hak sahibi kaydının kaldırılmasını isterse kaydın uygulamadan çıkarılması, onaylanan esere "çıkarma" (Tebliğ, "Mühür, onay ve izin" başlığının 3. fıkrası) sayılır mı; Kurulunuza bildirim ya da yeniden başvuru gerekir mi?
     - d) Tebliğin 2. maddesi hızlandırma ve yavaşlatma programlarında hadr, tedvir ve tahkik usullerine dair ölçülerin dikkate alınmasını istiyor. Uygulamada 0,75 ile 1,5 kat arasında, perde düzeltmeli bir okuma hızı ayarı planlıyoruz; bu aralık uygun mudur, değilse hangi aralıkta tutulmalıdır?
 
 **İnceleme sırası, test ve onay bilgisi**
@@ -143,14 +143,14 @@ Onaylanan içeriğin sonradan fark edilmeden değişmemesi için şu yöntemi ku
 | 3 | §7.5 madde 1 (belgeler); §7.2 adım 3 (döküm biçimi Açık soru); Yönetmelik m. 7/2 ve m. 8/4 |
 | 4 | §7.5 madde 2; §1 (ücret satırı; A01.1 notu aşağıda) |
 | 5 | §7.5 madde 3; [Fazlar](../08-yol-haritasi/01-fazlar.md) §6 soru 3 (web); Yönetmelik m. 7/2 (başvuru materyali, "her eser için") ve m. 9/2-b (dijital eserin onayı) |
-| 6 | §7.5 madde 10 (başvuruyu gerçek kişi mi, tüzel kişi mi yapar; Yönetmelik m. 2/1 ve m. 4/1-d gerçek ve tüzel kişileri sayıyor); [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) S-11 (hafız ve lisans sözleşmeleri, Kurul başvurusunun sahibi); avukat yazısı 6.2 |
+| 6 | §7.5 madde 10 (başvuruyu gerçek kişi mi, tüzel kişi mi yapar; Yönetmelik m. 2/1 ve m. 4/1-d gerçek ve tüzel kişileri sayıyor); [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) S-11 (lisans sözleşmeleri, Kurul başvurusunun sahibi); avukat yazısı 6.2 |
 | 7 | Tebliğ 3/b ve 3/ç (A01.1 bulgusu); §7.4 (yedek plan: Mushaf C); K-07; [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) §4.1 ve [Mobil mimari](../06-mobil/01-mobil-mimari.md) §7.3 (Mushaf C Medine sayfa sınırlarını korur); cüz sınırları: Tanzil `quran-data.js` ve quran.com API v4 (aşağıda) |
 | 8 | Tebliğ 3/c (A01.1 bulgusu); K-26 (Tanzil metni değiştirilmez); §7.1 (QPC satırı) |
 | 9 | §7.5 madde 4; Tebliğ 3/o; §7.1 (QPC ve Unicode yazı tipi satırları); §7.4 |
 | 10 | §7.5 madde 9; Tebliğ 3/k ve 3/l (bu kurallar Cumhuriyet haberinde "basılı mushaf" kuralı diye geçiyordu; tebliğ "Basılı ve dijital eserlerde" diyor) |
 | 11 | Tebliğ 3/n (A01.1 bulgusu); K-07 (Mod A: koyu tema, tecvid renkleri); K-24 (Gece teması) |
 | 12 | §7.5 madde 5 (arama sonuçlarındaki âyet parçaları dahil); §7.1 son üç satır; [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) AS-03 (kelime anlamları); [lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) §8 satır 9; [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md) §1; başvuru formundaki "metin kelime meal" içerik türü. Cevap "evet" ise `kelime-kok` paketinin `kurul_gerekli` değeri `true` olur; P-04 ve BÇ-02 bu cevaba bağlıdır |
-| 13 | §7.5 madde 6; §7.3 tablo satırı 3 (ses kodlaması, vurgu zamanlaması); Tebliğ madde 2 (hız; A01.1 bulgusu); [Ses sistemi](../06-mobil/02-ses-sistemi.md) §1 ve §5.1 (hız 0,75–1,5); Kapsam ve fazlar §4.5; 13.c için hafız izin mektubu madde 7 ([hafız izni](./hafiz-izin.md)) ve Tebliğ "Mühür, onay ve izin" (3) |
+| 13 | §7.5 madde 6; §7.3 tablo satırı 3 (ses kodlaması, vurgu zamanlaması); Tebliğ madde 2 (hız; A01.1 bulgusu); [Ses sistemi](../06-mobil/02-ses-sistemi.md) §1 ve §5.1 (hız 0,75–1,5); Kapsam ve fazlar §4.5; 13.c için Tebliğ "Mühür, onay ve izin" (3) |
 | 14 | Yönetmelik m. 8/1-b, m. 9/1 ve m. 9/2-b (A01.1 bulgusu); §4 (P-04); §7.2 |
 | 15 | §7.5 madde 7; §3 (iç test açık sorusu); Kapsam ve fazlar AS-11; [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) §11 madde 8; Fazlar §6 soru 2 |
 | 16 | §7.5 madde 8; §6 (Kurul onay bilgisi) |
@@ -186,7 +186,7 @@ Onaylanan içeriğin sonradan fark edilmeden değişmemesi için şu yöntemi ku
 - Elmalılı ilk baskısının yılları belgelerde iki biçimde geçiyor ([Belge çelişkileri](../10-claude-code/07-belge-celiskileri.md) BÇ-22, A09'da çözülür); yazıda yıl verilmedi.
 - "Kâr amacı gütmeyen" yazılmadı: tüzel kişilik yok (S-11) ve gelir modeli hakkında söz verilmez (K-22).
 - Gönderim: imzalı yazının posta ya da elden teslimi ve e-postayla ön bilgi bir seçenektir; kanal seçimi senin kararın. Takip: gönderimden 14 gün sonra (öneri).
-- Hafız kayıtlarında "yalnız yazılı izin veren hafızlar" yerine "hak sahibinin izniyle" yazıldı: Riskler R-03 ve lisans defterindeki `ses-qf-api` satırı QF ses akışını yedek yol olarak tutuyor. QF yedeğini kaldırmak istersen önce `/karar` gerekir; sonra bu yazı ve hafız mektubu sıkılaştırılır.
+- Ses cümleleri K-41'e göre yeniden yazıldı (30 Ekim 2026): hafız görüşmesi ve hafız izni yok; hazır kayıtlar kendi depomuzdan sunulur. Hak durumuna ilişkin söz yazıya konmadı, başvuru dosyasında bildirileceği belirtildi. Göndermeden önce bu cümleleri kendi kararınıza göre gözden geçirin.
 - Cevap gelince: cevabın metni, "İlgili dosyalar" başlığından önce açılacak "## Cevap" bölümüne tarihiyle yazılır. AS-03 ve AS-11 kapanır; K-06'nın `internal` kuralı, K-07'nin görünüm listesi ve P-04'ün yayın sırası gerekirse `/karar` ile güncellenir. Yayın kapısı ve Kurul dosyasının §1, §3, §6, §7 bölümleri; lisans defteri §1 (Kurul alanı), §2 Kurul sütunu (`elmalili-tefsir`, `kelime-kok`, `qac-morfoloji`, `tecrid-*`) ve §8 satır 9; Kapsam ve fazlar §2.2 ve §3; Kelime anlamları §1 ve Fazlar §6 `/belge-esitle` ile işlenir. Lisans durumunu değiştiren bir cevapta A39 yordamı (olay kaydı, ikinci onay) çalışır. İ-02 satırı güncellenir.
 
 ## İlgili dosyalar

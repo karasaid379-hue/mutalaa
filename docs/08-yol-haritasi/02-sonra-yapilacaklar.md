@@ -1,7 +1,7 @@
 # Sonra yapılacaklar
 
-> **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-01](../00-ozet/02-karar-defteri.md#k-01--ad-mütâlaa) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
+> **Sürüm:** 1.2 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-01](../00-ozet/02-karar-defteri.md#k-01--ad-mütâlaa) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu liste park alanıdır. Bir faza girmeyen ama unutulmaması gereken işler burada durur. Her madde neden önemli olduğunu, ne zaman yeniden açılacağını, ilk somut adımı ve ilgili kararı yazar. Bir madde ele alınınca karar defterine yeni bir karar olarak işlenir ve burada "Kapandı" diye işaretlenir. S-01 ile S-10 brifteki listedir; S-11 ile S-15 bu dosyanın ve koordinasyon notlarının eklediği maddelerdir.
 
@@ -15,7 +15,7 @@ Bu liste park alanıdır. Bir faza girmeyen ama unutulmaması gereken işler bur
 | S-04 | Türk hattı lisansı (Mushaf B) | Faz 3'ten sonra ya da lisans veren cevap verince | K-07 |
 | S-05 | Diyanet meali görüşmesi | Faz 3'ten sonra ya da iç testte yoğun talep | K-03, K-25 |
 | S-06 | Risale hak sahipleriyle görüşme | Avukat görüşü gelince; en geç 2030 | K-05, K-25 |
-| S-07 | Hafız izinleri | Faz 0'da başlar (kritik yol) | K-28, K-06 |
+| S-07 | Hafız izinleri | Kapandı (30 Ekim 2026): hazır kayıtlar kullanılır | K-40, K-41 |
 | S-08 | Mağaza adı ve alan adı kontrolü | İç dağıtımdan önce, en geç Faz 3 | K-01 |
 | S-09 | Diğer tefsir ve mealler | Elmalılı tefsir paketinden sonra; 2035, 2042 | K-03 |
 | S-10 | Anlamsal katman ve "kaynaklara sor" | Altın set ölçümleri oturunca (Faz 4) | K-27, K-25 |
@@ -77,6 +77,8 @@ Proje sahibi bu maddenin kayda geçmesini özellikle istedi. [K-22](../00-ozet/0
 - **İlgili karar.** [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik), K-25.
 
 ## S-07 · Hafız izinleri
+
+- **Durum.** Kapandı (30 Ekim 2026). Hafız sesi alınmaz ve hafızlarla görüşülmez ([K-40](../00-ozet/02-karar-defteri.md#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları)); ses için popüler okuyucuların hazır kayıtları kullanılır, izin durumu yapıyı kısıtlamaz ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)). Aşağıdaki metin tarihsel kayıttır.
 
 - **Neden önemli.** Bu madde kritik yoldadır ([Fazlar](./01-fazlar.md)). Ses dosyalarının telifi okuyucularda; okuyucular ücretsiz ve ticari olmayan dağıtıma izin veriyor ve kaldırma isteyebiliyor ([AlQuran Cloud](https://alquran.cloud/terms-and-conditions)). Türk hafızlar, sesli meal ve sesli Risale için açık kaynak yok. Ses ayrıca Kurul onayına tabi. Rapor 3–5 okuyucuyla başlamayı ve vavtv listesindeki Osman Şahin ve İshak Danış gibi Türk hafızlarla doğrudan görüşmeyi öneriyor. Kayıtlar yalnız hakları alınmışsa barındırılır; ses hiçbir zaman ücretli bir katmana konmaz.
 - **Tetik.** Faz 0'da başlar.

@@ -1,31 +1,31 @@
 # A29 · Kütüphane ve Depolama yöneticisi
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-18](../../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-28](../../00-ozet/02-karar-defteri.md#k-28--ses)
+> **Sürüm:** 1.1 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-41](../../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-18](../../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-28](../../00-ozet/02-karar-defteri.md#k-28--ses)
 > **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A23](./A23-cihaz-veri-katmani.md) · **İnsan adımı:** yok
 > **Ajanlar:** `mobil-gelistirici` · `lisans-denetcisi` · `test-yazari` · `arastirmaci` · `arayuz-denetcisi` · `inceleyici` · **Beceriler:** `paket-yayini` · `lisans-kapisi` · `mobil-ekran` · **Tahmini oturum:** 4–5
 > **Başlat:** `/asama A29`
 
 ## Amaç
-K-18'deki Ayarlar › Depolama ekranını ve Kütüphane sekmesini kurar. Paketler duraklatılabilen ve varsayılan olarak yalnız Wi-Fi ile çalışan bir kuyrukla iner, sha256 ile doğrulanır, kendi sürüm klasörüne çökmeye dayanıklı biçimde kurulur ve tek dokunuşla silinir. Hafız sesleri hafız ve sure başına silinir; düşük depolama eşikleri, otomatik temizlik, açılış uzlaştırması ve manifest güncelleme bildirimi çalışır. Kütüphane yalnız derlemede görünen paketlerin bölümlerini gösterir.
+K-18'deki Ayarlar › Depolama ekranını ve Kütüphane sekmesini kurar. Paketler duraklatılabilen ve varsayılan olarak yalnız Wi-Fi ile çalışan bir kuyrukla iner, sha256 ile doğrulanır, kendi sürüm klasörüne çökmeye dayanıklı biçimde kurulur ve tek dokunuşla silinir. Okuyucu sesleri kayıt ve sure başına silinir; düşük depolama eşikleri, otomatik temizlik, açılış uzlaştırması ve manifest güncelleme bildirimi çalışır. Kütüphane yalnız derlemede görünen paketlerin bölümlerini gösterir.
 
 ## Okunacak belgeler
 - [Depolama yöneticisi](../../06-mobil/03-depolama-yoneticisi.md): tamamı
 - [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §5 manifest alanları, §7 derleme türüne göre süzme, §8 cihazda yaşam döngüsü
 - [Mobil mimari](../../06-mobil/01-mobil-mimari.md): §5 durum tablosu, §6 veri erişimi, §10 görünürlük ve bayraklar, §11 hata türleri
 - [Mobil ekranlar](../../01-urun/03-mobil-ekranlar.md): §2 rota ağacı (`kutuphane/*`, `ayarlar/depolama/*`), §3 Kütüphane ve Depolama satırları, §4 silme onayı
-- [Ses sistemi](../../06-mobil/02-ses-sistemi.md): §5.2 `PACK_REMOVED`, §11 indirme ve önbellek, §12 hafız lisans kapısı
+- [Ses sistemi](../../06-mobil/02-ses-sistemi.md): §5.2 `RECORDING_REMOVED`, §11 indirme ve önbellek, §12 kaynaklar ve görünürlük
 - [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §8 Depolama listesi ve lisans görünürlüğü, §9 "Depolama'da paket sil"
 
 ## Kapsam
 **Yapılır**
 - Kütüphane: A21'in yer tutucu rotaları doldurulur: `kutuphane/_layout.tsx`, `kutuphane/index.tsx`, `kutuphane/tefsir/index.tsx`, `kutuphane/hadis/index.tsx`, `kutuphane/risale/index.tsx`.
-- Depolama: `ayarlar/depolama/index.tsx` ve paket ya da hafız ayrıntısı `ayarlar/depolama/[packId].tsx`.
+- Depolama: `ayarlar/depolama/index.tsx` ve paket ya da okuyucu kaydı ayrıntısı `ayarlar/depolama/[packId].tsx`.
 - İndirme kuyruğu, bütünlük doğrulaması, atomik kurulum, açılıştaki tam uzlaştırma, silme, sabitleme, eşikler, otomatik temizlik ve manifest güncellemeleri (06-mobil/03 §1–§9; A23 kuyruğu ve tam uzlaştırmayı A29'a bırakır).
 - Paket güncellendiğinde yeniden çapalama olayının yayımlanması.
 
 **Yapılmaz**
 - `device.db` şeması, `ContentDb`, `validatePack`, manifest istemcisi, imza doğrulaması, `isPackVisible` ve gömülü `core` içe aktarımı: A23.
-- Hadis ve Risale içindeki gezinme ve okuyucular: A31. Tefsir okuyucusu: A24; tefsir içindekilerinin gerçek pakete bağlanması: A37. Ses çalma ve `PACK_REMOVED` işleyicisi: A27; burada yalnız olay gönderilir.
+- Hadis ve Risale içindeki gezinme ve okuyucular: A31. Tefsir okuyucusu: A24; tefsir içindekilerinin gerçek pakete bağlanması: A37. Ses çalma ve `RECORDING_REMOVED` işleyicisi: A27 (ses indirme işlerini de A27 üretir ve bu aşamanın kuyruğunu kullanır, ikinci kuyruk yazılmaz); burada yalnız olay gönderilir.
 - Yeniden çapalama algoritması: A30. Arka planda indirme: v1.x (DY-4). iCloud yedeğinden dışlama: Açık soru (DY-5). Canlı içerik deposu: İ-18, A33 ve A34.
 
 ## Adımlar
@@ -46,7 +46,7 @@ K-18'deki Ayarlar › Depolama ekranını ve Kütüphane sekmesini kurar. Paketl
 - Bölümler 06-mobil/03 §1 tablosundaki sırayla: kullanım çubuğu (Çekirdek, Metin, Mushaf, Ses, Önbellek; kategoriler yazıyla da), indirme ayarları (Yalnız Wi-Fi varsayılan açık, otomatik temizlik varsayılan kapalı; ikisi de MMKV'de), indirme kuyruğu (boşsa gizli), metin paketleri, Mushaf (30 cüz ızgarası; lisansla görünür), hafız sesleri, önbellek.
 - Metinler §1.3 anahtar tablosundan i18n'e girer. Boyutlar 1000 tabanlı ve Türkçe biçimli ("12,4 MB"); son kullanım göreli ("dün", "3 gün önce", "hiç açılmadı").
 - `core` satırı kilitli: "Uygulamayla gelir, silinemez." İndirilmiş bir `core` güncellemesi silinebilir; uygulama gömülü sürüme döner.
-- Hafız ayrıntısında sure listesi, sure başına ve hafız başına silme.
+- Okuyucu kaydı ayrıntısında sure listesi, sure başına ve kayıt başına silme ve "Bütün Kur'an'ı indir" (iş kapsamı `{"kayit": …, "sure": n}` ya da `{"kayit": …, "tum": true}`; `audio_file` anahtarı `(kayit, sure, dosya_surumu)`).
 - Erişilebilirlik: çubuk `accessibilityRole="progressbar"` ve yazılı değer taşır; her "Sil" etiketi paket adını ve boyutunu içerir; kuyruk ilerlemesi en çok %25'lik adımlarla duyurulur; bütün eylemler düğmedir.
 - **Bitti sayılır:** Bileşen testleri yeşil; üç temada ekran görüntüleri `arayuz-denetcisi` onaylı.
 
@@ -61,10 +61,10 @@ K-18'deki Ayarlar › Depolama ekranını ve Kütüphane sekmesini kurar. Paketl
 - **Bitti sayılır:** Sahte dosya sistemi ve sahte indirme göreviyle birim testleri geri çekilmeyi, eşikleri, durum geçişlerini, iki kez tutmayan özeti, kurulum geri dönüşünü ve uzlaştırmanın her maddesini sınıyor.
 
 ### A29.5 · Silme, sabitleme ve otomatik temizlik
-- "Sil"e tek dokunuş paketi `pending_delete` yapar; satır "Silindi · Geri al" olur ve "Geri al" ekrandan çıkılana kadar kalır (zamanlayıcı yok). Dosyalar ekrandan çıkınca ya da uygulama arka plana geçince silinir; önce ses `PACK_REMOVED` ile durur, metin paketi DETACH edilir; DETACH başarısızsa silme sonraki açılışa kalır.
-- Onay yalnız toplu silmede ("Tüm indirmeleri sil", "Bu hafızın tüm sesleri") ve `depends_on` bağımlısı olan silmede istenir; pencere bağımlıları listeler.
-- Sabitlenen paket ve hafız otomatik temizliğe ve yer önerilerine girmez; güncellemesi Wi-Fi'da kendiliğinden iner.
-- Otomatik temizlik (§7): 30, 60 ya da 90 gün (varsayılan 90); günde en çok bir kez, ilk kareden sonra; sureyi bütün siler; sabitlenmiş hafızı, çalma kuyruğundaki âyetleri ve son 7 günde inenleri korur; sonucu ekrana yazar, bildirim göndermez.
+- "Sil"e tek dokunuş paketi `pending_delete` yapar; satır "Silindi · Geri al" olur ve "Geri al" ekrandan çıkılana kadar kalır (zamanlayıcı yok). Dosyalar ekrandan çıkınca ya da uygulama arka plana geçince silinir; önce ses `RECORDING_REMOVED` ile durur, metin paketi DETACH edilir; DETACH başarısızsa silme sonraki açılışa kalır.
+- Onay yalnız toplu silmede ("Tüm indirmeleri sil", "Bu kaydın tüm sesleri") ve `depends_on` bağımlısı olan silmede istenir; pencere bağımlıları listeler.
+- Sabitlenen paket ve kayıt otomatik temizliğe ve yer önerilerine girmez; güncellemesi Wi-Fi'da kendiliğinden iner.
+- Otomatik temizlik (§7): 30, 60 ya da 90 gün (varsayılan 90); günde en çok bir kez, ilk kareden sonra; sureyi bütün siler; sabitlenmiş kaydı, çalınan sureyi ve son 7 günde inenleri korur; sonucu ekrana yazar, bildirim göndermez.
 - Not ya da vurgunun bağlı olduğu paket silinince kullanıcı kaydı silinmez (§9).
 - **Bitti sayılır:** `test-kucuk` silinince satır "Silindi · Geri al" oluyor, ekrandan çıkınca Kütüphane "İndir" gösteriyor; otomatik temizlik seçim testi yeşil.
 
@@ -84,7 +84,7 @@ K-18'deki Ayarlar › Depolama ekranını ve Kütüphane sekmesini kurar. Paketl
 - [ ] Yalnız Wi-Fi açıkken hücresel ağda iş "Wi-Fi bekleniyor" oluyor; "Hücresel veriyle indir" işi başlatıyor (emülatör görüntüleri).
 - [ ] Duraklatılıp sürdürülen işte inen bayt sıfırlanmıyor; uygulama öldürülüp açılınca iş `resume_data` ile sürüyor (DY-9 sonucuna göre; görüntü ve not).
 - [ ] `test-kucuk` tek dokunuşla siliniyor, "Geri al" çalışıyor, ekrandan çıkınca Kütüphane "İndir" gösteriyor.
-- [ ] Bir hafızın tek suresi ve bütün sesleri ayrı ayrı siliniyor; toplu silme onay istiyor; çalan ses `PACK_REMOVED` ile duruyor (`ses-test`).
+- [ ] Bir kaydın tek suresi ve bütün sesleri ayrı ayrı siliniyor; toplu silme onay istiyor; çalan ses `RECORDING_REMOVED` ile duruyor (`ses-test`).
 - [ ] Yeni sürümlü manifest "Güncelleme var" rozetini ve `storage.update` metnini, yüksek `min_app_version` `storage.needsApp` metnini gösteriyor (Jest).
 - [ ] `internal` ve `public` bayrağında `bekliyor` ve `ic_kullanim` paketler Kütüphane'de ve Depolama'da yok (RNTL); `lisans-denetcisi` raporu temiz.
 - [ ] TalkBack ile Depolama ekranında çubuk değeri ve "Sil" etiketleri okunuyor (elle denetim, `.tmp/a29/cihaz.md`).

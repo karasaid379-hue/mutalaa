@@ -1,7 +1,7 @@
 # İçerik Paketleri
 
-> **Sürüm:** 1.2 · **Tarih:** 20 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** K-21 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
+> **Sürüm:** 1.3 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** K-21 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 İçerik cihaza sürümlü SQLite paketleri olarak iner. Yerelde SeaweedFS'in S3 API'si ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)), canlıda S3 uyumlu bir depo kullanılır; öneri Cloudflare R2'dir (depolama 0,015 $/GB-ay, veri çıkışı ücretsiz; [R2 fiyatlandırma](https://developers.cloudflare.com/r2/pricing)). Yayınlayıcı (`Mutalaa.Publisher`) editoryal veritabanından her derleme türü için ayrı paketler ve ayrı, imzalı bir manifest üretir ([Editoryal veritabanı](./02-editoryal-veritabani.md); [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)).
 
@@ -26,7 +26,8 @@ Cihazda üç tür yerel veritabanı vardır ([Mobil mimari](../06-mobil/01-mobil
 | `risale-{kitap}` | Kitabın paragrafları ve haşiyeleri; arama indeksi taşımaz | Külliyat 31 Aralık 2030'a kadar korunuyor ([TDV İA](https://islamansiklopedisi.org.tr/risale-i-nur-kulliyati)); metin avukat görüşüne kadar `kapali` |
 | `mushaf-a-cuz-{01..30}` | QPC V2 sayfa fontları, satır düzeni ve glif kodları | QF şartları ve Kurul (mobil mimari MM-1, MM-2) |
 | `mushaf-b` | Türk hattı sayfa görselleri, `ayah_box`, Türk düzeni sayfa eşlemesi | Lisans gelince (K-07) |
-| `ses-{hafiz}` | `audio_timing` ve sure başına ses dosyası listesi; dosyalar ayrı iner | Okuyucu izni ve Kurul ([AlQuran Cloud](https://alquran.cloud/terms-and-conditions)) |
+| `ses-katalog` | Okuyucular, kayıtlar ve kayıt başına 114 sure dosyasının ayna adresi, bayt, sha256 ve süresi; manifestle kendiliğinden iner | K-41 madde 10: izin durumu kısıtlamaz |
+| `ses-zaman-{kayit}` | Kaydın âyet, kelime ve özel bölüt zamanlaması (QUD); kayıt ilk seçilince kendiliğinden iner. Ses dosyaları paket dışındadır, aynadan iner | K-41 madde 10; QUD CC BY 4.0 atfı |
 
 - `core` QAC verisi taşımaz. Kelime bölmesi, kelime metni ve ofsetler Tanzil metninden türetilir. `kelime-kok` kurulu değilse kelime kartı Arapça kelimeyi, âyeti ve aramayı gösterir; kök, lemma ve Türkçe anlam bu paketle gelir.
 - `risale-dizin` bir kitap değildir; Risale kitap slugları `dizin` adını kullanmaz. Paket ATTACH sınırı yüzünden vardır (bölüm 2).
@@ -173,7 +174,8 @@ CREATE TABLE unit_ref (rowid INTEGER PRIMARY KEY, anchor TEXT NOT NULL UNIQUE,
 
 - `mushaf-a-cuz-NN`: `page_font(page, format, data BLOB, sha256)`, `page_line(page, line, line_type, centered, sure)`, `glyph_word(page, line, pos, anchor, ayah, glyph, is_ayah_end)`. Biçim mobil mimarinin önerisiyle aynıdır; fontlar SQLite içinde durduğu için paket tek dosya, tek özet ve tek indirmedir. Sayfa, ilk âyetinin bulunduğu cüzün paketine girer.
 - `mushaf-b`: `page_image(page, format, width, height, data BLOB, sha256)`, `ayah_box(page, anchor, seq, x, y, w, h)`, `page_map` (Türk düzeni). Görsel biçimi ve cüzlere bölünme Açık soru (MM-7).
-- `ses-{hafiz}`: `audio_timing(anchor, file, file_sha256, start_ms, end_ms, words)` ve `audio_part(part TEXT PRIMARY KEY, url, size_bytes, sha256)`. `part` sure numarasıdır (`002`). Ses dosyaları SQLite dışında, sure başına iner ve `device.db` `audio_file` tablosunda izlenir ([Ses sistemi](../06-mobil/02-ses-sistemi.md)). quran-align zamanlamaları yalnız hizalandıkları dosyalarla geçerlidir ([quran-align](https://raw.githubusercontent.com/cpfair/quran-align/master/README.md)).
+- `ses-katalog` ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)): `okuyucu(id, ad, ad_ar, sira)`, `kayit(id, okuyucu_id, tarz, rivayet, zamanlama, zamanlama_surumu, dosya_surumu, bit_hizi_kbps, bit_hizi_turu, toplam_bayt)`, `kayit_sure(kayit_id, sure, url, bayt, sha256, sure_ms)`. `url` kendi depomuzdaki değişmez adrestir: `audio/{kayit}/{dosya_surumu}/{sss}.mp3`. Ses dosyaları paket dışında, sure başına iner ve `device.db` `audio_file` tablosunda izlenir ([Ses sistemi](../06-mobil/02-ses-sistemi.md) §3, §11).
+- `ses-zaman-{kayit}`: `ayet_zaman(anchor, start_ms, end_ms)`, `kelime_zaman(anchor, kelime_no, start_ms, end_ms)`, `ozel_bolut(sure, tur, start_ms, end_ms)`; zamanlar sure dosyasına göre ms, aralık yarı açık. Kaynak QUD v4.0.0 (âyet ve kelime), yedek MP3Quran (âyet); zamanlama yalnız katalogdaki `dosya_surumu` dosyalarıyla geçerlidir. Tablo ve sütun adları A27.2'de kesinleşir.
 
 ## 4. Bağlantıların paketlere dağılımı
 
@@ -258,18 +260,18 @@ Aşağıdaki örnek `dev` derlemenin manifestidir; `dev` manifesti yerel Seaweed
       "title": "Tecrîd-i Sarîh (Arapça ve Ahmed Naim)"
     },
     {
-      "pack_id": "ses-ornek-hafiz",
+      "pack_id": "ses-katalog",
       "version": "2026.11.0",
       "sha256": "e5f60718293a4b5c6d7e8f9a0b1c2d3ee5f60718293a4b5c6d7e8f9a0b1c2d3e",
       "size_bytes": 1048576,
-      "license_status": "bekliyor",
+      "license_status": "serbest",
       "kurul_gerekli": true,
       "kurul_onay": null,
       "min_app_version": "1.0.0",
       "depends_on": ["core"],
-      "url": "http://192.168.1.50:8333/mutalaa/packs/dev/ses-ornek-hafiz/2026.11.0/ses-ornek-hafiz-2026.11.0.db",
+      "url": "http://192.168.1.50:8333/mutalaa/packs/dev/ses-katalog/2026.11.0/ses-katalog-2026.11.0.db",
       "schema_version": 1,
-      "title": "Örnek hafız"
+      "title": "Ses kataloğu"
     }
   ],
   "signature": { "alg": "ed25519", "kid": "dev-2026-1", "value": "BASE64-ORNEK-IMZA" }
@@ -365,7 +367,8 @@ Değerlerin tamamı tahmindir ve gerçek veriyle ölçülecektir.
 | `hadis-*` | Bilinmiyor | Kaynak seçilmedi (K-04) |
 | `mushaf-a-cuz-NN` | ~3 MB (woff2) | V2 tam set 93,2 MB woff2 ([Quran.com font klasörü](https://github.com/quran/quran.com-frontend-next/tree/production/public/fonts/quran/hafs)); TTF yaklaşık 2,8 kat (mobil mimari) |
 | `mushaf-b` | Bilinmiyor | Lisanslı görsel biçimine bağlı |
-| `ses-{hafiz}` | 0,5–1,5 GB tam hatim | 64 kbps 28,8 MB/saat; bir tam kayıt arşivi ~0,9 GB ([way2quran](https://way2quran.com/sw/reciters/mahmoud-khalil-al-hosary)) |
+| Kayıt sesleri (paket dışı) | Kayıt başına yaklaşık 1–1,7 GB (128 kbps murattal; mücevved daha uzun), kesin değer katalogda | Bayt ≈ süre × bit hızı ÷ 8; ölçüm A27.2 ([Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md) §4.4) |
+| `ses-katalog`, `ses-zaman-{kayit}` | Katalog küçük; zamanlama kayıt başına yaklaşık 1 MB | QUD zip boyutu yaklaşık 0,6 MB |
 
 ## 10. Açık sorular
 
