@@ -1,7 +1,7 @@
 # Kurul ön görüşme talebi
 
 > **Sürüm:** 1.1 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses)
+> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses)
 > **Muhatap:** Diyanet İşleri Başkanlığı, Mushafları İnceleme ve Kıraat Kurulu Başkanlığı · **Dil:** Türkçe · **İnsan adımı:** [İ-02](../10-claude-code/06-insan-adimlari.md)
 > **Kanal:** Kurul'un [İletişim sayfası](https://mushaflariinceleme.diyanet.gov.tr/sayfa/90): birim e-postası mushaflar@diyanet.gov.tr; posta adresi Diyanet İşleri Başkanlığı, Üniversiteler Mah. Dumlupınar Blv. No: 147/A 06800 Çankaya/ANKARA. Resmî yazının hangi kanaldan kabul edildiği yazmıyor; KEP adresi bulunamadı (Doğrulanacak). Başvuru usulü Yönetmelik m. 7/1'de (Başkanlıkça belirlenen matbu form). Okuma: 2026-10-20.
 > **Engellediği iş:** mushaf görünümlerinin kesinleşmesi (K-07; A24, A26); dış test kullanıcısı alınması (A33); mağaza yayını (A34); web sürümü (A38)

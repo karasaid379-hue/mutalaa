@@ -1,7 +1,7 @@
 # Riskler
 
 > **Sürüm:** 1.3 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
+> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu dosya risk kaydıdır. Olasılık ve etki 1–5 arası puanlanır; skor ikisinin çarpımıdır. Puanlar değerlendirmedir (tahmin) ve gözden geçirmede değişebilir. Hukuki riskler için **hukuki görüş değildir**.
 
@@ -63,7 +63,7 @@ Tek geliştiricili dönemde bir kişi birden çok rolü taşır.
 
 ### R-02 · Risale hakları
 - **Açıklama.** Risale-i Nur 31 Aralık 2030'a kadar korunuyor ve hakları bugün kimin kullandığı belirsiz ([TDV İslâm Ansiklopedisi](https://islamansiklopedisi.org.tr/risale-i-nur-kulliyati); [T24](https://t24.com.tr/haber/aym-risale-i-nur-yasagini-iptal-etti,299364)). Metnin iç test grubuna dahi dağıtılması ihlal sayılabilir. Tek bir topluluğun yayınevinden lisans almak tarafsızlığı zedeler. Telifli metnin dizin, gömme ve altın set için içeride işlenmesi, harici bir dil modeli API'sine gönderilmesi ve metinsiz dizinin mağaza derlemesinde yer alması Açık soru (hukuki görüş değildir; [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md), §2.4).
-- **Önlem.** Metin hukukçu görüşü gelene kadar `kapali`: hiçbir derlemeye girmez ve işlenmez. Görüş olumluysa yalnız ekip içi `dev` derlemede `ic_kullanim` olur ([K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik), [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)). Kapı testleri; harici API ve gömme adımları yalnız serbest metinlerde çalışır; metinsiz atıf dizini için avukat görüşü; 2031 hazırlığı ([Sonra yapılacaklar](./02-sonra-yapilacaklar.md), S-06).
+- **Önlem.** Metin hukukçu görüşü gelene kadar `kapali`: hiçbir derlemeye girmez ve işlenmez. Görüş olumluysa yalnız ekip içi `dev` derlemede `ic_kullanim` olur ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük), [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)). Kapı testleri; harici API ve gömme adımları yalnız serbest metinlerde çalışır; metinsiz atıf dizini için avukat görüşü; 2031 hazırlığı ([Sonra yapılacaklar](./02-sonra-yapilacaklar.md), S-06).
 - **Tetik.** Avukat görüşünün gelmesi; hak sahibinden ihtar; Risale içeriğinin `dev` dışındaki bir derlemede görünmesi (kapı testi kırılır).
 
 ### R-03 · Ses kaynağı ve ayna

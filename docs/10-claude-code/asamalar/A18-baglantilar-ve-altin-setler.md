@@ -1,6 +1,6 @@
 # A18 · Bağlantılar (`xref`) ve altın setler
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
+> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A16](./A16-elmalili-meali.md) · [A17](./A17-kelime-katmani.md) · **İnsan adımı:** İ-12 (Türkçe → kök onayı) · İ-13
 > **Ajanlar:** `hat-gelistirici` · `test-yazari` · `lisans-denetcisi` · `arastirmaci` · `sunucu-gelistirici` (yayın süzgeci) · `inceleyici` · **Beceriler:** `icerik-hatti` · `capa-gramer` · `lisans-kapisi` · `metin-butunlugu` · **Tahmini oturum:** 4–5 Claude Code oturumu; etiketleme ayrıca
 > **Başlat:** `/asama A18`

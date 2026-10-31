@@ -1,6 +1,6 @@
 # A40 · Mushaf B (Türk hattı; lisans gelince)
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-07](../../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
+> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-07](../../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
 > **Faz:** 6 · Takvime bağlı · **Önkoşul:** [A24](./A24-okuyucu-mushaf-c.md) ve lisans (A40.1'deki koşullar) · **İnsan adımı:** lisans (S-04, Türk hattı) · İ-03 (iznin kapsamı) · İ-19 (Kurul, public için)
 > **Ajanlar:** `mobil-gelistirici` · `lisans-denetcisi` · `hat-gelistirici` · `sunucu-gelistirici` · `test-yazari` · `arayuz-denetcisi` · `inceleyici` · **Beceriler:** `mobil-ekran` · `lisans-kapisi` · `paket-yayini` · `icerik-hatti` · **Tahmini oturum:** lisanstan sonra 4–6
 > **Başlat:** `/asama A40`

@@ -1,6 +1,6 @@
 # A28 · Arama ekranı
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-15](../../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte)
+> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte)
 > **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A12](./A12-arama-indeksi-ve-paket-semasi.md) · [A24](./A24-okuyucu-mushaf-c.md) · **İnsan adımı:** yok
 > **Ajanlar:** `mobil-gelistirici` · `test-yazari` · `hat-gelistirici` (ölçüm kümesi) · `arastirmaci` · `arayuz-denetcisi` · `inceleyici` · **Beceriler:** `mobil-ekran` · `test-vektoru` · `capa-gramer` · `metin-butunlugu` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A28`

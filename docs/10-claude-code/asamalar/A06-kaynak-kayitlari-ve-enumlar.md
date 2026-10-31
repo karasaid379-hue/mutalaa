@@ -1,6 +1,6 @@
 # A06 · Lisans defteri v1 (kaynak kayıtları) ve ortak enum şeması
 
-> **Sürüm:** 1.1 · **Tarih:** 26 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
+> **Sürüm:** 1.1 · **Tarih:** 26 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
 > **Faz:** 0 · Hazırlık · **Önkoşul:** [A02](./A02-tek-depo-iskeleti.md) · **İnsan adımı:** yok
 > **Ajanlar:** `hat-gelistirici` · `lisans-denetcisi` · `arastirmaci` · `web-gelistirici` · `sunucu-gelistirici` · `inceleyici` · **Beceriler:** `lisans-kapisi` · `icerik-hatti` · **Tahmini oturum:** 2–3
 > **Başlat:** `/asama A06`

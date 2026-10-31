@@ -1,6 +1,6 @@
 # A19 · Hadis hatları (Tecrîd + Naim, Kütüb-i Sitte Arapça)
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-04](../../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
+> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-04](../../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A10](./A10-tanzil-alimi.md) · [A15](./A15-editor-paneli.md) · **İnsan adımı:** İ-11 (Naim düzeltme turları) · İ-14 · İ-25 (Sunnah.com, fawazahmed0)
 > **Ajanlar:** `hat-gelistirici` · `lisans-denetcisi` · `arastirmaci` · `metin-denetcisi` · `test-yazari` · `sunucu-gelistirici` (şema eki gerekirse) · `inceleyici` · **Beceriler:** `icerik-hatti` · `lisans-kapisi` · `capa-gramer` · `metin-butunlugu` · **Tahmini oturum:** 3–4 Claude Code oturumu; insan işleri ayrıca
 > **Başlat:** `/asama A19`

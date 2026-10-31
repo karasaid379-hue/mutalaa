@@ -1,7 +1,7 @@
 # Quran Foundation: Developer Console ve sorular
 
 > **Sürüm:** 1.3 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Bağlı kararlar:** [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 > **Muhatap:** Quran Foundation geliştirici desteği · **Dil:** Kontrol listesi Türkçe, sorular İngilizce · **İnsan adımı:** [İ-06](../10-claude-code/06-insan-adimlari.md)
 > **Kanal:** developers@quran.com (şartlara göre QF'ye yazılı bildirim adresi; [Connected Apps](https://api-docs.quran.foundation/docs/connected-apps/) sayfası genel sorular için de bu adresi veriyor). Developer Console: [dev-console.quran.foundation](https://dev-console.quran.foundation/projects). Şartlar: [QF Developer Terms](https://api-docs.quran.foundation/legal/developer-terms/), "Last updated: 2026-10-11". Okuma: 2026-10-20.
 > **Engellediği iş:** Mushaf A çevrimdışı paketleri (`mushaf-a-cuz-*`; A26); AS-02

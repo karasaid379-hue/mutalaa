@@ -1,7 +1,7 @@
 # Hafız izin mektubu
 
 > **Sürüm:** 1.1 · **Tarih:** 28 Ekim 2026 · **Durum:** İptal edildi (hafız sesi alınmayacak; [K-40](../00-ozet/02-karar-defteri.md#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları)); gönderilmeyecek
-> **Bağlı kararlar:** [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Bağlı kararlar:** [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 > **Muhatap:** Türk hafızlar (her hafıza ayrı mektup) · **Dil:** Türkçe · **İnsan adımı:** [İ-07](../10-claude-code/06-insan-adimlari.md)
 > **Kanal:** Doğrudan görüşme; kullanıcı belirler. Hafızların adı ve iletişim bilgisi depoya yazılmaz.
 > **Engellediği iş:** `ses-{hafiz}` paketlerinin yayını (A27); mağaza sürümünde ses (A34)

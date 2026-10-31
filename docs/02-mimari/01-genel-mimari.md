@@ -1,7 +1,7 @@
 # Genel mimari
 
 > **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
+> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
 
 Bu dosya sistemin bileşenlerini, veri akışını, ortamları, derleme türlerini ve hata durumlarında kurtarmayı tanımlar. Sürümler [Teknoloji yığını](./02-teknoloji-yigini.md), klasörler [Proje yapısı](./03-proje-yapisi.md), uygulamanın iç yapısı [Mobil mimari](../06-mobil/01-mobil-mimari.md) dosyasındadır.
 
@@ -12,7 +12,7 @@ Bu dosya sistemin bileşenlerini, veri akışını, ortamları, derleme türleri
 1. **İçerik önceden derlenir.** v1 verisinin neredeyse tamamı salt okunur ve sürümlüdür; sunucuya yalnız kullanıcı verisi kalır ([araştırma raporu](../09-kaynakca.md)). Metin hatta işlenir, editör panelinde onaylanır, Yayınlayıcıda SQLite paketine dönüşür.
 2. **Okuma çevrimdışı çalışır.** Uygulama gömülü `core` paketiyle açılır. Ağ manifest, paket ve ses indirmek için kullanılır.
 3. **Tek doğruluk kaynağı editoryal veritabanıdır.** Paketler ondan türetilir ve her an yeniden üretilebilir.
-4. **Yayın kapısı yayın anında uygulanır.** Yayınlayıcı her derleme türüne ayrı manifest yazar. Uygulama aynı kuralı ikinci kez denetler ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)).
+4. **Yayın kapısı yayın anında uygulanır.** Yayınlayıcı her derleme türüne ayrı manifest yazar. Uygulama aynı kuralı ikinci kez denetler ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
 5. **Bütün katmanlar çapa kullanır.** Paket, bağlantı, not ve derin bağlantı aynı adresle çalışır; adresler yeniden numaralanmaz ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)).
 6. **Arka uç incedir.** v1'de API yalnız editör paneline ve yayın akışına hizmet eder. Okur uygulaması v1'de API'ye bağlanmaz ([K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç), [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte)).
 7. **Aynı kural üç dilde aynı sonucu verir.** Normalizasyon, çapa ayrıştırma ve `content_hash` Python, TypeScript ve C# ile yazılır. `shared/test-vectors/` üçünü aynı girdi ve çıktıya bağlar.
@@ -205,7 +205,7 @@ flowchart LR
 
 ## 8. Derleme türleri
 
-Görünürlük [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) kararının 18 Ekim 2026 güncellemesine göredir. Profil, kimlik ve şema adları [Mobil mimari](../06-mobil/01-mobil-mimari.md) bölüm 10 ile aynıdır.
+Görünürlük [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) kararının 18 Ekim 2026 güncellemesine göredir. Profil, kimlik ve şema adları [Mobil mimari](../06-mobil/01-mobil-mimari.md) bölüm 10 ile aynıdır.
 
 | | `dev` | `internal` | `public` |
 |---|---|---|---|
@@ -219,9 +219,9 @@ Görünürlük [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) kara
 | `aday` bağlantılar | Var, "doğrulanmamış" işaretli | Var, "doğrulanmamış" işaretli | Yok |
 
 Kurallar:
-- `kapali` kaynak hiçbir derlemeye yazılmaz. `bekliyor` ve `ic_kullanim` içerik yalnız ekip içi `dev` derlemesinde görünür; Risale metni de buna dahildir ([K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik)).
+- `kapali` kaynak hiçbir derlemeye yazılmaz. `bekliyor` ve `ic_kullanim` içerik yalnız ekip içi `dev` derlemesinde görünür; Risale metni de buna dahildir ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
 - Kapı iki katmanlıdır. Yayınlayıcı manifesti derleme türü başına süzer; uygulama `isPackVisible` ile yeniden denetler.
-- Kapı veri setlerine de uygulanır. QAC kaynaklı kök ve lemma verisi `core` içinde durmaz; kendi lisans durumunu taşıyan ayrı pakettedir, öneri `kelime-kok` ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) uygulama notu).
+- Kapı veri setlerine de uygulanır. QAC kaynaklı kök ve lemma verisi `core` içinde durmaz; kendi lisans durumunu taşıyan ayrı pakettedir, öneri `kelime-kok` ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) uygulama notu).
 - Manifest her derleme türünde imzalıdır ve paket başına `kurul_gerekli` bilgisi taşır. Yayınlayıcı onu derleme türüne özgü anahtarla imzalar. Uygulama imzasız ya da imzası tutmayan manifesti reddeder; `public` derlemede bu kural gevşetilmez ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) §5). Algoritma ve anahtar yönetimi Doğrulanacak.
 - Her derleme türünün dosyaları kendi önekindedir (`{flavor}/manifest.json`, `packs/{flavor}/…`). `public` öneki başka türün dosyasını içermez.
 - `public` derlemeye gömülen `core`, `public` manifestindeki sha256 ile aynı olmalıdır; derleme betiği bunu doğrulamadan durur ([Proje yapısı](./03-proje-yapisi.md)).

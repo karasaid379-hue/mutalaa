@@ -1,6 +1,6 @@
 # Risale-i Nur Hazırlığı
 > **Sürüm:** 1.2 · **Tarih:** 20 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-02](../00-ozet/02-karar-defteri.md#k-02--i̇lk-içerik-seti) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
+> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-02](../00-ozet/02-karar-defteri.md#k-02--i̇lk-içerik-seti) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
 
 K-05 gereği Risale-i Nur'un altyapısı şimdi hazırlanır, metin sonra yayımlanır. Bu dosya bugün neyin, hangi hukuki sınırla kurulacağını ve 1 Ocak 2031'e hazırlığın nasıl izleneceğini anlatır. Risale metni mağaza paketine girmez.
 

@@ -1,7 +1,7 @@
 # İnsan adımları
 
 > **Sürüm:** 1.5 · **Tarih:** 31 Ekim 2026 · **Durum:** Canlı belge
-> **Bağlı kararlar:** [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
+> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
 
 Claude Code bu işleri yapamaz: hukuki ve kurumsal yazışma, hesap açma, ödeme, izin almak, insan editör kararı, sistem geneli kurulum. Claude Code hazırlığı yapar (taslak, kontrol listesi, araç), işi siz yaparsınız ve sonucu Claude Code'a söylersiniz; Claude Code bu dosyayı günceller. Bir aşama, bağlı olduğu insan adımı `tamam` olmadan o kısmına başlamaz.
 

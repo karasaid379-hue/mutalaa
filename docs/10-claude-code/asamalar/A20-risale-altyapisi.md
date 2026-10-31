@@ -1,6 +1,6 @@
 # A20 · Risale altyapısı (metinsiz: çapa, yapı, sayfa eşleme şeması, sentetik fikstür)
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-05](../../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
+> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A07](./A07-editoryal-veritabani.md) · [A13](./A13-yayinlayici-ve-kalite-kapisi.md) · **İnsan adımı:** İ-03 · İ-24 (içindekiler ve baskı sayfa verisi) · İ-28 (lügat maddeleri)
 > **Ajanlar:** `hat-gelistirici` · `lisans-denetcisi` · `sunucu-gelistirici` (Yayınlayıcı paket tanımları) · `metin-denetcisi` · `test-yazari` · `inceleyici` · **Beceriler:** `lisans-kapisi` · `capa-gramer` · `paket-yayini` · `metin-butunlugu` · **Tahmini oturum:** 2–3
 > **Başlat:** `/asama A20`

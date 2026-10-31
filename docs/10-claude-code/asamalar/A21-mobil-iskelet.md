@@ -1,6 +1,6 @@
 # A21 · Mobil iskelet: Expo, Router, NativeWind, temalar, derleme türleri, EAS
 
-> **Sürüm:** 1.1 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-29](../../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-24](../../00-ozet/02-karar-defteri.md#k-24--tasarım-dili) · [K-30](../../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)
+> **Sürüm:** 1.1 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-29](../../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-24](../../00-ozet/02-karar-defteri.md#k-24--tasarım-dili) · [K-30](../../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)
 > **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A02](./A02-tek-depo-iskeleti.md) · [A04](./A04-capa-ve-test-vektorleri.md) · **İnsan adımı:** [İ-15](../06-insan-adimlari.md) (Expo hesabı, `eas login`)
 > **Ajanlar:** `mobil-gelistirici` · `arastirmaci` · `arayuz-denetcisi` · `inceleyici` · **Beceriler:** `mobil-ekran` · `windows-sorun` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A21`

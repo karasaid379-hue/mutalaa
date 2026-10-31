@@ -1,6 +1,6 @@
 # A34 · Mağaza v1 yayın hazırlığı
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-41](../../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-15](../../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-41](../../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-15](../../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 > **Faz:** 3 · Mağaza v1 · **Önkoşul:** [A33](./A33-uctan-uca-test-ve-ic-dagitim.md) · **İnsan adımı:** İ-03 (KVKK dosyasının avukat incelemesi) · İ-15 (hesaplar, gönderim) · İ-18 (canlı depo, alan adı) · İ-19 (Kurul başvurusu ve onayı) · İ-27 (Sentry ayarları)
 > **Ajanlar:** `lisans-denetcisi` · `inceleyici` · `arastirmaci` · `belge-bekcisi` · **Beceriler:** `lisans-kapisi` · `paket-yayini` · **Tahmini oturum:** 3–4 (Kurul beklemesi hariç)
 > **Başlat:** `/asama A34`

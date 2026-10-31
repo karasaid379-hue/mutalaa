@@ -1,7 +1,7 @@
 # KFGQPC Hafs yazı tipi için izin talebi
 
 > **Sürüm:** 1.0 · **Tarih:** 20 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Bağlı kararlar:** [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 > **Muhatap:** King Fahd Glorious Qur'an Printing Complex (KFGQPC) · **Dil:** İngilizce (öneri) · **İnsan adımı:** [İ-05](../10-claude-code/06-insan-adimlari.md)
 > **Kanal:** Doğrulanacak. Kompleksin genel kurumsal adresi info@qurancomplex.gov.sa; iletişim sayfalarında geçiyor ([qurancomplex.gov.sa/en/contact-us](https://qurancomplex.gov.sa/en/contact-us/), [fonts.qurancomplex.gov.sa/en/contact-us](https://fonts.qurancomplex.gov.sa/en/contact-us/)). Sayfalar araçla açılamadı (bağlantı reddedildi); adres arama dizininden okundu, tarayıcıda açıp doğrula. İzin için yayımlanmış bir form bulunamadı. Posta: Tabuk Road, P.O. Box 6262, Madinah 41442. Okuma: 2026-10-20.
 > **Engellediği iş:** Mushaf C'de KFGQPC fontu (A24); yedek Amiri Quran

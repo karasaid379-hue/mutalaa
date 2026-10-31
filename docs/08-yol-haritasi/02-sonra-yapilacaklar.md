@@ -1,7 +1,7 @@
 # Sonra yapılacaklar
 
 > **Sürüm:** 1.2 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-01](../00-ozet/02-karar-defteri.md#k-01--ad-mütâlaa) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
+> **Bağlı kararlar:** [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-01](../00-ozet/02-karar-defteri.md#k-01--ad-mütâlaa) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu liste park alanıdır. Bir faza girmeyen ama unutulmaması gereken işler burada durur. Her madde neden önemli olduğunu, ne zaman yeniden açılacağını, ilk somut adımı ve ilgili kararı yazar. Bir madde ele alınınca karar defterine yeni bir karar olarak işlenir ve burada "Kapandı" diye işaretlenir. S-01 ile S-10 brifteki listedir; S-11 ile S-15 bu dosyanın ve koordinasyon notlarının eklediği maddelerdir.
 
@@ -71,10 +71,10 @@ Proje sahibi bu maddenin kayda geçmesini özellikle istedi. [K-22](../00-ozet/0
 
 ## S-06 · Risale hak sahipleriyle görüşme
 
-- **Neden önemli.** Risale-i Nur 31 Aralık 2030'a kadar korunuyor ([TDV İslâm Ansiklopedisi](https://islamansiklopedisi.org.tr/risale-i-nur-kulliyati)). Bakanlık 2014'te mirasçıların hakları birlikte kullanması gerektiğini söyledi ([AA/Sondakika](https://www.sondakika.com/guncel/haber-risale-i-nur-kulliyati-nin-basimi-6272228/)); hakları Diyanet'e veren düzenlemenin dayandığı hüküm 2015'te iptal edildi ([T24](https://t24.com.tr/haber/aym-risale-i-nur-yasagini-iptal-etti,299364)). 2016–2026 arasında hakların kimde olduğunu gösteren kaynak bulunamadı. GitHub deposundaki CC BY-ND ifadesi geçerli bir lisans sayılmaz, çünkü hak sahibi olmayan bir yükleyici lisans veremez ([README](https://raw.githubusercontent.com/alitekdemir/Risale-i-Nur-Diyanet/master/README.md)). Rapor üç yol sayıyor: lisans, metin yerine dizin, 2031'e hazır katman; dizin ve hazır katmanı birleştirip lisansı paralel müzakere etmeyi öneriyor. Tek bir topluluğun yayınevine bağlanmak tarafsızlığı zedeler. Metin hukukçu görüşü gelene kadar `kapali` durumundadır ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)).
+- **Neden önemli.** Risale-i Nur 31 Aralık 2030'a kadar korunuyor ([TDV İslâm Ansiklopedisi](https://islamansiklopedisi.org.tr/risale-i-nur-kulliyati)). Bakanlık 2014'te mirasçıların hakları birlikte kullanması gerektiğini söyledi ([AA/Sondakika](https://www.sondakika.com/guncel/haber-risale-i-nur-kulliyati-nin-basimi-6272228/)); hakları Diyanet'e veren düzenlemenin dayandığı hüküm 2015'te iptal edildi ([T24](https://t24.com.tr/haber/aym-risale-i-nur-yasagini-iptal-etti,299364)). 2016–2026 arasında hakların kimde olduğunu gösteren kaynak bulunamadı. GitHub deposundaki CC BY-ND ifadesi geçerli bir lisans sayılmaz, çünkü hak sahibi olmayan bir yükleyici lisans veremez ([README](https://raw.githubusercontent.com/alitekdemir/Risale-i-Nur-Diyanet/master/README.md)). Rapor üç yol sayıyor: lisans, metin yerine dizin, 2031'e hazır katman; dizin ve hazır katmanı birleştirip lisansı paralel müzakere etmeyi öneriyor. Tek bir topluluğun yayınevine bağlanmak tarafsızlığı zedeler. Metin hukukçu görüşü gelene kadar `kapali` durumundadır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
 - **Tetik.** Atıf dizini Faz 1'de üretilince ve avukat görüşü gelince; 2031 hazırlığı en geç 2030 içinde.
 - **İlk somut adım.** Faz 0'da fikri haklar avukatına sorular (hukuki görüş değildir): hakları bugün kim kullanıyor; telifli metin dizin, gömme ve altın set için içeride işlenebilir ve harici bir dil modeli API'sine gönderilebilir mi; metinsiz atıf dizini mağaza derlemesinde yer alabilir mi ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md), §2.4). Cevaba göre belgelenmiş muvafakati olan yayınevleri ya da konsorsiyum listesi.
-- **İlgili karar.** [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik), K-25.
+- **İlgili karar.** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük), K-25.
 
 ## S-07 · Hafız izinleri
 
@@ -83,7 +83,7 @@ Proje sahibi bu maddenin kayda geçmesini özellikle istedi. [K-22](../00-ozet/0
 - **Neden önemli.** Bu madde kritik yoldadır ([Fazlar](./01-fazlar.md)). Ses dosyalarının telifi okuyucularda; okuyucular ücretsiz ve ticari olmayan dağıtıma izin veriyor ve kaldırma isteyebiliyor ([AlQuran Cloud](https://alquran.cloud/terms-and-conditions)). Türk hafızlar, sesli meal ve sesli Risale için açık kaynak yok. Ses ayrıca Kurul onayına tabi. Rapor 3–5 okuyucuyla başlamayı ve vavtv listesindeki Osman Şahin ve İshak Danış gibi Türk hafızlarla doğrudan görüşmeyi öneriyor. Kayıtlar yalnız hakları alınmışsa barındırılır; ses hiçbir zaman ücretli bir katmana konmaz.
 - **Tetik.** Faz 0'da başlar.
 - **İlk somut adım.** Yazılı izin şablonu: iç test ve mağaza dağıtımı, çevrimdışı indirme, Kurul'a sunma, zamanlama verisi üretme, atıf biçimi, ücretli katmana konmama, kaldırma usulü. Sonra ilk iki hafızla görüşme.
-- **İlgili karar.** [K-28](../00-ozet/02-karar-defteri.md#k-28--ses), [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı).
+- **İlgili karar.** [K-28](../00-ozet/02-karar-defteri.md#k-28--ses), [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük).
 
 ## S-08 · Mağaza adı ve alan adı kontrolü
 
@@ -143,7 +143,7 @@ Proje sahibi bu maddenin kayda geçmesini özellikle istedi. [K-22](../00-ozet/0
 - **Neden önemli.** QAC'nin indirme sayfası GPL ve "herhangi bir web sitesinde veya uygulamada" kullanım izni veriyor; SSS "ticari amaçla kullanmamak" şartı koyuyor ([QAC indirme](https://corpus.quran.com/download/); [QAC SSS](https://corpus.quran.com/faq.jsp)). Kök, lemma ve onlara bağlı kelime anlamları bu veriye dayanıyor. QAC'den türeyen veri K-06 uygulama notu gereği `core` dışında, ayrı `kelime-kok` paketinde tutulur ve cevap gelene dek `bekliyor` kalır; bu sürede `internal` ve `public` derlemede kelime kartının kök, lemma ve anlam satırları kapalıdır ([Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)). Hukuki görüş değildir.
 - **Tetik.** Faz 0'da başlar; cevap Faz 3'ten önce gerekir.
 - **İlk somut adım.** QAC'ye yazmak: ücretsiz ve bağışla yürüyen bir uygulamada kullanım, ayrı paket olarak aynen dağıtım, düzeltmelerin ayrı katmanda tutulması. Soru taslağı Kök ve lemma dosyasındadır. Cevap lisans defterine ve `source` satırına işlenir.
-- **İlgili karar.** [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları), [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı).
+- **İlgili karar.** [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları), [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük).
 
 ## İlgili dosyalar
 

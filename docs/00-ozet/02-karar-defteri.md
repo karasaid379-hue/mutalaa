@@ -1,8 +1,8 @@
 # Karar Defteri
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Onaylı
-> **Kapsam:** 16–18 Ekim 2026 beyin fırtınası oturumunda verilen bütün kararlar ve sonraki eklemeler (K-31, 19 Ekim 2026; K-32, K-33 ve K-34, 21 Ekim 2026; K-35, 24 Ekim 2026; K-36, 25 Ekim 2026; K-37, 26 Ekim 2026; K-38, 27 Ekim 2026; K-39 ve K-40, 28 Ekim 2026; K-41, 30 Ekim 2026).
-> **Kural:** Bir karar değişirse eski satır silinmez; "Geçersiz" olarak işaretlenir ve yeni karara bağlantı verilir.
+> **Sürüm:** 1.2 · **Tarih:** 31 Ekim 2026 · **Durum:** Onaylı
+> **Kapsam:** 16–18 Ekim 2026 beyin fırtınası oturumunda verilen bütün kararlar ve sonraki eklemeler (K-31, 19 Ekim 2026; K-32, K-33 ve K-34, 21 Ekim 2026; K-35, 24 Ekim 2026; K-36, 25 Ekim 2026; K-37, 26 Ekim 2026; K-38, 27 Ekim 2026; K-39 ve K-40, 28 Ekim 2026; K-41, 30 Ekim 2026; K-42, 31 Ekim 2026).
+> **Kural:** Karar metni bugünkü kuralı anlatır. Karar değişince metin yerinde güncellenir; özet tablo ve bağlı dosyalar aynı değişiklikte eşitlenir. Kaldırılan kararın numarası yeniden kullanılmaz.
 
 Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrıntılandırır ama değiştiremez. Çelişki görülürse bu dosya geçerlidir.
 
@@ -15,9 +15,7 @@ Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrı
 | K-01 | Ad | **Mütâlaa** | [Ürün özeti](./01-urun-ozeti.md) |
 | K-02 | İlk içerik seti | Kur'an-ı Kerîm (Elmalılı meali ile), hadis, Risale-i Nur; kitaplar sonra | [Kapsam](../01-urun/01-kapsam-ve-fazlar.md) |
 | K-03 | Tefsir | Şimdilik yalnız Elmalılı; önce meal, tefsir metni sonra | [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) |
-| K-04 | Hadis | Tecrîd-i Sarîh (Arapça + Ahmed Naim Türkçesi) ve Kütüb-i Sitte Arapça metni birlikte | [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md) |
-| K-05 | Risale-i Nur ve lisanslı içerik | Altyapı şimdi hazırlanır; telif görüşmeleri zamanı gelince | [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) |
-| K-06 | Yayın kapısı | Her kaynak lisans durumu ve Kurul onay sürümü taşır | [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) |
+| K-04 | Hadis | Tecrîd-i Sarîh (Arapça + Ahmed Naim ve Kâmil Miras Türkçesi) ve Kütüb-i Sitte Arapça metni birlikte | [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md) |
 | K-07 | Mushaf görünümü | A, B ve C üçü de seçenek; kullanıcı seçer | [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) |
 | K-08 | Platform sırası | Önce mobil, web mobilden sonra | [Fazlar](../08-yol-haritasi/01-fazlar.md) |
 | K-09 | Mobil | React Native + TypeScript, Expo SDK 57 (58'e geçiş), Expo Router | [Teknoloji yığını](../02-mimari/02-teknoloji-yigini.md) |
@@ -30,7 +28,7 @@ Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrı
 | K-16 | Çakışma çözümü | HLC + veri türüne göre birleştirme | [Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md) |
 | K-17 | Arama | Cihazda SQLite FTS5, normalize arama metni | [Arama](../03-veri/05-arama-fts5.md) |
 | K-18 | Depolama yöneticisi | v1'de | [Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md) |
-| K-19 | Kelime anlamları | Kendimiz yazarız: yapay zekâ taslağı + insan onayı | [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md) |
+| K-19 | Kelime anlamları | Önce hazır kaynak; yoksa yapay zekâ taslağı; her durumda insan onayı | [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md) |
 | K-20 | Barındırma | Geliştirme kendi bilgisayarda; canlıda düşük maliyetli yöntem sonra seçilecek | [Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md) |
 | K-21 | İçerik dağıtımı | Sürümlü SQLite paketleri; yerelde S3 uyumlu depo (SeaweedFS), canlıda S3 uyumlu depo (öneri: Cloudflare R2) | [İçerik paketleri](../03-veri/03-icerik-paketleri.md) |
 | K-22 | Gelir modeli | Şimdilik yok; fiyatlandırma sonra | [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) |
@@ -38,7 +36,7 @@ Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrı
 | K-24 | Tasarım dili | "Sade Osmanlı": İznik paleti, Kâğıt / Âhar / Gece | [Tasarım sistemi](../01-urun/04-tasarim-sistemi.md) |
 | K-25 | İlkeler | Tarafsızlık, kelimesi kelimesine metin, reklamsızlık, riyâsız tasarım | [Ürün özeti](./01-urun-ozeti.md) |
 | K-26 | Kalıcı adresler | Tek çapa grameri, yeniden numaralama yok | [Çapa şeması](../03-veri/01-capa-semasi.md) |
-| K-27 | Bağlantılar | Tek `xref` tablosu; tür, güven, kanıt, durum, lisans | [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) |
+| K-27 | Bağlantılar | Tek `xref` tablosu; tür, güven, kanıt, durum | [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) |
 | K-28 | Ses | expo-audio + XState | [Ses sistemi](../06-mobil/02-ses-sistemi.md) |
 | K-29 | Mobil arayüz | NativeWind v4 + React Native Reusables + @gorhom/bottom-sheet + Reanimated 4 | [Mobil mimari](../06-mobil/01-mobil-mimari.md) |
 | K-30 | Eski plandan çıkarılanlar | .NET 9 monolit, Azure yığını, Expo SDK 51 ve kapsam dışı modüller | [Bu dosya, K-30](#k-30--eski-plandan-çıkarılanlar) |
@@ -48,11 +46,12 @@ Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrı
 | K-34 | TypeScript sürümü | Tek sürüm TypeScript 6.0.x; TS 7 (native) kullanılmaz, geçiş araçlar desteklenince | [Teknoloji yığını](../02-mimari/02-teknoloji-yigini.md) |
 | K-35 | Çapa API ayrıntıları | Hata önceliği, §3 desenlerinin önceliği, Kur'an'da okuma sırası, birim ve rota işlevleri üç dilde, ilk kayıt adım sırası | [Çapa şeması](../03-veri/01-capa-semasi.md) |
 | K-36 | Arama normalizasyonu ayrıntıları | Adım sırası, kesme ve sözcük kuralları, biçim karakterleri, Arapça noktalama, küçük harf kod noktası başına; Python gövdeleyicisi `snowballstemmer` 3.1.1 ve `â î û` ön katlaması | [Arama](../03-veri/05-arama-fts5.md) |
-| K-37 | Editoryal şema ayrıntıları | G-YZ kaydı `review.yz_kaydi`; ortak enum JSON'u 11 tür; Identity `kimlik` şemasında, parola yalnız uzunluk ≥ 12; PostgreSQL ad politikası; belgede olmayan dizin yok | [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) |
-| K-38 | Kaynak edinimi | Dijital öncelikli, kanıtla yükseltme; Elmalılı'da kontrollü hazır metin (pilotta OCR ile yarışır); çıkarılmış metin üçüncü kanonik tür; hazır metin `taslak` girer | [Bu dosya, K-38](#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) |
-| K-39 | Tanzil alımı | Simple Clean `q:` birimi değil, yalnız `ar_norm` kaynağı; hat `onayli` Tanzil satırında yalnız türetilmiş sütunları günceller; `source` satırında ikinci onaylı alanlar ezilmez; sıkı kilit ve tanı; AR-4 A10'da; bildirim metni bayt bayt | [Bu dosya, K-39](#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) |
-| K-40 | Ses kaynağı | Hafız görüşmesi yerine hazır dijital tilavet kaynakları; İ-07 yeniden tanımlandı; `kapali` EveryAyah ve QuranicAudio indirilmez, QF yalnız arka uçtan; Kurul onayı sürer | [Bu dosya, K-40](#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları) |
-| K-41 | Ses sistemi | 7 popüler okuyucu, 9 kayıt; sure dosyası + QUD zamanlaması; dosyalar kendi depomuzdan (ayna); çevrimiçi öncelikli, isteğe bağlı kalıcı indirme; `PlaylistEngine`; izin yapıyı kısıtlamaz | [Bu dosya, K-41](#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) |
+| K-37 | Editoryal şema ayrıntıları | G-YZ kaydı `review.yz_kaydi`; ortak enum JSON'u 10 tür; Identity `kimlik` şemasında, parola yalnız uzunluk ≥ 12; PostgreSQL ad politikası; belgede olmayan dizin yok | [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) |
+| K-38 | Kaynak edinimi | Dijital öncelikli, kanıtla yükseltme; kaynak dosyalarını Claude Code indirir; Elmalılı'da kontrollü hazır metin (pilotta OCR ile yarışır); çıkarılmış metin üçüncü kanonik tür; hazır metin `taslak` girer | [Bu dosya, K-38](#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) |
+| K-39 | Tanzil alımı | Simple Clean `q:` birimi değil, yalnız `ar_norm` kaynağı; hat `onayli` Tanzil satırında yalnız türetilmiş sütunları günceller; `source` satırında yalnız betimleyici alanlar güncellenir; sıkı kilit ve tanı; AR-4 A10'da; bildirim metni bayt bayt | [Bu dosya, K-39](#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) |
+| K-40 | Ses kaynağı | Hafız sesi alınmaz; hazır dijital tilavet kayıtları kullanılır; kaynak, alım ve sunum K-41'de | [Bu dosya, K-40](#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları) |
+| K-41 | Ses sistemi | 7 popüler okuyucu, 9 kayıt; sure dosyası + QUD zamanlaması; dosyalar kendi depomuzdan (ayna); çevrimiçi öncelikli, isteğe bağlı kalıcı indirme; `PlaylistEngine` | [Bu dosya, K-41](#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) |
+| K-42 | Kaynak ilkesi | İzin, lisans ve hukuk süreci işlenmez; her aşama tedarikle başlar (araştır, belirle, işle); kaynakları Claude Code internetten ve GitHub'dan indirir; kaynak kaydı ve atıf; kalite temelli derleme görünürlüğü | [Bu dosya, K-42](#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) |
 
 ---
 
@@ -66,46 +65,25 @@ Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrı
 ### K-02 · İlk içerik seti
 - **Karar:** İlk içerik seti Kur'an-ı Kerîm (Elmalılı meali ile), hadis ve Risale-i Nur. Kitaplar (Kısas-ı Enbiyâ, Mevlid vb.) sonraki fazda.
 - **Gerekçe:** Ürünün ayırt edici işi bu üç külliyat arasındaki bağlantılar.
-- **Yayın:** Üçünün de altyapısı şimdi hazırlanır. Her biri lisans durumuna göre yayına açılır ([K-06](#k-06--yayın-kapısı)).
+- **Yayın:** Üçü de şimdi hazırlanır; Risale-i Nur'un metni, adresleri, âyet atıf dizini ve baskı sayfa eşlemesi içerik hattıyla gelir. Her biri editör onayı ve kalite kapılarından geçtikçe yayına açılır ([K-42](#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
 
 ### K-03 · Tefsir: önce Elmalılı meali
 - **Karar:** Şimdilik tek tefsir Elmalılı Hamdi Yazır'ın *Hak Dini Kur'an Dili*. Önce âyet meali hazırlanır, tefsir metni ikinci aşamada.
-- **Kaynak:** Özgün 1935–39 baskısı (yazar 1942'de vefat etti; eser 1 Ocak 2013'ten beri serbest). Sadeleştirilmiş baskılar kullanılmaz, çünkü sadeleştirenin hakkı sürer.
+- **Kaynak:** Özgün 1935–39 baskısı. Sadeleştirilmiş baskılar temel metin olmaz; ürün müellifin kendi metnini sunar.
 - **Düzeltme (18 Ekim 2026):** Oturumda bu baskının Osmanlıca harflerle basıldığı söylenmişti. Bu doğru görünmüyor: baskı 1928 harf devriminden sonra yapıldı ve Princeton kataloğu eseri "Osmanlı Türkçesi" değil "Turkish" olarak kaydediyor (İstanbul: Matbaai Ebüzziya, 1935–1938, 6.442 sayfa). Türkçe metin büyük olasılıkla Latin harfli, âyetler Arapça harflidir. Bu yüzden iş, harf çevirisi değil, 1930'ların dizgisine ve imlasına uygun OCR ve düzeltmedir. Bir tarama nüshası üzerinde doğrulanacak. Kaynak: [Princeton SCSB-3946972](https://catalog.princeton.edu/catalog/SCSB-3946972).
-- **Değerlendirilen alternatifler:** Mevcut bir dijital metni temel almak (sadeleştirme hakkı riski); Elmalılı'ya ek olarak Arapça klasik tefsir (sonraya bırakıldı).
+- **Değerlendirilen alternatifler:** Mevcut bir dijital metni doğrudan temel almak (sadeleştirme sızabilir); Elmalılı'ya ek olarak Arapça klasik tefsir (sonraya bırakıldı).
 - **Güncelleme (2026-10-27):** "Mevcut bir dijital metni temel almak" seçeneği [K-38](#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) ile kontrollü biçimde yeniden değerlendirilir: hazır metin A09 pilotunda OCR ile yarışır, eşik geçilirse temel metin olur. Sadeleştirilmiş baskılar yine kullanılmaz.
 
 ### K-04 · Hadis kaynakları
-- **Karar:** Tecrîd-i Sarîh (Arapça + Babanzâde Ahmed Naim'in Türkçesi) ile Kütüb-i Sitte'nin Arapça metni birlikte işlenir.
-- **Gerekçe:** Ahmed Naim (ö. 1934) bölümü bugün serbest; Kâmil Miras'ın (ö. 1957) ciltleri 1 Ocak 2028'de serbest kalır. Yasal Türkçe hadis metni sunan tek yol bu. Arapça metinler serbest.
-- **Açık nokta:** Açık hadis veri setlerinin kaynak belgeleri zayıf; kaynak seçimi [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md) dosyasında.
-
-### K-05 · Risale-i Nur ve lisansı bekleyen içerik
-- **Karar:** Risale-i Nur'un içerik hattı, adresleri, âyet atıf dizini ve baskı sayfa eşlemesi şimdi hazırlanır. Telif görüşmeleri zamanı gelince yapılır. Aynı yaklaşım hadis çevirileri, diğer tefsirler ve Türk hattı mushaf için de geçerli.
-- **Hukuki durum:** Risale-i Nur 31 Aralık 2030'a kadar korunuyor, 1 Ocak 2031'de serbest kalıyor. Hakları bugün kimin kullandığı belirsiz.
-- **Sonuç:** Risale metni yalnız ekip içi `dev` derlemelerinde görünür. Dış test kullanıcılarına giden `internal` derlemelere ve mağaza paketine girmez. Ekip içi işlemenin (dizin üretimi dahil) hukuken uygunluğu hukukçuya danışılır.
-
-### K-06 · Yayın kapısı
-- **Karar:** Her içerik kaynağı bir lisans durumu taşır: `serbest`, `bekliyor`, `ic_kullanim`, `kapali`. Kur'an metni, meal ve ses kaynakları ayrıca Kurul onaylı sürüm bilgisi taşır.
-- **Kural (derleme türüne göre görünürlük):**
-  - `public` (mağaza): yalnız `serbest` ve gerekiyorsa Kurul onaylı içerik.
-  - `internal` (davetli test kullanıcıları): yalnız `serbest` içerik. Kurul onayı bekleyen Kur'an metni, meal ve sesin kapalı testte gösterilip gösterilemeyeceği Kurul'la ön görüşmede sorulur (Açık soru); cevap gelene kadar dış test kullanıcısı alınmaz.
-  - `dev` (yalnız ekip): `serbest`, `bekliyor` ve `ic_kullanim` içerik. `kapali` içerik hiçbir derlemeye girmez.
-- **Durumların anlamı:**
-  - `serbest`: kamu malı, açık lisanslı ya da yazılı izni olan içerik.
-  - `bekliyor`: izin ya da açıklama istendi, cevap bekleniyor (örnek: Kur'an Corpus verisi).
-  - `ic_kullanim`: hukukçu görüşüyle yalnız ekip içinde işlenebilen içerik.
-  - `kapali`: hiçbir derlemede kullanılmaz ve işlenmez.
-- **Başlangıç durumları:** Risale-i Nur metni hukukçu görüşü gelene kadar `kapali`, görüş olumluysa `ic_kullanim`; izinle ya da 1 Ocak 2031'de `serbest`. Tecrîd-i Sarîh'in Kâmil Miras ciltleri 1 Ocak 2028'e kadar `kapali`, sonra `serbest`.
-  - Güncelleme (18 Ekim 2026): İlk taslakta `internal` derlemenin `ic_kullanim` içeriği gösterebileceği yazılıydı; dış test kullanıcılarına dağıtım çoğaltma ve yayma sayılabileceği için bu kural sıkılaştırıldı.
-- **Dayanak:** 633 sayılı Kanun m. 6 (4 Haziran 2025'ten beri): Kurul onayı olmayan elektronik ve sesli Kur'an ile mealli mushaf yayımlanamaz.
-- **Uygulama notu (18 Ekim 2026):** Kapı yalnız metinlere değil veri setlerine de uygulanır. Kur'an Corpus (QAC) kaynaklı kök ve lemma verisinin lisansı belirsiz olduğu için bu veri `core` paketinden ayrı bir pakette, kendi lisans durumuyla tutulur; QAC'den yazılı açıklık gelene kadar `bekliyor` durumundadır. Manifest, paket başına `kurul_gerekli` bilgisi ve manifest imzası taşır.
+- **Karar:** Tecrîd-i Sarîh (Arapça ve Türkçesi: Babanzâde Ahmed Naim ve Kâmil Miras ciltleri) ile Kütüb-i Sitte'nin Arapça metni birlikte işlenir.
+- **Gerekçe:** Tecrîd-i Sarîh tercümesi tam ve yerleşik bir Türkçe hadis metni sunar; Arapça metin onunla yan yana gösterilir.
+- **Açık nokta:** Hazır hadis veri setlerinin baskı esası çoğu zaman belirsizdir; kaynak, eksiksizlik ve numaralandırma ölçümüyle seçilir ([Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md)).
 
 ### K-07 · Mushaf görünümü: üç seçenek
 - **Karar:** Üç çizim yolu da uygulamada seçenek olarak bulunur; kullanıcı ayarlardan seçer.
   - **A · Medine düzeni:** QPC sayfa fontları, satırlar basılı mushafla birebir. Kelime seçimi, koyu tema, tecvid renkleri.
-  - **B · Türk hattı:** Lisanslı sayfa görselleri + sayfa başına âyet koordinat verisi. Âyet vurgusu var, kelime seçimi yok. Lisans gelince açılır.
-  - **C · Akan Unicode metin:** Tek açık lisanslı font, büyütünce yeniden akar, en erişilebilir yol.
+  - **B · Türk hattı:** Türk hattı sayfa görselleri + sayfa başına âyet koordinat verisi. Âyet vurgusu var, kelime seçimi yok. Görseller kaynak araştırmasıyla bulunur (A40).
+  - **C · Akan Unicode metin:** Tek yazı tipi, büyütünce yeniden akar, en erişilebilir yol.
 - **Gerekçe:** Kullanıcı tercihi. Kalıcı adres şeması üçünü aynı anda destekler; mod değişse de not ve vurgular kopmaz.
 
 ### K-08 · Platform sırası
@@ -123,7 +101,7 @@ Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrı
 
 ### K-11 · Veritabanı: PostgreSQL 18
 - **Karar:** PostgreSQL 18 (MSSQL yerine).
-- **Gerekçe:** Ücretsiz ve açık kaynak; Türkçe ve Arapça tam metin arama yapılandırmaları hazır; anlamsal katman için pgvector; Linux konteynerde hafif; EF Core sağlayıcısı (Npgsql) olgun. MSSQL'in ücretsiz sürümü sınırlı, tam sürümü lisans istiyor.
+- **Gerekçe:** Ücretsiz ve açık kaynak; Türkçe ve Arapça tam metin arama yapılandırmaları hazır; anlamsal katman için pgvector; Linux konteynerde hafif; EF Core sağlayıcısı (Npgsql) olgun. MSSQL'in ücretsiz sürümü sınırlı, tam sürümü ücretli.
 
 ### K-12 · İçerik hattı: Python
 - **Karar:** Python 3.13, paket yönetimi `uv`.
@@ -132,7 +110,7 @@ Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrı
 
 ### K-13 · Editör paneli
 - **Karar:** React + TypeScript + Vite + shadcn/ui; iç araç.
-- **Görev:** Otomatik bulunan iktibasları, kök etiketlerini ve kelime anlamlarını onaylamak; metin düzeltmek; lisans durumunu yönetmek.
+- **Görev:** Otomatik bulunan iktibasları, kök etiketlerini ve kelime anlamlarını onaylamak; metin düzeltmek; kaynak kayıtlarını görmek.
 
 ### K-14 · Web
 - **Karar:** Next.js 16 (React + TypeScript), mobilden sonra.
@@ -155,21 +133,22 @@ Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrı
 - **Kaynak:** Proje sahibinin önerisi (18 Ekim 2026) ve araştırma raporu.
 
 ### K-18 · Depolama yöneticisi v1'de
-- **Karar:** Ayarlar › Depolama ekranı v1'de: paket listesi, boyut, sürüm, tek dokunuşla silme, hafız başına ses silme, yalnız Wi-Fi ile indirme, duraklatılabilir indirme kuyruğu.
+- **Karar:** Ayarlar › Depolama ekranı v1'de: paket listesi, boyut, sürüm, tek dokunuşla silme, kayıt başına ses silme, yalnız Wi-Fi ile indirme, duraklatılabilir indirme kuyruğu.
 - **Kaynak:** Proje sahibinin önerisi (18 Ekim 2026).
 
 ### K-19 · Kur'an kelime anlamları
-- **Karar:** Türkçe kelime anlamları kendimiz yazılır. Yapay zekâ lemma başına taslak çıkarır, insan onaylar.
-- **Gerekçe:** Yeniden kullanılabilir açık lisanslı Türkçe kelime meali bulunamadı. İş yükü 77.429 kelimeye değil, farklı lemma sayısına bağlı.
+- **Karar:** Türkçe kelime anlamları için önce hazır kaynaklar araştırılır ([K-42](#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)); uygun hazır kaynak taslak girdisi olur. Hazır kaynak bulunmazsa yapay zekâ lemma başına taslak çıkarır. Her durumda insan onaylar.
+- **Gerekçe:** Hazır yapı önce gelir. İş yükü 77.429 kelimeye değil, farklı lemma sayısına bağlı.
 
 ### K-20 · Barındırma
 - **Karar:** Geliştirme şimdilik kendi bilgisayarda (Docker Compose). Canlıya geçerken düşük maliyetli bir yöntem seçilecek.
-- **Not:** Hesaplar v1.x'te geldiğinde KVKK nedeniyle veri konumu kararı yeniden ele alınacak.
+- **Not:** Hesaplar v1.x'te geldiğinde veri konumu kararı gizlilik açısından yeniden ele alınacak.
 
 ### K-21 · İçerik dağıtımı
 - **Karar:** İçerik sürümlü SQLite paketleri olarak dağıtılır. Yerelde S3 uyumlu bir depo, canlıda S3 uyumlu bir depo.
 - **Güncelleme (18 Ekim 2026):** Oturumda yerel depo için MinIO önerilmişti. MinIO, Ekim 2025'ten beri topluluk Docker imajı yayımlamıyor ve Aralık 2025'ten beri bakım modunda. Yerel geliştirmede SeaweedFS'in S3 arayüzü kullanılır (Doğrulanacak; bkz. [Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)).
 - **Öneri:** Canlıda Cloudflare R2 (veri çıkışı ücretsiz; ses trafiği için belirleyici). Kesin seçim canlıya geçişte.
+- **Bütünlük:** Manifest her derleme türünde imzalıdır; imzasız ya da imzası tutmayan manifest okunmaz ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) §5).
 
 ### K-22 · Gelir modeli
 - **Karar:** Şimdilik bir gelir modeli yok; önce projenin çalıştığı doğrulanacak. Fiyatlandırma "Sonra yapılacaklar" listesinde.
@@ -196,16 +175,16 @@ Eski plandan aynen devralınır:
 - **Karar:** Her metin birimi tek bir gramere göre kalıcı bir adres alır: `q:2:255`, `q:2:255-257` (âyet aralığı), `q:2:255:3-7` (kelime aralığı), `meal:elmalili:2:255`, `tf:elmalili:…`, `rn:sozler:…`, `h:{koleksiyon}:{no}`, `ht:{ceviri}:{koleksiyon}:{no}`, `konu:{slug}`, `…@120-184`.
 - **Kural:** Adresler hiçbir sürümde yeniden numaralanmaz; her birim metin özeti (hash) taşır. Karakter aralığı `@başlangıç-bitiş` yarı açıktır: başlangıç dahil, bitiş hariç.
 - **Güncelleme (2026-10-24):** Uygulama ayrıntıları (hata önceliği, sıralama, birim ve rota işlevleri, ilk kayıt adım sırası) [K-35](#k-35--çapa-api-ayrıntıları) ile belirlendi; bu karar değişmedi.
-- **Kanonik metin:** Kaynaktan alınan metin, kaynağın dağıttığı hâliyle saklanır; Tanzil metni bayt bayt değiştirilmez (NFC bile uygulanmaz, çünkü NFC şedde ile harekenin sırasını değiştirir ve Tanzil "değiştirmek yasak" şartı koyar). NFC yalnız kendi ürettiğimiz metinlere (transkripsiyonlar, kelime anlamları) ilk kayıtta uygulanır. Ofsetler kanonik metindeki Unicode kod noktalarıdır; arama için normalize edilmiş metin ayrı sütunda tutulur.
+- **Kanonik metin:** Kaynaktan alınan metin, kaynağın dağıttığı hâliyle saklanır; Tanzil metni bayt bayt değiştirilmez (NFC bile uygulanmaz, çünkü NFC şedde ile harekenin sırasını değiştirir). NFC yalnız kendi ürettiğimiz metinlere (transkripsiyonlar, kelime anlamları) ilk kayıtta uygulanır. Ofsetler kanonik metindeki Unicode kod noktalarıdır; arama için normalize edilmiş metin ayrı sütunda tutulur.
 - **Güncelleme (2026-10-27):** HTML, EPUB ya da PDF'ten çıkarılan metin, birebir dilim ve kendi aktarımımızın yanında üçüncü bir kanonik metin türü oldu ([K-38](#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme), madde 3). Tanzil gibi birebir dilimler için bu karar değişmedi.
 
 ### K-27 · Tek bağlantı tablosu
-- **Karar:** Bütün bağlantılar `xref` tablosunda: kaynak ve hedef adres + aralık, tür, puan, güven, kanıt, durum (aday / onaylı / red), lisans.
+- **Karar:** Bütün bağlantılar `xref` tablosunda: kaynak ve hedef adres + aralık, tür, puan, güven, kanıt, durum (aday / onaylı / red).
 - **İstisna:** Âyet ↔ meal ve âyet ↔ tefsir aralığı ilişkileri adreslerin kendisinden türetilir (`meal:elmalili:2:255` ↔ `q:2:255`, `tf:elmalili:2-255-257:…` ↔ `q:2:255-257`); `xref`'e ayrıca yazılmaz. Kullanıcı oyları (v1.x) ayrı bir `xref_vote` tablosunda tutulur.
 
 ### K-28 · Ses
 - **Karar:** expo-audio + XState durum makinesi (tekrar, aralık, âyetler arası bekleme, Kur'an + meal dönüşümü).
-- **Gerekçe:** react-native-track-player v5 ticari kullanım için lisans istiyor; v4 donduruldu.
+- **Gerekçe:** react-native-track-player v5 ticari kullanımda ücretli; v4 donduruldu.
 - **Güncelleme (2026-10-30):** expo-audio + XState sürer. SDK 58'de varsayılan motor `AudioPlaylist` (kilit ekranı denetimi listeyle çalışıyor), tek oynatıcı yedektir; ses modeli [K-41](#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)'dedir.
 
 ### K-29 · Mobil arayüz kitaplıkları
@@ -289,61 +268,59 @@ Eski planın okuyucu tasarımları, "okuma simetrisi" çekirdeği (son okunan ye
   3. **İç kesme eşleşmesi.** Sözcüğün geniş biçimi (kesmeler korunarak) `shared/data/ic-kesme.txt` girdilerinden biriyle başlıyorsa en uzun girdi seçilir ve sözcüğün ilk k kesmesi silinir (k = girdideki kesme sayısı). Girdiler `^[a-z]+('[a-z]+)+$` desenine uyar, benzersiz ve sıralıdır. Liste TypeScript ve C# koduna `uv run mutalaa export ic-kesme` ile kopyalanır; Python dosyayı doğrudan okur.
   4. **Arapça parça.** Silme (U+064B–U+065F, U+0670, U+06D6–U+06ED, U+0640), birleştirme, sonra L, M, N dışı her kod noktası ayırıcıdır (`، ؛ ؟ ﴾ ﴿` bunun içindedir); L ya da N taşımayan sözcük atılır. Silme aralığı dışındaki işaretler (U+0610–U+061A, U+08D3–U+08FF), Farsça harfler, Arapça-Hint rakamlar, sunum biçimleri (NFKC uygulanmaz) ve U+06C0 1.0'da değişmez; AR-8 ve QA raporu A10'dadır.
   5. **Küçük harf kod noktası başınadır.** JavaScript `toLowerCase()` ve Python `str.lower()` dizede son sigma bağlamı uygular, .NET `Rune.ToLowerInvariant` uygulamaz; kod noktası başına çağrı üçünü eşitler. Sonucu `ΟΔΟΣ → οδοσ`'tur ve bilinen sınır olarak kayıtlıdır (Yunanca hedef yazı sistemi değildir).
-  6. **Gövde (`tr_stem`, Python).** Her dar sözcükte yalnız `â → a`, `î → i`, `û → u` katlanır (ç ğ ı ö ş ü korunur), Snowball Türkçe gövdesi alınır ve geniş katlamadan geçirilir; sonuç boşsa ya da L/N taşımıyorsa sözcüğün geniş biçimi kullanılır. Sebep: Snowball Türkçe algoritmasının sesli harf tanımı yalnız `a e ı i o ö u ü`'dür, `â î û` sesli sayılmaz. `tr_wide` ve `tr_stem` aynı sayıda sözcük taşır ve sırası aynıdır. Gövdeleyici `snowballstemmer` 3.1.1'dir (BSD-3-Clause, saf Python), tam sürümle sabitlenir ve `snowballstemmer.turkish_stemmer.TurkishStemmer` doğrudan içe aktarılır.
+  6. **Gövde (`tr_stem`, Python).** Her dar sözcükte yalnız `â → a`, `î → i`, `û → u` katlanır (ç ğ ı ö ş ü korunur), Snowball Türkçe gövdesi alınır ve geniş katlamadan geçirilir; sonuç boşsa ya da L/N taşımıyorsa sözcüğün geniş biçimi kullanılır. Sebep: Snowball Türkçe algoritmasının sesli harf tanımı yalnız `a e ı i o ö u ü`'dür, `â î û` sesli sayılmaz. `tr_wide` ve `tr_stem` aynı sayıda sözcük taşır ve sırası aynıdır. Gövdeleyici `snowballstemmer` 3.1.1'dir (saf Python), tam sürümle sabitlenir ve `snowballstemmer.turkish_stemmer.TurkishStemmer` doğrudan içe aktarılır.
   7. **Sürüm.** İç kesme listesi ve gövdeleyici sürümü normalleştiricinin parçasıdır; liste eklemesi ya da gövdeleyici sürüm değişikliği küçük sürümü artırır ([Arama](../03-veri/05-arama-fts5.md) §1 kuralı).
   8. **Unicode verisi.** Kategoriler, küçük harf eşlemesi ve NFC çalışma zamanının verisinden gelir (Python 15.1, Node 17.0, .NET: kategori çalışma zamanı tablosundan, `Normalize` işletim sisteminin ICU/NLS kitaplığından); sabit tablo tutulmaz ve vektörler yalnız eski, yerleşik kod noktalarını kullanır ([A04 aşama kaydı](../10-claude-code/asamalar/A04-capa-ve-test-vektorleri.md#aşama-kaydı-kapanış-2026-10-25)).
 - **Gerekçe:** Arama §1 bu durumları açık bırakıyordu; üç dilin ayrışması sessiz arama kaybı demektir. Tasarım bağımsız bir incelemede Arama §1.5 Türkçe tablosunun 14 girdisi ve `IŞIK` üzerinden adım adım yürütüldü; hepsi tablodaki çıktıyı veriyor. Gövdeleyici seçimi `arastirmaci` raporuna dayanır (25 Ekim 2026; kaynaklar: [PyPI snowballstemmer](https://pypi.org/pypi/snowballstemmer/json), [Snowball Türkçe algoritması](https://snowballstem.org/algorithms/turkish/stemmer.html), [turkish.sbl](https://github.com/snowballstem/snowball/blob/master/algorithms/turkish.sbl), [PostgreSQL 18 Snowball README](https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/snowball/README)). PostgreSQL 18 `turkish_stem`, Snowball'un 2025-02-19 anlık görüntüsünden alınmıştır; sonraki tek Türkçe davranış farkı kesmeli özel isim ekidir ve dar anahtarda kesme kalmadığı için etkisi beklenmez (çıkarım, çalıştırılarak doğrulanmadı).
 - **Değerlendirilen alternatifler:** `PyStemmer` 3.1.0 (C uzantısı, aynı ortamda kuruluysa `snowballstemmer` sessizce ona geçerdi). `tr_stem`'i A12'ye bırakmak. `â î û` ön katlaması olmadan belgenin harfiyle gövdeleme (düzeltme işaretli sözcüklerin bir kısmı gövdelenmezdi). Bütün biçim karakterlerini boşluk yapmak (yumuşak tireli ve ZWNJ'li sözcükler ikiye bölünürdü). TypeScript gövdeleyicisi A12'de değerlendirilir.
-- **Kaynak:** Proje sahibinin kararı (25 Ekim 2026, A05); gövdeleyici lisansı BSD-3-Clause, hukuki görüş değildir.
+- **Kaynak:** Proje sahibinin kararı (25 Ekim 2026, A05).
 
 ### K-37 · Editoryal şema ayrıntıları
 - **Karar:** [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) v1 şeması EF Core 10 göçüyle şu ayrıntılarla kurulur:
   1. **Yapay zekâ kaydı (G-YZ, BÇ-05).** `review` tablosuna `yz_kaydi jsonb` sütunu eklenir; `prompt_id`, `prompt_sha256` ve `input_sha256` bu sütunda durur. Öteki alanlar var olan sütunlardan gelir: `ai_model` → `yz_modeli`, `review_id` → `review.id`, `created_at` → `review.created_at`. `dogrulanmis` ayrı saklanmaz; hedef satırın onaylı durumundan türetilir. Kısıt `review_yz_kaydi_check`: `yz_modeli` ile `yz_kaydi` ya ikisi birden boştur ya ikisi birden doludur; doluysa `yz_kaydi` bir JSON nesnesidir, üç anahtarı da taşır ve iki özet `^[0-9a-f]{64}$` biçimindedir.
-  2. **Ortak enum dosyası 11 tür taşır.** `packages/content-schema/enums.json` artık §2'deki bütün türleri içerir; yeni eklenenler `unit_kind`, `unit_status`, `metin_durumu`, `inceleme_durumu`, `surum_durumu`. TypeScript, C#, Python ve PostgreSQL bu dosyaya karşı testlenir; PostgreSQL'deki etiket sırası JSON'daki sıradır. Npgsql 10'un `MapEnum` yöntemi etiketleri alfabetik sıraya dizdiği için türler `HasPostgresEnum` ile tanımlanır ve sıra açıkça verilir.
+  2. **Ortak enum dosyası 10 tür taşır.** `packages/content-schema/enums.json` §2'deki bütün türleri içerir (`unit_kind`, `unit_status`, `metin_durumu`, `inceleme_durumu`, `surum_durumu` dahil). TypeScript, C#, Python ve PostgreSQL bu dosyaya karşı testlenir; PostgreSQL'deki etiket sırası JSON'daki sıradır. Npgsql 10'un `MapEnum` yöntemi etiketleri alfabetik sıraya dizdiği için türler `HasPostgresEnum` ile tanımlanır ve sıra açıkça verilir.
   3. **Editör kimliği.** Identity tabloları `kimlik` şemasında durur: `users`, `roles`, `user_roles`, `user_claims`, `user_logins`, `user_tokens`, `role_claims`. Identity şema sürümü varsayılan kalır, passkey tablosu kurulmaz. Parola en az 12 karakter olur; büyük harf, rakam ya da simge şartı yoktur. 5 hatalı denemede hesap 15 dakika kilitlenir. Kullanıcı adı e-posta adresidir ve her e-posta yalnız bir hesapta kullanılabilir.
   4. **Ad politikası.** `icerik` şemasındaki kısıt ve dizin adları, PostgreSQL'in adsız nesnelere verdiği adlardır: `{tablo}_pkey`, `{tablo}_{sütun}_fkey`, `{tablo}_{sütunlar}_key`, `{tablo}_{sütun}_check`; birden çok sütuna bakan CHECK `{tablo}_check` olur. Belgede adı geçen dizin ve kısıtlar o adı taşır. Belgede tekil kısıt (UNIQUE) diye yazılanlar EF'de aynı adlı tekil dizin olarak kurulur. Tek istisna `xref_natural_key`: hat bu kısıtı `ON CONFLICT ON CONSTRAINT` ile hedeflediği için gerçek bir kısıt olarak göçe ham SQL ile eklenir.
   5. **Belgede olmayan dizin açılmaz.** EF'nin yabancı anahtar sütunlarına kendiliğinden dizin açması kapatılır; `icerik` şemasında yalnız belgedeki dizinler bulunur. Identity'nin dört yabancı anahtar dizini açıkça tanımlanır.
-- **Gerekçe:** G-YZ alanları için tabloda yer yoktu; A16 ve A17 bu kaydın karar defterinde olmasını bekliyor ([belge çelişkileri](../10-claude-code/07-belge-celiskileri.md), BÇ-05). Tek bir enum dosyası dört uygulamayı birbirine bağlar. `license_status` sırası lisans kapısının davranışını belirler; Npgsql'in alfabetik sıralaması bilinçli bir tasarımdır ([efcore.pg #3667](https://github.com/npgsql/efcore.pg/issues/3667), [#3390](https://github.com/npgsql/efcore.pg/issues/3390); A07.1 okuması, 26 Ekim 2026). [Backend API](../02-mimari/05-backend-api.md) §6 parola için yalnız uzunluk şartı koyuyor; Identity'nin varsayılan kuralları [Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md) §6'daki örnek parolayı reddederdi. EFCore.NamingConventions kısıt ve dizinlere `pk_`, `fk_` ve `ix_` öneklerini verir; ad politikasıyla belgedeki DDL, `pg_dump` çıktısı ve hattın SQL'i aynı adları kullanır. Yabancı anahtar dizini kuralı açık kalsaydı belgede olmayan 10 dizin açılırdı.
+- **Gerekçe:** G-YZ alanları için tabloda yer yoktu; A16 ve A17 bu kaydın karar defterinde olmasını bekliyor ([belge çelişkileri](../10-claude-code/07-belge-celiskileri.md), BÇ-05). Tek bir enum dosyası dört uygulamayı birbirine bağlar. Enum sırası anlamlıdır (ör. `metin_durumu`); Npgsql'in alfabetik sıralaması bilinçli bir tasarımdır ([efcore.pg #3667](https://github.com/npgsql/efcore.pg/issues/3667), [#3390](https://github.com/npgsql/efcore.pg/issues/3390); A07.1 okuması, 26 Ekim 2026). [Backend API](../02-mimari/05-backend-api.md) §6 parola için yalnız uzunluk şartı koyuyor; Identity'nin varsayılan kuralları [Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md) §6'daki örnek parolayı reddederdi. EFCore.NamingConventions kısıt ve dizinlere `pk_`, `fk_` ve `ix_` öneklerini verir; ad politikasıyla belgedeki DDL, `pg_dump` çıktısı ve hattın SQL'i aynı adları kullanır. Yabancı anahtar dizini kuralı açık kalsaydı belgede olmayan 10 dizin açılırdı.
 - **Değerlendirilen alternatifler:** G-YZ için `review` tablosuna ayrı sütunlar (her yeni alan bir göç ister) ya da kararı A16'ya ertelemek. Enum'ları yalnız C# ve PostgreSQL'de tutmak (iki doğruluk kaynağı olurdu). Identity'nin varsayılan parola kuralları. EF'nin ad önekleri ve yabancı anahtar dizinleri.
 - **Kaynak:** Proje sahibinin kararı (26 Ekim 2026, A07): 1–3. maddeler soru-cevapla, 4–5. maddeler plan onayıyla.
 - **Güncelleme (2026-10-27, A07):** Madde 4'ün istisnaları kodla birlikte genişler: `xref_natural_key` (gerçek kısıt, ham SQL); `review_yz_kaydi_check` (çok sütunlu olduğu hâlde açık ad taşır, `review_check` olmaz); `icerik."__EFMigrationsHistory"` (`pk_` önekli birincil anahtar); `kimlik` şemasında EF adları (`pk_`, `fk_`, `ix_`). Durum sütunu olmayan hedeflerde (`source`, `root`, `tr_root_index`, `tr_form`, `page_map`, `ayah_box`, `audio_timing`) `dogrulanmis` = `review.durum = 'onaylandi'` olarak türetilir (madde 1'in anlamı değişmez). Madde 3 kodda uygulandı: parola yalnız uzunluk >= 12 ve `RequireUniqueEmail` açık; e-posta tekilliği veritabanı düzeyinde de kilitlidir: `kimlik.users` üzerinde `ix_users_normalized_email` ve (kullanıcı adı e-posta olduğundan) `ix_users_normalized_user_name` tekil dizinleridir.
 
 ### K-38 · Kaynak edinimi: dijital öncelikli, kanıtla yükseltme
 - **Karar:**
-  1. **İlke.** Bir kitap için önce yasal olarak kullanılabilen hazır dijital metin (TXT, EPUB, metin katmanlı PDF, HTML) aranır; tarama ve OCR yedek yoldur.
-     - Hazır metin `bekliyor` durumuyla kaydedilir ve yalnız ekip içi `dev` derlemesinde görünür.
-     - Örneklemi basılı özgün nüshayla karşılaştırılır (CER ve sadeleştirme denetimi). Kaynak ve baskı esası belgelenirse durum yükseltilir; belgelenmezse kendi aktarımımız yapılır.
-     - [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md) §5'teki yol bütün kitaplara uygulanır. Kökeni belgelenmemiş set `serbest` olmaz (R-06).
-     - Otomatik toplu indirme yoktur: dosyayı kullanıcı elle indirir, hat yalnız kayıtlı dosyayı işler.
-  2. **Elmalılı ([K-03](#k-03--tefsir-önce-elmalılı-meali)'ün uygulaması).** Hazır meal metni (aday: Vikikaynak "Kur'an"; tefsir için archive.org metin katmanı) A09 pilotunda OCR motorlarıyla aynı altın örneklemde ölçülür.
+  1. **İlke.** Bir kitap için önce hazır dijital metin (TXT, EPUB, metin katmanlı PDF, HTML) aranır; tarama ve OCR yedek yoldur.
+     - Hazır metin `taslak` girer ve editör onayından geçer.
+     - Örneklemi basılı özgün nüshayla karşılaştırılır (CER ve sadeleştirme denetimi). Eşik geçilir ve baskı esası belgelenirse temel metin olur; belgelenmezse kendi aktarımımız yapılır.
+     - [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md) §5'teki yol bütün kitaplara uygulanır. Baskı esası belgelenmemiş set temel metin olmaz.
+     - Kaynak dosyalarını Claude Code bulur ve indirir; hat yalnız kayıtlı dosyayı işler ([K-42](#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
+  2. **Elmalılı ([K-03](#k-03--tefsir-önce-elmalılı-meali)'ün uygulaması).** Hazır meal metni (adaylar: Vikikaynak "Kur'an", Tanzil ve Açık Kuran'daki Elmalılı metinleri; tefsir için archive.org metin katmanı) A09 pilotunda OCR motorlarıyla aynı altın örneklemde ölçülür.
      - Eşik geçilir ve tam metin denetimi temiz çıkarsa hazır metin temel metin olur, iki düzeltme turu yapılır. Başlangıç önerisi: meal bloklarında CER ≤ %1, sadeleştirme izi 0; eşik pilottan sonra kesinleşir.
      - Tam metin denetimi: 6.236 âyetin kapsamı ve sadeleştirme taraması otomatik; 60 rastgele âyet elle. Bu örneklem metnin %5'ini etkileyen bir sorunu yaklaşık %95 olasılıkla yakalar (0,95^60 ≈ 0,046).
      - Eşik geçilmezse OCR yoluna dönülür.
-     - Sadeleştirilmiş metinler (GitHub `elmalili-meal/kuran`, Azim) ve ticari kullanımı kapatanlar (Tanzil, Açık Kuran) aday olamaz.
-     - Özgün baskı taraması yine gerekir (örneklem ve Kurul'a sadakat kanıtı). Görsel kaynağı önce archive.org taraması (ofset sınamasından geçerse), yedek sahaftan takım.
-     - Atıf metni "X kaynağından alınmış, Mütâlaa tarafından özgün baskıyla karşılaştırılıp düzeltilmiştir" biçimine döner. `serbest` ve Kurul başvurusu avukat görüşüne ve Kurul onayına bağlıdır.
+     - Sadeleştirilmiş metinler (GitHub `elmalili-meal/kuran`, Azim) aday olamaz.
+     - Özgün baskı taraması yine gerekir (örneklem için). Görsel kaynağı önce archive.org taraması (ofset sınamasından geçerse), yedek sahaftan takım.
+     - Atıf metni "X kaynağından alınmış, Mütâlaa tarafından özgün baskıyla karşılaştırılıp düzeltilmiştir" biçimine döner.
   3. **Çıkarılmış metin ([K-26](#k-26--kalıcı-adresler-çapa-şeması)'ya ek).** HTML, EPUB ya da PDF'ten çıkarılan metin kaynak dosyanın birebir dilimi değildir; üçüncü bir kanonik metin türüdür.
      - Ham dosya `data/raw` altında değişmez (SHA-256), çıkarıcı sürümü sabittir ve dönüşüm deterministiktir.
      - Dönüşüm ortak test vektörleriyle üç dilde tanımlanır.
      - İlk kayıt adımları ([K-35](#k-35--çapa-api-ayrıntıları)) uygulanır. `provenance` dosya özetini, dosya içi konumu ve çıkarıcı sürümünü taşır.
      - G-BUT denetimi bu tür için "ham dosya ve çıkarıcıdan metin yeniden üretilebilir" olur. Birebir dilimlerde (Tanzil) K-26 aynen sürer.
   4. **Başlangıç durumu.** `metin_durumu = 'onayli'` ile giriş yalnız Tanzil gibi kanonik başvuru kaynakları için geçerlidir. Hazır ve çıkarılmış metinlerin hepsi `taslak` girer ve editör onayından geçer (meal ve tefsirde ikinci onay). Böylece P-10 editör onaysız hazır metni `public` derlemeye sokmaz (BÇ-43).
-  5. **Sınırlar.** Risale-i Nur, Kâmil Miras ciltleri ve hazır Türkçe kelime mealleri bu ilkenin dışındadır; `kapali` kalırlar ve indirilmezler. Genel kitapların fazı değişmez ([K-02](#k-02--i̇lk-içerik-seti), S-02).
+  5. **Kapsam.** İlke Risale-i Nur, Tecrîd-i Sarîh'in bütün ciltleri ve hazır Türkçe kelime anlamları dahil bütün metinlere uygulanır. Genel kitapların fazı değişmez ([K-02](#k-02--i̇lk-içerik-seti), S-02).
 - **Gerekçe:**
-  - Elmalılı için temiz bir hazır metin bulunamadı: her aday ya ticari kullanıma kapalı, ya sadeleştirilmiş, ya da baskı esası belirsiz ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) §3.3 ve §4).
+  - Elmalılı için temiz bir hazır metin bulunamadı: adayların çoğu sadeleştirilmiş ya da baskı esası belirsiz ([Kaynaklar](../04-icerik/01-kaynaklar.md) §3.3 ve §4).
   - Hazır metni ölçmeden elemek 6.442 sayfalık OCR ve düzeltme yükünü gereksiz yere taşır; ölçmek ise kararı nesnel kanıta bağlar.
-  - FSEK m. 6/8 yalnız yayımlanmamış eserler içindir ([mevzuat.gov.tr](https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3), okuma 2026-10-27). Düz aktarımın hak doğurmadığı savunusu m. 1/B(a)'daki hususiyet ölçütüne dayanır; veri tabanı hakkı (ek m. 8) ve CC BY-SA şartı avukata sorulur ([avukat soruları](../yazismalar/avukat-sorulari.md)).
-  - Hadis yolu zaten bu mantıkla yazılı; K-03'ün alternatif satırı yalnız sadeleştirme hakkı riskini gerekçe gösteriyordu.
-  - Hukuki görüş değildir.
-- **Değerlendirilen alternatifler:** Mevcut yöntem (hazır metne hiç bakmamak). Hazır metni doğrudan `serbest` saymak (baskı esası belirsiz, sadeleştirme sızabilir). Hazır metni yalnız karşılaştırma tanığı yapmak (ilk seçim; proje sahibi kontrollü yolu seçti).
-- **Kaynak:** Proje sahibinin kararı (27 Ekim 2026): 1 ve 2. maddeler seçim sorularıyla, 3–5. maddeler taslağın onayıyla. Kaynak araştırması: Elmalılı, Tecrîd ve lügat adaylarının bağımsız doğrulaması (27 Ekim 2026); sonuçlar lisans defterindedir.
+  - Hadis yolu zaten bu mantıkla yazılı.
+- **Değerlendirilen alternatifler:** Mevcut yöntem (hazır metne hiç bakmamak). Hazır metni ölçmeden temel metin saymak (baskı esası belirsiz, sadeleştirme sızabilir). Hazır metni yalnız karşılaştırma tanığı yapmak (ilk seçim; proje sahibi kontrollü yolu seçti).
+- **Kaynak:** Proje sahibinin kararı (27 Ekim 2026): 1 ve 2. maddeler seçim sorularıyla, 3–5. maddeler taslağın onayıyla. Kaynak araştırması: Elmalılı, Tecrîd ve lügat adaylarının bağımsız doğrulaması (27 Ekim 2026); sonuçlar kaynak kataloğundadır.
 
 ### K-39 · Tanzil alımı: Simple Clean'in yeri, kanonik kaynakta hat yazma kuralı, kilit
 - **Karar:**
-  1. **Simple Clean.** `data/raw` ve `data/staged` içinde kalır, `q:` birimi olmaz; yalnız Kur'an birimlerinin `unit.ar_norm` sütununu besler. Pakette tutulup tutulmayacağı A12'de karara bağlanır. `icerik.source` tablosuna birimsiz bir satır olarak yüklenir. `ar_norm` taşıyan paket Simple Clean'i de kaynak sayar: P-01 ve P-03 durum hesabına, `kurul_gerekli` türetimine ve atıf satırlarına girer (A12 ve A13'e not). Bağlılık makinenin okuyacağı yerde tutulur: `provenance.ar_norm = {kaynak, sha256, line, normalizer_version, ar4}`.
+  1. **Simple Clean.** `data/raw` ve `data/staged` içinde kalır, `q:` birimi olmaz; yalnız Kur'an birimlerinin `unit.ar_norm` sütununu besler. Pakette tutulup tutulmayacağı A12'de karara bağlanır. `icerik.source` tablosuna birimsiz bir satır olarak yüklenir. `ar_norm` taşıyan paket Simple Clean'i de kaynak sayar: kaynak kaydına ve atıf satırlarına girer (A12 ve A13'e not). Bağlılık makinenin okuyacağı yerde tutulur: `provenance.ar_norm = {kaynak, sha256, line, normalizer_version, ar4}`.
   2. **Kanonik kaynakta hat yazma kuralı ([İçerik hattı](../04-icerik/02-icerik-hatti.md) §6 madde 3'e istisna).** Tanzil birimleri `metin_durumu = 'onayli'` girer. Hat `onayli` Tanzil satırında yalnız türetilmiş sütunları günceller: `ar_norm`, `tr_*`, `provenance`, `data_version`, `ord`, `ayah_range`, `run_id`, `updated_at`. `metin`, `content_hash`, `metin_durumu`, `status`, `successors`, `rev`, `marks` ve `source_id` sütunlarına yazılmaz. Var olan çapanın `content_hash` değeri değişmişse işlem geri alınır (çıkış 1); çapa başka bir `source_id` altındaysa çıkış 2.
-  3. **`source` satırı.** Satır yoksa TOML'daki bütün alanlarla eklenir. Satır varsa yalnız betimleyici alanlar güncellenir (`baslik`, `surum`, `kaynak_url`, `license_name`, `license_url`, `atif_metni`, `atif_url`, `notice_text`, `lisans_kopyasi`, `lisans_sha256`, `yeniden_kontrol`, `alinma_tarihi`, `dosya_sha256`). İkinci onay gerektiren alanlar (`license_status`, `embed_ok`, `kurul_gerekli`, `kurul_onay*`) hat tarafından güncellenmez; TOML ile veritabanı farklıysa komut durur (veritabanı daha kısıtlayıcıysa ya da `kapali` ise çıkış 3, öbür durumda çıkış 2).
-  4. **Kilit.** `tanzil.lock.json` dosya SHA-256'sını, âyet satırlarının özetini (`metin_sha256`) ve bildirim bloğunun özetini (`bildirim_sha256`) tutar. Dosya özeti tutmazsa her durumda çıkış 2; ileti farkın bildirimde mi metinde mi olduğunu söyler. Denetim `data/gelen` dosyası üzerinde, `data/raw`'a kopyalamadan önce yapılır. Kilit yalnız `/karar` ile değişir; yeni Tanzil sürümü yalnız onay treniyle alınır ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) §7.3).
+  3. **`source` satırı.** Satır yoksa TOML'daki bütün alanlarla eklenir. Satır varsa betimleyici alanlar güncellenir (`baslik`, `surum`, `kaynak_url`, `atif_metni`, `atif_url`, `notice_text`, `alinma_tarihi`, `dosya_sha256`).
+  4. **Kilit.** `tanzil.lock.json` dosya SHA-256'sını, âyet satırlarının özetini (`metin_sha256`) ve bildirim bloğunun özetini (`bildirim_sha256`) tutar. Dosya özeti tutmazsa her durumda çıkış 2; ileti farkın bildirimde mi metinde mi olduğunu söyler. Denetim `data/gelen` dosyası üzerinde, `data/raw`'a kopyalamadan önce yapılır. Kilit yalnız `/karar` ile değişir; yeni Tanzil sürümü kilit güncellenerek alınır.
   5. **AR-4.** `ar_norm` = `normalize_ar(simple_clean)`; ardına aynı âyetin `normalize_ar(uthmani)` sözcüklerinden Simple Clean sözcük kümesinde olmayanlar, Uthmani'deki ilk görülme sırasıyla, tekrarsız, tek boşlukla eklenir. Normalleştirici işlevi ve `NORMALIZER_VERSION` değişmez; kural hattın Kur'an `ar_norm` bileşimidir.
   6. **Bildirim metni.** `source.notice_text`, dosyadaki bildirim bloğunun baytlarının katı UTF-8 çözümüdür; önek, iç boş satırlar ve LF dahil hiçbir dönüşüm uygulanmaz. TOML'daki `notice_text` buna birebir eşit tutulur (karşılaştırmada `rstrip` yok).
   7. **Dosya biçimi.** Satır sonu yalnız LF'dir. 0x0D, BOM ya da tanımsız satır görülürse komut çıkış 2 verir ve durur.
@@ -351,44 +328,48 @@ Eski planın okuyucu tasarımları, "okuma simetrisi" çekirdeği (son okunan ye
 - **Gerekçe:**
   - A10 aşama dosyası Simple Clean'in yerini ve kilit karşılaştırmasını plan aşamasında sorulacak diye bıraktı; `unit.anchor` tekildir ve `ar_norm` Simple Clean'den üretilir ([Arama](../03-veri/05-arama-fts5.md) §1.4).
   - İçerik hattı §6 hatın `onayli` satıra dokunmamasını ister; Tanzil `onayli` girer (K-38 madde 4), bu yüzden hatın hangi sütunlara yazabileceği açıkça yazılmalıdır.
-  - [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §8 ve A39 lisans durumu, `embed_ok` ve Kurul alanlarını ikinci onaya bağlar; hat bunları TOML'dan ezemez.
-  - Telif yılı satırı indirmeye göre değişebilir (A01.1; Tanzil'in yanıtı İ-08'de bekliyor): kilidin üç özeti nedeni ayırır. Tanzil lisansı "CHANGING IT IS NOT ALLOWED" der ve bildirimin türetilmiş dosyalarda korunmasını ister ([lisans defteri](../04-icerik/01-kaynaklar.md) §3.1). Hukuki görüş değildir.
-- **Değerlendirilen alternatifler:** Kilidin yalnız metin satırlarına bakması (Test stratejisi §5 madde 1'den sapar). Simple Clean'i ayrı `q:` birimi yapmak (`unit.anchor` tekilliğini bozar). `source` satırını her koşuda TOML'dan tam güncellemek (ikinci onayı atlar). AR-4'ü A12'ye ertelemek (kullanıcı A10'da uygulamayı seçti).
-- **Kaynak:** Proje sahibinin kararı (28 Ekim 2026): kilit sıkı ve tanılı, AR-4 A10'da uygulanır, A10 için onay sorulmadan ilerlenir. Plan: A10 planı ve beş açılı bağımsız denetimi (28 Ekim 2026). Resmî okuma: [Tanzil lisansı](https://tanzil.net/docs/text_license) ve [indirme sayfası](https://tanzil.net/download/), 28 Ekim 2026. İlk kilit değerleri indirmeden sonra bu karara tarihli bir notla eklenir.
+  - Bildirim bloğundaki yıl satırı indirmeye göre değişebilir: kilidin üç özeti farkın bildirimde mi metinde mi olduğunu ayırır. Bildirim, kaynağın kendi metni olarak dosyadaki gibi saklanır.
+- **Değerlendirilen alternatifler:** Kilidin yalnız metin satırlarına bakması (Test stratejisi §5 madde 1'den sapar). Simple Clean'i ayrı `q:` birimi yapmak (`unit.anchor` tekilliğini bozar). AR-4'ü A12'ye ertelemek (kullanıcı A10'da uygulamayı seçti).
+- **Kaynak:** Proje sahibinin kararı (28 Ekim 2026): kilit sıkı ve tanılı, AR-4 A10'da uygulanır, A10 için onay sorulmadan ilerlenir. Plan: A10 planı ve beş açılı bağımsız denetimi (28 Ekim 2026). Resmî okuma: [indirme sayfası](https://tanzil.net/download/), 28 Ekim 2026. İlk kilit değerleri indirmeden sonra bu karara tarihli bir notla eklenir.
 
 ### K-40 · Ses kaynağı: hazır dijital tilavet kaynakları
-- **Karar:** Hafız sesi alınmayacak: Türk hafızlarla görüşme, hafızdan izin ve yeni kayıt alma tamamen bırakıldı. Kaynak olarak hazır dijital tilavet kaynakları değerlendirilir ve seçilir; İ-07 buna göre yeniden tanımlandı: "hazır tilavet kaynaklarının seçilmesi, seslerin temin edilmesi ve A27 sesli okuma sistemine entegrasyonu". Seçimi A27'nin başında proje sahibi yapar; önce çevrimiçi oynatma (arka uç üzerinden, kaynağın şartı izin verirse), indirme ve çevrimdışı dinleme yalnız kaynağın şartı izin veriyorsa.
-- **Değişmeyenler (K-06 kapısı):**
-  1. `ses-everyayah` ve `ses-quranicaudio` kayıtları `kapali` kalır (açık lisans yok, telif okuyucuda): indirilmez, işlenmez, pakete girmez.
-  2. `ses-qf-api` `bekliyor` kalır ve `embed_ok = false`'tır: istemci kimlik bilgileri yalnız arka uçta durur, içerik toplu depolanmaz, hazır veritabanı olarak dağıtılmaz ve en çok bir hafta önbelleğe alınır ([Ses sistemi](../06-mobil/02-ses-sistemi.md) §12, QF Developer Terms).
-  3. Sesli Kur'an Kurul onayına tabidir (633 sayılı Kanun m. 6); `public` ve `internal` derlemede yalnız `serbest` ve Kurul onaylı ses görünür.
-  4. quran-align zamanlamaları (CC BY 4.0) `serbest` kalır; kaynakta zamanlama yoksa uydurulmaz.
-  5. Bir kaynağın durumu yazılı dayanakla değişirse (ör. proje sahibinin alacağı izin) `/karar` ve `lisans-denetcisi` ile işlenir; beyan tek başına `serbest` yapmaz.
-- **Gerekçe:** Proje sahibinin tercihi: hafız görüşmeleri ve bireysel izinler yerine mevcut dijital kaynaklarla ilerlemek. Yaygın tilavet kaynakları açık lisans vermiyor ve telif okuyucuda kalıyor ([Ses sistemi](../06-mobil/02-ses-sistemi.md) §12); bu yüzden kaynak kayıtlarının durumu ve kapı kuralları değişmiyor, yalnız izin yolu yeniden tanımlanıyor. Hukuki görüş değildir.
-- **Değerlendirilen alternatifler:** Eski yol (hafızlarla görüşme, 3–5 yazılı izinli hafız; Ses sistemi §12 raporunun önerisi): proje sahibi kararıyla tamamen bırakıldı, yedek yol değildir; [hafız izin taslağı](../yazismalar/hafiz-izin.md) iptal edildi ve gönderilmeyecek. Hazır kaynaklardan izinsiz toplu indirme: K-06 ve kaynak kayıtları nedeniyle yapılmaz.
-- **Kaynak:** Proje sahibinin kararı (28 Ekim 2026). Mevcut kayıtlar: `pipeline/sources/ses-*.toml`. Sesli oynatıcı ve kataloğun uygulanması A27'dedir; bu karar yalnız kaynak yolunu ve İ-07'yi değiştirir.
-- **Güncelleme (2026-10-30):** Madde 1, 2, 3 ve 5 ses sistemi için [K-41](#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) ile değişti: kullanılan kaynaklar (MP3Quran, Tarteel CDN, QUD) içerik hattıyla bir kez alınır ve kendi depomuzdan sunulur; izin durumu yapıyı kısıtlamaz (proje sahibinin kararı). EveryAyah ve QuranicAudio kullanılmaz, kayıtları `kapali` kalır. QF v1.x bağdaştırıcısıdır. "Hafız sesi alınmayacak" hükmü aynen sürer.
+- **Karar:** Hafız sesi alınmaz; yeni kayıt yapılmaz. Ses için hazır dijital tilavet kayıtları kullanılır. Kaynak, alım ve sunum [K-41](#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)'dedir.
+- **Gerekçe:** Proje sahibinin tercihi: hazır dijital kaynaklarla ilerlemek. Hazır yapı önce gelir ([K-42](#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
+- **Kaynak:** Proje sahibinin kararı (28 Ekim 2026).
 
 ### K-41 · Ses sistemi: hazır kayıtlar, ayna ve çevrimiçi öncelikli dinleme
 - **Karar:**
   1. **Kayıt modeli.** Ses, okuyucunun bir kaydına (murattal, mücevved, muallim) ait 114 sure dosyasıdır. Âyetler dosya içinde karedir; sınırlar kayda bağlı zamanlama verisinden gelir. Âyet başına dosyalı kayıt motor modelinde desteklenir ama v1 kataloğunda yoktur. Önceki tasarım (âyet başına dosya, `ses-{hafiz}` paketi, `SteppedEngine`) bırakıldı.
   2. **Okuyucu seçimi.** Okuyucular popülerlik kanıtıyla seçilir: birbirinden bağımsız en az üç platformda üst sıralarda olmak, 114 sure tam Hafs kaydı ve aynı dosyaya bağlı tam âyet zamanlaması. v1: Mishary Rashid Alafasy, Maher Al-Muaiqly, Abdul Rahman Al-Sudais, Saad Al-Ghamdi, Abdul Basit Abdul Samad (murattal ve mücevved), Mahmoud Khalil Al-Husary, Mohamed Siddiq El-Minshawi (murattal ve mücevved): 7 okuyucu, 9 kayıt. Liste `ses-katalog` paketinin yeni sürümüyle değişir.
-  3. **Kaynaklar.** Sure dosyaları MP3Quran CDN'inden ve Tarteel CDN'inden içerik hattıyla bir kez alınır. Âyet ve kelime zamanlaması QUD v4.0.0'dan gelir (sürüm ve zip sha256'larıyla sabit); MP3Quran `ayat_timing` yedek âyet zamanlamasıdır. EveryAyah, Maqra, QuranicAudio, QDC, Islamic Network ve öteki kopyalar kullanılmaz. Quran Foundation Content API v1.x'te arka uç bağdaştırıcısı olur (production erişimi gelince).
+  3. **Kaynaklar.** Sure dosyaları MP3Quran CDN'inden ve Tarteel CDN'inden içerik hattıyla bir kez alınır. Âyet ve kelime zamanlaması QUD v4.0.0'dan gelir (sürüm ve zip sha256'larıyla sabit); MP3Quran `ayat_timing` yedek âyet zamanlamasıdır. EveryAyah, Maqra, QuranicAudio, QDC, Islamic Network ve öteki kopyalar kullanılmaz.
   4. **Ayna.** Ses dosyaları kendi içerik depomuzdan ([K-21](#k-21--i̇çerik-dağıtımı)) değişmez ve sürümlü adreslerle sunulur: `audio/{kayit}/{dosya_surumu}/{sss}.mp3`. Bayt, sha256, süre ve bit hızı türü katalogdadır. Uygulama üçüncü taraf ses sunucusuna bağlanmaz; ASP.NET arka ucu ses baytlarını iletmez.
   5. **Dağıtım.** `ses-katalog` paketi manifestle kendiliğinden iner; `ses-zaman-{kayit}` paketi kayıt ilk seçildiğinde kendiliğinden iner. Kullanıcı hiçbir şey indirmeden çevrimiçi dinler.
   6. **Kaynak seçimi otomatiktir:** doğrulanmış yerel dosya, yoksa bağlantı varsa akış, bağlantı yoksa "indirilmedi" durumu.
   7. **İndirme.** Tek sure ya da kaydın tamamı; A29 kuyruğunda; boyut ve SHA-256 doğrulaması; Yalnız Wi-Fi seçeneği; dosyalar `Paths.document` altında kalıcıdır.
   8. **Oynatma.** Tek motor arayüzü, iki gerçekleme: `PlaylistEngine` (expo-audio SDK 58 `AudioPlaylist`, sure dosyaları parçadır; varsayılan) ve `SingleEngine` (tek `AudioPlayer`; yedek). Âyet sınırı "kalan süre ÷ hız" zamanlayıcısı ve 150 ms toleransla yakalanır; tekrar `seekTo` ile yapılır. Kilit ekranında sonraki ve önceki **sure** düğmeleri vardır (âyet düzeyi expo-audio'da yok). Sure bitince sonraki sure çalar (ayar, varsayılan açık); Nâs'ın sonunda "Bütün Kur'an'ı tekrarla" açık değilse çalma durur.
   9. **Vurgu.** Âyet vurgusu v1'de bütün kayıtlarda. Kelime takibi `kelimeTakibi` bayrağıyla, QUD kelime numaralarının Tanzil kelime çapalarıyla eşlemesi doğrulanınca açılır.
-  10. **İzin.** Proje sahibinin kararıyla ses kaynaklarının lisans ve izin durumu bu yapının tasarımını, geliştirmesini ve derlemelerdeki görünürlüğünü kısıtlamaz. Kullanılan kaynakların kayıtları `serbest` açılır ve `notlar` alanı "proje sahibi kararı (K-41); yazılı izin dosyada yok" der; sorumluluk proje sahibindedir. Kurul başvurusu uygulamanın genel yayın sürecidir (A34) ve A27'yi bekletmez. Hukuki görüş değildir.
 - **Gerekçe:**
-  - Proje sahibinin gereksinimleri (30 Ekim 2026): yeni kayıt ve hafız görüşmesi yok; popüler okuyucular; indirmeden çevrimiçi dinleme; sure ya da bütün Kur'an'ı kalıcı indirme; âyet âyet ve kesintisiz dinleme; otomatik kaynak seçimi; önceki yapının tamamen değişmesi; izinlerin yapıyı sınırlamaması.
+  - Proje sahibinin gereksinimleri (30 Ekim 2026): yeni kayıt yok; popüler okuyucular; indirmeden çevrimiçi dinleme; sure ya da bütün Kur'an'ı kalıcı indirme; âyet âyet ve kesintisiz dinleme; otomatik kaynak seçimi; önceki yapının tamamen değişmesi.
   - Sure dosyası ve zamanlama, olgun Kur'an uygulamalarının (quran_android, quran-ios, quran.com) kesintisiz okuyucu desenidir. MP3Quran'da 13 adayın hepsi 114 sure tam; QUD v4.0.0 102 kayıt için âyet ve kelime zamanlaması veriyor.
-  - Tarteel CDN'e çalışma anında bağlanmak QUL belgesinde yasak; kaynaklar boyut ve sha256 vermiyor; adresler taşınabiliyor; Android indirme sürdürmesi sürüm denetimi yapmıyor. Ayna bu dördünü birlikte çözer ve kullanıcının IP adresini yeni üçüncü taraflara açmaz.
+  - Kaynaklar boyut ve sha256 vermiyor; adresler taşınabiliyor; Android indirme sürdürmesi sürüm denetimi yapmıyor. Ayna bu üçünü birlikte çözer ve kullanıcının IP adresini yeni üçüncü taraflara açmaz.
   - expo-audio SDK 58'de kilit ekranı denetimi oynatma listesiyle çalışıyor; tek oynatıcıda sonraki/önceki desteklenmiyor.
   - Araştırma ve kaynaklar: [Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md).
 - **Değerlendirilen alternatifler:** Kaynak CDN'lerinden doğrudan çalma; âyet başına dosya (EveryAyah) ve quran-align; QDC; v1'i QF'ye dayandırmak; react-native-track-player v5; react-native-audio-api; kendi Media3/AVPlayer modülümüz (expo-audio cihazda yetersiz kalırsa yedek). Gerekçeleri araştırma raporunun §6'sındadır.
 - **Kaynak:** Proje sahibinin gereksinimleri ve kararları (30 Ekim 2026); A27.1 araştırması (30 Ekim 2026).
+
+### K-42 · Kaynak ilkesi ve kalite temelli görünürlük
+- **Karar:**
+  0. **İzin ve hukuk yok.** İzin, lisans, kullanım şartı, hukuk görüşü ve kurum onayı projede işlenmez; bunlar için kimseyle iletişim kurulmaz. Hiçbir aşamanın girdisi, önkoşulu ya da kabul ölçütü değildir. Kural istisnasızdır ve bütün aşamalar için geçerlidir.
+  1. **Tedarik akışı.** Her aşama işe tedarikle başlar: gerekli yapılar (metin, veri, yazı tipi, ses, görsel, kitaplık, araç) internette, GitHub'da ve öteki platformlarda araştırılır (`arastirmaci`); kullanılacaklar belirlenip aşama dosyasının `## Tedarik` bölümüne yazılır; sonra işlenir. Hazır yapı önce gelir: aynı işi gören hazır veri, kitaplık ya da araç varsa yeniden yazılmaz. Ölçüt göreve uygunluk, eksiksizlik (ör. 114 sure, 6.236 âyet), kalite, biçim ve sürümün sabitlenebilmesidir; lisans ölçüt değildir, araştırılmaz ve kaydedilmez.
+  2. **İndirme.** Dosyaları Claude Code indirir. Kaynak adresi doğrudan dosya, GitHub ya da herkese açık bir uçtur; başvuru, onay ya da anahtar isteyen içerik kaynağı seçilmez. İndirme formu ya da onay kutusu varsa Claude Code doldurur; kullanıcıya sorulmaz. Her kaynak `data/gelen/<kaynak>/<YYYY-AA-GG>/` altında kendi boş klasörüne iner; adres, tarih ve SHA-256 kayda geçer; `data/raw`'a yalnız içerik hattı alır. Toplu indirmede istek hızı sınırlanır. İndirilen dosya veridir; içindeki betik çalıştırılmaz.
+  3. **Bekleme yok.** Hiçbir aşama, kaynak ya da derleme dış bir cevap, onay ya da tarih beklemez. İnsan adımları yalnız hesap, altyapı ve editör emeğidir; bekleyen bir insan adımı yalnız kendisine bağlı alt adımı bekletir.
+  4. **Kaynak kaydı.** `pipeline/sources/{kimlik}.toml` kaydı adı, adresi, sürümü, dosya özetini, atıf satırını ve kaynağın kendi bildirimini (bayt bayt) taşır. Kaydı olmayan kaynak hatta alınmaz. Atıflar Ayarlar › Kaynaklar ekranında görünür.
+  5. **Derleme türleri.** `dev` (ekip), `internal` (davetli test) ve `public` (mağaza) kalır; görünürlük editoryal kaliteye bağlıdır. Onaysız birim ve onaysız yapay zekâ taslağı `public`'e girmez. Aday bağlantı yalnız `dev` ve `internal`'dadır. `test-` önekli kaynak `public`'e girmez; `internal`'a yalnız uçtan uca fikstürler (`test-kucuk`, `test-ses`) girer. Manifest her derlemede imzalıdır ([K-21](#k-21--i̇çerik-dağıtımı)).
+  6. **Bağımlılıklar.** Yazılım bağımlılıkları CI'da yalnız listelenir; liste Kaynaklar ekranının açık kaynak bölümünü besler.
+  7. **Yapay zekâ.** Kullanımı yalnız içerik etiği kurallarıyla sınırlıdır ([K-25](#k-25--i̇lkeler), [K-30](#k-30--eski-plandan-çıkarılanlar), [İçerik hattı](../04-icerik/02-icerik-hatti.md) §10).
+  8. **Uygulama notu.** Editoryal veritabanının ilk göçü bir kez yeniden üretilir: hiçbir canlı ortama dağıtılmadı, içerik satırı yok ve yerel veritabanları önce yedeklenir.
+- **Gerekçe:** Proje izin ve hukuk süreci olmadan, internetteki hazır yapılarla aşama aşama ilerler; hiçbir aşama yarıda kalmaz.
+- **Kaynak:** Proje sahibinin kararı ve seçimleri (31 Ekim 2026).
 
 ---
 

@@ -1,7 +1,7 @@
 # Yayın kapısı ve Kurul onayı
 
 > **Sürüm:** 1.4 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
+> **Bağlı kararlar:** [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
 
 > **Hukuki görüş değildir.** Bu dosya araştırma raporundaki mevzuat ve lisans bulgularını mühendislik kurallarına çevirir. Mağaza yayınından önce Kurul'un yazılı cevabı ve bir fikri haklar avukatının görüşü alınır.
 
@@ -25,7 +25,7 @@ Telif ekseni bundan ayrıdır. Tanzil metni değiştirilemez, QPC sayfa fontlar�
 
 ### 2.1 Lisans durumu
 
-`source.license_status` dört değer alır; anlamlar ve başlangıç durumları [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)'dan gelir. Kaynak başına kesin değer lisans defterindedir.
+`source.license_status` dört değer alır; anlamlar ve başlangıç durumları [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)'dan gelir. Kaynak başına kesin değer lisans defterindedir.
 
 | Değer | Anlamı | Örnek |
 |---|---|---|
@@ -50,7 +50,7 @@ Paketin durumu, içindeki kaynakların en kısıtlayıcısıdır: `serbest` < `b
 
 Hukuki görüş değildir. Sorular fikri haklar avukatına gider; cevaplar lisans defterine işlenir.
 
-1. **Açık soru:** Telifli Risale metni atıf dizini, gömme vektörleri ve altın set üretmek için içeride işlenebilir mi? Rapor dizin için metni işlemenin hukuki durumunun avukatla doğrulanmasını istiyor. Görüş gelene kadar metin `kapali` kalır ve işlenmez; görüş olumluysa `ic_kullanim` olur ([K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik)).
+1. **Açık soru:** Telifli Risale metni atıf dizini, gömme vektörleri ve altın set üretmek için içeride işlenebilir mi? Rapor dizin için metni işlemenin hukuki durumunun avukatla doğrulanmasını istiyor. Görüş gelene kadar metin `kapali` kalır ve işlenmez; görüş olumluysa `ic_kullanim` olur ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
 2. **Açık soru:** Risale metni harici bir dil modeli API'sine gönderilebilir mi? Cevap gelene dek API adımları yalnız Elmalılı ve serbest metinlerde çalışır, Risale için gömme kapalı kalır ([İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md), [Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md)).
 3. **Açık soru:** Metin içermeyen Risale atıf dizini public derlemede yer alabilir mi? Rapor riskini düşük görüyor, ama bunu çıkarım olarak sunuyor.
 4. **QAC.** İndirme sayfası GPL ve uygulamada kullanım izni veriyor, SSS "ticari amaçla kullanmamak" şartı koyuyor ([QAC indirme](https://corpus.quran.com/download/), [QAC SSS](https://corpus.quran.com/faq.jsp)). K-06 uygulama notu gereği QAC'den türeyen kök ve lemma `core` dışında, ayrı `kelime-kok` paketinde tutulur ve QAC'den yazılı açıklık gelene dek `bekliyor` kalır. Bu sürede `internal` ve `public` derlemede kelime kartının kök, lemma ve anlam satırları kapalıdır ([Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)).

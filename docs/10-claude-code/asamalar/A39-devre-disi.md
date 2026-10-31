@@ -1,6 +1,6 @@
 # A39 · Takvim ve lisans olayları (2028, 2031, yeni lisanslar) — tekrar kullanılabilir yordam
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-04](../../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-05](../../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-04](../../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 > **Faz:** 6 · Takvime bağlı · **Önkoşul:** [A13](./A13-yayinlayici-ve-kalite-kapisi.md) · **İnsan adımı:** olaya göre: İ-03 (avukat) · İ-19 (Kurul onay treni) · hak sahibiyle yazışma · ikinci onayı veren editör
 > **Ajanlar:** `lisans-denetcisi` · `arastirmaci` · `hat-gelistirici` · `sunucu-gelistirici` · `belge-bekcisi` · `inceleyici` · **Beceriler:** `lisans-kapisi` · `paket-yayini` · `icerik-hatti` · **Tahmini oturum:** olay başına 1–3 (içerik sayısallaştırma işi hariç)
 > **Başlat:** `/asama A39`

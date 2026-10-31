@@ -1,7 +1,7 @@
 # Kaynakça
 
 > **Sürüm:** 1.2 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-23](00-ozet/02-karar-defteri.md#k-23--doküman-yeri)
+> **Bağlı kararlar:** [K-42](00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-23](00-ozet/02-karar-defteri.md#k-23--doküman-yeri)
 
 Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo belge sayfası (FileSystem ve Font) raporda yok; mobil dosyalarında kullanıldıkları için eklendi. Notlar kaynakların araştırma tarihindeki hâlini özetler; bir olgu kullanılmadan önce kaynak yeniden açılır. Araştırma ortamında bazı birincil siteler (ör. tanzil.net, mevzuat.gov.tr) doğrudan okunamadı; bu durumda kopyası okunan kaynak notta belirtildi. Eski plan dosyaları `quran-app-docs/` altında arşivdedir ve burada listelenmez.
 

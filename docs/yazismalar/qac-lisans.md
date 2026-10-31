@@ -1,7 +1,7 @@
 # QAC lisans sorusu
 
 > **Sürüm:** 1.0 · **Tarih:** 20 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 > **Muhatap:** Quranic Arabic Corpus bakımcıları (sitenin altbilgisine göre quran.com ekibi) · **Dil:** İngilizce · **İnsan adımı:** [İ-04](../10-claude-code/06-insan-adimlari.md)
 > **Kanal:** [feedback.quran.com](https://feedback.quran.com/) (quran.com destek sayfasının gösterdiği Canny panosu; gönderilerin herkese açık olup olmadığı Doğrulanacak, herkese açıksa imzaya e-posta yazılmaz) ya da Quran Foundation'ın genel iletişim adresi ([quran.foundation](https://quran.foundation/), "Contact:" satırı; adres sayfada gizli, arama dizininden okundu, Doğrulanacak). Herkese açık yol: aynı soruyu soran GitHub kaydı [#81](https://github.com/kaisdukes/quranic-corpus/issues/81) (cevapsız). [corpus.quran.com/contact.jsp](https://corpus.quran.com/contact.jsp) hâlâ Kais Dukes'un üniversite adresini gösteriyor; bu adresin reddedildiği bildirildi. Okuma: 2026-10-20.
 > **Engellediği iş:** `kelime-kok` paketinin `internal` ve `public` derlemelere girmesi (A17); bu derlemelerde kelime kartının kök, lemma ve Türkçe anlam satırları (A25, A34)

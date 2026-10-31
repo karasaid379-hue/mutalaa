@@ -1,6 +1,6 @@
 # A14 · API editör uçları
 
-> **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A07](./A07-editoryal-veritabani.md) · **İnsan adımı:** yok
 > **Ajanlar:** `sunucu-gelistirici` · `test-yazari` · `arastirmaci` · `inceleyici` · **Beceriler:** `ef-goc` · `lisans-kapisi` · `windows-sorun` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A14`

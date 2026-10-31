@@ -1,7 +1,7 @@
 # Depolama yöneticisi
 
 > **Sürüm:** 1.2 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
+> **Bağlı kararlar:** [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) proje sahibinin önerisidir (18 Ekim 2026): Ayarlar › Depolama ekranı v1'de bulunur; paket listesi, boyut, sürüm, tek dokunuşla silme, okuyucu başına ses silme, yalnız Wi-Fi ile indirme ve duraklatılabilir indirme kuyruğu içerir. Bu dosya ekranı, yerel tabloları, kuyruğu, eşikleri, otomatik temizliği, manifest güncellemelerini ve kenar durumları tanımlar. Kod `src/features/storage` ve `src/packs` içindedir ([Mobil mimari](./01-mobil-mimari.md)). Paket biçimleri [İçerik paketleri](../03-veri/03-icerik-paketleri.md) dosyasında kesinleşir.
 
@@ -261,7 +261,7 @@ export function nextRetryAt(attempts: number, now = Date.now()): number | null {
 - Ses dosyaları `ses-katalog` `kayit_sure` satırındaki bayt ve sha256 ile (`file.digest('SHA-256')`, SDK 58), paketler manifestteki özetle doğrulanır.
 - Özet tutmazsa `.part` silinir, `integrity_fails` artar ve iş sürdürme kullanılmadan baştan iner. İkinci kez tutmazsa manifest yenilenir; özet değiştiyse yeni özetle bir kez daha denenir, değişmediyse iş `failed` olur. Sentry'ye yalnız paket kimliği, sürüm ve bayt sayısı gider.
 - Doğrulanmamış dosya hiçbir zaman ATTACH edilmez ve çalınmaz.
-- Manifest her zaman imzalıdır ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)). Uygulama imzayı gömülü açık anahtarla doğrular. `public` derleme imzasız ya da imzası tutmayan manifesti reddeder ve son geçerli manifestle sürer; bu kesin kuraldır. Yerel yayınlayıcı ayrı bir geliştirme anahtarıyla imzalar, `public` ikili yalnız üretim açık anahtarını taşır (öneri). Algoritma ve anahtar yönetimi [İçerik paketleri](../03-veri/03-icerik-paketleri.md) dosyasında kesinleşir.
+- Manifest her zaman imzalıdır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)). Uygulama imzayı gömülü açık anahtarla doğrular. `public` derleme imzasız ya da imzası tutmayan manifesti reddeder ve son geçerli manifestle sürer; bu kesin kuraldır. Yerel yayınlayıcı ayrı bir geliştirme anahtarıyla imzalar, `public` ikili yalnız üretim açık anahtarını taşır (öneri). Algoritma ve anahtar yönetimi [İçerik paketleri](../03-veri/03-icerik-paketleri.md) dosyasında kesinleşir.
 
 ## 6. Düşük depolama eşikleri
 
@@ -308,7 +308,7 @@ flowchart TD
   J -- hayır --> L[Güncelle düğmesi ve rozet]
 ```
 
-- Görünmez olan paket (`kapali`; `internal` ve `public` derlemede `serbest` olmayan ya da gerekli Kurul onayı bulunmayan) `disabled` (`license`) olur. İçerik gizlenir, ses durur, dosyalar silinmek üzere işaretlenir ve `storage.licenseRemoved` bir kez gösterilir. Notlar ve vurgular kalır ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)).
+- Görünmez olan paket (`kapali`; `internal` ve `public` derlemede `serbest` olmayan ya da gerekli Kurul onayı bulunmayan) `disabled` (`license`) olur. İçerik gizlenir, ses durur, dosyalar silinmek üzere işaretlenir ve `storage.licenseRemoved` bir kez gösterilir. Notlar ve vurgular kalır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
 - Manifestten tamamen kalkan paketin ne olacağı Açık soru (DY-3). `public` derlemede ihtiyatla devre dışı bırakılması önerilir. Lisansı `kapali` olan paket bu yolla kalkar, çünkü Yayınlayıcı onu manifeste yazmaz (P-01).
 - `min_app_version` uymuyorsa paket indirilmez; mağaza bağlantılı `storage.needsApp` gösterilir.
 - `kurul_onay` değişen güncellemede satır "Kurul onaylı yeni sürüm" der.

@@ -1,6 +1,6 @@
 # A38 · Web (Next.js 16; âyet ve sayfa adresleri)
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-14](../../00-ozet/02-karar-defteri.md#k-14--web) · [K-08](../../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5)
+> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-14](../../00-ozet/02-karar-defteri.md#k-14--web) · [K-08](../../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5)
 > **Faz:** 5 · Web · **Önkoşul:** [A34](./A34-magaza-yayini.md) · **İnsan adımı:** Kurul'un web görüşü (İ-02 kanalı, gerekirse İ-19) · İ-18 (alan adı) · web barındırma kararı
 > **Ajanlar:** `web-gelistirici` · `arayuz-denetcisi` · `arastirmaci` · `test-yazari` · `lisans-denetcisi` · `inceleyici` · **Beceriler:** `capa-gramer` · `test-vektoru` · `lisans-kapisi` · **Tahmini oturum:** 4–6
 > **Başlat:** `/asama A38`

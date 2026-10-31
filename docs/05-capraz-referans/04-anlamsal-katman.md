@@ -1,7 +1,7 @@
 # Anlamsal Katman
 
 > **Sürüm:** 1.0 · **Tarih:** 18 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Bağlı kararlar:** [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 
 Bu dosya güvenilirlik sıralamasının son katmanını tanımlar: gömme vektörleriyle bulunan anlamsal komşular (`xref.type = 'anlamsal'`). Katman sonraki fazdadır. Önce komşular sunucuda bir kez hesaplanıp tablo olarak gönderilir, serbest metinli anlamsal arama daha sonra çevrimiçi gelir. "Kaynaklara sor" [sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) listesindedir.
 

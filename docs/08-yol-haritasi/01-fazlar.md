@@ -1,7 +1,7 @@
 # Fazlar
 
 > **Sürüm:** 1.3 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
+> **Bağlı kararlar:** [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Claude Code ile yürütmek için fazlar A00–A40 aşamalarına bölündü: [Aşama haritası](../10-claude-code/04-asama-haritasi.md) ([K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)).
 
@@ -68,7 +68,7 @@ flowchart LR
 **İşler**
 - Kurul'a ön görüşme talebi ve soru listesi ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)).
 - Fikri haklar avukatına sorular (hukuki görüş değildir): Risale haklarını bugün kim kullanıyor; telifli metin dizin, gömme ve altın set için içeride işlenebilir ve harici bir dil modeli API'sine gönderilebilir mi; metinsiz atıf dizini mağaza derlemesinde yer alabilir mi ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md), §2.4).
-- QAC'ye yazılı lisans sorusu (S-15). Cevap gelene dek QAC'den türeyen kök ve lemma ayrı `kelime-kok` paketinde `bekliyor` durumunda kalır ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)).
+- QAC'ye yazılı lisans sorusu (S-15). Cevap gelene dek QAC'den türeyen kök ve lemma ayrı `kelime-kok` paketinde `bekliyor` durumunda kalır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
 - KFGQPC'ye Hafs fontu için yazılı izin talebi; QF Developer Console hesabı ve şartların okunması.
 - Ses kaynağı ve okuyucu araştırması (A27.1, 30 Ekim 2026; [Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md)). Hafızlarla görüşme yapılmaz (K-40); S-07 kapandı.
 - Lisans defteri v1: v1 kaynaklarının hepsi `license_status` taşır ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md)).
@@ -100,7 +100,7 @@ flowchart LR
 - Editör paneli: iktibas, kök etiketi, kelime anlamı ve metin düzeltme kuyrukları; lisans durumu yönetimi.
 - Publisher: lisans kapısı, paket başına `kurul_gerekli` alanı, imzalı manifestler, yerel S3 deposuna (SeaweedFS) yayın.
 - Altın setler ve değerlendirme raporları.
-- Faz 2'yi bloklamayan uzun işler: Risale çapaları, âyet atıf dizini ve baskı sayfa eşlemesi; metin hukukçu görüşüne kadar `kapali`, görüş olumluysa yalnız `dev` derlemede `ic_kullanim`; dizin ve harici API adımı da bu görüşe bağlı ([K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik)); Tecrîd'in Arapça metni ve Naim kısmı `serbest` ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md#2-özet-tablo) §2), Kütüb-i Sitte Arapça metni kaynak belgesi netleşene dek `bekliyor`, Kâmil Miras ciltleri 1 Ocak 2028'e kadar `kapali` ([K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları), [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)); Elmalılı tefsir metninin OCR'ı ya da ölçümü geçerse hazır metin adayı ([K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali), [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)).
+- Faz 2'yi bloklamayan uzun işler: Risale çapaları, âyet atıf dizini ve baskı sayfa eşlemesi; metin hukukçu görüşüne kadar `kapali`, görüş olumluysa yalnız `dev` derlemede `ic_kullanim`; dizin ve harici API adımı da bu görüşe bağlı ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)); Tecrîd'in Arapça metni ve Naim kısmı `serbest` ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md#2-özet-tablo) §2), Kütüb-i Sitte Arapça metni kaynak belgesi netleşene dek `bekliyor`, Kâmil Miras ciltleri 1 Ocak 2028'e kadar `kapali` ([K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları), [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)); Elmalılı tefsir metninin OCR'ı ya da ölçümü geçerse hazır metin adayı ([K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali), [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)).
 
 **Çıkış ölçütleri**
 - `core` paketi aynı girdiyle aynı içerik özetini üretiyor.
@@ -112,7 +112,7 @@ flowchart LR
 
 ### Faz 2 · Mobil v1 (iç test)
 
-**Amaç.** Expo uygulamasının bütün v1 ekranları çevrimdışı çalışır. Test önce ekip içinde `dev` derlemeyle yapılır. Kurul kapalı teste izin verirse `internal` derleme EAS iç dağıtımla davetli test kullanıcılarına gider ve yalnız `serbest` içerik taşır ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)).
+**Amaç.** Expo uygulamasının bütün v1 ekranları çevrimdışı çalışır. Test önce ekip içinde `dev` derlemeyle yapılır. Kurul kapalı teste izin verirse `internal` derleme EAS iç dağıtımla davetli test kullanıcılarına gider ve yalnız `serbest` içerik taşır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
 
 **İşler**
 - Tasarım vitrini: bileşenler üç temada ve üç yazı boyutunda, ekranlardan önce (rapor önerisi).

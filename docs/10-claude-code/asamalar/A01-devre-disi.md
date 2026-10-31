@@ -1,6 +1,6 @@
 # A01 · Hukuk ve izin yazışma paketi
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-05](../../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-07](../../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-28](../../00-ozet/02-karar-defteri.md#k-28--ses)
+> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-07](../../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-28](../../00-ozet/02-karar-defteri.md#k-28--ses)
 > **Faz:** 0 · Hazırlık · **Önkoşul:** [A00](./A00-ortam-ve-depo.md) · **İnsan adımı:** [İ-02 … İ-08](../06-insan-adimlari.md) (gönderim)
 > **Ajanlar:** `arastirmaci` · `lisans-denetcisi` · **Beceriler:** `yazisma` · `lisans-kapisi` · **Tahmini oturum:** 1–2 (gönderim ve cevap beklemesi hariç)
 > **Başlat:** `/asama A01`

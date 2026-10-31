@@ -1,7 +1,7 @@
 # Mobil mimari
 
 > **Sürüm:** 1.3 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
+> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu dosya Expo uygulamasının iç yapısını tanımlar: klasörler, rotalar, durum yönetimi, veri erişimi, üç mushaf modunun çizimi, sağdan sola sayfalayıcı, performans bütçeleri, derleme türleri, hata yönetimi, hata izleme, erişilebilirlik ve dil. Ses ayrıntısı [Ses sistemi](./02-ses-sistemi.md), paket indirme ve silme ayrıntısı [Depolama yöneticisi](./03-depolama-yoneticisi.md) dosyasındadır. Ekranların görünüşü [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md), okuma akışı [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) dosyasında anlatılır.
 
@@ -13,7 +13,7 @@ Kod örnekleri yön gösterir. Kitaplık API adları ilgili belgelerden alındı
 
 1. **Çevrimdışı önce.** Uygulama ilk açılıştan itibaren gömülü `core` paketiyle internetsiz çalışır. Ağ yalnız manifest, paket ve ses için kullanılır.
 2. **İçerik salt okunur, kullanıcı verisi ayrı.** İçerik paketleri değişmeyen dosyalardır. Kullanıcının yazdığı her şey ayrı veritabanında durur ve içeriğe yalnız çapa ile bağlanır ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)).
-3. **Lisans kapısı istemcide de çalışır.** Yayınlayıcı her derleme türü için ayrı manifest üretir. Uygulama aynı kuralı ikinci kez uygular ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)).
+3. **Lisans kapısı istemcide de çalışır.** Yayınlayıcı her derleme türü için ayrı manifest üretir. Uygulama aynı kuralı ikinci kez uygular ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
 4. **Tek oynatıcı.** Ses tek bir durum makinesinden yönetilir ([K-28](../00-ozet/02-karar-defteri.md#k-28--ses)).
 5. **Kişisel veri ve okuma içeriği telemetriye girmez** (bölüm 12).
 6. **Mod değişse de veri kopmaz.** Üç mushaf modu aynı çapaları kullanır; vurgu ve notlar her modda görünür ([K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek)).
@@ -397,7 +397,7 @@ export interface MushafRenderer {
 }
 ```
 
-**Kelime kartı ve `kelime-kok` paketi.** QAC kaynaklı kök ve lemma verisi ile Türkçe kelime anlamları `core` paketinde değil, ayrı `kelime-kok` paketindedir ([İçerik paketleri §1](../03-veri/03-icerik-paketleri.md#1-paket-listesi), §3.3). Paket `bekliyor` durumunda olduğu için bugün yalnız `dev` derlemede görünür ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)). Kart iki durumda da çalışır:
+**Kelime kartı ve `kelime-kok` paketi.** QAC kaynaklı kök ve lemma verisi ile Türkçe kelime anlamları `core` paketinde değil, ayrı `kelime-kok` paketindedir ([İçerik paketleri §1](../03-veri/03-icerik-paketleri.md#1-paket-listesi), §3.3). Paket `bekliyor` durumunda olduğu için bugün yalnız `dev` derlemede görünür ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)). Kart iki durumda da çalışır:
 - Paket varsa Arapça kelime, Türkçe anlam, kök, lemma, "Bu kök Kur'an'da N yerde geçer" satırı ve "Kökü incele" görünür.
 - Paket yoksa (`internal`, `public`) Arapça kelime, konumu ve eylemler görünür. Türkçe anlam, kök satırı, sıklık ve "Kökü incele" boşluk bırakmadan gizlenir; eksiklik uyarısı gösterilmez. Anlamların QAC'den bağımsız olarak `core`'a taşınması İçerik paketleri IP-6'dır (Açık soru).
 
@@ -698,7 +698,7 @@ Uygulama kuralları:
 | Sentry | Kapalı | Açık | Açık |
 | Geliştirici menüsü | Var | Var | Yok |
 
-`kapali` içerik hiçbir derlemeye girmez. `bekliyor` ve `ic_kullanim` içerik yalnız ekip içi `dev` derlemede görünür; Risale metni de bu yüzden yalnız `dev`'dedir ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı), [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik)). Kurul onayı bekleyen Kur'an metni, meal ve sesin kapalı testte gösterilip gösterilemeyeceği Kurul'a sorulacak (Açık soru). Cevap gelene kadar dış test kullanıcısı alınmaz ve `internal` derleme Kurul kuralını `public` gibi uygular. Üç derleme ayrı uygulama kimliğiyle kurulur; böylece yalnız `dev`'de görünen paketler diğer sürümlerin veri alanına girmez. Kimlikler yer tutucudur; alan adı kararı [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) listesindedir.
+`kapali` içerik hiçbir derlemeye girmez. `bekliyor` ve `ic_kullanim` içerik yalnız ekip içi `dev` derlemede görünür; Risale metni de bu yüzden yalnız `dev`'dedir ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük), [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)). Kurul onayı bekleyen Kur'an metni, meal ve sesin kapalı testte gösterilip gösterilemeyeceği Kurul'a sorulacak (Açık soru). Cevap gelene kadar dış test kullanıcısı alınmaz ve `internal` derleme Kurul kuralını `public` gibi uygular. Üç derleme ayrı uygulama kimliğiyle kurulur; böylece yalnız `dev`'de görünen paketler diğer sürümlerin veri alanına girmez. Kimlikler yer tutucudur; alan adı kararı [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) listesindedir.
 
 ```ts
 // app.config.ts (özet)
@@ -760,7 +760,7 @@ export function isPackVisible(
 }
 ```
 
-Manifest paket başına `kurul_gerekli` taşır ve her zaman imzalıdır ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)). Uygulama imzayı gömülü açık anahtarla doğrular. `public` derleme imzasız ya da imzası tutmayan manifesti reddeder ve son geçerli manifestle sürer; bu kesin kuraldır ([Depolama yöneticisi](./03-depolama-yoneticisi.md), bölüm 5).
+Manifest paket başına `kurul_gerekli` taşır ve her zaman imzalıdır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)). Uygulama imzayı gömülü açık anahtarla doğrular. `public` derleme imzasız ya da imzası tutmayan manifesti reddeder ve son geçerli manifestle sürer; bu kesin kuraldır ([Depolama yöneticisi](./03-depolama-yoneticisi.md), bölüm 5).
 
 ```ts
 // src/lib/flags.ts

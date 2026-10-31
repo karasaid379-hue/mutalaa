@@ -1,6 +1,6 @@
 # A09 · Elmalılı OCR pilotu ve yöntem seçimi (OCR motorları ve hazır metin adayları)
 
-> **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-38](../../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
+> **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-38](../../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
 > **Faz:** 0 · Hazırlık · **Önkoşul:** [A02](./A02-tek-depo-iskeleti.md) · [A06](./A06-kaynak-kayitlari-ve-enumlar.md) · **İnsan adımı:** [İ-09, İ-10, İ-17, İ-29](../06-insan-adimlari.md)
 > **Ajanlar:** `hat-gelistirici` · `metin-denetcisi` · `lisans-denetcisi` · `arastirmaci` · `inceleyici` · **Beceriler:** `icerik-hatti` · `metin-butunlugu` · `lisans-kapisi` · **Tahmini oturum:** 2–4 (insan beklemesi hariç)
 > **Başlat:** `/asama A09`

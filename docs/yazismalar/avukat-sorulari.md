@@ -1,7 +1,7 @@
 # Fikri haklar avukatına sorular
 
 > **Sürüm:** 1.1 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak (gönderilmedi)
-> **Bağlı kararlar:** [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Bağlı kararlar:** [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 > **Muhatap:** Fikri haklar avukatı · **Dil:** Türkçe · **İnsan adımı:** [İ-03](../10-claude-code/06-insan-adimlari.md)
 > **Kanal:** Kullanıcı belirler; avukatın adı ve iletişim bilgisi depoya yazılmaz.
 > **Engellediği iş:** Risale metninin işlenmesi ve atıf dizini (A20, A31); `kelime-kok` paketinin yayını (A17); Elmalılı aktarımının ve kelime anlamlarının lisansı; v1 gizlilik metni (A32, A34). Hesaplı sürümün soruları A35'te ayrıca sorulur.

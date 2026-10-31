@@ -1,7 +1,7 @@
 # Kapsam ve Fazlar
 
 > **Sürüm:** 1.3 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-02](../00-ozet/02-karar-defteri.md#k-02--i̇lk-içerik-seti) · [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
+> **Bağlı kararlar:** [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-02](../00-ozet/02-karar-defteri.md#k-02--i̇lk-içerik-seti) · [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
 
 Bu dosya mobil v1'in neyi kapsadığını, her özelliğin hangi faza ait olduğunu ve neyin bilerek yapılmadığını tanımlar. Bu dosyada yer almayan bir özellik v1 kapsamında sayılmaz. Kararların tek kaynağı [karar defteridir](../00-ozet/02-karar-defteri.md); bu dosya kararları özellik düzeyine indirir.
 
@@ -27,7 +27,7 @@ Faz sırası [Fazlar](../08-yol-haritasi/01-fazlar.md) dosyasıyla aynıdır: Fa
 
 ## 2. Mobil v1'in tanımı
 
-Mobil v1, iOS ve Android için tek bir Expo uygulamasıdır ([K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası), [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji)). Kullanıcı hesap açmadan Kur'an'ı mushaf sayfası ve Elmalılı meali ile okur. Bir kelimeye dokunup kökünü, anlamını ve Kur'an'daki öteki geçişlerini görür, sonra okuduğu yere tek dokunuşla döner. Seçtiği hafızı dinler, not ve vurgu bırakır, hatim tutar. Hadis okuyucusu Tecrîd-i Sarîh'in Arapçasını Ahmed Naim Türkçesiyle yan yana gösterir. Tefsir paketi hazırlandıkça aynı akışa katılır. Risale-i Nur metni hukukçu görüşü gelene kadar hiçbir derlemede yoktur ([K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik), [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)).
+Mobil v1, iOS ve Android için tek bir Expo uygulamasıdır ([K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası), [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji)). Kullanıcı hesap açmadan Kur'an'ı mushaf sayfası ve Elmalılı meali ile okur. Bir kelimeye dokunup kökünü, anlamını ve Kur'an'daki öteki geçişlerini görür, sonra okuduğu yere tek dokunuşla döner. Seçtiği hafızı dinler, not ve vurgu bırakır, hatim tutar. Hadis okuyucusu Tecrîd-i Sarîh'in Arapçasını Ahmed Naim Türkçesiyle yan yana gösterir. Tefsir paketi hazırlandıkça aynı akışa katılır. Risale-i Nur metni hukukçu görüşü gelene kadar hiçbir derlemede yoktur ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük), [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
 
 | Sınır | v1'deki durum | Dayanak |
 |---|---|---|
@@ -36,7 +36,7 @@ Mobil v1, iOS ve Android için tek bir Expo uygulamasıdır ([K-08](../00-ozet/0
 | Ağ | Yalnız isteğe bağlı paket ve ses indirmek için gerekir. `core` paketi uygulamaya gömülüdür. | [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) |
 | Arama | Cihazda SQLite FTS5. | [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) |
 | Gelir | Reklam yok, ücret duvarı yok, gelir modeli yok. | [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli), [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) |
-| Yayın | Mağaza derlemesi yalnız `serbest` ve gerekiyorsa Kurul onaylı paketleri görür. | [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) |
+| Yayın | Mağaza derlemesi yalnız `serbest` ve gerekiyorsa Kurul onaylı paketleri görür. | [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) |
 | Arayüz dili | Türkçe. | Bu dosya |
 
 ### 2.1 Derleme türleri
@@ -47,7 +47,7 @@ Mobil v1, iOS ve Android için tek bir Expo uygulamasıdır ([K-08](../00-ozet/0
 | `internal` | Davetli test kullanıcıları, EAS iç dağıtım (Faz 2) | Yalnız `serbest`. Kurul onayı bekleyen Kur'an metni, meal ve sesin kapalı testte gösterilip gösterilemeyeceği Kurul'a sorulur (Açık soru); cevap gelene kadar dış test kullanıcısı alınmaz. |
 | `public` | Mağaza kullanıcıları (Faz 3 ve sonrası) | Yalnız `serbest`; Kur'an metni, meal ve ses paketlerinde ayrıca Kurul onaylı sürüm |
 
-`kapali` durumundaki bir paket hiçbir derlemeye girmez ve işlenmez. Kural [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) ile sabittir; manifest paket başına `kurul_gerekli` bilgisi ve imza taşır.
+`kapali` durumundaki bir paket hiçbir derlemeye girmez ve işlenmez. Kural [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) ile sabittir; manifest paket başına `kurul_gerekli` bilgisi ve imza taşır.
 
 ```mermaid
 flowchart LR

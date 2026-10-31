@@ -1,7 +1,7 @@
 # İktibas ve Atıf Tespiti
 
 > **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Bağlı kararlar:** [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 
 Bu dosya Risale-i Nur ve tefsir metinlerindeki âyet iktibaslarının ve açık atıfların bulunmasını tanımlar. Çıktı `xref` tablosuna `type = 'atif'` ve `type = 'iktibas'` satırlarıdır ([bağlantı modeli](./01-baglanti-modeli.md)). İş Python 3.13 içerik hattında, `pipeline/enrich/` altında, çevrimdışı çalışır (K-12). Her satır editör panelinde onaylanmadan mağazaya çıkmaz (K-13). Metni verilmeden yapılan imalar sözlüksel tespitle bulunamaz; onları editör `ima` olarak girer.
 

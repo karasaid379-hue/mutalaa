@@ -1,6 +1,6 @@
 # A11 · Kur'an yapısı: sure adları, cüz, secde, Medine sayfa eşlemesi
 
-> **Sürüm:** 1.1 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-07](../../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)
+> **Sürüm:** 1.1 · **Tarih:** 25 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-07](../../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A10](./A10-tanzil-alimi.md) · **İnsan adımı:** İ-23 (sure adlarının girişi ve onayı) · AS-10 kaynak kararı (proje sahibi)
 > **Ajanlar:** `hat-gelistirici` · `lisans-denetcisi` · `arastirmaci` · `sunucu-gelistirici` (şema eki gerekirse) · `test-yazari` · `inceleyici` · **Beceriler:** `icerik-hatti` · `lisans-kapisi` · `capa-gramer` · `ef-goc` · **Tahmini oturum:** 2–3 (insan beklemesi hariç)
 > **Başlat:** `/asama A11`

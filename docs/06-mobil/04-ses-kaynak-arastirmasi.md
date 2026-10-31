@@ -1,7 +1,7 @@
 # Ses kaynağı araştırması (A27.1)
 
 > **Sürüm:** 1.0 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak (araştırma tamam; cihaz ölçümleri kullanıcıya bırakıldı)
-> **Bağlı kararlar:** [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-40](../00-ozet/02-karar-defteri.md#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)
+> **Bağlı kararlar:** [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-40](../00-ozet/02-karar-defteri.md#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
 
 Bu dosya A27 ses sisteminin teknik dayanağıdır: hangi kaynaklar incelendi, okuyucular nasıl seçildi, hangi mimari neden seçildi ve kodlama hangi sırayla yapılacak. Ses sisteminin işleyişi [Ses sistemi](./02-ses-sistemi.md), aşama adımları [A27](../10-claude-code/asamalar/A27-ses-sistemi.md) dosyasındadır.
 
