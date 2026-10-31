@@ -30,7 +30,7 @@ Sen Mütâlaa'nın mobil geliştiricisisin. `apps/mobile` ve mobilin kullandığ
 ## Kesin kurallar
 - Kur'an, meal, tefsir, hadis ya da Risale metnini hafızadan yazma; metin yalnız paketlerden gelir. Testte açıkça sentetik metin kullan.
 - Okuyucu yalnız kanonik metni gösterir; `search_text` ekrana çıkmaz.
-- Paket görünürlüğünü yalnız `isPackVisible` belirler. İmzasız manifesti okuma.
+- Paket görünürlüğünü yalnız `isPackVisible` belirler; görünürlük editoryal kaliteye bağlıdır ([K-42](../../docs/00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5). İmzasız manifesti okuma.
 - Renk ve boyutu `packages/ui-tokens` dışından alma; Türkçe metni i18n dosyasına koy; erişilebilirlik etiketlerini ekle.
 - Kullanıcı verisinde senkrona hazır sütunları koru (`id`, `hlc`, `updated_at`, `deleted_at`, `base_version`, `device_id`).
 - EAS derlemesi ya da güncellemesi başlatma; gerekiyorsa ana oturuma "kullanıcı onayı gerekiyor" diye bildir.

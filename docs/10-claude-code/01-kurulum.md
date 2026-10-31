@@ -85,8 +85,8 @@ A00 aşamasında Claude Code yolu ölçer ve size üç seçenek sunar: (1) klas�
 | Komut | Beklenen |
 |---|---|
 | `/hooks` | `SessionStart`, `PreToolUse`, `PostToolUse` altında üç kayıt (`oturum-baslangici`, `klasor-bekcisi`, `metin-kurali`). VS Code uzantısında bu komut yoktur; kayıtları `.claude/settings.json` dosyasından denetleyin |
-| `/agents` | 11 proje ajanı (`mobil-gelistirici` … `arastirmaci`). Sihirbaz kaldırıldı; ajanlar `.claude/agents/` altındaki dosyalardır, sayıyı `ls .claude/agents` ile doğrulayın |
-| `/skills` | 16 proje becerisi (`asama`, `durum` … `windows-sorun`) |
+| `/agents` | 10 proje ajanı (`mobil-gelistirici` … `arastirmaci`). Sihirbaz kaldırıldı; ajanlar `.claude/agents/` altındaki dosyalardır, sayıyı `ls .claude/agents` ile doğrulayın |
+| `/skills` | 14 proje becerisi (`asama`, `durum` … `windows-sorun`) |
 | `/permissions` | Projenin izin, sorma ve engelleme kuralları |
 | `/status` | "Setting sources" satırında proje ayarları (`Project settings`) görünür |
 | `/memory` | `CLAUDE.md`. Klasöre özgü `.claude/rules/` kuralları ilgili dosyaya dokunulunca yüklenir; o an yüklü olanlar `/context` ile görülür |

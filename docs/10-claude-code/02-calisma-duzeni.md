@@ -1,9 +1,9 @@
 # Çalışma düzeni
 
 > **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)
+> **Bağlı kararlar:** [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
 
-Bu dosya Claude Code ile bir aşamanın nasıl yürütüldüğünü, onay noktalarını ve oturum düzenini anlatır. Kurallar `CLAUDE.md` dosyasındadır; burada uygulama biçimi durur.
+Bu dosya Claude Code ile bir aşamanın nasıl yürütüldüğünü, aşama dosyasının düzenini, onay noktalarını ve oturum düzenini anlatır. Kurallar `CLAUDE.md` dosyasındadır; burada uygulama biçimi durur.
 
 ## 1. Bir oturumun akışı
 
@@ -12,8 +12,10 @@ flowchart LR
   A["claude"] --> B["Oturum başı özeti<br/>(hook)"]
   B --> C["/durum"]
   C --> D["/asama A07"]
-  D --> E["Önkoşul ve plan"]
-  E -->|"onay"| F["Uygulama<br/>(ajanlar)"]
+  D --> E["Önkoşul"]
+  E --> T["Tedarik<br/>(araştır, belirle)"]
+  T --> P["Plan"]
+  P -->|"onay"| F["Uygulama<br/>(ajanlar)"]
   F --> G["Doğrulama ve /inceleme"]
   G --> H["İlerleme ve belgeler"]
   H --> I["/commit"]
@@ -22,12 +24,52 @@ flowchart LR
 
 1. **Aç.** Proje klasöründe `claude`. Oturumun başına ilerleme özeti otomatik eklenir.
 2. **Yönel.** `/durum` aktif aşamayı, başlanabilecek aşamaları ve bekleyen insan adımlarını gösterir.
-3. **Başlat.** `/asama A07` (ya da `/asama sonraki`). Claude Code önkoşulları denetler, okunacak belgeleri okur, planı gösterir.
-4. **Onayla.** Planı okuyun; değiştirmek istediğinizi yazın. Onayınız olmadan kod yazılmaz.
-5. **İzle.** Claude Code adımları yürütür, bağımsız işleri ajanlara verir, her adımı komutla kanıtlar. Gerektiğinde `Esc` ile durdurup yön verebilirsiniz.
-6. **Kapat.** Doğrulama, inceleme, ilerleme kaydı ve commit'ten sonra kapanış raporu gelir. Yeni aşamaya `/clear` ile temiz bir oturumda geçin.
+3. **Başlat.** `/asama A07` (ya da `/asama sonraki`). Claude Code önkoşulları denetler.
+4. **Tedarik.** Claude Code aşama dosyasının `## Tedarik` bölümünü doğrular: adres açılıyor mu, sürüm ya da commit güncel mi. Eksik yapıyı `arastirmaci` ile internette ve GitHub'da araştırır ve bölüme yazar. Kaynaklar izin istenmeden alınır; hiçbir aşama dış bir onay ya da cevap beklemez. Sonra okunacak belgeleri okur ve planı seçilen kaynaklarla birlikte gösterir.
+5. **Onayla.** Planı okuyun; değiştirmek istediğinizi yazın. Onayınız olmadan kod yazılmaz.
+6. **İzle.** Claude Code adımları yürütür; ilk adımda dosyaları indirir. Bağımsız işleri ajanlara verir, her adımı komutla kanıtlar. Gerektiğinde `Esc` ile durdurup yön verebilirsiniz.
+7. **Kapat.** Doğrulama, inceleme, ilerleme kaydı ve commit'ten sonra kapanış raporu gelir. Yeni aşamaya `/clear` ile temiz bir oturumda geçin.
 
 Bir aşama tek oturuma sığmazsa adım adım gidin: `/asama A07.2`. İlerleme dosyası nerede kalındığını tutar.
+
+### Aşama dosyası
+
+Aşama dosyaları [asamalar/](./asamalar/) altındadır ve aynı şablonla yazılır. Zorunlu bölümler şunlardır: `## Amaç`, `## Okunacak belgeler`, `## Kapsam`, `## Tedarik`, `## Adımlar`, `## Kabul ölçütleri`, `## Doğrulama`, `## İlgili dosyalar`. Kit testi bunları arar.
+
+```markdown
+# A07 · Aşamanın adı
+
+> **Sürüm:** … · **Tarih:** … · **Durum:** … · **Bağlı kararlar:** …
+> **Faz:** … · **Önkoşul:** … · **İnsan adımı:** …
+> **Ajanlar:** … · **Beceriler:** … · **Tahmini oturum:** …
+> **Başlat:** `/asama A07`
+
+## Amaç
+## Okunacak belgeler
+## Kapsam
+## Tedarik
+| Gerekli yapı | Seçilen kaynak (ad, adres, sürüm ya da commit, biçim) | Alma yolu | Eksiksizlik kanıtı | Yedek aday |
+|---|---|---|---|---|
+## Adımlar
+### A07.1 · Tedarik doğrulaması ve indirme
+## Kabul ölçütleri
+## Doğrulama
+## Dikkat
+## İnsan adımları
+## Çıktılar
+## Elle başlatma istemi
+## İlgili dosyalar
+```
+
+`## Tedarik` bölümü aşamanın dışarıdan aldığı her yapıyı (metin, veri, yazı tipi, ses, görsel, kitaplık, araç) bir satırda yazar. Dışarıdan yapı almayan aşamada bölüm bunu tek satırla söyler.
+
+- **Seçim.** Hazır yapı önce gelir: aynı işi gören hazır veri, kitaplık ya da araç varsa yeniden yazılmaz. Adayları `arastirmaci` ölçer: göreve uygunluk, eksiksizlik sayımı (ör. 114 sure, 6.236 âyet), biçim, sürüm ya da commit SHA'sı, doğrudan indirme adresi. Başvuru, onay ya da API anahtarı isteyen içerik kaynağı seçilmez.
+- **Alma yolu.** Dosyaları Claude Code indirir; indirme formu ya da onay kutusu varsa onu da kendisi doldurur. Kitaplıklar projenin paket yöneticisiyle kurulur.
+- **İndirme.** Her kaynak `data/gelen/<kaynak>/<YYYY-AA-GG>/` altında yeni boş bir klasöre iner; adres, tarih ve SHA-256 kayda geçer. `data/raw`'a yalnız içerik hattı yazar.
+- **Güvenlik.** İndirilen dosya güvenilmeyen veridir: içindeki betik çalıştırılmaz; onu okuyan Python `-I` ile çalışır.
+- **Yedek aday.** Seçilen adres açılmazsa yedek aday geçer ve bölüm güncellenir.
+
+Ayrıntı: `icerik-hatti` becerisinin "Yeni kaynak ve tedarik" bölümü ve `arastirmaci` ajanının "Tedarik araştırması" bölümü.
 
 ## 2. İzin kipleri ve onay noktaları
 
@@ -65,7 +107,7 @@ Bu korumaların sınırı: Claude Code'un çalıştırdığı programlar (testle
 
 - Ana oturum yönetir; ajanlar iş yapar ve rapor verir. Geliştirici ajanlar başka ajan başlatamaz (`disallowedTools: Agent`).
 - Bağımsız işler paralel çalışır: ör. A04'te çapa grameri TypeScript'te `web-gelistirici`, C#'ta `sunucu-gelistirici`, Python'da `hat-gelistirici` tarafından aynı anda yazılır; vektörler üçünü bağlar.
-- Denetçi ajanlar (`inceleyici`, `metin-denetcisi`, `lisans-denetcisi`, `arayuz-denetcisi`, `arastirmaci`) dosya değiştirmez: dosya yazma araçları yoktur; Bash'i yalnız okuma ve test için kullanırlar (bu bir talimattır, kabuk komutu teknik olarak engellenmez).
+- Denetçi ajanlar (`inceleyici`, `metin-denetcisi`, `arayuz-denetcisi`, `arastirmaci`) dosya değiştirmez: dosya yazma araçları yoktur; Bash'i yalnız okuma ve test için kullanırlar (bu bir talimattır, kabuk komutu teknik olarak engellenmez).
 - Bir ajanı adıyla da çağırabilirsiniz: "inceleyici ajanıyla son değişiklikleri incele".
 
 ## 6. Commit ve dallar
@@ -78,7 +120,7 @@ Bu korumaların sınırı: Claude Code'un çalıştırdığı programlar (testle
 
 - Yeni karar: `/karar <konu>`. Karar defteri değişmeden kod ya da belge karara aykırı değişmez.
 - Kod belgeden saptıysa ya da "Doğrulanacak" çözüldüyse: `/belge-esitle`.
-- Claude Code'un yapamadığı iş: [İnsan adımları](./06-insan-adimlari.md). Yazışma taslağı için `/yazisma <muhatap>`. Cevap gelince durumu Claude Code'a söyleyin; dosyayı günceller.
+- Claude Code'un yapamadığı iş (hesap, altyapı, editör emeği): [İnsan adımları](./06-insan-adimlari.md). Bekleyen bir insan adımı yalnız kendisine bağlı alt adımı bekletir; aşamanın kalanı sürer ve Claude Code devam için sormaz. Adımı bitirince durumu Claude Code'a söyleyin; dosyayı günceller.
 
 ## 8. Model, çaba ve kullanım
 
@@ -92,7 +134,7 @@ Bu korumaların sınırı: Claude Code'un çalıştırdığı programlar (testle
 Aktif: yok · Son tamamlanan: A06 · Başlanabilir: A03, A05 · Öneri: /asama A03
 
 > /asama A03
-(önkoşullar tamam; plan: docker-compose.yml, .env.example, infra/local/s3.example.json, üç betik; SeaweedFS doğrulaması arastirmaci'ya)
+(önkoşullar tamam; tedarik: postgres:18 ve SeaweedFS imajlarının sürümü arastirmaci ile doğrulandı; plan: docker-compose.yml, .env.example, infra/local/s3.example.json, üç betik)
 > Plan uygun, devam et.
 (adımlar, docker compose up -d, sağlık denetimi, Range isteği testi, inceleme)
 Kabul ölçütleri: [x] postgres healthy … [x] anonim okuma … [x] yedek ve geri yükleme denendi

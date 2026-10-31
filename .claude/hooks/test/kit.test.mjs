@@ -74,7 +74,7 @@ const skills = new Map(
 );
 
 test('beceriler: ad, açıklama, bilinen alanlar, enjeksiyon yok', () => {
-  assert.ok(skills.size >= 16, `beceri sayısı ${skills.size}`);
+  assert.ok(skills.size >= 14, `beceri sayısı ${skills.size}`);
   for (const [name, { data, body }] of skills) {
     for (const k of Object.keys(data)) assert.ok(SKILL_KEYS.has(k), `skills/${name}: bilinmeyen alan ${k}`);
     assert.equal(data.name, name, `skills/${name}: name klasör adıyla aynı olmalı`);
@@ -88,7 +88,7 @@ test('beceriler: ad, açıklama, bilinen alanlar, enjeksiyon yok', () => {
 
 test('ajanlar: ad, açıklama, araçlar, model, renk, önceden yüklenen beceriler', () => {
   const files = fs.readdirSync(at('.claude', 'agents')).filter((f) => f.endsWith('.md'));
-  assert.ok(files.length >= 11, `ajan sayısı ${files.length}`);
+  assert.ok(files.length >= 10, `ajan sayısı ${files.length}`);
   for (const f of files) {
     const { data } = parseFrontmatter(read('.claude', 'agents', f), `agents/${f}`);
     const name = f.slice(0, -3);

@@ -2,7 +2,7 @@
 name: inceleme
 description: >-
   Commit öncesi inceleme yapar; değişen alanlara göre hızlı denetimleri çalıştırır, inceleyici ve
-  gereken denetçi ajanları (metin, lisans, arayüz) devreye alır, bulguları önem sırasıyla raporlar ve
+  gereken denetçi ajanları (metin, arayüz) devreye alır, bulguları önem sırasıyla raporlar ve
   onayla düzeltir. Commit öncesinde, bir aşamanın inceleme adımında ya da kullanıcı /inceleme
   yazdığında kullan.
 argument-hint: "[kapsam: boş = çalışma ağacı | staged | <dosya/klasör>]"
@@ -24,6 +24,7 @@ Kapsam: `$ARGUMENTS` (boşsa çalışma ağacındaki bütün değişiklikler)
 | TypeScript | `pnpm lint` · `pnpm typecheck` · `pnpm test` (Turborepo önbelleği değişmeyen paketleri atlar) |
 | .NET | `dotnet build server/Mutalaa.slnx` · `dotnet test --solution server/Mutalaa.slnx` · `dotnet format server/Mutalaa.slnx --verify-no-changes` |
 | Python | `cd pipeline && uv run ruff check . && uv run ruff format --check . && uv run pytest` |
+| Kaynak kaydı | `uv --directory pipeline run mutalaa sources check` |
 | Test vektörleri | üç dilin vektör testleri (bkz. `test-vektoru` becerisi) |
 | Belgeler | `node .claude/skills/belge-esitle/baglanti-denetimi.mjs docs` |
 | Kit | `node --test ".claude/hooks/test/*.test.mjs"` |
@@ -32,9 +33,8 @@ Henüz kurulmamış bir alanın komutu çalışmazsa bunu not et; hata sayma.
 
 ## 3. Ajanlar
 
-- Her durumda `inceleyici`.
+- Her durumda `inceleyici`; kaynak kaydı, paket, manifest, görünürlük kodu ve bağımlılık değişikliklerini de o denetler.
 - Metin, çapa, normalizasyon, arama ya da Kur'an verisi değiştiyse `metin-denetcisi`.
-- Kaynak kaydı, paket, manifest, görünürlük kodu ya da bağımlılık değiştiyse `lisans-denetcisi`.
 - Ekran ya da bileşen değiştiyse `arayuz-denetcisi`.
 - Bağımsız denetçileri paralel çalıştır.
 
