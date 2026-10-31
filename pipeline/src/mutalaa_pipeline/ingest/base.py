@@ -161,8 +161,16 @@ def run_ingest(adapter: SourceAdapter, ctx: "RunContext") -> IngestSonucu:
         )
 
     ciktilar = _klasor_ciktilari(ctx, klasor)
+    # Istege bagli kanca: bagdastirici manifeste eklenecek ayrintilari (ornegin satir duzeni)
+    # `manifest_ayrintilari()` ile verir; parse() sonrasinda cagrilir.
+    kanca = getattr(adapter, "manifest_ayrintilari", None)
     ctx.manifest_yaz(
-        klasor, girdiler=girdiler, ciktilar=ciktilar, lisanslar=lisanslar, parmak=parmak
+        klasor,
+        girdiler=girdiler,
+        ciktilar=ciktilar,
+        lisanslar=lisanslar,
+        parmak=parmak,
+        ayrintilar=kanca() if callable(kanca) else None,
     )
     ctx.gunluk.yaz("INFO", "ingest_bitti", source_id=kaynak, sayilar={"birim": units.satir})
     return IngestSonucu(

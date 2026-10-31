@@ -142,6 +142,39 @@ def export_ic_kesme(
         typer.echo("ic-kesme: degisiklik yok")
 
 
+@export_app.command("pg")
+def export_pg_komutu(
+    source: Annotated[str, typer.Option("--source", help="Kaynak kimligi, or. tanzil-uthmani.")],
+    run: Annotated[
+        str | None,
+        typer.Option("--run", help="anchor run_id; verilmezse manifestli en son anchor."),
+    ] = None,
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="Islemi geri alir; hicbir satir yazmaz.")
+    ] = False,
+    force: Annotated[
+        bool, typer.Option("--force", help="Kabul edilir; export pg parmak izi atlamaz (K-39).")
+    ] = False,
+    config: Annotated[Path | None, typer.Option("--config", help="Baska bir mutalaa.toml.")] = None,
+    kok: KokSecenegi = None,
+) -> None:
+    """Staged birimleri PostgreSQL'e yukler (tek islem, idempotent; K-39)."""
+    # Ice aktarma: psycopg ve yapilandirma yalniz bu komutta yuklenir.
+    from mutalaa_pipeline.config import ayarlar_yukle
+    from mutalaa_pipeline.export import pg
+
+    try:
+        depo = kok_coz(kok)
+        ayarlar = ayarlar_yukle(config)
+    except GirdiHatasi as hata:
+        raise _hata(hata) from hata
+    kod = pg.komut_export_pg(
+        ayarlar, depo_kok=depo, source=source, run=run, dry_run=dry_run, force=force
+    )
+    if kod != cikis.BASARILI:
+        raise typer.Exit(code=kod)
+
+
 @sources_app.command("list")
 def sources_list(
     bicim: Annotated[
