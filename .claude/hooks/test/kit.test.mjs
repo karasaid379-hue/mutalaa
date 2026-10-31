@@ -131,14 +131,22 @@ test('settings.json: geçerli JSON, kip, okuma sınırı, hook betikleri var', (
     assert.ok(s.permissions.deny.includes(r), `deny: ${r}`);
   }
   assert.ok(s.permissions.deny.indexOf('Read(!**/.env.example)') > s.permissions.deny.indexOf('Read(**/.env.*)'));
-  for (const r of ['Bash(node *)', 'PowerShell(node *)']) assert.ok(!s.permissions.allow.includes(r), `geniş izin: ${r}`);
+  // Kullanıcı kararı (2026-10-31): terminal komutları ve araştırma onaysız çalışır. Güvenlik
+  // deny listesinde, ask listesinde (ücretli iş, genel kurulum) ve klasör bekçisindedir.
+  for (const r of ['Bash', 'WebSearch', 'WebFetch']) assert.ok(s.permissions.allow.includes(r), `allow: ${r}`);
+  for (const r of ['Bash(eas build *)', 'Bash(eas update *)', 'Bash(git config --global *)']) {
+    assert.ok(s.permissions.ask.includes(r), `ask: ${r}`);
+  }
+  for (const r of ['Bash(git push --force *)', 'Bash(eas submit *)', 'Bash(npm publish *)', 'Bash(pnpm publish *)']) {
+    assert.ok(s.permissions.deny.includes(r), `deny: ${r}`);
+  }
   const pre = s.hooks.PreToolUse[0];
   for (const tool of ['Write', 'Edit', 'NotebookEdit', 'Bash', 'PowerShell', 'Monitor']) {
     assert.ok(pre.matcher.split('|').includes(tool), `PreToolUse eşleyicisi: ${tool}`);
   }
   assert.equal(pre.hooks[0].onFailure, 'block', 'klasör bekçisi çalışamazsa işlem durmalı');
   for (const rule of [...s.permissions.allow, ...s.permissions.ask, ...s.permissions.deny]) {
-    assert.match(rule, /^(Bash|PowerShell|Read|Edit|WebFetch)\(.+\)$|^WebSearch$/, `kural biçimi: ${rule}`);
+    assert.match(rule, /^(Bash|PowerShell|Read|Edit|WebFetch)\(.+\)$|^(Bash|PowerShell|WebSearch|WebFetch)$/, `kural biçimi: ${rule}`);
     assert.ok(!rule.startsWith('Write('), `Write(...) kuralı denetlenmez; Read/Edit kullan: ${rule}`);
   }
   for (const [event, groups] of Object.entries(s.hooks)) {

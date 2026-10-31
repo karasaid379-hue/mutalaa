@@ -99,7 +99,7 @@ Oturumun ilk mesajında Claude Code'a ilerleme özeti eklenir ("Mütâlaa · otu
 |---|---|---|
 | `language` | `turkish` | Claude Code yanıtları Türkçe |
 | `permissions.defaultMode` | `acceptEdits` | Proje içindeki dosya düzenlemeleri sorulmadan uygulanır; komutlar kurallara göre sorulur. `Shift+Tab` ile kip değiştirilir |
-| `permissions.blockReadsOutsideWorkingDirectories` | `true` | Dosya araçları proje dışını okuyamaz; çözümlenemeyen komutlar (ör. `node -e`) onay ister |
+| `permissions.blockReadsOutsideWorkingDirectories` | `true` | Dosya araçları proje dışını okuyamaz; kabuk komutları ve araştırma `permissions.allow` ile onaysız çalışır (2026-10-31, kullanıcı kararı) |
 | `permissions.allow` | git'in okuma ve commit komutları, `pnpm`, `npx expo`, `dotnet`, `uv`, `docker compose`, `adb`, `maestro`, `eas`'ın okuma komutları, `node --test` ve bağlantı denetimi; belgeler için web alan adları | Günlük geliştirme sorulmadan yürür. Tek başına `node <betik>` ve `curl` sorulur |
 | `permissions.deny` | `.env` ve `.env.*` okuma (`.env.example` hariç), `.env` ve `.env.local` yazma, anahtar dosyaları; `data/raw` içine yazma; zorla push; `eas submit`; paket yayımlama | Gizli değer, ham kaynak ve geri dönüşsüz işlem koruması |
 | `permissions.ask` | push, `git reset`, `clean`, `restore`, `rebase`, `commit --amend`, `stash drop`, `branch -D`; `eas build` ve `update`; `docker compose down -v`; `dotnet user-secrets`; `rm -rf` ve benzerleri | Onayınız olmadan yapılmaz |
@@ -116,11 +116,11 @@ Kendi bilgisayarınıza özgü bir ayar gerekirse (ör. Git Bash yolu) `.claude/
 | Katman | Ne yapar | Sınırı |
 |---|---|---|
 | Dosya araçları (Read, Write, Edit) | Proje dışını okuyamaz (`blockReadsOutsideWorkingDirectories`) ve yazamaz (klasör bekçisi) | Kesin engel |
-| Kabuk komutları (Git Bash, Monitor) | Komutta görünen proje dışı yol, ev ya da geçici klasör başvurusu (`~`, `$HOME`, `$USERPROFILE`, `$TEMP`, `/tmp` …) onay ister. `data/raw` ve `.git` içine yazma reddedilir; `CLAUDE.md`, kit dosyaları ve karar defterine yazma, özyinelemeli silme ve geri dönüşü zor git işlemleri onay ister | Komut metnine bakar; betiğin içinde kurulan yolu göremez |
+| Kabuk komutları (Git Bash, Monitor) | Komutta görünen proje dışı yol, ev ya da geçici klasör başvurusu (`~`, `$HOME`, `$USERPROFILE`, `$TEMP`, `/tmp` …) onay ister. `data/raw` ve `.git` içine yazma reddedilir; `CLAUDE.md`, ayarlar, hook'lar ve karar defterine yazma ile depo tarihini yok eden git işlemleri (`--no-verify`, `filter-branch`, `gc`, `reflog expire`) onay ister; `git push/reset/clean/restore/rebase` ve `rm -r` sorulmaz (kural 11); ajan, beceri ve kural dosyaları sorulmaz | Komut metnine bakar; betiğin içinde kurulan yolu göremez |
 | Çalıştırılan programlar (`uv run`, `dotnet run`, `pnpm` betikleri, testler, `node <betik>`) | Claude Code bunların açtığı dosyaları sınırlamaz | Windows'ta işletim sistemi düzeyinde kum havuzu (sandbox) yoktur |
 | Claude Code'un ve araçların kendi dosyaları | Oturum kayıtları ve kullanıcı ayarları `%USERPROFILE%\.claude` altındadır; araç önbellekleri (pnpm, NuGet, uv, Docker) ve test çerçevelerinin geçici dosyaları kendi yerlerindedir | Kuralın dışındadır |
 
-Bu yüzden kural 1 (CLAUDE.md) Claude için bağlayıcıdır: yazdığı betik ve komutlar proje dışı yol kullanmaz; `inceleyici` bunu denetler. Satır içi kod (`node -e`, `python -c`) ve tek başına `node <betik>` onay ister: komutu okuyup onaylayın ya da reddedin. İşletim sistemi düzeyinde kesin sınır isterseniz Claude Code'u yalnız bu klasöre erişimi olan ayrı bir Windows kullanıcısıyla ya da WSL2 içinde kum havuzu açıkken çalıştırmanız gerekir; bu kurulum kitin dışındadır (Doğrulanacak).
+Bu yüzden kural 1 (CLAUDE.md) Claude için bağlayıcıdır: yazdığı betik ve komutlar proje dışı yol kullanmaz; `inceleyici` bunu denetler. Satır içi kod (`node -e`, `python -c`) ve betikler onaysız çalışır (`settings.json` › `allow`: `Bash`, `WebFetch`, `WebSearch`); klasör sınırını bu yüzden yalnız bekçi ve işletim sistemi düzeyindeki önlemler korur. Onay yalnız ücretli iş, genel kurulum ve bekçinin sorduğu durumlar için kalır. İşletim sistemi düzeyinde kesin sınır isterseniz Claude Code'u yalnız bu klasöre erişimi olan ayrı bir Windows kullanıcısıyla ya da WSL2 içinde kum havuzu açıkken çalıştırmanız gerekir; bu kurulum kitin dışındadır (Doğrulanacak).
 
 ## 8. Güncelleme ve sorun giderme
 

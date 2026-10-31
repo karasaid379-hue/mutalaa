@@ -60,13 +60,14 @@ test('Windows: kit ve karar defteri değişikliği onay ister', () => {
     'CLAUDE.md',
     '.claude\\settings.json',
     '.claude\\settings.local.json',
-    '.claude\\skills\\asama\\SKILL.md',
-    '.claude\\agents\\inceleyici.md',
     '.claude\\hooks\\lib\\bekci.mjs',
-    '.claude\\rules\\mobil.md',
     'docs\\00-ozet\\02-karar-defteri.md',
   ]) {
     assert.equal(decision(decide(winInput('Edit', { file_path: `${WIN_ROOT}\\${rel}` }), win)), 'ask', rel);
+  }
+  // Ajan, beceri ve kural dosyaları sıradan çalışma dosyasıdır (kullanıcı kararı, 2026-10-31).
+  for (const rel of ['.claude\\skills\\asama\\SKILL.md', '.claude\\agents\\inceleyici.md', '.claude\\rules\\mobil.md']) {
+    assert.equal(decision(decide(winInput('Edit', { file_path: `${WIN_ROOT}\\${rel}` }), win)), null, rel);
   }
   assert.equal(decision(decide(winInput('Edit', { file_path: `${WIN_ROOT}\\docs\\10-claude-code\\05-ilerleme.md` }), win)), null);
 });
@@ -189,31 +190,49 @@ test('Kabukla kit ve karar defteri değişikliği onay ister', () => {
     "sed -i 's/a/b/' CLAUDE.md",
     'cp yeni.json .claude/settings.json',
     'cd docs/00-ozet && echo x >> 02-karar-defteri.md',
-    'cat > .claude/skills/asama/SKILL.md <<EOF\nicerik\nEOF',
+    'cat > .claude/hooks/lib/bekci.mjs <<EOF\nicerik\nEOF',
   ]) {
     assert.equal(winDecision(cmd), 'ask', cmd);
   }
+  assert.equal(winDecision('cat > .claude/skills/asama/SKILL.md <<EOF\nicerik\nEOF'), null);
 });
 
-test('Özyinelemeli silme ve geri dönüşü zor git işlemleri onay ister', () => {
+test('Yalnız depo tarihini ve güvenlik denetimini yok eden git işlemleri onay ister (kural 11)', () => {
+  for (const cmd of [
+    'git commit -m x --no-verify',
+    'git filter-branch --index-filter x',
+    'git reflog expire --expire=now --all',
+    'git gc --prune=now',
+    'git update-ref -d refs/heads/x',
+  ]) {
+    assert.equal(winDecision(cmd), 'ask', cmd);
+  }
+  // Kural 11: bunlar için onay sorulmaz (zorla push settings.json deny listesindedir).
   for (const cmd of [
     'rm -fr build-tmp',
     'rm -r -f x',
     'xargs rm -rf < liste.txt',
     'git commit --amend -m x',
-    'git commit -m x --no-verify',
     'git stash drop',
     'git branch -D eski',
     'git switch --discard-changes main',
     'git checkout -- src/a.ts',
     'git -C . reset --hard',
     'git push origin main',
+    'git clean -fd',
+    'git restore .',
+    'git rebase main',
+    'git commit -m "feat(api): add x"',
+    'git switch -c yeni',
+    'git stash',
+    'git checkout -b dal',
+    'rm .tmp/a.png',
   ]) {
-    assert.equal(winDecision(cmd), 'ask', cmd);
-  }
-  for (const cmd of ['git commit -m "feat(api): add x"', 'git switch -c yeni', 'git stash', 'git checkout -b dal', 'rm .tmp/a.png']) {
     assert.equal(winDecision(cmd), null, cmd);
   }
+  // Korunan yerler yine reddedilir.
+  assert.equal(winDecision('rm -rf data/raw'), 'deny');
+  assert.equal(winDecision('rm -rf ../baska-proje'), 'ask');
 });
 
 test('Heredoc gövdesi komut sayılmaz; kabuğa verilen gövde taranır', () => {
@@ -230,18 +249,22 @@ test('Monitor aracı kabuk gibi denetlenir', () => {
 
 test('PowerShell dosya komutları da denetlenir', () => {
   assert.equal(winDecision('Set-Content -Path CLAUDE.md -Value x', WIN_ROOT, 'PowerShell'), 'ask');
-  assert.equal(winDecision('Remove-Item -Recurse -Force .tmp\\eski', WIN_ROOT, 'PowerShell'), 'ask');
+  assert.equal(winDecision('Remove-Item -Recurse -Force .tmp\\eski', WIN_ROOT, 'PowerShell'), null);
   assert.equal(winDecision('Copy-Item a.txt -Destination data\\raw\\a.txt', WIN_ROOT, 'PowerShell'), 'deny');
 });
 
 test('&&, ||, & ve | sonraki komutu ayırır; komut kaybolmaz', () => {
   for (const cmd of [
-    'git status && git push origin main',
-    'pnpm test || git reset --hard',
-    'echo a && rm -rf build-tmp',
-    'sleep 1 & git clean -fd',
+    'git status && git commit -m x --no-verify',
+    'pnpm test || git gc --prune=now',
+    'echo a && cat ../disari.txt',
+    'sleep 1 & git filter-branch x',
   ]) {
     assert.equal(winDecision(cmd), 'ask', cmd);
+  }
+  // Kural 11: bileşik komutta da push, reset, rm -rf için sorulmaz.
+  for (const cmd of ['git status && git push origin main', 'pnpm test || git reset --hard', 'echo a && rm -rf build-tmp']) {
+    assert.equal(winDecision(cmd), null, cmd);
   }
   assert.equal(winDecision('true && cp a.txt data/raw/a.txt'), 'deny');
   assert.equal(winDecision('cd pipeline && uv run pytest && cd ..'), null);
