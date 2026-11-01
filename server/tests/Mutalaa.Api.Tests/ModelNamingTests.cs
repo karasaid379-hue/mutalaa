@@ -12,7 +12,7 @@ namespace Mutalaa.Api.Tests;
 
 /// <summary>
 /// IcerikDbContext modeli (veritabani ve Docker gerektirmez): tablo sayilari, ad politikasi (K-37 madde 4), capa sutunlarinda
-/// COLLATE "C", 11 PostgreSQL enum turu ve etiket sirasi, xmin, uretilen arama sutunlari.
+/// COLLATE "C", 10 PostgreSQL enum turu ve etiket sirasi, xmin, uretilen arama sutunlari.
 /// Her sinama hem varsayilan modelde hem model onbellegi atlanarak, tr-TR kulturunde yeniden olusturulan modelde kosar.
 /// </summary>
 public partial class ModelNamingTests
