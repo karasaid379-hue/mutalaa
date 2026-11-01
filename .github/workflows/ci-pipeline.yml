@@ -80,8 +80,8 @@ jobs:
       - name: Test vectors are current
         if: runner.os == 'Linux'
         run: uv run mutalaa export test-vectors --check
-      # Listed only: the pipeline is never distributed (psycopg is LGPL-3.0), so this does not gate.
-      - name: Dependency licenses (listed, not gated)
+      # Listed only (K-42): no license stops the build.
+      - name: Dependency licenses (listed)
         if: runner.os == 'Linux'
         continue-on-error: true
         run: uv run --with "pip-licenses==5.5.5" pip-licenses --from=mixed --format=markdown

@@ -67,7 +67,7 @@ mutalaa/
 ├─ data/                         git dışı: raw/, gelen/, staged/, ocr/, gold/, llm-cache/, reports/, logs/, packs/, kurul/, backups/ (§1.1)
 ├─ docs/                         proje belgeleri (eski adıyla mutalaa-docs); Claude Code rehberi docs/10-claude-code/
 ├─ scripts/                      backup-db.ps1, restore-db.ps1, lan-ip.ps1
-│  └─ ci/                        CI yardımcıları (A08): check-licenses.mjs, pr-title.mjs, license-exceptions.json ve *.test.mjs testleri
+│  └─ ci/                        CI yardımcıları (A08): list-licenses.mjs, pr-title.mjs ve *.test.mjs testleri
 ├─ CLAUDE.md · .claude/          Claude Code kiti: kılavuz, ajanlar, beceriler, kurallar, hook'lar (K-31)
 ├─ .tmp/                         git dışı geçici dosyalar ve Claude Code plan dosyaları
 ├─ .github/                      CI (§7)
@@ -340,7 +340,7 @@ Python için `pyproject.toml` içinde `[tool.ruff] target-version = "py313"`, `l
 | [pr-title.yml](../../.github/workflows/pr-title.yml) | `pull_request` (`opened`, `edited`, `synchronize`, `reopened`) | Yok (her PR) | PR başlığı `scripts/ci/pr-title.mjs` ile denetlenir (§6); başlık yalnız ortam değişkeninden okunur |
 | [eas-build.yml](../../.github/workflows/eas-build.yml) | Elle (`workflow_dispatch`) ve `mobile-v*` etiketi | Yok | EAS Build (`--no-wait`); mağazaya gönderim (`eas submit`) yoktur, elle yapılır |
 
-Bağımlılık güncellemesi için [dependabot.yml](../../.github/dependabot.yml) vardır (Teknoloji yığını §4.2). Yerel yardımcılar [scripts/ci/](../../scripts/ci/) altındadır: `check-licenses.mjs` (lisans kapısı), `license-exceptions.json` (istisna listesi; şu an boş), `pr-title.mjs` ve `node --test` testleri.
+Bağımlılık güncellemesi için [dependabot.yml](../../.github/dependabot.yml) vardır (Teknoloji yığını §4.2). Yerel yardımcılar [scripts/ci/](../../scripts/ci/) altındadır: `list-licenses.mjs` (bağımlılık listesi), `pr-title.mjs` ve `node --test` testleri.
 
 **Ortak kurallar**
 
@@ -359,14 +359,14 @@ Bağımlılık güncellemesi için [dependabot.yml](../../.github/dependabot.yml
 - pnpm sürümünü eylem kök `package.json` içindeki `devEngines.packageManager` alanından okur; `version` girdisi verilmez (K-32 ile uyumlu). Node sürümü `.nvmrc`'den gelir.
 - Yerel ayar karşıtlığı yalnız Linux'ta görülür (Windows'ta Node iki koşuda da `tr-TR`). `packages/anchors` ve `packages/search` Vitest kurulum dosyaları (`test/global-setup.ts`) koşu başında `locale=` ve `unicode=` yazar; Windows dışında `tr_TR` istenip ICU Türkçe çözmediyse test hata verir, böylece `tr_TR.UTF-8` ayağı sessizce İngilizce koşamaz.
 - Turborepo `test` görevi `env: ["LANG","LC_ALL"]` bildirir (§4.1); `tr_TR.UTF-8` ayağı `C.UTF-8` ayağının önbelleğinden gelmez.
-- Lisans kapısı: `pnpm licenses list -r --json --prod | node scripts/ci/check-licenses.mjs pnpm`. Kuralları ve kapsamı: [Teknoloji yığını §3](./02-teknoloji-yigini.md#3-lisans-notları).
+- Bağımlılık listesi: `pnpm licenses list -r --json --prod | node scripts/ci/list-licenses.mjs pnpm`; yalnız listeler, derlemeyi durdurmaz. Ayrıntı: [Teknoloji yığını §3](./02-teknoloji-yigini.md#3-lisans-notları).
 
 **ci-dotnet**
 
 - `dotnet test --solution server/Mutalaa.slnx -c Release --no-build` birleşimi çalışır (MTP kipi, [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform); [dotnet test belgesi](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test)). Yerelde 1755 testin 1755'i geçti. `--no-build` `--no-restore`'u da içerir. SDK 10'da hiç test koşmayan bir proje bütün koşuyu 8 koduyla düşürür.
 - xunit.v3 testi tek başına çalıştırılıp çıktısı görülmek istenirse: `dotnet <test dll> -diagnostics -showLiveOutput -method <test adı>`. İş akışı bunu normalizasyon ortamı günlüğü için kullanır (globalleşme kipi ve kültür; A05).
 - `setup-dotnet` `global.json` içindeki SDK'yı kurar; NuGet önbelleği `packages.lock.json` dosyalarına bağlıdır.
-- Lisans kapısı: `nuget-license` yerel araçtır (`.config/dotnet-tools.json`); test projeleri dışlanır. Ayrıntı: Teknoloji yığını §3.
+- Bağımlılık listesi: `nuget-license` yerel araçtır (`.config/dotnet-tools.json`); test projeleri dışlanır; çıktı `list-licenses.mjs nuget` ile listelenir. Ayrıntı: Teknoloji yığını §3.
 
 **ci-pipeline**
 
