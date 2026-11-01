@@ -3,7 +3,7 @@
 //   node scripts/ci/list-licenses.mjs pnpm  [file]   pnpm licenses list -r --json --prod
 //   node scripts/ci/list-licenses.mjs nuget [file]   nuget-license ... -o JsonPretty
 //   add  --json <outfile>  to write the normalized package list (input for the open source section
-//   of the Ayarlar > Kaynaklar screen, A34)
+//   of the Ayarlar > Kaynaklar screen, A32)
 //
 // The input is read from the file argument or from stdin. Exit codes: 0 the list was printed (or
 // there was nothing to list), 2 unreadable input, bad arguments or an empty NuGet list.
