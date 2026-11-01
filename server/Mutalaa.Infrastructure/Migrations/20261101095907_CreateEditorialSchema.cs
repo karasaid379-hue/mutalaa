@@ -1,7 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Mutalaa.Domain.Content;
-using Mutalaa.Domain.Licensing;
 using Mutalaa.Domain.Links;
 using Mutalaa.Domain.Releases;
 using Mutalaa.Domain.Reviews;
@@ -27,7 +26,6 @@ namespace Mutalaa.Infrastructure.Migrations
             migrationBuilder.AlterDatabase()
                 .Annotation("Npgsql:Enum:icerik.derleme_turu", "dev,internal,public")
                 .Annotation("Npgsql:Enum:icerik.inceleme_durumu", "acik,onaylandi,reddedildi,geri_alindi")
-                .Annotation("Npgsql:Enum:icerik.license_status", "serbest,bekliyor,ic_kullanim,kapali")
                 .Annotation("Npgsql:Enum:icerik.metin_durumu", "taslak,incelemede,onayli")
                 .Annotation("Npgsql:Enum:icerik.source_kind", "kuran_metni,meal,tefsir,hadis,hadis_ceviri,risale,kitap,morfoloji,kelime_anlami,sozluk,mushaf_duzeni,mushaf_gorseli,font,baski,ses,zamanlama,baglanti_verisi")
                 .Annotation("Npgsql:Enum:icerik.surum_durumu", "hazirlaniyor,dogrulandi,yayinlandi,basarisiz,geri_cekildi")
@@ -126,7 +124,6 @@ namespace Mutalaa.Infrastructure.Migrations
                     durum = table.Column<ReleaseStatus>(type: "icerik.surum_durumu", nullable: false, defaultValue: ReleaseStatus.Hazirlaniyor),
                     manifest = table.Column<string>(type: "jsonb", nullable: true),
                     kapi_raporu = table.Column<string>(type: "jsonb", nullable: false, defaultValue: "{}"),
-                    kaynak_durumu = table.Column<string>(type: "jsonb", nullable: false, defaultValue: "{}"),
                     ozetler = table.Column<string>(type: "jsonb", nullable: false, defaultValue: "{}"),
                     data_version = table.Column<string>(type: "text", nullable: false),
                     olusturan = table.Column<string>(type: "text", nullable: false),
@@ -163,29 +160,15 @@ namespace Mutalaa.Infrastructure.Migrations
                     tur = table.Column<SourceKind>(type: "icerik.source_kind", nullable: false),
                     baslik = table.Column<string>(type: "text", nullable: false),
                     yazar = table.Column<string>(type: "text", nullable: true),
-                    yazar_vefat_yili = table.Column<short>(type: "smallint", nullable: true),
                     surum = table.Column<string>(type: "text", nullable: false),
                     provider = table.Column<string>(type: "text", nullable: true),
                     kaynak_url = table.Column<string>(type: "text", nullable: true),
                     alinma_tarihi = table.Column<DateOnly>(type: "date", nullable: true),
                     dosya_sha256 = table.Column<string>(type: "char(64)", nullable: true),
                     baski_bilgisi = table.Column<string>(type: "jsonb", nullable: true),
-                    license_name = table.Column<string>(type: "text", nullable: false),
-                    license_url = table.Column<string>(type: "text", nullable: true),
-                    license_status = table.Column<LicenseStatus>(type: "icerik.license_status", nullable: false, defaultValue: LicenseStatus.Bekliyor),
-                    lisans_kopyasi = table.Column<string>(type: "text", nullable: true),
-                    lisans_sha256 = table.Column<string>(type: "char(64)", nullable: true),
-                    kamu_mali_tarihi = table.Column<DateOnly>(type: "date", nullable: true),
-                    kisitlar = table.Column<string>(type: "jsonb", nullable: false, defaultValue: "{}"),
-                    embed_ok = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    kurul_gerekli = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    kurul_onay = table.Column<string>(type: "jsonb", nullable: true),
-                    kurul_onay_tarihi = table.Column<DateOnly>(type: "date", nullable: true),
-                    kurul_onay_ozeti = table.Column<string>(type: "char(64)", nullable: true),
                     atif_metni = table.Column<string>(type: "text", nullable: false),
                     atif_url = table.Column<string>(type: "text", nullable: true),
                     notice_text = table.Column<string>(type: "text", nullable: true),
-                    yeniden_kontrol = table.Column<DateOnly>(type: "date", nullable: true),
                     notlar = table.Column<string>(type: "text", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
@@ -194,7 +177,6 @@ namespace Mutalaa.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("source_pkey", x => x.slug);
-                    table.CheckConstraint("source_check", "kurul_onay IS NULL OR (kurul_onay ?& ARRAY['onay_no','onayli_surum'] AND kurul_onay_tarihi IS NOT NULL AND kurul_onay_ozeti IS NOT NULL)");
                 });
 
             migrationBuilder.CreateTable(
@@ -262,7 +244,6 @@ namespace Mutalaa.Infrastructure.Migrations
                     votes_up = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     votes_down = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     data_version = table.Column<string>(type: "text", nullable: false),
-                    license = table.Column<LicenseStatus>(type: "icerik.license_status", nullable: false),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
@@ -1096,7 +1077,6 @@ namespace Mutalaa.Infrastructure.Migrations
             migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.surum_durumu;");
             migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.source_kind;");
             migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.metin_durumu;");
-            migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.license_status;");
             migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.inceleme_durumu;");
             migrationBuilder.Sql("DROP TYPE IF EXISTS icerik.derleme_turu;");
             migrationBuilder.Sql("DROP SCHEMA IF EXISTS kimlik;");

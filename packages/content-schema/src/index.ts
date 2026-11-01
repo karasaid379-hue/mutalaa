@@ -3,7 +3,6 @@ export const packageName = '@mutalaa/content-schema' as const;
 export {
   DERLEME_TURU,
   INCELEME_DURUMU,
-  LICENSE_STATUS,
   METIN_DURUMU,
   SOURCE_KIND,
   SURUM_DURUMU,
@@ -16,7 +15,6 @@ export {
 export type {
   DerlemeTuru,
   IncelemeDurumu,
-  LicenseStatus,
   MetinDurumu,
   SourceKind,
   SurumDurumu,

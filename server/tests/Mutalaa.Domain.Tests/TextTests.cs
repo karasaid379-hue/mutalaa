@@ -2,7 +2,7 @@ using Mutalaa.Domain.Text;
 
 namespace Mutalaa.Domain.Tests;
 
-/// <summary>Vektorlerin kapsamadigi metin davranislari. Karakterler sayisal kod noktasiyla kurulur.</summary>
+/// <summary>Vektorlerin kapsamadigi metin davranislari. Karakterler sayisal kod noktasiyla olusturulur.</summary>
 public class TextTests
 {
     private static string Cp(params int[] codePoints) => string.Concat(codePoints.Select(char.ConvertFromUtf32));

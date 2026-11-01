@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Mutalaa.Api.Tests.Support;
 using Mutalaa.Domain.Content;
-using Mutalaa.Domain.Licensing;
 using Mutalaa.Domain.Links;
 using Mutalaa.Domain.Releases;
 using Mutalaa.Domain.Reviews;
@@ -34,73 +33,76 @@ public class DefaultValueTests(EditorialDatabase<DefaultValueTests> fixture) : I
         return source;
     }
 
+    private async Task<Unit> SaveUnitAsync(Action<Unit>? configure, CancellationToken ct)
+    {
+        Source source = await SaveSourceAsync(null, ct);
+        Unit unit = TestData.NewUnit(source.Slug, TestData.UnitAnchor());
+        configure?.Invoke(unit);
+        await using DbSession session = Db.OpenSession();
+        session.Context.Add(unit);
+        await session.Context.SaveChangesAsync(ct);
+        return unit;
+    }
+
+    // unit.rev: veritabani varsayilani 1, CLR varsayilani 0 (varsayilani CLR varsayilanindan farkli gercek sutun).
+
     [Fact]
-    public async Task An_explicit_serbest_license_status_is_written_and_read_back_not_replaced_by_the_database_default()
+    public async Task An_explicit_zero_rev_is_written_and_read_back_not_replaced_by_the_database_default()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
-        Source source = await SaveSourceAsync(s => s.LicenseStatus = LicenseStatus.Serbest, ct);
+        Unit unit = await SaveUnitAsync(u => u.Rev = 0, ct);
 
-        Source read = await ReadAsync(r => r.Session.Context.Sources.AsNoTracking().SingleAsync(s => s.Slug == source.Slug, r.Ct), ct);
+        Unit read = await ReadAsync(r => r.Session.Context.Units.AsNoTracking().SingleAsync(u => u.Id == unit.Id, r.Ct), ct);
 
-        Assert.Equal(LicenseStatus.Serbest, read.LicenseStatus);
-        Assert.Equal("serbest", await Db.ScalarAsync<string>("SELECT license_status::text FROM icerik.source WHERE slug = @s", ct, ("s", source.Slug)));
+        Assert.Equal(0, read.Rev);
+        Assert.Equal(0, await Db.ScalarAsync<int>("SELECT rev FROM icerik.unit WHERE id = @id", ct, ("id", unit.Id)));
     }
 
     [Fact]
-    public async Task A_source_whose_license_status_was_never_assigned_is_written_with_the_domain_initial_value_bekliyor()
+    public async Task A_unit_whose_rev_was_never_assigned_is_written_with_the_domain_initial_value_one()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
-        Source source = await SaveSourceAsync(null, ct);
+        Unit unit = await SaveUnitAsync(null, ct);
 
-        Assert.Equal(LicenseStatus.Bekliyor, source.LicenseStatus);
-        Assert.Equal("bekliyor", await Db.ScalarAsync<string>("SELECT license_status::text FROM icerik.source WHERE slug = @s", ct, ("s", source.Slug)));
+        Unit read = await ReadAsync(r => r.Session.Context.Units.AsNoTracking().SingleAsync(u => u.Id == unit.Id, r.Ct), ct);
+
+        Assert.Equal(1, unit.Rev);
+        Assert.Equal(1, read.Rev);
+        Assert.Equal(1, await Db.ScalarAsync<int>("SELECT rev FROM icerik.unit WHERE id = @id", ct, ("id", unit.Id)));
     }
 
     [Theory]
-    [InlineData(LicenseStatus.Serbest, "serbest")]
-    [InlineData(LicenseStatus.Bekliyor, "bekliyor")]
-    [InlineData(LicenseStatus.IcKullanim, "ic_kullanim")]
-    [InlineData(LicenseStatus.Kapali, "kapali")]
-    public async Task Every_license_status_is_written_as_its_own_label(LicenseStatus status, string label)
+    [InlineData(TextStatus.Taslak, "taslak")]
+    [InlineData(TextStatus.Incelemede, "incelemede")]
+    [InlineData(TextStatus.Onayli, "onayli")]
+    public async Task Every_metin_durumu_is_written_as_its_own_label(TextStatus status, string label)
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
-        Source source = await SaveSourceAsync(s => s.LicenseStatus = status, ct);
+        Unit unit = await SaveUnitAsync(u => u.MetinDurumu = status, ct);
 
-        Assert.Equal(label, await Db.ScalarAsync<string>("SELECT license_status::text FROM icerik.source WHERE slug = @s", ct, ("s", source.Slug)));
+        Assert.Equal(label, await Db.ScalarAsync<string>("SELECT metin_durumu::text FROM icerik.unit WHERE id = @id", ct, ("id", unit.Id)));
     }
 
     [Fact]
-    public async Task Source_boolean_and_jsonb_defaults_match_the_ddl_when_untouched()
+    public async Task Lemma_gloss_boolean_and_jsonb_defaults_match_the_ddl_when_untouched()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
         Source source = await SaveSourceAsync(null, ct);
-
-        Source read = await ReadAsync(r => r.Session.Context.Sources.AsNoTracking().SingleAsync(s => s.Slug == source.Slug, r.Ct), ct);
-
-        Assert.False(read.EmbedOk);
-        Assert.False(read.KurulGerekli);
-        Assert.Equal("{}", read.Kisitlar);
-        Assert.Equal(SourceKind.Meal, read.Tur);
-    }
-
-    [Fact]
-    public async Task An_explicit_zero_rev_is_written_as_zero_and_an_unassigned_rev_as_one()
-    {
-        CancellationToken ct = TestContext.Current.CancellationToken;
-        Source source = await SaveSourceAsync(null, ct);
-        Unit zero = TestData.NewUnit(source.Slug, TestData.UnitAnchor());
-        zero.Rev = 0;
-        Unit initial = TestData.NewUnit(source.Slug, TestData.UnitAnchor());
+        Lemma lemma = new() { Id = 1, Lang = "ar", Text = "lemma-1", TextClean = "lemma-1", SourceId = source.Slug, DataVersion = "test" };
+        LemmaGloss gloss = new() { LemmaId = lemma.Id, AnlamKisa = "Deneme anlami", Origin = "editor", Version = "1", ContentHash = TestData.Hash() };
         await using (DbSession session = Db.OpenSession())
         {
-            session.Context.AddRange(zero, initial);
+            session.Context.AddRange(lemma, gloss);
             await session.Context.SaveChangesAsync(ct);
         }
 
-        Assert.Equal(0, await Db.ScalarAsync<int>("SELECT rev FROM icerik.unit WHERE id = @id", ct, ("id", zero.Id)));
-        Assert.Equal(1, await Db.ScalarAsync<int>("SELECT rev FROM icerik.unit WHERE id = @id", ct, ("id", initial.Id)));
-        Unit read = await ReadAsync(r => r.Session.Context.Units.AsNoTracking().SingleAsync(u => u.Id == zero.Id, r.Ct), ct);
-        Assert.Equal(0, read.Rev);
+        LemmaGloss read = await ReadAsync(r => r.Session.Context.LemmaGlosses.AsNoTracking().SingleAsync(g => g.LemmaId == lemma.Id, r.Ct), ct);
+
+        Assert.False(read.YalnizcaEtimolojik);
+        Assert.Equal("[]", read.KuranAnlamlari);
+        Assert.Equal(XrefStatus.Aday, read.Status);
+        Assert.False(await Db.ScalarAsync<bool>("SELECT yalnizca_etimolojik FROM icerik.lemma_gloss WHERE lemma_id = @id", ct, ("id", lemma.Id)));
+        Assert.Equal("[]", await Db.ScalarAsync<string>("SELECT kuran_anlamlari::text FROM icerik.lemma_gloss WHERE lemma_id = @id", ct, ("id", lemma.Id)));
     }
 
     [Fact]
@@ -163,7 +165,6 @@ public class DefaultValueTests(EditorialDatabase<DefaultValueTests> fixture) : I
         CancellationToken ct = TestContext.Current.CancellationToken;
         Xref xref = TestData.NewXref(type: XrefType.Atif);
         xref.Origin = XrefOrigin.Hat;
-        xref.License = LicenseStatus.Serbest;
         xref.Status = XrefStatus.Aday;
         await using (DbSession session = Db.OpenSession())
         {
@@ -175,7 +176,6 @@ public class DefaultValueTests(EditorialDatabase<DefaultValueTests> fixture) : I
 
         Assert.Equal(XrefType.Atif, read.Type);
         Assert.Equal(XrefOrigin.Hat, read.Origin);
-        Assert.Equal(LicenseStatus.Serbest, read.License);
         Assert.Equal(XrefStatus.Aday, read.Status);
         Assert.Equal(0, read.VotesUp);
         Assert.Equal(0, read.VotesDown);

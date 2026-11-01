@@ -1,6 +1,6 @@
 using Mutalaa.Domain.Anchors;
 using Mutalaa.Domain.Content;
-using Mutalaa.Domain.Licensing;
+using Mutalaa.Domain.Links;
 using Mutalaa.Domain.Tests.Support;
 using Mutalaa.Infrastructure.Persistence;
 using Mutalaa.Infrastructure.Persistence.Converters;
@@ -133,24 +133,33 @@ public class ConverterTests
     {
         InBothCultures(() =>
         {
-            LabelNameTranslator<LicenseStatus> translator = new(LicenseStatusLabels.ToLabel);
+            // Iktibas ve Ima buyuk I ile baslar: kulturlu kucultme tr-TR'de noktasiz i uretirdi.
+            LabelNameTranslator<XrefType> xrefTypes = new(XrefTypeLabels.ToLabel);
 
-            Assert.Equal("ic_kullanim", translator.TranslateMemberName(nameof(LicenseStatus.IcKullanim)));
-            Assert.Equal("serbest", translator.TranslateMemberName(nameof(LicenseStatus.Serbest)));
-            Assert.Throws<InvalidOperationException>(() => translator.TranslateMemberName("serbest"));
-            Assert.Throws<NotSupportedException>(() => translator.TranslateTypeName("LicenseStatus"));
+            Assert.Equal("iktibas", xrefTypes.TranslateMemberName(nameof(XrefType.Iktibas)));
+            Assert.Equal("ima", xrefTypes.TranslateMemberName(nameof(XrefType.Ima)));
+            Assert.Equal("benzer_ayet", xrefTypes.TranslateMemberName(nameof(XrefType.BenzerAyet)));
+            Assert.Throws<InvalidOperationException>(() => xrefTypes.TranslateMemberName("iktibas"));
+            Assert.Throws<NotSupportedException>(() => xrefTypes.TranslateTypeName("XrefType"));
+
+            LabelNameTranslator<UnitStatus> unitStatuses = new(UnitStatusLabels.ToLabel);
+
+            Assert.Equal("kullanim_disi", unitStatuses.TranslateMemberName(nameof(UnitStatus.KullanimDisi)));
+            Assert.Equal("etkin", unitStatuses.TranslateMemberName(nameof(UnitStatus.Etkin)));
+            Assert.Throws<InvalidOperationException>(() => unitStatuses.TranslateMemberName("kullanim_disi"));
         });
     }
 
     [Fact]
-    public void Enum_definitions_list_license_status_labels_in_numeric_order()
+    public void Enum_definitions_list_metin_durumu_labels_in_numeric_order()
     {
         InBothCultures(() =>
         {
-            Assert.Equal(11, PostgresEnums.Definitions.Count);
+            Assert.Equal(10, PostgresEnums.Definitions.Count);
+            // Sayisal sira alfabetik degildir (alfabetik: incelemede, onayli, taslak); Npgsql MapEnum alfabetik dizer (efcore.pg #3667).
             Assert.Equal(
-                ["serbest", "bekliyor", "ic_kullanim", "kapali"],
-                PostgresEnums.Definitions.Single(d => d.Key == "license_status").Value);
+                ["taslak", "incelemede", "onayli"],
+                PostgresEnums.Definitions.Single(d => d.Key == "metin_durumu").Value);
             Assert.Equal(
                 ["etkin", "kullanim_disi"],
                 PostgresEnums.Definitions.Single(d => d.Key == "unit_status").Value);

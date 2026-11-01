@@ -1,4 +1,4 @@
-namespace Mutalaa.Domain.Licensing;
+namespace Mutalaa.Domain.Releases;
 
 /// <summary>Derleme turu (JSON derleme_turu). Bildirim sirasi packages/content-schema/enums.json sirasiyla aynidir; sayisal degerler bu siradir.</summary>
 public enum BuildFlavor

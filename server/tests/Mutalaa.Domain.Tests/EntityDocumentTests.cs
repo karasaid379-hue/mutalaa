@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Mutalaa.Domain.Anchors;
 using Mutalaa.Domain.Content;
-using Mutalaa.Domain.Licensing;
 using Mutalaa.Domain.Links;
 using Mutalaa.Domain.Releases;
 using Mutalaa.Domain.Reviews;
@@ -33,7 +32,6 @@ public class EntityDocumentTests
     /// <summary>PostgreSQL enum turu -> C# enum ve etiket islevi.</summary>
     private static readonly Dictionary<string, (Type Type, Func<object, string> Label)> Enums = new(StringComparer.Ordinal)
     {
-        ["license_status"] = (typeof(LicenseStatus), v => ((LicenseStatus)v).ToLabel()),
         ["derleme_turu"] = (typeof(BuildFlavor), v => ((BuildFlavor)v).ToLabel()),
         ["source_kind"] = (typeof(SourceKind), v => ((SourceKind)v).ToLabel()),
         ["unit_kind"] = (typeof(UnitKind), v => ((UnitKind)v).ToLabel()),

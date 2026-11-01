@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Mutalaa.Domain.Content;
-using Mutalaa.Domain.Licensing;
 using Mutalaa.Domain.Links;
 using Mutalaa.Domain.Releases;
 using Mutalaa.Domain.Reviews;
@@ -29,7 +28,6 @@ namespace Mutalaa.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "icerik", "derleme_turu", new[] { "dev", "internal", "public" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "icerik", "inceleme_durumu", new[] { "acik", "onaylandi", "reddedildi", "geri_alindi" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "icerik", "license_status", new[] { "serbest", "bekliyor", "ic_kullanim", "kapali" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "icerik", "metin_durumu", new[] { "taslak", "incelemede", "onayli" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "icerik", "source_kind", new[] { "kuran_metni", "meal", "tefsir", "hadis", "hadis_ceviri", "risale", "kitap", "morfoloji", "kelime_anlami", "sozluk", "mushaf_duzeni", "mushaf_gorseli", "font", "baski", "ses", "zamanlama", "baglanti_verisi" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "icerik", "surum_durumu", new[] { "hazirlaniyor", "dogrulandi", "yayinlandi", "basarisiz", "geri_cekildi" });
@@ -889,63 +887,9 @@ namespace Mutalaa.Infrastructure.Migrations
                         .HasColumnType("char(64)")
                         .HasColumnName("dosya_sha256");
 
-                    b.Property<bool>("EmbedOk")
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("embed_ok");
-
-                    b.Property<DateOnly?>("KamuMaliTarihi")
-                        .HasColumnType("date")
-                        .HasColumnName("kamu_mali_tarihi");
-
                     b.Property<string>("KaynakUrl")
                         .HasColumnType("text")
                         .HasColumnName("kaynak_url");
-
-                    b.Property<string>("Kisitlar")
-                        .IsRequired()
-                        .HasColumnType("jsonb")
-                        .HasDefaultValue("{}")
-                        .HasColumnName("kisitlar");
-
-                    b.Property<bool>("KurulGerekli")
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("kurul_gerekli");
-
-                    b.Property<string>("KurulOnay")
-                        .HasColumnType("jsonb")
-                        .HasColumnName("kurul_onay");
-
-                    b.Property<string>("KurulOnayOzeti")
-                        .HasColumnType("char(64)")
-                        .HasColumnName("kurul_onay_ozeti");
-
-                    b.Property<DateOnly?>("KurulOnayTarihi")
-                        .HasColumnType("date")
-                        .HasColumnName("kurul_onay_tarihi");
-
-                    b.Property<string>("LicenseName")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("license_name");
-
-                    b.Property<LicenseStatus>("LicenseStatus")
-                        .HasColumnType("icerik.license_status")
-                        .HasDefaultValue(LicenseStatus.Bekliyor)
-                        .HasColumnName("license_status");
-
-                    b.Property<string>("LicenseUrl")
-                        .HasColumnType("text")
-                        .HasColumnName("license_url");
-
-                    b.Property<string>("LisansKopyasi")
-                        .HasColumnType("text")
-                        .HasColumnName("lisans_kopyasi");
-
-                    b.Property<string>("LisansSha256")
-                        .HasColumnType("char(64)")
-                        .HasColumnName("lisans_sha256");
 
                     b.Property<string>("NoticeText")
                         .HasColumnType("text")
@@ -978,14 +922,6 @@ namespace Mutalaa.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("yazar");
 
-                    b.Property<short?>("YazarVefatYili")
-                        .HasColumnType("smallint")
-                        .HasColumnName("yazar_vefat_yili");
-
-                    b.Property<DateOnly?>("YenidenKontrol")
-                        .HasColumnType("date")
-                        .HasColumnName("yeniden_kontrol");
-
                     b.Property<uint>("xmin")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -995,10 +931,7 @@ namespace Mutalaa.Infrastructure.Migrations
                     b.HasKey("Slug")
                         .HasName("source_pkey");
 
-                    b.ToTable("source", "icerik", t =>
-                        {
-                            t.HasCheckConstraint("source_check", "kurul_onay IS NULL OR (kurul_onay ?& ARRAY['onay_no','onayli_surum'] AND kurul_onay_tarihi IS NOT NULL AND kurul_onay_ozeti IS NOT NULL)");
-                        });
+                    b.ToTable("source", "icerik");
                 });
 
             modelBuilder.Entity("Mutalaa.Domain.Content.SurahAlias", b =>
@@ -1354,10 +1287,6 @@ namespace Mutalaa.Infrastructure.Migrations
                         .HasDefaultValue("{}")
                         .HasColumnName("evidence");
 
-                    b.Property<LicenseStatus>("License")
-                        .HasColumnType("icerik.license_status")
-                        .HasColumnName("license");
-
                     b.Property<XrefOrigin>("Origin")
                         .HasColumnType("icerik.xref_origin")
                         .HasColumnName("origin");
@@ -1512,12 +1441,6 @@ namespace Mutalaa.Infrastructure.Migrations
                         .HasColumnType("jsonb")
                         .HasDefaultValue("{}")
                         .HasColumnName("kapi_raporu");
-
-                    b.Property<string>("KaynakDurumu")
-                        .IsRequired()
-                        .HasColumnType("jsonb")
-                        .HasDefaultValue("{}")
-                        .HasColumnName("kaynak_durumu");
 
                     b.Property<string>("Manifest")
                         .HasColumnType("jsonb")

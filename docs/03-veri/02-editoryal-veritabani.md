@@ -1,15 +1,15 @@
 # Editoryal Veritabanı
 
-> **Sürüm:** 1.6 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.7 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) · K-12 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Editoryal veritabanı içeriğin tek doğruluk kaynağıdır. Python içerik hattı yazar, editör paneli onaylar, .NET yayınlayıcı okuyup SQLite paketlerini üretir. Mobil uygulama bu veritabanına bağlanmaz. Seçim PostgreSQL 18'dir; Türkçe ve Arapça tam metin yapılandırmaları hazırdır, anlamsal katman için pgvector eklenir (K-11). Geliştirme yerel Docker Compose'ta `postgres:18` ile çalışır ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)). Bu dosya diğer belgelerin önerdiği tabloları da kesin DDL olarak toplar (bölüm 11).
 
 ## 1. İlkeler
 
-- Kaynak metin değiştirilmez. QAC dosyası "CHANGING IT IS NOT ALLOWED" der ([QAC indirme](https://corpus.quran.com/download/)); Tanzil şartları da değiştirmeyi yasaklar ([Tanzil metni, OpenITI kopyası](https://raw.githubusercontent.com/OpenITI/0025AH/master/data/0001Quran/0001Quran.Mushaf/0001Quran.Mushaf.Tanzil001-ara1.mARkdown)). Düzeltmeler ayrı katmanda durur.
-- Her satır bir kaynağa, kaynak da lisans durumuna bağlanır. Yayın kapısı bu zincirle karar verir (K-06). Kapı metinlere ve veri setlerine aynı biçimde uygulanır.
-- Tablo adları brifteki gibi İngilizcedir; enum değerleri Türkçedir. Lisans defterinin TOML alanları ve Backend API'nin JSON alanları sütun adlarıyla aynıdır. Bu belgelerin Türkçe adlandırdığı sütunlar (`source` alanlarının çoğu, `unit.metin`, `unit.metin_durumu`, `review` ve `release`) aynı adı taşır. Tablolar `icerik` şemasındadır; v1.x kullanıcı tabloları `kullanici` şemasında durur ([Kullanıcı verisi ve senkron](./04-kullanici-verisi-ve-senkron.md)).
+- Kaynak metin değiştirilmez ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)): Tanzil metni bayt bayt saklanır, QAC değerleri de kaynaktaki gibi kalır. Düzeltmeler ayrı katmanda durur (`quran_word_fix`, `review`).
+- Her satır bir kaynağa bağlanır; kaynağın kaydı `pipeline/sources/{slug}.toml` dosyasındadır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 4). Yayın kapısı kaynak kaydına ve editoryal kaliteye bakar (K-42 madde 5). Kapı metinlere ve veri setlerine aynı biçimde uygulanır.
+- Tablo adları brifteki gibi İngilizcedir; enum değerleri Türkçedir. Kaynak kaydının TOML alanları ve Backend API'nin JSON alanları sütun adlarıyla aynıdır. Bu belgelerin Türkçe adlandırdığı sütunlar (`source` alanlarının çoğu, `unit.metin`, `unit.metin_durumu`, `review` ve `release`) aynı adı taşır. Tablolar `icerik` şemasındadır; v1.x kullanıcı tabloları `kullanici` şemasında durur ([Kullanıcı verisi ve senkron](./04-kullanici-verisi-ve-senkron.md)).
 - Çapa sütunları `COLLATE "C"` kullanır; bayt sıralaması `LIKE 'rn:sozler:%'` önek sorgularının B-ağacı dizinini kullanmasını sağlar. Bu bayt sırası çapa API'sinin `compare` sırası değildir ([Çapa şeması](./01-capa-semasi.md) §11, K-35); okuma sırası `unit.ord` sütunundadır. Aralıklar `int4range` olarak tutulur; PostgreSQL'in kanonik `[)` biçimi çapa şemasındaki yarı açık aralıkla aynıdır ([Çapa şeması](./01-capa-semasi.md)).
 - `root.id`, `lemma.id` ve `xref.id` çapalar gibi kalıcıdır; satır silinip yeniden yaratılmaz.
 
@@ -35,7 +35,6 @@ Birim çapalarına (`unit.anchor`) yabancı anahtar yoktur: `xref`, `review.hede
 CREATE SCHEMA IF NOT EXISTS icerik;
 SET search_path = icerik, public;
 
-CREATE TYPE license_status AS ENUM ('serbest','bekliyor','ic_kullanim','kapali');
 CREATE TYPE derleme_turu   AS ENUM ('dev','internal','public');
 CREATE TYPE source_kind    AS ENUM ('kuran_metni','meal','tefsir','hadis','hadis_ceviri','risale','kitap','morfoloji',
                                     'kelime_anlami','sozluk','mushaf_duzeni','mushaf_gorseli','font','baski','ses',
@@ -50,76 +49,54 @@ CREATE TYPE inceleme_durumu AS ENUM ('acik','onaylandi','reddedildi','geri_alind
 CREATE TYPE surum_durumu   AS ENUM ('hazirlaniyor','dogrulandi','yayinlandi','basarisiz','geri_cekildi');
 ```
 
-`license_status`, `xref_type`, `xref_status` ve `xref_origin` adları [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) DDL'iyle; `inceleme_durumu`, `derleme_turu`, `surum_durumu` ve `metin_durumu` adları [Backend API](../02-mimari/05-backend-api.md) ile aynıdır. Backend API de `license_status` ve `xref_status` adlarını kullanır (ED-7 çözüldü).
+Türler 10'dur ve `packages/content-schema/enums.json` ile aynı etiketleri aynı sırayla taşır ([K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) madde 2). `xref_type`, `xref_status` ve `xref_origin` adları [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) DDL'iyle; `inceleme_durumu`, `derleme_turu`, `surum_durumu` ve `metin_durumu` adları [Backend API](../02-mimari/05-backend-api.md) ile aynıdır. Backend API de `xref_status` adını kullanır (ED-7 çözüldü).
 
 ## 3. `source`
 
 ```sql
 CREATE TABLE source (
-  slug                text COLLATE "C" PRIMARY KEY,     -- lisans defterindeki kimlik: 'tanzil-uthmani'
+  slug                text COLLATE "C" PRIMARY KEY,     -- kaynak kaydındaki kimlik: 'tanzil-uthmani'
   tur                 source_kind NOT NULL,
   baslik              text NOT NULL,
   yazar               text,
-  yazar_vefat_yili    smallint,
   surum               text NOT NULL,                    -- veri setinin ya da baskının sürümü
   provider            text,                             -- 'tanzil', 'qac', 'quran_foundation', 'tarteel', …
   kaynak_url          text,
-  alinma_tarihi       date,
-  dosya_sha256        char(64),
+  alinma_tarihi       date,                             -- dosyanın indirildiği gün
+  dosya_sha256        char(64),                         -- indirilen dosyanın özeti
   baski_bilgisi       jsonb,                            -- baskılar: yayınevi, yıl, cilt takımı, ISBN, boy, yazı, metin esası
-  license_name        text NOT NULL,                    -- 'CC BY 3.0 + değiştirme yasağı'
-  license_url         text,
-  license_status      license_status NOT NULL DEFAULT 'bekliyor',
-  lisans_kopyasi      text,                             -- 'licenses/{slug}-{tarih}.txt'
-  lisans_sha256       char(64),
-  kamu_mali_tarihi    date,                             -- kamu malı olacağı gün
-  kisitlar            jsonb NOT NULL DEFAULT '{}',      -- {"degistirme_yasak":true,"hazir_vt_yasak":true,"onbellek_gun":7}
-  embed_ok            boolean NOT NULL DEFAULT false,   -- gömülebilir ya da dil modeli API'sine gönderilebilir mi
-  kurul_gerekli       boolean NOT NULL DEFAULT false,
-  kurul_onay          jsonb,                            -- {"onay_no","onayli_surum"}
-  kurul_onay_tarihi   date,
-  kurul_onay_ozeti    char(64),                         -- onaylanan içerik özeti (bölüm 10)
-  atif_metni          text NOT NULL,                    -- Kaynaklar ve lisanslar ekranındaki zorunlu atıf
+  atif_metni          text NOT NULL,                    -- Ayarlar › Kaynaklar ekranındaki atıf satırı
   atif_url            text,                             -- atıfla gösterilen bağlantı; boşsa kaynak_url
-  notice_text         text,                             -- tam bildirim (ör. Tanzil telif bildirimi)
-  yeniden_kontrol     date,
+  notice_text         text,                             -- kaynağın kendi bildirimi, bayt bayt (ör. Tanzil dosyasındaki bildirim bloğu)
   notlar              text,
   created_at          timestamptz NOT NULL DEFAULT now(),
-  updated_at          timestamptz NOT NULL DEFAULT now(),
-  CHECK (kurul_onay IS NULL OR (kurul_onay ?& ARRAY['onay_no','onayli_surum']
-                                AND kurul_onay_tarihi IS NOT NULL AND kurul_onay_ozeti IS NOT NULL))
+  updated_at          timestamptz NOT NULL DEFAULT now()
 );
 ```
 
-- Kimlikler ve her kaynağın kesin durumu [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) dosyasındadır. Defterdeki `pipeline/sources/{slug}.toml` alanları aynı adlı sütunlara yüklenir: `slug`, `tur`, `baslik`, `yazar`, `surum`, `kaynak_url`, `license_name`, `license_url`, `license_status`, `kisitlar`, `atif_metni`, `kurul_gerekli`, `embed_ok` ve hatta özgü `lisans_kopyasi`, `lisans_sha256`, `yeniden_kontrol`. Hat bu alanları şöyle yükler ([K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) madde 3):
-  - **Satır yoksa** hepsi TOML'dan eklenir.
-  - **Satır varsa** yalnız betimleyici alanlar güncellenir: `baslik`, `surum`, `kaynak_url`, `license_name`, `license_url`, `atif_metni`, `atif_url`, `notice_text`, `lisans_kopyasi`, `lisans_sha256`, `yeniden_kontrol`, `alinma_tarihi`, `dosya_sha256`.
-  - **Hiç güncellenmeyenler:** `license_status`, `embed_ok`, `kurul_gerekli`, `kurul_onay`, `kurul_onay_tarihi`, `kurul_onay_ozeti`. Bunlar ikinci onaya bağlıdır (bölüm 8). TOML ile veritabanı farklıysa hat durur: veritabanı daha kısıtlayıcıysa ya da `kapali` ise çıkış `3`, öbür durumda çıkış `2` ve "editörde ikinci onay gerekir" iletisi.
+- `source` betimleyici bir kaynak kaydıdır: ad, adres, sürüm, dosya özeti, atıf ve kaynağın kendi bildirimi ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 4). Kimlikler [Kaynaklar](../04-icerik/01-kaynaklar.md) dosyasında ve `pipeline/sources/{slug}.toml` kayıtlarındadır; kaydı olmayan kaynak hatta alınmaz. Kayıttaki alanlar aynı adlı sütunlara yüklenir; `alinma_tarihi` ve `dosya_sha256` indirilen dosyanın tarihini ve SHA-256 özetini taşır (K-42 madde 2). Hat bu alanları şöyle yükler ([K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) madde 3):
+  - **Satır yoksa** kayıttaki bütün alanlarla eklenir.
+  - **Satır varsa** yalnız betimleyici alanlar güncellenir: `baslik`, `surum`, `kaynak_url`, `atif_metni`, `atif_url`, `notice_text`, `alinma_tarihi`, `dosya_sha256`. Öteki sütunlara (`tur`, `yazar`, `provider`, `baski_bilgisi`, `notlar`) hat ilk eklemeden sonra yazmaz.
   - **`notice_text`** dosyadan gelir: Tanzil'de dosyadaki bildirim bloğunun baytlarının katı UTF-8 çözümüdür, hiçbir dönüşüm uygulanmaz (K-39 madde 6).
 
   Backend API kaynağı `/api/v1/sources/{slug}` adresinde aynı adlarla döndürür.
-- Derleme türüne göre görünürlük yalnız `license_status` ile belirlenir: `public` ve `internal` yalnız `serbest`, `dev` ayrıca `bekliyor` ve `ic_kullanim` alır, `kapali` hiçbir derlemeye girmez (K-06). Lisans defterindeki `izinli_derleme` önerisine bu kuralla gerek kalmaz.
-- `kurul_gerekli` varsayılanı türden gelir: `kuran_metni`, Arapça metinle gösterilen `meal`, `ses`, `mushaf_duzeni`, `font` ve `mushaf_gorseli` için `true`. Editör tek tek değiştirebilir; yayın kapısı yalnız bu alana bakar ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)). Dayanak 633 sayılı Kanun m. 6'dır ([Lexpera, 633](https://www.lexpera.com.tr/mevzuat/kanunlar/diyanet-isleri-baskanligi-kurulus-ve-gorevleri-hakkinda-kanun-633)).
-- Kurul onayı üç sütunda durur: `kurul_onay` (onay no ve onaylı sürüm), `kurul_onay_tarihi` ve `kurul_onay_ozeti`. Yayınlayıcı manifestteki `kurul_onay` nesnesini (`onay_no`, `onay_tarihi`, `onayli_surum`, `icerik_ozeti`) bu sütunlardan kurar ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) §2.2).
-- Yayınlayıcı her pakete `attribution` satırını şu eşlemeyle yazar: `baslik` → `title`, `surum` → `version`, `atif_url` (boşsa `kaynak_url`) → `source_url`, `atif_metni` → `required_credit`; `license_name`, `license_url` ve `notice_text` aynı adla geçer ([İçerik paketleri](./03-icerik-paketleri.md) §3.1).
-- `kisitlar.hazir_vt_yasak = true` taşıyan kaynak hiçbir pakete girmez. Quran Foundation şartları hazır veritabanı dağıtımına izin vermez ve gömme vektörlerini de aynı kısıtlara bağlar ([QF Developer Terms](https://api-docs.quran.foundation/legal/developer-terms/)).
-- `embed_ok` hukuki onayı tutar. Gömme hattı `provider = 'quran_foundation'` kaynakları hiç işlemez; diğerlerinde `embed_ok` ister. Risale için hukuki durum netleşene kadar `false` kalır ([Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md)).
+- Derleme görünürlüğü editoryal kaliteye bağlıdır (K-42 madde 5). Kaynak kaydı olmayan içerik hiçbir pakete girmez. Onaysız birim ve onaysız yapay zekâ taslağı `public`'e girmez; aday bağlantı yalnız `dev` ve `internal`'dadır. Slug'ı `test-` ile başlayan kaynak `public`'e girmez; `internal`'a yalnız uçtan uca fikstürler (`test-kucuk`, `test-ses`) girer. Kapı kuralları (P-01, P-07…P-14) [Backend API](../02-mimari/05-backend-api.md) §10.3'tedir.
+- Yayınlayıcı her pakete `attribution` satırını şu eşlemeyle yazar: `baslik` → `title`, `surum` → `version`, `atif_url` (boşsa `kaynak_url`) → `source_url`, `atif_metni` → `required_credit`; `notice_text` aynı adla geçer ([İçerik paketleri](./03-icerik-paketleri.md) §3.1). Atıflar Ayarlar › Kaynaklar ekranında görünür.
 - Risale baskıları (`tur = 'baski'`) da birer kaynaktır. [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) dosyasındaki `baski` alanları `baski_bilgisi` içinde durur.
 - `baski_bilgisi` anahtarları: yayınevi, yıl, cilt takımı, ISBN, boy, yazı ve `metin_esasi` (metnin hangi baskıya ya da nüshaya dayandığı). Metin hazır dijital dosyadan geliyorsa dijital kaynağın türü de yazılır (öneri; anahtar adı ve değerleri A20'deki şema çalışmasında kesinleşir ve A20 anahtar listesine eklenir): `hazir_metin` (TXT, EPUB, metin katmanlı PDF, HTML) ya da `tarama` (OCR yolu) ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)). Alanın şema doğrulaması A20'de planlıdır; bugün serbest biçimli jsonb'dir.
 
-Durumların anlamı K-06'dadır: `serbest` kamu malı, açık lisans ya da yazılı izin; `bekliyor` izin ya da açıklık istendi, cevap bekleniyor; `ic_kullanim` avukat görüşüyle yalnız ekip işleyebilir; `kapali` hiç kullanılmaz ve işlenmez. Hat `kapali` kaynağın dosyasını okumaz. Örnek satırlar (kimlikler ve kesin değerler lisans defterindedir; hukuki görüş değildir):
+Örnek satırlar (kimlikler ve kesin değerler kaynak kayıtlarındadır):
 
-| `slug` | `tur` | `license_status` | `kurul_gerekli` | Not |
-|---|---|---|---|---|
-| `tanzil-uthmani`, `tanzil-simple-clean` | kuran_metni | `serbest` | evet | CC BY 3.0, değiştirme yasağı ([Tanzil metni](https://raw.githubusercontent.com/OpenITI/0025AH/master/data/0001Quran/0001Quran.Mushaf/0001Quran.Mushaf.Tanzil001-ara1.mARkdown)) |
-| `elmalili-meal`, `elmalili-tefsir` | meal, tefsir | `serbest` | meal evet; tefsir Açık soru | 1 Ocak 2013'ten beri serbest ([MKÜ kaydı](https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a); 2026-10-26'da 403 verdi, tarih 1942 + 71 hesabıdır, [lisans defteri](../04-icerik/01-kaynaklar.md) §3.3); baskı kimliği `elmalili-1935` `baski_bilgisi` içinde; kendi aktarımımız |
-| `qac-morfoloji` | morfoloji | `bekliyor` | hayır | QAC'ye yazılı soru ([QAC SSS](https://corpus.quran.com/faq.jsp)) |
-| `tecrid-naim` · `tecrid-miras` | hadis_ceviri | `serbest` · `kapali` | hayır | Miras ciltleri 1 Ocak 2028'de serbest; `kamu_mali_tarihi = 2028-01-01` |
-| `risale-1956-1960`, `risale-asil-nusha` | risale | `kapali` | hayır | Metin avukat görüşüne kadar kapalı; sonra `ic_kullanim`, izinle ya da 1 Ocak 2031'de `serbest`. Asıl nüsha 2031'den sonra yalnız karşılaştırma için |
-| `quran-align` | zamanlama | `serbest` | — | CC BY 4.0; K-41 ile kullanılmıyor (âyet başına EveryAyah dosyalarına bağlı) |
-| `zamanlama-qud`, `zamanlama-mp3quran` (A27.2'de açılır) | zamanlama | `serbest` (K-41 madde 10) | `ses-zaman-{kayit}` | QUD v4.0.0 CC BY 4.0 (âyet ve kelime); MP3Quran yedek âyet zamanlaması ([Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md)) |
-| `ses-mp3quran`, `ses-tarteel-cdn` (A27.2'de açılır) | ses | `serbest` (K-41 madde 10) | aynadan, paket dışı | Dosyalar içerik hattıyla bir kez alınır, kendi depomuzdan sunulur |
-| `medine-604-duzen` | mushaf_duzeni | `bekliyor` | evet | Kaynak seçimi Açık soru |
+| `slug` | `tur` | Not |
+|---|---|---|
+| `tanzil-uthmani`, `tanzil-simple-clean` | kuran_metni | Kanonik metin, bayt bayt saklanır (K-26); Simple Clean `q:` birimi olmaz, yalnız `ar_norm` kaynağıdır ([K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) madde 1) |
+| `elmalili-meal`, `elmalili-tefsir` | meal, tefsir | Kendi aktarımımız; baskı kimliği `elmalili-1935` `baski_bilgisi` içinde |
+| `qac-morfoloji` | morfoloji | Kök, lemma ve sözcük türü (`quran_word.morph_source`, bölüm 5) |
+| `tecrid-naim` · `tecrid-miras` | hadis_ceviri | Ahmed Naim Türkçesi ve Kâmil Miras ciltleri ([K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları)) |
+| `risale-1956-1960`, `risale-asil-nusha` | risale | Risale metninin dayandığı baskı ve nüsha kayıtları ([Risale hazırlığı](../04-icerik/05-risale-hazirligi.md)) |
+| `zamanlama-qud`, `zamanlama-mp3quran` (A27.2'de açılır) | zamanlama | QUD v4.0.0 (âyet ve kelime); MP3Quran yedek âyet zamanlaması ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) madde 3; [Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md)) |
+| `ses-mp3quran`, `ses-tarteel-cdn` (A27.2'de açılır) | ses | Dosyalar içerik hattıyla bir kez alınır, kendi depomuzdan sunulur (K-41 madde 3–4) |
+| `medine-604-duzen` | mushaf_duzeni | Kaynak seçimi Açık soru (ED-5) |
 
 ## 4. `unit`
 
@@ -252,7 +229,7 @@ CREATE TABLE quran_word_fix (
 );
 ```
 
-- QAC 77.429 kelimeyi yaklaşık %99 doğrulukla etiketler ve veri hâlâ düzeltilmektedir ([QAC SSS](https://corpus.quran.com/faq.jsp)). Kelime bölme, metin ve ofsetler Tanzil'den türetilir (`source_id`); kök, lemma ve sözcük türü QAC'den gelir (`morph_source`). Bu ayrım paket bölünmesini taşır: QAC kaynaklı veri `core` paketine girmez, `kelime-kok` paketine girer ([İçerik paketleri](./03-icerik-paketleri.md); K-06 uygulama notu).
+- QAC 77.429 kelimeyi yaklaşık %99 doğrulukla etiketler ve veri hâlâ düzeltilmektedir ([QAC SSS](https://corpus.quran.com/faq.jsp)). Kelime bölme, metin ve ofsetler Tanzil'den türetilir (`source_id`); kök, lemma ve sözcük türü QAC'den gelir (`morph_source`). Bu ayrım paket bölünmesini taşır: QAC kaynaklı veri `core` paketine girmez, `kelime-kok` paketine girer ([İçerik paketleri](./03-icerik-paketleri.md) §1).
 - Yayınlayıcı QAC tabanını okur ve yalnız `status = 'onayli'` düzeltmeleri üstüne uygular; künye "QAC v0.4 + Mütâlaa düzeltmeleri (N adet)" yazar ([Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)).
 - Türkçe anlam alanları [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md) kılavuzundaki adları aynen taşır: `anlam_kisa`, `kuran_anlamlari`, `turkce_es_kelime`, `yalnizca_etimolojik`, `editor_notu`; kökün temel anlamı `root.kok_anlami` sütunundadır. İş yükü farklı lemma sayısına bağlıdır (K-19).
 - ~~PostgreSQL 18'in `uuidv7()` işlevi Doğrulanacak; yoksa kimliği hat üretir.~~ **Çözüldü (27 Ekim 2026):** `uuidv7()` PostgreSQL 18.0'da eklendi ([UUID işlevleri](https://www.postgresql.org/docs/18/functions-uuid.html)). Yerel kapta (18.6) çalışır; `uuid_extract_version` 7 verir. `xref.id` ve `quran_word_fix.id` için `DEFAULT uuidv7()` göçtedir.
@@ -312,7 +289,6 @@ CREATE TABLE xref (
   votes_up      integer NOT NULL DEFAULT 0,
   votes_down    integer NOT NULL DEFAULT 0,
   data_version  text NOT NULL,
-  license       license_status NOT NULL,
   CONSTRAINT xref_natural_key UNIQUE NULLS NOT DISTINCT (type, src_anchor, src_span, dst_anchor, dst_span)
 );
 CREATE INDEX xref_src   ON xref (src_anchor, type);
@@ -320,7 +296,7 @@ CREATE INDEX xref_dst   ON xref (dst_anchor, type);
 CREATE INDEX xref_queue ON xref (type, confidence DESC) WHERE status = 'aday';
 
 CREATE TABLE xref_vote (                           -- v1.x; canlıda genel kip veritabanında
-  xref_id       uuid NOT NULL,                     -- xref.id; ayrı veritabanında yabancı anahtar kurulmaz
+  xref_id       uuid NOT NULL,                     -- xref.id; ayrı veritabanında yabancı anahtar tanımlanmaz
   account_hash  text NOT NULL,                     -- HMAC-SHA256(sunucu sırrı, hesap kimliği)
   vote          text NOT NULL CHECK (vote IN ('up','down')),
   reason        text CHECK (reason IN ('yanlis_ayet','iktibas_degil','kok_yanlis','alakasiz')),
@@ -331,9 +307,9 @@ CREATE TABLE xref_vote (                           -- v1.x; canlıda genel kip v
 ```
 
 - Sütunlar brifteki listeyle ve [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) DDL'iyle aynıdır. Uçlar birim düzeyindedir. Kur'an ucunda `q:2:255:3-7` seçimi `dst_anchor = 'q:2:255'`, `dst_span = '[3,8)'` (kelime konumu) olur; metin biriminde aralık kod noktasıdır. Dönüşümü üç dilde `toUnitSpan` (`to_unit_span`, `ToUnitSpan`) yapar ([Çapa şeması](./01-capa-semasi.md) §11, K-35).
-- `license` iki ucun ve bağlantı verisinin kaynaklarının en kısıtlayıcısıdır. Sorunlu çıkan bir veri seti tek sorguyla kapanır (rapor).
+- Bağlantının pakete girmesi iki ucunun görünürlüğüne ve `status` değerine bağlıdır: `red` hiç girmez, `aday` yalnız `dev` ve `internal`'a girer (P-07, [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5).
 - Âyet aralığı çapası (`q:2:255-257`) bir birim olmadığı için `xref` ucu olmaz; aralık atıfları âyet başına satıra bölünür ve `evidence.group` ile bağlanır. Âyetleri `coveredAyahs` verir; `toUnitSpan` âyet aralığında ve cümle çapasında hata verir (K-35).
-- `xref_vote` hesap kimliğini açık tutmaz. Tablo canlıdaki genel kip veritabanında durur; oy `PUT` ve `DELETE /api/v1/xrefs/{id}/vote` ile yazılır ([Genel mimari](../02-mimari/01-genel-mimari.md); [Backend API](../02-mimari/05-backend-api.md) §5). Gece işi oyları editoryal veritabanındaki `votes_up` ve `votes_down` sayaçlarına işler; hesap silinince oylar silinir (K-25, [KVKK](../07-yayin/02-gizlilik.md)).
+- `xref_vote` hesap kimliğini açık tutmaz. Tablo canlıdaki genel kip veritabanında durur; oy `PUT` ve `DELETE /api/v1/xrefs/{id}/vote` ile yazılır ([Genel mimari](../02-mimari/01-genel-mimari.md); [Backend API](../02-mimari/05-backend-api.md) §5). Gece işi oyları editoryal veritabanındaki `votes_up` ve `votes_down` sayaçlarına işler; hesap silinince oylar silinir (K-25, [Gizlilik](../07-yayin/02-gizlilik.md)).
 
 ## 8. `review` ve inceleme akışı
 
@@ -344,7 +320,7 @@ CREATE TABLE review (
                    'root','tr_root_index','tr_form','surah_alias','xref','page_map','ayah_box','audio_timing')),
   hedef_anahtar    text NOT NULL,                  -- çapa, lemma id, kaynak id …
   xref_id          uuid REFERENCES xref(id),       -- bağlantı incelemesinde dolu
-  alan             text NOT NULL,                  -- 'metin', 'anlam_kisa', 'status', 'license_status', …
+  alan             text NOT NULL,                  -- 'metin', 'anlam_kisa', 'status', …
   eylem            text NOT NULL,                  -- 'onayla' | 'duzenle_onayla' | 'reddet' | 'uzmana_gonder' | 'etimolojik_isaretle'
   onceki           jsonb,
   onerilen         jsonb,
@@ -383,7 +359,7 @@ stateDiagram-v2
 
 - Hat onaylı alanlara yazmaz. İstisna, kanonik kaynak Tanzil'dir ([K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) madde 2): Tanzil birimleri `onayli` girer ve hat bu satırlarda yalnız türetilmiş sütunları günceller (`ar_norm`, `tr_*`, `provenance`, `data_version`, `ord`, `ayah_range`, `run_id`, `updated_at`). `metin`, `content_hash`, `metin_durumu`, `status`, `successors`, `rev`, `marks` ve `source_id` sütunlarına hiç yazılmaz; Tanzil satırı için `review` açılmaz. Adayları yazar (`xref.status = 'aday'`, `lemma_gloss.status = 'aday'`, `unit.metin_durumu = 'taslak'`) ve her aday için `review` satırı açar. Yeni çalışmada üretilmeyen `aday` bağlantı silinir; `onayli` bağlantı silinmez, yeniden doğrulama için kuyruğa düşer (bağlantı modeli).
 - Onay `onerilen` değerini hedefe aynı işlemde uygular; kendi `status` alanı olan tablolarda onay `onayli`, ret `red` yazar. Kelime anlamı incelemesi gerçek sütun adlarını kullanır: `hedef_tablo = 'lemma_gloss'`, `alan = 'anlam_kisa'` ([Backend API](../02-mimari/05-backend-api.md) §4.1 kuyruk tablosuyla aynı). Kur'an metni için metin incelemesi açılmaz.
-- İkinci onay gereken alanlar: meal ve tefsir metni, `source.license_status`, `source.kurul_onay`, `source.embed_ok`. Hat `source.license_status`, `embed_ok`, `kurul_gerekli` ve `kurul_onay*` alanlarını TOML'dan güncellemez (bölüm 3, K-39 madde 3); değişiklik bu ikinci onay yoluyla yapılır. İlk onay `inceleyen` alanını doldurur ve kayıt `acik` kalır; farklı bir editörün onayı değeri uygular ve `ikinci_inceleyen` alanını doldurur ([Backend API](../02-mimari/05-backend-api.md) §4.1).
+- İkinci onay gereken alanlar: meal ve tefsir metni ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) madde 4). İlk onay `inceleyen` alanını doldurur ve kayıt `acik` kalır; farklı bir editörün onayı değeri uygular ve `ikinci_inceleyen` alanını doldurur ([Backend API](../02-mimari/05-backend-api.md) §4.1).
 - Yapay zekâ taslakları `yz_modeli` ve `yz_kaydi` taşır ve onaylanana kadar "doğrulanmamış" rozetiyle görünür ([K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)). G-YZ kaydının ([İçerik hattı](../04-icerik/02-icerik-hatti.md) §9–§10) alanları şöyle eşlenir ([K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)):
   - `ai_model` → `yz_modeli`; `prompt_id`, `prompt_sha256` ve `input_sha256` → `yz_kaydi` nesnesinin anahtarları; `review_id` → `review.id`; `created_at` → `review.created_at`.
   - `review_yz_kaydi_check`: `yz_modeli` ile `yz_kaydi` ya ikisi birden boştur ya ikisi birden doludur. Doluysa `yz_kaydi` üç anahtarı taşıyan bir JSON nesnesidir; iki özet 64 küçük harfli onaltılık karakterdir.
@@ -432,18 +408,18 @@ CREATE TABLE audio_timing (
   start_ms       integer NOT NULL,
   end_ms         integer NOT NULL,
   words          jsonb,                               -- [[kelime, start_ms, end_ms], …]
-  timing_source  text NOT NULL,                       -- A07: 'quran-align' | 'editor'; K-41 sonrası 'qud' | 'mp3quran' | 'editor'
+  timing_source  text NOT NULL,                       -- 'qud' | 'mp3quran' | 'editor' (K-41 madde 3)
   data_version   text NOT NULL,
   PRIMARY KEY (source_id, anchor),
   CHECK (start_ms < end_ms)
 );
 ```
 
-- `page_map` satırının anlamı kaynağa göre değişir: Mod A'da satır, Mod B ve C'de sayfa, basılı baskıda sayfa başlangıcı. `sure_adi` ve `besmele` satırlarında çapa olarak surenin ilk âyeti yazılır. `glyphs` Mod A paketindeki `glyph_word` tablosunun kaynağıdır ([Mobil mimari](../06-mobil/01-mobil-mimari.md)). Düzen verisinin kaynağı Açık soru (`medine-604-duzen`, lisans defteri).
+- `page_map` satırının anlamı kaynağa göre değişir: Mod A'da satır, Mod B ve C'de sayfa, basılı baskıda sayfa başlangıcı. `sure_adi` ve `besmele` satırlarında çapa olarak surenin ilk âyeti yazılır. `glyphs` Mod A paketindeki `glyph_word` tablosunun kaynağıdır ([Mobil mimari](../06-mobil/01-mobil-mimari.md)). Düzen verisinin kaynağı Açık soru (`medine-604-duzen`, ED-5).
 - Basılı baskıda `source_id` şöyle seçilir. Tek baskıdan kendi aktarımımızı yaptığımız kaynakta (Elmalılı, Tecrîd) `source_id` birimin kaynağıdır (`elmalili-meal`, `elmalili-tefsir`, `tecrid-naim` …); baskı kimliği (ör. `elmalili-1935`) o kaynağın `baski_bilgisi` alanındadır ve cilt `volume` sütunundadır. Birden çok baskısı eşlenen eserde (Risale) her baskı `tur = 'baski'` olan ayrı bir kaynaktır ve `source_id` odur (bölüm 3).
 - `ayah_box` koordinatları görsel piksel uzayındadır. Yaklaşım Quran for Android'den alınmıştır, onun veri biçimi doğrulanmadı.
 - **K-41 sonrası (A27.2 göçü).** Ses artık okuyucunun kaydına ait 114 sure dosyasıdır ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)). Aynı zamanlama kaynağı (QUD) birden çok kayda hizmet ettiği için `audio_timing` kayda bağlanır: kayıt kimliği sütunu eklenir ve birincil anahtar kayıt ile çapaya taşınır; `file` `'002.mp3'` biçimindedir, `file_sha256` aynadaki dosyanın özetidir, `words` QUD kelime satırlarıdır (`[kelime_no (1 tabanlı), start_ms, end_ms]`). Kayıtlar ve sure dosyaları (bayt, sha256, süre, `dosya_surumu`) için yeni tablolar eklenir. Tablo ve sütun adları, DDL ve EF göçü A27.2'de (`sunucu-gelistirici`, `ef-goc`) karara bağlanır ve bu bölüme yazılır; o zamana kadar yukarıdaki DDL A07 şemasıdır.
-- `file_sha256` dosya değişince satırın reddedilmesini sağlar; zamanlama yalnız katalogdaki `dosya_surumu` dosyalarıyla geçerlidir. quran-align zamanlamaları yalnız hizalandıkları EveryAyah dosyaları için geçerlidir ve K-41 ile kullanılmaz.
+- `file_sha256` dosya değişince satırın reddedilmesini sağlar; zamanlama yalnız katalogdaki `dosya_surumu` dosyalarıyla geçerlidir.
 
 ### 9.2 `embedding` (v1.x)
 
@@ -461,7 +437,7 @@ CREATE TABLE embedding (
 CREATE INDEX embedding_hnsw ON embedding USING hnsw (v halfvec_cosine_ops);
 ```
 
-Satır yalnız `embed_ok` kaynaklardan üretilir. `content_hash` birimin güncel özetinden farklıysa satır yeniden gömülür. Tasarım ve model seçimi [Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md) dosyasındadır; pgvector HNSW ve `halfvec` destekler ([PGXN pgvector](https://pgxn.org/dist/vector)).
+Satır birimin güncel metninden üretilir; `content_hash` birimin güncel özetinden farklıysa satır yeniden gömülür. Hangi birimlerin gömüleceği, tasarım ve model seçimi [Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md) dosyasındadır; pgvector HNSW ve `halfvec` destekler ([PGXN pgvector](https://pgxn.org/dist/vector)).
 
 ## 10. Köken, yükleme ve `release`
 
@@ -473,7 +449,6 @@ CREATE TABLE release (
   durum            surum_durumu NOT NULL DEFAULT 'hazirlaniyor',
   manifest         jsonb,                          -- imzalı manifest.json
   kapi_raporu      jsonb NOT NULL DEFAULT '{}',    -- paket başına dahil/hariç ve gerekçe
-  kaynak_durumu    jsonb NOT NULL DEFAULT '{}',    -- yayın anındaki lisans ve Kurul bilgisi
   ozetler          jsonb NOT NULL DEFAULT '{}',    -- kaynak ve paket içerik özetleri
   data_version     text NOT NULL,
   olusturan        text NOT NULL,
@@ -498,7 +473,7 @@ ALTER TABLE unit ADD FOREIGN KEY (run_id) REFERENCES pipeline_run (run_id);
 - `data_version` hat çalıştırmalarında `{yyyy.mm.dd}-{hat_git_kısa_sha}`, hazır veri setlerinde `{source_id}@{sürüm}` biçimindedir; Tanzil için `tanzil-uthmani@{surum}` (sürüm kaynak kaydındaki `surum` alanından gelir, çözülemezse hat çıkış `2` verir). Tanzil `provenance` değeri `{"file":"<dosya adı>","sha256":"…","line":1,"bayt":[0,0],"steps":[]}` biçimindedir (bayt aralığı ham dosyada yarı açıktır, tarihli yol girmez; sayılar yer tutucudur). `ar_norm` Simple Clean'i de kaynak aldığı için satır ayrıca `provenance.ar_norm = {"kaynak":"tanzil-simple-clean","sha256":"…","line":1,"normalizer_version":"…","ar4":true}` taşır ([K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) madde 1 ve 5; `kaynak` değerinin yazımı kod yazılırken kesinleşir, Doğrulanacak). `unit.provenance` satırın kökenini yazar: `{"file":"cilt1.txt","line":1204,"ocr_page":"c1-s45","steps":["nfc","bosluk"]}`. HTML, EPUB ya da PDF'ten çıkarılan metinde `provenance` ayrıca ham dosyanın özetini (SHA-256), dosya içi konumu ve çıkarıcı sürümünü taşır ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme), madde 3).
 - Hattın yüklediği her `unit` satırı `run_id` taşır; `pipeline_run` sütunları [İçerik hattı](../04-icerik/02-icerik-hatti.md) önerisiyle aynıdır. `xref` satırının çalıştırması `evidence.run_id` içinde durur; bağlantı modelinin sütun listesi değişmez.
 - Hat veriyi `staging_unit` gibi geçici tablolara psycopg 3 `COPY` ile yükler, sonra tek işlemde çapaya göre upsert yapar (Tanzil'de upsert yerine iki ifade: ekleme ve türetilmiş sütunları güncelleme, K-39) ([İçerik hattı](../04-icerik/02-icerik-hatti.md) §6). İşlem kapanmadan şu denetimler koşar: önceki çalışmadaki her çapa hâlâ var; kullanım dışı her çapanın `successors` alanı dolu; özetler biçimce geçerli.
-- İçerik ve Kurul özetleri tek sıralama kuralı kullanır: çapaların bayt sırası (`COLLATE "C"`); ses ve font dosyalarında yolun bayt sırası. Satır biçimi ve hesap [İçerik paketleri](./03-icerik-paketleri.md) bölüm 6'dadır; Kurul özeti aynı kuralı yalnız Kurul kapsamındaki kaynaklara uygular ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)). `public` kapısı bu özetin `source.kurul_onay_ozeti` ile eşleşmesini ister (Backend API P-04). Kurul onayı belirli bir sürüme bağlıdır ve onaylanmış eserin içeriği değiştirilemez ([Memurlar.net, 2022](https://www.memurlar.net/haber/1045766/kur-an-i-kerim-basim-ve-yayim-kriterleri-hakkinda-yonetmelik-resmi-gazete-de-yayimlandi.html)).
+- İçerik özetleri tek sıralama kuralı kullanır: çapaların bayt sırası (`COLLATE "C"`); ses ve font dosyalarında yolun bayt sırası. Satır biçimi ve hesap [İçerik paketleri](./03-icerik-paketleri.md) bölüm 6'dadır. Özetler `release.ozetler` sütununda durur; terfide kaynakların içerik özetleri iç kanalda test edilen yayındakiyle aynı olmalıdır (Backend API P-14).
 - Kapıdan ya da doğrulamadan geçemeyen yayın `durum = 'basarisiz'` olur ve `kapi_raporu` gerekçeyi taşır; manifest yayımlanmaz. [Backend API](../02-mimari/05-backend-api.md#106-durumlar-idempotentlik-terfi-ve-geri-alma) §10.6 de aynı değeri kullanır; talep yeni bir `release` satırıyla yeniden denenir.
 - Yayımlanmış sürüm değişmez. Geri çekme `durum = 'geri_cekildi'` ve önceki sürümü gösteren yeni manifestle yapılır ([İçerik paketleri](./03-icerik-paketleri.md)).
 
@@ -509,15 +484,15 @@ ALTER TABLE unit ADD FOREIGN KEY (run_id) REFERENCES pipeline_run (run_id);
 | [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) | `xref`, `xref_vote`, yayın süzgeci sorgusu (`review.xref_id`, `review.state`) | Bölüm 7 ve 8; `review.state` bu şemada `durum` adını taşır |
 | [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) | `root`, `lemma`, `quran_word`, `quran_word_fix`, `tr_root_index`, `tr_form` | Bölüm 5 ve 6; Türkçe lemmalar `lemma.lang = 'tr'` satırıdır |
 | [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md) | `surah_alias` | Bölüm 6 |
-| [Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md) | `embedding`, `source.embed_ok` | Bölüm 9 ve 3 |
+| [Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md) | `embedding` | Bölüm 9.2 |
 | [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md) | Anlam alanları | `lemma_gloss` ve `root.kok_anlami`, aynı alan adlarıyla |
 | [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) | `baski` | `source.tur = 'baski'` + `baski_bilgisi` |
 | [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md) | `hadis_numara_esleme`, `hadis_konum` | Aşağıda, İngilizce adlarla |
-| [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) | TOML alanları; `izinli_derleme`; örnek satırlar | Bölüm 3, aynı adlarla; `izinli_derleme` yerine K-06 derleme kuralı; örnek satırlar defterle aynıdır (`risale-asil-nusha` ve `tecrid-miras` `kapali`) |
+| [Kaynaklar](../04-icerik/01-kaynaklar.md) | Kaynak kaydının TOML alanları; örnek satırlar | Bölüm 3, aynı adlarla |
 | [İçerik hattı](../04-icerik/02-icerik-hatti.md) | `pipeline_run`, `run_id`; `xref` tekillik anahtarına `origin`; örnekteki `unit.text` ve `status = 'aday'` | Bölüm 10; `xref_natural_key` bağlantı modelindeki gibi `origin` içermez, reddedilen anahtarı `red` satırı korur; `unit.metin` ve `metin_durumu = 'taslak'`; G-YZ kaydı (K-37, bölüm 8): `ai_model` → `review.yz_modeli`; `prompt_id`, `prompt_sha256`, `input_sha256` → `review.yz_kaydi` (`review_yz_kaydi_check`); `review_id` → `review.id`; `created_at` → `review.created_at`; `dogrulanmis` saklanmaz |
-| [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) | `kurul_onay`, `kurul_onay_tarihi`, `kurul_onay_ozeti`, `atif_metni` | Bölüm 3, aynı adlarla |
+| [Yayın süreci](../07-yayin/01-yayin-sureci.md) | `atif_metni`; yayın kaydı | Bölüm 3 ve 10, aynı adlarla |
 | [Genel mimari](../02-mimari/01-genel-mimari.md) | `xref_vote` canlı veritabanında, editoryal tarafta yalnız toplamlar | Bölüm 7 |
-| [Backend API](../02-mimari/05-backend-api.md) | `search_text`; kelime anlamı alanı; lisans ve bağlantı durumu türleri; paket üst veri tablosu; `kisitlar.hazir_vt_yasak` | Bölüm 4'teki dört arama sütunu; `lemma_gloss.anlam_kisa`; `license_status`, `xref_status` (bölüm 2); `pack_meta` ([İçerik paketleri](./03-icerik-paketleri.md)); bölüm 3. Backend API bu adları aynen kullanır (ED-7 çözüldü) |
+| [Backend API](../02-mimari/05-backend-api.md) | `search_text`; kelime anlamı alanı; bağlantı durumu türü; paket üst veri tablosu | Bölüm 4'teki dört arama sütunu; `lemma_gloss.anlam_kisa`; `xref_status` (bölüm 2); `pack_meta` ([İçerik paketleri](./03-icerik-paketleri.md)). Backend API bu adları aynen kullanır (ED-7 çözüldü) |
 
 ```sql
 CREATE TABLE hadith_number_map (                  -- hadis_numara_esleme
@@ -539,9 +514,9 @@ CREATE TABLE hadith_location (                    -- hadis_konum: kitap › bâb
 
 Bu bölüm A07 koduyla doğrulandı (27 Ekim 2026; [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)). Kod `server/Mutalaa.Infrastructure/Persistence` altındadır.
 
-- `Mutalaa.Infrastructure` içinde `IcerikDbContext` tabloları eşler; yayınlayıcı ve editör uçları aynı bağlamı kullanır ([Proje yapısı](../02-mimari/03-proje-yapisi.md)). Seçenekler tek yoldan kurulur (`IcerikDbContextOptions.Configure`). C# adlandırması PascalCase, veritabanı adları snake_case'tir.
+- `Mutalaa.Infrastructure` içinde `IcerikDbContext` tabloları eşler; yayınlayıcı ve editör uçları aynı bağlamı kullanır ([Proje yapısı](../02-mimari/03-proje-yapisi.md)). Seçenekler tek yoldan verilir (`IcerikDbContextOptions.Configure`). C# adlandırması PascalCase, veritabanı adları snake_case'tir.
 - **`EFCore.NamingConventions`: Çözüldü (27 Ekim 2026).** 10.0.1 sürümü EF Core 10 ile çalışır (Apache-2.0; [depo](https://github.com/efcore/EFCore.NamingConventions)). `UseSnakeCaseNamingConvention(CultureInfo.InvariantCulture)` çağrılır; kültür verilmezse de Invariant kullanılır. Açıkça verilen adları ezmez.
-- **Enum eşlemesi.** Her tür `HasPostgresEnum(şema, ad, etiketler)` ile açık sırayla tanımlanır; etiketler enum'un sayısal sırasıdır ve `packages/content-schema/enums.json` sırasıdır. `MapEnum` yalnız C# değeri ile etiket arasındaki ad çevirmenini kurar. Sebep: Npgsql 10 `MapEnum` etiketlerini alfabetik sıraya dizer ([efcore.pg #3390](https://github.com/npgsql/efcore.pg/issues/3390), [#3667](https://github.com/npgsql/efcore.pg/issues/3667)); `license_status` sırası kapının davranışını belirlediği için buna bırakılamaz. Çevirmenler tek statik örnektir. `SetPostgresVersion(18, 0)` verilir (varsayılan 14'tür). Bağlantı dizesi `UseNpgsql(...)` çağrısına doğrudan verilir; sonradan verilirse enum eşlemesi kaybolur. C# türleri Domain'dedir: `LicenseStatus`, `BuildFlavor` (`derleme_turu`), `SourceKind`, `UnitKind`, `UnitStatus`, `TextStatus` (`metin_durumu`), `XrefType`, `XrefStatus`, `XrefOrigin`, `ReviewStatus` (`inceleme_durumu`), `ReleaseStatus` (`surum_durumu`).
+- **Enum eşlemesi.** Her tür `HasPostgresEnum(şema, ad, etiketler)` ile açık sırayla tanımlanır; etiketler enum'un sayısal sırasıdır ve `packages/content-schema/enums.json` sırasıdır. `MapEnum` yalnız C# değeri ile etiket arasındaki ad çevirmenini kurar. Sebep: Npgsql 10 `MapEnum` etiketlerini alfabetik sıraya dizer ([efcore.pg #3390](https://github.com/npgsql/efcore.pg/issues/3390), [#3667](https://github.com/npgsql/efcore.pg/issues/3667)); `metin_durumu` sırası (`taslak`, `incelemede`, `onayli`; alfabetik değil) anlamlı olduğu için buna bırakılamaz. Çevirmenler tek statik örnektir. `SetPostgresVersion(18, 0)` verilir (varsayılan 14'tür). Bağlantı dizesi `UseNpgsql(...)` çağrısına doğrudan verilir; sonradan verilirse enum eşlemesi kaybolur. 10 türün C# karşılıkları Domain'dedir: `BuildFlavor` (`derleme_turu`; `Mutalaa.Domain/Releases`), `SourceKind`, `UnitKind`, `UnitStatus`, `TextStatus` (`metin_durumu`), `XrefType`, `XrefStatus`, `XrefOrigin`, `ReviewStatus` (`inceleme_durumu`), `ReleaseStatus` (`surum_durumu`).
 - **Tür eşlemeleri.** `int4range` → `AnchorSpan` (değer dönüştürücü; `NpgsqlRange<int>` sağlayıcı türü), `int4range[]` → `AnchorSpan[]` (`HasColumnType("int4range[]")` şarttır, yoksa Npgsql `int4multirange` seçer), `tsvector` → gölge `NpgsqlTsVector` özelliği, `halfvec` → pgvector .NET türü (v1.x; Doğrulanacak). jsonb sütunları C#'ta `string` olur (`HasColumnType("jsonb")`); `ToJson` ve `JsonDocument` kullanılmaz, çünkü `JsonDocument` havuzdan bellek kiralar ve değişiklik izlemede sorun çıkarır. Üretilen sütunlar `HasComputedColumnSql("…", stored: true)`, `COLLATE "C"` `UseCollation("C")`, GiST/GIN/HNSW `HasMethod(…)` ile tanımlanır.
 - **`xmin`.** Eşzamanlılık belirteci gölge `uint` özelliktir (`HasColumnType("xid")`, `IsRowVersion()`); Domain'e alan eklenmez. `xmin` sistem sütunudur, göçte sütun üretilmez. `ExecuteUpdateAsync` `xmin` denetimi eklemez ve `updated_at` değerini kendiliğinden yazmaz; `updated_at` yalnız `UpdatedAtInterceptor` ile `SaveChanges` sırasında yazılır ([Backend API](../02-mimari/05-backend-api.md) §7).
 - **Çapa sütunları.** `Mutalaa.Domain/Anchors` içindeki `AnchorRef` türüne değer dönüştürücüsüyle bağlanır; geçersiz çapa yazılamaz. Yayınlayıcı okumaları `AsNoTracking()` ve `AsAsyncEnumerable()` ile akış hâlinde yapar.
@@ -549,7 +524,7 @@ Bu bölüm A07 koduyla doğrulandı (27 Ekim 2026; [K-37](../00-ozet/02-karar-de
   - Dönüştürülmüş sütunlarda (`AnchorRef`, `AnchorSpan`) LINQ ile `LIKE` ve aralık işleci SQL'e çevrilmez. A13 ve A14 bu sorgular için ham SQL ya da projeksiyon kullanır. `unit` okumaları `tsv_tr` ve `tsv_ar` gölge sütunlarını da seçer; bu yüzden yayınlayıcı ve uç okumaları `AsNoTracking()` ile projeksiyon yapar.
   - `AnchorSpan` üç anlam taşır: `unit.ayah_range` küresel âyet sırasıdır (1..6236); `xref.src_span` ve `dst_span` Kur'an ucunda kelime konumudur, metin ucunda kod noktasıdır; `unit.sentences` kod noktasıdır.
 - Şemanın tek sahibi EF Core göçleridir (`server/Mutalaa.Infrastructure/Migrations`). Python hattı şema değiştirmez. Göçler `dotnet ef migrations bundle` ile uygulanır; API açılışında otomatik göç yoktur.
-- **Ham SQL.** Bugünkü göçte ham SQL yalnız `xref_natural_key`'dir (gerçek `UNIQUE NULLS NOT DISTINCT` kısıtı). Hat bu kısıtı `ON CONFLICT ON CONSTRAINT xref_natural_key` ile hedefler. `page_map` üzerindeki `NULLS NOT DISTINCT` EF'de `AreNullsDistinct(false)` ile adlı tekil dizin olarak kurulur. İleride `ALTER TYPE … ADD VALUE` ve HNSW (v1.x) göçleri ham SQL içerir.
+- **Ham SQL.** Bugünkü göçte ham SQL yalnız `xref_natural_key`'dir (gerçek `UNIQUE NULLS NOT DISTINCT` kısıtı). Hat bu kısıtı `ON CONFLICT ON CONSTRAINT xref_natural_key` ile hedefler. `page_map` üzerindeki `NULLS NOT DISTINCT` EF'de `AreNullsDistinct(false)` ile adlı tekil dizin olarak tanımlanır. İleride `ALTER TYPE … ADD VALUE` ve HNSW (v1.x) göçleri ham SQL içerir.
 - **DDL'den kasıtlı sapmalar (K-37).** Göçün ürettiği şema, bu belgedeki DDL'den şu farklarla ayrılır. Anlık görüntü [Test stratejisi](../07-yayin/03-test-stratejisi.md) §6'daki yoldadır.
   - Belgede `UNIQUE` yazılanlar adlı tekil dizindir: `unit_anchor_key`, `root_letters_key`, `quran_word_surah_ayah_word_key`, `quran_word_fix_anchor_field_key`, `release_surum_derleme_key`, `page_map_source_id_volume_page_line_key`. Yalnız `xref_natural_key` gerçek kısıttır. Bu yüzden hat `ON CONFLICT`'i sütun listesiyle yazar (`ON CONFLICT (anchor)` gibi); kısıt adıyla hedef yalnız `xref` içindir.
   - EF birincil anahtar sütunlarını önce yazar ve üretilen sütunları (`tsv_*`) sona koyar; sütun sırası bu belgedeki DDL'den farklıdır. Yüklemeler (`COPY`, `INSERT`) her zaman sütun listesiyle yapılır.
@@ -557,7 +532,7 @@ Bu bölüm A07 koduyla doğrulandı (27 Ekim 2026; [K-37](../00-ozet/02-karar-de
   - `icerik."__EFMigrationsHistory"` ek tablodur ve 19 tabloya dahil değildir. Birincil anahtarı `pk___ef_migrations_history` adını taşır; ad politikasının `pk_` önekli tek `icerik` istisnasıdır.
   - Kimlik şeması (`kimlik`) 7 tablodur: `users`, `roles`, `user_roles`, `user_claims`, `user_logins`, `user_tokens`, `role_claims`. Passkey tablosu yoktur. Bu şemada EF adları (`pk_`, `ix_`) kalır.
   - `review_yz_kaydi_check` birden çok sütuna baktığı hâlde açık adlıdır (`review_check` olmaz).
-- **Biçim denetimi olmayan sütunlar.** `source.kurul_onay_ozeti` ve öteki özet sütunlarının (`dosya_sha256`, `lisans_sha256`, `file_sha256`) biçim CHECK'i yoktur. Kapı bütünlüğü için ileride eklenmesi değerlendirilebilir (Açık soru; [belge çelişkileri](../10-claude-code/07-belge-celiskileri.md) BÇ-41); o zamana kadar A14 ikinci onayda özetin biçimini doğrular.
+- **Biçim denetimi olmayan sütunlar.** Özet sütunlarından yalnız `unit.content_hash` biçimce denetlenir (`unit_content_hash_check`). `source.dosya_sha256`, `audio_timing.file_sha256` ve `lemma_gloss.content_hash` `char(64)` taşır ama biçim CHECK'i yoktur; ileride eklenmesi değerlendirilebilir (Açık soru; [belge çelişkileri](../10-claude-code/07-belge-celiskileri.md) BÇ-41).
 - Yıkıcı değişiklik tek adımda yapılmaz: sütun eklenir, doldurulur, okuyucular geçirilir, eski sütun sonraki göçte kalkar. Enum'a eklenen değer geri alınamaz.
 - CI `postgres:18` konteyneri açar, göç paketini uygular, hat ve yayınlayıcı testlerini aynı veritabanında koşar ([Test stratejisi](../07-yayin/03-test-stratejisi.md)).
 
@@ -568,14 +543,14 @@ Bu bölüm A07 koduyla doğrulandı (27 Ekim 2026; [K-37](../00-ozet/02-karar-de
 | ED-1 | Editör panelinin v1 kimlik doğrulaması | Cevaplandı: ASP.NET Core Identity ([Backend API](../02-mimari/05-backend-api.md) §6) |
 | ED-2 | İkinci onay gereken alanların kesin listesi | Öneri; Backend API §4.1 ile aynı |
 | ED-3 | PostgreSQL 18'de `uuidv7()` ve üretilen sütun varsayılanı | **Çözüldü (27 Ekim 2026):** `uuidv7()` 18.0'da eklendi ([UUID işlevleri](https://www.postgresql.org/docs/18/functions-uuid.html)); üretilen sütun varsayılanı `VIRTUAL`'dır, dizinlenenler `STORED` yazılır ([CREATE TABLE](https://www.postgresql.org/docs/18/sql-createtable.html), [Üretilen sütunlar](https://www.postgresql.org/docs/18/ddl-generated-columns.html)) |
-| ED-4 | QAC lisansı; gelmezse kelime anlamlarının kelime çapasına göre `core`'a alınması (avukat) | Açık soru, hukuki görüş değildir |
+| ED-4 | Kaldırıldı | Konu [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) ile kapsam dışı kaldı (31 Ekim 2026) |
 | ED-5 | Mod A düzen ve glif verisinin kaynağı (`medine-604-duzen`) | Açık soru |
 | ED-6 | Konu düğümü tabloları (`konu:{slug}`, v1.x) | Açık soru |
-| ED-7 | Backend API ile ad farkları: `lisans_durumu` ve `xref_durum` tür adları, `lemma.tr_anlam`, paket `meta` tablosu, başarısız yayının `hazirlaniyor` kalması. Bu şema bağlantı modelinin tür adlarını, `lemma_gloss`, `pack_meta` ve `basarisiz` değerini kullanır | **Çözüldü (19 Ekim 2026):** Backend API bu şemanın adlarını kullanır ([Backend API](../02-mimari/05-backend-api.md) §4.1, §7, §10.4, §10.6) |
+| ED-7 | Backend API ile ad farkları: `xref_durum` tür adı, `lemma.tr_anlam`, paket `meta` tablosu, başarısız yayının `hazirlaniyor` kalması. Bu şema bağlantı modelinin tür adlarını, `lemma_gloss`, `pack_meta` ve `basarisiz` değerini kullanır | **Çözüldü (19 Ekim 2026):** Backend API bu şemanın adlarını kullanır ([Backend API](../02-mimari/05-backend-api.md) §4.1, §7, §10.4, §10.6) |
 
 ## İlgili dosyalar
 
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Çapa şeması](./01-capa-semasi.md) · [İçerik paketleri](./03-icerik-paketleri.md) · [Kullanıcı verisi ve senkron](./04-kullanici-verisi-ve-senkron.md) · [Arama (FTS5)](./05-arama-fts5.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md)
+- [Kaynaklar](../04-icerik/01-kaynaklar.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md)
 - [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) · [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) · [Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md)
-- [Backend API](../02-mimari/05-backend-api.md) · [Proje yapısı](../02-mimari/03-proje-yapisi.md) · [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)
+- [Backend API](../02-mimari/05-backend-api.md) · [Proje yapısı](../02-mimari/03-proje-yapisi.md) · [Yayın süreci](../07-yayin/01-yayin-sureci.md)

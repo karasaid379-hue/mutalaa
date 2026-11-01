@@ -2,7 +2,6 @@ using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Mutalaa.Domain.Anchors;
 using Mutalaa.Domain.Content;
-using Mutalaa.Domain.Licensing;
 using Mutalaa.Domain.Links;
 using Npgsql;
 
@@ -29,7 +28,6 @@ internal static class TestData
         Tur = SourceKind.Meal,
         Baslik = "Deneme kaynagi",
         Surum = "1",
-        LicenseName = "Deneme",
         AtifMetni = "Deneme atfi",
     };
 
@@ -50,7 +48,6 @@ internal static class TestData
         Type = type,
         Origin = XrefOrigin.Hat,
         DataVersion = "test",
-        License = LicenseStatus.Serbest,
     };
 
     /// <summary>Istisna zincirinde (kendisi dahil) ilk T'yi bulur; yoksa null.</summary>

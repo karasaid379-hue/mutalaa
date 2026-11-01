@@ -1,6 +1,5 @@
 using System.Globalization;
 using Mutalaa.Domain.Content;
-using Mutalaa.Domain.Licensing;
 using Mutalaa.Domain.Links;
 using Mutalaa.Domain.Releases;
 using Mutalaa.Domain.Reviews;
@@ -10,7 +9,7 @@ namespace Mutalaa.Domain.Tests;
 
 /// <summary>
 /// C# enum'lari packages/content-schema/enums.json ile ayni sirada ve ayni etiketle olmali.
-/// Sira anlamlidir (ozellikle license_status: serbest &lt; bekliyor &lt; ic_kullanim &lt; kapali).
+/// Sira anlamlidir (ozellikle metin_durumu: taslak &lt; incelemede &lt; onayli; alfabetik sira degildir).
 /// </summary>
 public class EnumLabelTests
 {
@@ -19,7 +18,6 @@ public class EnumLabelTests
     /// <summary>JSON tur anahtari -> denetim. Yeni tur JSON'a eklenip buraya eklenmezse All_json_enum_keys_are_covered kirilir.</summary>
     private static readonly Dictionary<string, Action<string[]>> Checks = new(StringComparer.Ordinal)
     {
-        ["license_status"] = labels => Check<LicenseStatus>(labels, LicenseStatusLabels.ToLabel, LicenseStatusLabels.TryParseLabel),
         ["xref_type"] = labels => Check<XrefType>(labels, XrefTypeLabels.ToLabel, XrefTypeLabels.TryParseLabel),
         ["xref_status"] = labels => Check<XrefStatus>(labels, XrefStatusLabels.ToLabel, XrefStatusLabels.TryParseLabel),
         ["xref_origin"] = labels => Check<XrefOrigin>(labels, XrefOriginLabels.ToLabel, XrefOriginLabels.TryParseLabel),
@@ -54,17 +52,17 @@ public class EnumLabelTests
         CultureScope.Turkish(() => Run(key));
 
     [Fact]
-    public void License_status_order_is_most_restrictive_last()
+    public void Metin_durumu_order_follows_the_editorial_flow_not_the_alphabet()
     {
-        Assert.True(LicenseStatus.Serbest < LicenseStatus.Bekliyor);
-        Assert.True(LicenseStatus.Bekliyor < LicenseStatus.IcKullanim);
-        Assert.True(LicenseStatus.IcKullanim < LicenseStatus.Kapali);
+        Assert.True(TextStatus.Taslak < TextStatus.Incelemede);
+        Assert.True(TextStatus.Incelemede < TextStatus.Onayli);
+        Assert.True(string.CompareOrdinal(TextStatus.Taslak.ToLabel(), TextStatus.Onayli.ToLabel()) > 0);
     }
 
     [Fact]
     public void Undefined_numeric_value_throws_out_of_range()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => ((LicenseStatus)99).ToLabel());
+        Assert.Throws<ArgumentOutOfRangeException>(() => ((TextStatus)99).ToLabel());
         Assert.Throws<ArgumentOutOfRangeException>(() => ((BuildFlavor)(-1)).ToLabel());
         Assert.Throws<ArgumentOutOfRangeException>(() => ((SourceKind)17).ToLabel());
         Assert.Throws<ArgumentOutOfRangeException>(() => ((XrefType)8).ToLabel());
@@ -80,7 +78,7 @@ public class EnumLabelTests
     [Fact]
     public void Null_label_is_rejected()
     {
-        Assert.False(LicenseStatusLabels.TryParseLabel(null, out LicenseStatus value));
+        Assert.False(TextStatusLabels.TryParseLabel(null, out TextStatus value));
         Assert.Equal(default, value);
     }
 
@@ -124,8 +122,9 @@ public class EnumLabelTests
             Assert.False(tryParse(label + " ", out _));
         }
 
-        Assert.False(tryParse("IC_KULLANIM", out _));
-        Assert.False(tryParse("Serbest", out _));
+        Assert.False(tryParse("IKTIBAS", out _));
+        Assert.False(tryParse("KULLANIM_DISI", out _));
+        Assert.False(tryParse("Taslak", out _));
         Assert.False(tryParse(string.Empty, out _));
         Assert.False(tryParse("yok", out _));
     }

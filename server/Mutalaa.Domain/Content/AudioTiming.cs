@@ -22,7 +22,10 @@ public sealed class AudioTiming
     /// <summary>jsonb: [[kelime, start_ms, end_ms], ...].</summary>
     public string? Words { get; set; }
 
-    /// <summary>quran-align ya da editor.</summary>
+    /// <summary>
+    /// Zamanlama kaynagi (K-41 madde 3): 'qud' (QUD v4.0.0; ayet ve kelime), 'mp3quran' (MP3Quran ayat_timing; yedek ayet zamanlamasi)
+    /// ya da 'editor'.
+    /// </summary>
     public required string TimingSource { get; set; }
 
     public required string DataVersion { get; set; }

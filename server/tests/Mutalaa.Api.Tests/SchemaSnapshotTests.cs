@@ -5,7 +5,7 @@ using Mutalaa.Api.Tests.Support;
 namespace Mutalaa.Api.Tests;
 
 /// <summary>
-/// Gocle kurulan semanin pg_dump --schema-only dokumu depodaki anlik goruntuyle (Snapshots/editoryal-sema.sql) karsilastirilir.
+/// Gocle olusturulan semanin pg_dump --schema-only dokumu depodaki anlik goruntuyle (Snapshots/editoryal-sema.sql) karsilastirilir.
 /// Bilincli guncelleme: MUTALAA_UPDATE_SNAPSHOTS=1 (dosya yeniden yazilir ve test BILEREK kirmizi biter; CI ortaminda reddedilir).
 /// </summary>
 public partial class SchemaSnapshotTests(EditorialDatabase<SchemaSnapshotTests> fixture, PostgresFixture postgres) : IClassFixture<EditorialDatabase<SchemaSnapshotTests>>

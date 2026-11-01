@@ -54,18 +54,6 @@ CREATE TYPE icerik.inceleme_durumu AS ENUM (
 
 
 --
--- Name: license_status; Type: TYPE; Schema: icerik; Owner: -
---
-
-CREATE TYPE icerik.license_status AS ENUM (
-    'serbest',
-    'bekliyor',
-    'ic_kullanim',
-    'kapali'
-);
-
-
---
 -- Name: metin_durumu; Type: TYPE; Schema: icerik; Owner: -
 --
 
@@ -402,7 +390,6 @@ CREATE TABLE icerik.release (
     durum icerik.surum_durumu DEFAULT 'hazirlaniyor'::icerik.surum_durumu NOT NULL,
     manifest jsonb,
     kapi_raporu jsonb DEFAULT '{}'::jsonb NOT NULL,
-    kaynak_durumu jsonb DEFAULT '{}'::jsonb NOT NULL,
     ozetler jsonb DEFAULT '{}'::jsonb NOT NULL,
     data_version text NOT NULL,
     olusturan text NOT NULL,
@@ -495,33 +482,18 @@ CREATE TABLE icerik.source (
     tur icerik.source_kind NOT NULL,
     baslik text NOT NULL,
     yazar text,
-    yazar_vefat_yili smallint,
     surum text NOT NULL,
     provider text,
     kaynak_url text,
     alinma_tarihi date,
     dosya_sha256 character(64),
     baski_bilgisi jsonb,
-    license_name text NOT NULL,
-    license_url text,
-    license_status icerik.license_status DEFAULT 'bekliyor'::icerik.license_status NOT NULL,
-    lisans_kopyasi text,
-    lisans_sha256 character(64),
-    kamu_mali_tarihi date,
-    kisitlar jsonb DEFAULT '{}'::jsonb NOT NULL,
-    embed_ok boolean DEFAULT false NOT NULL,
-    kurul_gerekli boolean DEFAULT false NOT NULL,
-    kurul_onay jsonb,
-    kurul_onay_tarihi date,
-    kurul_onay_ozeti character(64),
     atif_metni text NOT NULL,
     atif_url text,
     notice_text text,
-    yeniden_kontrol date,
     notlar text,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT source_check CHECK (((kurul_onay IS NULL) OR ((kurul_onay ?& ARRAY['onay_no'::text, 'onayli_surum'::text]) AND (kurul_onay_tarihi IS NOT NULL) AND (kurul_onay_ozeti IS NOT NULL))))
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -641,7 +613,6 @@ CREATE TABLE icerik.xref (
     votes_up integer DEFAULT 0 NOT NULL,
     votes_down integer DEFAULT 0 NOT NULL,
     data_version text NOT NULL,
-    license icerik.license_status NOT NULL,
     CONSTRAINT xref_confidence_check CHECK (((confidence >= (0)::double precision) AND (confidence <= (1)::double precision))),
     CONSTRAINT xref_score_check CHECK (((score >= (0)::double precision) AND (score <= (1)::double precision)))
 );

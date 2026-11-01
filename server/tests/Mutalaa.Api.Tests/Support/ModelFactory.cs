@@ -10,7 +10,7 @@ namespace Mutalaa.Api.Tests.Support;
 
 /// <summary>
 /// Veritabani gerektirmeyen model erisimi. Baglam, Api'nin ve dotnet ef'in kullandigi DI yolundan (AddIcerikDb + AddEditorIdentity)
-/// baglanti dizesiz kurulur: Identity modeli Stores seceneklerini DI'dan okudugu icin DI'siz kurulan model farkli cikar.
+/// baglanti dizesiz olusturulur: Identity modeli Stores seceneklerini DI'dan okudugu icin DI'siz olusturulan model farkli cikar.
 /// </summary>
 internal static class ModelFactory
 {
@@ -36,7 +36,7 @@ internal static class ModelFactory
         return services.BuildServiceProvider();
     }
 
-    /// <summary>Model uzerinde eylemi calistirir; varsayilan (onbellekli) ve yeni kurulmus model icin.</summary>
+    /// <summary>Model uzerinde eylemi calistirir; varsayilan (onbellekli) ve yeni olusturulmus model icin.</summary>
     public static void ForEachModel(Action<IModel> action)
     {
         action(CreateModel(uncachedModel: false));

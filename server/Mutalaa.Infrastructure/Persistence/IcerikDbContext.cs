@@ -14,7 +14,7 @@ namespace Mutalaa.Infrastructure.Persistence;
 
 /// <summary>
 /// Editoryal veritabani baglami (Editoryal veritabani 12). Icerik tablolari <c>icerik</c>, Identity tablolari <c>kimlik</c> semasindadir.
-/// Secenekler IcerikDbContextOptions.Configure ile kurulur.
+/// Secenekler IcerikDbContextOptions.Configure ile verilir.
 /// </summary>
 public sealed class IcerikDbContext(DbContextOptions<IcerikDbContext> options)
     : IdentityDbContext<EditorUser, IdentityRole, string>(options)

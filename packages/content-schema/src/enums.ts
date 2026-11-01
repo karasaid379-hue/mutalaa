@@ -2,9 +2,6 @@
 // Source of truth: packages/content-schema/enums.json (order is significant).
 // test/enums.test.ts keeps this file and the JSON identical.
 
-export const LICENSE_STATUS = ['serbest', 'bekliyor', 'ic_kullanim', 'kapali'] as const;
-export type LicenseStatus = (typeof LICENSE_STATUS)[number];
-
 export const XREF_TYPE = [
   'atif',
   'iktibas',
