@@ -1,6 +1,6 @@
-"""Tanzil "Text (with aya numbers)" dosya bicimi: katı ayristirma ve yeniden kurma (K-39 madde 7).
+"""Tanzil "Text (with aya numbers)" dosya bicimi: kati ayristirma ve yeniden kurma (K-39 madde 7).
 
-VARSAYIM (olculecek: İ-30): dosya, okuma sirasinda `sure|ayet|metin` satirlarindan ve bunlara
+VARSAYIM (olculecek: A10): dosya, okuma sirasinda `sure|ayet|metin` satirlarindan ve bunlara
 bitisik tek bir bildirim blogundan olusur. Gercek dosya indirilene kadar belgede yazili bicim
 yoktur; bu modul bicimin TEK tanimidir (satir deseni, bildirim blogunun yeri). Bildirim onekinin
 ne oldugu bilinmez ve sabitlenmez: bildirim blogu, ilk ayet satiri olmayan satirdan dosya sonuna
@@ -10,7 +10,7 @@ kadar (bos satirlar dahil) olan baytlardir (`konum = "son"`); dosya bildirimle b
 Tanimsiz her durum `GirdiHatasi` (cikis 2) verir. Hata iletileri yalniz satir numarasi, bayt
 konumu ve sayi tasir; satir icerigi asla (Icerik hatti §7).
 
-Metin hicbir donusumden gecmez: yalniz `b"\\n"` ile bolunur, her satir katı UTF-8 ile cozulur.
+Metin hicbir donusumden gecmez: yalniz `b"\\n"` ile bolunur, her satir kati UTF-8 ile cozulur.
 NFC, strip ve splitlines yoktur (K-26). Birim metni dosyanin aynen bir dilimidir.
 """
 
@@ -24,9 +24,9 @@ from mutalaa_pipeline.anchor import AnchorError, AnchorRef, Q, format, parse
 from mutalaa_pipeline.anchor.ayet_sayilari import AYET_SAYILARI
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 
-# --- VARSAYIM (olculecek: İ-30): ayet satiri oneki ----------------------------------------------
+# --- VARSAYIM (olculecek: A10): ayet satiri oneki -----------------------------------------------
 AYET_ONEKI: Final = re.compile(rb"([1-9][0-9]{0,2})\|([1-9][0-9]{0,2})\|")
-# Baştaki sıfır ya da gecersiz numara tanisi: ayet satirina benzeyen ama AYET_ONEKI'ne uymayan satir.
+# Bastaki sifir ya da gecersiz numara tanisi: ayet satirina benzeyen, AYET_ONEKI'ne uymayan satir.
 AYET_BENZERI: Final = re.compile(rb"[0-9]+\|[0-9]+\|")
 # ------------------------------------------------------------------------------------------------
 
@@ -44,10 +44,10 @@ class AyetSatiri:
     sure: int
     ayet: int
     satir: int  # 1 tabanli satir numarasi
-    satir_bas: int  # satirin ilk baytı
-    satir_son: int  # satirin son baytından sonrasi (varsa LF dahil)
-    bayt_bas: int  # metnin ilk baytı (`s|a|` oneki sonrasi)
-    bayt_son: int  # metnin son baytından sonrasi (LF haric)
+    satir_bas: int  # satirin ilk bayti
+    satir_son: int  # satirin son baytindan sonrasi (varsa LF dahil)
+    bayt_bas: int  # metnin ilk bayti (`s|a|` oneki sonrasi)
+    bayt_son: int  # metnin son baytindan sonrasi (LF haric)
     metin: str
 
     @property
@@ -179,7 +179,7 @@ def bildirim_bul(siniflar: Sequence[bool]) -> tuple[str, int, int]:
     `siniflar[i]` i. satirin ayet satiri olup olmadigidir. Bildirim blogu, ilk ayet satiri
     olmayan satirdan dosya sonuna kadardir (`konum="son"`); ilk satir ayet satiri degilse blok
     dosya basindan ilk ayet satirina kadardir (`konum="bas"`). Bu, bicimin VARSAYIMIDIR
-    (olculecek: İ-30); yalniz bu islev degisir.
+    (olculecek: A10); yalniz bu islev degisir.
     """
     sayi = len(siniflar)
     if sayi == 0:
@@ -201,7 +201,7 @@ def ayristir(
     *,
     tam: bool = True,
 ) -> Ayrisma:
-    """Dosyayi katı bicimde ayristirir; tanimsiz her sey `GirdiHatasi` (cikis 2).
+    """Dosyayi kati bicimde ayristirir; tanimsiz her sey `GirdiHatasi` (cikis 2).
 
     `tam=False` okuma sirasinin `1|1`'den kesintisiz olmasini ister ama sure tablosunun sonuna
     kadar gitmeyi istemez (fikstur parcalari icin). Tanzil alimi her zaman `tam=True` kullanir.
@@ -236,7 +236,9 @@ def ayristir(
     for i in range(len(satirlar)):
         if i in ayet_araligi:
             if not siniflar[i]:
-                raise GirdiHatasi(f"satir {i + 1}: tanimsiz satir (ayet bolgesinde ayet satiri degil)")
+                raise GirdiHatasi(
+                    f"satir {i + 1}: tanimsiz satir (ayet bolgesinde ayet satiri degil)"
+                )
         elif AYET_BENZERI.match(satirlar[i]) is not None:
             raise GirdiHatasi(
                 f"satir {i + 1}: tanimsiz satir (baslangic sifir, gecersiz numara ya da "
@@ -249,7 +251,8 @@ def ayristir(
     ayetler = _ayetleri_oku(veri, satirlar, baslangiclar, ayet_araligi, sonda_lf_yok, sure_tablosu)
     if tam and len(ayetler) != sure_basina_toplam(sure_tablosu):
         raise GirdiHatasi(
-            f"ayet sayisi eksik: beklenen {sure_basina_toplam(sure_tablosu)}, bulunan {len(ayetler)}"
+            f"ayet sayisi eksik: beklenen {sure_basina_toplam(sure_tablosu)},"
+            f" bulunan {len(ayetler)}"
         )
 
     bildirim_bas = baslangiclar[bildirim_ilk] if bildirim_ilk < len(satirlar) else len(veri)

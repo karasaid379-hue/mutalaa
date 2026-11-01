@@ -1,6 +1,5 @@
-"""`mutalaa` komut satiri girisi."""
+"""`mutalaa` komut satiri girisi (cikis kodlari: `cikis.py`)."""
 
-from datetime import UTC, date, datetime
 from enum import StrEnum
 from pathlib import Path
 from typing import Annotated
@@ -13,7 +12,10 @@ from mutalaa_pipeline.export.ortak import GirdiHatasi, kok_coz
 
 app = typer.Typer(
     name="mutalaa",
-    help="Mutalaa icerik hatti.",
+    help=(
+        "Mutalaa icerik hatti. Cikis kodlari: 0 basarili, 1 QA kapisi kaldi,"
+        " 2 girdi ya da yapilandirma hatasi (kayitsiz ya da gecersiz kaynak kaydi dahil)."
+    ),
     no_args_is_help=True,
     add_completion=False,
     # Iz (traceback) yerel degiskenleri gosterirse baglanti dizesi sizabilir.
@@ -23,7 +25,9 @@ app = typer.Typer(
 export_app = typer.Typer(no_args_is_help=True, help="Disa aktarim: veri dosyalari ve vektorler.")
 app.add_typer(export_app, name="export")
 
-sources_app = typer.Typer(no_args_is_help=True, help="Kaynak kayitlari ve lisans durumlari.")
+sources_app = typer.Typer(
+    no_args_is_help=True, help="Kaynak kayitlari (pipeline/sources/*.toml): liste ve denetim."
+)
 app.add_typer(sources_app, name="sources")
 
 KokSecenegi = Annotated[
@@ -42,14 +46,9 @@ class Bicim(StrEnum):
     TABLO = "tablo"
 
 
-def bugun() -> date:
-    """Yeniden kontrol karsilastirmasinin bugunu (testlerde degistirilebilir)."""
-    return datetime.now(UTC).date()
-
-
 def _hata(hata: GirdiHatasi) -> typer.Exit:
     typer.echo(f"hata: {hata}", err=True)
-    return typer.Exit(code=2)
+    return typer.Exit(code=cikis.GIRDI_HATASI)
 
 
 @export_app.command("ayet-sayilari")
@@ -158,7 +157,7 @@ def export_pg_komutu(
     config: Annotated[Path | None, typer.Option("--config", help="Baska bir mutalaa.toml.")] = None,
     kok: KokSecenegi = None,
 ) -> None:
-    """Staged birimleri PostgreSQL'e yukler (tek islem, idempotent; K-39)."""
+    """Staged birimleri PostgreSQL'e yukler (tek islem, idempotent; K-39). Cikis 0, 1 ya da 2."""
     # Ice aktarma: psycopg ve yapilandirma yalniz bu komutta yuklenir.
     from mutalaa_pipeline.config import ayarlar_yukle
     from mutalaa_pipeline.export import pg
@@ -182,9 +181,9 @@ def sources_list(
     ] = Bicim.TABLO,
     kok: KokSecenegi = None,
 ) -> None:
-    """`pipeline/sources/*.toml` kayitlarini listeler; gecmis yeniden kontrol `!` ile isaretli."""
+    """`pipeline/sources/*.toml` kayitlarini listeler: slug, tur, surum, kaynak_url."""
     try:
-        sonuclar = sources.yukle(kok_coz(kok), lisans_dosyalari=False)
+        sonuclar = sources.yukle(kok_coz(kok))
     except GirdiHatasi as hata:
         raise _hata(hata) from hata
     bozuk = False
@@ -195,7 +194,7 @@ def sources_list(
     if bozuk:
         raise typer.Exit(code=cikis.GIRDI_HATASI)
     kayitlar = [s.kaynak for s in sonuclar if s.kaynak is not None]
-    satirlar = sources.satirlar(kayitlar, bugun())
+    satirlar = sources.satirlar(kayitlar)
     if bicim is Bicim.JSON:
         typer.echo(sources.json_metni(satirlar))
     elif satirlar:
@@ -206,9 +205,9 @@ def sources_list(
 
 @sources_app.command("check")
 def sources_check(kok: KokSecenegi = None) -> None:
-    """Kaynak kayitlarini, lisans kopyalarini ve SHA-256 ozetlerini denetler (G-LIS)."""
+    """Kaynak kayitlarinin bicimini ve zorunlu alanlarini denetler (G-KAY); cikis 0 ya da 2."""
     try:
-        sonuclar = sources.yukle(kok_coz(kok), lisans_dosyalari=True)
+        sonuclar = sources.yukle(kok_coz(kok))
     except GirdiHatasi as hata:
         raise _hata(hata) from hata
     hata_sayisi = 0
@@ -220,15 +219,6 @@ def sources_check(kok: KokSecenegi = None) -> None:
         for mesaj in sonuc.uyarilar:
             typer.echo(f"uyari: {sonuc.dosya}: {mesaj}", err=True)
             uyari_sayisi += 1
-        if sonuc.kaynak is not None and sources.gecmis_mi(sonuc.kaynak, bugun()):
-            typer.echo(
-                f"uyari: {sonuc.dosya}: yeniden kontrol tarihi gecti: {sonuc.kaynak.slug}",
-                err=True,
-            )
-            uyari_sayisi += 1
-    for ad in sources.yetim_kopyalar(kok_coz(kok), sonuclar):
-        typer.echo(f"uyari: licenses/{ad}: hicbir kayit bu lisans kopyasini gostermiyor", err=True)
-        uyari_sayisi += 1
     if not sonuclar:
         typer.echo("kayit yok")
     else:

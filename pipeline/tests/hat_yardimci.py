@@ -14,10 +14,10 @@ PAROLA = "GIZLI-DENEME"
 
 
 def depo_kur(tmp_path: Path, *slugs: str, **degisim: object) -> Path:
-    """Sahte depo koku; her slug icin gecerli, `serbest` bir sentetik kayit."""
+    """Sahte depo koku; her slug icin gecerli bir sentetik kayit."""
     kok = kok_kur(tmp_path)
     for slug in slugs:
-        kayit_yaz(kok, alanlar_kur(slug, kok, **degisim))
+        kayit_yaz(kok, alanlar_kur(slug, **degisim))
     return kok
 
 

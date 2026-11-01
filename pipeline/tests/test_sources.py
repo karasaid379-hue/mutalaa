@@ -1,12 +1,16 @@
-"""`mutalaa sources list` ve `sources check` testleri (A06.1, G-LIS).
+# ruff: noqa: RUF001
+"""`mutalaa sources list` ve `sources check` testleri (A06.1, G-KAY, K-42).
 
 Fiksturler `tmp_path` altinda kodla uretilir: her senaryo kendi sahte kokunu
-(`pnpm-workspace.yaml` + `pipeline/sources/licenses/`) kurar ve `--kok` ile verir. Tum kayitlar
+(`pnpm-workspace.yaml` + `pipeline/sources/`) kurar ve `--kok` ile verir. Tum kayitlar
 `test-` onekli SENTETIK kayittir; gercek kaynak metni yoktur.
 """
 
-import hashlib
+import dataclasses
 import json
+import re
+import tomllib
+from collections.abc import Iterator
 from datetime import date
 from pathlib import Path
 
@@ -14,15 +18,39 @@ import pytest
 from typer.testing import CliRunner, Result
 
 from mutalaa_pipeline import cli, sources
-from mutalaa_pipeline.enums import LicenseStatus, SourceKind
+from mutalaa_pipeline.enums import SourceKind
 from mutalaa_pipeline.export.ortak import depo_koku
+from mutalaa_pipeline.sources import kayit
 
 runner = CliRunner()
 
-LISANS_ICERIGI = b"Deneme lisans metni 1\nDeneme lisans metni 2\n"
 ATIF = "Deneme atif metni."
-GECMIS = date(2000, 1, 1)
-GELECEK = date(2999, 1, 1)
+
+ZORUNLU = ("slug", "tur", "baslik", "atif_metni")
+ISTEGE_BAGLI = (
+    "yazar",
+    "surum",
+    "provider",
+    "kaynak_url",
+    "atif_url",
+    "notice_text",
+    "baski_bilgisi",
+    "notlar",
+)
+# K-42: kayit semasindan cikan alanlar; her biri "bilinmeyen alan" hatasidir.
+ESKI_ALANLAR: dict[str, object] = {
+    "license_name": "Deneme",
+    "license_url": "https://example.invalid/x",
+    "license_status": "serbest",
+    "kisitlar": {"degistirme_yasak": True},
+    "embed_ok": True,
+    "kurul_gerekli": False,
+    "yeniden_kontrol": date(2999, 1, 1),
+    "lisans_kopyasi": "licenses/test-eski-2026-10-19.txt",
+    "lisans_sha256": "0" * 64,
+    "yazar_vefat_yili": 1900,
+    "kamu_mali_tarihi": date(2030, 1, 1),
+}
 
 
 # --- Yardimcilar -------------------------------------------------------------------------
@@ -30,7 +58,7 @@ GELECEK = date(2999, 1, 1)
 
 def kok_kur(tmp_path: Path) -> Path:
     kok = tmp_path / "kok"
-    (kok / "pipeline" / "sources" / "licenses").mkdir(parents=True)
+    (kok / "pipeline" / "sources").mkdir(parents=True)
     (kok / "pnpm-workspace.yaml").write_bytes(b"")
     return kok
 
@@ -46,7 +74,7 @@ def deger_yaz(deger: object) -> str:
         return deger.isoformat()
     if isinstance(deger, int):
         return str(deger)
-    if isinstance(deger, str):
+    if isinstance(deger, str | list):
         return json.dumps(deger)
     if isinstance(deger, dict):
         ic = ", ".join(f"{ad} = {deger_yaz(v)}" for ad, v in deger.items())
@@ -58,30 +86,14 @@ def toml_metni(alanlar: dict[str, object]) -> str:
     return "".join(f"{ad} = {deger_yaz(v)}\n" for ad, v in alanlar.items())
 
 
-def lisans_yaz(kok: Path, slug: str, icerik: bytes = LISANS_ICERIGI) -> tuple[str, str]:
-    """Lisans kopyasini yazar; (goreli yol, sha256) dondurur."""
-    goreli = f"licenses/{slug}-2026-10-19.txt"
-    (kaynaklar(kok) / goreli).write_bytes(icerik)
-    return goreli, hashlib.sha256(icerik).hexdigest()
-
-
-def alanlar_kur(slug: str, /, kok: Path | None = None, **degisim: object) -> dict[str, object]:
-    """Gecerli bir `serbest` kayit; `kok` verilirse lisans kopyasi da yazilir."""
+def alanlar_kur(slug: str, /, **degisim: object) -> dict[str, object]:
+    """Gecerli bir kayit (yalniz zorunlu alanlar); `None` verilen alan kayittan cikar."""
     alanlar: dict[str, object] = {
         "slug": slug,
         "tur": "kuran_metni",
         "baslik": "Deneme kaynak",
-        "license_name": "Deneme lisansi",
-        "license_status": "serbest",
         "atif_metni": ATIF,
-        "kurul_gerekli": False,
-        "embed_ok": True,
-        "yeniden_kontrol": GELECEK,
     }
-    if kok is not None:
-        kopya, ozet = lisans_yaz(kok, slug)
-        alanlar["lisans_kopyasi"] = kopya
-        alanlar["lisans_sha256"] = ozet
     alanlar.update(degisim)
     return {ad: v for ad, v in alanlar.items() if v is not None}
 
@@ -104,7 +116,7 @@ def check(kok: Path) -> Result:
 
 def test_gecerli_kayit_sifir(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-gecerli", kok))
+    kayit_yaz(kok, alanlar_kur("test-gecerli"))
     sonuc = check(kok)
     assert sonuc.exit_code == 0, sonuc.stderr
     assert "1 kayit, 0 hata, 0 uyari" in sonuc.stdout
@@ -117,22 +129,12 @@ def test_gecerli_kayit_tum_istege_bagli_alanlarla(tmp_path: Path) -> None:
         kok,
         alanlar_kur(
             "test-tam",
-            kok,
             yazar="Deneme Yazar",
-            yazar_vefat_yili=1900,
             surum="1",
             provider="deneme",
             kaynak_url="https://example.invalid/kaynak",
-            license_url="https://example.invalid/lisans",
-            kisitlar={
-                "degistirme_yasak": True,
-                "hazir_vt_yasak": True,
-                "onbellek_gun": 7,
-                "yalniz_eslesen_ses": True,
-            },
-            notice_text="Deneme bildirim.",
             atif_url="https://example.invalid/atif",
-            kamu_mali_tarihi=date(2030, 1, 1),
+            notice_text="Deneme bildirim.",
             baski_bilgisi={"yil": 1935, "yayinevi": "Deneme"},
             notlar="Deneme notu.",
         ),
@@ -140,6 +142,10 @@ def test_gecerli_kayit_tum_istege_bagli_alanlarla(tmp_path: Path) -> None:
     sonuc = check(kok)
     assert sonuc.exit_code == 0, sonuc.stderr
     assert sonuc.stderr == ""
+    kaynak = sources.yukle(kok)[0].kaynak
+    assert kaynak is not None
+    assert kaynak.baski_bilgisi == {"yil": 1935, "yayinevi": "Deneme"}
+    assert kaynak.notice_text == "Deneme bildirim."
 
 
 def test_bos_dizin_sifir_ve_not(tmp_path: Path) -> None:
@@ -183,7 +189,7 @@ def test_bozuk_toml(tmp_path: Path) -> None:
 
 def test_bom_hata(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
-    veri = toml_metni(alanlar_kur("test-bom", kok)).encode("utf-8")
+    veri = toml_metni(alanlar_kur("test-bom")).encode("utf-8")
     (kaynaklar(kok) / "test-bom.toml").write_bytes(b"\xef\xbb\xbf" + veri)
     sonuc = check(kok)
     assert sonuc.exit_code == 2
@@ -192,7 +198,7 @@ def test_bom_hata(tmp_path: Path) -> None:
 
 def test_crlf_hata(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
-    veri = toml_metni(alanlar_kur("test-crlf", kok)).replace("\n", "\r\n").encode("utf-8")
+    veri = toml_metni(alanlar_kur("test-crlf")).replace("\n", "\r\n").encode("utf-8")
     (kaynaklar(kok) / "test-crlf.toml").write_bytes(veri)
     sonuc = check(kok)
     assert sonuc.exit_code == 2
@@ -207,55 +213,9 @@ def test_utf8_degil_hata(tmp_path: Path) -> None:
     assert "hata: test-latin.toml: UTF-8 degil" in sonuc.stderr
 
 
-def test_eksik_lisans_kopyasi_dosyasi(tmp_path: Path) -> None:
-    kok = kok_kur(tmp_path)
-    alanlar = alanlar_kur("test-eksik", kok)
-    (kaynaklar(kok) / str(alanlar["lisans_kopyasi"])).unlink()
-    kayit_yaz(kok, alanlar)
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert "hata: test-eksik.toml: lisans_kopyasi dosyasi yok" in sonuc.stderr
-
-
-def test_eksik_lisans_alanlari(tmp_path: Path) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-alansiz"))
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert "lisans_kopyasi zorunlu" in sonuc.stderr
-    assert "lisans_sha256 zorunlu" in sonuc.stderr
-
-
-def test_yanlis_ozet(tmp_path: Path) -> None:
-    kok = kok_kur(tmp_path)
-    gercek = hashlib.sha256(LISANS_ICERIGI).hexdigest()
-    kayit_yaz(kok, alanlar_kur("test-ozet", kok, lisans_sha256="0" * 64))
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert "hata: test-ozet.toml: lisans_sha256 dosya ozetiyle ayni degil" in sonuc.stderr
-    assert f"hesaplanan: {gercek}" in sonuc.stderr
-
-
-@pytest.mark.parametrize("ozet", ["ABC", "A" * 64, "g" * 64, "0" * 63])
-def test_ozet_bicimi(tmp_path: Path, ozet: str) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-bicim", kok, lisans_sha256=ozet))
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert "lisans_sha256 64 haneli kucuk harfli" in sonuc.stderr
-
-
-def test_bilinmeyen_durum(tmp_path: Path) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-durum", kok, license_status="acik"))
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert "hata: test-durum.toml: license_status: bilinmeyen deger" in sonuc.stderr
-
-
 def test_bilinmeyen_tur(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-tur", kok, tur="roman"))
+    kayit_yaz(kok, alanlar_kur("test-tur", tur="roman"))
     sonuc = check(kok)
     assert sonuc.exit_code == 2
     assert "hata: test-tur.toml: tur: bilinmeyen deger" in sonuc.stderr
@@ -263,7 +223,7 @@ def test_bilinmeyen_tur(tmp_path: Path) -> None:
 
 def test_dosya_adi_slug_ile_ayni_degil(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-slug", kok), dosya="test-baska.toml")
+    kayit_yaz(kok, alanlar_kur("test-slug"), dosya="test-baska.toml")
     sonuc = check(kok)
     assert sonuc.exit_code == 2
     assert "hata: test-baska.toml: slug (test-slug) dosya adiyla (test-baska) ayni degil" in (
@@ -283,7 +243,8 @@ def test_dosya_adi_deseni(tmp_path: Path, dosya: str) -> None:
 
 def test_ascii_olmayan_dosya_adi(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-\u0131"), dosya="test-\u0131.toml")
+    ad = f"test-{chr(0x131)}"  # noktasiz i: ASCII olmayan dosya adi
+    kayit_yaz(kok, alanlar_kur(ad), dosya=f"{ad}.toml")
     sonuc = check(kok)
     assert sonuc.exit_code == 2
     assert "desenine uymuyor" in sonuc.stderr
@@ -292,18 +253,44 @@ def test_ascii_olmayan_dosya_adi(tmp_path: Path) -> None:
 
 def test_bilinmeyen_alan(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-alan", kok, fazladan="x"))
+    kayit_yaz(kok, alanlar_kur("test-alan", fazladan="x"))
     sonuc = check(kok)
     assert sonuc.exit_code == 2
     assert "hata: test-alan.toml: bilinmeyen alan: fazladan" in sonuc.stderr
 
 
-@pytest.mark.parametrize(
-    "eksik", ["slug", "tur", "baslik", "license_name", "license_status", "atif_metni"]
-)
+def test_sema_alanlari_sabit() -> None:
+    assert tuple(kayit.ZORUNLU_ALANLAR) == ZORUNLU
+    assert tuple(kayit.ISTEGE_BAGLI_ALANLAR) == ISTEGE_BAGLI
+    assert [f.name for f in dataclasses.fields(sources.Kaynak)] == [*ZORUNLU, *ISTEGE_BAGLI]
+    assert not set(ESKI_ALANLAR) & (set(ZORUNLU) | set(ISTEGE_BAGLI))
+    assert len(ESKI_ALANLAR) == 11
+
+
+@pytest.mark.parametrize("ad", sorted(ESKI_ALANLAR))
+def test_eski_lisans_alani_bilinmeyen_alan_hatasi(tmp_path: Path, ad: str) -> None:
+    kok = kok_kur(tmp_path)
+    kayit_yaz(kok, alanlar_kur("test-eski", **{ad: ESKI_ALANLAR[ad]}))
+    sonuc = check(kok)
+    assert sonuc.exit_code == 2
+    assert f"hata: test-eski.toml: bilinmeyen alan: {ad}" in sonuc.stderr
+    assert "1 kayit, 1 hata" in sonuc.stdout
+    assert calistir(kok, "list").exit_code == 2
+
+
+def test_butun_eski_alanlar_birlikte_her_biri_ayri_hata(tmp_path: Path) -> None:
+    kok = kok_kur(tmp_path)
+    kayit_yaz(kok, alanlar_kur("test-eski", **ESKI_ALANLAR))
+    sonuc = check(kok)
+    assert sonuc.exit_code == 2
+    assert sonuc.stderr.count("bilinmeyen alan:") == len(ESKI_ALANLAR)
+    assert f"1 kayit, {len(ESKI_ALANLAR)} hata" in sonuc.stdout
+
+
+@pytest.mark.parametrize("eksik", ZORUNLU)
 def test_zorunlu_alan_eksik(tmp_path: Path, eksik: str) -> None:
     kok = kok_kur(tmp_path)
-    alanlar = alanlar_kur("test-zorunlu", kok)
+    alanlar = alanlar_kur("test-zorunlu")
     del alanlar[eksik]
     kayit_yaz(kok, alanlar, dosya="test-zorunlu.toml")
     sonuc = check(kok)
@@ -311,200 +298,45 @@ def test_zorunlu_alan_eksik(tmp_path: Path, eksik: str) -> None:
     assert f"zorunlu alan eksik: {eksik}" in sonuc.stderr
 
 
-@pytest.mark.parametrize("eksik", ["kurul_gerekli", "embed_ok", "yeniden_kontrol"])
-def test_zorunlu_bool_ve_tarih_eksik(tmp_path: Path, eksik: str) -> None:
+def test_atif_metni_eksikse_hata(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
-    alanlar = alanlar_kur("test-zorunlu", kok)
-    del alanlar[eksik]
-    kayit_yaz(kok, alanlar)
+    kayit_yaz(kok, alanlar_kur("test-atifsiz", atif_metni=None))
     sonuc = check(kok)
     assert sonuc.exit_code == 2
-    assert f"zorunlu alan eksik: {eksik}" in sonuc.stderr
+    assert "hata: test-atifsiz.toml: zorunlu alan eksik: atif_metni" in sonuc.stderr
+    assert "1 kayit, 1 hata" in sonuc.stdout
 
 
+@pytest.mark.parametrize("alan", ["atif_metni", "baslik"])
 @pytest.mark.parametrize("metin", ["", "   ", " \t\n"])
-def test_atif_metni_bos(tmp_path: Path, metin: str) -> None:
+def test_zorunlu_metin_alani_bos(tmp_path: Path, alan: str, metin: str) -> None:
     kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-atif", kok, atif_metni=metin))
+    kayit_yaz(kok, alanlar_kur("test-bos", **{alan: metin}))
     sonuc = check(kok)
     assert sonuc.exit_code == 2
-    assert "atif_metni bos olamaz" in sonuc.stderr
+    assert f"hata: test-bos.toml: {alan} bos olamaz" in sonuc.stderr
 
 
 @pytest.mark.parametrize(
     ("alan", "deger", "beklenen"),
     [
-        ("embed_ok", "true", "embed_ok: bool olmali"),
-        ("kurul_gerekli", 1, "kurul_gerekli: bool olmali"),
-        ("yazar_vefat_yili", True, "yazar_vefat_yili: tam sayi olmali"),
-        ("yazar_vefat_yili", "1900", "yazar_vefat_yili: tam sayi olmali"),
-        ("yeniden_kontrol", "2999-01-01", "yeniden_kontrol: TOML tarihi olmali"),
-        ("kisitlar", "x", "kisitlar: tablo olmali"),
-        ("kamu_mali_tarihi", "2030", "kamu_mali_tarihi: TOML tarihi olmali"),
-        ("baski_bilgisi", "x", "baski_bilgisi: tablo olmali"),
         ("slug", 5, "slug: metin olmali"),
+        ("tur", 5, "tur: metin olmali"),
+        ("surum", 1, "surum: metin olmali"),
+        ("yazar", True, "yazar: metin olmali"),
+        ("notice_text", 5, "notice_text: metin olmali"),
+        ("notlar", ["a"], "notlar: metin olmali"),
+        ("baski_bilgisi", "x", "baski_bilgisi: tablo olmali"),
     ],
 )
 def test_tip_hatalari(tmp_path: Path, alan: str, deger: object, beklenen: str) -> None:
     kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-tip", kok, **{alan: deger}), dosya="test-tip.toml")
+    alanlar = alanlar_kur("test-tip")
+    alanlar[alan] = deger
+    kayit_yaz(kok, alanlar, dosya="test-tip.toml")
     sonuc = check(kok)
     assert sonuc.exit_code == 2
     assert beklenen in sonuc.stderr
-
-
-def test_tarih_saatli_deger_tarih_degil(tmp_path: Path) -> None:
-    kok = kok_kur(tmp_path)
-    alanlar = alanlar_kur("test-saat", kok)
-    metin = toml_metni(alanlar).replace("2999-01-01", "2999-01-01T00:00:00")
-    (kaynaklar(kok) / "test-saat.toml").write_bytes(metin.encode("utf-8"))
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert "yeniden_kontrol: TOML tarihi olmali" in sonuc.stderr
-
-
-# --- check: kapali ve embed_ok kurallari -------------------------------------------------
-
-
-def test_kapali_embed_ok_true_hata(tmp_path: Path) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-kapali", license_status="kapali", embed_ok=True))
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert "hata: test-kapali.toml: license_status kapali iken embed_ok true olamaz" in (
-        sonuc.stderr
-    )
-
-
-def test_kapali_lisans_kopyasiz_gecerli(tmp_path: Path) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-kapali", license_status="kapali", embed_ok=False))
-    sonuc = check(kok)
-    assert sonuc.exit_code == 0, sonuc.stderr
-    assert "0 hata" in sonuc.stdout
-
-
-def test_kapali_kaynakta_lisans_dosyasi_okunmaz(tmp_path: Path) -> None:
-    """Kapali kayitta kopya alani verilse bile dosya aranmaz ve ozet karsilastirilmaz."""
-    kok = kok_kur(tmp_path)
-    kopya, _ = lisans_yaz(kok, "test-kapali")
-    alanlar = alanlar_kur(
-        "test-kapali",
-        license_status="kapali",
-        embed_ok=False,
-        lisans_kopyasi=kopya,
-        lisans_sha256="0" * 64,
-    )
-    kayit_yaz(kok, alanlar)
-    kayit_yaz(
-        kok,
-        alanlar_kur(
-            "test-kapali-yok",
-            license_status="kapali",
-            embed_ok=False,
-            lisans_kopyasi="licenses/test-kapali-yok-2026-10-19.txt",
-            lisans_sha256="1" * 64,
-        ),
-    )
-    sonuc = check(kok)
-    assert sonuc.exit_code == 0, sonuc.stderr
-
-
-def test_quran_foundation_embed_ok_true_hata(tmp_path: Path) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-qf", kok, provider="quran_foundation", embed_ok=True))
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert "provider quran_foundation iken embed_ok true olamaz" in sonuc.stderr
-
-
-def test_quran_foundation_embed_ok_false_gecerli(tmp_path: Path) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-qf", kok, provider="quran_foundation", embed_ok=False))
-    assert check(kok).exit_code == 0
-
-
-@pytest.mark.parametrize("durum", ["bekliyor", "ic_kullanim"])
-def test_kapali_disindaki_durumlar_lisans_kopyasi_ister(tmp_path: Path, durum: str) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-durum", license_status=durum))
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert "lisans_kopyasi zorunlu" in sonuc.stderr
-
-
-# --- check: yol kacisi -------------------------------------------------------------------
-
-
-@pytest.mark.parametrize(
-    "yol",
-    [
-        "../x",
-        "licenses/../x-2026-10-19.txt",
-        "licenses\\test-yol-2026-10-19.txt",
-        "/etc/test-yol-2026-10-19.txt",
-        "C:/test-yol-2026-10-19.txt",
-        "licenses/test-yol.txt",
-        "licenses/test-baska-2026-10-19.txt",
-        "licenses/test-yol-2026-13-40.txt",
-        "test-yol-2026-10-19.txt",
-        "licenses/alt/test-yol-2026-10-19.txt",
-    ],
-)
-def test_lisans_kopyasi_yolu_gecersiz(tmp_path: Path, yol: str) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-yol", kok, lisans_kopyasi=yol))
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert "hata: test-yol.toml: lisans_kopyasi" in sonuc.stderr
-
-
-def test_yol_kacisi_dis_dosyayi_okumaz(tmp_path: Path) -> None:
-    """`../x` ile dis dosya gosterilse bile ozet dis dosyadan hesaplanmaz."""
-    kok = kok_kur(tmp_path)
-    dis = kok / "pipeline" / "dis.txt"
-    dis.write_bytes(LISANS_ICERIGI)
-    kayit_yaz(
-        kok,
-        alanlar_kur(
-            "test-yol",
-            lisans_kopyasi="../dis.txt",
-            lisans_sha256=hashlib.sha256(LISANS_ICERIGI).hexdigest(),
-        ),
-    )
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert "'..' iceremez" in sonuc.stderr
-
-
-# --- check: kisitlar ---------------------------------------------------------------------
-
-
-def test_bilinmeyen_kisit_uyari_cikis_sifir(tmp_path: Path) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-kisit", kok, kisitlar={"yeni_kisit": True}))
-    sonuc = check(kok)
-    assert sonuc.exit_code == 0, sonuc.stderr
-    assert "uyari: test-kisit.toml: kisitlar: bilinmeyen anahtar yeni_kisit" in sonuc.stderr
-    assert "0 hata, 1 uyari" in sonuc.stdout
-
-
-@pytest.mark.parametrize(
-    ("anahtar", "deger"),
-    [
-        ("degistirme_yasak", "evet"),
-        ("hazir_vt_yasak", 1),
-        ("onbellek_gun", True),
-        ("onbellek_gun", "7"),
-        ("yalniz_eslesen_ses", 0),
-    ],
-)
-def test_kisit_tipi_hata(tmp_path: Path, anahtar: str, deger: object) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-kisit", kok, kisitlar={anahtar: deger}))
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert f"kisitlar.{anahtar}:" in sonuc.stderr
 
 
 # --- check: toplama ve gizlilik ----------------------------------------------------------
@@ -512,15 +344,15 @@ def test_kisit_tipi_hata(tmp_path: Path, anahtar: str, deger: object) -> None:
 
 def test_hatalar_toplanir_ilkinde_durmaz(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-a", kok, tur="roman", license_status="acik", fazladan=1))
-    kayit_yaz(kok, alanlar_kur("test-b", kok, lisans_sha256="0" * 64))
+    kayit_yaz(kok, alanlar_kur("test-a", tur="roman", fazladan=1, license_status="serbest"))
+    kayit_yaz(kok, alanlar_kur("test-b", atif_metni=None))
     (kaynaklar(kok) / "test-c.toml").write_bytes(b"=\n")
     sonuc = check(kok)
     assert sonuc.exit_code == 2
     assert "hata: test-a.toml: tur:" in sonuc.stderr
-    assert "hata: test-a.toml: license_status:" in sonuc.stderr
     assert "hata: test-a.toml: bilinmeyen alan: fazladan" in sonuc.stderr
-    assert "hata: test-b.toml: lisans_sha256 dosya ozetiyle" in sonuc.stderr
+    assert "hata: test-a.toml: bilinmeyen alan: license_status" in sonuc.stderr
+    assert "hata: test-b.toml: zorunlu alan eksik: atif_metni" in sonuc.stderr
     assert "hata: test-c.toml: TOML ayristirilamadi" in sonuc.stderr
     assert "3 kayit, 5 hata" in sonuc.stdout
 
@@ -528,8 +360,8 @@ def test_hatalar_toplanir_ilkinde_durmaz(tmp_path: Path) -> None:
 def test_cikti_icerik_metni_tasimaz(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
     gizli = "GIZLI-ATIF-ICERIGI-XYZ"
-    kayit_yaz(kok, alanlar_kur("test-gizli", kok, atif_metni=gizli, tur="roman"))
-    kayit_yaz(kok, alanlar_kur("test-gizli-iki", kok, atif_metni=gizli))
+    kayit_yaz(kok, alanlar_kur("test-gizli", atif_metni=gizli, tur="roman"))
+    kayit_yaz(kok, alanlar_kur("test-gizli-iki", atif_metni=gizli))
     sonuc = check(kok)
     assert sonuc.exit_code == 2
     assert gizli not in sonuc.stdout
@@ -541,73 +373,49 @@ def test_cikti_icerik_metni_tasimaz(tmp_path: Path) -> None:
 # --- list --------------------------------------------------------------------------------
 
 
-def test_list_json_siralama_ve_alanlar(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(cli, "bugun", lambda: date(2026, 10, 26))
+def test_list_json_siralama_ve_alanlar(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-z", kok, yeniden_kontrol=date(2026, 10, 25)))
-    kayit_yaz(
-        kok,
-        alanlar_kur(
-            "test-a",
-            license_status="kapali",
-            embed_ok=False,
-            kurul_gerekli=True,
-            tur="risale",
-            yeniden_kontrol=date(2026, 10, 26),
-        ),
-    )
-    kayit_yaz(kok, alanlar_kur("test-m", kok, yeniden_kontrol=date(2027, 4, 1), embed_ok=False))
+    kayit_yaz(kok, alanlar_kur("test-z", surum="2", kaynak_url="https://example.invalid/z"))
+    kayit_yaz(kok, alanlar_kur("test-a", tur="risale"))
+    kayit_yaz(kok, alanlar_kur("test-m", surum="1.1"))
     sonuc = calistir(kok, "list", "--format", "json")
     assert sonuc.exit_code == 0, sonuc.stderr
     veri = json.loads(sonuc.stdout)
     assert [s["slug"] for s in veri] == ["test-a", "test-m", "test-z"]
-    assert veri[0] == {
-        "slug": "test-a",
-        "tur": "risale",
-        "license_status": "kapali",
-        "kurul_gerekli": True,
-        "embed_ok": False,
-        "yeniden_kontrol": "2026-10-26",
-        "yeniden_kontrol_gecmis": False,
+    assert veri[0] == {"slug": "test-a", "tur": "risale", "surum": None, "kaynak_url": None}
+    assert veri[2] == {
+        "slug": "test-z",
+        "tur": "kuran_metni",
+        "surum": "2",
+        "kaynak_url": "https://example.invalid/z",
     }
-    assert [s["yeniden_kontrol_gecmis"] for s in veri] == [False, False, True]
+    assert sonuc.stdout.isascii()
 
 
-def test_list_varsayilan_bicim_tablo_ve_isaret(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setattr(cli, "bugun", lambda: date(2026, 10, 26))
+def test_list_varsayilan_bicim_tablo(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-eski", kok, yeniden_kontrol=GECMIS))
-    kayit_yaz(kok, alanlar_kur("test-yeni", kok, yeniden_kontrol=GELECEK))
+    kayit_yaz(kok, alanlar_kur("test-eski", surum="1.0", kaynak_url="https://example.invalid/e"))
+    kayit_yaz(kok, alanlar_kur("test-yeni", tur="meal"))
     sonuc = calistir(kok, "list")
     assert sonuc.exit_code == 0, sonuc.stderr
     satirlar = sonuc.stdout.splitlines()
-    assert satirlar[0].split() == [
-        "slug",
-        "tur",
-        "license_status",
-        "kurul_gerekli",
-        "embed_ok",
-        "yeniden_kontrol",
-    ]
+    assert satirlar[0].isascii()
+    assert satirlar[0].split() == ["slug", "tur", "surum", "kaynak_url"]
     eski = next(s for s in satirlar if s.startswith("test-eski"))
     yeni = next(s for s in satirlar if s.startswith("test-yeni"))
-    assert eski.endswith("2000-01-01 !")
-    assert yeni.endswith("2999-01-01")
-    assert "!" not in yeni
-    assert eski.split()[:5] == ["test-eski", "kuran_metni", "serbest", "hayir", "evet"]
+    assert eski.split() == ["test-eski", "kuran_metni", "1.0", "https://example.invalid/e"]
+    assert yeni.split() == ["test-yeni", "meal", "-", "-"]
+    assert len(satirlar) == 3
 
 
-def test_list_gercek_bugunle_cok_eski_ve_cok_ileri(tmp_path: Path) -> None:
+def test_list_tablo_ascii_olmayan_degeri_kacislar(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-eski", kok, yeniden_kontrol=GECMIS))
-    kayit_yaz(kok, alanlar_kur("test-ileri", kok, yeniden_kontrol=GELECEK))
-    veri = json.loads(calistir(kok, "list", "--format", "json").stdout)
-    assert {s["slug"]: s["yeniden_kontrol_gecmis"] for s in veri} == {
-        "test-eski": True,
-        "test-ileri": False,
-    }
+    adres = f"https://example.invalid/{chr(0x131)}"  # noktasiz i
+    kayit_yaz(kok, alanlar_kur("test-asci", kaynak_url=adres))
+    sonuc = calistir(kok, "list")
+    assert sonuc.exit_code == 0, sonuc.stderr
+    assert sonuc.stdout.isascii()
+    assert "\\u0131" in sonuc.stdout
 
 
 def test_list_bos_dizin(tmp_path: Path) -> None:
@@ -622,7 +430,7 @@ def test_list_bos_dizin(tmp_path: Path) -> None:
 
 def test_list_bozuk_toml_iki(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-iyi", kok))
+    kayit_yaz(kok, alanlar_kur("test-iyi"))
     (kaynaklar(kok) / "test-bozuk.toml").write_bytes(b"slug = \n")
     sonuc = calistir(kok, "list", "--format", "json")
     assert sonuc.exit_code == 2
@@ -631,17 +439,10 @@ def test_list_bozuk_toml_iki(tmp_path: Path) -> None:
 
 def test_list_gecersiz_sema_iki(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-durum", kok, license_status="acik"))
+    kayit_yaz(kok, alanlar_kur("test-tur", tur="roman"))
     sonuc = calistir(kok, "list")
     assert sonuc.exit_code == 2
-    assert "license_status: bilinmeyen deger" in sonuc.stderr
-
-
-def test_list_lisans_dosyasini_denetlemez(tmp_path: Path) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-ozet", kok, lisans_sha256="0" * 64))
-    assert calistir(kok, "list").exit_code == 0
-    assert check(kok).exit_code == 2
+    assert "tur: bilinmeyen deger" in sonuc.stderr
 
 
 def test_list_gecersiz_format() -> None:
@@ -652,247 +453,119 @@ def test_list_gecersiz_format() -> None:
 def test_gercek_depoda_list_calisir() -> None:
     sonuc = runner.invoke(cli.app, ["sources", "list", "--format", "json"])
     assert sonuc.exit_code == 0, sonuc.stderr
-    assert isinstance(json.loads(sonuc.stdout), list)
+    veri = json.loads(sonuc.stdout)
+    assert len(veri) > 0
+    assert all(set(s) == {"slug", "tur", "surum", "kaynak_url"} for s in veri)
 
 
 # --- Kutuphane katmani -------------------------------------------------------------------
 
 
-def test_satirlar_bugunu_enjekte_eder(tmp_path: Path) -> None:
+def test_yukle_kaynak_dondurur(tmp_path: Path) -> None:
     kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-sinir", kok, yeniden_kontrol=date(2026, 10, 26)))
-    kayit = sources.yukle(kok, lisans_dosyalari=True)[0].kaynak
-    assert kayit is not None
-    assert kayit.slug == "test-sinir"
-    assert kayit.tur is SourceKind.KURAN_METNI
-    assert kayit.license_status is LicenseStatus.SERBEST
-    assert sources.gecmis_mi(kayit, date(2026, 10, 26)) is False
-    assert sources.gecmis_mi(kayit, date(2026, 10, 27)) is True
-    assert sources.satirlar([kayit], date(2026, 10, 27))[0]["yeniden_kontrol_gecmis"] is True
+    kayit_yaz(kok, alanlar_kur("test-sinir", yazar="Deneme Yazar"))
+    sonuc = sources.yukle(kok)[0]
+    assert sonuc.hatalar == []
+    assert sonuc.kaynak is not None
+    assert sonuc.kaynak.slug == "test-sinir"
+    assert sonuc.kaynak.tur is SourceKind.KURAN_METNI
+    assert sonuc.kaynak.atif_metni == ATIF
+    assert sonuc.kaynak.yazar == "Deneme Yazar"
+    assert sonuc.kaynak.surum is None
 
 
 def test_gercek_kaynak_dizini_depo_icinde() -> None:
     assert sources.kaynak_dizini(depo_koku()).is_dir()
 
 
-# --- check: saglamlastirma (A06 inceleme duzeltmeleri) -----------------------------------
-
-
-def test_lisans_kopyasi_okunamazsa_iki_izleme_yok(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-izin", kok))
-    gercek_okuma = Path.read_bytes
-
-    def okuma(self: Path) -> bytes:
-        if self.suffix == ".txt":
-            raise PermissionError
-        return gercek_okuma(self)
-
-    monkeypatch.setattr(Path, "read_bytes", okuma)
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert "hata: test-izin.toml: lisans_kopyasi okunamadi" in sonuc.stderr
-    assert "Traceback" not in sonuc.stderr
-    assert isinstance(sonuc.exception, SystemExit)
-
-
-def test_lisans_kopyasi_cozumlenemezse_iki(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Sembolik bag dongusu `resolve()` icinde RuntimeError verebilir."""
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-dongu", kok))
-    gercek_cozum = Path.resolve
-
-    def cozum(self: Path, strict: bool = False) -> Path:
-        if self.suffix == ".txt":
-            raise RuntimeError
-        return gercek_cozum(self, strict=strict)
-
-    monkeypatch.setattr(Path, "resolve", cozum)
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert "lisans_kopyasi okunamadi" in sonuc.stderr
-    assert isinstance(sonuc.exception, SystemExit)
-
-
-@pytest.mark.parametrize("alan", ["baslik", "license_name"])
-@pytest.mark.parametrize("metin", ["", "   ", " \t\n"])
-def test_zorunlu_metin_alani_bos(tmp_path: Path, alan: str, metin: str) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-bosalan", kok, **{alan: metin}))
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert f"hata: test-bosalan.toml: {alan} bos olamaz" in sonuc.stderr
-
-
-def test_bos_lisans_kopyasi_hata(tmp_path: Path) -> None:
-    kok = kok_kur(tmp_path)
-    kopya, _ = lisans_yaz(kok, "test-bos", b"")
-    kayit_yaz(
-        kok,
-        alanlar_kur(
-            "test-bos",
-            lisans_kopyasi=kopya,
-            lisans_sha256=hashlib.sha256(b"").hexdigest(),
-        ),
-    )
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert "hata: test-bos.toml: lisans_kopyasi bos dosya" in sonuc.stderr
-
-
-@pytest.mark.parametrize("gun", [0, -1])
-def test_onbellek_gun_birden_kucuk_hata(tmp_path: Path, gun: int) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-onbellek", kok, kisitlar={"onbellek_gun": gun}))
-    sonuc = check(kok)
-    assert sonuc.exit_code == 2
-    assert "kisitlar.onbellek_gun 1 veya daha buyuk olmali" in sonuc.stderr
-
-
-def test_onbellek_gun_bir_gecerli(tmp_path: Path) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-onbellek", kok, kisitlar={"onbellek_gun": 1}))
-    assert check(kok).exit_code == 0
-
-
-def test_yetim_lisans_dosyasi_uyari(tmp_path: Path) -> None:
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-bagli", kok))
-    (kaynaklar(kok) / "licenses" / "test-yetim-2026-10-19.txt").write_bytes(b"x\n")
-    (kaynaklar(kok) / "licenses" / ".gitkeep").write_bytes(b"")
-    sonuc = check(kok)
-    assert sonuc.exit_code == 0, sonuc.stderr
-    assert "uyari: licenses/test-yetim-2026-10-19.txt:" in sonuc.stderr
-    assert ".gitkeep" not in sonuc.stderr
-    assert "test-bagli-2026-10-19.txt" not in sonuc.stderr
-    assert "0 hata, 1 uyari" in sonuc.stdout
-
-
-def test_yeniden_kontrol_gecmis_uyari(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(cli, "bugun", lambda: date(2026, 10, 26))
-    kok = kok_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-eski", kok, yeniden_kontrol=date(2026, 10, 25)))
-    kayit_yaz(kok, alanlar_kur("test-bugun", kok, yeniden_kontrol=date(2026, 10, 26)))
-    sonuc = check(kok)
-    assert sonuc.exit_code == 0, sonuc.stderr
-    assert "yeniden kontrol tarihi gecti: test-eski" in sonuc.stderr
-    assert "test-bugun" not in sonuc.stderr
-    assert "0 hata, 1 uyari" in sonuc.stdout
-
-
-def test_bugun_tarih_dondurur() -> None:
-    assert type(cli.bugun()) is date
-
-
 # --- Gercek depo: kalici sabitleme -------------------------------------------------------
 
-BEKLENEN_SLUGLAR = frozenset(
-    {
-        "tanzil-uthmani",
-        "tanzil-simple-clean",
-        "kfgqpc-hafs-font",
-        "qpc-v1-font",
-        "qpc-v2-font",
-        "qpc-v4-font",
-        "medine-604-duzen",
-        "amiri-quran-font",
-        "qac-morfoloji",
-        "elmalili-meal",
-        "elmalili-tefsir",
-        "tefsir-quranpedia",
-        "tecrid-ar",
-        "tecrid-naim",
-        "tecrid-miras",
-        "hadis-fawaz-ar",
-        "hadis-sunnah-api",
-        "risale-1956-1960",
-        "risale-asil-nusha",
-        "risale-atif-dizini",
-        "risale-kelime-frekans",
-        "lugat-redhouse-1890",
-        "lugat-kamus-i-turki",
-        "lugat-naci",
-        "ses-everyayah",
-        "ses-quranicaudio",
-        "ses-qf-api",
-        "ses-kfgqpc-meal",
-        "quran-align",
-        "kaikki-tr",
-    }
+# K-42: kullanilmayan ya da anahtar/hesap isteyen kaynaklarin kayitlari silindi.
+SILINEN_SLUGLAR = (
+    "ses-everyayah",
+    "ses-quranicaudio",
+    "quran-align",
+    "hadis-sunnah-api",
+    "ses-qf-api",
 )
-BEKLENEN_KAPALI = frozenset(
-    {
-        "tecrid-miras",
-        "risale-1956-1960",
-        "risale-asil-nusha",
-        "risale-atif-dizini",
-        "ses-everyayah",
-        "ses-quranicaudio",
-    }
+# Betimleyici alanlarda (adres ve notice_text haric) hukuk ya da izin yapisinin izi kalmamali
+# (K-42 madde 0). Silinen insan adimi numaralari buyuk-kucuk harfe duyarlidir.
+HUKUK_IZI = re.compile(
+    r"lisans|license|kurul|avukat|embed_ok|kisitlar|ic_kullanim|kapali|yazışma|yazisma|hukuki"
+    r"|Unlicense|CC BY|CC0|\bOFL\b|\bGPL\b",
+    re.IGNORECASE,
 )
+SILINEN_ADIM_NO = re.compile(r"İ-(0[2-8]|19|2[569]|30)(?![0-9])")
+TARANAN_ALANLAR = ("baslik", "yazar", "atif_metni", "baski_bilgisi", "notlar")
 
 
 def gercek_kayitlar() -> dict[str, sources.Kaynak]:
-    sonuclar = sources.yukle(depo_koku(), lisans_dosyalari=True)
+    sonuclar = sources.yukle(depo_koku())
     return {s.kaynak.slug: s.kaynak for s in sonuclar if s.kaynak is not None}
 
 
-def test_gercek_depo_tam_otuz_slug() -> None:
-    assert len(BEKLENEN_SLUGLAR) == 30
-    assert set(gercek_kayitlar()) == BEKLENEN_SLUGLAR
-    assert len(list(sources.kaynak_dizini(depo_koku()).glob("*.toml"))) == 30
+def gercek_toml() -> dict[str, dict[str, object]]:
+    dizin = sources.kaynak_dizini(depo_koku())
+    return {
+        yol.stem: tomllib.loads(yol.read_bytes().decode("utf-8"))
+        for yol in sorted(dizin.glob("*.toml"), key=lambda p: p.name)
+    }
 
 
-def test_gercek_depo_kapali_kume_ve_kopyasizlik() -> None:
-    kayitlar = gercek_kayitlar()
-    kapali = {s for s, k in kayitlar.items() if k.license_status is LicenseStatus.KAPALI}
-    assert kapali == BEKLENEN_KAPALI
-    for slug in kapali:
-        assert kayitlar[slug].lisans_kopyasi is None, slug
-        assert kayitlar[slug].lisans_sha256 is None, slug
-        assert kayitlar[slug].embed_ok is False, slug
+def metin_degerleri(deger: object) -> Iterator[str]:
+    if isinstance(deger, str):
+        yield deger
+    elif isinstance(deger, dict):
+        for v in deger.values():
+            yield from metin_degerleri(v)
 
 
-def test_gercek_depo_kalip_kimlik_dosyasi_yok() -> None:
-    adlar = [p.name for p in sources.kaynak_dizini(depo_koku()).glob("*.toml")]
-    for onek in ("qul-", "ses-turk-hafiz-", "mushaf-b-"):
-        assert not [a for a in adlar if a.startswith(onek)], onek
+def test_gercek_depo_her_dosya_gecerli_kayit() -> None:
+    dosyalar = {p.stem for p in sources.kaynak_dizini(depo_koku()).glob("*.toml")}
+    assert dosyalar
+    assert set(gercek_kayitlar()) == dosyalar
 
 
-def test_gercek_depo_quran_foundation_embed_kapali() -> None:
-    saglayici = [k for k in gercek_kayitlar().values() if k.provider == "quran_foundation"]
-    assert saglayici
-    assert all(k.embed_ok is False for k in saglayici)
+@pytest.mark.parametrize("slug", SILINEN_SLUGLAR)
+def test_gercek_depo_silinen_kayit_yok(slug: str) -> None:
+    assert not (sources.kaynak_dizini(depo_koku()) / f"{slug}.toml").exists()
 
 
-def test_gercek_depoda_check_sifir_uyari(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(cli, "bugun", lambda: date(2026, 10, 26))
+def test_gercek_depo_lisans_klasoru_yok() -> None:
+    assert not (sources.kaynak_dizini(depo_koku()) / "licenses").exists()
+
+
+def test_gercek_depo_eski_alan_yok() -> None:
+    izinli = set(ZORUNLU) | set(ISTEGE_BAGLI)
+    for slug, veri in gercek_toml().items():
+        assert not set(veri) & set(ESKI_ALANLAR), slug
+        assert set(veri) <= izinli, slug
+        assert set(ZORUNLU) <= set(veri), slug
+
+
+def test_gercek_depo_hukuk_izi_yok() -> None:
+    for slug, veri in gercek_toml().items():
+        for alan in TARANAN_ALANLAR:
+            for metin in metin_degerleri(veri.get(alan)):
+                assert HUKUK_IZI.search(metin) is None, f"{slug}.{alan}"
+                assert SILINEN_ADIM_NO.search(metin) is None, f"{slug}.{alan}"
+
+
+def test_gercek_depoda_check_sifir_uyari() -> None:
     sonuc = runner.invoke(cli.app, ["sources", "check"])
     assert sonuc.exit_code == 0, sonuc.stderr
-    assert "30 kayit, 0 hata, 0 uyari" in sonuc.stdout
+    assert re.search(r"^sources check: [0-9]+ kayit, 0 hata, 0 uyari$", sonuc.stdout, re.MULTILINE)
 
 
-def _satirlar_duzle(metin: str) -> list[str]:
-    return [satir.rstrip(" \t") for satir in metin.split("\n")]
-
-
-@pytest.mark.parametrize("slug", ["tanzil-uthmani", "tanzil-simple-clean"])
-def test_tanzil_notice_text_lisans_kopyasindaki_bildirimle_ayni(slug: str) -> None:
-    kayit = gercek_kayitlar()[slug]
-    assert kayit.notice_text is not None
-    assert kayit.lisans_kopyasi is not None
-    kopya = (sources.kaynak_dizini(depo_koku()) / kayit.lisans_kopyasi).read_bytes()
-    kopya_satirlari = _satirlar_duzle(kopya.decode("utf-8"))
-    bildirim = _satirlar_duzle(kayit.notice_text)
-    while bildirim and bildirim[0] == "":
-        bildirim.pop(0)
-    while bildirim and bildirim[-1] == "":
-        bildirim.pop()
-    assert bildirim
-    bulundu = any(
-        kopya_satirlari[i : i + len(bildirim)] == bildirim
-        for i in range(len(kopya_satirlari) - len(bildirim) + 1)
-    )
-    assert bulundu
+def test_gercek_depo_tanzil_notice_text() -> None:
+    kayitlar = gercek_kayitlar()
+    uthmani = kayitlar["tanzil-uthmani"].notice_text
+    sade = kayitlar["tanzil-simple-clean"].notice_text
+    assert uthmani is not None
+    assert uthmani.strip(" \t\n") != ""
+    assert uthmani == sade  # iki varyantin dosya basligi ayni bildirimi tasir
+    assert "\r" not in uthmani
+    # kanonik kaynak Tanzil'in iki varyanti bildirimi tasir; baska kaynak da tasiyabilir
+    assert {"tanzil-uthmani", "tanzil-simple-clean"} <= {
+        s for s, k in kayitlar.items() if k.notice_text is not None
+    }

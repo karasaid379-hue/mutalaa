@@ -18,7 +18,6 @@ from mutalaa_pipeline.export.ortak import GirdiHatasi
 if TYPE_CHECKING:
     from mutalaa_pipeline.runctx import RunContext
 
-INGEST_IZINLI: Final = frozenset({"serbest", "bekliyor", "ic_kullanim"})
 UNITS_ADI: Final = "units.jsonl"
 
 
@@ -118,9 +117,9 @@ def _klasor_ciktilari(ctx: "RunContext", klasor: Path) -> list[lineage.Cikti]:
 
 
 def run_ingest(adapter: SourceAdapter, ctx: "RunContext") -> IngestSonucu:
-    """Lisans kapisi, `fetch`, parmak izi, `parse`, `staged`, manifest (en son)."""
+    """Kaynak kaydi, `fetch`, parmak izi, `parse`, `staged`, manifest (en son)."""
     kaynak = adapter.source_id
-    ctx.require_status(kaynak, allowed=INGEST_IZINLI)  # kapali kaynakta buraya gelinmez (cikis 3)
+    ctx.require_sources(kaynak)  # kayitsiz ya da gecersiz kayitta buraya gelinmez (cikis 2)
     ctx.gunluk.yaz("INFO", "ingest_basla", source_id=kaynak)
 
     dosyalar = adapter.fetch(ctx)
@@ -131,7 +130,7 @@ def run_ingest(adapter: SourceAdapter, ctx: "RunContext") -> IngestSonucu:
         girdiler.append(
             lineage.Girdi(yol=lineage.goreli_yol(ctx.veri_kok, dosya.path), sha256=dosya.sha256)
         )
-    parmak, lisanslar = ctx.parmak_izi(girdiler, [kaynak])
+    parmak = ctx.parmak_izi(girdiler)
 
     onceki = lineage.son_basarili(ctx.staged_kaynak_dizini(kaynak), ctx.adim)
     if lineage.atlanabilir(
@@ -168,7 +167,6 @@ def run_ingest(adapter: SourceAdapter, ctx: "RunContext") -> IngestSonucu:
         klasor,
         girdiler=girdiler,
         ciktilar=ciktilar,
-        lisanslar=lisanslar,
         parmak=parmak,
         ayrintilar=kanca() if callable(kanca) else None,
     )

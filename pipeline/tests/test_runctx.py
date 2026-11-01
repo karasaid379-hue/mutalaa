@@ -1,4 +1,4 @@
-"""`runctx`: UUIDv7, lisans kapisi (cikis 3), komut sarmalayici ve sizinti kurali (SENTETIK)."""
+"""`runctx`: UUIDv7, kaynak kaydi denetimi (cikis 2), komut sarmalayici ve sizinti kurali."""
 
 import itertools
 import uuid
@@ -9,12 +9,11 @@ import pytest
 from hat_yardimci import PAROLA, SAHTE_DSN, ctx_kur, depo_kur
 from test_sources import alanlar_kur, kayit_yaz
 
-from mutalaa_pipeline import cikis
+from mutalaa_pipeline import cikis, runctx
 from mutalaa_pipeline.db import VeritabaniHatasi, baglan
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.lineage import Cikti, Girdi
 from mutalaa_pipeline.runctx import (
-    LisansKapisi,
     QaKaldi,
     RunContext,
     Uuid7Uretici,
@@ -96,118 +95,112 @@ def test_run_id_uuid7_metni(tmp_path: Path) -> None:
     assert ctx.run_id == str(parsed)
 
 
-# --- require_status ------------------------------------------------------------------------
+# --- require_sources -----------------------------------------------------------------------
 
 
-def test_require_status_gecerli_kaynak(tmp_path: Path) -> None:
+def test_require_sources_gecerli_kaynak(tmp_path: Path) -> None:
     kok = depo_kur(tmp_path, "test-bir", "test-iki")
     ctx = ctx_kur(tmp_path, kok)
-    sonuc = ctx.require_status(["test-bir", "test-iki"])
+    sonuc = ctx.require_sources(["test-bir", "test-iki"])
     assert set(sonuc) == {"test-bir", "test-iki"}
-    assert set(ctx.require_status("test-bir")) == {"test-bir"}
+    assert sonuc["test-bir"].atif_metni
+    assert set(ctx.require_sources("test-bir")) == {"test-bir"}
+    assert list(ctx.require_sources(["test-iki", "test-bir", "test-iki"])) == [
+        "test-iki",
+        "test-bir",
+    ]
 
 
-def test_require_status_kapali(tmp_path: Path) -> None:
-    kok = depo_kur(tmp_path, "test-acik")
-    kayit_yaz(kok, alanlar_kur("test-kapali", license_status="kapali", embed_ok=False))
-    ctx = ctx_kur(tmp_path, kok)
-    with pytest.raises(LisansKapisi) as hata:
-        ctx.require_status("test-kapali")
-    assert "kapali" in str(hata.value)
-    # bir kaynak bile kapaliysa hepsi durur
-    with pytest.raises(LisansKapisi):
-        ctx.require_status(["test-acik", "test-kapali"])
-
-
-def test_require_status_kayitsiz(tmp_path: Path) -> None:
+def test_require_sources_kayitsiz_girdi_hatasi(tmp_path: Path) -> None:
     kok = depo_kur(tmp_path, "test-acik")
     ctx = ctx_kur(tmp_path, kok)
-    with pytest.raises(LisansKapisi) as hata:
-        ctx.require_status("test-yok")
+    with pytest.raises(GirdiHatasi) as hata:
+        ctx.require_sources("test-yok")
     assert "kayitsiz" in str(hata.value)
+    assert cikis_kodu(hata.value) == cikis.GIRDI_HATASI
+    # bir kaynak bile kayitsizsa hepsi durur
+    with pytest.raises(GirdiHatasi):
+        ctx.require_sources(["test-acik", "test-yok"])
 
 
-def test_require_status_sema_hatali_kayit(tmp_path: Path) -> None:
+def test_require_sources_sema_hatali_kayit(tmp_path: Path) -> None:
     kok = depo_kur(tmp_path)
-    alanlar = alanlar_kur("test-bozuk", kok)
-    del alanlar["atif_metni"]
-    kayit_yaz(kok, alanlar)
-    with pytest.raises(LisansKapisi) as hata:
-        ctx_kur(tmp_path, kok).require_status("test-bozuk")
+    kayit_yaz(kok, alanlar_kur("test-bozuk", atif_metni=None))
+    with pytest.raises(GirdiHatasi) as hata:
+        ctx_kur(tmp_path, kok).require_sources("test-bozuk")
+    assert "gecersiz" in str(hata.value)
+    assert cikis_kodu(hata.value) == cikis.GIRDI_HATASI
+
+
+def test_require_sources_bos_atif_metni_gecersiz(tmp_path: Path) -> None:
+    kok = depo_kur(tmp_path)
+    kayit_yaz(kok, alanlar_kur("test-bos", atif_metni="  "))
+    with pytest.raises(GirdiHatasi):
+        ctx_kur(tmp_path, kok).require_sources("test-bos")
+
+
+def test_require_sources_eski_lisans_alani_gecersiz(tmp_path: Path) -> None:
+    kok = depo_kur(tmp_path)
+    kayit_yaz(kok, alanlar_kur("test-eski", license_status="serbest"))
+    with pytest.raises(GirdiHatasi) as hata:
+        ctx_kur(tmp_path, kok).require_sources("test-eski")
     assert "gecersiz" in str(hata.value)
 
 
-def test_require_status_lisans_kopyasi_ozeti_tutmuyor(tmp_path: Path) -> None:
-    kok = depo_kur(tmp_path)
-    alanlar = alanlar_kur("test-ozet", kok, lisans_sha256="0" * 64)
-    kayit_yaz(kok, alanlar)
-    with pytest.raises(LisansKapisi):
-        ctx_kur(tmp_path, kok).require_status("test-ozet")
-
-
-def test_require_status_lisans_kopyasi_yok(tmp_path: Path) -> None:
-    kok = depo_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-kopyasiz"))  # kok verilmedi: lisans alanlari yok
-    with pytest.raises(LisansKapisi):
-        ctx_kur(tmp_path, kok).require_status("test-kopyasiz")
-
-
-def test_require_status_izinli_durumlar(tmp_path: Path) -> None:
-    kok = depo_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-bekleyen", kok, license_status="bekliyor"))
-    ctx = ctx_kur(tmp_path, kok)
-    assert "test-bekleyen" in ctx.require_status("test-bekleyen")
-    with pytest.raises(LisansKapisi):
-        ctx.require_status("test-bekleyen", allowed={"serbest"})
-
-
-def test_require_status_veritabani_durumu(tmp_path: Path) -> None:
-    kok = depo_kur(tmp_path, "test-acik")
-    ctx = ctx_kur(tmp_path, kok)
-    assert "test-acik" in ctx.require_status("test-acik", db_durumlari={"test-acik": "serbest"})
-    with pytest.raises(LisansKapisi):
-        ctx.require_status("test-acik", db_durumlari={"test-acik": "kapali"})
-
-
-def test_require_status_bos_liste_girdi_hatasi(tmp_path: Path) -> None:
+def test_require_sources_bos_liste_girdi_hatasi(tmp_path: Path) -> None:
     ctx = ctx_kur(tmp_path, depo_kur(tmp_path))
     with pytest.raises(GirdiHatasi):
-        ctx.require_status([])
+        ctx.require_sources([])
 
 
-def test_require_status_iletide_ascii_disi_slug_kacirilir(tmp_path: Path) -> None:
+def test_require_sources_iletide_ascii_disi_slug_kacirilir(tmp_path: Path) -> None:
     ctx = ctx_kur(tmp_path, depo_kur(tmp_path))
-    with pytest.raises(LisansKapisi) as hata:
-        ctx.require_status("test-çok")
+    with pytest.raises(GirdiHatasi) as hata:
+        ctx.require_sources("test-çok")
     assert str(hata.value).isascii()
 
 
 def test_cikis_kodlari() -> None:
-    assert cikis_kodu(LisansKapisi("x")) == cikis.LISANS_KAPISI == 3
     assert cikis_kodu(QaKaldi("x")) == cikis.QA_KALDI == 1
     assert cikis_kodu(GirdiHatasi("x")) == cikis.GIRDI_HATASI == 2
+    assert cikis_kodu(RuntimeError("x")) == cikis.GIRDI_HATASI
+
+
+def test_cikis_kodu_kumesi_sifir_bir_iki() -> None:
+    kodlar = {deger for ad, deger in vars(cikis).items() if ad.isupper() and isinstance(deger, int)}
+    assert kodlar == {0, 1, 2}
+    assert (cikis.BASARILI, cikis.QA_KALDI, cikis.GIRDI_HATASI) == (0, 1, 2)
+
+
+def test_lisans_kapisi_kalmadi() -> None:
+    """K-42: lisans kapisi, `require_status` ve cikis kodu 3 kalkti."""
+    assert not hasattr(runctx, "LisansKapisi")
+    assert not hasattr(runctx, "IZINLI_DURUMLAR")
+    assert not hasattr(RunContext, "require_status")
+    assert not hasattr(RunContext, "lisans_kopyalari")
+    assert not hasattr(cikis, "LISANS_KAPISI")
 
 
 def gec(c: RunContext, kaynak: str) -> None:
-    c.require_status(kaynak)
+    c.require_sources(kaynak)
 
 
-def test_komut_calistir_kapali_kaynak_cikis_3(
+def test_komut_calistir_kayitsiz_kaynak_cikis_2(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    kok = depo_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-kapali", license_status="kapali", embed_ok=False))
-    ctx = ctx_kur(tmp_path, kok, kaynaklar=["test-kapali"])
-    assert komut_calistir(ctx, lambda c: gec(c, "test-kapali")) == 3
-    assert "kapali" in capsys.readouterr().err
+    ctx = ctx_kur(tmp_path, depo_kur(tmp_path), kaynaklar=["test-yok"])
+    assert komut_calistir(ctx, lambda c: gec(c, "test-yok")) == 2
+    assert "kayitsiz" in capsys.readouterr().err
     rapor = (tmp_path / "data" / "reports" / f"{ctx.run_id}.json").read_text(encoding="utf-8")
-    assert '"cikis_kodu": 3' in rapor
+    assert '"cikis_kodu": 2' in rapor
     assert '"durum": "basarisiz"' in rapor
 
 
-def test_komut_calistir_kayitsiz_kaynak_cikis_3(tmp_path: Path) -> None:
-    ctx = ctx_kur(tmp_path, depo_kur(tmp_path), kaynaklar=["test-yok"])
-    assert komut_calistir(ctx, lambda c: gec(c, "test-yok")) == 3
+def test_komut_calistir_gecersiz_kayit_cikis_2(tmp_path: Path) -> None:
+    kok = depo_kur(tmp_path)
+    kayit_yaz(kok, alanlar_kur("test-bozuk", atif_metni=None))
+    ctx = ctx_kur(tmp_path, kok, kaynaklar=["test-bozuk"])
+    assert komut_calistir(ctx, lambda c: gec(c, "test-bozuk")) == 2
 
 
 def test_komut_calistir_basarili_ve_qa(tmp_path: Path) -> None:
@@ -251,12 +244,12 @@ def test_dsn_stderr_gunluk_rapor_manifest_parmak_izinde_gorunmez(
         c.gunluk.yaz("INFO", "parola " + PAROLA)
         c.uyar(f"uyari {SAHTE_DSN}")
         c.parametreler["adres"] = SAHTE_DSN
-        izi, lisanslar = c.parmak_izi([Girdi("raw/x/a.txt", "a" * 64)], ["test-kaynak"])
+        izi = c.parmak_izi([Girdi("raw/x/a.txt", "a" * 64)])
+        assert isinstance(izi, str)
         c.manifest_yaz(
             tmp_path / "data" / "staged" / "test-kaynak" / c.run_id,
             girdiler=[Girdi("raw/x/a.txt", "a" * 64)],
             ciktilar=[Cikti("staged/x/units.jsonl", "b" * 64, 1)],
-            lisanslar=lisanslar,
             parmak=izi,
         )
         raise GirdiHatasi(f"baglanti kurulamadi: {SAHTE_DSN} / password={PAROLA}")
@@ -269,7 +262,9 @@ def test_dsn_stderr_gunluk_rapor_manifest_parmak_izinde_gorunmez(
     assert dosyalarda_ara(tmp_path / "data", "@127.0.0.1") == []
     assert (tmp_path / "data" / "logs" / f"{ctx.run_id}.jsonl").is_file()
     assert (tmp_path / "data" / "reports" / f"{ctx.run_id}.json").is_file()
-    assert (tmp_path / "data" / "staged" / "test-kaynak" / ctx.run_id / "manifest.json").is_file()
+    manifest = tmp_path / "data" / "staged" / "test-kaynak" / ctx.run_id / "manifest.json"
+    assert manifest.is_file()
+    assert b"lisans" not in manifest.read_bytes()  # K-42: manifest lisans kopyasi tasimaz
 
 
 def test_beklenmeyen_hata_yalniz_tur_adi_yazar(

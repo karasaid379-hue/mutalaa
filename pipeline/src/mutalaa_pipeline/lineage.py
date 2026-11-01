@@ -1,8 +1,8 @@
 """Veri soyu: manifest, parmak izi, atomik yazim, son basarili calistirma (§5, §6, §12).
 
-Parmak izi yalniz acik girdilerden hesaplanir (adim, parametreler, girdi ozetleri, lisans ozetleri,
-`mutalaa.toml` ozeti, git commit, arac surumleri). Ortam degiskenleri ve `.env` degerleri hicbir
-ozete girmez. Icerik dosyalarina zaman damgasi yazilmaz.
+Parmak izi yalniz acik girdilerden hesaplanir (adim, parametreler, girdi ozetleri, `mutalaa.toml`
+ozeti, git commit, arac surumleri). Ortam degiskenleri ve `.env` degerleri hicbir ozete girmez.
+Icerik dosyalarina zaman damgasi yazilmaz.
 """
 
 import hashlib
@@ -130,7 +130,6 @@ def parmak_izi(
     adim: str,
     parametreler: Mapping[str, object],
     girdiler: Sequence[Girdi],
-    lisans_kopyalari: Mapping[str, Mapping[str, str]],
     config_sha: str | None,
     git_commit: str | None,
     araclar: Mapping[str, str | None],
@@ -143,7 +142,6 @@ def parmak_izi(
         "adim": adim,
         "parametreler": dict(parametreler),
         "girdiler": sorted([Path(g.yol).name, g.sha256] for g in girdiler),
-        "lisans_kopyalari": {k: dict(v) for k, v in lisans_kopyalari.items()},
         "config_sha256": config_sha,
         "git_commit": git_commit,
         "araclar": dict(araclar),
@@ -160,7 +158,6 @@ def manifest_kur(
     uv_lock: str | None,
     config_sha: str | None,
     girdiler: Sequence[Girdi],
-    lisans_kopyalari: Mapping[str, Mapping[str, str]],
     araclar: Mapping[str, str | None],
     ciktilar: Sequence[Cikti],
     parmak: str,
@@ -177,7 +174,6 @@ def manifest_kur(
         "uv_lock_sha256": uv_lock,
         "config_sha256": config_sha,
         "girdiler": [g.sozluk() for g in sorted(girdiler, key=lambda g: g.yol)],
-        "lisans_kopyasi": {k: dict(v) for k, v in sorted(lisans_kopyalari.items())},
         "araclar": dict(araclar),
         "llm": None,
         "ciktilar": [c.sozluk() for c in sorted(ciktilar, key=lambda c: c.yol)],

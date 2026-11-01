@@ -1,8 +1,8 @@
-"""Calistirma baglami: UUIDv7 run_id, kaynak kaydi ve lisans kapisi, rapor, komut sarmalayici.
+"""Calistirma baglami: UUIDv7 run_id, kaynak kaydi denetimi, rapor, komut sarmalayici.
 
-`require_status`: `--source` alan her komut, okudugu ve yazdigi butun kaynaklar icin girista
-cagirir. Kayit yok, sema hatali, lisans kopyasi ozeti tutmuyor ya da durum `kapali` ise
-`LisansKapisi` (cikis 3).
+`require_sources`: `--source` alan her komut, okudugu ve yazdigi butun kaynaklar icin giriste
+cagirir. Kayit yoksa ya da kayit gecersizse `GirdiHatasi` (cikis 2); kaydi olmayan kaynak
+hatta alinmaz (K-42 madde 4).
 """
 
 import os
@@ -10,7 +10,7 @@ import secrets
 import sys
 import threading
 import uuid
-from collections.abc import Callable, Iterable, Mapping, Set
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -18,7 +18,6 @@ from typing import TYPE_CHECKING, Final
 
 from mutalaa_pipeline import cikis, lineage, sources
 from mutalaa_pipeline.config import Ayarlar
-from mutalaa_pipeline.enums import LicenseStatus
 from mutalaa_pipeline.export.ortak import GirdiHatasi, depo_koku
 from mutalaa_pipeline.logs import (
     Gunluk,
@@ -34,7 +33,6 @@ from mutalaa_pipeline.sources.kayit import Kaynak, Sonuc
 if TYPE_CHECKING:
     from mutalaa_pipeline.ingest.base import StagedUnit
 
-IZINLI_DURUMLAR: Final = frozenset({"serbest", "bekliyor", "ic_kullanim"})
 GUNLUK_KLASORU: Final = "logs"
 RAPOR_KLASORU: Final = "reports"
 STAGED_KLASORU: Final = "staged"
@@ -43,18 +41,12 @@ SAYAC_BITI: Final = 12
 RASTGELE_ALAN: Final = 11  # sayac baslangici 2**11'in altinda: tasma payi birakir
 
 
-class LisansKapisi(Exception):
-    """Lisans kapisi: kaynak kapali, kayitsiz ya da kaydi gecersiz; komut 3 ile cikar."""
-
-
 class QaKaldi(Exception):
     """QA kapisi kaldi; komut 1 ile cikar."""
 
 
 def cikis_kodu(hata: BaseException) -> int:
-    """Istisna turunden cikis kodu (Icerik hatti §4)."""
-    if isinstance(hata, LisansKapisi):
-        return cikis.LISANS_KAPISI
+    """Istisna turunden cikis kodu (Icerik hatti §4): QA kapisi 1, oteki her hata 2."""
     if isinstance(hata, QaKaldi):
         return cikis.QA_KALDI
     return cikis.GIRDI_HATASI
@@ -192,24 +184,19 @@ class RunContext:
     def raw_dizin(self, source_id: str) -> Path:
         return self.veri_kok / RAW_KLASORU / source_id
 
-    # --- kaynak kaydi ve lisans kapisi -----------------------------------------------
+    # --- kaynak kaydi ---------------------------------------------------------------
 
     def _kayitlar(self) -> dict[str, Sonuc]:
         if self._sonuclar is None:
-            sonuclar = sources.yukle(self.depo_kok, lisans_dosyalari=True)
+            sonuclar = sources.yukle(self.depo_kok)
             self._sonuclar = {s.dosya.removesuffix(".toml"): s for s in sonuclar}
         return self._sonuclar
 
-    def require_status(
-        self,
-        kaynaklar: str | Iterable[str],
-        allowed: Set[str] = IZINLI_DURUMLAR,
-        db_durumlari: Mapping[str, str] | None = None,
-    ) -> dict[str, Kaynak]:
-        """Her kaynagin kaydini ve durumunu denetler; biri bile gecmezse `LisansKapisi`.
+    def require_sources(self, kaynaklar: str | Iterable[str]) -> dict[str, Kaynak]:
+        """Her kaynagin kaydini denetler; biri bile kayitsiz ya da gecersizse `GirdiHatasi`.
 
-        `db_durumlari` veritabanindaki `license_status` degerleridir (satiri olanlar icin);
-        kayit ile veritabanindan hangisi `allowed` disindaysa kapi kapanir.
+        Gecerli kayit, `sources check` denetiminden hatasiz gecen kayittir (G-KAY: sema,
+        zorunlu alanlar, dolu `atif_metni`). Donus: `{slug: Kaynak}`, ilk gorulme sirasinda.
         """
         slugs = [kaynaklar] if isinstance(kaynaklar, str) else list(kaynaklar)
         if not slugs:
@@ -226,38 +213,15 @@ class RunContext:
             if sonuc.kaynak is None:
                 nedenler.append(f"{ad}: kayit gecersiz ({len(sonuc.hatalar)} hata)")
                 continue
-            kaynak = sonuc.kaynak
-            if kaynak.license_status is LicenseStatus.KAPALI:
-                nedenler.append(f"{ad}: kapali")
-                continue
-            if kaynak.license_status.value not in allowed:
-                nedenler.append(
-                    f"{ad}: durum {kaynak.license_status.value} bu komutta izinli degil"
-                )
-                continue
-            veritabani = (db_durumlari or {}).get(slug)
-            if veritabani is not None and veritabani not in allowed:
-                nedenler.append(f"{ad}: veritabani durumu {_guvenli_slug(veritabani)} izinli degil")
-                continue
-            gecenler[slug] = kaynak
+            gecenler[slug] = sonuc.kaynak
         if nedenler:
             self.gunluk.hata(
-                "lisans_kapisi_kapali", kaynak_sayisi=len(slugs), reddedilen=len(nedenler)
+                "kaynak_kaydi_gecersiz", kaynak_sayisi=len(slugs), reddedilen=len(nedenler)
             )
-            raise LisansKapisi("lisans kapisi: " + "; ".join(nedenler))
+            raise GirdiHatasi(
+                "kaynak kaydi: " + "; ".join(nedenler) + " (ayrinti: mutalaa sources check)"
+            )
         return gecenler
-
-    def lisans_kopyalari(self, slugs: Iterable[str]) -> dict[str, dict[str, str]]:
-        """Manifest icin `{kaynak: {yol, sha256}}` (kayit dogrulanmis olmali)."""
-        sonuc: dict[str, dict[str, str]] = {}
-        for slug in slugs:
-            kaynak = self.require_status(slug)[slug]
-            if kaynak.lisans_kopyasi is not None and kaynak.lisans_sha256 is not None:
-                sonuc[slug] = {
-                    "yol": f"{sources.KAYNAK_DIZINI}/{kaynak.lisans_kopyasi}",
-                    "sha256": kaynak.lisans_sha256,
-                }
-        return sonuc
 
     # --- veri soyu --------------------------------------------------------------------
 
@@ -266,21 +230,16 @@ class RunContext:
             self._git = lineage.git_durumu(self.depo_kok)
         return self._git
 
-    def parmak_izi(
-        self, girdiler: list[lineage.Girdi], kaynaklar: Iterable[str]
-    ) -> tuple[str, dict[str, dict[str, str]]]:
-        """(parmak izi, lisans kopyalari). Ortam ve `.env` degerleri girmez."""
-        lisanslar = self.lisans_kopyalari(kaynaklar)
-        izi = lineage.parmak_izi(
+    def parmak_izi(self, girdiler: list[lineage.Girdi]) -> str:
+        """Calistirmanin parmak izi. Ortam ve `.env` degerleri girmez."""
+        return lineage.parmak_izi(
             adim=self.adim,
             parametreler=self.parametreler,
             girdiler=girdiler,
-            lisans_kopyalari=lisanslar,
             config_sha=lineage.config_sha256(self.ayarlar.config_yolu),
             git_commit=self.git().commit,
             araclar=lineage.arac_surumleri(),
         )
-        return izi, lisanslar
 
     def manifest_yaz(
         self,
@@ -288,7 +247,6 @@ class RunContext:
         *,
         girdiler: list[lineage.Girdi],
         ciktilar: list[lineage.Cikti],
-        lisanslar: Mapping[str, Mapping[str, str]],
         parmak: str,
         ayrintilar: Mapping[str, object] | None = None,
     ) -> Path:
@@ -300,7 +258,6 @@ class RunContext:
             uv_lock=lineage.uv_lock_sha256(self.depo_kok),
             config_sha=lineage.config_sha256(self.ayarlar.config_yolu),
             girdiler=girdiler,
-            lisans_kopyalari=lisanslar,
             araclar=lineage.arac_surumleri(),
             ciktilar=ciktilar,
             parmak=parmak,
@@ -363,7 +320,7 @@ def komut_calistir(ctx: RunContext, govde: Callable[[RunContext], int | None]) -
     try:
         sonuc = govde(ctx)
         kod = sonuc if sonuc is not None else cikis.BASARILI
-    except (GirdiHatasi, LisansKapisi, QaKaldi) as hata:
+    except (GirdiHatasi, QaKaldi) as hata:
         kod = cikis_kodu(hata)
         sys.stderr.write(f"hata: {ileti_temizle(str(hata), gizliler)}\n")
     except Exception as hata:

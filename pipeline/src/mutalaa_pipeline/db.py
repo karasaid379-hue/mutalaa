@@ -1,7 +1,5 @@
 """Veritabani baglantisi (config'ten). Hata iletilerine baglanti dizesi girmez."""
 
-from collections.abc import Iterable
-
 import psycopg
 
 from mutalaa_pipeline.config import Ayarlar
@@ -22,16 +20,3 @@ def baglan(
     except psycopg.Error as hata:
         # psycopg iletisi host, kullanici ve baglanti parcalari icerebilir: yalniz tur yazilir.
         raise VeritabaniHatasi(f"veritabanina baglanilamadi ({type(hata).__name__})") from None
-
-
-def lisans_durumlari(conn: psycopg.Connection, slugs: Iterable[str]) -> dict[str, str]:
-    """`icerik.source` tablosunda satiri olan kaynaklarin `license_status` degerleri."""
-    liste = sorted(set(slugs))
-    try:
-        satirlar = conn.execute(
-            "SELECT slug, license_status::text FROM icerik.source WHERE slug = ANY(%s)",
-            (liste,),
-        ).fetchall()
-    except psycopg.Error as hata:
-        raise VeritabaniHatasi(f"lisans durumu okunamadi ({type(hata).__name__})") from None
-    return {str(slug): str(durum) for slug, durum in satirlar}

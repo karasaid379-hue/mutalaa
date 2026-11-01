@@ -1,6 +1,7 @@
 """`lineage`: manifest, parmak izi, atomik yazim, son basarili calistirma (SENTETIK)."""
 
 import hashlib
+import inspect
 import json
 import os
 from pathlib import Path
@@ -27,9 +28,6 @@ def manifest_kur(run_id: str = "00000000-0000-7000-8000-000000000001") -> dict[s
         uv_lock="d" * 64,
         config_sha="e" * 64,
         girdiler=[GIRDI],
-        lisans_kopyalari={
-            "test-kaynak": {"yol": "pipeline/sources/licenses/x.txt", "sha256": "f" * 64}
-        },
         araclar=ARACLAR,
         ciktilar=[CIKTI],
         parmak="1" * 64,
@@ -41,7 +39,6 @@ def parmak(**degisim: object) -> str:
         "adim": "ingest",
         "parametreler": {"variant": "deneme"},
         "girdiler": [GIRDI],
-        "lisans_kopyalari": {"test-kaynak": {"yol": "y", "sha256": "f" * 64}},
         "config_sha": "e" * 64,
         "git_commit": "c" * 40,
         "araclar": ARACLAR,
@@ -65,15 +62,22 @@ def test_manifest_alanlari_ve_sirasi() -> None:
         "uv_lock_sha256",
         "config_sha256",
         "girdiler",
-        "lisans_kopyasi",
         "araclar",
         "llm",
         "ciktilar",
         "parmak_izi",
     ]
     assert m["llm"] is None
+    assert not any("lisans" in anahtar for anahtar in m)  # K-42: manifest lisans kopyasi tasimaz
     assert m["girdiler"] == [{"yol": GIRDI.yol, "sha256": GIRDI.sha256, "ust_run_id": "ust-run"}]
     assert set(m["araclar"]) == {"normalizer_version", "psycopg", "snowballstemmer"}  # type: ignore[call-overload]
+
+
+def test_parmak_izi_ve_manifest_lisans_kopyasi_almaz() -> None:
+    """K-42: parmak izi ve manifest lisans kopyasi parametresi tasimaz."""
+    for islev in (lineage.parmak_izi, lineage.manifest_kur):
+        assert "lisans_kopyalari" not in inspect.signature(islev).parameters
+    assert isinstance(parmak(), str)
 
 
 def test_manifest_deterministik_zaman_damgasiz() -> None:
@@ -102,7 +106,6 @@ def test_manifest_listeleri_sirali() -> None:
         uv_lock=None,
         config_sha=None,
         girdiler=[g2, g1],
-        lisans_kopyalari={},
         araclar=ARACLAR,
         ciktilar=[c2, c1],
         parmak="p",
@@ -115,7 +118,6 @@ def test_manifest_listeleri_sirali() -> None:
         uv_lock=None,
         config_sha=None,
         girdiler=[g1, g2],
-        lisans_kopyalari={},
         araclar=ARACLAR,
         ciktilar=[c1, c2],
         parmak="p",
@@ -216,7 +218,6 @@ def test_parmak_izi_deterministik_ve_hassas() -> None:
         {"config_sha": "9" * 64},
         {"git_commit": "9" * 40},
         {"araclar": {**ARACLAR, "normalizer_version": "2.0"}},
-        {"lisans_kopyalari": {"test-kaynak": {"yol": "y", "sha256": "9" * 64}}},
     ):
         assert parmak(**degisim) != parmak()
 
@@ -233,7 +234,8 @@ def test_iki_farkli_db_url_ayni_parmak_izi(tmp_path: Path) -> None:
     izler = []
     for dsn in (None, SAHTE_DSN, "postgresql://baska:BASKA-PAROLA@10.0.0.9:5432/baska"):
         ctx = ctx_kur(tmp_path, kok, db_url=dsn, parametreler={"variant": "deneme"})
-        izi, _ = ctx.parmak_izi(girdiler, ["test-kaynak"])
+        izi = ctx.parmak_izi(girdiler)
+        assert isinstance(izi, str)
         izler.append(izi)
     assert len(set(izler)) == 1
 
@@ -242,10 +244,10 @@ def test_ortam_degiskenleri_parmak_izine_girmez(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     kok = depo_kur(tmp_path, "test-kaynak")
-    onceki, _ = ctx_kur(tmp_path, kok).parmak_izi([GIRDI], ["test-kaynak"])
+    onceki = ctx_kur(tmp_path, kok).parmak_izi([GIRDI])
     monkeypatch.setenv("MUTALAA_DB_URL", SAHTE_DSN)
     monkeypatch.setenv("MUTALAA_LOG_DUZEYI", "ERROR")
-    sonraki, _ = ctx_kur(tmp_path, kok).parmak_izi([GIRDI], ["test-kaynak"])
+    sonraki = ctx_kur(tmp_path, kok).parmak_izi([GIRDI])
     assert onceki == sonraki
 
 
@@ -265,7 +267,6 @@ def test_config_sha256_yalniz_toml_baytlarindan(tmp_path: Path) -> None:
             tmp_path / "m",
             girdiler=[GIRDI],
             ciktilar=[CIKTI],
-            lisanslar={},
             parmak="p",
         )
         assert json.loads(yol.read_bytes())["config_sha256"] == ozet

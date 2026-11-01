@@ -5,12 +5,6 @@ baslik = "Tanzil Kur'an metni, Simple Clean"
 surum = "1.1"
 provider = "tanzil"
 kaynak_url = "https://tanzil.net/"
-license_name = "CC BY 3.0 + değiştirme yasağı"
-license_url = "https://tanzil.net/docs/text_license"
-license_status = "serbest"
-kisitlar = { degistirme_yasak = true }
-embed_ok = true
-kurul_gerekli = true
 atif_metni = "Kur'an metni: Tanzil Project, tanzil.net. Metin değiştirilmeden kullanılmıştır."
 atif_url = "https://tanzil.net/"
 notice_text = '''
@@ -38,14 +32,7 @@ notice_text = '''
 
   Please check updates at: http://tanzil.net/updates/
 '''
-yeniden_kontrol = 2027-04-26
-lisans_kopyasi = "licenses/tanzil-simple-clean-2026-10-26.txt"
-lisans_sha256 = "3ac762ac320dba0377da23410e375ec56e69e347f1c7729b4c0881a53a266de4"
 notlar = '''
-embed_ok: Evet (çıkarım).
-Hüküm: arama tabanı.
-2026-10-26 okumasında tanzil.net/updates yalnız Uthmani için açık 1.1 girdisi gösteriyor, Simple Clean için açık girdi yok; surum = 1.1 defter §3.1'e göre yazıldı, Doğrulanacak (A10).
-Açık soru (İ-08, 1. soru): ayrı sütundaki normalize search_text "değiştirme" sayılır mı?
-Açık soru (İ-08, 2. soru): ticari olmayan kullanım ve üst veri dosyası; SSS'deki "non-commercial purposes" cümlesi Kur'an metni ve üst veri dosyaları için de geçerli mi?
-Açık soru (İ-08, 3. soru): sürüm güncelliği ve indirmeler arasındaki fark.
-Aşama: A10 (indirme kullanıcı onayıyla; lisans metni canlı doğrulaması).'''
+Kullanım: arama tabanı.
+2026-10-26 okumasında tanzil.net/updates yalnız Uthmani için açık 1.1 girdisi gösteriyor, Simple Clean için açık girdi yok; surum = 1.1 Kaynaklar §3.1'e göre yazıldı, Doğrulanacak (A10).
+Aşama: A10.'''

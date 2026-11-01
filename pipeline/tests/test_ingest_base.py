@@ -1,4 +1,4 @@
-"""`ingest.base`: `run_ingest`, `staged` yazimi, atlama, lisans kapisi (SENTETIK "Deneme" metni)."""
+"""`ingest.base`: `run_ingest`, `staged` yazimi, atlama, kaynak kaydi (SENTETIK "Deneme" metni)."""
 
 import hashlib
 import json
@@ -12,7 +12,7 @@ from test_sources import alanlar_kur, kayit_yaz
 from mutalaa_pipeline import lineage
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest.base import RawFile, StagedUnit, run_ingest
-from mutalaa_pipeline.runctx import LisansKapisi, RunContext
+from mutalaa_pipeline.runctx import RunContext
 
 KAYNAK = "test-kaynak"
 HAM = b"Deneme satiri 2\nDeneme satiri 1\n"
@@ -82,7 +82,7 @@ def test_run_ingest_staged_siralidir_ve_manifest_en_son(tmp_path: Path) -> None:
         units["sha256"] == hashlib.sha256((sonuc.klasor / "units.jsonl").read_bytes()).hexdigest()
     )
     assert manifest["girdiler"][0]["yol"] == f"raw/{KAYNAK}/2026-10-28/deneme.txt"
-    assert KAYNAK in manifest["lisans_kopyasi"]
+    assert "lisans_kopyasi" not in manifest  # K-42: manifest lisans kopyasi tasimaz
     assert manifest["llm"] is None
     assert lineage.ciktilar_saglam(tmp_path / "data", manifest)
 
@@ -157,23 +157,34 @@ def test_cikti_bozulmussa_atlanmaz(tmp_path: Path) -> None:
     )
 
 
-def test_kapali_kaynakta_fetch_calismaz(tmp_path: Path) -> None:
+def test_gecersiz_kayitli_kaynakta_fetch_calismaz(tmp_path: Path) -> None:
     kok = depo_kur(tmp_path)
-    kayit_yaz(kok, alanlar_kur("test-kapali", license_status="kapali", embed_ok=False))
-    ctx = ctx_kur(tmp_path, kok, kaynaklar=["test-kapali"])
-    ad = SahteBagdastirici("test-kapali")
-    with pytest.raises(LisansKapisi):
+    kayit_yaz(kok, alanlar_kur("test-atifsiz", atif_metni=None))
+    ctx = ctx_kur(tmp_path, kok, kaynaklar=["test-atifsiz"])
+    ad = SahteBagdastirici("test-atifsiz")
+    with pytest.raises(GirdiHatasi) as hata:
         run_ingest(ad, ctx)
+    assert "gecersiz" in str(hata.value)
     assert ad.fetch_sayisi == 0
     assert not (tmp_path / "data" / "raw").exists()
     assert not (tmp_path / "data" / "staged").exists()
 
 
+def test_eski_lisans_alanli_kayitta_fetch_calismaz(tmp_path: Path) -> None:
+    kok = depo_kur(tmp_path)
+    kayit_yaz(kok, alanlar_kur("test-eski", embed_ok=True))
+    ad = SahteBagdastirici("test-eski")
+    with pytest.raises(GirdiHatasi):
+        run_ingest(ad, ctx_kur(tmp_path, kok, kaynaklar=["test-eski"]))
+    assert ad.fetch_sayisi == 0
+
+
 def test_kayitsiz_kaynakta_fetch_calismaz(tmp_path: Path) -> None:
     kok = depo_kur(tmp_path, KAYNAK)
     ad = SahteBagdastirici("test-yok")
-    with pytest.raises(LisansKapisi):
+    with pytest.raises(GirdiHatasi) as hata:
         run_ingest(ad, ctx_kur(tmp_path, kok, kaynaklar=["test-yok"]))
+    assert "kayitsiz" in str(hata.value)
     assert ad.fetch_sayisi == 0
 
 

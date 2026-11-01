@@ -1,16 +1,21 @@
 """`export pg`: staged birimleri PostgreSQL'e yukler (Icerik hatti §6, K-39).
 
-Akis: (1) dosya onkosullari (anchor calistirmasi, zincir, QA raporu, lisans kapisi, satirlar),
-(2) tek veritabani islemi: advisory kilit, `pipeline_run`, `source` satirlari, `staging_unit`
-gecici tablosu, denetimler, iki ifadeli yazim.
+Akis: (1) dosya onkosullari (kaynak kaydi, anchor calistirmasi, zincir, QA raporu, satirlar,
+bildirim), (2) tek veritabani islemi: advisory kilit, `pipeline_run`, `source` satirlari,
+`staging_unit` gecici tablosu, denetimler, iki ifadeli yazim.
+
+G-KAY (dosya tarafi): kaynak kaydi gecerli ve `atif_metni` dolu (`require_sources`); kanonik
+kaynakta TOML'daki `notice_text`, dosyadaki bildirim blogu (`notice.txt`) ile bayt bayt ayni
+(K-39 madde 6). Uc denetim de cikis 2 verir.
 
 Tanzil (K-39): birimler `onayli` girer; hat var olan satirda yalniz turetilmis sutunlari
 (`ar_norm`, `provenance`, `data_version`, `ord`, `ayah_range`, `run_id`, `updated_at`) gunceller.
 `metin`, `content_hash`, `metin_durumu`, `status`, `successors`, `rev`, `marks` ve `source_id`
 SET listesine girmez. `export pg` parmak izi atlamasi yapmaz (`--force` kabul edilir, etkisizdir).
 
-Cikis kodlari: 1 QA kapisi/ozet farki/eksik capa, 2 girdi ve yapilandirma, 3 lisans kapisi.
-Iletilere satir icerigi ve baglanti dizesi yazilmaz; yalniz capa, sayi, ozet ve alan adi.
+Cikis kodlari: 0 basarili, 1 QA kapisi/ozet farki/eksik capa, 2 girdi ve yapilandirma (kayitsiz
+ya da gecersiz kaynak kaydi dahil). Iletilere satir icerigi ve baglanti dizesi yazilmaz; yalniz
+capa, sayi, ozet ve alan adi.
 """
 
 import json
@@ -32,10 +37,9 @@ from mutalaa_pipeline.anchor import AnchorError
 from mutalaa_pipeline.anchor import format as anchor_format
 from mutalaa_pipeline.anchor import parse as anchor_parse
 from mutalaa_pipeline.config import Ayarlar
-from mutalaa_pipeline.db import VeritabaniHatasi, baglan, lisans_durumlari
-from mutalaa_pipeline.enums import LicenseStatus
+from mutalaa_pipeline.db import VeritabaniHatasi, baglan
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kati_json
-from mutalaa_pipeline.runctx import LisansKapisi, QaKaldi, RunContext, komut_calistir
+from mutalaa_pipeline.runctx import QaKaldi, RunContext, komut_calistir
 from mutalaa_pipeline.sources.kayit import Kaynak
 
 ANCHOR_ADIMI: Final = "anchor"
@@ -44,7 +48,7 @@ UNITS_ADI: Final = "units.jsonl"
 NOTICE_ADI: Final = "notice.txt"
 EXPORT_ADIMI: Final = "export"
 QA_KOMUTU: Final = "qa run"
-KAPILAR: Final = ("G-LIS", "G-BUT", "G-CAP", "G-NOR")
+KAPILAR: Final = ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
 GECTI: Final = "gecti"
 ZINCIR_DERINLIGI: Final = 8
 ILK_N_CAPA: Final = 5
@@ -72,24 +76,29 @@ GEREKLI_ALANLAR: Final = (
     "provenance",
     "source_id",
 )
-# K-39 madde 3: yalniz betimleyici alanlar guncellenir.
+# K-39 madde 3: satir varsa yalniz betimleyici alanlar guncellenir.
 BETIMLEYICI_ALANLAR: Final = (
     "baslik",
     "surum",
     "kaynak_url",
-    "license_name",
-    "license_url",
     "atif_metni",
     "atif_url",
     "notice_text",
-    "lisans_kopyasi",
-    "lisans_sha256",
-    "yeniden_kontrol",
     "alinma_tarihi",
     "dosya_sha256",
 )
 TURETILMIS_ALANLAR: Final = ("ar_norm", "provenance", "data_version", "ord", "ayah_range")
-IKINCI_ONAY_ALANLARI: Final = ("license_status", "embed_ok", "kurul_gerekli")
+# K-39 madde 3: satir yoksa TOML'daki butun alanlarla eklenir (alinma ve ozet ham dosyadan).
+INSERT_SOURCE: Final = (
+    "INSERT INTO icerik.source (slug, tur, baslik, yazar, surum, provider, kaynak_url,"
+    " alinma_tarihi, dosya_sha256, baski_bilgisi, atif_metni, atif_url, notice_text, notlar)"
+    " VALUES (%(slug)s, %(tur)s::icerik.source_kind, %(baslik)s, %(yazar)s, %(surum)s,"
+    " %(provider)s, %(kaynak_url)s, %(alinma_tarihi)s, %(dosya_sha256)s, %(baski_bilgisi)s,"
+    " %(atif_metni)s, %(atif_url)s, %(notice_text)s, %(notlar)s)"
+)
+SELECT_SOURCE: Final = sql.SQL("SELECT {} FROM icerik.source WHERE slug = %s FOR UPDATE").format(
+    sql.SQL(", ").join(sql.Identifier(alan) for alan in BETIMLEYICI_ALANLAR)
+)
 
 BAGLANTI = Callable[[], psycopg.Connection]
 
@@ -294,7 +303,7 @@ def _qa_denetle(ctx: RunContext, source_id: str, anchor_run_id: str, units_sha: 
         if isinstance(veri.get("kapilar"), dict) and all(k in veri["kapilar"] for k in KAPILAR)  # type: ignore[operator]
     ]
     if not tam:
-        raise QaKaldi("QA raporu dort kapiyi da icermiyor (G-LIS, G-BUT, G-CAP, G-NOR)")
+        raise QaKaldi(f"QA raporu dort kapiyi da icermiyor ({', '.join(KAPILAR)})")
     rapor_id, veri = tam[-1]
     kapilar = veri["kapilar"]
     assert isinstance(kapilar, dict)
@@ -401,7 +410,11 @@ def _icerik_ozeti_denetle(satirlar: list[Satir]) -> None:
 
 
 def _bildirim(ingest: ZincirRun, kaynak: Kaynak) -> str | None:
-    """`notice.txt` baytlarinin kati UTF-8 cozumu; yoksa TOML degeri (K-39 madde 6)."""
+    """G-KAY bildirim denetimi (K-39 madde 6): `notice.txt` baytlarinin kati UTF-8 cozumu.
+
+    Dosya TOML'daki `notice_text` ile birebir ayni olmali (`rstrip` yok); ingest bildirim
+    yazmadiysa TOML degeri kullanilir.
+    """
     yol = ingest.klasor / NOTICE_ADI
     if not yol.is_file():
         return kaynak.notice_text
@@ -419,7 +432,8 @@ def hazirla(
 ) -> Hazirlik:
     """Veritabanina dokunmadan tum dosya onkosullarini denetler."""
     kaynak_idleri = (source_id, *ek_kaynaklar)
-    ctx.require_status(kaynak_idleri)  # lisans kapisi (dosya tarafi): cikis 3
+    # G-KAY: kayit gecerli ve atif_metni dolu; kayitsiz ya da gecersiz kayitta cikis 2.
+    kaynaklar = ctx.require_sources(kaynak_idleri)
     anchor_run_id, klasor, manifest = _anchor_calismasi(ctx, source_id, run)
     if not lineage.ciktilar_saglam(ctx.veri_kok, manifest):
         raise GirdiHatasi("anchor calistirmasinin ciktilari saglam degil")
@@ -433,13 +447,13 @@ def hazirla(
     qa_rapor_id = _qa_denetle(ctx, source_id, anchor_run_id, units_sha)
     satirlar = _satirlari_oku(units_bayt, source_id)
     _icerik_ozeti_denetle(satirlar)
-    kaynaklar = ctx.require_status(kaynak_idleri)
+    # G-KAY: TOML notice_text dosyadaki bildirimle bayt bayt ayni; farkliysa cikis 2.
     bildirimler = {slug: _bildirim(ingest[slug], kaynaklar[slug]) for slug in kaynak_idleri}
     units_yol = lineage.goreli_yol(ctx.veri_kok, units_dosya)
     girdiler = [lineage.Girdi(units_yol, units_sha, anchor_run_id)]
     for slug in kaynak_idleri:
         girdiler += [lineage.Girdi(d["yol"], d["sha256"]) for d in ham[slug]]
-    parmak, _ = ctx.parmak_izi(girdiler, kaynak_idleri)
+    parmak = ctx.parmak_izi(girdiler)
     return Hazirlik(
         source_id=source_id,
         kaynak_idleri=kaynak_idleri,
@@ -499,69 +513,32 @@ def _alinma(ham: Sequence[Mapping[str, str]]) -> tuple[date | None, str | None]:
 
 
 def _istenen(kaynak: Kaynak, h: Hazirlik) -> dict[str, object]:
+    """Betimleyici alanlarin istenen degerleri (`BETIMLEYICI_ALANLAR` sirasinda)."""
     alinma, dosya_sha = _alinma(h.ham[kaynak.slug])
     return {
         "baslik": kaynak.baslik,
         "surum": kaynak.surum,
         "kaynak_url": kaynak.kaynak_url,
-        "license_name": kaynak.license_name,
-        "license_url": kaynak.license_url,
         "atif_metni": kaynak.atif_metni,
         "atif_url": kaynak.atif_url,
         "notice_text": h.bildirimler[kaynak.slug],
-        "lisans_kopyasi": kaynak.lisans_kopyasi,
-        "lisans_sha256": kaynak.lisans_sha256,
-        "yeniden_kontrol": kaynak.yeniden_kontrol,
         "alinma_tarihi": alinma,
         "dosya_sha256": dosya_sha,
     }
 
 
-def _ikinci_onay_farki(kaynak: Kaynak, mevcut: Mapping[str, object]) -> tuple[list[str], bool]:
-    """(farkli alanlar, veritabani daha kisitlayici mi)."""
-    farkli: list[str] = []
-    kisitlayici = False
-    db_durum = LicenseStatus(str(mevcut["license_status"]))
-    if db_durum is not kaynak.license_status:
-        farkli.append("license_status")
-        kisitlayici |= db_durum.kisitlilik_sirasi() > kaynak.license_status.kisitlilik_sirasi()
-    if mevcut["embed_ok"] != kaynak.embed_ok:
-        farkli.append("embed_ok")
-        kisitlayici |= mevcut["embed_ok"] is False and kaynak.embed_ok
-    if mevcut["kurul_gerekli"] != kaynak.kurul_gerekli:
-        farkli.append("kurul_gerekli")
-        kisitlayici |= mevcut["kurul_gerekli"] is True and not kaynak.kurul_gerekli
-    return farkli, kisitlayici
-
-
 def _source_satirlari(conn: psycopg.Connection, h: Hazirlik) -> dict[str, int]:
-    """K-39 madde 3: yoksa ekler, varsa yalniz betimleyici alanlari (farkliysa) gunceller."""
+    """K-39 madde 3: yoksa butun TOML alanlariyla ekler, varsa betimleyici alanlari gunceller.
+
+    Betimleyici alan yalniz farkliysa yazilir. Var olan satirda oteki sutunlara (`tur`, `yazar`,
+    `provider`, `baski_bilgisi`, `notlar`) hat dokunmaz.
+    """
     sayac = {"kaynak_eklenen": 0, "kaynak_guncellenen": 0, "kaynak_degismeyen": 0}
     mevcutlar: dict[str, dict[str, object] | None] = {}
     with conn.cursor(row_factory=dict_row) as imlec:
         for slug in h.kaynak_idleri:
-            imlec.execute(
-                "SELECT slug, baslik, surum, kaynak_url, license_name, license_url,"
-                " license_status::text AS license_status, embed_ok, kurul_gerekli, atif_metni,"
-                " atif_url, notice_text, lisans_kopyasi, lisans_sha256, yeniden_kontrol,"
-                " alinma_tarihi, dosya_sha256 FROM icerik.source WHERE slug = %s FOR UPDATE",
-                (slug,),
-            )
+            imlec.execute(SELECT_SOURCE, (slug,))
             mevcutlar[slug] = imlec.fetchone()
-    # Once butun ikinci onay denetimleri: yazim baslamadan durulur.
-    for slug in h.kaynak_idleri:
-        mevcut = mevcutlar[slug]
-        if mevcut is None:
-            continue
-        farkli, kisitlayici = _ikinci_onay_farki(h.kaynaklar[slug], mevcut)
-        if farkli:
-            ileti = (
-                f"kaynak {_g(slug)}: {', '.join(farkli)} TOML ile veritabaninda farkli; "
-                "editorde ikinci onay gerekir"
-            )
-            if kisitlayici:
-                raise LisansKapisi(ileti)
-            raise GirdiHatasi(ileti)
     for slug in h.kaynak_idleri:
         kaynak = h.kaynaklar[slug]
         istenen = _istenen(kaynak, h)
@@ -570,32 +547,16 @@ def _source_satirlari(conn: psycopg.Connection, h: Hazirlik) -> dict[str, int]:
         mevcut = mevcutlar[slug]
         if mevcut is None:
             conn.execute(
-                "INSERT INTO icerik.source (slug, tur, baslik, yazar, yazar_vefat_yili, surum,"
-                " provider, kaynak_url, alinma_tarihi, dosya_sha256, baski_bilgisi, license_name,"
-                " license_url, license_status, lisans_kopyasi, lisans_sha256, kamu_mali_tarihi,"
-                " kisitlar, embed_ok, kurul_gerekli, atif_metni, atif_url, notice_text,"
-                " yeniden_kontrol, notlar) VALUES (%(slug)s, %(tur)s::icerik.source_kind,"
-                " %(baslik)s, %(yazar)s, %(yazar_vefat_yili)s, %(surum)s, %(provider)s,"
-                " %(kaynak_url)s, %(alinma_tarihi)s, %(dosya_sha256)s, %(baski_bilgisi)s,"
-                " %(license_name)s, %(license_url)s, %(license_status)s::icerik.license_status,"
-                " %(lisans_kopyasi)s, %(lisans_sha256)s, %(kamu_mali_tarihi)s, %(kisitlar)s,"
-                " %(embed_ok)s, %(kurul_gerekli)s, %(atif_metni)s, %(atif_url)s,"
-                " %(notice_text)s, %(yeniden_kontrol)s, %(notlar)s)",
+                INSERT_SOURCE,
                 {
                     **istenen,
                     "slug": slug,
                     "tur": kaynak.tur.value,
                     "yazar": kaynak.yazar,
-                    "yazar_vefat_yili": kaynak.yazar_vefat_yili,
                     "provider": kaynak.provider,
                     "baski_bilgisi": (
                         Jsonb(kaynak.baski_bilgisi) if kaynak.baski_bilgisi is not None else None
                     ),
-                    "license_status": kaynak.license_status.value,
-                    "kamu_mali_tarihi": kaynak.kamu_mali_tarihi,
-                    "kisitlar": Jsonb(kaynak.kisitlar),
-                    "embed_ok": kaynak.embed_ok,
-                    "kurul_gerekli": kaynak.kurul_gerekli,
                     "notlar": kaynak.notlar,
                 },
             )
@@ -750,8 +711,6 @@ def _pipeline_run_yaz(
 def _yukle(conn: psycopg.Connection, ctx: RunContext, h: Hazirlik) -> dict[str, int]:
     """Tek islemin govdesi (cagiran `conn.transaction()` icinde)."""
     conn.execute("SELECT pg_advisory_xact_lock(hashtext('mutalaa:' || %s::text))", (h.source_id,))
-    durumlar = lisans_durumlari(conn, h.kaynak_idleri)
-    ctx.require_status(h.kaynak_idleri, db_durumlari=durumlar)  # veritabani tarafi: cikis 3
     manifest = _manifest_kur(h)
     _pipeline_run_yaz(conn, ctx, h, "calisiyor", manifest)
     sayilar = _source_satirlari(conn, h)

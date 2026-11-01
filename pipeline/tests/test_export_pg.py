@@ -7,6 +7,7 @@ altindaki sahte kokte durur. `veritabani` isaretli testler yalniz turetilmis tes
 
 import json
 import os
+import re
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -28,8 +29,27 @@ ANA = "test-ana"
 EK = "test-ek"
 TARIH = "2026-10-28"
 BILDIRIM = "Deneme bildirimi\n\n  Ikinci satir \n"
-KAPILAR = ("G-LIS", "G-BUT", "G-CAP", "G-NOR")
+KAPILAR = ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
 TUM_GECTI = dict.fromkeys(KAPILAR, "gecti")
+# `icerik.source` hedef sema: 16 sutun, `id` yok (birincil anahtar `slug`).
+HEDEF_SUTUNLAR = (
+    "slug",
+    "tur",
+    "baslik",
+    "yazar",
+    "surum",
+    "provider",
+    "kaynak_url",
+    "alinma_tarihi",
+    "dosya_sha256",
+    "baski_bilgisi",
+    "atif_metni",
+    "atif_url",
+    "notice_text",
+    "notlar",
+    "created_at",
+    "updated_at",
+)
 
 
 def ozet(metin: str) -> str:
@@ -78,25 +98,21 @@ def senaryo_kur(tmp_path: Path, **ana_alanlar: object) -> Senaryo:
     ana = {
         "tur": "kuran_metni",
         "surum": "1.0",
-        "kurul_gerekli": True,
-        "kisitlar": {"degistirme_yasak": True},
         "notice_text": BILDIRIM,
         "kaynak_url": "https://deneme.invalid/",
     }
     ana.update(ana_alanlar)
-    kayit_yaz(kok, alanlar_kur(ANA, kok, **ana))
-    kayit_yaz(kok, alanlar_kur(EK, kok, surum="1.1", baslik="Deneme ek kaynak"))
+    kayit_yaz(kok, alanlar_kur(ANA, **ana))
+    kayit_yaz(kok, alanlar_kur(EK, surum="1.1", baslik="Deneme ek kaynak"))
     return Senaryo(tmp_path, kok, ayarlar_kur(tmp_path))
 
 
 def toml_yeniden(s: Senaryo, slug: str, **degisim: object) -> None:
-    """Kaynak TOML'unu degisiklikle yeniden yazar (lisans kopyasi ayni kalir)."""
+    """Kaynak TOML'unu degisiklikle yeniden yazar (`None` verilen alan kayittan cikar)."""
     taban: dict[str, object] = (
         {
             "tur": "kuran_metni",
             "surum": "1.0",
-            "kurul_gerekli": True,
-            "kisitlar": {"degistirme_yasak": True},
             "notice_text": BILDIRIM,
             "kaynak_url": "https://deneme.invalid/",
         }
@@ -104,7 +120,7 @@ def toml_yeniden(s: Senaryo, slug: str, **degisim: object) -> None:
         else {"surum": "1.1", "baslik": "Deneme ek kaynak"}
     )
     taban.update(degisim)
-    kayit_yaz(s.kok, alanlar_kur(slug, s.kok, **taban))
+    kayit_yaz(s.kok, alanlar_kur(slug, **taban))
 
 
 def _staged_calisma(
@@ -131,7 +147,6 @@ def _staged_calisma(
         uv_lock=None,
         config_sha=None,
         girdiler=girdiler,
-        lisans_kopyalari={},
         araclar={},
         ciktilar=ciktilar,
         parmak="0" * 64,
@@ -325,15 +340,15 @@ def test_ilk_yukleme_sonra_ikinci_kosu_sifir_degisiklik(
     assert len(str(run[0][3]).strip()) == 64
     assert satirlar[0][4] == run[0][0]
     kaynak = conn.execute(
-        "SELECT notice_text, surum, license_status::text, kurul_gerekli, embed_ok,"
-        " alinma_tarihi::text, dosya_sha256 FROM icerik.source WHERE slug = %s",
+        "SELECT notice_text, surum, alinma_tarihi::text, dosya_sha256 FROM icerik.source"
+        " WHERE slug = %s",
         (ANA,),
     ).fetchone()
     assert kaynak is not None
     assert kaynak[0] == BILDIRIM
-    assert kaynak[1:5] == ("1.0", "serbest", True, True)
-    assert kaynak[5] == TARIH
-    assert kaynak[6] == lineage.sha256_bayt(b"Deneme ham dosya test-ana\n")
+    assert kaynak[1] == "1.0"
+    assert kaynak[2] == TARIH
+    assert kaynak[3] == lineage.sha256_bayt(b"Deneme ham dosya test-ana\n")
     assert say(conn, "SELECT count(*) FROM icerik.source WHERE slug = %s", EK) == 1
 
     # Ikinci kosu: yeni zincir ayni icerikle; --force etkisiz, hicbir satir degismez.
@@ -438,61 +453,80 @@ def test_baska_kaynaga_ait_capa_cikis_2(tmp_path: Path, conn: psycopg.Connection
 
 
 @pytest.mark.veritabani
-@pytest.mark.parametrize(
-    ("db_degisimi", "beklenen"),
-    [
-        ("license_status = 'ic_kullanim'", 3),  # veritabani daha kisitlayici
-        ("embed_ok = false", 3),
-        ("kurul_gerekli = true", 0),  # TOML'la ayni: fark yok
-        ("license_status = 'kapali'", 3),  # kapali: lisans kapisi
-    ],
-)
-def test_ikinci_onay_alani_veritabani_kisitlayici(
-    tmp_path: Path, conn: psycopg.Connection, db_degisimi: str, beklenen: int
-) -> None:
-    s = senaryo_kur(tmp_path)
-    zincir_kur(s)
-    assert calistir(s, conn) == 0
-    conn.execute(f"UPDATE icerik.source SET {db_degisimi} WHERE slug = %s", (ANA,))  # type: ignore[call-overload]
-    once = conn.execute(
-        "SELECT license_status::text, embed_ok, kurul_gerekli, baslik FROM icerik.source"
-        " WHERE slug = %s",
-        (ANA,),
-    ).fetchone()
-    toml_yeniden(s, ANA, baslik="Deneme yeni baslik")
-    zincir_kur(s, [satir(1, ar_norm="degisti"), satir(2), satir(3)])
-    assert calistir(s, conn) == beklenen
-    sonra = conn.execute(
-        "SELECT license_status::text, embed_ok, kurul_gerekli, baslik FROM icerik.source"
-        " WHERE slug = %s",
-        (ANA,),
-    ).fetchone()
-    assert sonra is not None
-    assert once is not None
-    assert sonra[:3] == once[:3]  # ikinci onayli alanlar hic yazilmaz
-    if beklenen != 0:
-        assert sonra[3] == once[3]  # durdu: betimleyici alan da yazilmadi
-        assert (
-            say(conn, "SELECT count(*) FROM icerik.unit WHERE ar_norm = 'degisti'") == 0
-        )  # satirlar degismedi
-    else:
-        assert sonra[3] == "Deneme yeni baslik"
+def test_source_tablosu_hedef_sutunlara_sahip(conn: psycopg.Connection) -> None:
+    """Sema A07'nin yeniden uretilen ilk gocudur: `icerik.source` 16 sutun, `id` yok."""
+    sutunlar = [
+        str(satir_[0])
+        for satir_ in conn.execute(
+            "SELECT column_name FROM information_schema.columns"
+            " WHERE table_schema = 'icerik' AND table_name = 'source' ORDER BY ordinal_position"
+        ).fetchall()
+    ]
+    assert sutunlar == list(HEDEF_SUTUNLAR)
 
 
 @pytest.mark.veritabani
-def test_toml_veritabanindan_kisitlayici_degilse_cikis_2(
+def test_source_ilk_ekleme_butun_toml_alanlariyla(tmp_path: Path, conn: psycopg.Connection) -> None:
+    s = senaryo_kur(
+        tmp_path,
+        yazar="Deneme Yazar",
+        provider="deneme",
+        baski_bilgisi={"yil": 1935},
+        notlar="Deneme teknik not.",
+        atif_url="https://deneme.invalid/atif",
+    )
+    zincir_kur(s)
+    assert calistir(s, conn) == 0
+    kaynak = conn.execute(
+        "SELECT tur::text, baslik, yazar, provider, kaynak_url, baski_bilgisi, atif_metni,"
+        " atif_url, notlar FROM icerik.source WHERE slug = %s",
+        (ANA,),
+    ).fetchone()
+    assert kaynak == (
+        "kuran_metni",
+        "Deneme kaynak",
+        "Deneme Yazar",
+        "deneme",
+        "https://deneme.invalid/",
+        {"yil": 1935},
+        "Deneme atif metni.",
+        "https://deneme.invalid/atif",
+        "Deneme teknik not.",
+    )
+
+
+@pytest.mark.veritabani
+def test_betimleyici_alanlar_degisince_guncellenir(
     tmp_path: Path, conn: psycopg.Connection
 ) -> None:
+    """K-39 madde 3: TOML'daki betimleyici alan degisince hat satiri gunceller."""
     s = senaryo_kur(tmp_path)
     zincir_kur(s)
     assert calistir(s, conn) == 0
-    # TOML 'bekliyor' (daha kisitlayici), veritabani 'serbest': hat ikinci onayi atlayamaz.
-    toml_yeniden(s, ANA, license_status="bekliyor")
+    toml_yeniden(
+        s,
+        ANA,
+        baslik="Deneme yeni baslik",
+        atif_metni="Deneme yeni atif",
+        atif_url="https://deneme.invalid/atif",
+        kaynak_url="https://deneme.invalid/yeni",
+    )
     zincir_kur(s)
-    assert calistir(s, conn) == 2
-    assert conn.execute(
-        "SELECT license_status::text FROM icerik.source WHERE slug = %s", (ANA,)
-    ).fetchone() == ("serbest",)
+    assert calistir(s, conn) == 0
+    rapor = sayilar(s)
+    assert (rapor["kaynak_guncellenen"], rapor["kaynak_degismeyen"]) == (1, 1)
+    kaynak = conn.execute(
+        "SELECT baslik, atif_metni, atif_url, kaynak_url, notice_text FROM icerik.source"
+        " WHERE slug = %s",
+        (ANA,),
+    ).fetchone()
+    assert kaynak == (
+        "Deneme yeni baslik",
+        "Deneme yeni atif",
+        "https://deneme.invalid/atif",
+        "https://deneme.invalid/yeni",
+        BILDIRIM,
+    )
 
 
 @pytest.mark.veritabani
@@ -502,16 +536,39 @@ def test_source_varsa_yalniz_betimleyici_alan_guncellenir(
     s = senaryo_kur(tmp_path)
     zincir_kur(s)
     assert calistir(s, conn) == 0
-    conn.execute("UPDATE icerik.source SET notlar = 'Deneme editor notu' WHERE slug = %s", (ANA,))
-    toml_yeniden(s, ANA, baslik="Deneme yeni baslik", notlar="Deneme baska not", surum="1.2")
+    conn.execute(
+        "UPDATE icerik.source SET notlar = 'Deneme editor notu', yazar = 'Deneme editor yazar'"
+        " WHERE slug = %s",
+        (ANA,),
+    )
+    toml_yeniden(
+        s,
+        ANA,
+        baslik="Deneme yeni baslik",
+        notlar="Deneme baska not",
+        surum="1.2",
+        yazar="Deneme baska yazar",
+        provider="deneme",
+        tur="meal",
+    )
     zincir_kur(s)
     assert calistir(s, conn) == 0
     rapor = sayilar(s)
     assert (rapor["kaynak_guncellenen"], rapor["kaynak_degismeyen"]) == (1, 1)
     kaynak = conn.execute(
-        "SELECT baslik, surum, notlar FROM icerik.source WHERE slug = %s", (ANA,)
+        "SELECT baslik, surum, notlar, yazar, provider, tur::text FROM icerik.source"
+        " WHERE slug = %s",
+        (ANA,),
     ).fetchone()
-    assert kaynak == ("Deneme yeni baslik", "1.2", "Deneme editor notu")  # notlar betimleyici degil
+    # Betimleyici: baslik, surum. Betimleyici olmayan: notlar, yazar, provider, tur (editorundur).
+    assert kaynak == (
+        "Deneme yeni baslik",
+        "1.2",
+        "Deneme editor notu",
+        "Deneme editor yazar",
+        None,
+        "kuran_metni",
+    )
 
 
 @pytest.mark.veritabani
@@ -554,6 +611,40 @@ def test_veritabaninda_bildirim_notice_txt_ile_tutarli(
     assert kayit == (ozet(BILDIRIM),)
 
 
+# --- hedef sema ve K-39 madde 3 (veritabani gerekmez) -------------------------------------
+
+
+def test_betimleyici_alanlar_k39_madde_3() -> None:
+    assert pg.BETIMLEYICI_ALANLAR == (
+        "baslik",
+        "surum",
+        "kaynak_url",
+        "atif_metni",
+        "atif_url",
+        "notice_text",
+        "alinma_tarihi",
+        "dosya_sha256",
+    )
+    assert pg.KAPILAR == ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
+
+
+def test_insert_ve_select_yalniz_hedef_sutunlari_kullanir() -> None:
+    ekleme = re.search(r"INSERT INTO icerik\.source \((.*?)\) VALUES", pg.INSERT_SOURCE)
+    assert ekleme is not None
+    eklenen = [sutun.strip() for sutun in ekleme.group(1).split(",")]
+    assert set(eklenen) <= set(HEDEF_SUTUNLAR)
+    assert "id" not in eklenen
+    assert set(pg.BETIMLEYICI_ALANLAR) <= set(HEDEF_SUTUNLAR)
+    secim = pg.SELECT_SOURCE.as_string()
+    for alan in pg.BETIMLEYICI_ALANLAR:
+        assert f'"{alan}"' in secim
+    for eski in ("license", "lisans", "kurul", "embed_ok", "kisitlar", "yeniden_kontrol"):
+        assert eski not in pg.INSERT_SOURCE
+        assert eski not in secim
+    for eski in ("kamu_mali", "vefat"):
+        assert eski not in pg.INSERT_SOURCE
+
+
 # --- dosya onkosullari (veritabani gerekmez) ---------------------------------------------
 
 
@@ -577,6 +668,13 @@ def test_qa_kapisi_kaldiysa_cikis_1(tmp_path: Path) -> None:
 def test_qa_raporu_dort_kapiyi_icermiyorsa_cikis_1(tmp_path: Path) -> None:
     s = senaryo_kur(tmp_path)
     zincir_kur(s, kapilar={"G-CAP": "gecti"})
+    assert calistir(s) == 1
+
+
+def test_qa_raporu_eski_g_lis_adiyla_cikis_1(tmp_path: Path) -> None:
+    """Kapi G-LIS'ten G-KAY'a donustu: eski adli rapor dort kapiyi da icermez."""
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s, kapilar=dict.fromkeys(("G-LIS", "G-BUT", "G-CAP", "G-NOR"), "gecti"))
     assert calistir(s) == 1
 
 
@@ -621,16 +719,54 @@ def test_bozuk_units_satiri_cikis_2(tmp_path: Path) -> None:
     assert calistir(s) == 2
 
 
-def test_kapali_kaynak_cikis_3(tmp_path: Path) -> None:
+def test_kayitsiz_ek_kaynak_cikis_2(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """G-KAY: kayitsiz kaynak hatta alinmaz (cikis 2); veritabani baglantisi acilmaz."""
     s = senaryo_kur(tmp_path)
     zincir_kur(s)
-    toml_yeniden(s, EK, license_status="kapali", lisans_kopyasi=None, lisans_sha256=None)
+    (s.kok / "pipeline" / "sources" / f"{EK}.toml").unlink()
     bag = Cagrilmaz()
     assert (
         pg.komut_export_pg(s.ayarlar, depo_kok=s.kok, source=ANA, kayit={ANA: (EK,)}, baglanti=bag)
-        == 3
+        == 2
     )
     assert bag.sayi == 0
+    assert "kayitsiz" in capsys.readouterr().err
+
+
+def test_gecersiz_kayit_cikis_2(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """G-KAY: kayit gecerli olmali; eski lisans alani bilinmeyen alan olarak kaydi bozar."""
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s)
+    toml_yeniden(s, EK, license_status="serbest")
+    bag = Cagrilmaz()
+    assert (
+        pg.komut_export_pg(s.ayarlar, depo_kok=s.kok, source=ANA, kayit={ANA: (EK,)}, baglanti=bag)
+        == 2
+    )
+    assert bag.sayi == 0
+    assert "gecersiz" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("atif", ["", "   "])
+def test_atif_metni_bos_cikis_2(tmp_path: Path, atif: str) -> None:
+    """G-KAY: `atif_metni` dolu olmali."""
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s)
+    toml_yeniden(s, ANA, atif_metni=atif)
+    bag = Cagrilmaz()
+    assert (
+        pg.komut_export_pg(s.ayarlar, depo_kok=s.kok, source=ANA, kayit={ANA: (EK,)}, baglanti=bag)
+        == 2
+    )
+    assert bag.sayi == 0
+
+
+def test_notice_txt_var_toml_notice_yoksa_cikis_2(tmp_path: Path) -> None:
+    """G-KAY: dosyada bildirim blogu varsa TOML'daki `notice_text` bayt bayt ayni olmali."""
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s)
+    toml_yeniden(s, ANA, notice_text=None)
+    assert calistir(s) == 2
 
 
 def test_tanimsiz_kaynak_cikis_2(tmp_path: Path) -> None:
@@ -648,14 +784,14 @@ def test_anchor_calismasi_yoksa_ve_run_gecersizse_cikis_2(tmp_path: Path) -> Non
 
 def test_rapor_baglanti_dizesi_ve_icerik_yazmaz(tmp_path: Path) -> None:
     s = senaryo_kur(tmp_path)
-    zincir_kur(s, kapilar={**TUM_GECTI, "G-LIS": "kaldi"})
+    zincir_kur(s, kapilar={**TUM_GECTI, "G-KAY": "kaldi"})
     assert calistir(s) == 1
     raporlar = b"".join(p.read_bytes() for p in (s.veri / "reports").glob("*.json"))
     raporlar += b"".join(p.read_bytes() for p in (s.veri / "logs").glob("*.jsonl"))
     assert b"Deneme metni" not in raporlar
 
 
-def test_cli_export_pg_kayitsiz_kaynak_cikis_3(
+def test_cli_export_pg_kayitsiz_kaynak_cikis_2(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     kok = kok_kur(tmp_path)
@@ -663,5 +799,6 @@ def test_cli_export_pg_kayitsiz_kaynak_cikis_3(
     sonuc = CliRunner().invoke(
         cli.app, ["export", "pg", "--source", "tanzil-uthmani", "--kok", str(kok)]
     )
-    assert sonuc.exit_code == 3, sonuc.stderr
-    assert "lisans kapisi" in sonuc.stderr
+    assert sonuc.exit_code == 2, sonuc.stderr
+    assert "kaynak kaydi" in sonuc.stderr
+    assert "lisans" not in sonuc.stderr
