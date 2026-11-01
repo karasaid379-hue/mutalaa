@@ -48,6 +48,23 @@ test('fromNuget maps the nuget-license JSON fields and rejects a non-array', () 
   assert.throws(() => fromNuget('{}'), /JSON array/);
 });
 
+test('fromNuget and fromPnpm reject entries with missing or renamed fields', () => {
+  assert.throws(() => fromNuget(JSON.stringify([{ Foo: 1 }])), /no PackageId/);
+  assert.throws(() => fromNuget(JSON.stringify([{ PackageId: 'X' }])), /no PackageVersion/);
+  assert.throws(
+    () => fromNuget(JSON.stringify([{ PackageId: 'X', PackageVersion: '1', License: 3 }])),
+    /non-text License/,
+  );
+  assert.throws(
+    () =>
+      fromNuget(JSON.stringify([{ PackageId: 'X', PackageVersion: '1', ValidationErrors: 'e' }])),
+    /non-array ValidationErrors/,
+  );
+  assert.throws(() => fromPnpm('[]'), /JSON object/);
+  assert.throws(() => fromPnpm(JSON.stringify({ MIT: 'a' })), /not an array/);
+  assert.throws(() => fromPnpm(JSON.stringify({ MIT: [{ versions: ['1'] }] })), /no package name/);
+});
+
 test('format sorts ordinally and shows missing licenses and tool notes', () => {
   const lines = format([
     { name: 'b', version: '1.0.0', license: 'GPL-3.0-only' },
@@ -110,6 +127,31 @@ test('command line: exit code 2 for unreadable input, bad arguments and an empty
   assert.equal(run(['pnpm', '--json'], '{}').status, 2);
   assert.equal(run(['pnpm', 'a.json', 'b.json'], '{}').status, 2);
   assert.equal(run(['pnpm', 'does-not-exist.json']).status, 2);
+});
+
+test('command line: a renamed NuGet field is exit code 2, not a corrupt list', () => {
+  const r = run(['nuget'], JSON.stringify([{ Foo: 1 }]));
+  assert.equal(r.status, 2);
+  assert.match(r.stderr, /no PackageId/);
+});
+
+test('command line: --json write errors are exit code 2; an empty NuGet list writes no file', () => {
+  fs.mkdirSync(TMP, { recursive: true });
+  const missingDir = `${TMP}no-such-dir/list.json`;
+  const bad = run(
+    ['pnpm', '--json', missingDir],
+    JSON.stringify({ MIT: [{ name: 'a', versions: ['1'] }] }),
+  );
+  assert.equal(bad.status, 2);
+  assert.match(bad.stderr, /cannot write/);
+  const out = `${TMP}empty-nuget.json`;
+  fs.rmSync(out, { force: true });
+  try {
+    assert.equal(run(['nuget', '--json', out], '[]').status, 2);
+    assert.equal(fs.existsSync(out), false);
+  } finally {
+    fs.rmSync(out, { force: true });
+  }
 });
 
 test('command line: --json writes the normalized list', () => {

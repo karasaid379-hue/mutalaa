@@ -1,8 +1,8 @@
 name: nightly
 
-# Nightly invariance run. Tanzil data is never downloaded here (no terms-of-use consent in CI,
-# and data/ is not in git): only the checks that run on the committed fixture and the source
-# registry execute. The full run on real data is local (scripts/nightly.ps1).
+# Nightly invariance run. Tanzil data is not downloaded here (data/ is not in git and the
+# download is done locally by Claude Code): only the checks that run on the committed fixture
+# and the source registry execute. The full run on real data is local (scripts/nightly.ps1).
 # Later nightly jobs (golden sets, internal pack, Maestro) are added to this file.
 on:
   schedule:

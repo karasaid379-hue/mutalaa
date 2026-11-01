@@ -16,9 +16,17 @@ export function fromPnpm(text) {
   const trimmed = String(text ?? '').trim();
   if (trimmed === '' || /^no licenses/i.test(trimmed)) return [];
   const data = JSON.parse(trimmed);
+  if (data === null || typeof data !== 'object' || Array.isArray(data)) {
+    throw new Error('pnpm licenses output must be a JSON object');
+  }
   const out = [];
   for (const [license, entries] of Object.entries(data)) {
+    if (!Array.isArray(entries))
+      throw new Error(`pnpm entry list for "${license}" is not an array`);
     for (const entry of entries) {
+      if (typeof entry?.name !== 'string' || entry.name === '') {
+        throw new Error(`pnpm entry under "${license}" has no package name`);
+      }
       if (entry.name.startsWith('@mutalaa/')) continue; // workspace packages are ours
       for (const version of entry.versions?.length ? entry.versions : ['']) {
         out.push({ name: entry.name, version, license });
@@ -32,12 +40,28 @@ export function fromPnpm(text) {
 export function fromNuget(text) {
   const data = JSON.parse(String(text ?? '[]'));
   if (!Array.isArray(data)) throw new Error('nuget-license output must be a JSON array');
-  return data.map((p) => ({
-    name: p.PackageId,
-    version: p.PackageVersion,
-    license: p.License ?? null,
-    errors: (p.ValidationErrors ?? []).map((e) => e.Error ?? String(e)),
-  }));
+  return data.map((p, i) => {
+    // A renamed field must stop the run: a silent "undefined@undefined" row would also corrupt
+    // the --json file that feeds the Kaynaklar screen.
+    if (typeof p?.PackageId !== 'string' || p.PackageId === '') {
+      throw new Error(`nuget-license entry ${i} has no PackageId`);
+    }
+    if (typeof p.PackageVersion !== 'string') {
+      throw new Error(`nuget-license entry ${i} (${p.PackageId}) has no PackageVersion`);
+    }
+    if (p.License != null && typeof p.License !== 'string') {
+      throw new Error(`nuget-license entry ${i} (${p.PackageId}) has a non-text License`);
+    }
+    if (p.ValidationErrors != null && !Array.isArray(p.ValidationErrors)) {
+      throw new Error(`nuget-license entry ${i} (${p.PackageId}) has non-array ValidationErrors`);
+    }
+    return {
+      name: p.PackageId,
+      version: p.PackageVersion,
+      license: p.License ?? null,
+      errors: (p.ValidationErrors ?? []).map((e) => e.Error ?? String(e)),
+    };
+  });
 }
 
 // Ordinal comparison: the order does not depend on the machine's locale.
@@ -100,16 +124,24 @@ function main(argv) {
     process.stderr.write(`cannot parse input: ${err.message}\n`);
     return 2;
   }
-  if (jsonOut) fs.writeFileSync(jsonOut, `${JSON.stringify(packages, null, 2)}\n`, 'utf8');
-  if (packages.length === 0) {
-    if (kind === 'nuget') {
-      // The server always has NuGet dependencies; an empty list means the tool or the project
-      // filter produced nothing, and the list would silently miss every package.
-      process.stderr.write(
-        'nuget: no packages found; the tool output is empty or every project was excluded\n',
-      );
+  if (packages.length === 0 && kind === 'nuget') {
+    // The server always has NuGet dependencies; an empty list means the tool or the project
+    // filter produced nothing, and the list would silently miss every package. No --json file is
+    // written for it.
+    process.stderr.write(
+      'nuget: no packages found; the tool output is empty or every project was excluded\n',
+    );
+    return 2;
+  }
+  if (jsonOut) {
+    try {
+      fs.writeFileSync(jsonOut, `${JSON.stringify(packages, null, 2)}\n`, 'utf8');
+    } catch (err) {
+      process.stderr.write(`cannot write ${jsonOut}: ${err.message}\n`);
       return 2;
     }
+  }
+  if (packages.length === 0) {
     process.stdout.write(`${kind}: no shipped dependencies to list\n`);
     return 0;
   }
