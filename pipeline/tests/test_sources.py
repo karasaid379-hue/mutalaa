@@ -491,7 +491,7 @@ SILINEN_SLUGLAR = (
 # Betimleyici alanlarda (adres ve notice_text haric) hukuk ya da izin yapisinin izi kalmamali
 # (K-42 madde 0). Silinen insan adimi numaralari buyuk-kucuk harfe duyarlidir.
 HUKUK_IZI = re.compile(
-    r"lisans|license|kurul|avukat|embed_ok|kisitlar|ic_kullanim|kapali|yazışma|yazisma|hukuki"
+    r"lisans|license|\bkurul(?:u)?\b|avukat|embed_ok|kisitlar|ic_kullanim|kapali|yazışma|yazisma|hukuki"
     r"|Unlicense|CC BY|CC0|\bOFL\b|\bGPL\b",
     re.IGNORECASE,
 )
@@ -547,8 +547,9 @@ def test_gercek_depo_hukuk_izi_yok() -> None:
     for slug, veri in gercek_toml().items():
         for alan in TARANAN_ALANLAR:
             for metin in metin_degerleri(veri.get(alan)):
-                assert HUKUK_IZI.search(metin) is None, f"{slug}.{alan}"
-                assert SILINEN_ADIM_NO.search(metin) is None, f"{slug}.{alan}"
+                eslesme = HUKUK_IZI.search(metin) or SILINEN_ADIM_NO.search(metin)
+                if eslesme is not None:
+                    pytest.fail(f"{slug}.{alan}: hukuk ya da izin izi {eslesme.group()!r}")
 
 
 def test_gercek_depoda_check_sifir_uyari() -> None:

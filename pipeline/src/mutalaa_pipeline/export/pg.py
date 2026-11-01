@@ -38,6 +38,7 @@ from mutalaa_pipeline.anchor import format as anchor_format
 from mutalaa_pipeline.anchor import parse as anchor_parse
 from mutalaa_pipeline.config import Ayarlar
 from mutalaa_pipeline.db import VeritabaniHatasi, baglan
+from mutalaa_pipeline.enums import SourceKind
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kati_json
 from mutalaa_pipeline.runctx import QaKaldi, RunContext, komut_calistir
 from mutalaa_pipeline.sources.kayit import Kaynak
@@ -412,11 +413,14 @@ def _icerik_ozeti_denetle(satirlar: list[Satir]) -> None:
 def _bildirim(ingest: ZincirRun, kaynak: Kaynak) -> str | None:
     """G-KAY bildirim denetimi (K-39 madde 6): `notice.txt` baytlarinin kati UTF-8 cozumu.
 
-    Dosya TOML'daki `notice_text` ile birebir ayni olmali (`rstrip` yok); ingest bildirim
-    yazmadiysa TOML degeri kullanilir.
+    Dosya TOML'daki `notice_text` ile birebir ayni olmali (`rstrip` yok). Kanonik Kur'an
+    metninde TOML bildirim tasiyorsa dosya zorunludur: dosya yoksa bayt denetimi sessizce
+    atlanmaz. Oteki kaynaklarda ingest bildirim yazmadiysa TOML degeri kullanilir.
     """
     yol = ingest.klasor / NOTICE_ADI
     if not yol.is_file():
+        if kaynak.tur is SourceKind.KURAN_METNI and kaynak.notice_text is not None:
+            raise GirdiHatasi(f"{_g(kaynak.slug)}: TOML notice_text var ama notice.txt yok")
         return kaynak.notice_text
     try:
         metin = yol.read_bytes().decode("utf-8")
@@ -527,6 +531,21 @@ def _istenen(kaynak: Kaynak, h: Hazirlik) -> dict[str, object]:
     }
 
 
+def _ekleme_parametreleri(kaynak: Kaynak, istenen: Mapping[str, object]) -> dict[str, object]:
+    """`INSERT_SOURCE` parametreleri: betimleyici alanlar ve yalniz ilk eklemede yazilanlar."""
+    return {
+        **istenen,
+        "slug": kaynak.slug,
+        "tur": kaynak.tur.value,
+        "yazar": kaynak.yazar,
+        "provider": kaynak.provider,
+        "baski_bilgisi": (
+            Jsonb(kaynak.baski_bilgisi) if kaynak.baski_bilgisi is not None else None
+        ),
+        "notlar": kaynak.notlar,
+    }
+
+
 def _source_satirlari(conn: psycopg.Connection, h: Hazirlik) -> dict[str, int]:
     """K-39 madde 3: yoksa butun TOML alanlariyla ekler, varsa betimleyici alanlari gunceller.
 
@@ -546,20 +565,7 @@ def _source_satirlari(conn: psycopg.Connection, h: Hazirlik) -> dict[str, int]:
             raise GirdiHatasi(f"kaynak {_g(slug)}: surum cozulemedi (TOML surum alani yok)")
         mevcut = mevcutlar[slug]
         if mevcut is None:
-            conn.execute(
-                INSERT_SOURCE,
-                {
-                    **istenen,
-                    "slug": slug,
-                    "tur": kaynak.tur.value,
-                    "yazar": kaynak.yazar,
-                    "provider": kaynak.provider,
-                    "baski_bilgisi": (
-                        Jsonb(kaynak.baski_bilgisi) if kaynak.baski_bilgisi is not None else None
-                    ),
-                    "notlar": kaynak.notlar,
-                },
-            )
+            conn.execute(INSERT_SOURCE, _ekleme_parametreleri(kaynak, istenen))
             sayac["kaynak_eklenen"] += 1
             continue
         degisen: dict[str, object] = {}

@@ -18,12 +18,13 @@ from hat_yardimci import ayarlar_kur
 from test_sources import alanlar_kur, kayit_yaz, kok_kur
 from typer.testing import CliRunner
 
-from mutalaa_pipeline import cli, lineage
+from mutalaa_pipeline import cli, lineage, sources
 from mutalaa_pipeline.config import Ayarlar
 from mutalaa_pipeline.db import baglan
 from mutalaa_pipeline.export import pg
-from mutalaa_pipeline.export.ortak import GirdiHatasi
+from mutalaa_pipeline.export.ortak import GirdiHatasi, depo_koku
 from mutalaa_pipeline.runctx import Uuid7Uretici
+from mutalaa_pipeline.sources.kayit import Kaynak
 
 ANA = "test-ana"
 EK = "test-ek"
@@ -645,6 +646,54 @@ def test_insert_ve_select_yalniz_hedef_sutunlari_kullanir() -> None:
         assert eski not in pg.INSERT_SOURCE
 
 
+def _ana_kaynak(s: Senaryo) -> Kaynak:
+    kayitlar = {r.kaynak.slug: r.kaynak for r in sources.yukle(s.kok) if r.kaynak is not None}
+    return kayitlar[ANA]
+
+
+def _hazirlik_ornegi(kaynak: Kaynak) -> pg.Hazirlik:
+    """`_istenen` icin yeterli, dosya ve veritabani gerektirmeyen hazirlik."""
+    ham = [{"yol": f"raw/{kaynak.slug}/{TARIH}/deneme.txt", "sha256": "0" * 64}]
+    return pg.Hazirlik(
+        source_id=kaynak.slug,
+        kaynak_idleri=(kaynak.slug,),
+        anchor_run_id="",
+        units_yol="",
+        units_sha256="",
+        satirlar=[],
+        zincir=[],
+        ingest={},
+        ham={kaynak.slug: ham},
+        qa_rapor_id="",
+        kaynaklar={kaynak.slug: kaynak},
+        bildirimler={kaynak.slug: kaynak.notice_text},
+        parmak="",
+    )
+
+
+def test_insert_parametreleri_sutunlarla_ayni_sirada_ve_eksiksiz(tmp_path: Path) -> None:
+    """CI'da veritabani yokken de: INSERT yer tutucusu, sutun ve kodun verdigi parametre uyusur."""
+    ekleme = re.fullmatch(r"INSERT INTO icerik\.source \((.*?)\) VALUES \((.*)\)", pg.INSERT_SOURCE)
+    assert ekleme is not None
+    sutunlar = [sutun.strip() for sutun in ekleme.group(1).split(",")]
+    parametreler = re.findall(r"%\((\w+)\)s", ekleme.group(2))
+    assert parametreler == sutunlar  # yer tutucu adi sutun adidir ve ayni siradadir
+    kaynak = _ana_kaynak(senaryo_kur(tmp_path))
+    istenen = pg._istenen(kaynak, _hazirlik_ornegi(kaynak))
+    assert tuple(istenen) == pg.BETIMLEYICI_ALANLAR
+    assert set(pg._ekleme_parametreleri(kaynak, istenen)) == set(parametreler)
+
+
+def test_hedef_sutunlar_sunucu_sema_goruntusuyle_ayni() -> None:
+    """`icerik.source` sutunlari ve sirasi, EF modelinden uretilen sema goruntusuyle ayni."""
+    yol = depo_koku() / "server/tests/Mutalaa.Api.Tests/Snapshots/editoryal-sema.sql"
+    sema = yol.read_bytes().decode("utf-8")
+    blok = re.search(r"^CREATE TABLE icerik\.source \((.*?)^\);", sema, re.DOTALL | re.MULTILINE)
+    assert blok is not None
+    sutunlar = tuple(satir.split()[0] for satir in blok.group(1).splitlines() if satir.strip())
+    assert sutunlar == HEDEF_SUTUNLAR
+
+
 # --- dosya onkosullari (veritabani gerekmez) ---------------------------------------------
 
 
@@ -766,6 +815,13 @@ def test_notice_txt_var_toml_notice_yoksa_cikis_2(tmp_path: Path) -> None:
     s = senaryo_kur(tmp_path)
     zincir_kur(s)
     toml_yeniden(s, ANA, notice_text=None)
+    assert calistir(s) == 2
+
+
+def test_kanonik_kaynakta_notice_txt_yoksa_cikis_2(tmp_path: Path) -> None:
+    """G-KAY: TOML bildirim tasiyan kanonik kaynakta `notice.txt` yoksa bayt denetimi atlanmaz."""
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s, notice=None)
     assert calistir(s) == 2
 
 
