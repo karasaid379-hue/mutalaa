@@ -37,8 +37,6 @@ def kok_kur(tmp_path: Path) -> Path:
         kaynak_url="https://example.invalid/quran-data.xml",
         alinma_tarihi="2026-01-02",
         sha256="0" * 64,
-        lisans="deneme",
-        telif="deneme",
         surum="0",
         sayilar=SENTETIK_SAYILAR,
     )

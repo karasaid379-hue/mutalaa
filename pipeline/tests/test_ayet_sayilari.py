@@ -49,8 +49,13 @@ def sentetik_xml(
     kok_turu: str = "metadata",
     on_ek: str = "",
     ayas_metni: dict[int, str] | None = None,
+    kok_oznitelikleri: str = ' copyright="(C) deneme" license="deneme-lisans"',
 ) -> bytes:
-    """Tanzil `quran-data.xml` bicimini taklit eden sentetik XML."""
+    """Tanzil `quran-data.xml` bicimini taklit eden sentetik XML.
+
+    Gercek dosyanin kok ogesi telif ve lisans oznitelikleri tasir; uretec bunlari okumaz ve
+    yazmaz (K-42), bu yuzden sentetik dosya da tasir.
+    """
     if baslangiclar is None:
         toplam = 0
         hesaplanan = []
@@ -63,9 +68,7 @@ def sentetik_xml(
     satirlar = ['<?xml version="1.0" encoding="utf-8" ?>']
     if on_ek:
         satirlar.append(on_ek)
-    satirlar.append(
-        f'<quran type="{kok_turu}" version="9.9" copyright="(C) deneme" license="deneme-lisans">'
-    )
+    satirlar.append(f'<quran type="{kok_turu}" version="9.9"{kok_oznitelikleri}>')
     satirlar.append('\t<suras alias="chapters">')
     for sira, (indis, sayi, bas) in enumerate(zip(indisler, sayilar, baslangiclar, strict=True)):
         ayas = (ayas_metni or {}).get(sira, str(sayi))
@@ -116,6 +119,12 @@ def test_python_kopyasi_json_ile_ayni() -> None:
     assert isinstance(AYET_SAYILARI, tuple)
 
 
+def test_gercek_json_lisans_ve_telif_tasimaz() -> None:
+    """K-42: belgede yalniz kaynak adresi, tarih, ozet, surum ve sayilar bulunur."""
+    ham = json.loads((depo_koku() / ayet_sayilari.JSON_YOLU).read_text(encoding="utf-8"))
+    assert list(ham) == ["kaynak_url", "alinma_tarihi", "sha256", "surum", "sayilar"]
+
+
 def test_gercek_depoda_check_sifir() -> None:
     sonuc = runner.invoke(app, ["export", "ayet-sayilari", "--check"])
     assert sonuc.exit_code == 0, sonuc.output
@@ -134,25 +143,30 @@ def test_sentetik_xml_dort_dosya_uretir_ve_check_gecer(tmp_path: Path) -> None:
         assert b"\r" not in icerik
         assert icerik.endswith(b"\n")
         assert b"ad-0" not in icerik  # sure adi yer tutuculari hicbir dosyaya gecmez
+        # kok ogenin telif ve lisans oznitelikleri okunmaz, hicbir dosyaya gecmez (K-42)
+        assert b"deneme-lisans" not in icerik
+        assert b"(C) deneme" not in icerik
 
     belge = json.loads((kok / ayet_sayilari.JSON_YOLU).read_text(encoding="utf-8"))
     assert list(belge) == [
         "kaynak_url",
         "alinma_tarihi",
         "sha256",
-        "lisans",
-        "telif",
         "surum",
         "sayilar",
     ]
     assert belge["kaynak_url"] == URL
     assert belge["alinma_tarihi"] == TARIH
     assert belge["sha256"] == hashlib.sha256(veri).hexdigest()
-    assert belge["lisans"] == "deneme-lisans"
-    assert belge["telif"] == "(C) deneme"
     assert belge["surum"] == "9.9"
     assert tuple(belge["sayilar"]) == SENTETIK_SAYILAR
 
+    assert calistir(kok, "--check").exit_code == 0
+
+
+def test_telif_ve_lisans_ozniteliksiz_kok_oge_kabul_edilir(tmp_path: Path) -> None:
+    kok, sonuc = uret(tmp_path, sentetik_xml(kok_oznitelikleri=""))
+    assert sonuc.exit_code == 0, sonuc.output
     assert calistir(kok, "--check").exit_code == 0
 
 
@@ -292,6 +306,16 @@ def test_check_json_bozuksa_iki(tmp_path: Path, bozma: str) -> None:
     yol.parent.mkdir(parents=True)
     yol.write_text(bozma, encoding="utf-8", newline="\n")
     assert calistir(tmp_path, "--check").exit_code == 2
+
+
+@pytest.mark.parametrize("anahtar", ["lisans", "telif"])
+def test_check_eski_lisans_ya_da_telif_anahtarli_json_iki(tmp_path: Path, anahtar: str) -> None:
+    kok, _ = uret(tmp_path, sentetik_xml())
+    yol = kok / ayet_sayilari.JSON_YOLU
+    belge = json.loads(yol.read_text(encoding="utf-8"))
+    belge[anahtar] = "deneme"
+    yol.write_text(json.dumps(belge, indent=2) + "\n", encoding="utf-8", newline="\n")
+    assert calistir(kok, "--check").exit_code == 2
 
 
 def test_check_113_elemanli_json_iki(tmp_path: Path) -> None:
