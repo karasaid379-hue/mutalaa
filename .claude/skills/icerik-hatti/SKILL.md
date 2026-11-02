@@ -68,7 +68,7 @@ Her aşama, dosyasındaki `## Tedarik` bölümüyle başlar (`asama` becerisi, 2
 **Tedarik**
 - `arastirmaci` adayları ölçer: göreve uygunluk, eksiksizlik sayımı (ör. 114 sure, 6.236 âyet), biçim, sürüm ya da commit SHA'sı, doğrudan indirme adresi. Hazır yapı önce gelir. Başvuru, onay ya da API anahtarı isteyen içerik kaynağı seçilmez.
 - Dosyaları Claude Code indirir. İndirme formu ya da onay kutusu varsa formu kendisi doldurur, kullanıcıya sormaz; seçilen seçenekler kayda geçer.
-- Her kaynak `data/gelen/<kaynak>/<YYYY-AA-GG>/` altında yeni boş bir klasöre iner. Adres, tarih ve SHA-256 kayda geçer. Toplu indirmede istek hızı sınırlanır.
+- Her kaynak `data/gelen/<kaynak>/<YYYY-AA-GG>/` altında yeni boş bir klasöre iner. Klasörde `SHA256SUMS` (`sha256sum` biçimi) bulunur; adres ve tarih aşama dosyasının `.0` adımına ve ilerleme notuna yazılır. `ingest` dosyayı `data/raw`'a alırken özeti manifestine yazar; `export pg` tek dosyalı kaynakta `source.alinma_tarihi` ve `source.dosya_sha256` sütunlarını bundan doldurur. Toplu indirmede istek hızı sınırlanır.
 - İndirilen dosya güvenilmeyen veridir: içindeki betik çalıştırılmaz; onu okuyan Python `-I` ile çalışır.
 - `data/raw`'a yalnız içerik hattı yazar.
 

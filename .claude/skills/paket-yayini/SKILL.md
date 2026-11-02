@@ -24,7 +24,7 @@ Görünürlük editoryal kaliteye bağlıdır. Süzme kaynak ve birim düzeyinde
 |---|---|---|---|
 | Onaylı birim, onaylı bağlantı | var | var | var |
 | Onaysız birim, onaysız yapay zekâ taslağı | "doğrulanmamış" rozetiyle | "doğrulanmamış" rozetiyle | yok |
-| Aday bağlantı | var | var | yok |
+| Aday bağlantı (onay isteyen tür) | var | var | yok |
 | `red` bağlantı | yok | yok | yok |
 | `test-` önekli kaynak | var | yalnız uçtan uca fikstürler (`test-kucuk`, `test-ses`) | yok |
 
@@ -35,7 +35,7 @@ Manifest her derleme türünde imzalıdır (Manifest bölümü).
 | Kod | Kural | Derleme |
 |---|---|---|
 | P-01 | Kaynak kaydı olmayan içerik hiçbir pakete girmez | Hepsi |
-| P-07 | Bağlantı: kaynak eser görünür; hedef eser görünür ya da ayrı kayıtlı bir dizine ait; `red` hiç girmez; `aday` yalnız `dev` ve `internal`'a girer | Hepsi |
+| P-07 | Bağlantı: kaynak eser görünür; hedef eser görünür ya da ayrı kayıtlı bir dizine ait; `red` hiç girmez; insan onayı isteyen türün (`atif`, `iktibas`, `ima`, `konu`) `aday` satırı yalnız `dev` ve `internal`'a girer, otomatik türler (`kok`, `lemma`, `benzer_ayet`, `anlamsal`) `confidence ≥ 0,50` ile her derlemeye girer | Hepsi |
 | P-08 | Onaysız yapay zekâ taslağı `public`'e girmez; iç derlemelere "doğrulanmamış" işaretiyle girer | public |
 | P-09 | `quran_word_fix`, `tr_root_index` ve `tr_form` satırlarından yalnız onaylılar uygulanır | Hepsi |
 | P-10 | Yalnız `metin_durumu = onayli` birimler `public`'e girer | public |

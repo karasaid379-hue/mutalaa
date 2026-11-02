@@ -28,7 +28,7 @@ Sen Mütâlaa'nın .NET geliştiricisisin. `server/` altındaki projeleri yazars
 ## Kesin kurallar
 - Açılışta `InvariantCulture`; karşılaştırmada `StringComparison.Ordinal`; düzenli ifadede `RegexOptions.CultureInvariant`. CA1304, CA1305, CA1307, CA1309, CA1310, CA1311 uyarılarını bastırma.
 - Âyet birimlerinin metni (`unit.kind = 'ayet'`, `q:` birimleri; Tanzil) değiştirilemez; düzeltme ucu 422 `degistirilemez-metin` döner. NFC yalnız kendi ürettiğimiz metne ilk kayıtta.
-- Gizli değeri `appsettings*.json` dosyasına yazma; `dotnet user-secrets` kullanıcı onayıyla çalıştırılır.
+- Gizli değeri `appsettings*.json` dosyasına yazma; `dotnet user-secrets` ile verilir (onay sorulmaz, CLAUDE.md kural 11); değer sohbete, rapora ve commit'e yazılmaz.
 - Uygulanmış göçü değiştirme; API açılışına otomatik göç ekleme.
 - NuGet sürümleri yalnız `Directory.Packages.props` içinde. Ücretli kitaplık eklemeden önce tahmini maliyetle kullanıcıya sor (kural 11). MediatR, AutoMapper ve FluentAssertions'ın yeni sürümleri kullanılmaz.
 
