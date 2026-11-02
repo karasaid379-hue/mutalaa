@@ -563,9 +563,15 @@ def test_gercek_depo_tanzil_notice_text() -> None:
     uthmani = kayitlar["tanzil-uthmani"].notice_text
     sade = kayitlar["tanzil-simple-clean"].notice_text
     assert uthmani is not None
-    assert uthmani.strip(" \t\n") != ""
-    assert uthmani == sade  # iki varyantin dosya basligi ayni bildirimi tasir
-    assert "\r" not in uthmani
+    assert sade is not None
+    for metin in (uthmani, sade):
+        # dosyanin bildirim blogu: iki bos satir ve '#' onekli satirlar (K-39 madde 6, bayt bayt)
+        assert metin.startswith("\n\n# PLEASE DO NOT REMOVE OR CHANGE THIS COPYRIGHT BLOCK\n")
+        assert metin.endswith("\n")
+        assert "\r" not in metin
+    # iki blok yalniz baslik satirinda ayrilir
+    assert "Tanzil Quran Text (Uthmani, Version 1.1)" in uthmani
+    assert "Tanzil Quran Text (Simple Clean, Version 1.1)" in sade
     # kanonik kaynak Tanzil'in iki varyanti bildirimi tasir; baska kaynak da tasiyabilir
     assert {"tanzil-uthmani", "tanzil-simple-clean"} <= {
         s for s, k in kayitlar.items() if k.notice_text is not None
