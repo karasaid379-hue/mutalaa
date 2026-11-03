@@ -6,7 +6,6 @@ yazar = "Elmalılı Muhammed Hamdi Yazır"
 atif_metni = "Elmalılı Muhammed Hamdi Yazır, Hak Dini Kur'an Dili, İstanbul 1935–1939. Metin özgün baskıdan Mütâlaa tarafından aktarılmıştır. Aktarım sürümü {sürüm}."
 baski_bilgisi = { baski_kimligi = "elmalili-1935" }
 notlar = '''
-Kaynaklar §3.3'ün dayandığı MKÜ kaydı (openaccess.mku.edu.tr) 2026-10-26'da açılamadı (403); ikincil özete göre bibliyografya: Doğrulanacak.
 Açık soru: tarama kaynağı A09 tedarikinde ve pilot ölçümüyle seçilir; basılı takım (İ-09) yalnız internetteki taramalar ofset sınamasını geçmezse gerekir. Adaylar: archive.org HakDiniKuranDili (Eser 1979; tıpkıbasım kanıtlanmadı), İBB Atatürk Kitaplığı nüshaları, HathiTrust 1935 (yalnız arama); gerekirse sahaftan 1935 ya da 1960/1971 ofset takımı (TDV İA'ya göre ofset baskılar ilk baskıdan). Seçim yapılmadı (docs/04-icerik/01-kaynaklar.md §3.3).
 Hazır dijital meal metinleri (Vikikaynak, Tanzil ve Açık Kuran'daki Elmalılı metinleri) A09 pilotunda OCR ile yarışır; baskı esası ölçümle belirlenir (K-38).
 atif_metni içindeki {sürüm} Yayınlayıcı/alım sırasında doldurulur.'''

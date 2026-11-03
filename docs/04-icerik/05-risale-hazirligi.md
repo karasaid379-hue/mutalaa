@@ -1,53 +1,42 @@
 # Risale-i Nur Hazırlığı
-> **Sürüm:** 1.2 · **Tarih:** 20 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-02](../00-ozet/02-karar-defteri.md#k-02--i̇lk-içerik-seti) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
+> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-02](../00-ozet/02-karar-defteri.md#k-02--i̇lk-içerik-seti) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
 
-K-05 gereği Risale-i Nur'un altyapısı şimdi hazırlanır, metin sonra yayımlanır. Bu dosya bugün neyin, hangi hukuki sınırla kurulacağını ve 1 Ocak 2031'e hazırlığın nasıl izleneceğini anlatır. Risale metni mağaza paketine girmez.
+K-02 gereği Risale-i Nur'un metni, adresleri, âyet atıf dizini, lügatı ve baskı sayfa eşlemesi içerik hattıyla gelir (A20). Bu dosya kaynağın nasıl seçildiğini, hangi parçaların nasıl hazırlanacağını ve yayın kurallarını anlatır. Metin kelimesi kelimesine, kısaltmasız ve sadeleştirmesiz yayımlanır (K-25); birimler editör onayından geçtikçe mağaza paketine girer (K-42 madde 5).
 
-## 1. Hukuki durum
+## 1. Kaynak ve kapsam
 
-> **Hukuki görüş değildir.** Aşağıdakiler araştırma raporunun ve bağlantısı verilen kaynakların özetidir. Her uygulama adımı öncesinde bir fikri haklar avukatına danışılır.
+Kaynak; göreve uygunluk, eksiksizlik, biçim, sürümün sabitlenebilmesi ve doğrudan alınabilirlik ölçütleriyle seçilir ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 1). Başvuru, onay ya da API anahtarı isteyen kaynak seçilmez. Dosyaları Claude Code indirir: her kaynak `data/gelen/<kaynak>/<YYYY-AA-GG>/` altında yeni bir klasöre iner ve klasörde `SHA256SUMS` bulunur. Adresler, commit'ler ve sayımlar A20 `## Tedarik` bölümündedir.
 
-- **Koruma süresi.** Said Nursî 1960'ta vefat etti. Ekonomik haklar 31 Aralık 2030'a kadar sürer; Külliyat 1 Ocak 2031'de serbest kalır ([TDV İslâm Ansiklopedisi](https://islamansiklopedisi.org.tr/risale-i-nur-kulliyati); [FSEK m. 26–27, mevzuat.gov.tr](https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3)). WIPO Lex metni ([WIPO](https://www.wipo.int/wipolex/en/text/499171)) yalnız 2008 değişikliğine kadar günceldir; 6552 değişikliğini ve m. 47'nin iptal notunu taşımaz.
-- **Hak sahibi belirsiz.** Kültür ve Turizm Bakanlığı 2014'te bandrol başvurularını reddetti; gerekçe, yasal mirasçıların hakları birlikte kullanması gerektiği ve "sözleşme/muvafakatname" sunulamamasıydı ([AA/Sondakika](https://www.sondakika.com/guncel/haber-risale-i-nur-kulliyati-nin-basimi-6272228/)). Topluluk, Nursî'nin yayını "mutlak vekilim" dediği talebelerine emanet ettiğini savundu ([Timeturk](https://www.timeturk.com/tr/2014/07/08/risale-i-nurlar-yasaklaniyor-mu.html)). Kasım 2014'te bir Bakanlar Kurulu kararı, 6552 sayılı Kanunla değişen FSEK m. 47'ye dayanarak kullanım haklarını Diyanet'e verdi ([Hürriyet](https://www.hurriyet.com.tr/yazarlar/yalcin-bayer/nereden-nereye-27679980)). Anayasa Mahkemesi bu hükmü 14.05.2015 tarihli, E.2014/177, K.2015/49 sayılı kararıyla iptal etti; karar 11.06.2015 tarihli Resmî Gazete'de yayımlandı, sayı 29383 ([Resmî Gazete, 11.06.2015](https://www.resmigazete.gov.tr/eskiler/2015/06/20150611.htm); [FSEK m. 47 notu, mevzuat.gov.tr](https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3); [T24](https://t24.com.tr/haber/aym-risale-i-nur-yasagini-iptal-etti,299364); [Lexpera, 2023](https://www.lexpera.com.tr/literatur/armagan-makaleler/fikri-haklarin-anayasal-himayesi-uzerine-notlar-2-soyut-norm-denetimi-iptal-davasi-934-937/1)). 2016–2026 arasında hakları kimin kullandığını gösteren bir kaynak bulunamadı.
-- **Asıl nüsha.** Diyanet'in tahkik heyeti müellifin tashih ettiği 1956–1960 baskılarını esas aldı; metin 2015 başından beri yayınevlerince basılıyor ve risaleinur.hizmetvakfi.org'da yayımlanıyor ([README](https://raw.githubusercontent.com/alitekdemir/Risale-i-Nur-Diyanet/master/README.md)).
-- **alitekdemir/Risale-i-Nur-Diyanet deposu.** README metnin "www.risaleinur.hizmetvakfi.org adresinden indirilmiştir" diyor ve "Creative Commons Atıf-Türetilemez 4.0" iddiasını yalnız README'de taşıyor ([GitHub](https://github.com/alitekdemir/Risale-i-Nur-Diyanet)). Hak sahibi olmayan bir yükleyici sahip olmadığı hakkı lisanslayamaz; bu iddia geçersizdir ve depo kullanılmaz. Eski planın "lisans açık, hukuken güvenli" değerlendirmesi bu yüzden geçersizdir (`quran-app-docs/11-icerik-edinim/02-telif-analizi.md`).
-- **Manevi haklar.** FSEK m. 16 eserde "kısaltmalar, ekleme ve başka değiştirmeler" yapılmasını izne bağlar. m. 19 mirasçılara bu hakları 70 yıl kullanma imkânı verir ve kültür açısından önemli eserlerde Bakanlığa tanınan yetkinin süresini belirtmez. Pratik kural değişmez: metin 2031'den sonra da kelimesi kelimesine, kısaltılmadan ve sadeleştirilmeden yayımlanır (K-25).
+- **Metin.** Külliyat'ın dijital tam metni internette araştırılarak seçilir (A20.0, A20.1). Öneri, Diyanet'in "asıl nüsha" metninin GitHub kopyasıdır: `alitekdemir/Risale-i-Nur-Diyanet` (kayıt `risale-asil-nusha`; 15 kitap klasörü; `txt`, `obsidian-markdown` ve `html` biçimleri; markdown'da başlık, dipnot ve Arapça işareti). Diyanet'in tahkik heyeti müellifin tashih ettiği 1956–1960 baskılarını esas almıştır ([README](https://raw.githubusercontent.com/alitekdemir/Risale-i-Nur-Diyanet/master/README.md)); `risale-1956-1960` kaydı bu baskıların künyesidir ve metin taşımaz.
+- **Taslak girer.** Hazır dijital metin `taslak` girer ve editör onayından geçer ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) madde 4–5). Onay yolu (öneri: kaynakla bayt eşitliği kanıtlanan kitaplarda örneklem okumasından sonra kitap bazında toplu onay) `/karar` ile yazılır (A20.1).
+- **Karşılaştırma.** Metin kaynağı dışındaki dijital kopyalar (Hizmet Vakfı sitesinin Diyanet ve Külliyat sayfaları, eRisale, risale.online) yalnız karşılaştırma ve doğrulama içindir: içindekiler, kelime dizisi eşliği, sayfa eşlemesi. Farklar sürüm farkı olarak raporlanır; temel metin "düzeltilmez".
+- **Sadakat (K-25, K-26).** Metin kelimesi kelimesine, kısaltılmadan ve sadeleştirilmeden saklanır ve yayımlanır; yapay zekâ özeti yazılmaz (K-30). Hazır dijital metin kaynağın dağıttığı hâliyle saklanır (NFC uygulanmaz); kendi OCR aktarımımız ilk kayıtta NFC'ye çevrilir. Arama için normalize metin ayrı sütundadır.
+- **Fikstür.** Birim ve arayüz testleri için sentetik bir kaynak vardır (bölüm 3.6); gerçek metin testleri kaynak dosyasından alınmış kısa parçalarla yazılır.
 
-> **İç kullanım uyarısı.** Telif süresi dolmamış bir metin kaynağının iç kullanımı da (indirme, depoya ya da veritabanına koyma, OCR, indeksleme, yapay zekâ servisine gönderme, geliştirme derlemesine koyma) önce bir avukatla netleştirilir. Avukat görüşü gelene kadar Risale metni içerik hattına girmez ve Risale kaynakları `embed_ok = false` taşır: metin gömülmez ve harici yapay zekâ API'lerine gönderilmez. Geliştirme yer tutucu metinle yapılır (bölüm 3.6). K-05'e göre Risale metni yalnız ekip içi `dev` derlemelerinde görünür; davetli test kullanıcılarına giden `internal` derlemelere ve mağaza paketine girmez. Ekip içi işlemenin (dizin üretimi dahil) hukuki uygunluğu da hukukçuya danışılır; bu dosya ekip içi kullanımın bu görüşten sonra başlamasını öngörür. Bu not hukuki görüş değildir.
-
-## 2. Üç yol ve tarafsızlık
-
-| Yol | Ne yapılır | Risk ve koşul |
-|---|---|---|
-| 1. Lisans | Mirasçılardan ya da vasiyetnamede adı geçen talebe ve vakıflardan belgelenmiş muvafakati olan bir yayınevinden veya yayınevleri konsorsiyumundan yazılı izin | Tek bir topluluğun yayınevine bağlanmak tarafsızlığı zedeler |
-| 2. Metin yerine dizin (hukuki inceleme bekliyor) | Hangi âyetin hangi risalede, hangi bölümde ve hangi baskının kaçıncı sayfasında geçtiği yayımlanır; metin yayımlanmaz | Olgusal bilgi olduğu için risk düşük görünüyor (çıkarım). Dizini kurmak için metni işlemenin hukuki durumu avukatla doğrulanır |
-| 3. 1 Ocak 2031'i beklemek | Altyapı hazır bekler; metin 2031'de müellif tashihli 1956–1960 baskılarından açılır; asıl nüsha karşılaştırma metni olur | Takvim riski yok; hazırlık eksik kalırsa açılış gecikir |
-
-Rapor 2. ve 3. yolu birleştirmeyi, 1. yolu paralel müzakere etmeyi öneriyor. Görüşmeler [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) listesindedir.
+## 2. Tarafsızlık
 
 **Tarafsızlık kuralları (K-25).**
-- Münhasır anlaşma yapılmaz; bir yayınevine verilen hak diğerlerine de aynı şartlarla açık kalır.
-- Uygulamada yayınevi markası öne çıkarılmaz; baskılar eşit gösterilir ve okur baskıyı kendisi seçer.
-- Birden fazla baskı için sayfa eşlemesi tutulur.
-- Topluluklara özgü adlandırmalar kullanılmaz. Rapor eski plandaki "Hizmet hareketi" ifadesinin ve sesli Risale lisansı için cemaat kuruluşlarının aday gösterilmesinin çıkarılmasını istiyor.
+- Hiçbir cemaate ve yayınevine bağlı olunmaz. Uygulamada yayınevi markası öne çıkarılmaz; baskılar eşit gösterilir ve okur baskıyı kendisi seçer.
+- Birden fazla baskı için sayfa eşlemesi tutulur (bölüm 3.3).
+- Topluluklara özgü adlandırmalar kullanılmaz.
 
-## 3. Şimdi kurulanlar
+## 3. Hazırlanacak parçalar
 
-| İş | Risale metni gerekir mi? | Durum |
+| İş | Girdi | Aşama |
 |---|---|---|
-| Kitap ve bölüm adresleri | Hayır (içindekiler bilgisi) | Şimdi |
-| Baskı kayıtları, bölüm başı sayfa eşlemesi | Hayır (basılı kitaptan sayfa numarası) | Şimdi |
-| Paragraf çapaları | Evet | Temel metinden; 2031 ya da avukat onayı |
-| Âyet atıf dizini | Otomatik yöntem evet, elle dizin hayır | Yol 2 hukuki görüşüne bağlı |
-| Lügat | Hayır (serbest sözlükler ve kendi tanımlarımız) | Şimdi |
-| Âyet ve hadis atıf ayrıştırıcıları | Hayır (Elmalılı ve yapay örnekler) | Şimdi |
-| Okuyucu arayüzü ve paket hattı | Hayır (yer tutucu metin) | Şimdi |
-| Risale'ye özgü konu listesi (`konu:{slug}`; ör. haşir delilleri, ene ve zerre) ve paragraflara bağlanması | Liste için hayır, bağlama için evet | Liste şimdi, bağlama sonra ([Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md)) |
+| Kitap ve bölüm adresleri | Metnin başlıkları; eRisale ve Hizmet Vakfı içindekileriyle karşılaştırma | A20.2 |
+| Baskı kayıtları, bölüm başı sayfa eşlemesi | Hizmet Vakfı Külliyat (Envar baskısı) içindekileri | A20.3 |
+| Paragraf çapaları | Seçilen metin | A20.2 |
+| Âyet atıf dizini | Açık atıflar ve Arapça alıntılar; hazır araçlar önce ölçülür | A20.7 |
+| Lügat | Kelime-Frekans verisi, kaynak sözlükler, editör tanımları | A20.6 |
+| Âyet ve hadis atıf ayrıştırıcıları | Elmalılı, Risale metni ve sentetik örnekler | A18.4, A19.5, A20.7 |
+| Okuyucu arayüzü ve paket hattı | Gerçek metin; arayüz ve paket testleri için sentetik fikstür | A20.4, A20.5, A31 |
+| Risale'ye özgü konu listesi (`konu:{slug}`; ör. haşir delilleri, ene ve zerre) ve paragraflara bağlanması | Anlamsal katman | v1.x ([Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md)) |
 
 ### 3.1 Kitap ve bölüm adresleri
 
-Çapa grameri `rn:{kitap}(:{bolum})*:p{n}(:s{cumle})?` biçimindedir; örnek `rn:sozler:soz-10:hakikat-3:p4` ([Çapa şeması](../03-veri/01-capa-semasi.md)). Kitap listesi alitekdemir deposunun 15 klasörlük yapısından ve eski plandan çıkarıldı; kesin liste temel baskının içindekileriyle doğrulanır.
+Çapa grameri `rn:{kitap}(:{bolum})*:p{n}(:s{cumle})?` biçimindedir; örnek `rn:sozler:soz-10:hakikat-3:p4` ([Çapa şeması](../03-veri/01-capa-semasi.md)). Kitap listesi metin kaynağının 15 klasörlük yapısından çıkarıldı; kesin liste metnin başlıkları ve eRisale ile Hizmet Vakfı içindekileriyle doğrulanır (A20.2). eRisale içindekilerinde kitap bölünmesi farklıdır (Emirdağ Lâhikası tek kitap; İman ve Küfür Muvazeneleri ve İlk Dönem Eserleri ayrı kitaplar); eşleştirme farkları rapora yazılır.
 
 | Kitap | Slug | Kitap | Slug |
 |---|---|---|---|
@@ -57,17 +46,18 @@ Rapor 2. ve 3. yolu birleştirmeyi, 1. yolu paralel müzakere etmeyi öneriyor. 
 | Şuâlar | `sualar` | Emirdağ Lâhikası I | `emirdag-lahikasi-1` |
 | Mesnevî-i Nûriye | `mesnevi-i-nuriye` | Emirdağ Lâhikası II | `emirdag-lahikasi-2` |
 | İşârâtü'l-İ'câz | `isaratul-icaz` | Tarihçe-i Hayat | `tarihce-i-hayat` |
-| Muhâkemât | `muhakemat` | Küçük kitaplar | Risale başına ayrı slug (Açık soru) |
-| Sikke-i Tasdîk-i Gaybî | `sikke-i-tasdik-i-gaybi` | | |
+| Muhâkemât | `muhakemat` | Sikke-i Tasdîk-i Gaybî | `sikke-i-tasdik-i-gaybi` |
 
+- **Küçük kitaplar.** Diyanet deposundaki `Küçük Kitaplar` klasörü 11 eser içerir ve her eser ayrı kitap slug'ı alır. Slug'lar dosya adlarından Çapa şeması §5 kuralıyla türetilir: `divan-i-harb-i-orfi`, `genclik-rehberi`, `hanimlar-rehberi`, `hutbe-i-samiye`, `isarat`, `konferans`, `munazarat`, `nur-cesmesi`, `nurun-ilk-kapisi`, `sunuhat`, `tuluat`.
+- **Slug listesi ve doğrulama.** Liste küçük bir JSON dosyasında tutulur (öneri: `shared/data/risale-kitaplar.json`). Hepsi `dogrulandi: false` başlar; metnin başlıkları ve içindekilerle eşleşenler betikle `true` olur, eşleşmeyenler editör denetimine (İ-24) kalır.
 - **Slug kuralı.** Küçük harf ASCII; ç→c, ğ→g, ı→i, ö→o, ş→s, ü→u, â→a, î→i, û→u; kesme işareti düşer; boşluk tireye döner.
 - **Bölüm kalıpları.** `soz-{n}`, `mektup-{n}`, `lema-{n}`, `sua-{n}`; iç bölümler `makam-{n}`, `hakikat-{n}`, `nukte-{n}`, `mesele-{n}`, `isaret-{n}`, `mukaddime`, `zeyl`, `hatime`; haşiyeler için `hasiye-{n}` ([Çapa şeması](../03-veri/01-capa-semasi.md)).
-- **Lâhikalar.** Mektupların başlığı ya da numarası olmayabilir. Öneri: temel baskıdaki sıraya göre `parca-{n}` (Açık soru).
-- **Yazılmamış bölümler.** Eski plan bazı bölümleri "yazılmamış" diye listeliyor (ör. 14. ve 25. Mektup, 5. Lem'a; `quran-app-docs/04-okuma/03-risale-i-nur-okuyucu.md`). Bu bölümler için çapa üretilmez; liste Doğrulanacak.
+- **Lâhikalar.** Mektupların başlığı ya da numarası olmayabilir. Başlık ya da numara yoksa metindeki sıraya göre `parca-{n}`, varsa kaynaktaki numara kullanılır (Doğrulanacak).
+- **Yazılmamış bölümler.** Bazı bölüm numaraları Külliyat'ta yazılmamış sayılır (ör. 14. ve 25. Mektup, 5. Lem'a; liste Doğrulanacak). Bu bölümler için çapa üretilmez; eksik numaralar rapora yazılır, doldurulmaz.
 
 ### 3.2 Paragraf çapaları ve temel baskı
 
-Çapalar yeniden numaralanmaz (K-26). Paragraf numarası bu yüzden yalnız temel metinden, yani müellif tashihli 1956–1960 baskılarından üretilir. Temel metin sayısallaştırılmadan paragraf çapası üretilmez. Geliştirmede yer tutucu metinle `rn:` çapaları denenebilir; bunlar kalıcı bir dosyaya ya da kullanıcı verisine yazılmaz. Yol 2 dizini yayımlanırsa bölüme ve baskı sayfasına bağlanır; böylece temel metin geldiğinde yeniden numaralama gerekmez. Cümle (`:s{n}`) ve karakter aralığı (`@{başlangıç}-{bitiş}`; yarı açık, başlangıç dahil, bitiş hariç) adresleri de temel metinden üretilir.
+Çapalar yeniden numaralanmaz (K-26). Paragraf numarası bu yüzden yalnız temel metinden üretilir: içe alınan metinde her satır bir paragraf ya da başlıktır ve `n` bölüm içinde belge sırasıyla 1'den başlar (A20.2). Temel metin içe alınıp G-KAY ve G-BUT kapılarından geçmeden paragraf çapası üretilmez; kaynak güncellenirse yalnız [Çapa şeması](../03-veri/01-capa-semasi.md) §9'daki yeniden çapalama kuralı uygulanır. Sentetik fikstürle denenen `rn:` çapaları kalıcı bir dosyaya ya da kullanıcı verisine yazılmaz. Cümle (`:s{n}`) ve karakter aralığı (`@{başlangıç}-{bitiş}`; yarı açık, başlangıç dahil, bitiş hariç) adresleri de temel metinden üretilir.
 
 ### 3.3 Baskılar ve sayfa eşlemesi
 
@@ -87,69 +77,75 @@ CREATE TABLE baski (
 );
 ```
 
-- **Şimdi.** Bölüm başlarının sayfa numaraları basılı kitapların içindekiler sayfalarından ve kitabın kendisinden elle girilir. Ölçek fikri için kitapyurdu listesindeki 14 ciltlik büyük boy takım 7.550 sayfadır ([kitapyurdu](https://www.kitapyurdu.com/kitap/risalei-nur-kulliyati-buyuk-boy-14-cilt-takim/429602.html)); dört ana mecmua 130 parçadan oluşur ([TDV İA](https://cdn2.islamansiklopedisi.org.tr/dosya/35/C35011446.pdf)).
-- **2031'den sonra.** Her baskının metni temel metinle hizalanarak paragraf düzeyinde sayfa eşlemesi üretilir. Baskıların kendi dipnot, fihrist ve editoryal ekleri kopyalanmaz.
+- **Baskı kaydı.** Her baskı `source.tur = 'baski'` ve `baski_bilgisi` ile kaydedilir. İlk kayıt `risale-baski-envar`: yayınevi, yazı (`latin`) ve metin esası sitenin açıklamasından alınır; sitede bulunmayan alanlar boş kalır ve editör denetler (İ-24).
+- **Bölüm başı sayfaları.** Kaynak Hizmet Vakfı Külliyat görünümüdür ("Hizmet Vakfı ve Envar Neşriyat'ın Latin harfli Türkçe baskısı"; kayıt `risale-baski-envar`, `tur = 'baski'`). İçindekiler düğümleri `book_id`, `id`, `parent_id`, `slug`, `sort_order`, `start_page` ve `title` alanlarını taşır; Sözler için ön ölçüm 271 düğüm ve `start_page` 5–856 verdi. Düğümler metnin bölüm ağacıyla başlık üzerinden eşleştirilir ve `page_map` satırlarına yazılır; eşleşmeyenler editör kuyruğuna gider (İ-24). `page_map.start_anchor` çapa ister ve bölüm yolu çapa değildir: bölüm başı sayfası bölümün ilk paragraf çapasıyla yazılır, ayrı bölüm-sayfa tablosu açılmaz (öneri; [BÇ-07](../10-claude-code/07-belge-celiskileri.md#1-karar-bekleyenler)).
+- **Paragraf düzeyi.** Envar sayfa metni seçilen metinle hizalanır (ilk koşu Sözler pilotu; İkinci Söz'ün 640 kelimesinin 640'ı Envar sayfa 17–19 metninde bulundu). Baskıların kendi dipnot, fihrist ve editoryal ekleri kopyalanmaz.
+- **Yedek.** Hizmet Vakfı sayfalarına 2 Kasım 2026'da ulaşılamadı. Açılmazsa risale.online kullanılır: 24 eser, toplam 7.811 sayfa, paragraf başına `sayfa` alanı. Sitede baskı belirtilmediği için ayrı bir `baski` kaydıyla aynı şemaya yazılır. Baskılar eşit gösterilir (bölüm 2).
+- **Ölçek.** Kitapyurdu listesindeki 14 ciltlik büyük boy takım 7.550 sayfadır ([kitapyurdu](https://www.kitapyurdu.com/kitap/risalei-nur-kulliyati-buyuk-boy-14-cilt-takim/429602.html)); dört ana mecmua 130 parçadan oluşur ([TDV İA](https://cdn2.islamansiklopedisi.org.tr/dosya/35/C35011446.pdf)).
 
 ### 3.4 Âyet atıf dizini
 
 Dizin `xref` tablosunda `rn:` çapalarından `q:` çapalarına giden bağlantılardır: açık kaynak gösterimi `atif`, Arapça alıntı `iktibas`, metni verilmeyen anıştırma `ima` (yalnız küratörlü). Ardışık âyetler birlikte alıntılanmışsa hedef âyet aralığı çapasıdır: `q:{s}:{ilk}-{son}` (K-26). Yöntem [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md) dosyasındadır; özet:
 - "(Bakara Sûresi, 255)" ya da "Âl-i İmrân: 7" gibi açık atıflar küçük bir gramer ve sure adı varyant tablosuyla ayrıştırılır.
-- Arapça diziler normalize edilir ve Kur'an'ın Uthmani ve imlâî biçimleriyle kurulmuş 3–4 kelimelik n-gram indeksinde aranır; adaylar Smith-Waterman hizalamasıyla genişletilir.
+- Arapça diziler normalize edilir ve Kur'an'ın Uthmani ve imlâî biçimleriyle oluşturulmuş 3–4 kelimelik n-gram indeksinde aranır; adaylar Smith-Waterman hizalamasıyla genişletilir.
 - Kısa ve kalıplaşmış ifadeler düşük ön güvenle başlar. QUL 5.641 tekrarlanan ifade listeliyor; "تَجْرِي مِن تَحْتِهَا الْأَنْهَارُ خَالِدِينَ" 18 âyette geçiyor ([QUL](https://qul.tarteel.ai/morphology_phrases?page=61)).
-- MIT lisanslı ijaza önce Risale örnekleri üzerinde ölçülür ([PyPI](https://pypi.org/project/ijaza/)).
+- Hazır araçlar önce Risale örnekleri üzerinde ölçülür: `ijaza` 2.0.0 ([PyPI](https://pypi.org/project/ijaza/)), `quran-detector` 0.0.2 ve `quran-toolkit` 0.1.0. Kazanan sarılır; hiçbiri tutmazsa İktibas tespiti §5–§6 eşleştiricisi yazılır (A20.7).
 - Sözler, Mektubat, Lem'alar, Şuâlar, Mesnevî-i Nuriye ve İşârâtü'l-İ'câz'dan tabakalı seçilen 300–500 paragraflık altın set elle etiketlenir; kesinlik ve duyarlılık uzun ve kısa iktibaslar için ayrı raporlanır.
 - Basılı fihristler yalnız başlangıç noktasıdır. Bir çalışma âyetlerin çoğu zaman başlık olarak kullanıldığını, pek çok âyetin metni verilmeden açıklandığını ve bir fihrist kaydı için "Kur'an'da bu metinle herhangi bir âyet bulunamamıştır" notu düşüldüğünü gösteriyor ([RİNAP](https://rinap.uskudar.edu.tr/uploads/site/6/content/files/risale-i-nurun-tefsirdeki-yeri-compressed.pdf)).
-- İşârâtü'l-İ'câz Fâtiha'dan Bakara 33'e kadar tefsir eder; eski planın "Fâtiha + Bakara 1–31" kapsamı buna göre düzeltilir.
+- İşârâtü'l-İ'câz Fâtiha'dan Bakara 33'e kadar tefsir eder.
 
-Otomatik yöntemler Risale metnini işlediği için avukat görüşü gelmeden çalıştırılmaz. Basılı kitaptan elle dizin çıkarmak ayrı bir hukuki sorudur ve aynı görüşte sorulur.
+Otomatik yöntemler seçilen Risale metni üzerinde çalışır (A20.7). Dizin metinlidir: bağlantı yanındaki parça metin kopyalanmaz, `rn:` çapa aralığından okunur; böylece metin tek yerde durur. Dizin `risale-dizin` paketindeki `xref_idx` tablosuna yazılır; kaynak kaydı `risale-atif-dizini`dir. Hazır bir Risale âyet atıf dizini internette bulunamadı (yalnız basılı fihristler); dizin kendi hattımızla üretilir.
 
 ### 3.5 Lügat
 
-- **Kaynaklar.** Redhouse'un 1890 tarihli *A Turkish and English Lexicon*'u serbesttir ve HathiTrust'ta tam görünümdedir ([HathiTrust](https://catalog.hathitrust.org/Record/001771732)). Kâmûs-ı Türkî (Şemseddin Sâmi ö. 1904) ve Lugat-ı Nâci (iki yazarlı: Muallim Nâci ö. 1893, Müstecâbîzâde İsmet Bey ö. Mayıs 1917, TDV İA ile teyitli) için Internet Archive'ın kendi taramaları var (`kamusitrki00emse`, `lgatnaci0001na`); kullanım şartları ve baskı seçimi Doğrulanacak. Güvenilir bir hazır metin ise belirlenmedi (Çağdaş Sözlük lisanssızdır ve yazılı izin ister). İkisi `bekliyor` kalır ([Kaynaklar ve lisans defteri](./01-kaynaklar.md) §3.6). Türkçe tanımları biz yazarız.
-- **Kopyalanmayanlar.** eRisale'nin ve yayınevlerinin Risale'ye özgü modern lügatleri korunan derlemelerdir. Kelime-Frekans deposunun `anlam` sütunu bu tür lügatlerden derlendiği için kullanılmaz. Tanımı yazan editör bu lügatlere bakmaz.
-- **Başlık söz listesi.** Kelime-Frekans deposunun CC0 lisanslı kelime ve sıklık sütunları olgu niteliğindedir ve kullanılabilir. Ölçek: README'ye göre Sözler'de 56.384 lügatli kelime geçişi ve 12.692 farklı kelime var ([Kelime-Frekans](https://github.com/alitekdemir/Risale-i-Nur-Kelime-Frekans)).
+- **Köken ve yazım başvuruları.** Internet Archive'daki taramalar: Redhouse, *A Turkish and English Lexicon* (1890; `aturkishandenglishlexicon1`, `_djvu.txt` 8.447.120 bayt), Kâmûs-ı Türkî'nin Latin harfli kopyası (Şemseddin Sâmi; `kamus-i-turki-semseddin-sami-bey`, `_djvu.txt` 5.969.007 bayt) ve Lugat-ı Nâci (Muallim Nâci ve Müstecâbîzâde İsmet Bey; 1891; `lugati-naci`, `_djvu.txt` 2.585.323 bayt). Yedekler: Kâmûs-ı Türkî 1899 taraması `kamusitrki00emse`, `ottomanlexicons.com` ve Redhouse için [HathiTrust](https://catalog.hathitrust.org/Record/001771732) kaydı. Osmanlıca başlıklar OCR'da bozuk okunur, Latin açıklamalar okunabilir; kalite 100 başlık söz örneklemiyle ölçülür ve Osmanlıca OCR'ı kullanılamayan kopyalar kullanılmaz (A20.6). Çağdaş Sözlük'e (`turki.cagdassozluk.com`) 2 Kasım 2026'da ulaşılamadı.
+- **Başlık söz listesi ve sıklık.** Kelime-Frekans deposunun (`alitekdemir/Risale-i-Nur-Kelime-Frekans`, kayıt `risale-kelime-frekans`) `analysis/terkipsiz/<kitap>_frekans.txt` dosyaları (sütunlar `kelime,frekans`) 15 kitapta birleşik 20.045 benzersiz kelime verir. README'ye göre Sözler'de 56.384 lügatli kelime geçişi ve 12.692 farklı kelime var; ölçümde Sözler için 13.725 benzersiz kelime çıktı ([Kelime-Frekans](https://github.com/alitekdemir/Risale-i-Nur-Kelime-Frekans)).
+- **Anlam taslağı.** Aynı deponun `data/eRisale/raw/<kitap>.csv` dosyaları (sütunlar `"kelime","anlam"`; Külliyat sayfa altı kelime açıklamaları) 15 kitapta 398.772 satır ve 46.090 benzersiz kelime taşır. Kelime bazında birleştirilir; aynı kelimenin çelişen açıklamaları editör kuyruğuna gider. Her madde `aday` ve "doğrulanmamış" rozetiyle girer (A20.6).
 - **Madde yapısı (öneri).** `lugat_madde(id, basliksoz, basliksoz_norm, osmanlica_yazim, koken_dil, tanim_tr, ar_kok_id, kaynaklar, duzey, status, surum, content_hash)`. `ar_kok_id` QAC kök envanterine bağlanır ve Kur'an'a köprü olur ([Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)). `duzey` okurun "Lügat: Kapalı / Az / Orta / Çok" yoğunluk ayarını besler.
-- **İş akışı.** Yapay zekâ serbest sözlüklerden taslak çıkarabilir; isteme yalnız `embed_ok = true` kaynaklardan metin girer, korumalı metin girmez. Her madde insan onayından geçer ([Kelime anlamları](./06-kelime-anlamlari.md)).
+- **İş akışı.** Önce hazır kaynak: Kelime-Frekans anlam verisi taslak olur. Karşılığı olmayan kelime için yapay zekâ taslağı yalnız "doğrulanmamış" rozetiyle üretilebilir ([İçerik hattı](./02-icerik-hatti.md) §10). Her madde insan onayından geçer (İ-28; [Kelime anlamları](./06-kelime-anlamlari.md)).
+- **Paket.** Lügat verisinin hangi pakette taşınacağı Açık sorudur ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) IP-10; öneri: `risale-dizin`). Lügat Risale metniyle birlikte görünür.
 
-### 3.6 Geliştirme için yer tutucu metin
+### 3.6 Sentetik fikstür
 
-Sentetik `test-risale-ornek` kaynağı, Külliyat'ın yapısını taklit eden yapay Türkçe metin taşır: kitap, bölüm ve paragraf ağacı, satır içi Arapça diziler, dipnot işaretleri, uzun paragraflar. Metin bir betikle üretilir ve "örnek metin" diye işaretlenir. Kitap slug'ı `test-ornek`, kitap paketi `risale-test-ornek`'tir; paket kimliği çapadan türetilir ([İçerik paketleri](../03-veri/03-icerik-paketleri.md#4-bağlantıların-paketlere-dağılımı) §4). Kaynak `ic_kullanim` durumundadır ve yalnız `dev` derlemesinde görünür; Yayınlayıcı `test-` önekli kaynağı `public` derlemeye hiçbir durumda almaz ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md#8-örnek-veri) §8, P-12). Okuyucu arayüzü, arama, lügat katmanı ve paket hattı bu kaynaktan üretilen paketlerle uçtan uca test edilir. Bu yol Risale metnine dokunmadan işin büyük kısmını bitirir.
+Sentetik `test-risale-ornek` kaynağı, Külliyat'ın yapısını taklit eden yapay Türkçe metin taşır: kitap, bölüm ve paragraf ağacı, satır içi Arapça diziler, dipnot işaretleri, uzun paragraflar. Metin bir betikle üretilir ve "örnek metin" diye işaretlenir. Kitap slug'ı `test-ornek`, kitap paketi `risale-test-ornek`'tir; paket kimliği çapadan türetilir ([İçerik paketleri](../03-veri/03-icerik-paketleri.md#4-bağlantıların-paketlere-dağılımı) §4). Kaynak yalnız `dev` derlemesinde görünür; Yayınlayıcı `test-` önekli kaynağı `public` derlemeye hiçbir durumda almaz ve `internal` derlemeye yalnız `test-kucuk` ile `test-ses` girer ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md#8-örnek-veri) §8, P-12). Okuyucu arayüzü, arama, lügat katmanı ve paket hattı bu kaynaktan üretilen paketlerle uçtan uca test edilir; gerçek metin testleri kaynak dosyasından alınmış kısa parçalarla yazılır (A20.5).
 
 ## 4. Yayın kuralları
 
-- `risale-*` kaynakları avukat görüşüne kadar `kapali` kalır. Olumlu görüş gelirse en fazla `ic_kullanim` olur.
-- K-06'ya göre `ic_kullanim` içerik yalnız ekip içi `dev` derlemelerinde görünür; `internal` ve `public` derlemelere girmez ([Kaynaklar ve lisans defteri](./01-kaynaklar.md)).
-- 1. yolla lisans alınmadıkça mağaza paketlerine 2031'den önce Risale metni girmez.
-- 2. yol dizini yalnız avukat görüşünden sonra yayımlanır ve şunları içerir: kitap ve bölüm adresi, âyet çapası, bağlantı türü, baskı ve sayfa. Metin alıntısı içermez.
+Görünürlük editoryal kaliteye bağlıdır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5; [Yayın süreci](../07-yayin/01-yayin-sureci.md) §3).
 
-## 5. 2031 hazırlık listesi
+- `risale-{kitap}` ve `risale-dizin` paketleri her derlemede bulunur. Onaysız Risale birimleri `dev` ve `internal` derlemelerinde "doğrulanmamış" rozetiyle görünür; `public` derlemeye yalnız onaylı birimler girer (P-10).
+- Onaylı Risale birimi yoksa Risale paketleri `public` manifestinde yer almaz; `public` kuru çalıştırması yine 0 ile biter.
+- Âyet atıf dizini (`risale-atif-dizini`) insan onayı isteyen türlerdendir: `aday` satırlar yalnız `dev` ve `internal`'da görünür, `public`'e yalnız onaylı satırlar girer (P-07). Dizin kitap ve bölüm adresini, âyet çapasını, bağlantı türünü, baskıyı ve sayfayı taşır; metin alıntısı bağlantıya kopyalanmaz.
+- `test-risale-ornek` yalnız `dev`'de görünür (P-12).
 
-- [ ] **2027:** Avukat görüşü alındı (iç kullanım; dizin yöntemi; yer tutucu dışındaki her geliştirme kullanımı).
-- [ ] **Temel metin:** Her kitap için müellif tashihli 1956–1960 baskısı belirlendi (künye ve yer numarası Doğrulanacak); fiziksel nüsha ya da tarama kaynağı ayarlandı. Tarama 2031'den önce yapılacaksa avukat onayı var.
-- [ ] **Karşılaştırma:** Asıl nüsha yalnız karşılaştırma metni. Farklar sürüm farkı olarak raporlanır; temel metin "düzeltilmez".
-- [ ] **Yazar dökümü:** Lâhikalar ve Tarihçe-i Hayat gibi derlemelerde başka kişilerin kaleminden çıkan kısımlar olabilir (Doğrulanacak). İşârâtü'l-İ'câz ve Mesnevî-i Nûriye'nin Türkçe tercümelerinin mütercimi belirlenir (genel bilgiye göre müellifin kardeşi Abdülmecid Nursî; Doğrulanacak). Bu kısımlar kendi yazar ya da mütercimlerinin ölüm yılına göre serbest kalır; tarihleri ayrı hesaplanır.
-- [ ] **Sayısallaştırma:** Temel baskıların yazı türüne göre OCR yolu seçildi; CER örneklemi yapıldı; dört göz incelemesi planlandı. Kelimesi kelimesine kuralı: kısaltma, sadeleştirme ve "düzeltme" yok. Aktarılan metin bizim ürettiğimiz metindir ve ilk kayıtta NFC'ye çevrilir (K-26).
-- [ ] **Adresler:** Kitap ve bölüm slug'ları temel baskının içindekileriyle doğrulandı; paragraf çapaları üretildi ve donduruldu.
-- [ ] **Sayfa eşlemesi:** En az üç baskının bölüm başları hazır; paragraf düzeyi temel metinle hizalanarak üretilecek.
-- [ ] **Atıf dizini:** Altın sette kesinlik ve duyarlılık raporlandı; onaylı bağlantılar hazır.
-- [ ] **Lügat:** Sık başlık sözlerin tanımları onaylı.
-- [ ] **Paketler:** `risale-{kitap}` paketleri yer tutucu metinle uçtan uca test edildi.
-- [ ] **Ekim–Aralık 2030:** Son hukuki kontrol (süre, manevi haklar, atıf metni) yapıldı; mağaza sürüm notları hazır.
-- [ ] **1 Ocak 2031:** `risale-1956-1960` kaynağı `serbest` oldu; paketler yayımlandı.
+## 5. Hazırlık listesi
 
-Atıf metni (2031, öneri): "Bediüzzaman Said Nursî, Risale-i Nur Külliyatı. Metin {baskı künyesi} esas alınarak kelimesi kelimesine aktarılmıştır."
+- [ ] **Tedarik:** Metin, içindekiler, sayfa eşlemesi, lügat ve atıf aracı kaynakları `data/gelen/<kaynak>/<YYYY-AA-GG>/` altında; her klasörde `SHA256SUMS` var; commit'ler ve paket sürümleri doğrulandı; kaynak kayıtları geçerli (`sources check` hatasız).
+- [ ] **Metin:** Seçilen kaynaktan kitaplar `unit` olarak yüklendi; G-KAY ve G-BUT yeşil (beklenen sayılar ölçümle aynı, metin kaynak dosyayla bayt bayt aynı); ikinci içe alma 0 değişiklik. Kelimesi kelimesine kuralı: kısaltma, sadeleştirme ve "düzeltme" yok.
+- [ ] **Baskı esası:** Her kitabın dayandığı müellif tashihli 1956–1960 baskısının künyesi `risale-1956-1960` kaydına yazıldı (künye Doğrulanacak).
+- [ ] **Karşılaştırma:** Metin kaynağı dışındaki dijital kopyalar yalnız karşılaştırma içindir. Farklar sürüm farkı olarak raporlanır; temel metin "düzeltilmez".
+- [ ] **Yazar dökümü:** Lâhikalar ve Tarihçe-i Hayat gibi derlemelerde başka kişilerin kaleminden çıkan kısımlar olabilir (Doğrulanacak). İşârâtü'l-İ'câz ve Mesnevî-i Nûriye'nin Türkçe tercümelerinin mütercimi belirlenir (genel bilgiye göre müellifin kardeşi Abdülmecid Nursî; Doğrulanacak). Bu kısımlar atıf satırında ve kaynak kaydında ayrıca belirtilir.
+- [ ] **Adresler:** Kitap ve bölüm slug'ları metnin başlıkları ve içindekilerle doğrulandı; paragraf çapaları üretildi ve donduruldu.
+- [ ] **Sayfa eşlemesi:** Envar baskısının bölüm başları `page_map`'te; paragraf düzeyi metinle hizalanarak üretildi. Başka baskılar aynı şemaya ayrı `baski` kaydıyla eklenir (bölüm 2).
+- [ ] **Atıf dizini:** Araç karşılaştırma raporu ve karar kaydı var; `xref` aday satırları yüklendi; altın set görev dosyaları hazır. Etiketler geldikçe kesinlik ve duyarlılık raporlanır, onaylı bağlantılar yayına girer (İ-13).
+- [ ] **Lügat:** Başlık söz listesi ve anlam taslakları yüklendi; sık başlık sözlerin tanımları onaylı (İ-28).
+- [ ] **Paketler:** `risale-dizin` ve `risale-{kitap}` paketleri gerçek metinle üretildi; `risale-test-ornek` fikstürüyle uçtan uca test edildi.
+- [ ] **Yayın:** `public` kuru çalıştırması 0 ile biter; `public` manifestinde yalnız onaylı Risale birimleri bulunur.
+
+Atıf metni (öneri): "Bediüzzaman Said Nursî, Risale-i Nur Külliyatı. Metin {kaynak adı ve adresi} kaynağından alınmış, {baskı künyesi} esas alınarak kelimesi kelimesine yayımlanmıştır."
 
 ## 6. Açık sorular
 
-1. Avukat görüşü: iç kullanım, otomatik ve elle dizin yöntemleri.
-2. 1. yol için hangi hak sahipleriyle, hangi tarafsızlık şartlarıyla görüşülecek?
-3. Küçük kitapların slug'ları ve Lâhika parçalarının numaralandırması.
-4. Her kitap için temel baskının künyesi.
-5. Başka yazar ve mütercimlerin kısımları ve serbest kalma tarihleri.
-6. Risale içinde geçen âyetler için Kurul onayı gerekmez (çıkarım); teyit edilecek.
+1. Metin kaynağının kitap kapsamı: Hizmet Vakfı ve eRisale kitap listelerinde olup seçilen depoda ayrı metin olarak bulunmayan eserler (A20.1 listeleri karşılaştırır; eksik kitabı başka kaynaktan eklemek kapsam değişikliğidir).
+2. Risale birimlerinin `taslak` → `onayli` yolu (kitap bazında toplu onay önerisi; `/karar` ile yazılır).
+3. Küçük kitapların slug'ları ve Lâhika parçalarının numaralandırması (metinle doğrulanır).
+4. Her kitap için dayandığı baskının künyesi.
+5. Başka yazar ve mütercimlerin kısımları.
+6. Bölüm başı baskı sayfasının çapası ([BÇ-07](../10-claude-code/07-belge-celiskileri.md#1-karar-bekleyenler)).
+7. Lügat verisinin paketi (İçerik paketleri IP-10).
 
 ## İlgili dosyalar
-- [Kaynaklar ve lisans defteri](./01-kaynaklar.md) · [İçerik hattı](./02-icerik-hatti.md) · [Hadis hazırlığı](./04-hadis-hazirligi.md) · [Kelime anlamları](./06-kelime-anlamlari.md)
+- [Kaynaklar](./01-kaynaklar.md) · [İçerik hattı](./02-icerik-hatti.md) · [Hadis hazırlığı](./04-hadis-hazirligi.md) · [Kelime anlamları](./06-kelime-anlamlari.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md)
 - [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) · [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [Fazlar](../08-yol-haritasi/01-fazlar.md) · [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) · [Riskler](../08-yol-haritasi/03-riskler.md)
+- [Yayın süreci](../07-yayin/01-yayin-sureci.md) · [Fazlar](../08-yol-haritasi/01-fazlar.md) · [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) · [Riskler](../08-yol-haritasi/03-riskler.md)
