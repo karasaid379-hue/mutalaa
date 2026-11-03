@@ -184,6 +184,74 @@ test('ilerleme dosyası: durum işaretleri ve 41 aşama satırı', () => {
   for (const id of STAGES) assert.match(md, new RegExp(`^\\| ${id} \\|`, 'm'), `ilerleme: ${id} satırı yok`);
 });
 
+// K-42: her aşama dosyası tedarikle başlar ve projede hukuk ya da izin yapısı yoktur.
+test('aşama dosyaları: ## Tedarik bölümü Kapsam ile Adımlar arasındadır (K-42)', () => {
+  for (const id of STAGES) {
+    const f = stageFiles.find((x) => x.startsWith(`${id}-`));
+    const text = read('docs', '10-claude-code', 'asamalar', f);
+    const kapsam = text.indexOf('\n## Kapsam');
+    const tedarik = text.indexOf('\n## Tedarik');
+    const adimlar = text.indexOf('\n## Adımlar');
+    assert.ok(tedarik > 0, `${f}: "## Tedarik" bölümü yok`);
+    assert.ok(kapsam < tedarik && tedarik < adimlar, `${f}: "## Tedarik" Kapsam ile Adımlar arasında olmalı`);
+    const section = text.slice(tedarik, adimlar);
+    assert.ok(
+      section.includes('| Gerekli yapı |') || section.includes('dışarıdan yapı almaz'),
+      `${f}: Tedarik bölümü tablo ("| Gerekli yapı |") ya da "dışarıdan yapı almaz" satırı taşımalı`,
+    );
+  }
+});
+
+test('aşama dosyaları: tedarik adımı A09–A40 aşamalarının ilk adımıdır (K-42)', () => {
+  for (let n = 9; n <= 40; n++) {
+    const id = `A${String(n).padStart(2, '0')}`;
+    if (id === 'A39') continue; // devre dışı
+    const f = stageFiles.find((x) => x.startsWith(`${id}-`));
+    const text = read('docs', '10-claude-code', 'asamalar', f);
+    const adimlar = text.slice(text.indexOf('\n## Adımlar'));
+    const first = /\n### (A\d\d\.\d) · (.*)/.exec(adimlar);
+    assert.ok(first, `${f}: adım başlığı yok`);
+    assert.match(first[2], /^Tedarik/, `${f}: ilk adım (${first[1]}) tedarik adımı olmalı`);
+  }
+});
+
+test('hukuk ve izin yapısı yok (K-42): yasak terimler belgelerde, kitte ve kaynak kayıtlarında geçmez', () => {
+  assert.ok(!fs.existsSync(at('docs', 'yazismalar')), 'docs/yazismalar klasörü olmamalı');
+  const FORBIDDEN = [
+    /\bKurul\b/,
+    /avukat/i,
+    /yazışma/i,
+    /yazisma/i,
+    /hukuki görüş/i,
+    /license_status/,
+    /embed_ok/,
+    /kurul_gerekli/,
+    /ic_kullanim/,
+    /lisans kapısı/i,
+    /lisans defteri/i,
+  ];
+  const files = [at('CLAUDE.md')];
+  const walk = (dir, accept) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) walk(p, accept);
+      else if (accept(e.name)) files.push(p);
+    }
+  };
+  walk(at('docs'), (n) => n.endsWith('.md'));
+  walk(at('.claude'), (n) => n.endsWith('.md'));
+  files.push(...fs.readdirSync(at('pipeline', 'sources')).filter((n) => n.endsWith('.toml')).map((n) => at('pipeline', 'sources', n)));
+  const hits = [];
+  for (const f of files) {
+    const text = fs.readFileSync(f, 'utf8');
+    for (const re of FORBIDDEN) {
+      const m = re.exec(text);
+      if (m) hits.push(`${path.relative(ROOT, f)}: "${m[0]}"`);
+    }
+  }
+  assert.deepEqual(hits, []);
+});
+
 test('bağlantılar: docs, CLAUDE.md ve .claude içinde kırık bağlantı yok', () => {
   const files = [];
   const walk = (dir) => {
