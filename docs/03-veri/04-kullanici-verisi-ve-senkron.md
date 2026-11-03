@@ -1,6 +1,6 @@
 # Kullanıcı Verisi ve Senkron
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.2 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç)
 
 v1 hesapsız ve çevrimdışı tam çalışır; notlar, vurgular ve ilerleme cihazda kalır. Hesap ve cihazlar arası senkron v1.x'te gelir. Yerel veritabanı v1'den itibaren senkrona hazır şemayla kurulur; v1.x'te göç gerekmez (K-15). Rapor, tek kullanıcılı ve çakışması az bu veri için yerel giden kutusu, "imleçten bu yana değişiklikler" sorgusu ve yumuşak silmeyle basit bir senkronu yeterli görür ([React Native Relay](https://reactnativerelay.com/article/building-offline-first-react-native-apps-2026-expo-sqlite-drizzle-orm-sync-strategies)).
@@ -217,7 +217,7 @@ Hesap gelmeden önce veri yalnız cihazdadır. Ayarlar › Yedekle kullanıcı v
 - Dosya adı `mutalaa-yedek-2026-10-18.json` biçimindedir. Silinmiş satırlar da dosyaya girer; böylece geri yükleme silmeleri de taşır. `outbox`, `sync_state` ve `device.db` girmez.
 - Geri yükleme varsayılan olarak birleştirir ve bölüm 4'teki kuralları kullanır; aynı dosyayı iki kez yüklemek bir şey değiştirmez. Aynı `id` ile iki farklı not gövdesi varsa cihazdaki asıl kalır, yedektekiler çakışma kopyası olur. "Tümünü değiştir" seçeneği onay ister.
 - Önce önizleme gösterilir ("142 vurgu, 37 not, 12 yer imi"). Dosyanın `user_schema_version` değeri uygulamanınkinden büyükse işlem reddedilir ve güncelleme istenir; küçükse bellekte göç uygulanır.
-- Dosya notları içerir ve kişisel veridir. Uygulama dosyayı hiçbir sunucuya göndermez; kullanıcı bu konuda bilgilendirilir ([KVKK ve gizlilik](../07-yayin/02-gizlilik.md)). Parolalı yedek Açık soru.
+- Dosya notları içerir ve kişisel veridir. Uygulama dosyayı hiçbir sunucuya göndermez; kullanıcı bu konuda bilgilendirilir ([Gizlilik](../07-yayin/02-gizlilik.md)). Parolalı yedek Açık soru.
 - İşletim sistemi yedeklerinin (`user.db` için Android otomatik yedekleme, iCloud cihaz yedeği) kapsamı Doğrulanacak.
 
 ## 7. Hangi ayarlar senkrona girer
@@ -303,7 +303,7 @@ sequenceDiagram
 - **Hesap bağlama.** İlk girişte bütün yerel satırlar kuyruğa alınır ve hesaptaki verilerle bölüm 4 kurallarıyla birleşir. İkinci cihaz da aynı yolla katılır.
 - **Silinmiş satırların saklanması.** Sunucu silinmiş satırları 180 gün tutar (öneri); temizlik işi silinen en büyük numarayı `gc_seq` alanına yazar. İmleci `gc_seq` değerinden küçük bir cihaz 410 yanıtı alır (ProblemDetails kodu `imlec-eskidi`, KV-8) ve tam eşitleme yapar: önce giden kutusunu yükler, sonra canlı satırların tamamını indirir; giden kutusunda olmayan ve sunucuda bulunmayan yerel satırları siler. Cihaz kendi silinmiş satırlarını 365 gün tutar (öneri).
 - **Oylar.** Bağlantı oyu senkrona girmez; `PUT` ve `DELETE /api/v1/xrefs/{id}/vote` ile doğrudan gider ([Editoryal veritabanı](./02-editoryal-veritabani.md) §7).
-- **Gizlilik.** Hesapta yalnız e-posta ve kullanıcının kayıtları tutulur; hesap silinince `kullanici` şemasındaki bütün satırlar ve `xref_vote` oyları silinir. Yurt dışı aktarım ve aydınlatma yükümlülükleri [KVKK ve gizlilik](../07-yayin/02-gizlilik.md) dosyasındadır (hukuki görüş değildir).
+- **Gizlilik.** Hesapta yalnız e-posta ve kullanıcının kayıtları tutulur; hesap silinince `kullanici` şemasındaki bütün satırlar ve `xref_vote` oyları silinir. Veri envanteri ve barındırma konumu kararı [Gizlilik](../07-yayin/02-gizlilik.md) dosyasındadır.
 - **Seçenekler.** Gereksinim büyürse (ör. paylaşımlı okuma grupları) PowerSync değerlendirilir; Pro planı aylık 49 $'dan başlar, kendi sunucunda çalışan sürümü ücretsizdir ([PowerSync](https://toolradar.com/tools/powersync/pricing)). Metin CRDT'si (Yjs, Automerge) yalnız ortak düzenleme gelirse gündeme gelir. expo-sqlite SDK 56'da oturum değişiklik kümeleri ekledi ([Expo SDK 56](https://expo.dev/changelog/sdk-56)); kullanımı Doğrulanacak.
 
 ## 9. Açık sorular
@@ -323,4 +323,4 @@ sequenceDiagram
 
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Çapa şeması](./01-capa-semasi.md) · [İçerik paketleri](./03-icerik-paketleri.md) · [Editoryal veritabanı](./02-editoryal-veritabani.md)
 - [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md) · [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) · [Tasarım sistemi](../01-urun/04-tasarim-sistemi.md)
-- [Backend API](../02-mimari/05-backend-api.md) · [KVKK ve gizlilik](../07-yayin/02-gizlilik.md) · [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md)
+- [Backend API](../02-mimari/05-backend-api.md) · [Gizlilik](../07-yayin/02-gizlilik.md) · [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md)

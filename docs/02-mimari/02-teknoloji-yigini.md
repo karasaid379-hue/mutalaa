@@ -1,7 +1,7 @@
 # Teknoloji yığını
 
-> **Sürüm:** 1.8 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-34](../00-ozet/02-karar-defteri.md#k-34--typescript-tek-sürüm-60x) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
+> **Sürüm:** 1.9 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-34](../00-ozet/02-karar-defteri.md#k-34--typescript-tek-sürüm-60x) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu dosya her katmanın teknolojisini, sürümünü, seçilme nedenini ve reddedilen seçenekleri listeler. Sürüm ve fiyatlar 16 Ekim 2026 araştırmasından gelir ([araştırma raporu](../09-kaynakca.md), araştırma notu 05). Kaynağı olmayan sürüm numaraları "Doğrulanacak" diye işaretlidir ve kurulum günü kilit dosyasına yazılır.
 
@@ -15,7 +15,7 @@ Bu dosya her katmanın teknolojisini, sürümünü, seçilme nedenini ve reddedi
 | Yönlendirme | Expo Router (sürümü SDK'ya bağlı) | Sekmeler, derin bağlantı | SDK 56'dan beri react-navigation bağımlılığı yok ([SDK 56](https://expo.dev/changelog/sdk-56)) | — |
 | Cihazda veri | expo-sqlite + Drizzle ORM | İçerik paketleri; `user.db`, `device.db` | Canlı sorgu ve göç desteği ([React Native Relay](https://reactnativerelay.com/article/building-offline-first-react-native-apps-2026-expo-sqlite-drizzle-orm-sync-strategies)) | WatermelonDB (K-30). op-sqlite: yalnız gerçek veriyle ölçüm sorun gösterirse |
 | Cihazda arama | SQLite FTS5; expo-sqlite `enableFTS` Android ve iOS'ta açık ([expo-sqlite](https://docs.expo.dev/versions/v58.0.0/sdk/sqlite.md)) | Çevrimdışı arama | [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) | Azure AI Search: Basic katmanı ayda 73,73 $ ([Turbo360](https://azure-cost-management-playbook.turbo360.com/docs/ai-search)) ve çevrimdışı çalışmaz |
-| Ses | expo-audio ~58.0.10 + XState; `expo-file-system` ~58.0.13 (indirme, `file.digest`) | Arka planda çalma; kilit ekranında sonraki/önceki sure (`AudioPlaylist`, SDK 58.0.0); sure dosyası + âyet kareleri; tekrar ve aralık XState'te | K-28, [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme); expo-audio'da aralık döngüsü yok ([expo-audio v58](https://docs.expo.dev/versions/v58.0.0/sdk/audio/); [Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md)) | react-native-track-player v5 ticari lisanslı, v4 donduruldu ([RNTP](https://github.com/doublesymmetry/react-native-track-player)); expo-av (K-30) |
+| Ses | expo-audio ~58.0.10 + XState; `expo-file-system` ~58.0.13 (indirme, `file.digest`) | Arka planda çalma; kilit ekranında sonraki/önceki sure (`AudioPlaylist`, SDK 58.0.0); sure dosyası + âyet kareleri; tekrar ve aralık XState'te | K-28, [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme); expo-audio'da aralık döngüsü yok ([expo-audio v58](https://docs.expo.dev/versions/v58.0.0/sdk/audio/); [Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md)) | react-native-track-player v5 ticari kullanımda ücretli, v4 donduruldu ([RNTP](https://github.com/doublesymmetry/react-native-track-player)); expo-av (K-30) |
 | Mobil arayüz | NativeWind v4, React Native Reusables, @gorhom/bottom-sheet 5.2.x, Reanimated 4, Gesture Handler | Bileşenler, alt sayfa, jestler | K-29 | NativeWind v5: ön sürüm, "üretim için değil" ([NativeWind v5](https://www.nativewind.dev/v5/getting-started/installation)). Unistyles 3 yedek seçenek ([karşılaştırma](https://reactnativerelay.com/article/react-native-styling-2026-nativewind-unistyles-tamagui-compared)). Tamagui (eski plan) |
 | Mobil durum | Zustand, TanStack Query, react-native-mmkv | Arayüz durumu, sorgu önbelleği, hızlı anahtar-değer | K-29 | — |
 | Hata izleme | Sentry (`@sentry/react-native`) | Çökme ve hata kaydı; `dev` derlemede kapalı | Expo eklentisi var ([Mobil mimari](../06-mobil/01-mobil-mimari.md)) | Application Insights (K-30) |
@@ -32,117 +32,108 @@ Bu dosya her katmanın teknolojisini, sürümünü, seçilme nedenini ve reddedi
 | Depo araçları | pnpm workspaces + Turborepo; .NET çözümü; uv | Üç dilin tek depoda derlenmesi | Brifteki proje yapısı | npm ve yarn çalışma alanları; Nx (değerlendirilmedi) |
 | CI | GitHub Actions | Denetim ve EAS tetikleme | Eski planda da vardı | Azure DevOps (Azure yığını çıktı) |
 | Konteyner | Docker Desktop (WSL2) + Docker Compose | Yerel yığın | K-20 | Azure Container Apps (K-30) |
-| Yapay zekâ (sonra) | Claude Haiku 5.5: 100 bin token altı istemde milyon girdi tokenı 0,10 $, çıktı 0,50 $ ([Claude fiyatlandırma](https://platform.claude.com/docs/en/about-claude/pricing)) | Kelime anlamı ve bağlantı taslağı; sonra kaynaklı soru-cevap. Yalnız `source.embed_ok` açık kaynaklar dış API'ye gider | Düşük maliyet | Azure OpenAI GPT-4o (eski plan) |
-| Vektör (sonra) | pgvector 0.8.7 (1 Ekim 2026; PostgreSQL License) ([PGXN](https://pgxn.org/dist/vector)) | Anlamsal katman | PostgreSQL içinde çalışır | Azure AI Search |
+| Yapay zekâ (sonra) | Claude Haiku 5.5: 100 bin token altı istemde milyon girdi tokenı 0,10 $, çıktı 0,50 $ ([Claude fiyatlandırma](https://platform.claude.com/docs/en/about-claude/pricing)) | Kelime anlamı ve bağlantı taslağı; sonra kaynaklı soru-cevap | Düşük maliyet | Azure OpenAI GPT-4o (eski plan) |
+| Vektör (sonra) | pgvector 0.8.7 (1 Ekim 2026) ([PGXN](https://pgxn.org/dist/vector)) | Anlamsal katman | PostgreSQL içinde çalışır | Azure AI Search |
 
 ## 2. Uygulama başına kitaplıklar
 
-Lisans sütunu: bağlantılı değerler araştırmadan gelir. "beyan" yazan değerler paket kayıtlarındaki beyandır; CI lisans kapısı (A08, §3) dağıtılan kodda bu beyanları paket üst verisiyle sınar. İlgili uygulama paketleri gelene kadar kapının denetleyeceği bir şey yoktur. "nuspec doğrulandı (27 Ekim 2026)" yazan paketlerin lisansı paketin `.nuspec` dosyasından okundu (A07; hukuki görüş değildir). THIRD_PARTY_NOTICES dosyası A34'e kalır ([A34](../10-claude-code/asamalar/A34-magaza-yayini.md)).
+Bu bölüm her uygulamanın dış bağımlılıklarını listeler. Kesin sürümler kilit dosyalarındadır (bölüm 4.1); bağımlılıklar CI'da yalnız listelenir (bölüm 3).
 
 ### 2.1 Mobil (`apps/mobile`)
 
-| Kitaplık | Görev | Lisans | Not |
-|---|---|---|---|
-| `expo`, `expo-router`, `expo-dev-client`, `expo-updates` | Çatı, rotalar, geliştirme derlemesi, OTA | MIT (beyan) | Sürümler `npx expo install` ile SDK'ya göre seçilir |
-| `expo-sqlite`, `drizzle-orm` (+ `drizzle-kit`) | Paketler, kullanıcı ve cihaz veritabanı | MIT, Apache-2.0 (beyan) | Drizzle yalnız `user.db` ve `device.db` için ([Mobil mimari](../06-mobil/01-mobil-mimari.md)) |
-| `expo-audio`, `xstate` | Ses motoru ve oynatıcı makinesi | MIT (beyan) | [Ses sistemi](../06-mobil/02-ses-sistemi.md) |
-| `expo-file-system`, `expo-font`, `expo-image` | İndirme, Mushaf A fontları, Mushaf B görselleri | MIT (beyan) | |
-| `nativewind` v4 | Tailwind sözlüğüyle stil | MIT (beyan) | v5 RC kullanılmaz |
-| React Native Reusables | Arayüz bileşenleri | MIT ([RN Reusables](https://github.com/founded-labs/react-native-reusables)) | Alt sayfa bileşeni yok |
-| `@gorhom/bottom-sheet` 5.2.x | Kelime kartı, Bağlantılar paneli | MIT (beyan) | Reanimated 4 ve Gesture Handler ≥ 2.16.1 ister ([package.json](https://github.com/gorhom/react-native-bottom-sheet/blob/master/package.json)) |
-| `react-native-reanimated` 4, `react-native-gesture-handler` | Sayfalayıcı, seçim | MIT (beyan) | |
-| `zustand`, `@tanstack/react-query`, `react-native-mmkv` | Durum | MIT (beyan) | |
-| `@sentry/react-native` | Hata izleme | MIT (beyan) | |
-| `zod` | Manifest şema doğrulaması (öneri) | MIT (beyan) | Şema `packages/content-schema` içinde |
-| `@noble/ed25519` | Manifest imzasını doğrulama (öneri) | MIT (beyan) | İmzasız manifest reddedilir; kitaplık seçimi Doğrulanacak ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) IP-7) |
-| `jest-expo`, `@testing-library/react-native` | Test | MIT (beyan) | |
+| Kitaplık | Görev | Not |
+|---|---|---|
+| `expo`, `expo-router`, `expo-dev-client`, `expo-updates` | Çatı, rotalar, geliştirme derlemesi, OTA | Sürümler `npx expo install` ile SDK'ya göre seçilir |
+| `expo-sqlite`, `drizzle-orm` (+ `drizzle-kit`) | Paketler, kullanıcı ve cihaz veritabanı | Drizzle yalnız `user.db` ve `device.db` için ([Mobil mimari](../06-mobil/01-mobil-mimari.md)) |
+| `expo-audio`, `xstate` | Ses motoru ve oynatıcı makinesi | [Ses sistemi](../06-mobil/02-ses-sistemi.md) |
+| `expo-file-system`, `expo-font`, `expo-image` | İndirme, Mushaf A fontları, Mushaf B görselleri | — |
+| `nativewind` v4 | Tailwind sözlüğüyle stil | v5 RC kullanılmaz |
+| [React Native Reusables](https://github.com/founded-labs/react-native-reusables) | Arayüz bileşenleri | Alt sayfa bileşeni yok |
+| `@gorhom/bottom-sheet` 5.2.x | Kelime kartı, Bağlantılar paneli | Reanimated 4 ve Gesture Handler ≥ 2.16.1 ister ([package.json](https://github.com/gorhom/react-native-bottom-sheet/blob/master/package.json)) |
+| `react-native-reanimated` 4, `react-native-gesture-handler` | Sayfalayıcı, seçim | — |
+| `zustand`, `@tanstack/react-query`, `react-native-mmkv` | Durum | — |
+| `@sentry/react-native` | Hata izleme | — |
+| `zod` | Manifest şema doğrulaması (öneri) | Şema `packages/content-schema` içinde |
+| `@noble/ed25519` | Manifest imzasını doğrulama (öneri) | İmzasız manifest reddedilir; kitaplık seçimi Doğrulanacak ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) IP-7) |
+| `jest-expo`, `@testing-library/react-native` | Test | — |
 
 ### 2.2 API ve altyapı (`server/Mutalaa.Api`, `server/Mutalaa.Infrastructure`)
 
 Veri erişimi paketleri `Mutalaa.Infrastructure` projesindedir (`Microsoft.EntityFrameworkCore.Design` yalnız `Mutalaa.Api` projesindedir, `PrivateAssets=all`). Sürümler `server/Directory.Packages.props` içinde sabittir.
 
-| Paket | Görev | Sürüm | Lisans |
-|---|---|---|---|---|
-| `Microsoft.EntityFrameworkCore`, `Microsoft.EntityFrameworkCore.Relational` (Infrastructure) | EF Core çekirdeği | 10.0.14 | MIT (nuspec doğrulandı, 27 Ekim 2026) |
-| `Microsoft.EntityFrameworkCore.Design` (Api) | `dotnet ef` tasarım zamanı | 10.0.14 (`dotnet-ef` aracı da 10.0.14) | MIT (nuspec doğrulandı, 27 Ekim 2026) |
-| `Microsoft.AspNetCore.Identity.EntityFrameworkCore` (Infrastructure) | Editör ve (v1.x) okur kimliği | 10.0.14 | MIT (nuspec doğrulandı, 27 Ekim 2026) |
-| `Npgsql.EntityFrameworkCore.PostgreSQL` (Infrastructure) | EF Core sağlayıcısı | 10.0.3 | PostgreSQL License (nuspec doğrulandı, 27 Ekim 2026) |
-| `EFCore.NamingConventions` (Infrastructure) | snake_case tablo ve sütun adları | 10.0.1 | Apache-2.0 (nuspec doğrulandı, 27 Ekim 2026) |
-| `Microsoft.AspNetCore.OpenApi` | Yerleşik OpenAPI belgesi (A14) | | MIT (beyan) |
-| `Scalar.AspNetCore` | OpenAPI arayüzü (yalnız geliştirme; A14) | | MIT (beyan) |
-| `Serilog.AspNetCore` | Yapılandırılmış günlük (A14) | | Apache-2.0 (beyan) |
-| `OpenTelemetry.Extensions.Hosting`, `OpenTelemetry.Instrumentation.AspNetCore`, `OpenTelemetry.Exporter.OpenTelemetryProtocol`, `Npgsql.OpenTelemetry` | İz ve ölçü (A14) | | Apache-2.0, PostgreSQL License (beyan) |
-| `xunit.v3` | Birim ve tümleşik test | 4.0.2 | Apache-2.0 (beyan) |
-| `Testcontainers.PostgreSql` | Test kabı (`postgres:18.6-trixie`; yalnız test) | 4.16.0 | MIT (nuspec doğrulandı, 27 Ekim 2026) |
-| `Microsoft.AspNetCore.Mvc.Testing` | Uç testleri (A14) | | MIT (beyan) |
+| Paket | Görev | Sürüm |
+|---|---|---|
+| `Microsoft.EntityFrameworkCore`, `Microsoft.EntityFrameworkCore.Relational` (Infrastructure) | EF Core çekirdeği | 10.0.14 |
+| `Microsoft.EntityFrameworkCore.Design` (Api) | `dotnet ef` tasarım zamanı | 10.0.14 (`dotnet-ef` aracı da 10.0.14) |
+| `Microsoft.AspNetCore.Identity.EntityFrameworkCore` (Infrastructure) | Editör ve (v1.x) okur kimliği | 10.0.14 |
+| `Npgsql.EntityFrameworkCore.PostgreSQL` (Infrastructure) | EF Core sağlayıcısı | 10.0.3 |
+| `EFCore.NamingConventions` (Infrastructure) | snake_case tablo ve sütun adları | 10.0.1 |
+| `Microsoft.AspNetCore.OpenApi` | Yerleşik OpenAPI belgesi (A14) | |
+| `Scalar.AspNetCore` | OpenAPI arayüzü (yalnız geliştirme; A14) | |
+| `Serilog.AspNetCore` | Yapılandırılmış günlük (A14) | |
+| `OpenTelemetry.Extensions.Hosting`, `OpenTelemetry.Instrumentation.AspNetCore`, `OpenTelemetry.Exporter.OpenTelemetryProtocol`, `Npgsql.OpenTelemetry` | İz ve ölçü (A14) | |
+| `xunit.v3` | Birim ve tümleşik test | 4.0.2 |
+| `Testcontainers.PostgreSql` | Test kabı (`postgres:18.6-trixie`; yalnız test) | 4.16.0 |
+| `Microsoft.AspNetCore.Mvc.Testing` | Uç testleri (A14) | |
 
-`Testcontainers.PostgreSql` geçişli bağımlılıkları (`Docker.DotNet.Enhanced`, `SSH.NET`, `BouncyCastle`, `SharpZipLib`) da MIT lisanslıdır (nuspec doğrulandı, 27 Ekim 2026); yalnız test projesine girer, dağıtılan ürüne girmez. THIRD_PARTY_NOTICES dosyasına Npgsql (PostgreSQL License telif bildirimi), EFCore.NamingConventions (Apache-2.0), EF Core ve Identity (MIT) A34'te yazılır ([A34](../10-claude-code/asamalar/A34-magaza-yayini.md)).
+`Testcontainers.PostgreSql` geçişli bağımlılıkları (`Docker.DotNet.Enhanced`, `SSH.NET`, `BouncyCastle`, `SharpZipLib`) yalnız test projesine girer, dağıtılan ürüne girmez.
 
 Test çalıştırıcısı ([K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)): `xunit.v3` 4.x, Microsoft.Testing.Platform (MTP v2) üzerinde koşar. `Microsoft.NET.Test.Sdk` ve `xunit.runner.visualstudio` eklenmez. MTP kipi kökteki `global.json` içindeki `test.runner` ile açılır; komut `dotnet test --solution server/Mutalaa.slnx`. Paket sürümü yalnız `server/Directory.Packages.props` içinde yazılır (A02.4'te `xunit.v3` 4.0.2). Neden: `xunit.v3` 4.0, VSTest hedefini .NET 10 SDK'da desteklemiyor ([xunit.v3 4.0.0](https://xunit.net/releases/v3/4.0.0), [dotnet test belgesi](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test), okuma 21 Ekim 2026).
 
 ### 2.3 Yayınlayıcı (`server/Mutalaa.Publisher`)
 
-| Paket | Görev | Lisans | Not |
-|---|---|---|---|
-| `Microsoft.Data.Sqlite` (SQLitePCLRaw e_sqlite3 ile) | Paket yazımı | MIT, Apache-2.0 (beyan) | FTS5 derleme seçeneği açılışta `PRAGMA compile_options` ile denetlenir |
-| `AWSSDK.S3` | S3 uyumlu depoya yükleme | Apache-2.0 (beyan) | S3 uyumlu depolarda bütünlük sağlaması ayarı Doğrulanacak |
-| `System.CommandLine` | Komut satırı | MIT (beyan) | Kararlı sürüm durumu Doğrulanacak |
-| `NSec.Cryptography` ya da BouncyCastle | Manifest imzası (Ed25519) | MIT (beyan) | Algoritma ve kitaplık Doğrulanacak |
-| `JsonSchema.Net` | Testte manifest şema doğrulaması | MIT (beyan) | Doğrulanacak |
+| Paket | Görev | Not |
+|---|---|---|
+| `Microsoft.Data.Sqlite` (SQLitePCLRaw e_sqlite3 ile) | Paket yazımı | FTS5 derleme seçeneği açılışta `PRAGMA compile_options` ile denetlenir |
+| `AWSSDK.S3` | S3 uyumlu depoya yükleme | S3 uyumlu depolarda bütünlük sağlaması ayarı Doğrulanacak |
+| `System.CommandLine` | Komut satırı | Kararlı sürüm durumu Doğrulanacak |
+| `NSec.Cryptography` ya da BouncyCastle | Manifest imzası (Ed25519) | Algoritma ve kitaplık Doğrulanacak |
+| `JsonSchema.Net` | Testte manifest şema doğrulaması | Doğrulanacak |
 
 ### 2.4 İçerik hattı (`pipeline/`)
 
-| Paket | Görev | Lisans ve durum |
+| Paket | Görev | Sürüm ve durum |
 |---|---|---|
-| `psycopg` (3) | PostgreSQL bağlantısı | LGPL-3.0 (beyan); yalnız geliştirme bilgisayarında çalışır, dağıtılmaz |
-| `regex`, `rapidfuzz` | Unicode düzenli ifade, bulanık eşleştirme (iktibas) | Apache-2.0, MIT (beyan) |
-| CAMeL Tools | Tefsir ve Risale'deki Kur'an dışı Arapça | Kod MIT; 1.6.0 (8 Haziran 2026); Python 3.11–3.14 ([PyPI](https://pypi.org/project/camel-tools/)). Veri paketleri ayrı lisanslıdır, aşağıdaki nota bakın (Doğrulanacak) |
-| `snowballstemmer` 3.1.1 | Türkçe gövde (`tr_stem`): `snowballstemmer.turkish_stemmer.TurkishStemmer`, `â î û` ön katlamasıyla ([Arama](../03-veri/05-arama-fts5.md) §1.2 madde 7, [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) madde 6) | BSD-3-Clause (beyan), saf Python; tam sürümle sabitlenir (`==3.1.1`); yalnız geliştirme bilgisayarında çalışır, dağıtılmaz. Kaynak: [PyPI](https://pypi.org/pypi/snowballstemmer/json), okuma 25 Ekim 2026. Hukuki görüş değildir |
-| zeyrek | Türkçe morfoloji (Zemberek'in kısmi Python uyarlaması) | Kod MIT; 0.1.3 (Aralık 2022), alfa ([PyPI](https://pypi.org/project/zeyrek)). Sözlük verisi Zemberek'ten uyarlanmıştır, aşağıdaki nota bakın (Doğrulanacak) |
-| `sentence-transformers` + Qwen3-Embedding ya da BGE-M3 | Anlamsal katman (sonra) | Kitaplık Apache-2.0 (beyan); Qwen3-Embedding Apache-2.0, BGE-M3 MIT ([wz-it](https://wz-it.com/en/blog/best-embedding-models-german/)) |
+| `psycopg` (3) | PostgreSQL bağlantısı | 3.3.6; yalnız geliştirme bilgisayarında çalışır, dağıtılmaz |
+| `regex`, `rapidfuzz` | Unicode düzenli ifade, bulanık eşleştirme (iktibas) | — |
+| CAMeL Tools | Tefsir ve Risale'deki Kur'an dışı Arapça | 1.6.0 (8 Haziran 2026); Python 3.11–3.14 ([PyPI](https://pypi.org/project/camel-tools/)). Veri paketleri `camel_data` ile ayrıca indirilir ([Yerel geliştirme](./04-yerel-gelistirme.md) §10.4) |
+| `snowballstemmer` 3.1.1 | Türkçe gövde (`tr_stem`): `snowballstemmer.turkish_stemmer.TurkishStemmer`, `â î û` ön katlamasıyla ([Arama](../03-veri/05-arama-fts5.md) §1.2 madde 7, [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) madde 6) | Saf Python; tam sürümle sabitlenir (`==3.1.1`); yalnız geliştirme bilgisayarında çalışır, dağıtılmaz, çıktısı (`tr_stem` sütunu) pakete girer. C uzantılı `PyStemmer` bilerek kullanılmaz: aynı ortamda kuruluysa `snowballstemmer` sessizce ona geçerdi. Kaynak: [PyPI](https://pypi.org/pypi/snowballstemmer/json), okuma 25 Ekim 2026 |
+| zeyrek | Türkçe morfoloji (Zemberek'in kısmi Python uyarlaması) | 0.1.3 (Aralık 2022), alfa ([PyPI](https://pypi.org/project/zeyrek)) |
+| `sentence-transformers` + Qwen3-Embedding ya da BGE-M3 | Anlamsal katman (sonra) | — |
 | Kraken, Tesseract ya da görsel yapay zekâ modeli | Elmalılı OCR | Seçim [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) dosyasında |
-| `anthropic` | Toplu etiketleme taslağı | MIT (beyan); `source.embed_ok` kapalı kaynağın metni gönderilmez ([Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md)) |
-| `typer`, `pytest`, `ruff`, `mypy` | Komut satırı, test, biçim, tip denetimi | MIT (beyan) |
-
-**Lisans bulguları, A02 lisans denetimi (21 Ekim 2026). Hukuki görüş değildir.** Aşağıdakiler kaynak dosyalarından okundu; çıktının paketlenen içeriğe etkisi ve veri haklarının kapsamı doğrulanmadı.
-
-- **CAMeL Tools (Doğrulanacak).** Kod MIT'tir (camel-tools 1.6.0; [LICENSE](https://github.com/CAMeL-Lab/camel_tools/blob/master/LICENSE)). Ama veri paketleri kodla aynı lisansta değildir ([camel-tools-data kataloğu 1.6](https://raw.githubusercontent.com/CAMeL-Lab/camel-tools-data/main/catalogue-1.6.json)): varsayılan Modern Standart Arapça paketleri `morphology-db-msa-r13` ve `disambig-mle-calima-msa-r13` GPL v2; `morphology-db-msa-s31` LDC lisanslı; Mısır paketleri GPL v2; Körfez ve Şam paketleri CC BY 4.0; BERT modelleri MIT. `camel-kenlm` (camel-tools'un Windows dışındaki geçişli bağımlılığı) LGPL, 2.1 ya da sonrası ([LICENSE](https://raw.githubusercontent.com/CAMeL-Lab/camel-kenlm/master/LICENSE)). Kök ve lemma çıktısını hangi veri paketinin ürettiği ve bu çıktının paketlenen içeriğe (örneğin `kelime-kok`, Risale ve tefsir dizinleri) etkisi doğrulanmadı. Avukata sorulacak bir konudur ([BÇ-35](../10-claude-code/07-belge-celiskileri.md#1-karar-bekleyenler)); soru taslağı henüz yazılmadı ve gönderilmeden önce kullanıcı onaylar.
-- **zeyrek (Doğrulanacak).** Kod MIT'tir (0.1.3), ama Zemberek'ten uyarlanmış sözlük verisi taşır. Zemberek-NLP Apache-2.0'dır ([LICENSE](https://raw.githubusercontent.com/ahmetaa/zemberek-nlp/master/LICENSE)); zeyrek tekerleğinde Apache bildirimi görünmüyor. Sözlük verisinin (TDK türevi dosyalar dahil) kaynağı ve hakkı doğrulanamadı. Hat içi morfolojide kullanılıp çıktı insan onayından geçen eşleme tablosuna dönüşüyorsa risk düşük görünüyor; bu hukuki sonuç değildir.
-- **psycopg 3.3.6** LGPL-3.0-only'dir. Yukarıdaki satırdaki "yalnız geliştirme bilgisayarında çalışır, dağıtılmaz" beyanıyla tutarlıdır; ek işlem gerekmiyor.
-- **`snowballstemmer` (A05, 25 Ekim 2026).** Lisans BSD-3-Clause olarak okundu ([PyPI](https://pypi.org/pypi/snowballstemmer/json)); paket yalnız hatta çalışır ve çıktısı (`tr_stem` sütunu) pakete girer, paketin kendisi dağıtılmaz. Hukuki görüş değildir. Öneri: `lisans-denetcisi` kilit dosyasındaki sürümün lisansını `pip-licenses` ile bir kez doğrular ve BSD bildirimi `THIRD_PARTY_NOTICES` taslağına eklenir (A34). C uzantılı `PyStemmer` bilerek kullanılmaz: aynı ortamda kuruluysa `snowballstemmer` sessizce ona geçerdi.
-- **`THIRD_PARTY_NOTICES`.** `camel-kenlm` ile zeyrek/Zemberek için bildirimler mağaza sürümünden önce taslağa eklenir (bkz. bölüm 3, lisans denetimi maddesi).
+| `anthropic` | Toplu etiketleme taslağı | — |
+| `typer`, `pytest`, `ruff`, `mypy` | Komut satırı, test, biçim, tip denetimi | — |
 
 ### 2.5 Editör paneli (`apps/editor`)
 
-| Paket | Görev | Lisans |
-|---|---|---|
-| `react`, `vite`, `@vitejs/plugin-react` | Çatı ve derleme | MIT (beyan) |
-| `tailwindcss` v4.3, shadcn/ui (bileşenler depoya kopyalanır) | Arayüz | MIT (beyan) |
-| `react-router` | Rotalar | MIT (beyan); sürüm Doğrulanacak |
-| `@tanstack/react-query` | Sunucu durumu | MIT (beyan) |
-| `openapi-typescript`, `openapi-fetch` | OpenAPI belgesinden tip ve istemci | MIT (beyan) |
-| `vitest`, `@testing-library/react` | Test | MIT (beyan) |
+| Paket | Görev |
+|---|---|
+| `react`, `vite`, `@vitejs/plugin-react` | Çatı ve derleme |
+| `tailwindcss` v4.3, shadcn/ui (bileşenler depoya kopyalanır) | Arayüz |
+| `react-router` | Rotalar; sürüm Doğrulanacak |
+| `@tanstack/react-query` | Sunucu durumu |
+| `openapi-typescript`, `openapi-fetch` | OpenAPI belgesinden tip ve istemci |
+| `vitest`, `@testing-library/react` | Test |
 
 ### 2.6 Web (Faz 5) ve paylaşılan paketler
 
 - Web: `next` 16.4, `react` 19.3, Tailwind CSS v4, shadcn/ui. Çevrimdışı web araması gerekirse Türkçe ve Arapça gövdeleyicisi olan Orama değerlendirilir ([Orama](https://docs.orama.com/open-source/supported-languages)); expo-sqlite'ın web derlemesinde FTS yok.
 - Paylaşılan paketler (`packages/*`): yalnız `xstate` (oynatıcı) ve `drizzle-orm` (şema tipleri) dış bağımlılık taşır. Diğerleri bağımlılıksız TypeScript'tir.
 
-## 3. Lisans notları
+## 3. Kitaplık notları ve bağımlılık listesi
 
-- **react-native-track-player:** v5'ten itibaren ticari lisanslı; kişisel ve eğitim amaçlı kullanım ücretsiz, v4 Apache-2.0 dalında donduruldu ([RNTP](https://github.com/doublesymmetry/react-native-track-player)). "Ticari" ifadesinin ücretsiz bir uygulama için anlamı yazılı netleşmeden kullanılmaz (K-28).
+- **react-native-track-player:** v5 ticari kullanımda ücretlidir; v4 donduruldu ([RNTP](https://github.com/doublesymmetry/react-native-track-player)). Ücretli kitaplıkta tahmini maliyet kullanıcıya gösterilir (kural 11); ses motoru expo-audio + XState'tir (K-28).
 - **NativeWind v5:** `nativewind@5.0.0-rc.0`, `tailwindcss@4.1.12` sürümüne sabit ve "üretim için değil" ([NativeWind v5](https://www.nativewind.dev/v5/getting-started/installation)). v4 kullanılır (K-29).
-- **Ticari lisansa geçen .NET kitaplıkları:** Eski plan MediatR'ın yeni sürümlerinin ticari olduğunu not eder (`quran-app-docs/02-mimari/03-mimari-karar-loglari.md`, ADR-003). Yeni yapıda MediatR yoktur; işleyiciler Minimal API uçlarındadır. AutoMapper ve FluentAssertions'ın yeni sürümleri için de lisans değişikliği bilinir (Doğrulanacak). Üçü de kullanılmaz.
-- **İçerik lisansları** (Tanzil, QPC fontları, KFGQPC Hafs, QAC) kod lisanslarından ayrıdır ve [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) dosyasında izlenir.
+- **Ücretli .NET kitaplıkları:** MediatR'ın yeni sürümleri ücretlidir; eski plan bunu not eder (`quran-app-docs/02-mimari/03-mimari-karar-loglari.md`, ADR-003). Yeni yapıda MediatR yoktur; işleyiciler Minimal API uçlarındadır. AutoMapper ve FluentAssertions'ın yeni sürümleri de ücretlidir (Doğrulanacak). Üçü de kullanılmaz; kullanılacak olursa tahmini maliyet kullanıcıya gösterilir (kural 11).
+- **İçerik kaynakları** kod bağımlılığı değildir; kaynak kaydı ve atıf [Kaynaklar](../04-icerik/01-kaynaklar.md) dosyasında ve `pipeline/sources/` altında izlenir ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 4).
 - **Bağımlılık listesi (A08; [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 6).** CI her ekosistemde bağımlılıkları lisanslarıyla yalnız listeler; hiçbir lisans derlemeyi ya da PR'ı durdurmaz. Araçlar:
   - TypeScript: `pnpm licenses list -r --json --prod`. pnpm v12.7.0'dan beri proje içinde yalnız o projeyi listeler; çalışma alanının tamamı için kökte `-r` gerekir ([pnpm licenses](https://pnpm.io/cli/licenses)).
   - .NET: `nuget-license` 4.0.18, yerel araç (`.config/dotnet-tools.json`). `.slnx` destekler, restore yapmaz (önce `dotnet restore` gerekir), `-exclude-projects "*Tests*"` ile test projelerini dışlar ([nuget-license](https://github.com/sensslen/nuget-license)).
   - Python: `pip-licenses` 5.5.5, `uv run --with "pip-licenses==5.5.5"` ile (projeye bağımlılık eklenmez) ([pip-licenses](https://pypi.org/project/pip-licenses/)).
-  - Betik: [scripts/ci/list-licenses.mjs](../../scripts/ci/list-licenses.mjs). pnpm ve `nuget-license` çıktısını okur; paket başına bir satır ve lisans başına sayım yazar. Okuma hatasında ya da boş NuGet listesinde 2 ile çıkar, öteki her durumda 0.
+  - Betik: [scripts/ci/list-licenses.mjs](../../scripts/ci/list-licenses.mjs). pnpm ve `nuget-license` çıktısını okur; paket başına bir satır ve lisans başına sayım yazar. Okuma, ayrıştırma ve alan hatasında (eksik ya da yeniden adlandırılmış paket alanı), `--json` dosyası yazılamadığında ve boş NuGet listesinde 2 ile çıkar, öteki her durumda 0.
   - İlk sonuçlar (27 Ekim 2026): pnpm `--prod` kümesi boş (uygulama paketleri henüz yok); .NET test dışı 4 proje, 46 paket (MIT 43, Apache-2.0 1, PostgreSQL 2).
 
-  Liste Ayarlar › Kaynaklar ekranının açık kaynak bölümünü besler; `list-licenses.mjs --json` çıktısı girdi olur (A34).
-- **Uygulamanın kendi kaynak kodu lisansı** Açık soru. Eski plandaki AGPL-3.0 kararı yeni karar defterinde ele alınmadı.
+  Liste Ayarlar › Kaynaklar ekranının açık kaynak bölümünü besler; `list-licenses.mjs --json` çıktısı girdi olur (A32).
 
 ## 4. Sürüm sabitleme ve yükseltme
 
@@ -205,13 +196,11 @@ Eski plan: `quran-app-docs/02-mimari/01-genel-mimari.md` ve `quran-app-docs/00-b
 ## 6. Açık sorular
 
 1. ~~Yerel S3 deposu: K-21 MinIO der.~~ Çözüldü: K-21 güncellendi, yerel depo SeaweedFS ([Genel mimari](./01-genel-mimari.md)).
-2. Uygulamanın kendi kaynak kodu lisansı.
-3. Kaynağı olmayan sürüm numaraları (Turborepo, pnpm, Vite, Npgsql sağlayıcısı, Sentry, Scalar) kurulum günü kilit dosyalarına yazılır ve bu tabloya işlenir.
-4. CAMeL veri paketlerinin (GPL v2, LDC) ve zeyrek/Zemberek sözlük verisinin lisansı ile çıktının paketlenen içeriğe etkisi (Doğrulanacak; bölüm 2.4, [BÇ-35](../10-claude-code/07-belge-celiskileri.md#1-karar-bekleyenler)). Avukata sorulacak konudur; hukuki görüş değildir.
+2. Kaynağı olmayan sürüm numaraları (Turborepo, pnpm, Vite, Npgsql sağlayıcısı, Sentry, Scalar) kurulum günü kilit dosyalarına yazılır ve bu tabloya işlenir.
 
 ## İlgili dosyalar
 
 - [Genel mimari](./01-genel-mimari.md) · [Proje yapısı](./03-proje-yapisi.md) · [Yerel geliştirme](./04-yerel-gelistirme.md) · [Backend API](./05-backend-api.md)
 - [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Ses sistemi](../06-mobil/02-ses-sistemi.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md)
+- [Kaynaklar](../04-icerik/01-kaynaklar.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md)
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Kaynakça](../09-kaynakca.md)

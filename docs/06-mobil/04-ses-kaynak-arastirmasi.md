@@ -1,6 +1,6 @@
 # Ses kaynağı araştırması (A27.1)
 
-> **Sürüm:** 1.0 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak (araştırma tamam; cihaz ölçümleri kullanıcıya bırakıldı)
+> **Sürüm:** 1.1 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak (araştırma tamam; cihaz ölçümleri kullanıcıya bırakıldı)
 > **Bağlı kararlar:** [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-40](../00-ozet/02-karar-defteri.md#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
 
 Bu dosya A27 ses sisteminin teknik dayanağıdır: hangi kaynaklar incelendi, okuyucular nasıl seçildi, hangi mimari neden seçildi ve kodlama hangi sırayla yapılacak. Ses sisteminin işleyişi [Ses sistemi](./02-ses-sistemi.md), aşama adımları [A27](../10-claude-code/asamalar/A27-ses-sistemi.md) dosyasındadır.
@@ -11,7 +11,7 @@ Bu dosya A27 ses sisteminin teknik dayanağıdır: hangi kaynaklar incelendi, ok
 
 | No | Gereksinim | Karşılayan bölüm |
 |---|---|---|
-| 1–3 | Yeni kayıt ve hafız görüşmesi yok; hazır dijital sesler | §3, [K-40](../00-ozet/02-karar-defteri.md#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları) |
+| 1–3 | Yeni kayıt yok; hazır dijital sesler | §3, [K-40](../00-ozet/02-karar-defteri.md#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları) |
 | 4–7 | Az ama gerçekten çok dinlenen okuyucular; popülerlik araştırılarak seçilir | §4 |
 | 8 | İlk kullanımda indirmeden çevrimiçi dinleme | §5.3, §5.5 |
 | 9–10 | Sure ya da okuyucunun bütün Kur'an'ı isteğe bağlı indirilir, kalıcıdır, çevrimdışı çalar | §5.6 |
@@ -23,10 +23,12 @@ Bu dosya A27 ses sisteminin teknik dayanağıdır: hangi kaynaklar incelendi, ok
 ## 2. Projenin bugünkü durumu
 
 - **Mobil uygulama yok.** `apps/mobile` A21'de kurulur. `packages/player` yalnız iskelettir (`packageName` dışa aktarımı). Planlanan yığın: Expo SDK 58 (kararlı 15 Ekim 2026; React Native 0.88), `expo-audio` ~58.0.10, `expo-file-system` ~58.0.13, `expo-sqlite` + Drizzle, XState v5 ([Teknoloji yığını](../02-mimari/02-teknoloji-yigini.md); [bundledNativeModules sdk-58](https://github.com/expo/expo/blob/sdk-58/packages/expo/bundledNativeModules.json)).
-- **Sunucuda ses kodu yok.** Editoryal veritabanında `icerik.audio_timing` tablosu (A07) duruyor. Quran Foundation entegrasyonu kodda yok. Proje sahibinin bildirimine göre QF Developer Console hesabı açık, prelive kimlik bilgileri `dotnet user-secrets` içinde, production erişimi için başvuru yapıldı; değerler listelenmedi ve doğrulanmadı.
-- **Önceki tasarım değişti.** Ses sistemi 1.1 âyet başına dosya (EveryAyah düzeni), `ses-{hafiz}` paketi, tek oynatıcılı `SteppedEngine` ve hafız izinleri üzerine kuruluydu. Bu tasarımın dayandığı kaynakların (EveryAyah, QuranicAudio) sure dosyası yok ya da çalışma anında bağlanmaya uygun değil. Ayrıca proje sahibi önce çevrimiçi dinleme ve kayıt başına tam indirme istiyor. Yeni tasarım §5'te; karar [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme).
+- **Sunucuda ses kodu yok.** Editoryal veritabanında `icerik.audio_timing` tablosu (A07) duruyor.
+- **Tasarımın dayanağı.** Âyet başına dosya sunan kaynaklardan EveryAyah'ın sure dosyası yok, QuranicAudio çalışma anında bağlanmaya uygun değil. Proje sahibi önce çevrimiçi dinleme ve kayıt başına tam indirme istiyor. Tasarım §5'te; karar [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme).
 
 ## 3. Kaynakların karşılaştırılması
+
+Kaynaklar kapsam (114 sure, tam âyet zamanlaması), biçim (sure dosyası ya da âyet dosyası), erişilebilirlik (anahtarsız uç, GitHub ya da herkese açık CDN) ve sabitlenebilirlik (sürüm, adres, özet) ölçütleriyle karşılaştırılır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 1 ve 2).
 
 ### 3.1 Özet
 
@@ -34,16 +36,16 @@ Bu dosya A27 ses sisteminin teknik dayanağıdır: hangi kaynaklar incelendi, ok
 |---|---|---|---|---|
 | **MP3Quran** | Anahtarsız katalog API'si + CDN | Sure başına MP3 | Âyet düzeyi (`/api/v3/ayat_timing`), kelime yok | **Ses kaynağı** (ayna için tek seferlik alım) ve **yedek âyet zamanlaması** |
 | **QUD v4.0.0** | GitHub release: katalog + zamanlama arşivleri | Ses barındırmaz; sure dosyası URL'leri | Âyet ve kelime (ms, sure dosyasına göre) | **Birincil zamanlama ve katalog kaynağı** |
-| **Tarteel CDN** (QUD ve QUL kayıtlarının bir kısmı) | CDN | Sure başına MP3 | QUD ile | **Ses kaynağı** (yalnız ayna için tek seferlik alım; çalışma anında bağlanma yasak) |
-| **Quran Foundation Content API** | OAuth2 API (arka uç) + belirteçsiz ses URL'leri | Sure ve âyet | Âyet ve kelime (`segments`) | **v1.x bağdaştırıcısı** (production erişimi gelince) |
+| **Tarteel CDN** (QUD ve QUL kayıtlarının bir kısmı) | CDN | Sure başına MP3 | QUD ile | **Ses kaynağı** (ayna için tek seferlik alım; uygulama çalışma anında bağlanmaz) |
+| Quran Foundation Content API | OAuth2 API (arka uç) + belirteçsiz ses URL'leri | Sure ve âyet | Âyet ve kelime (`segments`) | Kullanılmaz: anahtar ister, prelive yalnız iki sure taşır |
 | EveryAyah | Dizin | Yalnız âyet başına MP3 | quran-align (12 klasör) | Kullanılmaz: sure dosyası yok |
 | Maqra | EveryAyah'ın bayt bayt kopyası + manifest | Âyet başına | Âyet (tam sure kaydına göre) | Kullanılmaz; manifest yalnız âyet dosyalı kayıt eklenirse |
 | Mushaf-Learning/quran-audio | EveryAyah adres listesi | — | Yok (klasör boş) | Kullanılmaz |
 | QDC (`api.qurancdn.com`) | Belgesiz iç uç | Sure (`download.quranicaudio.com`) | Âyet ve kelime | Kullanılmaz: belgesiz, QF'nin OAuth'lu API'sine geçiş var |
 | QuranicAudio | Katalog API'si + CDN | Sure | Yok | Kullanılmaz (QDC/QF ile aynı dosyalar) |
 | AlQuran Cloud / Islamic Network | API + CDN | Âyet ve sure | Yok | Kullanılmaz: EveryAyah ve Quran Central kopyası, zamanlama yok |
-| quranlab (Hugging Face) | Zamanlama kümesi (CC BY 4.0) | EveryAyah adresleri | Kelime | Kullanılmaz: âyet dosyalarına bağlı |
-| quran-align | Zamanlama kümesi (CC BY 4.0), 2016 | EveryAyah klasörleri | Kelime (0 tabanlı, bitiş hariç) | Kullanılmaz: âyet dosyalarına bağlı |
+| quranlab (Hugging Face) | Zamanlama kümesi | EveryAyah adresleri | Kelime | Kullanılmaz: âyet dosyalarına bağlı |
+| quran-align | Zamanlama kümesi, 2016 | EveryAyah klasörleri | Kelime (0 tabanlı, bitiş hariç) | Kullanılmaz: âyet dosyalarına bağlı |
 | archive.org, islamic.app, öteki HF kümeleri | Yükleme ve aynalar | Karışık | Karışık | Kullanılmaz: köken ve bayt kararlılığı yok |
 
 ### 3.2 MP3Quran
@@ -52,7 +54,6 @@ Bu dosya A27 ses sisteminin teknik dayanağıdır: hangi kaynaklar incelendi, ok
 - **Zamanlama:** `/ayat_timing/reads` (115 kayıt; `id` = moshaf kimliği), `/ayat_timing/soar?read=`, `/ayat_timing?surah=&read=` → `[{ayah, start_time, end_time, polygon, x, y, page}]`. Birim belgede yok; değerler ms ile uyumlu (Bakara'nın son âyeti 7.539.060). Âyet 0 yok; 1. âyetten önceki birkaç saniye etiketsiz (istiâze ya da besmele). Kelime alanı yok.
 - **Kapsam:** 13 adayın hepsinde 114 surelik Hafs murattal kaydı var. Maher Al-Muaiqly'nin murattal kaydında (102) zamanlama yok; mücevved kaydında (133) var.
 - **Sınırlar:** boyut, süre ve özet alanı yok. Bilinmeyen kimlik hata vermiyor, tam liste dönüyor. Mücevved kayıtlarının rivayeti iki uçta farklı geliyor. Adresler geçmişte taşınmış (`server6.mp3quran.net` → `cdn.mp3quran.net`; QUD #312).
-- **Şart metni (bilgi):** gizlilik sayfası "we allow any visitor or developer to copy any material or use any link on the websites" diyor ([privacy](https://www.mp3quran.net/eng/privacy)).
 
 ### 3.3 QUD (Quranic Universal Audio)
 
@@ -60,21 +61,19 @@ Bu dosya A27 ses sisteminin teknik dayanağıdır: hangi kaynaklar incelendi, ok
 - **Katalog:** `recitations[]{slug, reciter_id, name_en, name_ar, riwayah, style, channel, audio_category, audio{chapter_urls, chapter_offsets_ms?, bitrate_mode, bitrate_kbps_nominal}, coverage{ayahs, surahs, missing_surahs?, missing_verses?}}`. Görülen bütün kayıtlar `by_surah`.
 - **Zamanlama:** âyet satırı `[ref, start_ms, end_ms, canonical, silence_after_ms]`; kelime satırı `[word_idx (âyet içinde 1 tabanlı), start_ms, end_ms]`; `_meta{units, script, script_sha256, …}`. Harf katmanı v4.0.0'da askıda.
 - **Ses–zamanlama bağı:** yalnız URL ile. QUD yayından önce her sureyi kaynaktan denetler (boyut değişirse ya da süre 2 sn'den fazla farklıysa sure çıkarılır); kaynak sesin sha256'sını yayımlamaz.
-- **Sürümleme:** `content_hash`, `ts_version`, `check_updates.py`. GitHub Releases sürüm sabitli, Hugging Face kayan sürüm. Taslak PR #266 lisansı değiştirmeyi öneriyor; Mütâlaa v4.0.0'a ve zip sha256'larına sabitlenir.
-- **Kod ve veri lisansı (bilgi):** CC BY 4.0 (QUD'un kendi işi). Kayıtlar okuyucunun ve asıl kaynağın malıdır ([NOTICE](https://raw.githubusercontent.com/QUD-Technologies/quranic-universal-audio/main/NOTICE.md)).
+- **Sürümleme:** `content_hash`, `ts_version`, `check_updates.py`. GitHub Releases sürüm sabitli, Hugging Face kayan sürüm; Mütâlaa v4.0.0'a ve zip sha256'larına sabitlenir. Kaynağın kendi bildirimi ([NOTICE](https://raw.githubusercontent.com/QUD-Technologies/quranic-universal-audio/main/NOTICE.md)) kaynak kaydına bayt bayt yazılır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 4).
 
 ### 3.4 Tarteel CDN ve QUL
 
-- QUD'daki Maher, Sudais, Ghamdi ve Abdul Basit kayıtları `audio-cdn.tarteel.ai` adresli sure dosyalarına hizalı. QUL belgesi: "do not hotlink audio-cdn.tarteel.ai at runtime" ve CDN üçüncü taraf üretim trafiği için güvence vermez ([QUL 118 belgesi](https://qul.tarteel.ai/resources/recitation/118/docs)). Bu yüzden bu dosyalar yalnız içerik hattıyla bir kez alınır ve aynadan sunulur (§5.2).
-- QUL verisi indirme için giriş istiyor ve API'si yok; Mütâlaa QUL'u doğrudan kullanmaz.
+- QUD'daki Maher, Sudais, Ghamdi ve Abdul Basit kayıtları `audio-cdn.tarteel.ai` adresli sure dosyalarına hizalı ([QUL kayıt belgesi](https://qul.tarteel.ai/resources/recitation/118/docs)). Bu dosyalar içerik hattıyla bir kez alınır ve aynadan sunulur (§5.2).
+- QUL'un ses verisi indirme için giriş istiyor ve API'si yok; ses için QUL doğrudan kullanılmaz, kayıt listesi ve zamanlama QUD'dan gelir.
 
 ### 3.5 Quran Foundation Content API
 
-- OAuth2 `client_credentials` (`scope=content`); prelive `https://prelive-oauth2.quran.foundation/oauth2/token`, `https://apis-prelive.quran.foundation/content/api/v4`; production `https://oauth2.quran.foundation`, `https://apis.quran.foundation/content/api/v4` ([quickstart](https://api-docs.quran.foundation/docs/quickstart/), [OpenAPI](https://api-docs.quran.foundation/openAPI/content/v4.json)). Belirteç 3600 sn.
-- **Prelive yalnız Fâtiha ve Bakara'yı taşır.** Tam veri production onayıyla gelir.
+- OAuth2 `client_credentials` (`scope=content`) ister; prelive `https://prelive-oauth2.quran.foundation/oauth2/token`, `https://apis-prelive.quran.foundation/content/api/v4`; production `https://oauth2.quran.foundation`, `https://apis.quran.foundation/content/api/v4` ([quickstart](https://api-docs.quran.foundation/docs/quickstart/), [OpenAPI](https://api-docs.quran.foundation/openAPI/content/v4.json)). Belirteç 3600 sn.
+- **Prelive yalnız Fâtiha ve Bakara'yı taşır.** Tam veri production erişimiyle gelir.
 - Uçlar: `/resources/chapter_reciters`, `/chapter_recitations/{id}/{sure}?segments=true` (`timestamps[]{verse_key, timestamp_from, timestamp_to, segments[[word_index, start_ms, end_ms]]}`), `/recitations/{id}/by_chapter/{n}` vb. Ses URL'leri belirteçsiz açılıyor (`download.quranicaudio.com/qdc/...`, `verses.quran.foundation/...`).
-- Content Sync `recitations` ve `chapter_recitations` gruplarını kapsar; çevrimdışı kopya bu yolla en az 7 günde bir eşitlenir. İstemcide `client_secret` bulunmaz ([developer terms](https://api-docs.quran.foundation/legal/developer-terms/), son güncelleme 2026-10-11).
-- **Rol:** v1.x'te arka uç bağdaştırıcısı (A14 API'sine bir uç), production erişimi gelince. v1 kataloğu QF'ye bağlı değildir.
+- **Değerlendirme:** Katalog ve zamanlama uçları belirteç, tam veri production erişimi ister. Anahtar isteyen içerik kaynağı seçilmediği için ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 2) v1 kataloğu QF'ye bağlı değildir; sure dosyaları MP3Quran ve Tarteel CDN'inden, zamanlama QUD'dan gelir.
 
 ### 3.6 EveryAyah, Maqra ve kopyaları
 
@@ -141,15 +140,14 @@ Karar kaydı: [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kay
 
 ### 5.2 Ayna: dosyalar kendi içerik depomuzdan
 
-İçerik hattı her kaydın sure dosyalarını kaynaktan (MP3Quran CDN, Tarteel CDN) **bir kez** alır, `data/raw/ses/{kayit}/{tarih}/{sss}.mp3` altına yazar ve şunları ölçer: bayt, sha256, süre, bit hızı türü (CBR ya da VBR). Yayınlayıcı dosyaları içerik deposuna (yerelde SeaweedFS, canlıda R2; [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı)) **değişmez ve sürümlü** adrese koyar: `audio/{kayit}/{dosya_surumu}/{sss}.mp3`. Uygulama üçüncü taraf ses sunucusuna bağlanmaz.
+Claude Code her kaydın sure dosyalarını kaynaktan (MP3Quran CDN, Tarteel CDN) **bir kez** `data/gelen/<kaynak>/<YYYY-AA-GG>/` altına indirir; toplu indirmede istek hızı sınırlanır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 2). İçerik hattı dosyaları buradan alır, `data/raw/ses/{kayit}/{tarih}/{sss}.mp3` altına yazar ve şunları ölçer: bayt, sha256, süre, bit hızı türü (CBR ya da VBR). Yayınlayıcı dosyaları içerik deposuna (yerelde SeaweedFS, canlıda R2; [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı)) **değişmez ve sürümlü** adrese koyar: `audio/{kayit}/{dosya_surumu}/{sss}.mp3`. Uygulama üçüncü taraf ses sunucusuna bağlanmaz.
 
 Gerekçe:
-1. Tarteel CDN'e çalışma anında bağlanmak QUL belgesinde açıkça yasak ve güvencesiz.
-2. Android'de `createDownloadTask` sürdürmede `If-Range` ya da ETag göndermiyor; değişen bir dosyaya sürdürme bozuk dosya üretir. Değişmez adres bu riski kaldırır.
-3. Kaynaklar boyut ve sha256 vermiyor; ayna her dosyanın boyutunu ve özetini bilir. İndirme doğrulaması ve boyut gösterimi buna dayanır.
-4. Zamanlama sese yalnız URL ile bağlı; kaynakta dosya değişir ya da adres taşınırsa (MP3Quran #312) zamanlama kayar. Ayna dosyayı sabitler; kaynakta değişiklik içerik hattının denetiminde görülür, yeni `dosya_surumu` olarak gelir.
-5. Kullanıcının IP adresi birden çok üçüncü taraf ses sunucusuna gitmez; yalnız zaten kullanılan içerik deposu ve CDN'e gider ([KVKK ve gizlilik](../07-yayin/02-gizlilik.md) §2.4).
-6. ASP.NET arka ucu ses baytlarını iletmez; depo nesne deposudur.
+1. Android'de `createDownloadTask` sürdürmede `If-Range` ya da ETag göndermiyor; değişen bir dosyaya sürdürme bozuk dosya üretir. Değişmez adres bu riski kaldırır.
+2. Kaynaklar boyut ve sha256 vermiyor; ayna her dosyanın boyutunu ve özetini bilir. İndirme doğrulaması ve boyut gösterimi buna dayanır.
+3. Zamanlama sese yalnız URL ile bağlı; kaynakta dosya değişir ya da adres taşınırsa (MP3Quran #312) zamanlama kayar. Ayna dosyayı sabitler; kaynakta değişiklik içerik hattının denetiminde görülür, yeni `dosya_surumu` olarak gelir.
+4. Kullanıcının IP adresi birden çok üçüncü taraf ses sunucusuna gitmez; yalnız zaten kullanılan içerik deposu ve CDN'e gider ([Gizlilik](../07-yayin/02-gizlilik.md) §2.4).
+5. ASP.NET arka ucu ses baytlarını iletmez; depo nesne deposudur.
 
 Bedel: dokuz kayıt için yaklaşık 12–16 GB depolama (kaba tahmin, §4.4). R2 fiyatı ve çıkış ücreti İ-18 ile hesap açılırken doğrulanır; ücretli işlem kural 11 gereği onay ister.
 
@@ -198,17 +196,17 @@ Her sure için sırayla: (1) `device.db` `audio_file` içinde doğrulanmış yer
 
 ### 5.10 Arka ucun rolü
 
-v1'de yok: katalog ve zamanlama içerik hattında üretilir, Yayınlayıcı paket ve ayna dosyalarını içerik deposuna koyar, uygulama depodan okur. QF bağdaştırıcısı v1.x'te A14 API'sine eklenir: belirteç arka uçta, URL ve zamanlama Content Sync kurallarıyla (en az 7 günde bir eşitleme); ses baytları yine iletilmez.
+Ses için arka uç bir rol üstlenmez: katalog ve zamanlama içerik hattında üretilir, Yayınlayıcı paket ve ayna dosyalarını içerik deposuna koyar, uygulama depodan okur. ASP.NET arka ucu ses baytlarını iletmez.
 
 ## 6. Değerlendirilen alternatifler
 
 | Seçenek | Neden seçilmedi |
 |---|---|
-| Kaynak CDN'lerinden doğrudan çalma (ayna yok) | Tarteel'de çalışma anında bağlanma yasak; boyut ve sha256 yok; adres taşınması ve dosya değişikliği zamanlamayı bozar; Android sürdürmesinde bozuk dosya riski; IP birden çok üçüncü tarafa gider |
+| Kaynak CDN'lerinden doğrudan çalma (ayna yok) | Boyut ve sha256 yok; adres taşınması ve dosya değişikliği zamanlamayı bozar; Android sürdürmesinde bozuk dosya riski; IP birden çok üçüncü tarafa gider |
 | Âyet başına dosya (EveryAyah) + quran-align | Sure dosyası yok; kesintisiz dinlemede boşluk; quran-align 2016'dan beri güncellenmiyor ve 12 klasörle sınırlı; Maher, Ghamdi, Yasser için kelime zamanlaması yok |
 | QDC (`api.qurancdn.com`) | Belgesiz iç uç; QF OAuth'lu API'ye geçiyor; veride negatif süreler |
-| v1'i QF'ye dayandırmak | Prelive yalnız iki sure; production onayı bekleniyor; çevrimdışı kopya Content Sync ve 7 günlük eşitleme şartına bağlı |
-| `react-native-track-player` v5 | Ticari lisans ücretli (K-28) |
+| v1'i QF'ye dayandırmak | Anahtar ister; prelive yalnız iki sure taşır; tam veri production erişimi ister |
+| `react-native-track-player` v5 | Ticari kullanımda ücretli (K-28) |
 | `react-native-audio-api` | 0.x API, PCM bellek yükü, akış katmanı bize kalır; expo-audio yetmezse ikinci seçenek |
 | Kendi Media3/AVPlayer Expo modülümüz | En güçlü yedek yol; expo-audio cihaz ölçümünde yetersiz kalırsa (A27.9) değerlendirilir |
 
@@ -225,13 +223,12 @@ v1'de yok: katalog ve zamanlama içerik hattında üretilir, Yayınlayıcı pake
 | SK-7 | iOS'ta indirilen seslerin iCloud yedeğinden dışlanması için Expo API'si yok | A27.6 (karar: küçük yerel modül ya da yedeğe girmeyi kabul) |
 | SK-8 | MP3Quran adreslerinin `/download/` önekli ve öneksiz biçimleri | A27.2 |
 | SK-9 | R2 depolama ve trafik bedeli | İ-18 |
-| SK-10 | QUD lisansının değişme önerisi (PR #266); v4.0.0'a sabitlenir | A27.2 |
 
 ## 8. Uygulama planı (özet)
 
 Ayrıntılı adımlar ve kabul ölçütleri [A27](../10-claude-code/asamalar/A27-ses-sistemi.md) dosyasındadır. Sıra teknik bağımlılığa göredir:
 
-1. **Katalog ve ayna (içerik hattı + Yayınlayıcı):** `pipeline/src/mutalaa_pipeline/ses/` (QUD ve MP3Quran okuyucuları, ayna alımı, ölçüm), kaynak kayıtları, editoryal veritabanı ses tabloları (EF göçü), `ses-katalog` ve `ses-zaman-*` paketleri, ayna dosyalarının yüklenmesi.
+1. **Tedarik (A27.0), katalog ve ayna (içerik hattı + Yayınlayıcı):** kaynak adreslerinin doğrulanması ve indirme (`data/gelen/`; [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 2), `pipeline/src/mutalaa_pipeline/ses/` (QUD ve MP3Quran okuyucuları, ayna alımı, ölçüm), kaynak kayıtları, editoryal veritabanı ses tabloları (EF göçü), `ses-katalog` ve `ses-zaman-*` paketleri, ayna dosyalarının yüklenmesi.
 2. **`packages/player`:** motor arayüzü (dosya × kare), kare zamanlayıcısı kararı, `decideAfterItem`, zamanlama araması, XState makinesi; önce testler.
 3. **Çevrimiçi oynatma:** `PlaylistEngine`, `SingleEngine`, ses oturumu, kaynak çözücü (akış), okuyucu seçici, mini oynatıcı, Dinleme sayfası.
 4. **Geçiş ve senkron:** âyet tekrarı, aralık, sonraki sure, Nâs kuralı, âyet vurgusu, takip modu.
@@ -244,10 +241,10 @@ Ayrıntılı adımlar ve kabul ölçütleri [A27](../10-claude-code/asamalar/A27
 
 Okuma tarihi hepsi için 30 Ekim 2026.
 
-- MP3Quran: [API](https://www.mp3quran.net/eng/api) · [reciters](https://mp3quran.net/api/v3/reciters?language=eng) · [ayat_timing/reads](https://mp3quran.net/api/v3/ayat_timing/reads) · [gizlilik](https://www.mp3quran.net/eng/privacy)
-- QUD: [depo](https://github.com/QUD-Technologies/quranic-universal-audio) · [v4.0.0](https://github.com/QUD-Technologies/quranic-universal-audio/releases/tag/v4.0.0) · [katalog belgesi](https://raw.githubusercontent.com/QUD-Technologies/quranic-universal-audio/main/docs/reference/catalog.md) · [NOTICE](https://raw.githubusercontent.com/QUD-Technologies/quranic-universal-audio/main/NOTICE.md) · [PR #266](https://github.com/QUD-Technologies/quranic-universal-audio/pull/266)
-- Tarteel QUL: [kayıtlar](https://qul.tarteel.ai/resources/recitation) · [118 belgesi](https://qul.tarteel.ai/resources/recitation/118/docs) · [credits](https://qul.tarteel.ai/credits)
-- Quran Foundation: [quickstart](https://api-docs.quran.foundation/docs/quickstart/) · [OpenAPI](https://api-docs.quran.foundation/openAPI/content/v4.json) · [ses SDK](https://api-docs.quran.foundation/docs/sdk/javascript/audio/) · [Content Sync](https://api-docs.quran.foundation/docs/tutorials/content-sync/getting-started/) · [developer terms](https://api-docs.quran.foundation/legal/developer-terms/)
+- MP3Quran: [API](https://www.mp3quran.net/eng/api) · [reciters](https://mp3quran.net/api/v3/reciters?language=eng) · [ayat_timing/reads](https://mp3quran.net/api/v3/ayat_timing/reads)
+- QUD: [depo](https://github.com/QUD-Technologies/quranic-universal-audio) · [v4.0.0](https://github.com/QUD-Technologies/quranic-universal-audio/releases/tag/v4.0.0) · [katalog belgesi](https://raw.githubusercontent.com/QUD-Technologies/quranic-universal-audio/main/docs/reference/catalog.md) · [NOTICE](https://raw.githubusercontent.com/QUD-Technologies/quranic-universal-audio/main/NOTICE.md)
+- Tarteel QUL: [kayıtlar](https://qul.tarteel.ai/resources/recitation) · [kayıt belgesi](https://qul.tarteel.ai/resources/recitation/118/docs)
+- Quran Foundation: [quickstart](https://api-docs.quran.foundation/docs/quickstart/) · [OpenAPI](https://api-docs.quran.foundation/openAPI/content/v4.json) · [ses SDK](https://api-docs.quran.foundation/docs/sdk/javascript/audio/)
 - EveryAyah ve kopyaları: [everyayah.com](https://everyayah.com/) · [Maqra](https://github.com/Abdalla-Eldoumani/maqra) · [Mushaf-Learning/quran-audio](https://github.com/Mushaf-Learning/quran-audio) · [quran-align](https://github.com/cpfair/quran-align) · [quranlab](https://huggingface.co/datasets/quranlab/quran-audio) · [AlQuran Cloud CDN](https://alquran.cloud/cdn) · [QuranicAudio API](https://quranicaudio.com/api/qaris)
 - Popülerlik: §4.2 tablosundaki bağlantılar.
 - Expo: [expo-audio v58](https://docs.expo.dev/versions/v58.0.0/sdk/audio/) · [expo-audio CHANGELOG](https://github.com/expo/expo/blob/sdk-58/packages/expo-audio/CHANGELOG.md) · [expo-file-system v58](https://docs.expo.dev/versions/v58.0.0/sdk/filesystem/) · [expo-network v58](https://docs.expo.dev/versions/v58.0.0/sdk/network/) · [SDK 58](https://expo.dev/changelog/sdk-58)
@@ -256,5 +253,5 @@ Okuma tarihi hepsi için 30 Ekim 2026.
 ## İlgili dosyalar
 
 - [Ses sistemi](./02-ses-sistemi.md) · [Mobil mimari](./01-mobil-mimari.md) · [Depolama yöneticisi](./03-depolama-yoneticisi.md)
-- [A27 aşaması](../10-claude-code/asamalar/A27-ses-sistemi.md) · [Karar defteri](../00-ozet/02-karar-defteri.md) · [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md)
-- [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [KVKK ve gizlilik](../07-yayin/02-gizlilik.md)
+- [A27 aşaması](../10-claude-code/asamalar/A27-ses-sistemi.md) · [Karar defteri](../00-ozet/02-karar-defteri.md) · [Kaynaklar](../04-icerik/01-kaynaklar.md)
+- [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [Gizlilik](../07-yayin/02-gizlilik.md)

@@ -1,7 +1,7 @@
 # Ürün Özeti
 
-> **Sürüm:** 1.2 · **Tarih:** 31 Ekim 2026 · **Durum:** Onaylı
-> **Bağlı kararlar:** [K-01, K-02, K-07, K-08, K-25](./02-karar-defteri.md) · [K-41](./02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
+> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Onaylı
+> **Bağlı kararlar:** [K-01, K-02, K-07, K-08, K-25](./02-karar-defteri.md) · [K-41](./02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-42](./02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
 
 ## Tek cümlede
 
@@ -36,7 +36,7 @@ Diyanet, vavtv, Hayrat, Açık Kuran, Quran.com ve Risale uygulamaları incelend
 | Âyet ↔ Risale iki yönlü atıf dizini | Yok | İnsan onaylı atıf tablosu |
 | Risale'de Arapça ibarelerin satır içi meali | Yalnız eski bir Android uygulaması | İktibas tespiti ve meal kartı |
 | Baskılar arası sayfa eşleme | Yok | `page_map` tablosu |
-| Âyet vurgulu, Kur'an + meal dönüşümlü dinleme ve Türk hafızlar | Diyanet dönüşümü, vavtv Türk hafızları sunuyor | İkisi bir arada |
+| Âyet vurgulu, Kur'an + meal dönüşümlü dinleme ve Türk hafızlar | Diyanet dönüşümü, vavtv Türk hafızları sunuyor | Âyet vurgulu dinleme v1'de, Kur'an + meal dönüşümlü dinleme v1.x'te; Türk hafızlar için faz atanmadı ([Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md)) |
 | Bağımsızlık | Güçlü rakiplerin hepsi bir kuruma bağlı | Hiçbir cemaate ve yayınevine bağlı olmayan ürün |
 
 ## İlkeler
@@ -52,25 +52,18 @@ Diyanet, vavtv, Hayrat, Açık Kuran, Quran.com ve Risale uygulamaları incelend
 ## İlk sürüm (v1) bir bakışta
 
 - **Platform:** iOS ve Android (Expo). Web mobilden sonra (Next.js 16).
-- **İçerik:** Kur'an-ı Kerîm metni ve Elmalılı meali; hadis (Tecrîd-i Sarîh Arapça + Ahmed Naim Türkçesi, Kütüb-i Sitte Arapça); Risale-i Nur altyapısı (adresler, atıf dizini, sayfa eşlemesi; metin hukukçu görüşü gelene kadar işlenmez). Elmalılı tefsir metni v1.x'te. Kitaplar sonra.
+- **İçerik:** Kur'an-ı Kerîm metni ve Elmalılı meali; hadis (Tecrîd-i Sarîh Arapça + Ahmed Naim ve Kâmil Miras Türkçesi, Kütüb-i Sitte Arapça); Risale-i Nur (metin, adresler, âyet atıf dizini, baskı sayfa eşlemesi, lügat). Elmalılı tefsir metni v1.x'te. Kitaplar sonra.
+- **Yayın:** Her içerik editör onayından ve Yayınlayıcının kalite kapısından geçtikçe mağaza sürümüne girer ([K-42](./02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)). Her kaynağın atıf satırı Ayarlar › Kaynaklar ekranında görünür.
+- **Ses:** Popüler okuyucuların hazır dijital kayıtları kullanılır, hafız sesi alınmaz; dosyalar kendi içerik deposundan sunulur ([K-40](./02-karar-defteri.md#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları), [K-41](./02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)).
 - **Hesap:** Yok. Uygulama hesapsız ve çevrimdışı tam çalışır.
 - **Arama:** Cihazda, SQLite FTS5.
 - **Depolama yöneticisi:** Var.
 
 Tam liste: [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md).
 
-## Bugünkü gerçek kısıtlar
-
-Bu kısıtlar araştırma raporundan gelir ve yol haritasını belirler. Hukuki görüş değildir.
-
-- **Kurul onayı.** 633 sayılı Kanun'un 6. maddesi (4 Haziran 2025'ten beri) uyarınca Mushafları İnceleme ve Kıraat Kurulu onayı olmayan elektronik ve sesli Kur'an ile mealli mushaf yayımlanamaz. Ayrıntı: [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md).
-- **Risale-i Nur.** 31 Aralık 2030'a kadar telifli; hakları bugün kimin kullandığı belirsiz. Ayrıntı: [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md).
-- **Meal.** Klasik Türkçe meallerden yalnız Elmalılı'nınki serbest (2013'ten beri). Çantay 2035'te, Bilmen 2042'de serbest kalır.
-- **Ses.** Popüler okuyucuların hazır dijital kayıtları kullanılır, hafız sesi alınmaz; dosyalar kendi içerik deposundan sunulur (K-40, K-41). Sesli Kur'an Kurul onayına tabidir.
-
 ## Referans malzeme
 
-- **Vitrin sayfası:** "Mütâlaa Okuma Uygulaması". Tıklanabilir okuma masası örneği, mushaf seçenekleri karşılaştırması, özellik haritası, tasarım dili, içerik takvimi.
+- **Vitrin sayfası:** "Mütâlaa Okuma Uygulaması". Tıklanabilir okuma masası örneği, mushaf seçenekleri karşılaştırması, özellik haritası, tasarım dili.
 - **Araştırma raporu:** `Kuran Risale okuma uygulaması araştırması.md` (16 Ekim 2026). Kaynak listesi: [Kaynakça](../09-kaynakca.md).
 - **Claude Code rehberi:** [Claude Code ile geliştirme](../10-claude-code/README.md). Proje yalnız Claude Code ile, aşama aşama geliştirilir ([K-31](./02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)).
 - **Eski plan:** `quran-app-docs` (Mayıs 2026). Okuyucu tasarımları ve ilkeler için referans; teknoloji kararları [K-30](./02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) ile geçersiz.

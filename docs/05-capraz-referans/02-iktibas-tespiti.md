@@ -1,11 +1,11 @@
 # İktibas ve Atıf Tespiti
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.2 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 
 Bu dosya Risale-i Nur ve tefsir metinlerindeki âyet iktibaslarının ve açık atıfların bulunmasını tanımlar. Çıktı `xref` tablosuna `type = 'atif'` ve `type = 'iktibas'` satırlarıdır ([bağlantı modeli](./01-baglanti-modeli.md)). İş Python 3.13 içerik hattında, `pipeline/enrich/` altında, çevrimdışı çalışır (K-12). Her satır editör panelinde onaylanmadan mağazaya çıkmaz (K-13). Metni verilmeden yapılan imalar sözlüksel tespitle bulunamaz; onları editör `ima` olarak girer.
 
-Girdiler: Risale-i Nur (K-05 gereği yalnız iç derleme), Elmalılı tefsiri (transkripsiyon bitince), sonra hadis Arapça metinleri. Dizin üretmek için Risale metnini işlemenin hukuki durumu bir fikri haklar avukatıyla doğrulanmalıdır (rapor). Hukuki görüş değildir.
+Girdiler: Risale-i Nur, Elmalılı tefsiri (transkripsiyon bitince), sonra hadis Arapça metinleri.
 
 ## 1. Hat akışı
 
@@ -149,7 +149,7 @@ def sw(a, b, match=2, fuzzy=1, miss=-2, gap=-2, sim=80):
 
 ## 7. Kısa ve kalıp ifadeler
 
-En büyük yanlış pozitif kaynağı kısa ve kalıplaşmış ifadelerdir. QUL 5.641 tekrarlanan ifade listeler. Örneğin تَجْرِي مِن تَحْتِهَا الْأَنْهَارُ خَالِدِينَ 18 âyette, altı kelimelik uzantısı 15 âyette geçer ([QUL](https://qul.tarteel.ai/morphology_phrases?page=61)). f değerini kendi indeksimiz hesaplar. Lisansı belirtilmeyen QUL listesi yalnız iç denetimde kullanılır.
+En büyük yanlış pozitif kaynağı kısa ve kalıplaşmış ifadelerdir. QUL 5.641 tekrarlanan ifade listeler. Örneğin تَجْرِي مِن تَحْتِهَا الْأَنْهَارُ خَالِدِينَ 18 âyette, altı kelimelik uzantısı 15 âyette geçer ([QUL](https://qul.tarteel.ai/morphology_phrases?page=61)). f değerini kendi indeksimiz hesaplar; QUL listesi bu hesabı denetlemek için kullanılır.
 
 | Durum | Kural |
 |---|---|
@@ -186,7 +186,6 @@ NeurIPS 2025'te sunulan karma yaklaşımda bir dil modeli kasıtlı referanslar�
 - `hedef` yalnız aday listesinden ya da `null` olabilir. Liste dışı çıktı atılır.
 - Sonuç `evidence.llm` alanına yazılır; durum `aday` kalır ve kararı editör verir.
 - Maliyet tahmini: Claude Haiku 5.5 milyon girdi tokenı 0,10 $, çıktı 0,50 $ ([fiyat](https://platform.claude.com/docs/en/about-claude/pricing)). 20 bin aday × 1.000 girdi ve 80 çıktı tokenı yaklaşık 2,8 $ eder. Aday sayısı varsayımdır.
-- Risale metninin bir API'ye gönderilmesi hukuken netleşmeden bu adım yalnız Elmalılı ve serbest metinlerde çalışır (Açık soru).
 
 ## 10. Altın set ve ölçüm
 
@@ -207,13 +206,13 @@ Hedefler [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md#8-v1-başarı-öl�
 
 ## 11. Hazır araçlar
 
-| Araç | Lisans, sürüm | Yaklaşım | Değerlendirme sorusu |
+| Araç | Sürüm | Yaklaşım | Değerlendirme sorusu |
 |---|---|---|---|
-| [ijaza](https://pypi.org/project/ijaza/) | MIT, 2.0.0 (8 Mart 2026) | Tam, normalize, kısmi, bulanık kademeli eşleşme; etiketsiz alıntı bulur; 6.236 âyet, Uthmani + sade | Risale'den çıkarılan dizilerde kesinlik ve duyarlılık |
-| [passim](https://kitab-project.org/methods/text-reuse) | Doğrulanacak | Aday çift + Smith-Waterman; 300 kelimelik kilometre taşları | Yöntem kaynağı; Risale ↔ Elmalılı metin yeniden kullanımı için de denenebilir |
-| [QDetect](https://fount.aucegypt.edu/faculty_journal_articles/2523) | "Açık kaynak" deniyor, depo bulunamadı | MSA ve lehçede âyet tespiti | Depo bulunursa |
-| [quran-search-in-text](https://pypi.org/project/quran-search-in-text/0.0.9/) | MIT, 0.0.9 (Kas 2024); 0.1.3 mevcut | Paragraf paragraf tarar, âyet adresi ve HTML bağlantı üretir | Hızlı taban çizgisi |
-| [quran-verse-detection](https://github.com/topics/quran-verse-detection) | Doğrulanacak | Âyet metninden sure ve âyet | Tam âyet tanıma |
+| [ijaza](https://pypi.org/project/ijaza/) | 2.0.0 (8 Mart 2026) | Tam, normalize, kısmi, bulanık kademeli eşleşme; etiketsiz alıntı bulur; 6.236 âyet, Uthmani + sade | Risale'den çıkarılan dizilerde kesinlik ve duyarlılık |
+| [passim](https://kitab-project.org/methods/text-reuse) | A18.0'da sabitlenir | Aday çift + Smith-Waterman; 300 kelimelik kilometre taşları | Yöntem kaynağı; Risale ↔ Elmalılı metin yeniden kullanımı için de denenebilir |
+| [QDetect](https://fount.aucegypt.edu/faculty_journal_articles/2523) | Depo bulunamadı | MSA ve lehçede âyet tespiti | Depo bulunursa |
+| [quran-search-in-text](https://pypi.org/project/quran-search-in-text/0.0.9/) | 0.0.9 (Kas 2024); 0.1.3 mevcut | Paragraf paragraf tarar, âyet adresi ve HTML bağlantı üretir | Hızlı taban çizgisi |
+| [quran-verse-detection](https://github.com/topics/quran-verse-detection) | A18.0'da sabitlenir | Âyet metninden sure ve âyet | Tam âyet tanıma |
 
 Hiçbiri Osmanlıca-Türkçe bir ana metin için tasarlanmadı (rapor). Karar kuralı: ijaza ve quran-search-in-text geliştirme bölümünde bizim çıkardığımız dizilerle koşulur. ijaza hedefleri tutarsa `pipeline/enrich/` içinde sarılır ve normalizasyon, bağlam ve kalıp katmanları bizde kalır. Tutmazsa §5–6'daki eşleştirici yazılır ve gerekirse ijaza'nın normalizasyonu kullanılır.
 
@@ -238,12 +237,10 @@ Aynı gramer motoru `collection_alias` tablosuyla hadis atıflarını ayrıştı
 3. Tanzil Uthmani ve Simple Clean metinlerinde âyet başına kelime sayısı eşit mi?
 4. Elmalılı'nın âyet numaralandırması Tanzil ile aynı mı?
 5. Tek başına hemzenin silinmesi arama normalizasyonuna da alınsın mı? [Arama](../03-veri/05-arama-fts5.md) dosyasıyla ortak karar gerekir.
-6. Risale metnini dizin için işlemek ve bir dil modeli API'sine göndermek hukuken uygun mu? Hukuki görüş değildir.
-7. passim ve quran-verse-detection lisansları ile QUL tekrar listesinin lisansı doğrulanacak.
 
 ## İlgili dosyalar
 - [Bağlantı modeli](./01-baglanti-modeli.md) · [Kök ve lemma](./03-kok-ve-lemma.md) · [Anlamsal katman](./04-anlamsal-katman.md)
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Sözlük](../00-ozet/03-sozluk.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [Arama](../03-veri/05-arama-fts5.md)
 - [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) · [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md) · [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md)
-- [Yayın kapısı](../07-yayin/01-yayin-sureci.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md) · [Kaynakça](../09-kaynakca.md)
+- [Yayın süreci](../07-yayin/01-yayin-sureci.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md) · [Kaynakça](../09-kaynakca.md)

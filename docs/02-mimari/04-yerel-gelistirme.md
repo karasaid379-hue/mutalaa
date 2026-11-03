@@ -1,7 +1,7 @@
 # Yerel geliştirme
 
-> **Sürüm:** 1.6 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)
+> **Sürüm:** 1.7 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)
 
 Geliştirme ekibin kendi Windows bilgisayarında yapılır ([K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma)). PostgreSQL ve S3 deposu Docker'da çalışır. API, editör ve Yayınlayıcı isteğe bağlı olarak Docker'da ya da doğrudan ana makinede çalışır. Node, .NET ve Python araçları ana makinededir. Uygulama telefonda ya da Android emülatöründe geliştirme derlemesiyle açılır.
 
@@ -285,7 +285,7 @@ SENTRY_DSN=
 ```dotenv
 # pipeline/.env.example (değişken adları: İçerik hattı §3)
 MUTALAA_DB_URL=postgresql://mutalaa:yerel-sifre-degistir@localhost:5432/mutalaa
-ANTHROPIC_API_KEY=          # yalnız yapay zekâ taslakları; embed_ok kapalı kaynak gönderilmez
+ANTHROPIC_API_KEY=          # yalnız yapay zekâ taslakları
 PYTHONUTF8=1
 ```
 
@@ -310,7 +310,7 @@ PYTHONUTF8=1
    dotnet run --project server/Mutalaa.Api -- seed
    ```
    `seed` var olan yöneticinin parolasına dokunmaz. Parolayı değiştirmek için kullanıcıyı silin ya da Identity ile sıfırlayın. Çıkış kodları: `0` başarı, `1` beklenmeyen hata, `2` eksik ayar, `3` Identity reddetti. Günlüğe parola ve e-posta yazılmaz.
-4. **Kur'an metnini yükleyin.** Komutlar [İçerik hattı](../04-icerik/02-icerik-hatti.md) §4'tedir.
+4. **Kur'an metnini yükleyin.** Tanzil dosyalarını A10'da Claude Code `data/gelen/tanzil/<YYYY-AA-GG>/` altına indirir; `ingest` onları oradan alır, kendisi indirmez ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 2). Komutlar [İçerik hattı](../04-icerik/02-icerik-hatti.md) §4'tedir.
    ```powershell
    cd pipeline
    uv run mutalaa sources check
@@ -373,11 +373,11 @@ PYTHONUTF8=1
 | Ne | Nasıl | Kural |
 |---|---|---|
 | `editor` ve `admin` rolleri, ilk yönetici | `Mutalaa.Api -- seed` | İdempotent; parola yalnız kullanıcı sırlarında ya da `.env`'de |
-| `source` satırları ve lisans durumları | Hattın `ingest` adımı | Değerler [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) ile aynı |
-| Tanzil metni | `ingest tanzil --variant uthmani` | Metin dağıtıldığı gibi saklanır, NFC bile uygulanmaz; atıf ve tanzil.net bağlantısı korunur ([Tanzil şartları](https://raw.githubusercontent.com/OpenITI/0025AH/master/data/0001Quran/0001Quran.Mushaf/0001Quran.Mushaf.Tanzil001-ara1.mARkdown)) |
-| Elmalılı meali | OCR çıktısı hazır olunca | Uydurma ya da yer tutucu meal metni yazılmaz |
-| Uçtan uca test fikstürleri: metin paketi `test-kucuk`, ses paketi `ses-test` (kaynağı `test-ses`) | Slug `test-` ile başlar, durum `serbest`; içerik kendi ürettiğimiz sentetik metin ve tondur | `dev` ve `internal` derlemeye girer; Yayınlayıcı `test-` kaynaklarını `public` derlemeye hiçbir durumda almaz ([Backend API](./05-backend-api.md) P-12; [Test stratejisi](../07-yayin/03-test-stratejisi.md) §9) |
-| Arayüz geliştirmek için sentetik eser kaynakları (ör. `test-tefsir-ornek`, `test-risale-ornek`) | Slug `test-` ile başlar, durum `ic_kullanim` | Yalnız `dev` derlemesinde görünür; `public`'e P-12 ile hiç girmez |
+| `source` satırları | Hattın `ingest` adımı, `pipeline/sources/{kimlik}.toml` kayıtlarından | Değerler [Kaynaklar](../04-icerik/01-kaynaklar.md) ile aynıdır; kaynak kaydı olmayan kaynak hatta alınmaz ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 4); `uv run mutalaa sources check` kayıtları denetler |
+| Tanzil metni | `ingest tanzil --variant uthmani` | Metin dağıtıldığı gibi saklanır, NFC bile uygulanmaz; kaynağın kendi bildirimi (`notice_text`) bayt bayt saklanır, atıf satırı ve tanzil.net bağlantısı kaynak kaydından gelir |
+| Elmalılı meali | A09 yol kararına göre hazır metin ya da OCR çıktısı geldiğinde | Uydurma ya da yer tutucu meal metni yazılmaz |
+| Uçtan uca test fikstürleri: metin paketi `test-kucuk`, ses paketi `ses-test` (kaynağı `test-ses`) | Slug `test-` ile başlar; içerik kendi ürettiğimiz sentetik metin ve tondur | `dev` ve `internal` derlemeye girer (`internal`'a yalnız bu uçtan uca fikstürler girer); Yayınlayıcı `test-` kaynaklarını `public` derlemeye hiçbir durumda almaz ([Backend API](./05-backend-api.md) P-12; [Test stratejisi](../07-yayin/03-test-stratejisi.md) §9) |
+| Arayüz geliştirmek için sentetik eser kaynakları (ör. `test-tefsir-ornek`, `test-risale-ornek`) | Slug `test-` ile başlar; içerik sentetik metindir | Yalnız `dev` derlemesinde görünür; `internal`'a yalnız `test-kucuk` ve `test-ses` girer, `public`'e P-12 ile hiç girmez |
 
 Tohumlama birim ve kaynaklarda çapa ya da slug üzerinden "varsa güncelle, yoksa ekle" mantığıyla çalışır; iki kez çalıştırmak aynı sonucu verir.
 
@@ -538,8 +538,8 @@ Kurallar:
 - **`expo prebuild`** SDK 57'den beri yerel klasörleri varsayılan olarak temizler ([Expo SDK 57](https://expo.dev/changelog/sdk-57)); `android/` ve `ios/` depoya girmez.
 - **EF Core ve saat:** `timestamptz` sütununa `DateTimeKind.Utc` değer yazılır; yerel saat (UTC+3) kullanılmaz.
 - **SQLite dosya kilidi:** Yayınlayıcı paketi taşımadan önce bağlantıyı kapatır (`Pooling=False`); Windows açık dosyayı taşıtmaz.
-- **CAMeL Tools verisi** ayrıca indirilir: `camel_data -i light` ([PyPI camel-tools](https://pypi.org/project/camel-tools/)). Veri paketlerinin lisansları kodunkinden farklıdır (bazıları GPL v2); ayrıntı [Teknoloji yığını §2.4](./02-teknoloji-yigini.md).
-- **Test telemetrisi.** Çözüldü (21 Ekim 2026). `xunit.v3` 3.2.0'dan beri `Microsoft.Testing.Extensions.Telemetry` paketine bağlıdır. Microsoft.Testing.Platform varsayılan olarak "Usage Data" türünde kullanım telemetrisi gönderir: çalıştırılabilir dosya adı ve test çatısı adı (özetlenmiş), işletim sistemi, sürüm bilgisi, test sayıları, çıkış kodu ve üç oktetli IP; kullanıcı adı ya da e-posta yok. Ürüne girmez; KVKK kuralı ürünü kapsar. `TESTINGPLATFORM_TELEMETRY_OPTOUT=1` ya da `DOTNET_CLI_TELEMETRY_OPTOUT=1` ortam değişkeniyle kapanır ("1" ya da "true"); telemetriye özel komut satırı seçeneği yoktur (`--no-banner` yalnız bildirimi gizler). Claude Code oturumlarında kit ayarları `DOTNET_CLI_TELEMETRY_OPTOUT=1` verir (`.claude/settings.json`, `env`). Kendi terminalinizde ve CI'da değişkeni ayrıca tanımlayın: Windows'ta kullanıcı ortam değişkeni olarak (Sistem özellikleri, Ortam Değişkenleri), geçerli PowerShell oturumunda `$env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"`, Git Bash'te `export DOTNET_CLI_TELEMETRY_OPTOUT=1`. Kaynaklar: [MTP telemetri](https://learn.microsoft.com/en-us/dotnet/core/testing/microsoft-testing-platform-telemetry) · [xUnit.net MTP](https://xunit.net/docs/getting-started/v3/microsoft-testing-platform) · [TelemetryManager.cs](https://github.com/microsoft/testfx/blob/main/src/Platform/Microsoft.Testing.Platform/Telemetry/TelemetryManager.cs) (okuma 21 Ekim 2026).
+- **CAMeL Tools verisi** ayrıca indirilir: `camel_data -i light` ([PyPI camel-tools](https://pypi.org/project/camel-tools/)). Kitaplık satırı: [Teknoloji yığını §2.4](./02-teknoloji-yigini.md).
+- **Test telemetrisi.** Çözüldü (21 Ekim 2026). `xunit.v3` 3.2.0'dan beri `Microsoft.Testing.Extensions.Telemetry` paketine bağlıdır. Microsoft.Testing.Platform varsayılan olarak "Usage Data" türünde kullanım telemetrisi gönderir: çalıştırılabilir dosya adı ve test çatısı adı (özetlenmiş), işletim sistemi, sürüm bilgisi, test sayıları, çıkış kodu ve üç oktetli IP; kullanıcı adı ya da e-posta yok. Ürüne girmez; v1'in kişisel veri toplamama kuralı ürünü kapsar ([Gizlilik](../07-yayin/02-gizlilik.md)). `TESTINGPLATFORM_TELEMETRY_OPTOUT=1` ya da `DOTNET_CLI_TELEMETRY_OPTOUT=1` ortam değişkeniyle kapanır ("1" ya da "true"); telemetriye özel komut satırı seçeneği yoktur (`--no-banner` yalnız bildirimi gizler). Claude Code oturumlarında kit ayarları `DOTNET_CLI_TELEMETRY_OPTOUT=1` verir (`.claude/settings.json`, `env`). Kendi terminalinizde ve CI'da değişkeni ayrıca tanımlayın: Windows'ta kullanıcı ortam değişkeni olarak (Sistem özellikleri, Ortam Değişkenleri), geçerli PowerShell oturumunda `$env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"`, Git Bash'te `export DOTNET_CLI_TELEMETRY_OPTOUT=1`. Kaynaklar: [MTP telemetri](https://learn.microsoft.com/en-us/dotnet/core/testing/microsoft-testing-platform-telemetry) · [xUnit.net MTP](https://xunit.net/docs/getting-started/v3/microsoft-testing-platform) · [TelemetryManager.cs](https://github.com/microsoft/testfx/blob/main/src/Platform/Microsoft.Testing.Platform/Telemetry/TelemetryManager.cs) (okuma 21 Ekim 2026).
 
 ## 11. Açık sorular
 
@@ -557,5 +557,5 @@ Kurallar:
 
 - [Genel mimari](./01-genel-mimari.md) · [Teknoloji yığını](./02-teknoloji-yigini.md) · [Proje yapısı](./03-proje-yapisi.md) · [Backend API](./05-backend-api.md)
 - [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md)
-- [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md)
+- [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Kaynaklar](../04-icerik/01-kaynaklar.md)
 - [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [Arama](../03-veri/05-arama-fts5.md) · [Çapa şeması](../03-veri/01-capa-semasi.md)

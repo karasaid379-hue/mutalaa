@@ -1,9 +1,9 @@
-# KVKK ve gizlilik
+# Gizlilik
 
-> **Sürüm:** 1.2 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
-> **Hukuki görüş değildir.** KVKK bulguları araştırma raporundan ve raporun dayandığı hukuk bürosu ve danışmanlık özetlerinden gelir. v1 mağazaya çıkmadan ve v1.x'te hesap açılmadan önce bir avukat bu dosyayı inceler.
+Bu dosya Mütâlaa'nın gizlilik tasarımını tanımlar: hangi veri nerede durur, hata raporu neyi taşımaz, mağaza beyanları neyi söyler ve hesaplı sürümde (v1.x) ne değişir. Mağazaların teknik yayın şartları olan gizlilik metni ve beyan formları da burada tutulur ([Yayın süreci](./01-yayin-sureci.md) §7.2).
 
 ## 1. Özet
 
@@ -11,12 +11,12 @@
 |---|---|---|
 | Kullanıcı verisi | Yalnız cihazda | Cihazda ve senkron sunucusunda |
 | Sunucuya giden kişisel veri | Yok; hata raporu kişisel veri içermez | E-posta ya da giriş kimliği, kullanıcının kendi kayıtları |
-| Yurt dışına aktarım | Hata raporu ve içerik indirme için Açık soru | Her yurt dışı veri işleyen için standart sözleşme ve bildirim |
+| Veri işleyen sağlayıcılar | Hata raporlama servisi ve içerik deposu (IP adresi; §2.4) | Barındırma, yedek, e-posta, hata raporlama ve içerik deposu; liste gizlilik metninde (§3.4) |
 | Reklam ve izleme | Yok ([K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)) | Yok |
-| Bilgilendirme | Gizlilik metni | Hesap açılmadan önce aydınlatma metni |
+| Bilgilendirme | Gizlilik metni | Hesap açılmadan önce hesap verilerini anlatan gizlilik metni (§3.8) |
 | Silme | Verilerimi sil ya da uygulamayı silmek | Hesabımı sil |
 
-Rapor en ucuz önlemi veriyi en aza indirmek olarak koyuyor: hesapsız yerel kullanım varsayılan, hesapta yalnız e-posta ve kullanıcının notları, analitikte kişisel veri yok. Eski plandaki KVKK, aydınlatma metni ve hesap silme tasarımı korunur; tek sağlayıcılı sözleşme yaklaşımı her veri işleyeni kapsayacak şekilde genişletilir (`quran-app-docs/09-guvenlik/01-kvkk-uyumluluk.md`). Eski dosyadaki Azure, yapay zekâ sorgu kaydı ve çocuk modu maddeleri geçersizdir ([K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)).
+En ucuz önlem veriyi en aza indirmektir: hesapsız yerel kullanım varsayılandır, hesapta yalnız e-posta ve kullanıcının kendi kayıtları tutulur, analitikte kişisel veri yoktur.
 
 ## 2. v1: hesapsız sürüm
 
@@ -52,13 +52,13 @@ Ayıklama kuralları birim testiyle kilitlenir: fikstür bir olay içine not met
 - Reklam yok ([K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)). Rapor bu kategoride reklamı itibar riski olarak görüyor; örnek Muslim Pro'nun yoğun reklam geçmişi ve 2020'deki konum verisi paylaşımı tartışması ([Islamtics](https://islamtics.com/?p=21176)).
 - v1'de üçüncü taraf analitik ya da izleme SDK'sı yoktur. Kullanım sayıları mağaza konsollarının toplu verisinden okunur.
 - Uygulama izleme yapmadığı için App Tracking Transparency izni istenmez.
-- CI'daki bağımlılık denetimi bilinen reklam ve izleme SDK'larını bir yasak listesiyle kırar (öneri).
+- CI'da bilinen reklam ve izleme SDK'ları bir yasak listesiyle yakalanır (öneri).
 
 ### 2.4 İçerik indirme ve CDN kayıtları
 
-Paket ve ses indirme isteği, her internet isteği gibi cihazın IP adresini içerik deposuna ve CDN'e ulaştırır. Önerilen depo Cloudflare R2'dir ([K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı)); rapordaki bütün aday sağlayıcılar veriyi yurt dışında tutuyor. Sağlayıcının erişim kayıtlarının KVKK açısından nasıl değerlendirileceği ve standart sözleşme gerekip gerekmediği Açık soru; avukata sorulur. Tasarım kuralları: indirme adresine kullanıcıya özgü parametre eklenmez, kendi erişim günlüğümüz açılmaz (öneri).
+Paket ve ses indirme isteği, her internet isteği gibi cihazın IP adresini içerik deposuna ve CDN'e ulaştırır. Önerilen depo Cloudflare R2'dir ([K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı)); rapordaki bütün aday sağlayıcılar veriyi yurt dışında tutuyor. Sağlayıcı erişim kayıtlarını tutabilir; sağlayıcı seçildiğinde adı ve ülkesi gizlilik metnine eklenir. Tasarım kuralları: indirme adresine kullanıcıya özgü parametre eklenmez, kendi erişim günlüğümüz açılmaz (öneri).
 
-Ses de aynı yoldan gelir: çevrimiçi dinleme ve indirme yalnız kendi içerik depomuzdaki aynaya istek gönderir; uygulama üçüncü taraf ses sunucularına (MP3Quran, Tarteel CDN vb.) bağlanmaz ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) madde 4). v1.x Quran Foundation bağdaştırıcısında istemci QF ses adreslerine giderse bu bölüm ve veri envanteri güncellenir.
+Ses de aynı yoldan gelir: çevrimiçi dinleme ve indirme yalnız kendi içerik depomuzdaki aynaya istek gönderir; uygulama üçüncü taraf ses sunucularına (MP3Quran, Tarteel CDN vb.) bağlanmaz ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) madde 4). Bir kaynak istemciyi üçüncü taraf bir adrese yönlendirirse bu bölüm ve veri envanteri güncellenir.
 
 ### 2.5 Gizlilik metni (v1 taslağı)
 
@@ -68,9 +68,9 @@ Ses de aynı yoldan gelir: çevrimiçi dinleme ve indirme yalnız kendi içerik 
 > İçerik paketlerini ve sesleri indirirken cihazınız içerik sunucusuna bir istek gönderir. Bu istek, her internet isteği gibi IP adresinizi içerir. İsteğe size özgü bir bilgi eklemeyiz.
 > Uygulama çökerse kişisel veri içermeyen teknik bir hata raporu gönderilir. Bunu Ayarlar › İlerleme ve gizlilik'ten kapatabilirsiniz.
 > Ayarlar › İlerleme ve gizlilik › Verilerimi sil ile ya da uygulamayı silerek cihazdaki bütün verinizi silebilirsiniz.
-> Veri sorumlusu: <ad ya da unvan>. İletişim: <adres>.
+> Yayıncı: <ad ya da unvan>. İletişim: <e-posta adresi>.
 
-Veri sorumlusunun gerçek kişi mi tüzel kişi mi olacağı Açık soru ([Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md)). Mağazalar bir gizlilik politikası bağlantısı ister (güncel kural Doğrulanacak); sayfa alan adı seçimine bağlıdır.
+Yayıncı adı ve iletişim adresi mağaza hesabı açılırken belli olur (İ-15). Mağazalar bir gizlilik politikası bağlantısı ister (güncel kural Doğrulanacak); sayfa alan adı seçimine bağlıdır ([Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) S-08, İ-18).
 
 ### 2.6 Mağaza gizlilik beyanları (v1)
 
@@ -107,31 +107,19 @@ Hesap ASP.NET Core Identity ile açılır. Google ile giriş sunulursa Apple ile
 
 Toplanmayanlar: konum, kişiler, reklam kimliği, okuma alışkanlığı analizi. Sunucu, kullanıcı kayıtlarının içeriğini hiçbir analizde kullanmaz.
 
-### 3.3 KVKK yükümlülükleri
+### 3.3 Bilgilendirme, kullanıcı talepleri ve saklama
 
-| Yükümlülük | Uygulama | Durum |
-|---|---|---|
-| Aydınlatma | Hesap açılmadan önce aydınlatma metni gösterilir (§3.8) | Eski plan iskeleti arındırılarak kullanılır |
-| Hukuki sebep | Hesap ve senkron için sözleşmenin ifası (m. 5/2-c); güvenlik günlükleri için meşru menfaat (m. 5/2-f); pazarlama yok | Eski plandan; Doğrulanacak |
-| Yurt dışına aktarım | Her yurt dışı veri işleyenle standart sözleşme ve Kurum'a bildirim (§3.4) | [EY Türkiye](https://www.ey.com/tr_tr/insights/law/kvkk-degisikliginin-yurt-disi-veri-aktarimina-etkisi), [Cottgroup](https://cottgroup.com/tr/blog/kvkk-gdpr/item/standart-sozlesme-bildirim-yukumlulugu-ve-yaptirimlari) |
-| VERBİS | Kayıt yükümlülüğünün doğup doğmadığı belirlenir; değerlendirme yazılı tutulur | Doğrulanacak; eski plan kaydı zorunlu sayıp eşik veriyor, araştırma bu eşikleri doğrulamadı |
-| İlgili kişi başvuruları | Uygulama içi form ve e-posta | Yanıt süresi 30 gün (m. 13, Doğrulanacak); eski plandaki "7 gün" araştırma notunda doğrulanacak olarak işaretli |
-| Veri ihlali | İhlal prosedürü ve bildirim | Eski plan 72 saat yazıyor; Doğrulanacak |
-| Saklama ve imha | Saklama süreleri ve silme akışı (§3.6) | Süreler Açık soru |
+- **Bilgilendirme.** Hesap açılmadan önce hesap verilerini anlatan gizlilik metni gösterilir (§3.8).
+- **Kullanıcı talepleri.** Verileri silme ve dışa aktarma uygulama içinden yapılır (§3.6); öteki talepler için gizlilik metnindeki iletişim adresi kullanılır (§3.8).
+- **Saklama ve silme.** Saklama süreleri ve silme akışı §3.6'dadır; süreler Açık soru.
 
-### 3.4 Yurt dışına aktarım
+### 3.4 Veri işleyenler
 
-7499 sayılı Kanun (12 Mart 2024) ve 10 Temmuz 2024 tarihli yönetmelikle yurt dışına aktarım m. 9'a bağlandı. 1 Eylül 2024'ten beri açık rıza yalnız arızi aktarımda geçerli ([EY Türkiye](https://www.ey.com/tr_tr/insights/law/kvkk-degisikliginin-yurt-disi-veri-aktarimina-etkisi)). Düzenli aktarımda her veri işleyenle standart sözleşme imzalanır ve sözleşme 5 iş günü içinde Kurum'a bildirilir. Bildirim KEP, fiziki yol ya da Standart Sözleşme Bildirim Modülü ile yapılır. Bildirim yapmamanın 2026 cezası 90.308–1.806.377 TL ([Cottgroup](https://cottgroup.com/tr/blog/kvkk-gdpr/item/standart-sozlesme-bildirim-yukumlulugu-ve-yaptirimlari)). Kaynaklardan biri "5 gün" diyor; rapor daha katı okumanın esas alınmasını öneriyor, bu yüzden takvim 5 takvim günü üzerinden kurulur. Türk hukuk çevreleri yurt dışında barındırılan bulut hizmetlerini değişiklikten en çok etkilenen alanlar arasında sayıyor ([Hukukçular Evi](https://hukukcularevi.com/danismanlik/veri-merkezi-bulut-hizmet-sozlesmeleri-veri-lokalizasyonu/)).
+Hesaplı sürümde kullanıcı verisini ya da IP adresini işleyen her sağlayıcı aşağıdaki tabloda yazılıdır. Yeni bir veri işleyen eklenirken şu üç adım yapılır:
 
-```mermaid
-flowchart TD
-  A["Yeni veri işleyen eklenecek"] --> B{"Veri yurt dışında işlenecek mi?"}
-  B -->|"hayır"| E["Aydınlatma metnini güncelle"]
-  B -->|"evet"| C["KVKK standart sözleşmesini imzala"]
-  C --> D["5 gün içinde Kurum'a bildir: KEP, fiziki yol ya da bildirim modülü"]
-  D --> E
-  E --> F["Veri işleyenler listesini ve mağaza beyanlarını güncelle"]
-```
+1. İşlediği veri ve konumu (ülke) tabloya yazılır.
+2. Gizlilik metni (§3.8) güncellenir.
+3. Mağaza beyanları (§2.6) güncellenir.
 
 | Veri işleyen adayı | İşlediği veri | Konum |
 |---|---|---|
@@ -140,13 +128,11 @@ flowchart TD
 | E-posta gönderimi | E-posta adresi | Seçilecek |
 | Hata raporlama | Teknik olay | Doğrulanacak |
 | İçerik deposu ve CDN | IP adresi | Yurt dışı (R2 önerisi) |
-| Apple ve Google ile giriş | Giriş kimliği | Sağlayıcının rolü Açık soru |
+| Apple ve Google ile giriş | Giriş kimliği | Sağlayıcının kendi sunucuları |
 
-Sağlayıcıların imzalı KVKK standart sözleşmesi sunup sunmadığı ve bir yeterlilik kararı olup olmadığı araştırmada bulunamadı (Doğrulanacak).
+### 3.5 Hassas kullanıcı kayıtları
 
-### 3.5 Özel nitelikli veri sorusu
-
-Eski plan, dini görüşün özel nitelikli veri olduğunu (m. 6) ve uygulamanın kullanımından dini görüş çıkarılabileceğini not ediyor (`quran-app-docs/09-guvenlik/01-kvkk-uyumluluk.md`). Mütâlaa'da notlar, vurgular ve okuma ilerlemesi doğrudan dini metinlere bağlıdır. Bu kayıtların sunucuda tutulmasının özel nitelikli veri işleme sayılıp sayılmadığı ve hangi şartla yapılabileceği **Açık soru**. Avukat cevabına kadar tasarım şu önlemleri alır:
+Mütâlaa'da notlar, vurgular ve okuma ilerlemesi doğrudan dini metinlere bağlıdır; bu kayıtlar kullanıcı için hassastır. Tasarım şu önlemleri alır:
 
 - Senkron isteğe bağlıdır; kullanıcı açar.
 - Okuma ilerlemesi ve hatim senkronu ayrı bir anahtarla açılır (öneri).
@@ -165,24 +151,23 @@ Dışa aktarma v1'deki JSON biçimini kullanır ve sunucudaki kayıtları da iç
 
 ### 3.7 Barındırma konumu kararı
 
-[K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) veri konumu kararının hesaplar geldiğinde KVKK nedeniyle yeniden ele alınmasını istiyor. Karar burada verilmez; ölçütler şunlardır.
+[K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) veri konumu kararının hesaplar geldiğinde gizlilik açısından yeniden ele alınmasını istiyor. Karar burada verilmez; ölçütler şunlardır.
 
-| Seçenek | KVKK etkisi | Maliyet (rapor) | İşletme yükü |
+| Seçenek | Gizlilik etkisi | Maliyet (rapor) | İşletme yükü |
 |---|---|---|---|
-| Yurt dışı sunucu (ör. Hetzner) + R2 | m. 9: standart sözleşme ve bildirim | ASP.NET Core 10 + Postgres, Hetzner + R2: 1 bin MAU'da ~6–7 €, 10 bin MAU'da ~6–20 € | Yedek, yama, izleme, TLS geliştiricide |
-| Yurt içi barındırma | Ana veri için aktarım yok; yardımcı servisler (e-posta, hata raporu, CDN) yurt dışındaysa m. 9 sürer | Araştırılmadı | Araştırılmadı |
+| Yurt dışı sunucu (ör. Hetzner) + R2 | Hesap ve senkron verisi yurt dışında durur; sağlayıcı ve ülke gizlilik metninde yazılır | ASP.NET Core 10 + Postgres, Hetzner + R2: 1 bin MAU'da ~6–7 €, 10 bin MAU'da ~6–20 € | Yedek, yama, izleme, TLS geliştiricide |
+| Yurt içi barındırma | Ana veri yurt içinde kalır; yardımcı servisler (e-posta, hata raporu, CDN) yurt dışındaysa onlar gizlilik metninde yazılır | Araştırılmadı | Araştırılmadı |
 
 Hetzner fiyatı 15 Haziran 2026 zammından sonra CX23 için ayda 5,49 € ([PrivateDevOps](https://privatedevops.com/news/hetzner-june-2026-cloud-price-increase-what-to-do)). Seçim [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) listesindeki "Canlı barındırma seçimi" maddesinde yapılır.
 
-### 3.8 Aydınlatma metni iskeleti
+### 3.8 Gizlilik metni (v1.x) içeriği
 
-1. Veri sorumlusu ve iletişim
+1. Yayıncı ve iletişim
 2. İşlenen veriler (§3.2 tablosu)
-3. Amaçlar ve hukuki sebepler
-4. Aktarımlar: veri işleyenler, ülkeler, standart sözleşme
+3. Amaçlar
+4. Veri işleyenler ve ülkeleri (§3.4)
 5. Saklama süreleri
-6. Haklar (m. 11) ve başvuru yolu, Kurul'a şikâyet hakkı
-7. Hesabı silme ve verileri dışa aktarma yolu
+6. Hesabı silme ve verileri dışa aktarma yolu
 
 ## 4. Kontrol listeleri
 
@@ -190,36 +175,29 @@ Hetzner fiyatı 15 Haziran 2026 zammından sonra CX23 için ayda 5,49 € ([Priv
 
 - [ ] Gizlilik metni uygulama içinden ve mağaza sayfasından erişilebilir.
 - [ ] Hata raporunda kişisel veri yok; IP saklama kapalı; ayıklama testleri yeşil.
-- [ ] Bağımlılık denetiminde reklam ve izleme SDK'sı yok.
+- [ ] Hata raporlama servisinin IP saklama ayarı ve veri bölgesi doğrulandı (§2.2).
+- [ ] Bağımlılıklarda reklam ve izleme SDK'sı yok.
 - [ ] App Store ve Google Play beyanları uygulamanın davranışıyla aynı.
 - [ ] Verilerimi sil ve dışa aktar E2E testleri yeşil.
-- [ ] Veri sorumlusu ve iletişim adresi belli.
-- [ ] CDN erişim kayıtları sorusu ve hata raporu sorusu avukata soruldu.
+- [ ] Yayıncı adı ve iletişim adresi belli.
 
 **Faz 4 öncesi (v1.x):**
 
 - [ ] Barındırma konumu seçildi; veri işleyenler listesi tamam.
-- [ ] Her yurt dışı veri işleyenle standart sözleşme imzalandı ve 5 gün içinde bildirildi.
-- [ ] Aydınlatma metni yayında; hesap açma akışında gösteriliyor.
-- [ ] Özel nitelikli veri sorusu yanıtlandı; gerekiyorsa açık rıza akışı tasarlandı.
-- [ ] VERBİS değerlendirmesi yazılı.
+- [ ] Gizlilik metni hesap bölümüyle yayında; hesap açma akışında gösteriliyor.
+- [ ] Hassas kayıt önlemleri (§3.5) uygulandı: senkron isteğe bağlı, ilerleme ve hatim senkronu ayrı anahtarda.
 - [ ] Hesap silme uçtan uca test edildi; silme işaretleri ve akış kayıtları da siliniyor.
 - [ ] Mağaza beyanları hesap verileriyle güncellendi.
 
 ## 5. Açık sorular
 
-1. Hata raporu ve CDN erişim kayıtları yurt dışına aktarım sayılır mı?
-2. Hata raporu anahtarının varsayılan değeri.
-3. Veri sorumlusu gerçek kişi mi tüzel kişi mi?
-4. Notlar, vurgular ve okuma ilerlemesi özel nitelikli veri mi?
-5. Saklama süreleri: güvenlik günlükleri, silme bekleme süresi, yedekler.
-6. Apple ve Google ile girişte sağlayıcıların rolü.
-7. VERBİS kayıt yükümlülüğü (Doğrulanacak).
-8. ~~Arama geçmişi tutulacak mı?~~ **Çözüldü (19 Ekim 2026):** son aramalar v1 özelliğidir ve yalnız cihazda tutulur ([Kapsam §4.7](../01-urun/01-kapsam-ve-fazlar.md#47-arama)); sunucuya gönderim yoktur (§2.1).
+1. Hata raporu anahtarının varsayılan değeri.
+2. Saklama süreleri: güvenlik günlükleri, silme bekleme süresi, yedekler.
+3. ~~Arama geçmişi tutulacak mı?~~ **Çözüldü (19 Ekim 2026):** son aramalar v1 özelliğidir ve yalnız cihazda tutulur ([Kapsam §4.7](../01-urun/01-kapsam-ve-fazlar.md#47-arama)); sunucuya gönderim yoktur (§2.1).
 
 ## İlgili dosyalar
 
-- [Yayın kapısı ve Kurul](./01-yayin-sureci.md) · [Test stratejisi](./03-test-stratejisi.md)
+- [Yayın süreci](./01-yayin-sureci.md) · [Test stratejisi](./03-test-stratejisi.md)
 - [Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md) · [Backend API](../02-mimari/05-backend-api.md) · [Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)
 - [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md) · [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md)
 - [Fazlar](../08-yol-haritasi/01-fazlar.md) · [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) · [Riskler](../08-yol-haritasi/03-riskler.md)

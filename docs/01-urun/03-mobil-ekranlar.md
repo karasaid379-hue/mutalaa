@@ -1,6 +1,6 @@
 # Mobil Ekranlar
 
-> **Sürüm:** 1.3 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.4 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu dosya mobil uygulamanın sekmelerini, rotalarını, ekranlarını, alt sayfalarını, ilk açılışını, ayarlarını, derin bağlantılarını ve gezinme kurallarını tanımlar. Rota ağacının temeli [Mobil mimari §4](../06-mobil/01-mobil-mimari.md#4-rotalar-expo-router) dosyasıdır; bu dosya o ağaca yalnız ekleme yapar ve eklemeleri işaretler. Okuma davranışı [Okuma deneyimi](./02-okuma-deneyimi.md), görünüş [Tasarım sistemi](./04-tasarim-sistemi.md) dosyasındadır.
@@ -13,7 +13,7 @@ Bu dosya mobil uygulamanın sekmelerini, rotalarını, ekranlarını, alt sayfal
 | **Kütüphane** | Eser kataloğu | Elmalılı tefsiri, Hadis (Tecrîd-i Sarîh, Kütüb-i Sitte), Risale-i Nur; paket görünürlüğüne göre |
 | **Ara** | Birleşik arama | Kapsam süzgeci, son aramalar, sonuçlar |
 | **Defterim** | Kişisel çalışma | Yer imleri, vurgular, notlar, koleksiyonlar, hatim ve ilerleme |
-| **Ayarlar** | Ayar listesi | Görünüm, okuma, mushaf, okuyucu ve dinleme, depolama, ilerleme ve gizlilik, erişilebilirlik, kaynaklar ve lisanslar, Kurul onay bilgisi |
+| **Ayarlar** | Ayar listesi | Görünüm, okuma, mushaf, okuyucu ve dinleme, depolama, ilerleme ve gizlilik, erişilebilirlik, kaynaklar |
 
 - Sekme simgeleri her zaman yazılı etiketle birlikte görünür.
 - Mini oynatıcı sekme çubuğunun üstünde durur ([Mobil mimari §4](../06-mobil/01-mobil-mimari.md#4-rotalar-expo-router)).
@@ -44,7 +44,7 @@ apps/mobile/app/
 │  ├─ kutuphane/hadis/[koleksiyon]/[no].tsx hadis okuyucu
 │  ├─ kutuphane/risale/index.tsx         +  kitaplar
 │  ├─ kutuphane/risale/[kitap]/index.tsx +  bölüm ağacı
-│  ├─ kutuphane/risale/[kitap]/[...bolum].tsx  Risale okuyucu ya da dizin görünümü
+│  ├─ kutuphane/risale/[kitap]/[...bolum].tsx  Risale okuyucu
 │  ├─ ara/index.tsx                         arama
 │  ├─ defterim/_layout.tsx               +  Stack
 │  ├─ defterim/index.tsx                    bölümlü liste: yer imi, vurgu, not, koleksiyon, hatim
@@ -60,8 +60,7 @@ apps/mobile/app/
 │  ├─ ayarlar/depolama/[packId].tsx         paket ya da okuyucu kaydı ayrıntısı
 │  ├─ ayarlar/ilerleme.tsx               +  ilerleme ve gizlilik, yedek
 │  ├─ ayarlar/erisilebilirlik.tsx        +
-│  ├─ ayarlar/kaynaklar.tsx                 kaynaklar ve lisanslar
-│  ├─ ayarlar/kurul.tsx                     Kurul onay bilgisi
+│  ├─ ayarlar/kaynaklar.tsx                 kaynaklar: atıf satırları ve açık kaynak bağımlılık listesi
 │  ├─ ayarlar/hakkinda.tsx               +  sürüm, derleme türü, ilkeler
 │  ├─ ayarlar/gelistirici/index.tsx      +  yalnız dev ve internal
 │  ├─ ayarlar/gelistirici/vitrin.tsx     +  Tasarım vitrini
@@ -90,7 +89,7 @@ Her ekran bu kuralları izler; tabloda yalnız ekrana özgü durum yazılıdır.
 | Boş | Boş durum kartı: tek cümle ve tek eylem. Ebru motifi yalnız burada ve tanıtımda kullanılır. |
 | Hata | Satır içi kart: "Bir sorun oluştu" ve "Yeniden dene". Kullanıcının yazdığı kaybolmaz. Hata türleri [Mobil mimari §11](../06-mobil/01-mobil-mimari.md#11-hata-ve-çevrimdışı-davranış). |
 | Çevrimdışı | Cihazdaki içerik tam çalışır. Ağ isteyen eylem "İnternet bağlantısı yok. İndirilen içerik okunabilir." der; indirme kuyruğa alınır. |
-| Lisans kapısı | Lisans paneli nedeni (lisans durumu, varsa serbest kalma tarihi) ve "Kaynaklar ve lisanslar" bağlantısını gösterir. İçeriğin hiçbir parçası gösterilmez. Derlemede görünmeyen paketin bölümü Kütüphane'de yer almaz. |
+| Derlemede yok | Paket bu derlemenin manifestinde değilse eserin bölümü Kütüphane'de ve Bağlantılar panelinde yer almaz. |
 
 ### 3.2 Ekranlar
 
@@ -103,9 +102,9 @@ Her ekran bu kuralları izler; tabloda yalnız ekrana özgü durum yazılıdır.
 | Kütüphane (`kutuphane`) | Eserlere giriş | Eser kartları, paket durum rozeti | Hiç isteğe bağlı paket yoksa: "Paketleri Depolama'dan indirebilirsin" |
 | Tefsir içindekiler (`kutuphane/tefsir`) | Sure ve mukaddime listesi | Liste, okuma ilerlemesi | Paket yok: indirme kartı |
 | Hadis koleksiyonları, kitap ve bâb listesi | Tecrîd-i Sarîh ve Kütüb-i Sitte gezinmesi | Liste, arama alanı | Koleksiyon paketi yok: indirme kartı |
-| Hadis okuyucu (`kutuphane/hadis/[koleksiyon]/[no]`) | Arapça ve Türkçe yan yana | HadithPair, başlık çipleri, "Arapça · Türkçe · İkisi" | Miras kısmı: Türkçe sütunda 2028 notu |
-| Risale kitapları ve bölüm ağacı | Kitap › bölüm gezinmesi | Kitap kartları, bölüm ağacı, kitap ilerlemesi | Metin derlemede yoksa yapısal adlar ve dizin |
-| Risale okuyucu (`kutuphane/risale/[kitap]/[...bolum]`) | Paragraf okuma, lügat, ibare kartı | Paragraf listesi, LugatGloss, CitationLink, FootnoteMarker | Lisans kapısı: dizin görünümü ([Okuma deneyimi §12](./02-okuma-deneyimi.md#12-risale-i-nur-okuyucu)); dizin de görünmüyorsa lisans paneli |
+| Hadis okuyucu (`kutuphane/hadis/[koleksiyon]/[no]`) | Arapça ve Türkçe yan yana | HadithPair, başlık çipleri, "Arapça · Türkçe · İkisi" | Kütüb-i Sitte: yalnız Arapça; Tecrîd'de karşılığı varsa "Tecrîd'deki tercümesine git" |
+| Risale kitapları ve bölüm ağacı | Kitap › bölüm gezinmesi | Kitap kartları, bölüm ağacı, kitap ilerlemesi | Paket yok: indirme kartı |
+| Risale okuyucu (`kutuphane/risale/[kitap]/[...bolum]`) | Paragraf okuma, lügat, ibare kartı | Paragraf listesi, LugatGloss, CitationLink, FootnoteMarker | Paket yok: indirme kartı ([Okuma deneyimi §12](./02-okuma-deneyimi.md#12-risale-i-nur-okuyucu)) |
 | Ara (`ara`) | Bütün paketlerde arama | SearchField, ScopeChips, SearchResultRow, son aramalar | Boş sorgu: son aramalar. Sonuç yok: "Tam ifade için tırnak kullan". Paket eksik: "Bu kapsamın paketi yok · İndir" |
 | Defterim (`defterim`) | Kişisel kayıtlar | SegmentedControl, kayıt listeleri, HatimBar | Boş: "Bir âyete dokun, Vurgula'yı seç" |
 | Koleksiyon, hatim ayrıntısı | Kaydı görüntüleme ve düzenleme | Liste, HatimGrid, HatimBar | Silinmiş kayıt: "Bu kayıt silindi · Geri al" |
@@ -113,8 +112,7 @@ Her ekran bu kuralları izler; tabloda yalnız ekrana özgü durum yazılıdır.
 | Hatim oluştur (`hatim/yeni`) | Ad ve isteğe bağlı bitiş tarihi | Form | Aynı adla hatim varsa uyarı |
 | Ayarlar ve alt ekranları | Bölüm 6 | SettingsRow, Switch, SegmentedControl, Slider | Değişiklik önizleme bölgesinde anında görünür |
 | Depolama (`ayarlar/depolama`) | Paketler, sesler, kuyruk ([Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md)) | Alan özeti, StorageRow, DownloadQueue | Yer yetersiz: temizlik önerisi; hücresel ağ ve "Yalnız Wi-Fi": indirme bekler |
-| Kaynaklar ve lisanslar | Her kaynağın lisansı ve atfı (Tanzil bağlantısı, QF atfı, yazı tipi lisansları) | Kaynak listesi, LicenseBadge | Uygulanmaz |
-| Kurul onay bilgisi | Paket başına onay numarası ve onaylı içerik sürümü | Liste | Onay bekleyen paket bu derlemede listelenmez |
+| Kaynaklar (`ayarlar/kaynaklar`) | Her kaynağın atıf satırı ve açık kaynak bağımlılık listesi ([Yayın süreci](../07-yayin/01-yayin-sureci.md) §6) | Kaynak listesi (paketlerin `attribution` tablosundan: ad, sürüm, atıf satırı, kaynak bağlantısı, varsa `notice_text`), bağımlılık listesi | Çevrimdışı açılır |
 | Tasarım vitrini (`ayarlar/gelistirici/vitrin`) | Bileşenleri üç tema ve üç boyutta gösterir | [Tasarım sistemi §11](./04-tasarim-sistemi.md#11-tasarım-vitrini) | `public` derlemede rota yönlendirilir |
 | Bulunamadı (`+not-found`) | Çözülemeyen adres | Açıklama, "Ara'da dene", "Okumaya dön" | Uygulanmaz |
 
@@ -146,7 +144,7 @@ flowchart LR
 1. **Hoş geldin.** Uygulamanın adı ve tek cümlelik tanımı. Üç söz: "Reklam yok. Hesap gerekmez. Notların cihazında kalır."
 2. **Tema ve yazı boyutu.** Kâğıt, Âhar, Gece ve Sistem kartları canlı örnekle görünür: Fâtiha'nın ilk âyeti ve Elmalılı meali. Altında Arapça ve Türkçe boyut kaydırıcıları vardır; yaşlı okur boyutu ilk dakikada ayarlar.
 3. **Mushaf ve okuma biçimi.** Çizim kartları: A "Medine düzeni · cüz başına indirilir" (yalnız paket bu derlemede görünüyorsa), C "Akan metin · büyütünce yeniden akar · en erişilebilir" (önceden seçili). B paketi derlemede yoksa gösterilmez. Altında okuma biçimi seçimi; Mushaf + Meal önceden seçilidir ([Okuma deneyimi §2](./02-okuma-deneyimi.md#2-okuma-biçimleri)). Ekran okuyucu açıksa bu adım "Erişilebilir metin modu"nu önerir.
-4. **İsteğe bağlı paketler.** Bu derlemede görünen paketler boyut ve lisans rozetiyle listelenir: Mod A cüzleri (A seçildiyse; "Hepsi" ya da "İlk cüz"), hadis, tefsir ve Risale paketleri (görünüyorsa), bir okuyucunun bütün Kur'an'ı (ses; isteğe bağlı, sonradan da indirilebilir). "Yalnız Wi-Fi ile indir" varsayılan açıktır. "Şimdi değil" geçerli bir seçimdir; seçilen paketler tanıtımdan sonra kuyrukta iner.
+4. **İsteğe bağlı paketler.** Bu derlemede görünen paketler boyutlarıyla listelenir: Mod A cüzleri (A seçildiyse; "Hepsi" ya da "İlk cüz"), hadis, tefsir ve Risale paketleri (görünüyorsa), bir okuyucunun bütün Kur'an'ı (ses; isteğe bağlı, sonradan da indirilebilir). "Yalnız Wi-Fi ile indir" varsayılan açıktır. "Şimdi değil" geçerli bir seçimdir; seçilen paketler tanıtımdan sonra kuyrukta iner.
 
 Tanıtım bitince Oku sekmesi Fâtiha'da açılır. Uygulama bir derin bağlantıyla ilk kez açıldıysa tanıtım kısa yoldan (yalnız 1. adım) geçer ve hedef açılır (öneri).
 
@@ -186,12 +184,11 @@ Ayarlar
 │  ├─ Okuma geçmişi: Açık · Gizli mod: Kapalı
 │  ├─ Hata raporları (Sentry, kişisel veri yok): varsayılan Açık soru
 │  ├─ Verilerimi dışa aktar · İçe aktar (dosya)
-│  └─ Verilerimi sil: kullanıcı veritabanı, ayarlar ve son aramalar; paketlere dokunmaz (KVKK §2.7)
+│  └─ Verilerimi sil: kullanıcı veritabanı, ayarlar ve son aramalar; paketlere dokunmaz (Gizlilik §2.7)
 ├─ Erişilebilirlik (ayarlar/erisilebilirlik)
 │  ├─ Erişilebilir metin modu · Büyük dokunma alanları (Mod A)
 │  └─ Hareketi azalt: Sistem* | Açık | Kapalı · Dokunsal geri bildirim: Açık
-├─ Kaynaklar ve lisanslar (ayarlar/kaynaklar)
-├─ Kurul onay bilgisi (ayarlar/kurul)
+├─ Kaynaklar (ayarlar/kaynaklar): atıf satırları ve açık kaynak bağımlılık listesi
 ├─ Hakkında (ayarlar/hakkinda): sürüm, derleme türü, içerik sürümleri, ilkeler (K-25), tanıtımı yeniden göster
 └─ Geliştirici (yalnız dev ve internal): Tasarım vitrini, çapa denetleyici, arama süresi ölçer, güven eşiklerini göster, öz test (yalnız dev; Test stratejisi §2)
 ```
@@ -199,7 +196,7 @@ Ayarlar
 Hizalama notları:
 - **Çözüldü (19 Ekim 2026):** `theme` tipi `sistem` değerini taşır ([Mobil mimari §5](../06-mobil/01-mobil-mimari.md#5-durum-yönetimi)).
 - **Çözüldü (19 Ekim 2026):** yazı boyutu deposu çarpan tutar (`arabicScale`, `turkishScale`); kaydırıcı kademeleri bu çarpanlara eşlenir ([Tasarım sistemi §3.2](./04-tasarim-sistemi.md#32-roller-ve-boyutlar), Mobil mimari §5).
-- Hata raporlarının varsayılan açık olup olamayacağı KVKK incelemesine bağlıdır ([KVKK ve gizlilik](../07-yayin/02-gizlilik.md)).
+- Hata raporlarının varsayılan değeri ve gizlilik metnindeki ifadesi Açık sorudur (ME-4; [Gizlilik](../07-yayin/02-gizlilik.md)).
 
 ## 7. Derin bağlantılar
 
@@ -216,7 +213,7 @@ Hizalama notları:
 | `mutalaa://sayfa/42` | Mushaf sayfası 42 |
 | `mutalaa://meal/elmalili/2/255` | Mushaf + Meal, meal paragrafı işaretli |
 | `mutalaa://tf/elmalili/2-255-257/p3` | Tefsir paragrafı |
-| `mutalaa://rn/sozler/soz-10/hakikat-3/p4?aralik=120-184` | Risale paragrafı, aralık işaretli; mağazada dizin ya da lisans paneli |
+| `mutalaa://rn/sozler/soz-10/hakikat-3/p4?aralik=120-184` | Risale paragrafı, aralık işaretli |
 | `mutalaa://h/tecrid/15` · `mutalaa://ht/naim/tecrid/15` | Hadis okuyucu, Arapça ya da Türkçe odaklı |
 | `mutalaa://ara?q=sabır&kapsam=kuran` | Ara, sorgu dolu |
 
@@ -224,7 +221,7 @@ Hizalama notları:
 1. Bağlantı `packages/anchors` ile doğrulanır.
 2. Geçerli hedef bir atlamadır. Bulunulan konum önce geri dönüş yığınına başlangıç olarak yazılır, sonra hedef açılır; "↩ Okuduğun yere dön" çipi görünür ([Okuma deneyimi §9](./02-okuma-deneyimi.md#9-atla-ve-dön)). Mobil mimarideki işleyici `router.replace('/oku')` öncesinde bu kaydı yazacak biçimde genişler.
 3. Geçersiz ya da aralık dışı adres (`q/2/300`) en yakın âyete yuvarlanmaz. Oku açılır ve "Bağlantı geçersiz" uyarısı görünür.
-4. Hedefin paketi cihazda yoksa indirme önerisi, derlemede yoksa lisans paneli açılır.
+4. Hedefin paketi cihazda yoksa indirme önerisi açılır; derlemede hiç yoksa Oku açılır ve "Bu içerik bu sürümde yok" uyarısı görünür.
 5. `fromRoute` bugün yalnız üç yerel şemayı çözer ([K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)). Web gelince `https://…/kuran/2/255` biçiminin bu çözücüye nasıl bağlanacağı web rotalarıyla birlikte A38'de kesinleşir ([belge çelişkileri](../10-claude-code/07-belge-celiskileri.md) BÇ-36). Evrensel bağlantılar alan adı seçilince kurulur ([Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md)).
 
 ## 8. Gezinme kuralları
@@ -266,14 +263,13 @@ sequenceDiagram
 | ME-1 | Diğer çapa türlerinin derin bağlantı biçimi (öneri: Çapa şeması §11 `toRoute`; bölüm 7 ona uyar; MM-14) | [Çapa şeması](../03-veri/01-capa-semasi.md#11-packagesanchors-api) |
 | ME-2 | Mini oynatıcının Expo Router sekmeleriyle yerleşimi (SDK 57 ve 58) | [Mobil mimari](../06-mobil/01-mobil-mimari.md) (MM-9) |
 | ME-3 | `public` derlemede geliştirici rotalarının pakete hiç girmemesi | Mobil mimari, bayraklar |
-| ME-4 | Hata raporlarının varsayılanı ve rıza metni | [KVKK ve gizlilik](../07-yayin/02-gizlilik.md) |
+| ME-4 | Hata raporlarının varsayılanı ve gizlilik metnindeki ifadesi | [Gizlilik](../07-yayin/02-gizlilik.md) |
 | ME-5 | İlk açılışı derin bağlantıyla yapan okurun tanıtımı | Okur testi |
-| ME-6 | Mağaza derlemesinde Risale bölümü yokken Kütüphane'de bilgi satırı gösterilsin mi | Proje sahibi |
 
 ## İlgili dosyalar
 
 - [Kapsam ve fazlar](./01-kapsam-ve-fazlar.md) · [Okuma deneyimi](./02-okuma-deneyimi.md) · [Tasarım sistemi](./04-tasarim-sistemi.md)
 - [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Ses sistemi](../06-mobil/02-ses-sistemi.md) · [Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [KVKK ve gizlilik](../07-yayin/02-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
+- [Yayın süreci](../07-yayin/01-yayin-sureci.md) · [Gizlilik](../07-yayin/02-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Sözlük](../00-ozet/03-sozluk.md)

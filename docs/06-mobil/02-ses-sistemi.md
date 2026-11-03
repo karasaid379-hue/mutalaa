@@ -1,11 +1,11 @@
 # Ses sistemi
 
-> **Sürüm:** 2.0 · **Tarih:** 30 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-40](../00-ozet/02-karar-defteri.md#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)
+> **Sürüm:** 2.1 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-40](../00-ozet/02-karar-defteri.md#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)
 
 Bu dosya tilavetin nereden geldiğini, nasıl çalındığını ve cihazda nasıl saklandığını tanımlar. Kaynak, okuyucu ve teknoloji seçiminin dayanağı [Ses kaynağı araştırması](./04-ses-kaynak-arastirmasi.md) dosyasındadır; karar [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme). [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) expo-audio ile XState'i seçer; react-native-track-player v5 ticari kullanım için ücretli, expo-av ve react-native-fs kullanılmaz ([K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)). Mini oynatıcı ve Dinleme sayfasının görünüşü [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) dosyasındadır.
 
-**1.1'den farkı (30 Ekim 2026).** Önceki tasarım âyet başına dosya (EveryAyah düzeni), `ses-{hafiz}` paketi, tek oynatıcılı `SteppedEngine` ve hafız izinleri üzerine kuruluydu; tamamen bırakıldı. Yeni tasarım: okuyucunun kaydına ait 114 sure dosyası, dosya içinde âyet kareleri, kendi depomuzdan sunulan ayna, çevrimiçi öncelikli dinleme ve isteğe bağlı kalıcı indirme.
+**Tasarımın özeti.** Ses, okuyucunun kaydına ait 114 sure dosyasıdır. Âyetler dosya içinde karedir; dosyalar kendi depomuzdan sunulur (ayna). Dinleme çevrimiçi öncelikli, kalıcı indirme isteğe bağlıdır.
 
 ## 1. Kapsam
 
@@ -14,9 +14,9 @@ Bu dosya tilavetin nereden geldiğini, nasıl çalındığını ve cihazda nası
 | 7 okuyucu, 9 kayıt ([§3.2](#32-okuyucular-ve-kayıtlar)); indirmeden çevrimiçi dinleme | Yeni kayıtlar katalog sürümüyle (araştırma §4.3) |
 | Âyet, aralık, sure, sayfa ve cüz çalma; kesintisiz dinleme ve sonraki sureye geçiş; Nâs kuralı | Kelime takibi (`kelimeTakibi` bayrağı, §6) |
 | Her âyeti ×N, aralığı ×N; âyet arası bekleme; 0,75–1,5 hız | Kur'an + meal dönüşümü (v1.x, §8) |
-| Arka planda ve kilit ekranında çalma; kilit ekranında sonraki/önceki sure | Quran Foundation bağdaştırıcısı (v1.x, §12) |
-| Âyet vurgusu, takip modu ve çip; uyku zamanlayıcısı | Kelime telaffuz sesi (Açık soru) |
-| Tek sure ve kaydın tamamını indirme; çevrimdışı çalma; otomatik kaynak seçimi | iOS yedekten dışlama için yerel modül (SK-7) |
+| Arka planda ve kilit ekranında çalma; kilit ekranında sonraki/önceki sure | Kelime telaffuz sesi (Açık soru) |
+| Âyet vurgusu, takip modu ve çip; uyku zamanlayıcısı | iOS yedekten dışlama için yerel modül (SK-7) |
+| Tek sure ve kaydın tamamını indirme; çevrimdışı çalma; otomatik kaynak seçimi | — |
 
 ## 2. expo-audio (SDK 58): verdikleri ve sınırları
 
@@ -80,7 +80,7 @@ Yedek âyet zamanlaması MP3Quran `ayat_timing` uçlarıdır (aynı MP3Quran dos
 
 ### 3.3 Ayna
 
-İçerik hattı her kaydın sure dosyalarını kaynaktan (MP3Quran CDN, Tarteel CDN) **bir kez** alır, `data/raw/ses/{kayit}/{tarih}/{sss}.mp3` altına yazar ve ölçer: bayt, sha256, süre, bit hızı türü (CBR ya da VBR). Zamanlamanın son âyet bitişi dosya süresini aşamaz; aşarsa ya da süre QUD'un ölçtüğünden 2 saniyeden fazla farklıysa o sure kayıttan düşer ve rapora yazılır. Yayınlayıcı dosyaları içerik deposuna değişmez ve sürümlü adresle koyar:
+Claude Code her kaydın sure dosyalarını kaynaktan (MP3Quran CDN, Tarteel CDN) **bir kez** `data/gelen/<kaynak>/<YYYY-AA-GG>/` altına indirir; toplu indirmede istek hızı sınırlanır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 2). İçerik hattı dosyaları buradan alır, `data/raw/ses/{kayit}/{tarih}/{sss}.mp3` altına yazar ve ölçer: bayt, sha256, süre, bit hızı türü (CBR ya da VBR). Zamanlamanın son âyet bitişi dosya süresini aşamaz; aşarsa ya da süre QUD'un ölçtüğünden 2 saniyeden fazla farklıysa o sure kayıttan düşer ve rapora yazılır. Yayınlayıcı dosyaları içerik deposuna değişmez ve sürümlü adresle koyar:
 
 ```
 audio/{kayit}/{dosya_surumu}/{sss}.mp3
@@ -173,7 +173,7 @@ Makine `packages/player` içindedir ve XState v5 API'siyle yazılır (sürüm `p
 | `delayMultiplier` | 0 | 0, 0,5, 1, 1,5 ya da 2; bekleme = âyet süresi ÷ hız × çarpan |
 | `autoNextSurah` | true | Aralık bitince ya da sure kapsamında sure bitince sonraki sure çalar |
 | `repeatQuran` | false | Nâs bitince Fâtiha'dan devam eder; kapalıysa çalma durur |
-| `mealAlternation` | `kapali` | `kapali`, `her_ayet`, `sure_sonu`, `sayfa_sonu` (v1.x) |
+| `mealAlternation` | `yok` | `yok`, `her_ayet`, `sure_sonu`, `sayfa_sonu` (v1.x) |
 | `follow` | true | Okuyucu çalan âyeti izler |
 | `rate` | 1 | 0,75–1,5 |
 | `sleep` | null | `{ mode: 'dakika', endsAt }` (15, 30, 60 dk) ya da `{ mode: 'aralik_sonu' }` |
@@ -327,7 +327,7 @@ Diyanet'in dinleme modu meali âyet, sure ya da sayfa sonunda okutur ve meal ses
 | `sayfa_sonu` | Sayfanın Kur'an kareleri, ardından aynı sayfanın meal öğeleri |
 
 - Meal öğeleri ayrı dosyalardır (her biri tek kare); bu kip açıkken `SingleEngine` kullanılır. Tekrar ve bekleme yalnız Kur'an karelerine uygulanır; meal bir kez okunur.
-- Meal sesi kaydı gerekir; seslendiren ve paket Açık sorudur. Özellik `mealSesi` bayrağıyla kapalıdır.
+- Meal sesi için hazır dijital kayıt aranır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 1); aday kayıt `ses-kfgqpc-meal`'dir ([Kaynaklar](../04-icerik/01-kaynaklar.md) §3.7), Türkçe kapsamı tedarikte doğrulanır. Kaynak belirlenene kadar özellik `mealSesi` bayrağıyla kapalıdır.
 
 ## 9. Uyku zamanlayıcısı
 
@@ -356,15 +356,14 @@ Apple sesin denetimsiz ve kendiliğinden çalmamasını ister ([Apple HIG Erişi
 - **Boyut.** Arayüz kaydın ve surenin boyutunu katalogdaki ölçülmüş değerden gösterir; kaydın tamamı için toplam ve cihazdaki boş alan indirmeden önce gösterilir.
 - **Çevrimdışı.** Bağlantı yokken yalnız indirilmiş sureler çalınabilir görünür; öteki sureler "İndirilmedi" etiketiyle gri durur. Kaydın bütün sureleri inmişse kayıt "Cihazda" rozetini taşır.
 - **Katalog güncellemesi.** Yeni `dosya_surumu` gelirse eski dosyalar çalınmaya devam eder; Depolama ekranı "Güncelleme var" gösterir, Wi-Fi'da sabitlenmiş kayıtlar kendiliğinden güncellenir ([Depolama yöneticisi](./03-depolama-yoneticisi.md)).
-- **Kelime telaffuz sesi.** QF kelime seslerini herkese açık CDN varlığı olarak sunar; v1'e girmesi Açık soru.
+- **Kelime telaffuz sesi.** Ayrı bir kelime telaffuz sesi kaynağı tedarikle aranır; v1'e girmesi Açık sorudur.
 
 ## 12. Kaynaklar, görünürlük ve atıf
 
-- **Kaynaklar.** Dosyalar MP3Quran ve Tarteel CDN'inden içerik hattıyla bir kez alınır; zamanlama QUD v4.0.0 (CC BY 4.0) ve MP3Quran'dan gelir ([araştırma §3](./04-ses-kaynak-arastirmasi.md#3-kaynakların-karşılaştırılması)). EveryAyah, QuranicAudio ve kopyaları kullanılmaz.
-- **Görünürlük.** Proje sahibinin kararıyla ses kaynaklarının lisans ve izin durumu bu yapının tasarımını, geliştirmesini ve derlemelerdeki görünürlüğünü kısıtlamaz ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) madde 10). `ses-katalog` ve `ses-zaman-*` paketleri bütün derleme türlerinde görünür. Kurul başvurusu uygulamanın genel yayın sürecidir (A34). Hukuki görüş değildir.
+- **Kaynaklar.** Sure dosyaları MP3Quran ve Tarteel CDN'inden içerik hattıyla bir kez alınır; zamanlama QUD v4.0.0 ve MP3Quran'dan gelir ([araştırma §3](./04-ses-kaynak-arastirmasi.md#3-kaynakların-karşılaştırılması)). Her kaynağın kaydı A27.0'da `pipeline/sources/` altında açılır; kaydı olmayan kaynak hatta alınmaz ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 4; [Kaynaklar](../04-icerik/01-kaynaklar.md) §3.7). EveryAyah, QuranicAudio ve kopyaları kullanılmaz.
+- **Görünürlük.** `ses-katalog` ve `ses-zaman-*` paketleri kaynak kaydı olan içerik olarak kalite kapısından geçer (P-01) ve bütün derleme türlerinde yer alır; `test-ses` fikstürü `public`'e girmez ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5).
 - **Kaldırma.** Bir kayıt katalogdan kalkarsa çalma durur (`RECORDING_REMOVED`), kayıt listeden çıkar, dosyaları silinmek üzere işaretlenir ve açıklama bir kez gösterilir ([Depolama yöneticisi](./03-depolama-yoneticisi.md) DY-3). Notlar ve vurgular etkilenmez.
-- **Atıf.** Ayarlar › Kaynaklar ve lisanslar ekranında her kayıt için okuyucu adı ve dosya kaynağı (MP3Quran, Tarteel); zamanlama için "Zamanlama: Quranic Universal Audio (QUD), CC BY 4.0" ve MP3Quran. Kesin metin A32'de yazılır.
-- **Quran Foundation (v1.x).** Bağdaştırıcı arka uçtadır: belirteç ve `client_secret` sunucuda; URL ve zamanlama Content Sync kurallarıyla (en az 7 günde bir eşitleme). Prelive yalnız Fâtiha ve Bakara'yı taşır; tam veri production erişimiyle gelir ([araştırma §3.5](./04-ses-kaynak-arastirmasi.md#35-quran-foundation-content-api)).
+- **Atıf.** Ayarlar › Kaynaklar ekranında her kayıt için okuyucu adı ve dosya kaynağı (MP3Quran, Tarteel); zamanlama için "Zamanlama: Quranic Universal Audio (QUD)" ve MP3Quran. Atıf satırları kaynak kayıtlarında (`atif_metni`) durur; kesin metin A32'de yazılır.
 
 ## 13. Açık sorular ve doğrulanacaklar
 
@@ -377,9 +376,7 @@ Apple sesin denetimsiz ve kendiliğinden çalmamasını ister ([Apple HIG Erişi
 | SS-5 | Bit hızı ve VBR konumlanma | Bit hızı katalogda ölçülür (A27.2); VBR sapması cihazda ölçülür (SK-1) |
 | SS-6 | Zamanlama biçimi ve dizin tabanı | QUD âyet satırı `[ref, start_ms, end_ms, canonical, silence_after_ms]`, kelime `[word_idx (1 tabanlı), start_ms, end_ms]`; kelime eşlemesi SK-5 |
 | SS-7 | Kelime takibi kapsamı | v1 kayıtlarının hepsinde QUD kelime zamanlaması var; açılış SK-5'e bağlı |
-| SS-8 | Meal ses paketi ve seslendiren | Açık soru |
 | SS-9 | Takip çipi ile Bağlantılar dönüş çipinin önceliği | Kapandı: tek çip yuvası, zincir önceliklidir ([Okuma deneyimi §9](../01-urun/02-okuma-deneyimi.md#9-atla-ve-dön)) |
-| SS-10 | Kaynak izinlerinin yeri; QF akışı | Kapandı (30 Ekim 2026): K-41 madde 10; QF v1.x bağdaştırıcısı |
 | SS-11 | Listede perde düzeltmesi (0,75–1,5 hız) | Doğrulanacak (cihaz); araştırma SK-2 |
 | SS-12 | Besmele ve istiâze bölütünün kaynaklara göre sınırı | A27.2; araştırma SK-6 |
 
@@ -388,6 +385,6 @@ Apple sesin denetimsiz ve kendiliğinden çalmamasını ister ([Apple HIG Erişi
 - [Ses kaynağı araştırması](./04-ses-kaynak-arastirmasi.md) · [Mobil mimari](./01-mobil-mimari.md) · [Depolama yöneticisi](./03-depolama-yoneticisi.md)
 - [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) · [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) · [Tasarım sistemi](../01-urun/04-tasarim-sistemi.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
+- [Kaynaklar](../04-icerik/01-kaynaklar.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)
+- [Yayın süreci](../07-yayin/01-yayin-sureci.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
 - [A27 aşaması](../10-claude-code/asamalar/A27-ses-sistemi.md) · [Karar defteri](../00-ozet/02-karar-defteri.md) · [Kaynakça](../09-kaynakca.md)

@@ -1,6 +1,6 @@
 # Genel mimari
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.2 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
 
 Bu dosya sistemin bileşenlerini, veri akışını, ortamları, derleme türlerini ve hata durumlarında kurtarmayı tanımlar. Sürümler [Teknoloji yığını](./02-teknoloji-yigini.md), klasörler [Proje yapısı](./03-proje-yapisi.md), uygulamanın iç yapısı [Mobil mimari](../06-mobil/01-mobil-mimari.md) dosyasındadır.
@@ -12,7 +12,7 @@ Bu dosya sistemin bileşenlerini, veri akışını, ortamları, derleme türleri
 1. **İçerik önceden derlenir.** v1 verisinin neredeyse tamamı salt okunur ve sürümlüdür; sunucuya yalnız kullanıcı verisi kalır ([araştırma raporu](../09-kaynakca.md)). Metin hatta işlenir, editör panelinde onaylanır, Yayınlayıcıda SQLite paketine dönüşür.
 2. **Okuma çevrimdışı çalışır.** Uygulama gömülü `core` paketiyle açılır. Ağ manifest, paket ve ses indirmek için kullanılır.
 3. **Tek doğruluk kaynağı editoryal veritabanıdır.** Paketler ondan türetilir ve her an yeniden üretilebilir.
-4. **Yayın kapısı yayın anında uygulanır.** Yayınlayıcı her derleme türüne ayrı manifest yazar. Uygulama aynı kuralı ikinci kez denetler ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
+4. **Kalite kapısı yayın anında uygulanır.** Yayınlayıcı kalite kapısını uygular ve her derleme türüne ayrı manifest yazar. Uygulama görünürlüğü ve manifest imzasını ikinci kez denetler ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
 5. **Bütün katmanlar çapa kullanır.** Paket, bağlantı, not ve derin bağlantı aynı adresle çalışır; adresler yeniden numaralanmaz ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)).
 6. **Arka uç incedir.** v1'de API yalnız editör paneline ve yayın akışına hizmet eder. Okur uygulaması v1'de API'ye bağlanmaz ([K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç), [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte)).
 7. **Aynı kural üç dilde aynı sonucu verir.** Normalizasyon, çapa ayrıştırma ve `content_hash` Python, TypeScript ve C# ile yazılır. `shared/test-vectors/` üçünü aynı girdi ve çıktıya bağlar.
@@ -52,18 +52,18 @@ Okurun cihazı v1'de nesne deposuna (manifest, paket, ses), EAS Update sunucusun
 
 | Bileşen | Klasör | Teknoloji | Sorumluluk | Yapmaz |
 |---|---|---|---|---|
-| İçerik hattı | `pipeline/` | Python 3.13 + uv | Kaynakları alır. Hazır kaynak metnini dağıtıldığı gibi saklar (Tanzil'e NFC bile uygulanmaz); NFC'yi yalnız kendi ürettiğimiz metinlere uygular ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)). Ayrı `search_text` sütununu üretir, çapa ve `content_hash` atar, kök, lemma ve iktibas adaylarını çıkarır, nitelik denetimi yapar, PostgreSQL'e yazar | Onay vermez; adaylar `aday` ya da `taslak` durumunda yazılır. `source.embed_ok = false` olan kaynağı gömme hattına ve dış yapay zekâ API'sine göndermez ([Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md)). Üretim sunucusunda çalışmaz ([K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python)) |
+| İçerik hattı | `pipeline/` | Python 3.13 + uv | Kaynak kaydı olan kaynakların dosyalarını `data/gelen/` altından alır (dosyaları Claude Code indirir). Hazır kaynak metnini dağıtıldığı gibi saklar (Tanzil'e NFC bile uygulanmaz); NFC'yi yalnız kendi ürettiğimiz metinlere uygular ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)). Ayrı `search_text` sütununu üretir, çapa ve `content_hash` atar, kök, lemma ve iktibas adaylarını çıkarır, nitelik denetimi yapar, PostgreSQL'e yazar | Onay vermez; adaylar `aday` ya da `taslak` durumunda yazılır. Üretim sunucusunda çalışmaz ([K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python)) |
 | Editoryal veritabanı | Docker `postgres:18` | PostgreSQL 18 | `source`, `unit`, `quran_word`, `lemma`, `root`, `xref`, `page_map`, `ayah_box`, `audio_timing`, `review`, `release` tablolarının ana kopyası | Okur uygulamasına açılmaz |
-| Editör paneli | `apps/editor` | React, TypeScript, Vite, shadcn/ui | İnceleme kuyrukları, metin düzeltme, lisans durumu, yayın başlatma ([K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli)) | Veritabanına doğrudan bağlanmaz |
+| Editör paneli | `apps/editor` | React, TypeScript, Vite, shadcn/ui | İnceleme kuyrukları, metin düzeltme, kaynak kayıtlarını görme, yayın başlatma ([K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli)) | Veritabanına doğrudan bağlanmaz |
 | API | `server/Mutalaa.Api` | ASP.NET Core 10 Minimal API, EF Core 10 | Editör uçları, editör kimliği, yayın talebi; v1.x'te hesap, senkron, bağlantı oyu ([Backend API](./05-backend-api.md)) | v1'de okur trafiği almaz; paket üretmez |
-| Yayınlayıcı | `server/Mutalaa.Publisher` | .NET 10 konsol | Metinlere ve veri setlerine lisans kapısı, SQLite paketi ve FTS5 dizini, sha256, imzalı manifest, yükleme, terfi, geri alma | İçerik verisini değiştirmez; yalnız `release` kaydını günceller |
+| Yayınlayıcı | `server/Mutalaa.Publisher` | .NET 10 konsol | Kalite kapısı, SQLite paketi ve FTS5 dizini, sha256, imzalı manifest, yükleme, terfi, geri alma | İçerik verisini değiştirmez; yalnız `release` kaydını günceller |
 | Nesne deposu | Yerelde Docker; canlıda bulut | S3 API | Paket, manifest ve ses dosyalarını sunar ([K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı)) | Mantık çalıştırmaz |
 | Mobil uygulama | `apps/mobile` | Expo SDK 57 | Okuma, FTS5 arama, ses, kullanıcı verisi, paket yöneticisi | v1'de hesap ve API çağrısı yok |
 | Web (Faz 5) | `apps/web` | Next.js 16 | Arama motorunda görünen statik sayfalar | v1'de yok |
 | Paylaşılan paketler | `packages/*` | TypeScript | Çapa, arama normalizasyonu, okuma çekirdeği, oynatıcı, tasarım jetonları | Arayüz bileşeni taşımaz |
 | Test vektörleri | `shared/test-vectors/` | JSONL | Python, TypeScript ve C# uygulamalarını aynı sonuca kilitler | — |
 
-**Yerel S3 deposu notu.** K-21'in ilk sürümü yerelde MinIO diyordu; karar SeaweedFS olarak güncellendi. MinIO topluluk sürümü Ekim 2025'te Docker imajı yayımlamayı bıraktı ve Aralık 2025'ten beri bakım kipindedir ([linuxiac](https://linuxiac.com/minio-ends-active-development/), [ayedo](https://ayedo.de/en/posts/minio-im-maintenance-mode/); bu bilgi araştırma raporunda yok, 18 Ekim 2026'da kontrol edildi). Yerel örnek bu yüzden SeaweedFS kullanır (Doğrulanacak; [Yerel geliştirme](./04-yerel-gelistirme.md)). Kod yalnız S3 API'sini kullanır; depo değişimi yapılandırma işidir. Karar metninin güncellenmesi Açık soru.
+**Yerel S3 deposu notu.** K-21'in ilk sürümü yerelde MinIO diyordu; karar SeaweedFS olarak güncellendi. MinIO topluluk sürümü Ekim 2025'te Docker imajı yayımlamayı bıraktı ve Aralık 2025'ten beri bakım kipindedir ([linuxiac](https://linuxiac.com/minio-ends-active-development/), [ayedo](https://ayedo.de/en/posts/minio-im-maintenance-mode/); bu bilgi araştırma raporunda yok, 18 Ekim 2026'da kontrol edildi). Yerel örnek bu yüzden SeaweedFS kullanır (Doğrulanacak; [Yerel geliştirme](./04-yerel-gelistirme.md)). Kod yalnız S3 API'sini kullanır; depo değişimi yapılandırma işidir.
 
 ## 4. Bileşen diyagramı
 
@@ -104,15 +104,15 @@ flowchart TB
 | Aşama | Ne olur | Çalıştıran | Yer | Çıktı |
 |---|---|---|---|---|
 | Hat | ingest → normalize → anchor → enrich → qa | Geliştirici | Geliştirici bilgisayarı | PostgreSQL'de birimler ve aday kayıtlar |
-| Onay | İnceleme, metin düzeltme, lisans durumu | Editör | Editör paneli + API | `onayli` ya da `red` kayıtlar, güncel lisans durumu |
-| Yayın | Kapı, paket, sha256, imzalı manifest, yükleme | Yayınlayıcı | Geliştirici bilgisayarı | Derleme türü başına paketler ve `manifest.json` |
+| Onay | İnceleme ve metin düzeltme | Editör | Editör paneli + API | `onayli` ya da `red` kayıtlar |
+| Yayın | Kalite kapısı, paket, sha256, imzalı manifest, yükleme | Yayınlayıcı | Geliştirici bilgisayarı | Derleme türü başına paketler ve `manifest.json` |
 | Uygulama derlemesi | Gömülü `core` ve fontlar eklenir, derleme türü sabitlenir | EAS Build | Bulut | APK/AAB, IPA |
 | Uygulama güncellemesi | Yalnız JavaScript | EAS Update | Bulut | Güncelleme paketi |
 | Okuma | Okuma, arama, ses, not; manifest kontrolü ve paket indirme | Uygulama | Cihaz | — |
 | Senkron (v1.x) | Hesap, senkron, bağlantı oyu | Uygulama + genel API | Cihaz + canlı sunucu | — |
 
 Kurallar:
-- İçerik okura iki yoldan ulaşır: yeni uygulama ikilisindeki gömülü `core` ya da kanal manifesti. EAS Update içerik taşımaz, çünkü Kurul onayı içerik sürümüne bağlıdır ([Mobil mimari](../06-mobil/01-mobil-mimari.md), bölüm 10).
+- İçerik okura iki yoldan ulaşır: yeni uygulama ikilisindeki gömülü `core` ya da kanal manifesti. EAS Update içerik taşımaz: içerik sürümü, kalite kapısından geçmiş paketlerin imzalı manifestiyle yönetilir ([Mobil mimari](../06-mobil/01-mobil-mimari.md), bölüm 10).
 - Arama dizini yayın sırasında kurulur. Cihaz kullanıcının sorgusunu aynı kuralla normalize eder ([Arama](../03-veri/05-arama-fts5.md)).
 - Bağlantılar hatta önceden hesaplanır ve editörde onaylanır; cihazda hesaplanmaz ([Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md)).
 
@@ -137,13 +137,13 @@ sequenceDiagram
   E->>A: yayın iste (derleme türü)
   A->>DB: release hazirlaniyor
   Y->>DB: yayını al, tutarlı anlık görüntü aç
-  Y->>Y: lisans kapısı, SQLite ve FTS5, sha256, manifest imzası
+  Y->>Y: kalite kapısı, SQLite ve FTS5, sha256, manifest imzası
   Y->>S: paketleri değişmez anahtarlarla yükle
   Y->>S: manifest.json yaz (son adım)
   Y->>DB: release yayinlandi
 ```
 
-Manifest en son yazılır. Okur ya eski manifesti ya yeni manifesti görür; yarım yayın görmez. Komutlar ve kapı kuralları [Backend API](./05-backend-api.md) dosyasının Yayınlayıcı bölümündedir.
+Manifest en son yazılır. Okur ya eski manifesti ya yeni manifesti görür; yarım yayın görmez. Komutlar ve kalite kapısı kuralları [Backend API](./05-backend-api.md) dosyasının Yayınlayıcı bölümündedir.
 
 ### 6.2 Cihazda paket güncelleme
 
@@ -175,7 +175,7 @@ Hesap, senkron ve bağlantı oyu genel kipte çalışan API'ye gider ([K-15](../
 | Yerel geliştirme | Şimdi | PostgreSQL, S3 deposu, API, editör, Yayınlayıcı, hat | Geliştiricinin Windows bilgisayarı, Docker Compose ([K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma); [Yerel geliştirme](./04-yerel-gelistirme.md)) |
 | İç test kanalı (Faz 2) | Açık soru | `internal` manifesti ve paketleri | Aşağıdaki seçeneklerden biri |
 | Canlı içerik (Faz 3) | Sonra seçilecek | `public` manifesti, paketler, ses | S3 uyumlu depo; öneri Cloudflare R2: depolama 0,015 $/GB-ay, veri çıkışı ücretsiz ([R2 fiyatlandırma](https://developers.cloudflare.com/r2/pricing)) |
-| Canlı API (Faz 4 · v1.x) | Sonra seçilecek | Hesap, senkron, oy | Düşük maliyetli yöntem (K-20); KVKK veri konumu kararı yeniden ele alınır |
+| Canlı API (Faz 4 · v1.x) | Sonra seçilecek | Hesap, senkron, oy | Düşük maliyetli yöntem (K-20); veri konumu kararı gizlilik açısından yeniden ele alınır ([Gizlilik](../07-yayin/02-gizlilik.md)) |
 
 **v1 canlı topolojisi (öneri).** v1'de okur yalnız nesne deposuna bağlanır. Editoryal yığın geliştirici bilgisayarında kalabilir ve Yayınlayıcı paketleri oradan yükler. Böylece v1'in canlı gideri depo ücretine iner. Raporun tahminine göre ASP.NET Core 10 ve PostgreSQL'in Hetzner'de, paketlerin R2'de durduğu yığın 1 bin aylık kullanıcıda ayda yaklaşık 6–7 € tutar; işletme emeği buna dahil değildir ([araştırma raporu](../09-kaynakca.md)).
 
@@ -201,11 +201,11 @@ flowchart LR
 | B. `internal` paketlerini iç test ikilisine gömmek | Barındırma gerekmez | İkili büyür; her içerik değişikliği yeni derleme ister |
 | C. Yerel depoya tünel | Ek hesap gerekmez | Bilgisayar açık kalmalı; dışarıya açılan yerel servis risk taşır |
 
-İç test derlemesi yalnız `serbest` içerik alır (K-06). Kurul onayı bekleyen Kur'an metni, meal ve sesin kapalı testte gösterilip gösterilemeyeceği Kurul'la ön görüşmede sorulur; cevap gelene kadar dış test kullanıcısı alınmaz (Açık soru; hukuki görüş değildir; [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)).
+İç test derlemesi (`internal`) onaylı içerikle birlikte onaysız birimleri "doğrulanmamış" rozetiyle ve aday bağlantıları taşır; `test-` önekli kaynaklardan yalnız uçtan uca fikstürler (`test-kucuk`, `test-ses`) girer ([Yayın süreci](../07-yayin/01-yayin-sureci.md) §3).
 
 ## 8. Derleme türleri
 
-Görünürlük [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) kararının 18 Ekim 2026 güncellemesine göredir. Profil, kimlik ve şema adları [Mobil mimari](../06-mobil/01-mobil-mimari.md) bölüm 10 ile aynıdır.
+Görünürlük [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) kararının 5. maddesine göredir ve editoryal kaliteye bağlıdır. Profil, kimlik ve şema adları [Mobil mimari](../06-mobil/01-mobil-mimari.md) bölüm 10 ile aynıdır.
 
 | | `dev` | `internal` | `public` |
 |---|---|---|---|
@@ -215,14 +215,17 @@ Görünürlük [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kali
 | Derin bağlantı şeması | `mutalaa-dev` | `mutalaa-internal` | `mutalaa` |
 | Manifest | `dev/manifest.json` | `internal/manifest.json` | `public/manifest.json` |
 | Paket kaynağı | Yerel S3 deposu (bilgisayarın LAN IP adresi) | İç test kanalı (Açık soru) | Canlı depo |
-| Görünen lisans durumları | `serbest`, `bekliyor`, `ic_kullanim` | Yalnız `serbest` | Yalnız `serbest`; Kur'an metni, meal ve seste Kurul onayı |
+| Onaylı birim, onaylı bağlantı | Var | Var | Var |
+| Onaysız birim, onaysız yapay zekâ taslağı | "Doğrulanmamış" rozetiyle | "Doğrulanmamış" rozetiyle | Yok |
 | `aday` bağlantılar | Var, "doğrulanmamış" işaretli | Var, "doğrulanmamış" işaretli | Yok |
+| `red` bağlantılar | Yok | Yok | Yok |
+| `test-` önekli kaynak | Var | Yalnız `test-kucuk`, `test-ses` | Yok |
 
 Kurallar:
-- `kapali` kaynak hiçbir derlemeye yazılmaz. `bekliyor` ve `ic_kullanim` içerik yalnız ekip içi `dev` derlemesinde görünür; Risale metni de buna dahildir ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
-- Kapı iki katmanlıdır. Yayınlayıcı manifesti derleme türü başına süzer; uygulama `isPackVisible` ile yeniden denetler.
-- Kapı veri setlerine de uygulanır. QAC kaynaklı kök ve lemma verisi `core` içinde durmaz; kendi lisans durumunu taşıyan ayrı pakettedir, öneri `kelime-kok` ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) uygulama notu).
-- Manifest her derleme türünde imzalıdır ve paket başına `kurul_gerekli` bilgisi taşır. Yayınlayıcı onu derleme türüne özgü anahtarla imzalar. Uygulama imzasız ya da imzası tutmayan manifesti reddeder; `public` derlemede bu kural gevşetilmez ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) §5). Algoritma ve anahtar yönetimi Doğrulanacak.
+- Süzme kaynak ve birim düzeyinde yapılır; aynı paket kimliği derleme türüne göre farklı içerik taşıyabilir. Onaysız birim ve onaysız yapay zekâ taslağı `public`'e girmez; insan onayı isteyen türün aday bağlantısı yalnız `dev` ve `internal`'dadır (otomatik türler güven eşiğiyle girer); `red` bağlantı hiçbir derlemeye girmez. `test-` önekli kaynak `public`'e girmez, `internal`'a yalnız uçtan uca fikstürler girer ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5).
+- Kalite kapısı iki katmanlıdır. Yayınlayıcı manifesti derleme türü başına süzer; uygulama `isPackVisible` ile yeniden denetler.
+- QAC kaynaklı kök ve lemma verisi `core` içinde durmaz; boyutu yüzünden ayrı ve isteğe bağlı `kelime-kok` paketindedir ve bütün derlemelerde yer alır ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) §1).
+- Manifest her derleme türünde imzalıdır. Yayınlayıcı onu derleme türüne özgü anahtarla imzalar. Uygulama imzasız ya da imzası tutmayan manifesti reddeder; `public` derlemede bu kural gevşetilmez ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) §5). Algoritma ve anahtar yönetimi Doğrulanacak.
 - Her derleme türünün dosyaları kendi önekindedir (`{flavor}/manifest.json`, `packs/{flavor}/…`). `public` öneki başka türün dosyasını içermez.
 - `public` derlemeye gömülen `core`, `public` manifestindeki sha256 ile aynı olmalıdır; derleme betiği bunu doğrulamadan durur ([Proje yapısı](./03-proje-yapisi.md)).
 
@@ -256,7 +259,6 @@ stateDiagram-v2
 | Manifest alınamıyor ya da şemaya uymuyor | Ağ hatası, şema doğrulama hatası | Son geçerli manifest ve kurulu paketlerle devam edilir; sonra yeniden denenir |
 | Manifest imzası doğrulanmıyor | `signature` derleme türünün açık anahtarıyla tutmuyor | Manifest yok sayılır; kurulu paketlerle devam edilir; kişisel veri içermeyen hata kaydı gönderilir |
 | Yanlış yayın | Editör ya da test kullanıcısı bildirir | Yayınlayıcı `rollback` ile derleme türünün manifestini önceki yayına çevirir. Uygulama manifesti istenen durum sayar ve sürüm geri gitse de ona uyar |
-| Lisans nedeniyle geri çekme | Hukuki bildirim | Paket derleme türünün manifestinden çıkarılır. Cihazdaki kopyanın silinmesi ya da gizlenmesi Açık soru |
 | Yayınlayıcı yarıda kaldı | `release` durumu `hazirlaniyor` ya da `dogrulandi` kalır | Manifest en son yazıldığı için okur etkilenmez; aynı komut kaldığı yerden sürer |
 | Aynı sürüm anahtarına farklı dosya | Yükleme öncesi HEAD ve sha256 meta verisi | Yayınlayıcı üzerine yazmaz, hata verir |
 | Nesne deposu kesintisi | Uygulamada ağ hatası | Kurulu paketlerle çevrimdışı devam; yeni kurulum gömülü `core` ile açılır |
@@ -270,20 +272,19 @@ stateDiagram-v2
 - v1 okur uygulaması hesap açmaz ve kişisel veri göndermez.
 - Editoryal yığın (PostgreSQL, API, editör) yalnız `127.0.0.1` adresine bağlanır. Yerel ağa yalnız S3 deposunun okuma portu açılır.
 - Gizli değerler `.env` ve .NET kullanıcı sırlarında durur, depoya girmez.
-- Canlı API yurt dışında barındırılırsa her veri işleyenle standart sözleşme imzalanır ve sözleşme 5 iş günü içinde Kurum'a bildirilir ([Cottgroup](https://cottgroup.com/tr/blog/kvkk-gdpr/item/standart-sozlesme-bildirim-yukumlulugu-ve-yaptirimlari)). Bu not hukuki görüş değildir; ayrıntı [KVKK ve gizlilik](../07-yayin/02-gizlilik.md).
+- Canlı API'nin barındırma konumu v1.x'te gizlilik açısından yeniden ele alınır ([Gizlilik](../07-yayin/02-gizlilik.md)).
 
 ## 11. Açık sorular
 
 1. ~~K-21 yerelde MinIO der.~~ Çözüldü: K-21 güncellendi, yerel depo SeaweedFS.
 2. İç test kanalı nerede barındırılacak (A, B ya da C)?
-3. v1.x'te kullanıcı veritabanı editoryal veritabanından ayrı mı tutulacak? Öneri: ayrı; editoryal veritabanı lisansı bekleyen metinleri taşıdığı için dışarıya açılmaz.
-4. Lisans nedeniyle geri çekilen paketin cihazdaki kopyası silinecek mi, gizlenecek mi?
-5. İmza algoritması, JSON kanonikleştirme ve anahtar yönetimi Doğrulanacak ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) IP-7).
+3. v1.x'te kullanıcı veritabanı editoryal veritabanından ayrı mı tutulacak? Öneri: ayrı; editoryal veritabanı onaysız taslakları ve editör kararlarını taşıdığı için dışarıya açılmaz.
+4. İmza algoritması, JSON kanonikleştirme ve anahtar yönetimi Doğrulanacak ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) IP-7).
 
 ## İlgili dosyalar
 
 - [Teknoloji yığını](./02-teknoloji-yigini.md) · [Proje yapısı](./03-proje-yapisi.md) · [Yerel geliştirme](./04-yerel-gelistirme.md) · [Backend API](./05-backend-api.md)
 - [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md)
 - [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md) · [Arama](../03-veri/05-arama-fts5.md)
-- [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md) · [KVKK ve gizlilik](../07-yayin/02-gizlilik.md)
+- [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Yayın süreci](../07-yayin/01-yayin-sureci.md) · [Gizlilik](../07-yayin/02-gizlilik.md)
 - [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) · [Karar defteri](../00-ozet/02-karar-defteri.md) · [Kaynakça](../09-kaynakca.md)

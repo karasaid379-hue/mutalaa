@@ -1,59 +1,28 @@
 # Kök ve Lemma Katmanı
 
-> **Sürüm:** 1.2 · **Tarih:** 20 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 
 Bu dosya Kur'an kelimelerinin kök ve lemma verisini, Türkçe kelimeyi Arapça köke bağlayan hattı ve kelime kartıyla kök gezgininin ihtiyaç duyduğu veriyi tanımlar. Bağlantı türleri `kok` ve `lemma`, puanlama ve panel kuralları [bağlantı modelindedir](./01-baglanti-modeli.md). Türkçe kelime anlamlarının yazımı [kelime anlamları](../04-icerik/06-kelime-anlamlari.md) dosyasındadır (K-19).
 
 ## 1. Kaynak veri
 
-- **QAC v0.4** (1 Mayıs 2011) Kur'an'daki 77.429 kelimenin tamamını etiketler. Morfolojik etiketlerin doğruluğu yaklaşık %99 olarak tahmin ediliyor ve veri hâlâ düzeltiliyor ([QAC sürüm notları](https://corpus.quran.com/releasenotes.jsp); [QAC SSS](https://corpus.quran.com/faq.jsp)).
+- **Quranic Arabic Corpus (QAC) v0.4** (1 Mayıs 2011) Kur'an'daki 77.429 kelimenin tamamını etiketler. Morfolojik etiketlerin doğruluğu yaklaşık %99 olarak tahmin ediliyor ve veri hâlâ düzeltiliyor ([QAC sürüm notları](https://corpus.quran.com/releasenotes.jsp); [QAC SSS](https://corpus.quran.com/faq.jsp)).
 - **Sayı farkları:** Wikipedia 77.430 kelime, QUL "dilbilgisi ve morfoloji" başlığında 77.432 öğe verir ([Wikipedia](https://en.wikipedia.org/wiki/Quranic_Arabic_Corpus); [QUL](https://qul.tarteel.ai/resources)). Fark büyük olasılıkla kelime bölmeden gelir; içe aktarma bunu âyet âyet denetler (§3).
-- **QUL SQLite dosyaları:** lemma kaynağı `lemmas(id, text, text_clean, words_count, uniq_words_count)` ve `word_lemmas(lemma_id, word_location)` tablolarını taşır; konum `2:3:5` biçimindedir ([QUL lemma](https://qul.tarteel.ai/resources/morphology/75)). Morfoloji paketlerinde `sure:âyet:kelime` anahtarı, kök, lemma, gövde ve POS bulunur. QUL etiketlerin farklı kaynak veri setleri arasında kararlı sayılmamasını söyler ([QUL eğitimi](https://qul.tarteel.ai/docs/tutorial-morphology-end-to-end)). Bu yüzden tek envanter olarak QAC v0.4 seçilir. QUL dışa aktarımı lisansı netleşene kadar yalnız karşılaştırma için kullanılır.
-- **QAC Version 2** geliştiriliyor. POS etiketleri yapay zekâyla üretilip uzmanlarca doğrulanmış, kod GPL-3.0; standart veri setleri ve API hedef olarak duruyor ama yayımlanmadı ([kaisdukes/quranic-corpus](https://github.com/kaisdukes/quranic-corpus)).
+- **QUL SQLite dosyaları:** lemma kaynağı `lemmas(id, text, text_clean, words_count, uniq_words_count)` ve `word_lemmas(lemma_id, word_location)` tablolarını taşır; konum `2:3:5` biçimindedir ([QUL lemma](https://qul.tarteel.ai/resources/morphology/75)). Morfoloji paketlerinde `sure:âyet:kelime` anahtarı, kök, lemma, gövde ve POS bulunur. QUL etiketlerin farklı kaynak veri setleri arasında kararlı sayılmamasını söyler ([QUL eğitimi](https://qul.tarteel.ai/docs/tutorial-morphology-end-to-end)). Bu yüzden tek envanter olarak QAC v0.4 seçilir. QUL dışa aktarımı karşılaştırma için kullanılır.
+- **QAC Version 2** geliştiriliyor. POS etiketleri yapay zekâyla üretilip uzmanlarca doğrulanmış; standart veri setleri ve API hedef olarak duruyor ama yayımlanmadı, depoda son işleme 21 Temmuz 2023 tarihli (20 Ekim 2026 okuması; [kaisdukes/quranic-corpus](https://github.com/kaisdukes/quranic-corpus)). Bu yüzden envanter v0.4'tür.
 - Kur'an'da bir kökün bütün geçişleri bu tablodan cihazda üretilir; ayrı bir mu'cem gerekmez (rapor).
 
-## 2. Lisans çelişkisi ve eylem
+## 2. Atıf ve görünürlük
 
-| Kaynak | İfade |
-|---|---|
-| [QAC indirme sayfası](https://corpus.quran.com/download/) | GNU GPL. "Permission is granted to copy and distribute verbatim copies of this file, but CHANGING IT IS NOT ALLOWED." Kaynak belirtilir ve corpus.quran.com bağlantısı verilirse veri "any website or application" içinde kullanılabilir. |
-| [QAC SSS](https://corpus.quran.com/faq.jsp) | "You do not use the data for commercial purposes"; araştırma yayınında atıf. |
-| [QUL SSS](https://qul.tarteel.ai/faq) | Ticari projelerde kullanılabilir, ama her kaynağın lisansı ayrı okunmalı. İncelenen kaynak sayfalarında lisans alanı yok. |
-
-Hukuki görüş değildir. Eylemler:
-1. **QAC'ye yazılır** (rapor ve brif). Sorular aşağıdaki taslakta. Cevap [kaynaklar ve lisans defterine](../04-icerik/01-kaynaklar.md) ve `source` satırına işlenir.
-2. **Tarteel'e yazılır;** QUL'un morfoloji ve lemma dışa aktarımları için kaynak bazında şart sorulur.
-3. **Ara durum:** QAC kaynağı `license_status = 'bekliyor'` taşır. QAC'den türeyen alanlar (`root_id`, `lemma_id`, `pos`) yalnız ekip içi `dev` derlemede görünür (K-06; [lisans defteri](../04-icerik/01-kaynaklar.md) §1). `internal` ve `public` derlemede kelime kartı metni ve sesi gösterir; kök, lemma ve anlam satırları cevap gelene kadar kapalıdır (Açık soru 1).
-4. **B planı:** QAC ticari olmayan kullanım ya da yalnız aynen dağıtım şartında ısrar ederse üç yol var. (a) Dosya ayrı bir pakette aynen dağıtılır ve tablolar cihazda ilk açılışta kurulur (avukata sorulur). (b) Kendi etiketlerimizi CAMeL Tools (MIT) ve editör onayıyla üretiriz; Kur'an Arapçasındaki başarısı Doğrulanacak. (c) QAC Version 2'nin açık veri setleri beklenir. Not (20 Ekim 2026): Version 2 deposunda veri lisansı ifadesi yok, son işleme 21 Temmuz 2023 tarihli; bu yüzden (c) zayıfladı ([kaisdukes/quranic-corpus](https://github.com/kaisdukes/quranic-corpus)).
-
-Gönderilecek metin [QAC lisans sorusu](../yazismalar/qac-lisans.md) yazısındadır. Yazının hitabı artık "QAC bakımcıları"dır (sitenin altbilgisine göre bakım quran.com ekibindedir; 20 Ekim 2026). Soru sayısı 6'dır. Aşağıdaki taslak kısa özetidir; metin ile çelişirse yazışma dosyası geçerlidir.
-
-```text
-Subject: Licensing question: Quranic Arabic Corpus morphology in a free reading app
-
-Dear Quranic Arabic Corpus maintainers,
-We are building "Mütâlaa", a free, ad-free Qur'an reading and study app in Turkish.
-1. The download page licenses the morphology file under the GNU GPL and allows use "in any website
-   or application" with credit and a link; the FAQ says "You do not use the data for commercial
-   purposes". Which terms apply to a free app that may accept donations?
-2. May we convert the unchanged values into our own SQLite tables and ship them with credit,
-   given the "verbatim copies" clause? (Combining the segment-level records into word-level
-   rows is part of this question: does it count as changing the file?)
-3. We keep our corrections in a separate layer and never edit your file. May we ship that layer,
-   and would you like to receive the corrections?
-4. What credit line do you prefer?
-5. May we include a word's root, lemma and part-of-speech tags in the prompts we send to an AI
-   service, when drafting Turkish word meanings?
-6. Can you answer on behalf of the copyright holder (the website names Kais Dukes)? If not,
-   whom should we contact?
-```
-
-Yeni sorular (20 Ekim 2026): 2. soruda "değiştirmek yasaktır" cümlesi ışığında segmentlerin kelime satırında toplanması (§3 madde 2); 5. soruda yapay zekâ istemlerinde kök, lemma ve sözcük türü etiketlerinin kullanımı; 6. soruda hak sahibinin kim olduğu ve kimin adına cevap verilebileceği.
+- **Kaynak kaydı ve atıf.** QAC için kaynak kaydı `qac-morfoloji`'dir ([Kaynaklar](../04-icerik/01-kaynaklar.md) §3.2). Atıf satırı "Morfoloji: Quranic Arabic Corpus (corpus.quran.com)." olur ve Ayarlar › Kaynaklar ekranında görünür. Paket künyesi §4'teki gibi "QAC v0.4 + Mütâlaa düzeltmeleri (N adet)" yazar.
+- **Görünürlük.** QAC'den türeyen alanlar (`root_id`, `lemma_id`, `pos`) `kelime-kok` paketindedir ve bütün derleme türlerinde (`dev`, `internal`, `public`) yer alır. Paket boyutu yüzünden ayrı ve isteğe bağlıdır; `core` yalnız Tanzil'den türeyen kelime bölmesini taşır (§8).
+- **Türkçe anlamlar.** Türkçe kelime anlamları (K-19) aynı pakettedir. `public`'te yalnız onaylı satırlar yer alır; taslaklar "doğrulanmamış" rozetiyle `dev` ve `internal`'dadır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5, K-25).
+- **Kaynak dosyası.** Dosya değiştirilmez; düzeltmeler ayrı bir katmanda tutulur (§4).
 
 ## 3. İçe aktarma ve tablolar
 
-1. QAC v0.4 morfoloji dosyası indirilir, `data/` altında SHA-256 ile saklanır ve hiç değiştirilmez.
+1. QAC v0.4 morfoloji dosyasını Claude Code (A17.0) `data/gelen/qac-morfoloji/<YYYY-AA-GG>/` altına indirir; adres, tarih ve SHA-256 kayda geçer. Hat dosyayı `data/raw`'a alır ve dosya hiç değiştirilmez.
 2. Segment düzeyindeki kayıtlar kelime düzeyine toplanır; kök ve lemma gövde segmentinden gelir. Alan biçimi indirilen dosyadan doğrulanır.
 3. Her âyetin kelime sayısı Tanzil Uthmani metniyle karşılaştırılır (durak işaretleri hariç). Farklar editöre liste olarak gider. `q:{sure}:{ayet}:{kelime}` numarası QAC/QUL konumudur (çapa şeması).
 4. `root`, `lemma` ve `quran_word` kurulur, onaylı düzeltmeler uygulanır (§4), sayılar ve IDF hesaplanır (§7).
@@ -87,7 +56,7 @@ CREATE TABLE quran_word_fix (
 );
 ```
 
-Derleme QAC tabanını okur ve yalnız `status = 'onayli'` düzeltmeleri üstüne uygular. Künye "QAC v0.4 + Mütâlaa düzeltmeleri (N adet)" yazar. Düzeltme listesi QAC kabul ederse geri gönderilir.
+Derleme QAC tabanını okur ve yalnız `status = 'onayli'` düzeltmeleri üstüne uygular. Künye "QAC v0.4 + Mütâlaa düzeltmeleri (N adet)" yazar.
 
 ## 5. Türkçe kelime → Arapça kök hattı
 
@@ -111,7 +80,7 @@ def tr_lower(s: str) -> str:            # Python'da 'İ'.lower() 'i̇' verir; ö
     return s.replace('I', 'ı').replace('İ', 'i').lower()
 
 def keys(token: str) -> tuple[str, str]:
-    # Kurallar Arama (03-veri/05) §2 ile aynıdır; uygulama packages/search ve mutalaa_pipeline.normalize'dan gelir.
+    # Kurallar Arama (03-veri/05) §1.2 ile aynıdır; uygulama packages/search ve mutalaa_pipeline.normalize'dan gelir.
     narrow = tr_lower(unicodedata.normalize('NFC', token)).replace('’', "'").replace('‘', "'")
     folded = unicodedata.normalize('NFD', narrow.replace('ı', 'i'))
     wide = unicodedata.normalize('NFC', ''.join(c for c in folded if not 0x0300 <= ord(c) <= 0x036F))
@@ -130,9 +99,9 @@ EL     = re.compile(r"\b(el|er|es|eş|en|et|ed|ez)-(\p{L}+)")                   
 
 Kesme işaretinde iki durum ayrılır. "Kur'ân", "Mü'min" gibi iç kesmeli kelimeler bir listeyle korunur. Sondaki kesmeden sonra gelen Türkçe ek ayrılır ("Kur'ân'ın" → "Kur'ân" + "ın"). Kurallar `shared/test-vectors/` örnekleriyle sınanır.
 
-**3. Lemmatizasyon.** zeyrek, Zemberek'in kısmi Python taşıması; MIT, 0.1.3 (Aralık 2022), alfa ([PyPI](https://pypi.org/project/zeyrek)). Sürüm sabitlenir ve Risale örneklemiyle gerileme testi yapılır. zeyrek'in tanımadığı biçim için önce `tr_form` sözlüğüne, sonra kural tabanlı ek soymaya, en son dil modeline gidilir. ZemberekDotNet (Apache-2.0, .NET Standard 2.1) K-12'de değerlendirilen .NET seçeneğidir; topluluğu küçüktür: 18 yıldız, 103 işleme, etiketli sürüm yok ([ZemberekDotNet](https://github.com/JnRMnT/ZemberekDotNet)).
+**3. Lemmatizasyon.** zeyrek, Zemberek'in kısmi Python taşıması; 0.1.3 (Aralık 2022), alfa ([PyPI](https://pypi.org/project/zeyrek)). Sürüm sabitlenir ve Risale örneklemiyle gerileme testi yapılır. zeyrek'in tanımadığı biçim için önce `tr_form` sözlüğüne, sonra kural tabanlı ek soymaya, en son dil modeline gidilir. ZemberekDotNet (.NET Standard 2.1) K-12'de değerlendirilen .NET seçeneğidir; topluluğu küçüktür: 18 yıldız, 103 işleme, etiketli sürüm yok ([ZemberekDotNet](https://github.com/JnRMnT/ZemberekDotNet)).
 
-**4. Etimoloji.** Wiktionary'nin kaikki/wiktextract dökümleri etimoloji zincirini ve çoğu zaman Arapça kök harflerini verir. Örneğin "ehlî" maddesi Osmanlıca اهلی üzerinden Arapça أَهْلِيّ'ye gider ve kök ء ه ل'dir ([kaikki](https://kaikki.org/dictionary/Turkish/meaning/e/eh/ehlî.html)). Kelime başına JSONL indirilebilir. Türkçe Vikisözlük çıkarımı `tr-extract.jsonl` 674,4 MB (gzip 42,0 MB) tutar. kaikki lisans belirtmez, Ylonen (LREC 2022) atfı ve bağlantı ister ([kaikki ham veri](https://kaikki.org/dictionary/rawdata.html)). Wiktionary metninin lisansı Doğrulanacak. Bu yüzden yalnız eşleme ve madde bağlantısı saklanır, sözlük metni saklanmaz. Etimoloji alanlarının adları JSONL şemasından doğrulanır.
+**4. Etimoloji.** Wiktionary'nin kaikki/wiktextract dökümleri etimoloji zincirini ve çoğu zaman Arapça kök harflerini verir. Örneğin "ehlî" maddesi Osmanlıca اهلی üzerinden Arapça أَهْلِيّ'ye gider ve kök ء ه ل'dir ([kaikki](https://kaikki.org/dictionary/Turkish/meaning/e/eh/ehlî.html)). Kelime başına JSONL indirilebilir. Türkçe Vikisözlük çıkarımı `tr-extract.jsonl` 674,4 MB (gzip 42,0 MB) tutar. Kaynak kaydındaki atıf Ylonen (LREC 2022) ve kaikki bağlantısıdır ([kaikki ham veri](https://kaikki.org/dictionary/rawdata.html)). Yalnız eşleme ve madde bağlantısı saklanır, sözlük metni saklanmaz. Etimoloji alanlarının adları JSONL şemasından doğrulanır.
 
 **5. QAC envanterine eşleme.** Kök harfleri normalize edilir (hemze biçimleri ء'ye, elif biçimleri ا'ya) ve QAC kök listesinde aranır. Arapça etimon ayrıca QAC `lemma.text_clean` ile eşlenir; şükür ← شُكْر gibi belirli bir türev isim lemma düzeyinde bağlanır (araştırma notu).
 
@@ -190,10 +159,10 @@ idf_n(r) < 0,2 olan kökler birim-birim kok satırı üretmez (öneri; altın se
 | Paket | Tablolar | Boyut |
 |---|---|---|
 | `core` | `quran_word` (Tanzil'den kelime bölmesi ve metin) | Kelime tablosu 77,4 bin satır (boyut tahmini için araştırma notu) |
-| `kelime-kok` (`bekliyor`, K-06 uygulama notu) | QAC kaynaklı `root`, `lemma`, kelime–kök/lemma eşlemesi (`word_morph`); Türkçe kelime anlamları (`lemma_gloss`; `public`'te yalnız onaylılar); `tr_form`; Elmalılı meali için `tr_root_index` | Morfoloji verisi ~2–4 MB (tahmin, araştırma notu) |
+| `kelime-kok` (bütün derlemelerde; ayrı ve isteğe bağlı paket) | QAC kaynaklı `root`, `lemma`, kelime–kök/lemma eşlemesi (`word_morph`); Türkçe kelime anlamları (`lemma_gloss`; `public`'te yalnız onaylılar); `tr_form`; Elmalılı meali için `tr_root_index` | Morfoloji verisi ~2–4 MB (tahmin, araştırma notu) |
 | `tefsir-elmalili`, `risale-dizin` | Kendi birimleri için `tr_root_index`; Risale kitap paketleri bu tabloyu taşımaz | Risale ~1,9 milyon kelime (7.550 sayfa × ~250 kelime, tahmin); Arapça kökenli payı ölçülmeden boyut verilemez |
 
-Tabloların kesin şeması [İçerik paketleri §3.2–§3.3](../03-veri/03-icerik-paketleri.md#33-kelime-kok)'tedir. `kelime-kok` kurulu değilse kelime kartı Arapça kelimeyi, konumunu ve eylemleri gösterir; Türkçe anlam, kök ve lemma bu paketle gelir. Anlamların QAC'den bağımsız olarak `core`'a taşınması İçerik paketleri IP-6'dır (Açık soru).
+Tabloların kesin şeması [İçerik paketleri §3.2–§3.3](../03-veri/03-icerik-paketleri.md#33-kelime-kok)'tedir. `kelime-kok` kurulu değilse kelime kartı Arapça kelimeyi, konumunu ve eylemleri gösterir; Türkçe anlam, kök ve lemma bu paketle gelir.
 
 ```sql
 -- Kelime kartı: core (main) + kelime-kok (p_kelime_kok)
@@ -243,19 +212,18 @@ Kelime kartı raporun tarifini izler: büyük puntoyla Arapça kelime, Türkçe 
 
 ## 9. Kur'an dışı Arapça
 
-Hadis metinleri ile Risale ve tefsirdeki Kur'an dışı Arapça ibareler CAMeL Tools ile çözümlenir: MIT, 1.6.0 (8 Haziran 2026), Python 3.11–3.14 ([PyPI](https://pypi.org/project/camel-tools/)). İş yalnız hatta yapılır (K-12); eski planın çalışma anındaki gRPC morfoloji servisi kalkar. Kökler QAC envanterinde varsa ona eşlenir. Satırlar `origin = 'camel'` taşır ve örneklem doğruluğu ölçülene kadar mağaza derlemesine girmez.
+Hadis metinleri ile Risale ve tefsirdeki Kur'an dışı Arapça ibareler CAMeL Tools ile çözümlenir: 1.6.0 (8 Haziran 2026), Python 3.11–3.14 ([PyPI](https://pypi.org/project/camel-tools/)). İş yalnız hatta yapılır (K-12); eski planın çalışma anındaki gRPC morfoloji servisi kalkar. Kökler QAC envanterinde varsa ona eşlenir. Satırlar `origin = 'camel'` taşır ve örneklem doğruluğu ölçülene kadar mağaza derlemesine girmez.
 
 ## 10. Açık sorular
 
-1. ~~Brif `core` paketine kök, lemma ve Türkçe anlam koyar.~~ Çözüldü: K-06 uygulama notu QAC verisini ayrı `kelime-kok` paketine taşıdı. Açık kalan: Türkçe kelime anlamları QAC lemma kimliklerine bağlıdır; QAC cevabı olumsuz olursa anlamların hangi kimliklere bağlanacağı [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md) dosyasındaki yedek plana göre belirlenir (İçerik paketleri IP-6).
+1. ~~Brif `core` paketine kök, lemma ve Türkçe anlam koyar.~~ **Çözüldü:** kök, lemma ve Türkçe anlam `core`'da değil, ayrı `kelime-kok` paketindedir (§8; [İçerik paketleri](../03-veri/03-icerik-paketleri.md)). Türkçe anlamlar QAC lemma kimliklerine bağlıdır ([Kelime anlamları](../04-icerik/06-kelime-anlamlari.md)).
 2. **Çözüldü (19 Ekim 2026):** Türkçe lemmalar `lemma` tablosunda `lang = 'tr'` satırıdır; `tr_root_index`, `tr_form` ve `quran_word_fix` [Editoryal veritabanı §5–§6](../03-veri/02-editoryal-veritabani.md#6-türkçe--kök-indeksi-ve-sure-adları) ve [İçerik paketleri §3.2–§3.3](../03-veri/03-icerik-paketleri.md#32-metin-paketleri)'tedir.
 3. zeyrek'in Python 3.13 ile çalışması ve Osmanlıca kelime dağarcığındaki kapsaması ölçülmedi.
-4. Wiktionary kaynaklı eşlemelerin lisans durumu doğrulanacak (kaikki lisans belirtmiyor). Hukuki görüş değildir.
-5. QAC dosyasının segment biçimi ve QUL kök kaynağının numarası indirilen dosyalardan doğrulanacak.
+4. QAC dosyasının segment biçimi ve QUL kök kaynağının numarası indirilen dosyalardan doğrulanacak.
 
 ## İlgili dosyalar
 - [Bağlantı modeli](./01-baglanti-modeli.md) · [İktibas tespiti](./02-iktibas-tespiti.md) · [Anlamsal katman](./04-anlamsal-katman.md)
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Sözlük](../00-ozet/03-sozluk.md)
 - [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Arama](../03-veri/05-arama-fts5.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md)
-- [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) · [Yayın kapısı](../07-yayin/01-yayin-sureci.md) · [Kaynakça](../09-kaynakca.md)
+- [Kaynaklar](../04-icerik/01-kaynaklar.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md)
+- [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) · [Yayın süreci](../07-yayin/01-yayin-sureci.md) · [Kaynakça](../09-kaynakca.md)

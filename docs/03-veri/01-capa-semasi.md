@@ -1,6 +1,6 @@
 # Çapa Şeması
 
-> **Sürüm:** 1.2 · **Tarih:** 24 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
 
 Her metin birimi tek bir gramere göre kalıcı bir adres (çapa) alır. Vurgular, notlar, yer imleri, `xref` bağlantıları, sayfa eşlemeleri, derin bağlantılar ve arama sonuçları bu adresle çalışır. Eski plan aynı içerik için en az beş uyumsuz biçim kullanıyordu (`2:255`, `quran:2:255`, `sozler:32:612`, `risale:sozler:13:para:42`). Bu dosya hepsinin yerini alır (`quran-app-docs/03-veri-modeli/03-polymorphic-content-ref.md`, `quran-app-docs/03-veri-modeli/02-tam-sql-ddl.md`).
@@ -52,7 +52,7 @@ ayrilmis     ::= ( "p" | "s" ) [0-9]+
 
 Gramere uyan bir dizgi şu anlam kurallarını da sağlamalıdır:
 
-1. `sure` 1–114 arasındadır. `ayet` o surenin âyet sayısını aşmaz; toplam 6.236 âyet vardır ([PyPI ijaza](https://pypi.org/project/ijaza/)). Üç uygulama 114 elemanlı âyet sayısı dizisini gömülü taşır. Dizi hafızadan yazılmaz; Tanzil üst veri dosyasından üretilen `shared/data/ayet-sayilari.json` dosyasından gelir ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) §3.1).
+1. `sure` 1–114 arasındadır. `ayet` o surenin âyet sayısını aşmaz; toplam 6.236 âyet vardır ([PyPI ijaza](https://pypi.org/project/ijaza/)). Üç uygulama 114 elemanlı âyet sayısı dizisini gömülü taşır. Dizi hafızadan yazılmaz; Tanzil üst veri dosyasından üretilen `shared/data/ayet-sayilari.json` dosyasından gelir ([Kaynaklar](../04-icerik/01-kaynaklar.md) §3.1).
 2. `kelime` âyetin kelime sayısını aşmaz. Bu denetim içerik verisiyle (`quran_word`) yapılır; ayrıştırıcı yapmaz.
 3. Kelime aralığında ve âyet aralığında `ilk < son`. Tek kelime `q:2:255:3`, tek âyet `q:2:255` yazılır; `q:2:255:3-3` ve `q:2:255-255` kanonik sayılmaz. Âyet aralığı yapısı gereği tek sure içindedir ve `son` o surenin âyet sayısını aşmaz.
 4. Tefsir âyet aralığında `ilk ≤ son` olur ve iki uç her zaman yazılır (`2-255-255`). Aralık sure sınırını geçmez; kaynak geçerse hat bölümü ikiye ayırır.
@@ -147,7 +147,7 @@ k    ^k:(?<yol>SEG(?::SEG)*):p(?<p>SAYI)ARA$
 1. Bir çapa bir kez verilir ve hep aynı birimi gösterir. Hiçbir sürüm çapaları yeniden numaralamaz; kullanılmış numara ya da ad başka birime verilmez.
 2. `p{n}` bir kimliktir. Okuma sırası `unit.ord` sütunundadır ve her sürümde yeniden hesaplanabilir. Okuyucunun gösterdiği paragraf numarası (¶) `ord` sırasından türetilir.
 3. Çapa silinmez. Kullanım dışı kalır (`status = 'kullanim_disi'`) ve `successors` alanında yönlendirme taşır.
-4. Her yayında yayınlayıcı, önceki yayının bütün çapalarının etkin ya da yönlendirmeli olduğunu doğrular. Bu denetim yayın kapısının adımlarından biridir ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)).
+4. Her yayında yayınlayıcı, önceki yayının bütün çapalarının etkin ya da yönlendirmeli olduğunu doğrular. Bu denetim Yayınlayıcı kalite kapısının adımlarından biridir ([Yayın süreci](../07-yayin/01-yayin-sureci.md) §4).
 
 | Olay | Çapa | Yönlendirme |
 |---|---|---|
@@ -161,7 +161,7 @@ k    ^k:(?<yol>SEG(?::SEG)*):p(?<p>SAYI)ARA$
 [{ "anchor": "rn:sozler:soz-10:hakikat-3:p27", "from": 312, "to": 640, "delta": -312 }]
 ```
 
-Kur'an âyet çapaları sabittir. Kelime numaraları QAC konumuna sabitlenir. Kelime sayısı kaynağa göre değişiyor: QAC 77.429, Vikipedi 77.430, QUL 77.432 ([QAC SSS](https://corpus.quran.com/faq.jsp); [Wikipedia](https://en.wikipedia.org/wiki/Quranic_Arabic_Corpus); [QUL kaynaklar](https://qul.tarteel.ai/resources)). Hat, QUL ve Quran Foundation kelime konumlarını QAC'ye karşı denetler ve fark varsa eşleme tablosu tutar (Açık soru).
+Kur'an âyet çapaları sabittir. Kelime numaraları QAC konumuna sabitlenir. Kelime sayısı kaynağa göre değişiyor: QAC 77.429, Vikipedi 77.430, QUL 77.432 ([QAC SSS](https://corpus.quran.com/faq.jsp); [Wikipedia](https://en.wikipedia.org/wiki/Quranic_Arabic_Corpus); [QUL kaynaklar](https://qul.tarteel.ai/resources)). Hat, QUL kelime konumlarını QAC'ye karşı denetler ve fark varsa eşleme tablosu tutar (Açık soru).
 
 ## 7. Kanonik metin ve `content_hash`
 
@@ -192,7 +192,7 @@ Sıranın gerekçesi: silme NFC'den önce gelir, çünkü NFC'den sonra silinen 
 content_hash = hashlib.sha256(kanonik_metin.encode("utf-8")).hexdigest()  # 64 küçük harf onaltılık
 ```
 
-- Tanzil şartları metnin aynen dağıtılmasına izin verir ve "CHANGING IT IS NOT ALLOWED" der ([Tanzil metni, OpenITI kopyası](https://raw.githubusercontent.com/OpenITI/0025AH/master/data/0001Quran/0001Quran.Mushaf/0001Quran.Mushaf.Tanzil001-ara1.mARkdown)). NFC şedde ile harekenin sırasını değiştirdiği için Tanzil metnine uygulanmaz.
+- Tanzil metni kaynak dosyadaki hâliyle, bayt bayt saklanır. NFC şedde ile harekenin sırasını değiştirdiği için Tanzil metnine uygulanmaz.
 - Arama için normalize edilmiş metin ayrı sütunlarda durur ve kanonik metnin yerine geçmez ([Arama](./05-arama-fts5.md)).
 - Hat, kaynaktan alınan her birim için `kaynak_dosyası[başlangıç:bitiş] == unit.text` eşitliğini QA adımında doğrular.
 - Özet yalnız içerik hattında hesaplanır. Cihaz özeti yeniden hesaplamaz; paketteki `unit.content_hash` değerini kopyalar.
@@ -238,9 +238,9 @@ flowchart TD
 
 | Düzen ya da baskı | Eşleme birimi | Kaynak |
 |---|---|---|
-| Mod A · Medine 604 sayfa, 15 satır | Satır başına ilk ve son kelime çapası | QPC/QUL düzen verisi; lisans Açık soru |
+| Mod A · Medine 604 sayfa, 15 satır | Satır başına ilk ve son kelime çapası | QPC/QUL düzen verisi |
 | Mod C · akan Unicode | Sayfa başına ilk ve son kelime (A ile aynı sayfa sınırları) | A'nın verisinden türetilir |
-| Mod B · Türk hattı | Sayfa başına âyet aralığı ve `ayah_box` koordinatları | Lisanslı görsel kaynak |
+| Mod B · Türk hattı | Sayfa başına âyet aralığı ve `ayah_box` koordinatları | Türk hattı sayfa görselleri; kaynak A40'ta araştırmayla bulunur (K-07) |
 | Risale baskıları | Sayfa başlangıcı `(çapa, ofset)` | Baskı eşlemesi |
 | Elmalılı 1935–39 | Cilt ve sayfa başlangıcı `(çapa, ofset)` | Özgün baskı |
 
@@ -365,12 +365,11 @@ CI üç test koşucusunu aynı dosyalarla çalıştırır. TypeScript vektörler
 
 | No | Konu | Durum |
 |---|---|---|
-| ÇŞ-1 | QAC, QUL ve QF kelime numaralandırması arasındaki farklar ve eşleme tablosu | Açık soru |
-| ÇŞ-2 | Tanzil'e soru: ayrı sütundaki normalize arama metninin "değiştirme" sayılıp sayılmadığı (lisans defteri, yazışma 1; hukuki görüş değildir) | Açık soru |
+| ÇŞ-1 | QAC ve QUL kelime numaralandırması arasındaki farklar ve eşleme tablosu | Açık soru |
 | ÇŞ-3 | Hadis numara sistemi ve alt numaralar (`2564a`); gramere harf soneki eklenmesi | Açık soru |
 | ÇŞ-4 | Haşiye ve tefsir sure girişi adlandırması (`hasiye-{n}`, `sure-{n}-giris`) | Öneri |
 | ÇŞ-5 | Yeniden çapalama eşiği (0,85) ve cihazda yaklaşık eşleşme algoritmasının kitaplık seçimi | Doğrulanacak |
-| ÇŞ-6 | Mod A satır düzeni verisinin kaynağı ve lisansı (mobil mimari MM-2) | Açık soru |
+| ÇŞ-6 | Mod A satır düzeni verisinin kaynağı ve sürümü (QPC/QUL; A26.0 tedarik adımında sabitlenir) | Doğrulanacak |
 | ÇŞ-7 | Web rotaları | Faz 5'te kesinleşir |
 | ÇŞ-8 | Konu düğümlerinin slug listesi ve tabloları (v1.x) | Açık soru |
 | ÇŞ-9 | Çapa API ayrıntıları (hata önceliği, sıralama, birim ve rota işlevleri, ilk kayıt sırası) | Çözüldü (2026-10-24, [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)) |
@@ -380,5 +379,5 @@ CI üç test koşucusunu aynı dosyalarla çalıştırır. TypeScript vektörler
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Sözlük](../00-ozet/03-sozluk.md)
 - [Editoryal veritabanı](./02-editoryal-veritabani.md) · [İçerik paketleri](./03-icerik-paketleri.md) · [Kullanıcı verisi ve senkron](./04-kullanici-verisi-ve-senkron.md) · [Arama (FTS5)](./05-arama-fts5.md)
 - [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) · [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) · [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md)
-- [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) · [Yayın kapısı ve Kurul](../07-yayin/01-yayin-sureci.md)
+- [Kaynaklar](../04-icerik/01-kaynaklar.md) · [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) · [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md)
+- [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) · [Yayın süreci](../07-yayin/01-yayin-sureci.md)

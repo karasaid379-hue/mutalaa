@@ -1,6 +1,6 @@
 # Test stratejisi
 
-> **Sürüm:** 1.9 · **Tarih:** 31 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.10 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
 
 Bu dosya neyin, hangi araçla, ne zaman test edildiğini tanımlar. Eşik değerlerinin çoğu bu dosyanın önerisidir; ilk ölçümden sonra kalibre edilir ve öyle işaretlidir.
@@ -13,7 +13,7 @@ Bu dosya neyin, hangi araçla, ne zaman test edildiğini tanımlar. Eşik değer
 | Birim | pytest (`pipeline/`), Vitest (`packages/`, `apps/editor`), Jest + jest-expo (`apps/mobile`), xUnit (`server/`) | Her PR |
 | İçerik kalitesi | Altın set değerlendirmesi, değişmezlik testleri | Gece ve sürüm |
 | Veritabanı | Göç testleri (Testcontainers, `postgres:18`) | Her PR |
-| Yayın kapısı | Publisher birim, bütünleşik ve yapıt taraması | Her PR ve sürüm |
+| Kalite kapısı | Publisher birim, bütünleşik ve yapıt taraması | Her PR ve sürüm |
 | Mobil | React Native Testing Library, Maestro | PR ve gece |
 | Performans, erişilebilirlik | Kıyas ekranı, `gfxinfo`, Instruments, tarayıcılar, elle kontrol | Sürüm |
 
@@ -116,10 +116,10 @@ test('âyet ×3 tekrardan sonra sonraki âyete geçer', async () => {
 |---|---|---|
 | Atıf ve iktibas | 300–500 paragraf | Sözler, Mektubat, Lem'alar, Şuâlar, Mesnevî-i Nuriye, İşârâtü'l-İ'câz ve Elmalılı tefsir örneklemi |
 | Kök (Türkçe lemma → Arapça kök) | 300–500 çift | Sıklık bandı ve kaynak (meal, tefsir, Risale) |
-| Benzer âyet | Örneklem | QUL kaydı, lisansı teyit edilirse |
+| Benzer âyet | Örneklem | QUL kaydı |
 | Anlamsal (v1.x) | Alan içi sorgu seti | Türkçe sorgu → paragraf; Arapça ve Türkçe → âyet |
 
-Büyüklük ve tabakalar rapordan gelir. Risale metni hukukçu görüşü gelene kadar `kapali` olduğu için Risale altın seti de bu görüşten sonra kurulur; görüş olumluysa set `data/` altında (git dışı) tutulur ve hiçbir pakete girmez ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük), [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)). Harici bir dil modeli API'sine gönderim ayrıca Açık soru; hukuki görüş değildir ([Yayın kapısı ve Kurul](./01-yayin-sureci.md#24-telif-ve-işleme-açık-soruları)). Elmalılı ve serbest metinlerdeki iktibas setleri bu görüşü beklemez. Basılı fihristler başlangıç noktasıdır; bir fihrist kaydının Kur'an'da karşılığı bulunmadığı not edilmiştir ([RİNAP](https://rinap.uskudar.edu.tr/uploads/site/6/content/files/risale-i-nurun-tefsirdeki-yeri-compressed.pdf)).
+Büyüklük ve tabakalar rapordan gelir. Altın setler `data/gold/` altında (git dışı, insan emeği, yedeklenir) tutulur ve hiçbir pakete girmez. Risale altın seti Risale metni hatta alındıktan sonra kurulur (A20); Elmalılı ve Tanzil üzerindeki iktibas setleri bunu beklemez. Basılı fihristler başlangıç noktasıdır; bir fihrist kaydının Kur'an'da karşılığı bulunmadığı not edilmiştir ([RİNAP](https://rinap.uskudar.edu.tr/uploads/site/6/content/files/risale-i-nurun-tefsirdeki-yeri-compressed.pdf)).
 
 Ölçüler âyet düzeyinde ve açıklık (span) düzeyinde kesinlik, duyarlılık ve F1'dir; uzun ve kısa iktibas ayrı raporlanır. Açıklık eşleşmesi aynı hedef çapa ve en az 0,5 örtüşme oranı ister (öneri).
 
@@ -148,18 +148,18 @@ def prf(pred: set, gold: set) -> tuple[float, float, float]:
 
 ## 5. Kur'an metni değişmezlik testleri
 
-Tanzil metni aynen dağıtılabilir, değiştirilemez ([Tanzil metni, OpenITI kopyası](https://raw.githubusercontent.com/OpenITI/0025AH/master/data/0001Quran/0001Quran.Mushaf/0001Quran.Mushaf.Tanzil001-ara1.mARkdown)). Kurul onayı da sürüme bağlıdır. Bu testler her gece ve her sürümde koşar. Sahipleri: 1–4 A10 (`pipeline/tests/test_degismezlik.py`, `degismezlik` işareti; fikstürle koşan sürümleri CI'da, gerçek veriyle koşanlar yerelde `scripts/nightly.ps1` ile), 5 A24, 6 A13, 7 A11, 8 A13.
+Tanzil metni bayt bayt saklanır; hiçbir dönüşüm uygulanmaz ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)). Bu testler her gece ve her sürümde koşar. Sahipleri: 1–4 A10 (`pipeline/tests/test_degismezlik.py`, `degismezlik` işareti; fikstürle koşan sürümleri CI'da, gerçek veriyle koşanlar yerelde `scripts/nightly.ps1` ile), 5 A24, 6 A13, 7 A11, 8 A13.
 
-1. Kullanıcının indirdiği Uthmani ve Simple Clean dosyalarının SHA-256'sı `pipeline/src/mutalaa_pipeline/ingest/tanzil.lock.json` içindeki sabit değere eşittir. Kilit ayrıca âyet satırlarının (`metin_sha256`) ve bildirim bloğunun (`bildirim_sha256`) özetini tutar; fark metinde mi bildirimde mi olduğu iletide görünür ([K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) madde 4).
+1. İndirilen (`data/gelen/tanzil/<YYYY-AA-GG>/`) Uthmani ve Simple Clean dosyalarının SHA-256'sı `pipeline/src/mutalaa_pipeline/ingest/tanzil.lock.json` içindeki sabit değere eşittir. Kilit ayrıca âyet satırlarının (`metin_sha256`) ve bildirim bloğunun (`bildirim_sha256`) özetini tutar; fark metinde mi bildirimde mi olduğu iletide görünür ([K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) madde 4).
 2. 114 sure ve 6.236 âyet vardır.
 3. Her `q:{sure}:{ayet}` biriminin kanonik metni Tanzil satırıyla bayt bayt aynıdır. Birimlerden Tanzil dosyası yeniden üretilir ve kaynakla karşılaştırılır (bildirim satırları hariç).
 4. Her birimin `content_hash` değeri o metnin SHA-256'sıdır.
 5. Okuyucunun metin seçicisi yalnız kanonik metni okur; `search_text` hiçbir ekranda görünmez (`reader-core` testi).
-6. `core` paketinde Tanzil telif bildiriminin tam metni bulunur.
+6. `core` paketinde Tanzil'in kendi bildirimi (`notice_text`) bayt bayt bulunur ve SHA-256'sı kilitteki `bildirim_sha256` değerine eşittir.
 7. Sayfa eşlemesi: 1. sayfa Fâtiha 1–7'dir, 604. sayfa Nâs 6 ile biter, 0 ve 605 geçersizdir (`quran-app-docs/04-okuma/01-quran-okuyucu.md` testleri).
-8. Kurul kapsamındaki paketlerde hesaplanan içerik özeti onaylı özete eşittir ([Yayın kapısı](./01-yayin-sureci.md)).
+8. Terfide (`promote`) `public` yayının içerik özetleri iç kanalda test edilen yayınınkine eşittir (P-14; [Yayın süreci](./01-yayin-sureci.md) §2.2).
 
-**Çözüldü (NFC, K-26).** Karar defteri kanonik metni kaynağın dağıttığı hâli olarak tanımladı: Tanzil metnine NFC uygulanmaz, NFC yalnız kendi ürettiğimiz metinlerde ilk kayıtta yapılır, ofsetler kanonik metnin kod noktalarıdır. Aşağıdaki not bu kararın gerekçesi olarak kalır. İlk brif kesin karakter aralıklarını NFC kanonik metinde tanımlıyordu. NFC Arapça harekelerin sırasını değiştirebilir: şedde + fetha (U+0651 U+064E) NFC'de fetha + şedde (U+064E U+0651) olur (yerel Python denemesi, 18 Ekim 2026). Tanzil metni NFC değilse NFC'ye çevirmek bayt değiştirir ve "değiştirmek yasak" şartıyla çatışır. Test 3 Kur'an birimlerinde Tanzil baytlarını korur, ayrıca metnin NFC olup olmadığını raporlar. Ofset tanımının Kur'an birimlerine nasıl uygulanacağı [Çapa şeması](../03-veri/01-capa-semasi.md) dosyasında karara bağlanır.
+**Çözüldü (NFC, K-26).** Kanonik metin kaynağın dağıttığı hâlidir: Tanzil metnine NFC uygulanmaz, NFC yalnız kendi ürettiğimiz metinlerde ilk kayıtta yapılır, ofsetler kanonik metnin kod noktalarıdır. Gerekçe teknik: NFC Arapça harekelerin sırasını değiştirebilir; şedde + fetha (U+0651 U+064E) NFC'de fetha + şedde (U+064E U+0651) olur (yerel Python denemesi, 18 Ekim 2026). Tanzil metni NFC değilse NFC'ye çevirmek bayt değiştirir ve kanonik metni kaynaktan ayırır. Test 3 Kur'an birimlerinde Tanzil baytlarını korur, ayrıca metnin NFC olup olmadığını raporlar. Ofset tanımının Kur'an birimlerine nasıl uygulanacağı [Çapa şeması](../03-veri/01-capa-semasi.md) dosyasında karara bağlanır.
 
 ## 6. Veritabanı göç testleri
 
@@ -191,16 +191,16 @@ Yığın `xunit.v3` kullanır ([Teknoloji yığını](../02-mimari/02-teknoloji-
 **Uygulandı (A07, 27 Ekim 2026).** Yukarıdaki örnek sadeleştirilmiş biçimdir; gerçek testler `server/tests/Mutalaa.Api.Tests/` altındadır.
 
 - **Kap ve fikstür.** İmaj `postgres:18.6-trixie`'dir. İmajın varsayılan yerel ayarı `en_US.utf8` olduğu için kapta `POSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=C.UTF-8` ve `TZ=UTC` verilir. Fikstür `AssemblyFixture`'dır ve kabı tembel açar: kurucu ve `InitializeAsync` Docker'a dokunmaz, `Build()` ilk veritabanı isteğinde çalışır. Böylece Docker kapalıyken yalnız Docker'lı sınıflar düşer (bir `AssemblyFixture` hatası bütün derlemeyi düşürür).
-- **Enum testi.** Tek JSON `packages/content-schema/enums.json` dosyasıdır. TypeScript birleşim tipi (`packages/content-schema/test/enums.test.ts`, Vitest), Python enum'u (`pipeline/tests/test_enums.py`, pytest) ve C# enum'u (`EnumLabelTests`, xUnit v3; etiket ve sıra) bu JSON'la karşılaştırılır (A06). JSON on bir tür taşır: `license_status` (4 değer), `xref_type` (8), `xref_status` (3), `xref_origin` (3), `source_kind`, `derleme_turu`, `unit_kind`, `unit_status`, `metin_durumu`, `inceleme_durumu`, `surum_durumu` ([K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)). Sıra anlamlıdır (ör. `serbest` < `bekliyor` < `ic_kullanim` < `kapali`). `PostgresEnumTests` PostgreSQL'deki etiketleri `enumsortorder` sırasıyla JSON'la karşılaştırır.
+- **Enum testi.** Tek JSON `packages/content-schema/enums.json` dosyasıdır. TypeScript birleşim tipi (`packages/content-schema/test/enums.test.ts`, Vitest), Python enum'u (`pipeline/tests/test_enums.py`, pytest) ve C# enum'u (`EnumLabelTests`, xUnit v3; etiket ve sıra) bu JSON'la karşılaştırılır (A06). JSON on tür taşır: `source_kind`, `xref_type` (8 değer), `xref_status` (3), `xref_origin` (3), `derleme_turu` (3), `unit_kind`, `unit_status`, `metin_durumu`, `inceleme_durumu`, `surum_durumu` ([K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)). Sıra anlamlıdır (ör. `metin_durumu`: `taslak`, `incelemede`, `onayli`). `PostgresEnumTests` PostgreSQL'deki etiketleri `enumsortorder` sırasıyla JSON'la karşılaştırır.
 - **Anlık görüntü.** Dosya `server/tests/Mutalaa.Api.Tests/Snapshots/editoryal-sema.sql`'dir (`SchemaSnapshotTests`). Dökümden her koşuda değişen satırlar atılır: `-- Dumped from database version …`, `-- Dumped by pg_dump version …`, `\restrict …`, `\unrestrict …`. Bilinçli değişiklikte güncelleme `MUTALAA_UPDATE_SNAPSHOTS=1 dotnet test --project server/tests/Mutalaa.Api.Tests --filter-class Mutalaa.Api.Tests.SchemaSnapshotTests` ile yapılır. Test dosyayı yeniden yazar ve bilerek kırmızı biter; `CI` ortam değişkeni doluysa güncelleme reddedilir. Fark commit'te gözden geçirilir.
 
 **Kullanıcı veritabanı (cihazda, expo-sqlite + Drizzle).** Yayımlanmış her şema sürümünden bir fikstür veritabanı saklanır. Göç dosyaları Node'da SQLite üzerinde çalıştırılır ve veri kaybı olmadığı doğrulanır. Her kullanıcı tablosunda `id`, `hlc`, `updated_at`, `deleted_at`, `base_version`, `device_id` sütunlarının bulunduğu test edilir ([K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte)). Bir Maestro akışı eski sürümden güncellemeyi cihazda sınar.
 
 **İçerik paketi.** `min_app_version` değeri uygulamadan yüksek olan paket açılmaz; eski paket yeni uygulamada açılır.
 
-## 7. Yayın kapısı testleri
+## 7. Kalite kapısı testleri
 
-Ayrıntı [Yayın kapısı ve Kurul](./01-yayin-sureci.md#5-public-derleme-hiçbir-zaman-ic_kullanim-bekliyor-kapali-içermez-testi) dosyasındadır. Kapsam: durum × derleme türü matrisi (`internal` ve `public` yalnız `serbest`, `dev` `kapali` dışındaki her durum; [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)); onaysız, onaylı ve onaydan sonra değişmiş Kurul kaynağı; kaynak kaydı olmayan paket; `kurul_gerekli` değerinin kaynaklardan türetilmesi; imzasız ya da bozuk imzalı manifestin public derlemede reddi; `xref` süzgeci (public derlemede `rn:` hedefli bağlantı yalnız ayrı lisanslı dizin kaydıyla girer); manifest ile önek içeriğinin tutarlılığı; public manifestin, public önekteki bütün nesnelerin ve gömülü `core` paketinin yapıt taraması. Bu son test her public sürümde zorunludur.
+Ayrıntı [Yayın süreci](./01-yayin-sureci.md) §5'tedir. Kapsam: görünürlük matrisi (derleme türü × içerik; [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5); P-01 ve P-07…P-14 kurallarının her biri için geçen ve kalan fikstür; onaylı ve onaysız birim, yapay zekâ taslağı; kaynak kaydı olmayan paket; `test-` önekli kaynak (`internal`'da yalnız `test-kucuk` ve `test-ses`, `public`'te hiçbiri); imzasız ya da bozuk imzalı manifestin her derlemede reddi; `xref` süzgeci (`red` hiç girmez; insan onayı isteyen türde `aday` yalnız `dev` ve `internal`'a girer, otomatik türler `confidence ≥ 0,50` ile her derlemeye girer; `rn:` hedefli bağlantı yalnız ayrı kayıtlı dizin kaydıyla girer); manifest ile önek içeriğinin tutarlılığı; `public` kuru çalıştırmasının 0 ile bitmesi; public manifestin, public önekteki bütün nesnelerin ve gömülü `core` paketinin yapıt taraması. Bu son test her public sürümde zorunludur.
 
 ## 8. Mobil bileşen testleri
 
@@ -210,11 +210,11 @@ Jest (jest-expo) ve React Native Testing Library ile:
 - **Bağlantılar alt sayfası:** esere göre gruplama, gerekçe etiketi, güven düzeyi, düşük güvenli ve denetlenmemiş bağlantıların "Daha fazla (otomatik)" altında katlanması.
 - **Geri dönüş yığını:** atlama, kırıntı izi, "Okuduğun yere dön" çipi.
 - **Mini oynatıcı ve Depolama listesi.**
-- **Lisans görünürlüğü:** `internal` ve `public` bayrağıyla `bekliyor` paket Kütüphane'de görünmez; `kelime-kok` paketi `bekliyor` iken kelime kartında kök, lemma ve anlam satırları kapalıdır.
+- **Paket görünürlüğü:** `public` bayrağıyla `test-` önekli kaynak taşıyan ya da başka derleme türüne ait paket Kütüphane'de görünmez ve açılmaz; `internal` bayrağıyla yalnız `test-kucuk` ve `test-ses` kaynaklı paketler görünür (`isPackVisible`, [Mobil mimari](../06-mobil/01-mobil-mimari.md#10-derleme-türleri-ve-özellik-bayrakları) §10). `kelime-kok` paketi her derlemede yer alır (ayrı ve isteğe bağlı pakettir); `public` derlemede kelime kartı yalnız onaylı kelime anlamlarını gösterir.
 
 ## 9. Uçtan uca testler (Maestro)
 
-`dev` ve `internal` derlemeler iki fikstür paketi taşır: küçük bir metin paketi (`test-kucuk`) ve üretilmiş tonlarla sahte zamanlama içeren ses kaydı `ses-test` (kayıt kimliği `test-ton`; `ses-katalog` ve `ses-zaman-test-ton` içinde; kaynağının slug'ı `test-ses`'tir). Böylece testler gerçek okuyucu kaydına ve ağdaki ses sunucularına ihtiyaç duymaz. Fikstürler kendi ürettiğimiz içeriktir ve `serbest` durumundadır; bu yüzden `internal` derlemeye de girer. Kaynak slug'ları `test-` ile başladığı için `public` derlemeye hiç girmez ([Backend API](../02-mimari/05-backend-api.md#103-kapı-kontrolleri) P-12; [Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md#8-örnek-veri) §8). `testID` adları çapa gramerini kullanır. Akışlar derleme türünün uygulama kimliğini ve derin bağlantı şemasını değişkenden alır: `${APP_ID}` ve `${SCHEME}` `dev`'de `app.mutalaa.dev` ile `mutalaa-dev`, `internal`'da `app.mutalaa.internal` ile `mutalaa-internal`'dır ([Mobil mimari](../06-mobil/01-mobil-mimari.md#10-derleme-türleri-ve-özellik-bayrakları) §10). Değişkenler koşuda verilir; `maestro test` bayrağı Doğrulanacak (A33).
+`dev` ve `internal` derlemeler iki fikstür paketi taşır: küçük bir metin paketi (`test-kucuk`) ve üretilmiş tonlarla sahte zamanlama içeren ses kaydı `ses-test` (kayıt kimliği `test-ton`; `ses-katalog` ve `ses-zaman-test-ton` içinde; kaynağının slug'ı `test-ses`'tir). Böylece testler gerçek okuyucu kaydına ve ağdaki ses sunucularına ihtiyaç duymaz. Fikstürler kendi ürettiğimiz sentetik içeriktir; kaynak slug'ları `test-` ile başladığı için `public` derlemeye hiç girmez, `internal` derlemeye yalnız bu iki uçtan uca fikstür girer ([Backend API](../02-mimari/05-backend-api.md#103-kapı-kontrolleri) P-12; [Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md#8-örnek-veri) §8). `testID` adları çapa gramerini kullanır. Akışlar derleme türünün uygulama kimliğini ve derin bağlantı şemasını değişkenden alır: `${APP_ID}` ve `${SCHEME}` `dev`'de `app.mutalaa.dev` ile `mutalaa-dev`, `internal`'da `app.mutalaa.internal` ile `mutalaa-internal`'dır ([Mobil mimari](../06-mobil/01-mobil-mimari.md#10-derleme-türleri-ve-özellik-bayrakları) §10). Değişkenler koşuda verilir; `maestro test` bayrağı Doğrulanacak (A33).
 
 ```yaml
 appId: ${APP_ID}
@@ -289,21 +289,21 @@ VoiceOver ve TalkBack'in harekeli Kur'an Arapçasıyla davranışı hakkında ka
 
 | Tetik | Koşanlar |
 |---|---|
-| Her PR | Vektörler (3 dil), birim testleri, tip denetimi, lint, bağımlılık lisans denetimi, Publisher kapı testleri, göç ve enum testleri, kontrast testi |
+| Her PR | Vektörler (3 dil), birim testleri, tip denetimi, lint, bağımlılık listesi (yalnız listeler), Publisher kapı testleri, göç ve enum testleri, kontrast testi |
 | Gece | İçerik hattı tam koşu, altın set değerlendirmesi, değişmezlik testleri, `internal` paket üretimi, emülatörde Maestro. A08 gece işi kurmaz. Gece işi A10'da `.github/workflows/nightly.yml` olarak açılır (`schedule` ve `workflow_dispatch`; `uv run pytest -m degismezlik` ve `uv run mutalaa sources check`; tanzil.net'ten hiçbir şey indirilmez). CI'da yalnız fikstür testleri koşar, gerçek veriyle koşu yerelde `scripts/nightly.ps1` ile yapılır ([BÇ-42](../10-claude-code/07-belge-celiskileri.md#1-karar-bekleyenler)) |
 | Sürüm | Hepsi, public yapıt taraması, referans cihazda performans, elle erişilebilirlik, aşağıdaki kontrol listesi |
 
-**Her PR satırının bugünkü karşılığı (A08, 27 Ekim 2026).** Beş iş akışı koşar ([Proje yapısı §7](../02-mimari/03-proje-yapisi.md#7-ci-iş-akışları-github-actions)): `ci-ts` (TypeScript vektörleri ve birim testleri, lint, tip denetimi, `tr_TR.UTF-8` ve `C.UTF-8` ayakları), `ci-dotnet` (C# vektörleri ve birim testleri, Testcontainers ile veritabanı ve göç testleri, `dotnet format`), `ci-pipeline` (Python vektörleri ve testleri, ruff, mypy; Ubuntu ve Windows), `pr-title` (PR başlığı biçimi) ve `ci-workflows` (iş akışı dosyalarının actionlint denetimi). İki kapı vardır: bağımlılık lisans kapısı (yalnız dağıtılan ve sunulan kodda durdurur; [Teknoloji yığını §3](../02-mimari/02-teknoloji-yigini.md#3-lisans-notları)) ve PR başlığı kapısı. Publisher kapı testleri ve kontrast testi ilgili aşamalar geldikçe bu iş akışlarına eklenir (A13 ve mobil aşamalar); bugünkü koşular yalnız var olan testleri çalıştırır.
+**Her PR satırının bugünkü karşılığı (A08, 27 Ekim 2026).** Beş iş akışı koşar ([Proje yapısı §7](../02-mimari/03-proje-yapisi.md#7-ci-iş-akışları-github-actions)): `ci-ts` (TypeScript vektörleri ve birim testleri, lint, tip denetimi, `tr_TR.UTF-8` ve `C.UTF-8` ayakları), `ci-dotnet` (C# vektörleri ve birim testleri, Testcontainers ile veritabanı ve göç testleri, `dotnet format`), `ci-pipeline` (Python vektörleri ve testleri, ruff, mypy; Ubuntu ve Windows), `pr-title` (PR başlığı biçimi) ve `ci-workflows` (iş akışı dosyalarının actionlint denetimi). Bağımlılıklar yalnız listelenir (`scripts/ci/list-licenses.mjs`; [Teknoloji yığını §3](../02-mimari/02-teknoloji-yigini.md#3-kitaplık-notları-ve-bağımlılık-listesi), [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 6); hiçbir lisans PR'ı ya da derlemeyi durdurmaz. Politika kapısı olarak yalnız PR başlığı biçimi (`pr-title`) vardır. Publisher kapı testleri ve kontrast testi ilgili aşamalar geldikçe bu iş akışlarına eklenir (A13 ve mobil aşamalar); bugünkü koşular yalnız var olan testleri çalıştırır.
 
 ## 13. Sürüm kontrol listesi
 
 - [ ] CI'nın bütün işleri yeşil; sürüm numarası ve değişiklik notu hazır.
 - [ ] Altın set kapıları geçti; değerlendirme raporu `release` kaydına bağlı.
 - [ ] Değişmezlik testleri yeşil.
-- [ ] Kapı raporu okundu; public yapıt taraması yeşil; public manifest imzalı ve imza uygulamadaki açık anahtarla doğrulanıyor.
-- [ ] Kurul kapsamındaki içerik özetleri onaylı özetlerle aynı; Kurul onay bilgisi ekranı doğru.
-- [ ] Kaynaklar ve lisanslar ekranı yeni kaynakları ve fontları içeriyor.
-- [ ] Gizlilik metni ve mağaza beyanları uygulamanın davranışıyla aynı ([KVKK ve gizlilik](./02-gizlilik.md)).
+- [ ] Kapı raporu okundu; `public` kuru çalıştırması 0 ile bitti; public yapıt taraması yeşil; public manifest imzalı ve imza uygulamadaki açık anahtarla doğrulanıyor.
+- [ ] Terfide `public` içerik özetleri iç kanalda test edilen yayınla aynı (P-14).
+- [ ] Kaynaklar ekranı yeni kaynakları, atıfları ve fontları içeriyor.
+- [ ] Gizlilik metni ve mağaza beyanları uygulamanın davranışıyla aynı ([Gizlilik](./02-gizlilik.md)).
 - [ ] Maestro akışları iOS ve Android'de yeşil (iOS koşusunun yeri: bölüm 14 madde 7); Öz test ekranı "Geçti".
 - [ ] Performans bütçeleri referans cihazlarda tutuyor; uygulama boyutu kaydedildi.
 - [ ] Erişilebilirlik elle kontrol listesi tamam.
@@ -324,7 +324,7 @@ VoiceOver ve TalkBack'in harekeli Kur'an Arapçasıyla davranışı hakkında ka
 
 ## İlgili dosyalar
 
-- [Yayın kapısı ve Kurul](./01-yayin-sureci.md) · [KVKK ve gizlilik](./02-gizlilik.md)
+- [Yayın süreci](./01-yayin-sureci.md) · [Gizlilik](./02-gizlilik.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Arama](../03-veri/05-arama-fts5.md)
 - [İçerik hattı](../04-icerik/02-icerik-hatti.md) · [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)
 - [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Ses sistemi](../06-mobil/02-ses-sistemi.md) · [Tasarım sistemi](../01-urun/04-tasarim-sistemi.md) · [Proje yapısı](../02-mimari/03-proje-yapisi.md)
