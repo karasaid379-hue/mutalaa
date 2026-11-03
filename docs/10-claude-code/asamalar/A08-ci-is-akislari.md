@@ -1,7 +1,7 @@
 # A08 · CI iş akışları (GitHub Actions)
 
-> **Sürüm:** 1.4 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
-> **Faz:** 0 · Hazırlık · **Önkoşul:** [A05](./A05-arama-normalizasyonu.md) · [A07](./A07-editoryal-veritabani.md) · **İnsan adımı:** [İ-16](../06-insan-adimlari.md) (GitHub özel deposu ve `EXPO_TOKEN`)
+> **Sürüm:** 1.5 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
+> **Faz:** 0 · Hazırlık · **Önkoşul:** [A05](./A05-arama-normalizasyonu.md) · [A07](./A07-editoryal-veritabani.md) · **İnsan adımı:** [İ-16](../06-insan-adimlari.md)
 > **Ajanlar:** `inceleyici` · `arastirmaci` · **Beceriler:** `windows-sorun` · **Tahmini oturum:** 1–2
 > **Başlat:** `/asama A08`
 
@@ -11,14 +11,14 @@ Her PR'da üç dilin lint, tip, birim ve vektör denetimleri GitHub Actions'ta k
 ## Okunacak belgeler
 - [Proje yapısı](../../02-mimari/03-proje-yapisi.md): §6 Git kuralları, §7 CI iş akışları (tablo ve ortak kurallar; YAML kopyası yok, tek kaynak `.github/`), §8 madde 3
 - [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §12 CI düzeni
-- [Teknoloji yığını](../../02-mimari/02-teknoloji-yigini.md): §3 bağımlılık lisans denetimi, §4.1 sabitleme, §4.2 Dependabot
+- [Teknoloji yığını](../../02-mimari/02-teknoloji-yigini.md): §3 bağımlılık listesi, §4.1 sabitleme, §4.2 Dependabot
 - [Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md): §10.1 (CI'daki yerel ayar matrisinin nedeni)
 
 ## Kapsam
 **Yapılır**
 - `.github/workflows/ci-ts.yml`, `ci-dotnet.yml`, `ci-pipeline.yml`, `eas-build.yml` (Proje yapısı §7).
 - PR başlığı denetimi (§6: "CI PR başlığının biçimini denetler"); dosya `pr-title.yml` (öneri).
-- Bağımlılık lisans listesi adımları (Teknoloji yığını §3) ve `.github/dependabot.yml` (§4.2; öneri).
+- Bağımlılık listesi adımları (Teknoloji yığını §3; yalnız listeler) ve `.github/dependabot.yml` (§4.2; öneri).
 - `.github/workflows/ci-workflows.yml`: iş akışı dosyalarının CI'da actionlint denetimi (kapsam eklemesi; [aşama kaydı](#aşama-kaydı-2026-10-27)).
 - Yerel eşdeğer koşu; İ-16'dan sonra ilk GitHub koşusu.
 
@@ -27,11 +27,20 @@ Her PR'da üç dilin lint, tip, birim ve vektör denetimleri GitHub Actions'ta k
 - EAS derlemesini gerçekten başlatmak (A21 sonrası; İ-15). `eas submit` hiç çalıştırılmaz.
 - Dal koruma ayarı: GitHub'da kullanıcı yapar (İ-16 kapsamında).
 
+## Tedarik
+| Gerekli yapı | Seçilen kaynak (ad, adres, sürüm ya da commit, biçim) | Alma yolu | Eksiksizlik kanıtı | Yedek aday |
+|---|---|---|---|---|
+| GitHub Actions eylemleri | `actions/checkout` v7.0.1, `pnpm/action-setup` v6.1.0, `actions/setup-node` v7.1.0, `actions/setup-dotnet` v6.0.0, `astral-sh/setup-uv` v10.3.2, `expo/expo-github-action` 9.0.1; sürüm sayfaları aşağıdaki "A08.1 kaynaklı sonuçlar" tablosundadır | GitHub sürüm sayfaları (`arastirmaci`, 27 Ekim 2026); her eylem tam commit SHA'sı ve sürüm yorumuyla sabitlenir | actionlint 0 bulgu; `check-jsonschema` geçti | Güncellemeleri Dependabot (`github-actions`) önerir |
+| Runner imajları | `ubuntu-24.04` ve `windows-2025` (GitHub barındırılan; `-latest` kullanılmaz) | `runs-on` satırı | `ci-pipeline` iki sistemde, `ci-ts` iki yerel ayarda koşar | — |
+| İş akışı denetleyicileri | actionlint 1.7.12 (resmî Docker imajı, özet ile sabit); `check-jsonschema` 0.39.0 (`vendor.github-workflows`, `vendor.dependabot`) | `docker run` ve `uvx check-jsonschema@0.39.0` (Doğrulama bloğu) | Altı iş akışı ve `dependabot.yml` bulgusuz | — |
+| Bağımlılık listesi araçları | `pnpm licenses list -r --json --prod`; `nuget-license` 4.0.18 (yerel araç, `.config/dotnet-tools.json`); `pip-licenses` 5.5.5 (`uv run --with`); listeleyici betik `scripts/ci/list-licenses.mjs` (kendi yazımız) | pnpm yerleşik; NuGet ve PyPI paketleri | `node --test "scripts/ci/*.test.mjs"` yeşil; listeler koşu günlüğünde | — |
+| EAS derleme aracı | `eas-cli` 26.0.0 ([npm](https://www.npmjs.com/package/eas-cli)); `eas-build.yml` bu sürüme sabit | `expo/expo-github-action` (`eas-version: 26.0.0`, `packager: npm`) iş akışında kurar; derleme yalnız elle ya da `mobile-v*` etiketiyle başlar | İş akışı actionlint ve şema denetiminden geçti; derleme A21 sonrasıdır | — |
+
 ## Adımlar
 ### A08.1 · Doğrulanacaklar
 - `arastirmaci` resmî kaynaktan bağlantısıyla raporlar:
   - Eylemlerin güncel ana sürümleri: `actions/checkout`, `pnpm/action-setup`, `actions/setup-node`, `actions/setup-dotnet`, `astral-sh/setup-uv`, `expo/expo-github-action` (Proje yapısı §7: "@v4, @v6, @v8 yazım günündeki ana sürümler; güncel ana sürümler Doğrulanacak").
-  - Lisans listesi araçları: .NET için lisans aracı, Python için `pip-licenses` (Teknoloji yığını §3: "araç seçimi Doğrulanacak"); `pnpm licenses list` çıktı biçimi.
+  - Bağımlılık listesi araçları: .NET için bağımlılık listeleyici, Python için `pip-licenses` (Teknoloji yığını §3: "araç seçimi Doğrulanacak"); `pnpm licenses list` çıktı biçimi.
   - Turborepo'nun ortam değişkeni süzmesi: `LANG` görevlere geçiyor mu ve önbellek anahtarına giriyor mu. Geçmiyorsa `turbo.json`'a `globalEnv: ["LANG"]` eklenir (öneri).
   - Dependabot'un uv desteği (§4.2).
   - EAS'in ücretsiz planındaki aylık derleme sınırı (Proje yapısı §8 madde 3); sonuç A21 ve A33'ün planına not edilir.
@@ -52,11 +61,11 @@ Her PR'da üç dilin lint, tip, birim ve vektör denetimleri GitHub Actions'ta k
 - `eas-build.yml` Proje yapısı §7'de özetlendiği gibidir; yalnız elle ve `mobile-v*` etiketiyle tetiklenir. `EXPO_TOKEN` yalnız `secrets` içinden okunur.
 - **Bitti sayılır:** dört dosya var; yerel denetleyici hatasız.
 
-### A08.3 · PR başlığı, lisans listesi, Dependabot
+### A08.3 · PR başlığı, bağımlılık listesi, Dependabot
 - `pr-title.yml` (öneri): başlık `<tür>(<kapsam>): <özet>` biçimine karşı bash düzenli ifadesiyle sınanır; türler ve kapsamlar §6'daki listeden. Başlık ortam değişkeni üzerinden okunur, komuta doğrudan gömülmez (betik enjeksiyonuna karşı).
-- Lisans listesi: `ci-ts.yml` içinde `pnpm licenses list`, `ci-dotnet.yml` ve `ci-pipeline.yml` içinde A08.1'de seçilen araçlar; çıktı koşu günlüğüne yazılır. GPL, AGPL ya da ticari lisanslı yeni bağımlılıkta PR'ı durdurma kuralı öneridir (Teknoloji yığını §3); kullanıcı onaylarsa açılır. Hat bağımlılıkları dağıtılmaz (`psycopg` LGPL-3.0; Teknoloji yığını §2.4); kural yalnız dağıtılan koda uygulanır.
-- `.github/dependabot.yml` (öneri): npm, NuGet, GitHub Actions ve Docker için haftalık gruplu güncelleme (§4.2). Expo'ya bağlı paketler yalnız SDK yükseltmesiyle güncellenir; bu dışlama mobil gelince A21'de eklenir.
-- **Bitti sayılır:** dosyalar yerel denetleyiciden geçti; durdurma kuralının açık ya da kapalı olduğu aşama kaydında.
+- Bağımlılık listesi ([K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 6): `ci-ts.yml` içinde `pnpm licenses list -r --json --prod`, `ci-dotnet.yml` içinde `nuget-license` (test projeleri hariç), `ci-pipeline.yml` içinde `pip-licenses` (bilgi amaçlı); adımların adı "Dependency licenses (listed)"dir. `scripts/ci/list-licenses.mjs` pnpm ve NuGet çıktısını paket başına bir satır ve lisans başına sayım olarak koşu günlüğüne yazar. Liste yalnız listeler: hiçbir lisans derlemeyi ya da PR'ı durdurmaz. Betik okunamayan ya da ayrıştırılamayan girdide (adı ya da NuGet için sürümü eksik girdi dahil), hatalı argümanda, yazılamayan `--json` dosyasında ve boş NuGet listesinde 2 ile çıkar, öteki her durumda 0; boş NuGet listesi, araç ya da proje süzgeci hiç paket üretmediğinde listenin sessizce eksik kalmasını önler. `--json <dosya>` normalleştirilmiş listeyi yazar; bu çıktı Ayarlar › Kaynaklar ekranının açık kaynak bölümünü besler ([Teknoloji yığını](../../02-mimari/02-teknoloji-yigini.md) §3).
+- `.github/dependabot.yml` (öneri): npm, GitHub Actions ve uv için haftalık gruplu güncelleme (§4.2); NuGet ve `docker-compose` bilerek dışarıdadır (gerekçe Teknoloji yığını §4.2'de). Expo'ya bağlı paketler yalnız SDK yükseltmesiyle güncellenir; bu dışlama mobil gelince A21'de eklenir.
+- **Bitti sayılır:** dosyalar yerel denetleyiciden geçti; bağımlılık listesi adımlarının çıktısı aşama kaydında.
 
 ### A08.4 · Yerel eşdeğer koşu
 - `ci-ts`: `pnpm install --frozen-lockfile`, ardından `pnpm turbo run lint typecheck test`; ikinci kez `LANG=tr_TR.UTF-8` ile. Türkçe Windows'ta Node zaten Türkçe yerel ayarla koşar; Linux karşılığı ilk GitHub koşusunda görülür.
@@ -92,7 +101,7 @@ LANG=tr_TR.UTF-8 pnpm turbo run test
 dotnet tool restore && dotnet restore server/Mutalaa.slnx --locked-mode
 dotnet format server/Mutalaa.slnx --verify-no-changes --no-restore
 dotnet build server/Mutalaa.slnx -c Release --no-restore && dotnet test --solution server/Mutalaa.slnx -c Release --no-build
-(cd pipeline && uv sync --locked && uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run pytest && PYTHONUTF8=0 uv run pytest && uv run mutalaa export test-vectors --check)
+uv --directory pipeline sync --locked && uv --directory pipeline run ruff check . && uv --directory pipeline run ruff format --check . && uv --directory pipeline run mypy && uv --directory pipeline run pytest && PYTHONUTF8=0 uv --directory pipeline run pytest && uv --directory pipeline run mutalaa export test-vectors --check
 pnpm turbo run test --dry=json                                # LANG=C.UTF-8 ve LANG=tr_TR.UTF-8 ile ayrı koşulup anchors#test özetleri karşılaştırılır
 node --test "scripts/ci/*.test.mjs"
 MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd -W):/repo" -w /repo rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 -color
@@ -106,7 +115,7 @@ gh run list --limit 10                                        # İ-16'dan sonra;
 - Kilit dosyaları CI'da birebir kullanılır: `pnpm install --frozen-lockfile`, `dotnet restore --locked-mode`, `uv sync --locked`. Kilit dosyası güncel değilse CI kırmızıdır; çözüm kilit dosyasını yerelde güncellemektir.
 - `PYTHONUTF8` CI'da bilerek verilmez; kodlama hataları Windows ayağında görünür (§7 yorum satırı).
 - Turborepo önbelleği yerelde `LANG` farkını görmeyebilir; A08.1'deki `turbo.json` ayarı yapılmadıysa yerel `tr_TR` koşusu önbellekten gelebilir. Kuşkuda `--force` ile koşulur.
-- EAS'in ücretsiz plan sınırı doğrulandı: ayda 15 Android ve 15 iOS derleme (§8 madde 3, aşama kaydı). `eas-build.yml` elle ya da `mobile-v*` etiketiyle tetiklendiği için kotayı kendiliğinden harcamaz; etiket itmek derleme başlatır.
+- EAS'in ücretsiz plan sınırı doğrulandı: ayda 15 Android ve 15 iOS derleme (§8 madde 3, aşama kaydı). `eas-build.yml` elle ya da `mobile-v*` etiketiyle tetiklendiği için kotayı kendiliğinden harcamaz; etiket itmek derleme başlatır (ücretli iş sayılır: tahmini maliyet söylenir ve onay alınır, CLAUDE.md kural 11).
 - `git push`, `git reset` ve `git clean` onay sorulmadan çalışır (CLAUDE.md kural 11); zorla push yasaktır. Ayrıntı: `windows-sorun` (Git Bash ve yol sorunları).
 
 ## İnsan adımları
@@ -115,7 +124,7 @@ gh run list --limit 10                                        # İ-16'dan sonra;
 ## Çıktılar
 - `.github/workflows/ci-ts.yml`, `ci-dotnet.yml`, `ci-pipeline.yml`, `eas-build.yml`; onaylanırsa `pr-title.yml`; eklenen `ci-workflows.yml`
 - `.github/dependabot.yml` (öneri)
-- `scripts/ci/` (`check-licenses.mjs`, `pr-title.mjs`, `license-exceptions.json`, testler)
+- `scripts/ci/` (`list-licenses.mjs`, `pr-title.mjs`, testler)
 - `turbo.json` ortam ayarı (`test` görevi `env: ["LANG","LC_ALL"]`)
 - `/belge-esitle` ile Proje yapısı §7'ye işlenen sürüm farkları ve `LANG` sonucu
 
@@ -133,7 +142,7 @@ Durum: tamam (2026-10-27). PR #1 birleştirildi (merge commit `0bfc8ac`), dal si
 - **Plan onaylandı.** Altı iş akışı dosyası, `dependabot.yml` ve `scripts/ci/` betikleri.
 - **`pr-title.yml` açık.** Biçim `scripts/ci/pr-title.mjs` ile sınanır; başlık yalnız ortam değişkeninden okunur. Gerekçe: squash birleştirmede PR başlığı commit mesajı olur ([Proje yapısı §6](../../02-mimari/03-proje-yapisi.md)).
 - **`dependabot.yml` açık.** Ekosistemler: `npm`, `github-actions`, `uv` (haftalık, ekosistem başına tek grup, minor ve patch). NuGet ve `docker-compose` bilerek dışarıda (gerekçe [Teknoloji yığını §4.2](../../02-mimari/02-teknoloji-yigini.md)). Aşağıdaki `commit-message.prefix` bulgusu yüzünden `include: scope` kullanılmadı.
-- **Lisans durdurma kuralı açık**, yalnız dağıtılan ve ağ üzerinden sunulan kodda: TypeScript `--prod` bağımlılıkları ve .NET test dışı projeler. İçerik hattı dağıtılmadığı için yalnız listelenir. Kural ve istisna dosyası: [Teknoloji yığını §3](../../02-mimari/02-teknoloji-yigini.md#3-lisans-notları). Hukuki görüş değildir.
+- **Bağımlılıklar yalnız listelenir** ([K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 6): hiçbir lisans derlemeyi ya da PR'ı durdurmaz. Liste dağıtılan ve ağ üzerinden sunulan kodu kapsar: TypeScript `--prod` bağımlılıkları ve .NET test dışı projeler; içerik hattı bağımlılıkları bilgi amaçlı listelenir. Ayrıntı: [Teknoloji yığını §3](../../02-mimari/02-teknoloji-yigini.md#3-kitaplık-notları-ve-bağımlılık-listesi).
 - **`ci-workflows.yml` eklendi** (kapsam eklemesi). actionlint yalnız yerelde değil CI'da da koşar; iş akışı dosyalarındaki betik ve ifade hataları PR'da görülür.
 - **Eylemler tam commit SHA'sı ile sabit**, sürüm yorumu ile. **Runner'lar sabit:** `ubuntu-24.04`, `windows-2025`.
 - **Tek PR'da başlık deneyi.** A08.5'teki "ikinci deneme PR'ı" yerine aynı PR'ın başlığı önce biçimsiz açılır (`pr-title` kırmızı görülür), sonra düzeltilir (`edited` olayı kapıyı yeniden çalıştırır). Adımlar [İ-16](../06-insan-adimlari.md) notundadır.
@@ -150,9 +159,9 @@ Durum: tamam (2026-10-27). PR #1 birleştirildi (merge commit `0bfc8ac`), dal si
 | `astral-sh/setup-uv` | v10.3.2; v8'den beri kayan ana sürüm etiketi yok, bu yüzden SHA ile sabitlenir | [sürümler](https://github.com/astral-sh/setup-uv/releases) |
 | `expo/expo-github-action` | 9.0.1 | [sürümler](https://github.com/expo/expo-github-action/releases) |
 | Runner | `ubuntu-latest` 19 Ekim ile 19 Kasım 2026 arasında Ubuntu 26.04'e geçiyor; bu yüzden `ubuntu-24.04` ve `windows-2025` sabit | [GitHub changelog, 17 Eylül 2026](https://github.blog/changelog/2026-09-17-ubuntu-26-generally-available-and-latest-migration) |
-| pnpm lisans listesi | `pnpm licenses list -r --json --prod`; v12.7.0'dan beri proje içinde yalnız o projeyi listeler, kökte `-r` gerekir | [pnpm licenses](https://pnpm.io/cli/licenses) |
-| .NET lisans aracı | `nuget-license` 4.0.18, yerel araç; `.slnx` destekler, restore yapmaz; `-ji` ve `-exclude-projects "*Tests*"` seçenekleri | [nuget-license](https://github.com/sensslen/nuget-license) |
-| Python lisans aracı | `pip-licenses` 5.5.5, `uv run --with` ile; yalnız listeler | [pip-licenses](https://pypi.org/project/pip-licenses/) |
+| pnpm bağımlılık listesi | `pnpm licenses list -r --json --prod`; v12.7.0'dan beri proje içinde yalnız o projeyi listeler, kökte `-r` gerekir | [pnpm licenses](https://pnpm.io/cli/licenses) |
+| .NET bağımlılık listesi aracı | `nuget-license` 4.0.18, yerel araç; `.slnx` destekler, restore yapmaz; `-ji` ve `-exclude-projects "*Tests*"` seçenekleri | [nuget-license](https://github.com/sensslen/nuget-license) |
+| Python bağımlılık listesi aracı | `pip-licenses` 5.5.5, `uv run --with` ile; yalnız listeler | [pip-licenses](https://pypi.org/project/pip-licenses/) |
 | Turborepo ve `LANG` | `LANG` yerleşik geçiş listesindeydi ama önbellek anahtarına girmiyordu; `LC_ALL` süzülüyordu. Çözüm: `test` görevinde `env: ["LANG","LC_ALL"]`; `globalEnv` önerisi kalktı | Yerel `--dry=json` karşılaştırması (aşağıda) |
 | Dependabot ve uv | `package-ecosystem: uv` var, `uv.lock` dosyasını günceller; bazı durumlar çalışmıyor | [astral-sh/uv#2512](https://github.com/astral-sh/uv/issues/2512) |
 | Dependabot ve pnpm 12 | İki belgeli `pnpm-lock.yaml`'da sürüm güncellemesi çalışır; bağımlılık grafiği ve güvenlik uyarısı üretilmez | A08.1 araştırması (`arastirmaci`); ayrıntı [Teknoloji yığını §4.2](../../02-mimari/02-teknoloji-yigini.md) |
@@ -167,7 +176,7 @@ Durum: tamam (2026-10-27). PR #1 birleştirildi (merge commit `0bfc8ac`), dal si
 | `gh` CLI | Güncel sürüm v2.103.3; bu makinede kurulu değil | [sürümler](https://github.com/cli/cli/releases) |
 | `dotnet test --solution server/Mutalaa.slnx -c Release --no-build` | Çalışıyor; `--no-build` `--no-restore`'u da içerir. SDK 10'da hiç test koşmayan proje bütün koşuyu 8 koduyla düşürür | Yerel koşu (aşağıda) |
 
-Çözüldü (2026-10-27): [Proje yapısı §7](../../02-mimari/03-proje-yapisi.md#7-ci-iş-akışları-github-actions) ve [Teknoloji yığını §3, §4.2](../../02-mimari/02-teknoloji-yigini.md) içindeki "Doğrulanacak" ifadeleri (eylem sürümleri, `LANG` geçişi, `-c Release --no-build` birleşimi, Dependabot uv desteği, lisans aracı seçimi, EAS sınırı) bu tablonun kaynaklarıyla kapandı.
+Çözüldü (2026-10-27): [Proje yapısı §7](../../02-mimari/03-proje-yapisi.md#7-ci-iş-akışları-github-actions) ve [Teknoloji yığını §3, §4.2](../../02-mimari/02-teknoloji-yigini.md) içindeki "Doğrulanacak" ifadeleri (eylem sürümleri, `LANG` geçişi, `-c Release --no-build` birleşimi, Dependabot uv desteği, bağımlılık listesi aracı seçimi, EAS sınırı) bu tablonun kaynaklarıyla kapandı.
 
 ### A08.4 yerel koşu çıktıları
 
@@ -177,7 +186,7 @@ Durum: tamam (2026-10-27). PR #1 birleştirildi (merge commit `0bfc8ac`), dal si
 - `LANG=tr_TR.UTF-8 pnpm turbo run test --force`: 11/11 yeşil; `anchors` ve `search` kurulum dosyaları `locale=tr-TR unicode=17.0` yazdı.
 - Turborepo önbellek kanıtı (`pnpm turbo run test --dry=json`, `anchors#test` özeti): eski `turbo.json`'da `C.UTF-8` ve `tr_TR.UTF-8` için özet aynı (`anchors` `b717c87da377058d`, `search` `84da177e5a57e660`); yeni `turbo.json`'da farklı (`C.UTF-8`: `anchors` `77e2ffea3c42b3b1`, `search` `cb30f7dc3a0794e3`; `tr_TR.UTF-8`: `anchors` `9e04fe583c26dd5f`, `search` `a87df6f7c0087813`). `environmentVariables.configured` içinde `LANG` görünür.
 - Windows'ta iki koşu da `tr-TR` verir (Node `tr-TR`); `C.UTF-8` karşıtlığının asıl kanıtı CI'dır.
-- `node --test "scripts/ci/*.test.mjs"` 14/14; `eslint scripts/ci` temiz; `prettier --check .` temiz (`docker-compose.yml` `.prettierignore`'a eklendi: elle yazılmış, açıklama satırlı).
+- `node --test "scripts/ci/*.test.mjs"` 15/15 (1 Kasım 2026); `eslint scripts/ci` temiz; `prettier --check .` temiz (`docker-compose.yml` `.prettierignore`'a eklendi: elle yazılmış, açıklama satırlı).
 
 **.NET** (Windows 10.0.26200, .NET 10.0.13, ICU kipi, `CurrentCulture` `tr-TR`)
 
@@ -188,10 +197,10 @@ Durum: tamam (2026-10-27). PR #1 birleştirildi (merge commit `0bfc8ac`), dal si
 - `uv sync --locked`, `ruff check`, `ruff format --check` (37 dosya), `mypy` (24 kaynak dosya) temiz; `pytest` 1496 geçti, hem `PYTHONUTF8=1` (kit ortamı) hem `PYTHONUTF8=0` ile; `uv run mutalaa export test-vectors --check` "fark yok".
 - Yerel tercih edilen kodlama `utf-8`; `PYTHONUTF8=0` koşusunda `cp1254`. Windows CI ayağının `cp1252`'sinin tam karşılığı değildir; asıl kanıt CI'dır.
 
-**Lisans kapısı**
+**Bağımlılık listesi**
 
-- pnpm `--prod`: boş ("denetlenecek dağıtılan bağımlılık yok"). pnpm tüm bağımlılıklar (prod dışı dahil): 132 paket, hepsi izinli listede.
-- NuGet test dışı 4 proje: 46 paket (MIT 43, Apache-2.0 1, PostgreSQL 2) geçti. Test projeleri dahil 75 paket (MIT 63, Apache-2.0 10, PostgreSQL 2).
+- pnpm `--prod`: boş ("no shipped dependencies to list", çıkış 0). pnpm tüm bağımlılıklar (prod dışı dahil): 132 paket listelendi.
+- NuGet test dışı 4 proje: 46 paket listelendi (MIT 43, Apache-2.0 1, PostgreSQL 2). Test projeleri dahil 75 paket (MIT 63, Apache-2.0 10, PostgreSQL 2).
 
 **İş akışı denetimi**
 
@@ -201,11 +210,9 @@ Durum: tamam (2026-10-27). PR #1 birleştirildi (merge commit `0bfc8ac`), dal si
 
 ### İnceleme (2026-10-27)
 
-Beş bakış açılı (iş akışı doğruluğu, güvenlik ve lisans, .NET Linux riski, TypeScript ve Python Linux riski, betik kalitesi) ve şüpheci doğrulamalı inceleme: 40 bulgu, 17'si çürütüldü, engelleyici yok. Düzeltilenler:
+Beş bakış açılı (iş akışı doğruluğu, güvenlik, .NET Linux riski, TypeScript ve Python Linux riski, betik kalitesi) ve şüpheci doğrulamalı inceleme: 40 bulgu, 17'si çürütüldü, engelleyici yok. Düzeltilenler:
 
-- **NuGet kapısı sıfır paketle yeşil verebilirdi:** boş NuGet çıktısı artık çıkış kodu 2 (pnpm için boş küme meşru kalır); testi var.
-- **İstisnalar** yalnız `ad@sürüm` biçiminde ve `source` alanıyla kabul edilir; dosya biçimi doğrulanır (yeni sürüm yeniden incelenir).
-- LGPL-2.1 ve LGPL-3.0 (yalın) kimlikleri izinli listeye eklendi.
+- **Boş NuGet listesi sessizce geçebilirdi:** boş NuGet çıktısı çıkış kodu 2 verir (pnpm için boş küme meşru kalır); testi var.
 - Betiklerin ana modül koruması gerçek yolları karşılaştırır (bağ ve eşlenmiş sürücülerde sessiz "yeşil" riski).
 - Dependabot başlıkları ve `dependabot.yml` önekleri `pr-title` testiyle sınanır.
 - `global-setup.ts` istenen `tr_TR` yerel ayarını üç değişkenden birinde arar (`LC_ALL` tanımlıyken atlanmaz).
@@ -218,8 +225,8 @@ Bilerek yapılmayanlar: kit testlerinin CI'da koşması (ilk Linux koşusundan s
 
 ### Sapmalar
 
-- **Adım 0** (kit izin pencerelerinin kaldırılması) A08 kapsamı dışı bir kullanıcı yönergesiydi. Otomatik mod sınıflandırıcısı klasör bekçisi hook'unu gevşeten düzenlemeyi reddettiği için ertelendi; A08 işi buna bağlı değil. Bu aşama dosyasındaki A08.5 ve Dikkat'in `git push` cümleleri CLAUDE.md kural 11'e göre düzeltildi; kit, K-31 ve öteki belgelerdeki aynı hizalama Adım 0 ile birlikte kaldı.
-- `gh` kurulu değil. PR açma ve Actions sonucu kullanıcı bildirimine bağlı (A08.5 bekliyor).
+- **Adım 0** (kit izin pencerelerinin kaldırılması) A08 kapsamı dışı bir kullanıcı yönergesiydi. Otomatik mod sınıflandırıcısı klasör bekçisi hook'unu gevşeten düzenlemeyi reddettiği için ertelendi; A08 işi buna bağlı değil. Bu aşama dosyasındaki A08.5 ve Dikkat'in `git push` cümleleri CLAUDE.md kural 11'e göre düzeltildi.
+- `gh` kurulu değil; PR açma ve Actions sonucu kullanıcının bildirimine dayanır (A08.5 tamam).
 
 ### Devredilenler
 
@@ -227,7 +234,7 @@ Bilerek yapılmayanlar: kit testlerinin CI'da koşması (ilk Linux koşusundan s
 - **A21:** `apps/mobile` eklendiği PR'da `.github/dependabot.yml` `npm` girdisine Expo paketleri için `ignore`; `EXPO_TOKEN` (Expo robot kullanıcısı, en dar rol; İ-15'e bağlı); EAS ayda 15+15 sınırı.
 - **A33:** EAS ayda 15+15 sınırı Faz 2 temposu için.
 - **A38:** web iş akışında `NEXT_TELEMETRY_DISABLED`.
-- **A34:** `THIRD_PARTY_NOTICES` için `check-licenses.mjs --json` çıktısı.
+- **A34:** `THIRD_PARTY_NOTICES` girdisi, yani Ayarlar › Kaynaklar ekranının açık kaynak bölümü (ekran A32'dedir), `list-licenses.mjs --json` çıktısından beslenir.
 - **A10:** gece iş akışı iskeleti (BÇ-42).
 
 ## İlgili dosyalar

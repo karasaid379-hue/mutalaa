@@ -1,7 +1,7 @@
 # A02 · Tek depo iskeleti (pnpm + Turborepo, .NET çözümü, uv)
 
-> **Sürüm:** 1.2 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
-> **Faz:** 0 · Hazırlık · **Önkoşul:** [A00](./A00-ortam-ve-depo.md) · **İnsan adımı:** yok
+> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-34](../../00-ozet/02-karar-defteri.md#k-34--typescript-tek-sürüm-60x) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
+> **Faz:** 0 · Hazırlık · **Önkoşul:** [A00](./A00-ortam-ve-depo.md) · **İnsan adımı:** —
 > **Ajanlar:** `web-gelistirici` · `sunucu-gelistirici` · `hat-gelistirici` · `arastirmaci` · `inceleyici` · **Beceriler:** `windows-sorun` · **Tahmini oturum:** 2–3
 > **Başlat:** `/asama A02`
 
@@ -20,7 +20,7 @@
 - Kök araç dosyaları: `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `eslint.config.mjs`, `.prettierrc.json`, `.nvmrc`, `global.json`, `.config/dotnet-tools.json`. `.npmrc` açılmaz; yalnız kimlik doğrulama, kayıt defteri ya da sertifika gerekirse açılır ([K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)).
 - Altı boş TypeScript paketi (`packages/anchors`, `content-schema`, `search`, `reader-core`, `player`, `ui-tokens`) ve `shared/test-vectors` çalışma alanı paketi.
 - `server/` çözümü: dört proje, üç test projesi, `Directory.Build.props`, `Directory.Packages.props`, kilit dosyaları.
-- `pipeline/` uv projesi: `pyproject.toml`, `uv.lock`, `.python-version`, `mutalaa.toml`, `src/mutalaa_pipeline/`, `sources/licenses/`, `prompts/`, `tests/`.
+- `pipeline/` uv projesi: `pyproject.toml`, `uv.lock`, `.python-version`, `mutalaa.toml`, `src/mutalaa_pipeline/`, `sources/` (kaynak kayıtları klasörü; A06 doldurur), `prompts/`, `tests/`.
 - `.gitignore` dosyasına eksik derleme çıktısı satırları (yalnız ekleme).
 
 **Yapılmaz**
@@ -28,6 +28,13 @@
 - `docker-compose.yml`, `.env.example`, `infra/`, `scripts/` (A03). `.github/workflows/` (A08).
 - Çapa, normalizasyon, kaynak kayıtları ve enum'lar (A04, A05, A06); EF Core ve göçler (A07).
 - `.gitattributes`, `.editorconfig` ve `.gitignore` dosyalarını baştan yazmak: A00'da açıldılar, burada yalnız eksik satır eklenir.
+
+## Tedarik
+| Gerekli yapı | Seçilen kaynak (ad, adres, sürüm ya da commit, biçim) | Alma yolu | Eksiksizlik kanıtı | Yedek aday |
+|---|---|---|---|---|
+| pnpm çalışma alanı ve TypeScript araçları | pnpm 12.14.0 (npm ile kurulur, Corepack yok; [pnpm.io/installation](https://pnpm.io/installation), [K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)); Node 24 (`.nvmrc`); TypeScript 6.0.x ([K-34](../../00-ozet/02-karar-defteri.md#k-34--typescript-tek-sürüm-60x)); `turbo`, `eslint`, `typescript-eslint`, `eslint-config-prettier`, `prettier`, `vitest` | `pnpm add -Dw`; sürümler kurulum günü `pnpm-lock.yaml` dosyasına yazılır, elle sürüm yazılmaz | `pnpm install --frozen-lockfile` hatasız; kök dışında yedi `@mutalaa/*` paketi; `pnpm turbo run build lint typecheck test` yeşil | `nodeLinker: hoisted` (yalnız Metro sorun çıkarırsa; `/karar` ister) |
+| .NET çözümü araçları | .NET SDK `10.0.100` (`rollForward: latestFeature`; kurulu 10.0.402); `dotnet-ef` yerel araç; `xunit.v3` 4.x (4.0.2, Microsoft.Testing.Platform; [xunit.v3 4.0.0](https://xunit.net/releases/v3/4.0.0), [dotnet test belgesi](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test)) | `dotnet tool install dotnet-ef` ve `.config/dotnet-tools.json`; paket sürümleri yalnız `server/Directory.Packages.props` içinde | `dotnet restore --locked-mode`, `dotnet build` ve `dotnet test --solution server/Mutalaa.slnx` yeşil; mimari testi geçiyor | `xunit.v3.mtp-off` + `xunit.runner.visualstudio` (VSTest; [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)'te elendi) |
+| Python içerik hattı araçları | Python 3.13 (`uv python pin 3.13`); uv; Typer; hatchling; `pytest`, `ruff`, `mypy` | `uv python install 3.13` (gerekirse), `uv add`, `uv add --dev pytest ruff mypy`; kilit `uv.lock` | `uv sync --locked` hatasız; `pytest`, `ruff check`, `ruff format --check`, `mypy src` yeşil; `uv run mutalaa --help` 0 | — |
 
 ## Adımlar
 ### A02.1 · Doğrulanacaklar
@@ -66,9 +73,9 @@
 
 ### A02.5 · Python içerik hattı (`hat-gelistirici`)
 - `pipeline/pyproject.toml` İçerik hattı §3'teki gibi: ad, `requires-python = ">=3.13,<3.14"`, bağımlılıklar, `arapca`, `turkce`, `gomme` grupları, `mutalaa = "mutalaa_pipeline.cli:app"`, hatchling. Geliştirme araçları: `uv add --dev pytest ruff mypy`. Ruff ayarı Proje yapısı §5'teki gibi (`py313`, `line-length = 100`, kural seçimi, `line-ending = "lf"`).
-- `uv python pin 3.13`, `uv lock`, `uv sync`. Python 3.13 yoksa `uv python install 3.13` çalışır (kullanıcı onayı ister).
+- `uv python pin 3.13`, `uv lock`, `uv sync`. Python 3.13 yoksa `uv python install 3.13` çalışır.
 - `pipeline/mutalaa.toml` İçerik hattı §3'teki gibi; `[llm] model` yer tutucu kalır (model kimliği Doğrulanacak; ilk yapay zekâ işinde doğrulanır).
-- `src/mutalaa_pipeline/cli.py` (Typer uygulaması `app`) ve alt paketler `ingest`, `normalize`, `anchor`, `enrich`, `qa`, `export` (`__init__.py`). Yardımcı modüller (`config.py`, `runctx.py` …) onları kullanan aşamada eklenir. `sources/licenses/` ve `prompts/` klasörleri `.gitkeep` ile.
+- `src/mutalaa_pipeline/cli.py` (Typer uygulaması `app`) ve alt paketler `ingest`, `normalize`, `anchor`, `enrich`, `qa`, `export` (`__init__.py`). Yardımcı modüller (`config.py`, `runctx.py` …) onları kullanan aşamada eklenir. `sources/` ve `prompts/` klasörleri (boşken `.gitkeep` ile).
 - Yer tutucu test: `pipeline/tests/test_cli.py`, `mutalaa --help` çıkış kodu 0.
 - **Bitti sayılır:** `uv run pytest`, `uv run ruff check .`, `uv run ruff format --check .` ve `uv run mypy src` yeşil; `uv run mutalaa --help` çalışıyor.
 
@@ -104,7 +111,7 @@ dotnet restore server/Mutalaa.slnx --locked-mode
 dotnet format server/Mutalaa.slnx --verify-no-changes --no-restore
 dotnet build server/Mutalaa.slnx --no-restore
 dotnet test --solution server/Mutalaa.slnx --no-build
-(cd pipeline && uv sync --locked && uv run ruff check . && uv run ruff format --check . && uv run mypy src && uv run pytest && uv run mutalaa --help)
+uv --directory pipeline sync --locked && uv --directory pipeline run ruff check . && uv --directory pipeline run ruff format --check . && uv --directory pipeline run mypy src && uv --directory pipeline run pytest && uv --directory pipeline run mutalaa --help
 git status --porcelain
 ```
 
@@ -116,7 +123,7 @@ git status --porcelain
 - `Mutalaa.Domain` EF Core, Npgsql ve AWS paketlerine bağlanmaz; NuGet sürümü yalnız `Directory.Packages.props`'tadır. CA1304…CA1311 `.editorconfig`'te hata düzeyindedir; kültüre duyarlı çağrı derlemeyi durdurur.
 - Python: dosyalar `encoding="utf-8"` ile açılır. Claude Code oturumunda `PYTHONUTF8=1` ayarlıdır; CI'da bilerek verilmez (A08).
 - Windows: proje yolu boşluk, Türkçe karakter ve OneDrive içerir. Komutlarda göreli yol kullanılır. `node_modules`, `bin/obj` ve `.venv` proje klasöründe oluşur; A00'daki OneDrive kararına uyulur. Ayrıntı: `windows-sorun`.
-- Satır içi kod (`node -e`, `python -c`) ve tek başına `node <betik>` onay ister; denetim betikleri paket içinde dosya olarak yazılır ve proje dışı yol kullanmaz.
+- Tekrar kullanılacak denetimler paket içinde (ya da `scripts/` altında) dosya olarak yazılır ve proje dışı yol kullanmaz; satır içi kod (`node -e`, `python -c`) ve betikler onaysız çalışır (CLAUDE.md Windows notları).
 - Commit: Conventional Commits, İngilizce; ör. `build(infra): scaffold pnpm, dotnet and uv workspaces`.
 
 ## İnsan adımları
@@ -126,7 +133,7 @@ git status --porcelain
 - Kök: `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `eslint.config.mjs`, `.prettierrc.json`, `.nvmrc`, `global.json`, `.config/dotnet-tools.json`, `.gitignore` eki
 - `packages/{anchors,content-schema,search,reader-core,player,ui-tokens}/` ve `shared/test-vectors/` (`package.json`, biçim denetleyicisi)
 - `server/Mutalaa.slnx`, `server/Directory.Build.props`, `server/Directory.Packages.props`, `server/Mutalaa.{Domain,Infrastructure,Api,Publisher}/`, `server/tests/Mutalaa.{Domain,Api,Publisher}.Tests/`, `packages.lock.json` dosyaları
-- `pipeline/pyproject.toml`, `uv.lock`, `.python-version`, `mutalaa.toml`, `src/mutalaa_pipeline/`, `sources/licenses/`, `prompts/`, `tests/test_cli.py`
+- `pipeline/pyproject.toml`, `uv.lock`, `.python-version`, `mutalaa.toml`, `src/mutalaa_pipeline/`, `sources/`, `prompts/`, `tests/test_cli.py`
 
 ## Elle başlatma istemi
 ```text
@@ -134,4 +141,4 @@ docs/10-claude-code/asamalar/A02-tek-depo-iskeleti.md dosyasındaki aşamayı y�
 ```
 
 ## İlgili dosyalar
-- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A01](./A01-devre-disi.md) · Sonraki: [A03](./A03-yerel-altyapi.md)
+- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A00](./A00-ortam-ve-depo.md) · Sonraki: [A03](./A03-yerel-altyapi.md)

@@ -31,7 +31,7 @@ Aşağıdaki komutlar PowerShell içindir. `winget` paket kimlikleri yazım gün
 
 Notlar:
 - **Git for Windows önemlidir.** Claude Code komutları Git Bash ile çalıştırır; aşama dosyalarındaki komutlar bash sözdizimindedir. Git kurulu değilse Claude Code PowerShell'e düşer.
-- **Python'u ayrıca kurmayın.** uv, Python 3.13'ü proje için kendisi kurar (A02'de `uv python install 3.13`, onayınızla).
+- **Python'u ayrıca kurmayın.** uv, Python 3.13'ü proje için kendisi kurar (A02'de `uv python install 3.13`).
 - **Hesaplar** (Expo, Apple Developer, Google Play, GitHub, Sentry) ilgili aşamada gerekir: [İnsan adımları](./06-insan-adimlari.md).
 - **Maestro CLI** şimdi kurulmaz; uçtan uca testlerde (A33) gerekir. Windows'ta kurulum yolu o aşamada resmî kaynaktan doğrulanır ve size sorulur.
 
@@ -100,9 +100,9 @@ Oturumun ilk mesajında Claude Code'a ilerleme özeti eklenir ("Mütâlaa · otu
 | `language` | `turkish` | Claude Code yanıtları Türkçe |
 | `permissions.defaultMode` | `acceptEdits` | Proje içindeki dosya düzenlemeleri sorulmadan uygulanır; komutlar kurallara göre sorulur. `Shift+Tab` ile kip değiştirilir |
 | `permissions.blockReadsOutsideWorkingDirectories` | `true` | Dosya araçları proje dışını okuyamaz; kabuk komutları ve araştırma `permissions.allow` ile onaysız çalışır (2026-10-31, kullanıcı kararı) |
-| `permissions.allow` | git'in okuma ve commit komutları, `pnpm`, `npx expo`, `dotnet`, `uv`, `docker compose`, `adb`, `maestro`, `eas`'ın okuma komutları, `node --test` ve bağlantı denetimi; belgeler için web alan adları | Günlük geliştirme sorulmadan yürür. Tek başına `node <betik>` ve `curl` sorulur |
+| `permissions.allow` | `Bash`, `PowerShell`, `WebSearch`, `WebFetch` | Terminal komutları ve web araştırması sorulmadan yürür (kural 11); sınırı klasör bekçisi, `deny` kuralları ve CLAUDE.md kural 1 çizer |
 | `permissions.deny` | `.env` ve `.env.*` okuma (`.env.example` hariç), `.env` ve `.env.local` yazma, anahtar dosyaları; `data/raw` içine yazma; zorla push; `eas submit`; paket yayımlama | Gizli değer, ham kaynak ve geri dönüşsüz işlem koruması |
-| `permissions.ask` | push, `git reset`, `clean`, `restore`, `rebase`, `commit --amend`, `stash drop`, `branch -D`; `eas build` ve `update`; `docker compose down -v`; `dotnet user-secrets`; `rm -rf` ve benzerleri | Onayınız olmadan yapılmaz |
+| `permissions.ask` | `eas build` ve `eas update` (ücretli); `git config --global`; `dotnet tool install -g` | Ücretli iş ve genel kurulum onayınızla yapılır |
 | `autoMemoryEnabled` | `false` | Proje bilgisi yalnız depodaki dosyalarda tutulur; klasör dışına hafıza yazılmaz |
 | `enableArtifact` | `false` | Claude Code'un proje dışındaki oturum karalama klasörü (scratchpad) ve Artifact aracı kapalı; geçici dosyalar `.tmp/` altında |
 | `plansDirectory` | `.tmp/planlar` | Plan dosyaları proje içinde ve git dışında |

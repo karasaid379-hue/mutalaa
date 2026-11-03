@@ -1,9 +1,9 @@
 # Ajanlar, beceriler, kurallar ve hook'lar
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)
+> **Sürüm:** 1.1 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
 
-Bu dosya kitin her parçasını listeler. Dosyalar `.claude/` altındadır; değişiklikleri Claude Code onayınızla yapar (`klasor-bekcisi` hook'u ve Claude Code'un korumalı klasör kuralı).
+Bu dosya kitin her parçasını listeler. Dosyalar `.claude/` altındadır; ajan, beceri ve kural dosyaları sorulmadan düzenlenir; `CLAUDE.md`, ayarlar, hook dosyaları ve karar defteri değişiklikleri `klasor-bekcisi` hook'unun onayına tabidir.
 
 ## 1. Alt ajanlar (`.claude/agents/`)
 

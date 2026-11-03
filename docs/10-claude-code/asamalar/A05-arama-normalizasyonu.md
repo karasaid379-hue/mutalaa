@@ -1,7 +1,7 @@
 # A05 · Arama normalizasyonu (TS, C#, Python)
 
-> **Sürüm:** 1.2 · **Tarih:** 26 Ekim 2026 · **Durum:** Tamam (26 Ekim 2026) · **Bağlı kararlar:** [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-36](../../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)
-> **Faz:** 0 · Hazırlık · **Önkoşul:** [A04](./A04-capa-ve-test-vektorleri.md) · **İnsan adımı:** yok
+> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Tamam (26 Ekim 2026) · **Bağlı kararlar:** [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-36](../../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
+> **Faz:** 0 · Hazırlık · **Önkoşul:** [A04](./A04-capa-ve-test-vektorleri.md) · **İnsan adımı:** —
 > **Ajanlar:** `web-gelistirici` · `sunucu-gelistirici` · `hat-gelistirici` · `test-yazari` · `metin-denetcisi` · `arastirmaci` · `inceleyici` · **Beceriler:** `test-vektoru` · `metin-butunlugu` · `windows-sorun` · **Tahmini oturum:** 2–3
 > **Başlat:** `/asama A05`
 
@@ -29,13 +29,21 @@ Arama metninin normalizasyonu ([Arama](../../03-veri/05-arama-fts5.md) §1, `nor
 - Arama §1.5 Arapça tablosundaki girdilerin Tanzil baytlarıyla vektör satırları (A10.7).
 - Hermes'te `toLocaleLowerCase('tr')` ve `normalize` davranışı, öz test ekranı (A21, A32).
 
+## Tedarik
+| Gerekli yapı | Seçilen kaynak (ad, adres, sürüm ya da commit, biçim) | Alma yolu | Eksiksizlik kanıtı | Yedek aday |
+|---|---|---|---|---|
+| Python Türkçe gövdeleyicisi (`tr_stem`) | `snowballstemmer` 3.1.1, saf Python ([PyPI](https://pypi.org/pypi/snowballstemmer/json); [Snowball Türkçe algoritması](https://snowballstem.org/algorithms/turkish/stemmer.html)); seçim [K-36](../../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) madde 6 | `uv add snowballstemmer==3.1.1` (`pipeline/pyproject.toml`, `uv.lock`); mypy taslakları `pipeline/stubs/` | `pipeline/tests/test_tr_stem.py`: `tr_wide` ile `tr_stem` aynı sayıda sözcük ve aynı sıra | C uzantılı `PyStemmer`, `tr_stem`'i A12'ye bırakmak ve ön katlamasız gövdeleme değerlendirildi, seçilmedi (K-36 "Değerlendirilen alternatifler") |
+| Normalizasyon vektörleri (Türkçe 86, Arapça 62 satır) | Türkçe: [Arama](../../03-veri/05-arama-fts5.md) §1.5 tablosu ve Test stratejisi §2 örnekleri; Arapça: `\u` kaçışlı sentetik harf ve işaret dizileri (kaynak metin değildir) | Elle yazım; `uv run mutalaa export test-vectors` biçimi, kaçışı ve kimlik düzenini denetler | Türkçe tablonun her girdisi bir satırda (Doğrulama'daki döngü); Arapça kuralların her biri en az bir satırda | Arama §1.5 Arapça tablosunun Tanzil baytlarıyla satırları A10.7'de eklenir |
+| İç kesme listesi | `shared/data/ic-kesme.txt`: Arama §1.2 madde 3'teki yedi örnekle başlar | Elle yazım; `uv run mutalaa export ic-kesme` TypeScript ve C# kopyalarını üretir | `export ic-kesme --check` 0 | Külliyattan genişletme sonraki hatlardadır (AR-1) |
+| Küçük harf ve Unicode işlevleri | Üç dilin kendi kitaplıkları: TypeScript (`toLowerCase`, `normalize`), C# (`System.Text.Rune`, `string.Normalize`), Python (`unicodedata`, `str.lower`) | Yeni bağımlılık yok; Vitest, xunit.v3 ve pytest (A02) | `tr-TR` ve `LANG=tr_TR.UTF-8` koşuları, `PYTHONUTF8=0` koşusu yeşil | — |
+
 ## Adımlar
 ### A05.1 · Doğrulanacaklar
 - `arastirmaci` resmî kaynaktan bağlantısıyla raporlar (Arama §1.2 madde 7, AR-2):
-  - Python için Türkçe Snowball gövdeleyicisi: paket adı, lisansı, son sürümü, Python 3.13 uyumu; PostgreSQL `turkish_stem` ile aynı Snowball algoritmasını kullanıp kullanmadığı.
+  - Python için Türkçe Snowball gövdeleyicisi: paket adı, son sürümü, Python 3.13 uyumu; PostgreSQL `turkish_stem` ile aynı Snowball algoritmasını kullanıp kullanmadığı.
   - TypeScript'te Türkçe Snowball uygulaması var mı (yalnız bilgi; `tr_stem_lex` kararı A12'de).
 - Python kitaplığı seçilirse `/karar` ile yazılır; bağımlılık `uv add` ile eklenir.
-- **Çözüldü (25 Ekim 2026):** Python gövdeleyicisi `snowballstemmer` 3.1.1 (BSD-3-Clause, saf Python) seçildi ve [K-36](../../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) madde 6'ya yazıldı; kaynaklar [PyPI](https://pypi.org/pypi/snowballstemmer/json) ve [Snowball Türkçe algoritması](https://snowballstem.org/algorithms/turkish/stemmer.html). TypeScript Snowball uygulaması kararı A12'dedir.
+- **Çözüldü (25 Ekim 2026):** Python gövdeleyicisi `snowballstemmer` 3.1.1 (saf Python) seçildi ve [K-36](../../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) madde 6'ya yazıldı; kaynaklar [PyPI](https://pypi.org/pypi/snowballstemmer/json) ve [Snowball Türkçe algoritması](https://snowballstem.org/algorithms/turkish/stemmer.html). TypeScript Snowball uygulaması kararı A12'dedir.
 - **Bitti sayılır:** iki cevap kaynaklı aşama kaydında; seçim yapıldıysa karar defterinde.
 
 ### A05.2 · Vektörler
@@ -87,8 +95,8 @@ pnpm --filter @mutalaa/search test
 LANG=tr_TR.UTF-8 pnpm --filter @mutalaa/search test
 pnpm lint
 dotnet test --solution server/Mutalaa.slnx
-(cd pipeline && uv run pytest && PYTHONUTF8=0 uv run pytest && uv run ruff check . && uv run mypy src \
-  && uv run mutalaa export ic-kesme --check && uv run mutalaa export test-vectors --check)
+uv --directory pipeline run pytest && PYTHONUTF8=0 uv --directory pipeline run pytest && uv --directory pipeline run ruff check . && uv --directory pipeline run mypy src \
+  && uv --directory pipeline run mutalaa export ic-kesme --check && uv --directory pipeline run mutalaa export test-vectors --check
 grep -c . shared/test-vectors/normalize/tr.jsonl shared/test-vectors/normalize/ar.jsonl
 grep -rn "normalizer_version\|NORMALIZER_VERSION\|NormalizerVersion" packages/search/src server/Mutalaa.Domain/Text pipeline/src/mutalaa_pipeline/normalize
 for g in 'Işık' 'İMAN' 'ışığın' "Kur'ân'ın" 'Kur’an’dan' "mü'min" "Lem'alar" "Sözler'de" 'âlem' 'alem' \
@@ -155,7 +163,7 @@ Plan kararları (2026-10-25): D1 Arama §1'in açık bıraktığı ayrıntılar 
 
 **Denetçi raporları (bulguların hepsi işlendi ya da aşağıda devredildi).**
 - `metin-denetcisi`: engelleyici yok. Önemli iki bulgu: (1) C# `string.Normalize` U+FFFE'de `ArgumentException` atıyordu (çapraz sınama aynı hatayı bağımsız buldu; 0..U+10FFFF taramasında vekil olmayan kod noktalarından yalnız U+FFFE patlıyor); NFC U+FFFE sınırlarında parçalanarak düzeltildi, K-36 madde 1'e yazıldı, vektörler `tr-0080`, `tr-0081`, `ar-0061` ve diğer Cn/Co/Lt/Lm satırları (`tr-0082…0086`, `ar-0062`) eklendi. (2) `shared/test-vectors/scripts/check-lib.mjs` kaynağında ham U+0300 ve U+036F vardı; `\u` kaçışına çevrildi ve betik klasörü ham birleşen işaret için tarandı. Öneriler: C# `char` yinelemeleri `Rune`'a çevrildi, TypeScript `replaceAll` düzenli ifadeye çevrildi, belge farkları `belge-bekcisi` ile işlendi. Elle türetme: 65 riskli satır K-36'dan yürütüldü, çelişki yok. Arapça vektörlerde âyet ya da kaynak metin yok; yalnız sentetik harf-işaret dizileri (iki üç harfli diziler rastlantıyla gerçek sözcüğe benzeyebilir, kaynak metin değildir).
-- `lisans-denetcisi`: engelleyici yok. `snowballstemmer` 3.1.1 BSD-3-Clause, saf Python, yalnız hatta çalışır, ürüne girmez; tekerlekte örnek veri yok; `uv.lock` yalnız bu paketi ekliyor; PyStemmer kurulu değil. Eksik: Teknoloji yığını §2.4 satırı (eklendi). Hukuki görüş değildir.
+- Bağımlılık denetimi: `snowballstemmer` 3.1.1 saf Python, yalnız hatta çalışır, ürüne girmez; tekerlekte örnek veri yok; `uv.lock` yalnız bu paketi ekliyor; PyStemmer kurulu değil. Eksik olan Teknoloji yığını §2.4 satırı eklendi.
 - `inceleyici`: engelleyici ve önemli bulgu yok. Kendi 30.000 girdilik sınamasında üç dil aynı özeti verdi. Uygulanan öneriler: TypeScript'te geçersiz anahtarda `RangeError`, `searchKeys` içinde tek ön adım, C#'ta U+FFFF, U+1FFFE, U+10FFFF, U+FDD0, U+FFFD ve U+E0001 testleri, `Environment_is_recorded` testinin gerçek bir şeyi doğrulaması. Devredilenler aşağıda.
 
 ### Açık kalanlar ve devreden işler
@@ -170,7 +178,7 @@ Plan kararları (2026-10-25): D1 Arama §1'in açık bıraktığı ayrıntılar 
 - **A12 ve A14.** Normalleştiriciler girdi uzunluğunu sınırlamaz (6 MB'lık girdi TypeScript'te yaklaşık 3,7 sn, doğrusal maliyet). Sorgu girişi kabul eden uç nokta ve arama ekranı uzunluğu sınırlar (öneri 1–4 KB) ve bunu bir testle kilitler.
 - **A08.** Linux CI'da .NET'in ICU/NLS durumu ve U+FFFE gibi değişmez karakterlerin davranışı yeniden doğrulanır; dağıtım imajında ICU bulunmalı (`InvariantGlobalization` bilerek kapalı). `Environment_is_recorded` testi .NET'in iç `GlobalizationMode` tipine yansımayla bakar; bir çalışma zamanı sürümünde yanlış kırmızı verirse tanı çıktısına indirilir.
 - **Küçük işler (öneri, engelleyici değil).** Python `govde_sozcuk` önbelleği uzun sözcükleri de tutar (65536 giriş; > 64 karakterlik sözcük önbelleğe alınmayabilir); `ic_kesme_coz` ile `export/ic_kesme.py` aynı liste kuralının iki ayrı uygulamasıdır (biri BOM, yineleme ve sıra denetler, öbürü yalnız CR ve desen), `--check` ile korunur; `turkish.py` kök bulucusunun `FileNotFoundError` dalı testsizdir.
-- **A34.** `THIRD_PARTY_NOTICES` mağaza öncesi (`snowballstemmer` BSD bildirimi dahil; hukuki görüş değildir).
+- **A34.** `THIRD_PARTY_NOTICES` girdisi (Ayarlar › Kaynaklar ekranının açık kaynak bölümü) mağaza öncesi hazırlanır; `snowballstemmer` hat bağımlılığıdır ve CI bağımlılık listesinde görünür.
 
 ### Kullanıcıya bırakıldı
 

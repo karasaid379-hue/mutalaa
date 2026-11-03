@@ -1,7 +1,7 @@
 # A03 · Yerel altyapı: Docker Compose, PostgreSQL 18, SeaweedFS
 
-> **Sürüm:** 1.1 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-11](../../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-20](../../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı)
-> **Faz:** 0 · Hazırlık · **Önkoşul:** [A02](./A02-tek-depo-iskeleti.md) · **İnsan adımı:** [İ-01](../06-insan-adimlari.md) (Docker Desktop ve WSL2)
+> **Sürüm:** 1.2 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-11](../../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-20](../../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
+> **Faz:** 0 · Hazırlık · **Önkoşul:** [A02](./A02-tek-depo-iskeleti.md) · **İnsan adımı:** [İ-01](../06-insan-adimlari.md) (Docker Desktop)
 > **Ajanlar:** `sunucu-gelistirici` · `arastirmaci` · `inceleyici` · **Beceriler:** `windows-sorun` · **Tahmini oturum:** 1–2
 > **Başlat:** `/asama A03`
 
@@ -25,6 +25,17 @@ Yerel altyapı tek komutla kalkar: `postgres:18` ve SeaweedFS'in S3 arayüzü (K
 - API, Yayınlayıcı ve editör Dockerfile'ları (A14, A13, A15). `app` profili bu dosyalar gelene kadar başlatılmaz; yalnız yapılandırması denetlenir.
 - Göçler ve `seed` (A07). `apps/mobile/.env.example` (A21). Paket yayını ve manifest (A13).
 - Günlük yedek görevinin Windows Görev Zamanlayıcı'ya kaydı: sistem ayarıdır, kullanıcı yapar (§9); aşama yalnız betiği hazırlar.
+
+## Tedarik
+| Gerekli yapı | Seçilen kaynak (ad, adres, sürüm ya da commit, biçim) | Alma yolu | Eksiksizlik kanıtı | Yedek aday |
+|---|---|---|---|---|
+| Docker Desktop (Compose v2) ve WSL2 | Docker Desktop güncel; WSL2 arka ucu | İ-01: kurulumu kullanıcı yapar ([İnsan adımları](../06-insan-adimlari.md)) | A03.3: `docker info` ve `docker compose version` çalışıyor | — |
+| PostgreSQL 18 | Docker Hub resmî imajı `postgres:18`; etiket kök `.env.example` içindeki `POSTGRES_TAG`; A03.3'te yerel kapta 18.6 | `docker compose up -d` imajı çeker | A03.3: sürüm 18, harmanlama `C.UTF-8`, `turkish` ve `arabic` metin arama yapılandırmaları var | — |
+| S3 uyumlu yerel depo | SeaweedFS: Docker Hub `chrislusf/seaweedfs`, etiket 4.48 ([GitHub sürümü 4.48](https://github.com/seaweedfs/seaweedfs/releases/tag/4.48), 28 Eylül 2026); `server -dir=/data -s3 -s3.port=8333 -s3.config=…` | `docker compose up -d`; etiket `SEAWEEDFS_TAG`; kimlik dosyası `infra/local/s3.json` şablondan | A03.4: anonim GET 200, Range GET 206 ve 1024 bayt, anonim PUT 403, iki parçalı indirmenin SHA-256'sı özgün dosyayla aynı | Garage (A03.4 sınaması tutmazsa `/karar` ile); MinIO kullanılmaz ([K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı)) |
+| S3 istemcisi (kova oluşturma, deneme yükleme) | `amazon/aws-cli` 2.38.3 ([Docker Hub](https://hub.docker.com/r/amazon/aws-cli)); `ENTRYPOINT` `aws` | `s3-init` servisi; etiket `AWSCLI_TAG` | `s3-init` "exited (0)"; kova oluştu | — |
+| Yedekleme ve geri yükleme | Konteyner içindeki `pg_dump` ve `pg_restore`; ince sarmalayıcılar `scripts/backup-db.ps1`, `restore-db.ps1`, `lan-ip.ps1` (Windows PowerShell 5.1) | Hazır PostgreSQL araçları kullanılır, betikler bu aşamada yazılır | A03.5: yedek → silme → geri yükleme deneme satırını geri getiriyor | — |
+
+Her imajın ve bayrağın kaynak bağlantısı ve okuma tarihi aşağıdaki "A03.1 kaynak kaydı" bölümündedir.
 
 ## Adımlar
 ### A03.1 · Doğrulanacaklar
@@ -122,7 +133,7 @@ PowerShell'de elle çalıştırılacaksa `curl` yerine `curl.exe` yazılır (Yer
 
 ## Dikkat
 - PostgreSQL 18 imajında birim `/var/lib/postgresql` noktasına bağlanır; eski örneklerdeki `/var/lib/postgresql/data` kullanılmaz (§4 notu).
-- `docker compose down -v` veritabanını siler: önce `backup-db.ps1`, sonra kullanıcı onayı (kural).
+- `docker compose down -v` veritabanını siler: önce `scripts/backup-db.ps1` ile yedek alınır; yedek alınamazsa silinmez (CLAUDE.md kural 11; onay sorulmaz).
 - 5432 doluysa ya da Hyper-V ayrılmış port aralığına düşüyorsa `.env` içinde port değiştirilir (§10.3); bunu kullanıcı yapar.
 - S3 portu `0.0.0.0:8333`'e açıktır; yalnız "Özel" ağda ve güvenlik duvarı kuralıyla kullanılır (§2).
 - Git Bash `/` ile başlayan argümanları Windows yoluna çevirebilir; konteyner içi yollar bu bloktaki gibi `sh -c '…'` içinde tırnaklı verilir. Ayrıntı: `windows-sorun`.

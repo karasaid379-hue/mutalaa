@@ -1,6 +1,6 @@
 # Claude Code ile geliştirme
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
+> **Sürüm:** 1.1 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
 
 Mütâlaa yalnız Claude Code ile ve yalnız bu proje klasörünün içinde geliştirilir ([K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)). Bu bölüm o işin rehberidir. Kit üç parçadır: kökteki `CLAUDE.md`, `.claude/` klasörü ve bu `docs/10-claude-code/` bölümü.
@@ -19,7 +19,7 @@ Mütâlaa yalnız Claude Code ile ve yalnız bu proje klasörünün içinde geli
 |---|---|---|
 | Proje kılavuzu | `CLAUDE.md` | Her oturumda okunan kesin kurallar, depo haritası, komutlar, çalışma düzeni |
 | Ayarlar | `.claude/settings.json` | Türkçe yanıt, izin kuralları, klasör dışı okuma engeli, otomatik hafıza ve karalama klasörü kapalı, yalnız Git Bash, hook'lar |
-| Hook'lar | `.claude/hooks/` | Klasör bekçisi (dışarı yazmayı engeller; kabuk komutlarında dış yolu, korunan yerlere yazmayı, özyinelemeli silmeyi ve riskli git işlemlerini denetler), biçim denetimi (BOM, CRLF, JSON, kit ön bilgisi), oturum başı durum özeti |
+| Hook'lar | `.claude/hooks/` | Klasör bekçisi (dışarı yazmayı engeller; kabuk komutlarında dış yolu, korunan yerlere yazmayı ve depo tarihini yok eden git işlemlerini denetler), biçim denetimi (BOM, CRLF, JSON, kit ön bilgisi), oturum başı durum özeti |
 | Kurallar | `.claude/rules/` | Klasöre özgü kurallar; ilgili dosyaya dokunulunca yüklenir |
 | Ajanlar | `.claude/agents/` | 10 alt ajan: geliştiriciler, test yazarı, denetçiler, belge bekçisi, araştırmacı |
 | Beceriler | `.claude/skills/` | 6 iş akışı becerisi (`/asama` yalnız sizin başlattığınız; `/durum`, `/karar`, `/inceleme`, `/commit`, `/belge-esitle` hem sizin hem Claude'un çağırdığı) ve 8 bilgi becerisi |
@@ -44,7 +44,7 @@ Ayrıntılı katalog: [Ajanlar, beceriler ve kurallar](./03-ajanlar-beceriler-ku
 
 - **Klasör sınırı.** Claude Code'un dosya araçları bu klasörün dışını okuyamaz ve yazamaz; kabuk komutlarında görünen dış yollar onay ister. Claude'un çalıştırdığı programlar işletim sistemi düzeyinde sınırlanmaz; ayrıntı ve sınırlar: [Kurulum §7](./01-kurulum.md#7-klasör-sınırı-neyi-engeller-neyi-engellemez). Geçici dosyalar `.tmp/` altındadır. Araçların kendi önbellekleri ve Claude Code'un kendi oturum kayıtları bu kuralın dışındadır.
 - **İçerik etiği.** Kur'an, meal, tefsir, hadis ve Risale metni hiçbir zaman yapay zekâ hafızasından yazılmaz; yalnız kaynak dosyalardan, içerik hattıyla gelir.
-- **Kaynak ilkesi.** Her aşama tedarikle başlar: araştır, belirle, işle. Hazır yapı önce gelir. Kaynaklar internetten ve GitHub'dan izin istenmeden alınır; hiçbir aşama dış bir onay ya da cevap beklemez. Bekleyen bir insan adımı yalnız kendisine bağlı alt adımı bekletir ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
+- **Kaynak ilkesi.** Her aşama tedarikle başlar: araştır, belirle, işle. Hazır yapı önce gelir. Kaynaklar internetten ve GitHub'dan doğrudan indirilir; hiçbir aşama dış bir onay ya da cevap beklemez. Bekleyen bir insan adımı yalnız kendisine bağlı alt adımı bekletir ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
 - **Kanıtla bitir.** Bir aşama, kabul ölçütleri komut çıktısıyla kanıtlanmadan ve inceleme yapılmadan bitmiş sayılmaz.
 - **Kararlar defterde.** Yeni karar `/karar` ile [karar defterine](../00-ozet/02-karar-defteri.md) yazılır; kod ve belge sonra uyar.
 
