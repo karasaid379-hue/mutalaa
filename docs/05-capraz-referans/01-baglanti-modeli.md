@@ -1,14 +1,14 @@
 # Bağlantı Modeli
 
-> **Sürüm:** 1.2 · **Tarih:** 24 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 
 Bu dosya bağlantıların veri modelini, puanlamasını, yayın kuralını, seçim çözümleme akışlarını, **Bağlantılar** panelinin sözleşmesini ve geri dönüş yığınını tanımlar. Ayrıntılar: [iktibas tespiti](./02-iktibas-tespiti.md), [kök ve lemma](./03-kok-ve-lemma.md), [anlamsal katman](./04-anlamsal-katman.md).
 
 ## 1. İlkeler
 
 - **Katmanlar güvenilirliğe göre sıralanır.** Eski plan seviyeleri gecikmeye göre kuruyordu (kök < 50 ms, konu < 500 ms, yapay zekâ ~3 s; `quran-app-docs/05-cross-ref/01-genel-bakis.md`). Burada bağlantılar içerik hattında önceden hesaplanır ve paketle cihaza iner; kelimeye dokunmak indeksli bir sorgudur.
-- **Her bağlantı kendini açıklar:** tür, puan, güven, kanıt, durum, lisans (K-27). Ekranda gerekçe çipi ve güven etiketi görünür.
+- **Her bağlantı kendini açıklar:** tür, puan, güven, kanıt, durum (K-27). Ekranda gerekçe çipi ve güven etiketi görünür.
 - **İki uçta aralık tutulur.** Blue Letter Bible'da yalnız ilk kelime eşleştiği için kullanıcılar bağlantının hangi ifadeye ait olduğunu göremiyordu; 2024'te 66.000'den fazla TSK girdisi tüm ifadeyi eşleyecek biçimde güncellendi ([BLB](https://blogs.blueletterbible.org/blb/2024/11/19/updated-tsk/)).
 - **İnsan onayı isteyen türler onaysız mağazaya çıkmaz;** makine önerileri rozet taşır (K-25). Panel çevrimdışı çalışır.
 
@@ -22,7 +22,7 @@ Bu dosya bağlantıların veri modelini, puanlamasını, yayın kuralını, seç
 | 1 · Deterministik | İktibas | n-gram indeksi + hizalama + bağlam + insan onayı | `iktibas` | v1 |
 | 2 · Sözlüksel | Kök, lemma | QAC + Türkçe→kök sözlüğü | `kok`, `lemma` | v1 |
 | 2 · Sözlüksel | İfade, konkordans | FTS5 ifade sorgusu, KWIC | yok (sorgu anında) | v1 |
-| 2 · Küratörlü | Benzer âyet | Kendi n-gram indeksimiz; lisans netleşirse QUL, QurSim | `benzer_ayet` | v1, kısmen |
+| 2 · Küratörlü | Benzer âyet | Kendi n-gram indeksimiz; QurSim (yedek: `arriqaaq/ilm`) | `benzer_ayet` | v1, kısmen |
 | 2 · Küratörlü | İma | Editör; dil modeli aday önerir | `ima` | v1, editör girdikçe |
 | 2 · Küratörlü | Konu | Atıf dizini ve kök kümelerinden tohum + editör | `konu` | v1.x |
 | 3 · Olasılıksal | Anlamsal komşu | Önceden hesaplanmış gömmeler | `anlamsal` | v1.x |
@@ -62,7 +62,6 @@ CREATE TABLE xref (
   status xref_status NOT NULL DEFAULT 'aday',
   votes_up integer NOT NULL DEFAULT 0, votes_down integer NOT NULL DEFAULT 0,
   data_version text NOT NULL,
-  license license_status NOT NULL,          -- editoryal veritabanındaki enum
   CONSTRAINT xref_natural_key UNIQUE NULLS NOT DISTINCT (type, src_anchor, src_span, dst_anchor, dst_span)
 );
 CREATE INDEX xref_src ON xref (src_anchor, type);
@@ -72,19 +71,18 @@ CREATE INDEX xref_queue ON xref (type, confidence DESC) WHERE status = 'aday';
 
 1. **Uçlar birim düzeyindedir** (âyet, paragraf, hadis); kelime ve karakter ayrıntısı aralıktadır. `q:2:255:3-7` seçimi `dst_anchor = 'q:2:255'`, `dst_span = '[3,8)'` olur. Dönüşümü hatta, sunucuda ve cihazda `toUnitSpan` yapar; âyet aralığı ve cümle çapası bu dönüşümde hata verir, âyet aralığı `coveredAyahs` ile âyetlere bölünür ([Çapa şeması §11](../03-veri/01-capa-semasi.md#11-packagesanchors-api), [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)).
 2. **Aralık yarı açıktır.** Metin biriminde kanonik metindeki Unicode kod noktası ofsetidir (kanonik metin: kaynağın dağıttığı hâli, kendi ürettiğimiz metinlerde ilk kayıtta Çapa şeması §7 adımlarından geçmiş metin; [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)) (çapadaki `@başlangıç-bitiş` sayıları); Kur'an biriminde QAC/QUL kelime konumudur. NULL birimin tamamıdır. UTF-16 dönüşümünü `packages/anchors` yapar.
-3. **Doğal anahtar tektir.** Hat aynı satırı günceller; `id`, `status` ve editör satırları korunur:
+3. **Doğal anahtar tektir.** Hat yalnız kendi `aday` satırını günceller; `id` ve `status` korunur, `onayli` ve `red` satırlara ve editör satırlarına dokunulmaz ([İçerik hattı](../04-icerik/02-icerik-hatti.md)):
    ```sql
-   INSERT INTO xref AS x (src_anchor, src_span, dst_anchor, dst_span, type, score, confidence, evidence, origin, status, data_version, license)
-   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'hat','aday',$9,$10)
+   INSERT INTO xref AS x (src_anchor, src_span, dst_anchor, dst_span, type, score, confidence, evidence, origin, status, data_version)
+   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'hat','aday',$9)
    ON CONFLICT ON CONSTRAINT xref_natural_key DO UPDATE
    SET score = EXCLUDED.score, confidence = EXCLUDED.confidence, evidence = EXCLUDED.evidence,
-       data_version = EXCLUDED.data_version, license = EXCLUDED.license
-   WHERE x.origin = 'hat';
+       data_version = EXCLUDED.data_version
+   WHERE x.origin = 'hat' AND x.status = 'aday';
    ```
    Yeni çalışmada üretilmeyen `aday` satır silinir; `onayli` satır silinmez, "yeniden doğrula" kaydıyla `review` kuyruğuna düşer.
 4. **Yön.** `atif`, `iktibas`, `ima` atıf yapan metinden âyete ya da hadise gider; "Bu âyet Risale'de nerede geçiyor?" `dst_anchor` indeksiyle çözülür. `kok`, `lemma`, `anlamsal` kaynak birimden komşuya, birim başına ilk N satırdır. Simetrik `benzer_ayet` kaynakları (QurSim) tek satırdır, sorgu iki sütuna bakar. `konu` birimden konu düğümüne gider.
-5. **Lisans en kısıtlayıcı değerdir:** `max(src kaynağı, dst kaynağı, bağlantı verisinin kaynağı)`, sıra `serbest < bekliyor < ic_kullanim < kapali`. Sorunlu çıkan bir veri seti tek sorguyla kapanır.
-6. **Uç metni değişirse** satır yeniden doğrulanır. `evidence.src_hash`/`dst_hash` uç birimin `content_hash` değerinin ilk 16 hanesidir. Özet değişince hat eski aralık metnini yeni metinde arar; tek eşleşmede ofseti kaydırır, yoksa satırı kuyruğa düşürüp yayından çıkarır.
+5. **Uç metni değişirse** satır yeniden doğrulanır. `evidence.src_hash`/`dst_hash` uç birimin `content_hash` değerinin ilk 16 hanesidir. Özet değişince hat eski aralık metnini yeni metinde arar; tek eşleşmede ofseti kaydırır, yoksa satırı kuyruğa düşürüp yayından çıkarır.
 
 Başlıca `evidence` anahtarları: `iktibas` → `matched_words`, `coverage`, `identity`, `phrase_freq`, `context`, `index`, `alternatives`, `position`; `kok`/`lemma` → `shared` [{`root`, `idf`, `src_word`, `dst_word`}], `etymological_only`, `lexicon_status`; `benzer_ayet` → `subtype` (`sozluksel`/`alim`/`mutesabih`); `anlamsal` → `model`, `cosine`, `calibrated`; hepsi → `src_hash`, `dst_hash`, `source_id`.
 
@@ -93,36 +91,36 @@ Başlıca `evidence` anahtarları: `iktibas` → `matched_words`, `coverage`, `i
 | Tür | Tanım | Örnek (biçim örneği) |
 |---|---|---|
 | `atif` | Âyete ya da hadise adı ve numarasıyla açık gönderme | `tf:elmalili:2-255-257:p3@40-63` "(Bakara Sûresi, 255)" → `q:2:255` |
-| `iktibas` | Âyet metninin Arapça olarak aynen ya da küçük yazım farkıyla alıntısı; tam ya da kısmi | Risale paragrafındaki وَاِنْ مِنْ شَىْءٍ اِلَّا يُسَبِّحُ بِحَمْدِهٖ → `q:17:44` + kelime aralığı |
+| `iktibas` | Âyet metninin Arapça olarak aynen ya da küçük yazım farkıyla alıntısı; tam ya da kısmi | Risale paragrafındaki Arapça âyet alıntısı (Risale yazımıyla) → `q:17:44` + kelime aralığı |
 | `ima` | Lafzı vermeden âyetin manasına işaret | Başlığı bir âyetin manası olan bölüm → o âyet, `origin = 'editor'` |
-| `kok` | İki birimin aynı Arapça kökten kelime taşıması | "sabır" geçen `rn:…:p4` ↔ `q:2:153` (بِٱلصَّبْرِ, ٱلصَّٰبِرِينَ), kök ص ب ر |
+| `kok` | İki birimin aynı Arapça kökten kelime taşıması | "sabır" geçen `rn:…:p4` ↔ `q:2:153` (بِٱلصَّبْرِ, ٱلصَّـٰبِرِينَ), kök ص ب ر |
 | `lemma` | Aynı Arapça lemmanın paylaşılması; kökten dar ve kesin | Türkçe "şükür" ← شُكْر |
 | `benzer_ayet` | Ortak ifade, âlim listesi ya da müteşâbih kaydı | QUL Similar Ayah: 1:1 → 27:30, 59:22, 1:3, 41:2 ([QUL](https://qul.tarteel.ai/resources/ayah-theme/74)) |
 | `konu` | Birimin bir konu düğümüne bağlanması | `q:2:255` → `konu:tevhid` |
 | `anlamsal` | Gömme benzerliğiyle önerilen komşu | `rn:…:p4` → `q:…`, kalibre puan 0,72 |
 
 - **İma.** Risale'de âyetler çoğu zaman başlık olur ve pek çok âyet metni verilmeden açıklanır ([RİNAP](https://rinap.uskudar.edu.tr/uploads/site/6/content/files/risale-i-nurun-tefsirdeki-yeri-compressed.pdf)). Sözlüksel tespit bunları bulamaz; imayı editör girer, dil modeli yalnız `aday` önerir.
-- **Benzer âyet.** QUL 4.001 benzer âyet ve 5.277 müteşâbih kaydı, QurSim âlim kaynaklı 7.600'den fazla çift sunar ([QUL](https://qul.tarteel.ai/resources); [QurSim](https://aclanthology.org/L12-1051/)). Kaynak bazında lisans yoktur ([QUL SSS](https://qul.tarteel.ai/faq)); bu satırlar `license = 'bekliyor'` ile girer ve iç derlemede kalır. Mağaza için sözlüksel benzer âyetleri Tanzil metninde kendi n-gram indeksimizle hesaplamayı öneriyorum ([02 §5](./02-iktibas-tespiti.md)). Raporun "sözlüksel benzerlik" ve "âlim kaynaklı ilişki" türleri `evidence.subtype` değerleridir.
-- **Konu (v1.x).** QUL'un 2.512 başlıklı konu dizini (ontoloji başlıkları QAC'den, tematik başlıklar Clear Quran çevirisinden) hazır kaynaktır ([QUL konular](https://qul.tarteel.ai/resources/ayah-topics/45)); Clear Quran başlıkları telifli olabilir (Doğrulanacak). Eski planın beş küratörlük, 15–25 bin $'lık taksonomisi yerine konular atıf dizini ve kök kümelerinden tohumlanır, Risale'ye özgü kavramlar (haşir delilleri, esmâ tecellileri, ene ve zerre) dil modeli önerisi ve editör onayıyla eklenir (rapor). Yalnız birim → konu satırı saklanır; aynı konuyu paylaşan birimler sorgu anında bulunur.
+- **Benzer âyet.** QUL 4.001 benzer âyet ve 5.277 müteşâbih kaydı, QurSim âlim kaynaklı 7.600'den fazla çift sunar ([QUL](https://qul.tarteel.ai/resources); [QurSim](https://aclanthology.org/L12-1051/)). Sözlüksel benzer âyetler Tanzil metninde kendi n-gram indeksimizle hesaplanır ([02 §5](./02-iktibas-tespiti.md)); QurSim satırları âlim kaynaklı ilişkileri ekler. QUL veri setlerinin indirmesi oturum açma istediği için QUL alınmaz; QUL biçimli kısmi kopya (`arriqaaq/ilm`) yedektir ([Kaynaklar](../04-icerik/01-kaynaklar.md) §3.2). Raporun "sözlüksel benzerlik" ve "âlim kaynaklı ilişki" türleri `evidence.subtype` değerleridir.
+- **Konu (v1.x).** QUL'un 2.512 başlıklı konu dizini (ontoloji başlıkları QAC'den, tematik başlıklar Clear Quran çevirisinden) hazır kaynaktır ([QUL konular](https://qul.tarteel.ai/resources/ayah-topics/45)). Eski planın beş küratörlük, 15–25 bin $'lık taksonomisi yerine konular atıf dizini ve kök kümelerinden tohumlanır, Risale'ye özgü kavramlar (haşir delilleri, esmâ tecellileri, ene ve zerre) dil modeli önerisi ve editör onayıyla eklenir (rapor). Yalnız birim → konu satırı saklanır; aynı konuyu paylaşan birimler sorgu anında bulunur.
 
 ## 6. Puanlama
 
 `score` tür içindeki bağ gücüdür ve sıralar. `confidence` doğru olma olasılığıdır; etiketi ve yayın eşiğini belirler. Sabitler başlangıç değeridir ve altın setlerle kalibre edilir.
 
 ```text
-atif        score = 1,0; confidence ayrıştırma kalitesinden (02 §3)
+atif        score = 1,0; confidence ayrıştırma kalitesinden (02 §2)
 iktibas     n eşleşen kelime, N âyetin kelime sayısı, e düzenleme, f dizinin geçtiği âyet sayısı
             score = (0,5 + 0,5·n/N) · min(1, n/7) · n/(n+e) · 1/f     (bağlam tek hedef seçerse f = 1)
 kok         idf_n(r) = ln(6236/df(r)) / ln(6236)      df: r kökünü taşıyan âyet sayısı
             birim-birim  score(A,B) = Σ idf_n(r ∈ K(A)∩K(B)) / Σ idf_n(r ∈ K(A))
             tek kelime   score = idf_n(r) · (aynı lemma ? 1 : 0,8) · (yalnızca etimolojik ? 0,5 : 1)
 lemma       kok ile aynı, lemma sıklığıyla
-benzer_ayet sözlüksel min(1, ortak/7)·(0,5 + 0,5·kapsama); QUL score/100; QurSim derecesi 0–1'e (ölçek Doğrulanacak)
+benzer_ayet sözlüksel min(1, ortak/7)·(0,5 + 0,5·kapsama); QurSim derecesi 0–1'e (ölçek Doğrulanacak); yedek QUL biçimli kopyada score/100
 konu        score(A,B|T) = w(A,T)·w(B,T)·idf_n(T)     w: 1,0 doğrudan, 0,5 dolaylı
-anlamsal    score = confidence = kalibre(kosinüs), grup çifti başına izotonik eşleme (04 §6)
+anlamsal    score = confidence = kalibre(kosinüs), grup çifti başına izotonik eşleme (04 §5)
 ```
 
-Rapor iktibası kapsama × uzunlukla puanlar ve kalıp ifadeye indirim uygular. Kapsama 0,5–1'e yumuşatılır, çünkü uzun âyetten alınan yedi kelimelik parça saf kapsamayla sıfıra yakın puan alırdı. Kalıp indirimini `1/f` yapar. Örneğin 18 âyette geçen تَجْرِي مِن تَحْتِهَا الْأَنْهَارُ خَالِدِينَ bağlamsız her hedefte 1/18 alır ([QUL](https://qul.tarteel.ai/morphology_phrases?page=61)). IDF, ق و ل gibi yaygın köklerin öne geçmesini önler.
+Rapor iktibası kapsama × uzunlukla puanlar ve kalıp ifadeye indirim uygular. Kapsama 0,5–1'e yumuşatılır, çünkü uzun âyetten alınan yedi kelimelik parça saf kapsamayla sıfıra yakın puan alırdı. Kalıp indirimini `1/f` yapar. Örneğin 18 âyette geçen تَجْرِى مِن تَحْتِهَا ٱلْأَنْهَـٰرُ خَـٰلِدِينَ bağlamsız her hedefte 1/18 alır ([QUL](https://qul.tarteel.ai/morphology_phrases?page=61)). IDF, ق و ل gibi yaygın köklerin öne geçmesini önler.
 
 | Etiket | Koşul | Görünüm |
 |---|---|---|
@@ -149,14 +147,14 @@ Liste v1.x'te gelir; v1 panelinde yalnız esere göre gruplar vardır ([Okuma de
 |---|---|
 | `atif`, `iktibas`, `ima`, `konu` | İnsan onayı: `status = 'onayli'` |
 | `kok`, `lemma` | `confidence ≥ 0,50` ve Türkçe taraftaki sözlük girdisi onaylı |
-| `benzer_ayet` | `confidence ≥ 0,50` ve bağlantı verisinin lisansı serbest |
+| `benzer_ayet` | `confidence ≥ 0,50` |
 | `anlamsal` | v1.x derlemesi, `confidence ≥ 0,50`, "Makine önerisi" rozeti |
 
-Her türde ek koşul `license = 'serbest'` ve iki ucun paketinin derlemede bulunmasıdır (K-06). İç derleme `red` dışındaki her satırı "Aday" rozetiyle görür. Risale kaynağı bugün mağaza paketine girmediği için (K-05) Risale uçlu satırlar mağaza derlemesinden düşer.
+Her türde ek koşul [P-07](../07-yayin/01-yayin-sureci.md#4-yayınlayıcı-kalite-kapısı-kuralları)'dir: kaynak ucun eseri o derlemede görünür; hedef ucun eseri görünür ya da bağlantı kaynak kaydı olan ayrı bir dizine (`risale-atif-dizini`) aittir. `red` hiç girmez. İç derlemeler (`dev`, `internal`) `red` dışındaki her satırı görür; onay isteyen türdeki `aday` satır orada "Aday" rozetiyle durur ve `public`'e girmez ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5).
 
 ```sql
 SELECT x.* FROM xref x                                     -- Mutalaa.Publisher
-WHERE x.license = 'serbest' AND x.status <> 'red'
+WHERE x.status <> 'red'
   AND NOT EXISTS (SELECT 1 FROM review r WHERE r.xref_id = x.id AND r.state = 'acik')
   AND CASE WHEN x.type IN ('atif','iktibas','ima','konu') THEN x.status = 'onayli'
            WHEN x.type IN ('kok','lemma') THEN x.confidence >= 0.5
@@ -251,7 +249,7 @@ Oy hesap ister ve v1.x'te gelir (K-15). Menü "Yararlı", "Yararsız" ve nedenli
 
 - `n = up + down ≥ 5` ise grup içi sıra `score · (0,8 + 0,4 · wilson(up, n))` olur (Wilson alt sınırı, z = 1,96).
 - Kuyruk: onaylı satırda `n ≥ 5` ve `wilson(down, n) ≥ 0,30` → "yeniden incele"; aday satırda `n ≥ 5` ve `wilson(up, n) ≥ 0,70` → "onay adayı"; en az iki `yanlis_ayet` ya da `iktibas_degil` → yüksek öncelik. Kullanıcının doğruladığı cihaz eşleşmesi `origin = 'kullanici_oyu'`, `status = 'aday'` ile yeni satır olur.
-- Oy durumu kendiliğinden değiştirmez; kararı editör verir. Hesap silinince oylar silinir. Oy sayısı ve katkı sıralaması gösterilmez (K-25). Bkz. [KVKK](../07-yayin/02-kvkk-ve-gizlilik.md).
+- Oy durumu kendiliğinden değiştirmez; kararı editör verir. Hesap silinince oylar silinir. Oy sayısı ve katkı sıralaması gösterilmez (K-25). Bkz. [Gizlilik](../07-yayin/02-gizlilik.md).
 
 ## 13. Paketleme ve cihazda sorgu
 
@@ -278,14 +276,12 @@ Hedef: ilk grup orta seviye Android'de 100 ms, bütün gruplar 300 ms altında (
 1. **Çözüldü (19 Ekim 2026):** K-27'nin "İstisna" satırı âyet ↔ meal ve âyet ↔ tefsir aralığı bağlarının çapadan türetildiğini ve `xref`'e yazılmadığını söyler ([K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)).
 2. **Çözüldü (19 Ekim 2026):** K-26 ve [Çapa şeması §1–§2](../03-veri/01-capa-semasi.md#1-birim-türleri) `konu:{slug}` ve âyet aralığı `q:2:255-257` biçimlerini taşır. Âyet aralığı birim olmadığı için `xref` ucu olmaz; aralık atıfları âyet başına satıra bölünür ve `evidence.group` ile bağlanır ([Editoryal veritabanı §7](../03-veri/02-editoryal-veritabani.md#7-xref-ve-xref_vote)).
 3. **Çözüldü (19 Ekim 2026):** `@başlangıç-bitiş` yarı açıktır: başlangıç dahil, bitiş hariç ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)).
-4. **Çözüldü (19 Ekim 2026):** `xref.license` `license_status` kümesini tutar ([Editoryal veritabanı §7](../03-veri/02-editoryal-veritabani.md#7-xref-ve-xref_vote)).
-5. Risale bağlantıları metin olmadan "dizin" olarak mağaza derlemesinde gösterilebilir mi? Rapor önerir ve avukat görüşü ister; hukuki görüş değildir.
-6. Kurul onayı bağlantı verisini ve Risale içindeki satır içi meal kartını kapsar mı? [Yayın kapısı](../07-yayin/01-yayin-kapisi-ve-kurul.md) ile netleşmeli.
-7. Konu düğümü tabloları editoryal veritabanında yok (ED-6, v1.x). **Kısmen çözüldü (19 Ekim 2026):** `xref_vote` [Editoryal veritabanı §7](../03-veri/02-editoryal-veritabani.md#7-xref-ve-xref_vote) ve [Backend API](../02-mimari/05-backend-api.md) §5'te; `tr_root_index` ve `tr_form` Editoryal veritabanı §6 ile [İçerik paketleri §3.2–§3.3](../03-veri/03-icerik-paketleri.md#32-metin-paketleri)'tedir.
+4. Konu düğümü tabloları editoryal veritabanında yok (ED-6, v1.x). **Kısmen çözüldü (19 Ekim 2026):** `xref_vote` [Editoryal veritabanı §7](../03-veri/02-editoryal-veritabani.md#7-xref-ve-xref_vote) ve [Backend API](../02-mimari/05-backend-api.md) §5'te; `tr_root_index` ve `tr_form` Editoryal veritabanı §6 ile [İçerik paketleri §3.2–§3.3](../03-veri/03-icerik-paketleri.md#32-metin-paketleri)'tedir.
+5. **Çözüldü (2 Kasım 2026):** Hat otomatik türleri (`kok`, `lemma`, `benzer_ayet`, `anlamsal`) `aday` yazar. [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5 ve [P-07](../07-yayin/01-yayin-sureci.md#4-yayınlayıcı-kalite-kapısı-kuralları) yalnız insan onayı isteyen türün (`atif`, `iktibas`, `ima`, `konu`) adayını `dev` ve `internal`'a ayırır; otomatik türler §8'deki `confidence` eşiğiyle her derlemeye girer.
 
 ## İlgili dosyalar
 - [İktibas tespiti](./02-iktibas-tespiti.md) · [Kök ve lemma](./03-kok-ve-lemma.md) · [Anlamsal katman](./04-anlamsal-katman.md)
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Sözlük](../00-ozet/03-sozluk.md)
 - [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) · [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) · [Tasarım sistemi](../01-urun/04-tasarim-sistemi.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Kullanıcı verisi](../03-veri/04-kullanici-verisi-ve-senkron.md) · [Arama](../03-veri/05-arama-fts5.md)
-- [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Yayın kapısı](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK](../07-yayin/02-kvkk-ve-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md) · [Kaynakça](../09-kaynakca.md)
+- [Mobil mimari](../06-mobil/01-mobil-mimari.md) · [Yayın süreci](../07-yayin/01-yayin-sureci.md) · [Gizlilik](../07-yayin/02-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md) · [Kaynakça](../09-kaynakca.md)

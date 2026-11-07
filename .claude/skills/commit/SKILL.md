@@ -40,7 +40,7 @@ Biçim ([Proje yapısı](../../../docs/02-mimari/03-proje-yapisi.md) §6):
 
 - Dosyaları adıyla ekle (`git add <yol>`); `git add -A` kullanma.
 - `git commit -m "<özet>" -m "<gövde>"`. Kanca ya da denetim atlama bayrağı (`--no-verify`) kullanma; yayımlanmış commit'i değiştirme (`--amend` yalnız henüz push edilmemiş kendi commit'inde ve kullanıcı isterse).
-- **Push yapma.** Kullanıcı isterse bile önce dalı ve hedefi göster; `git push` her zaman onay ister, zorla gönderme yasaktır.
+- **Push yalnız aşama sonunda.** Bu beceri push yapmaz; aşama bitince `asama` becerisi dalı ve hedefi gösterip `git push` çalıştırır (onay sorulmaz, CLAUDE.md kural 11). Zorla gönderme yasaktır.
 
 ## 5. Rapor
 

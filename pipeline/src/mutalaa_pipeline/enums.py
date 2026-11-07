@@ -1,25 +1,12 @@
-"""Paylasilan enum degerleri (A06.2).
+"""Paylasilan enum degerleri (A06.2): `enums.json` dosyasindaki 10 tur.
 
 Degerler `packages/content-schema/enums.json` dosyasindaki etiketlerdir ve bildirim sirasi
-JSON sirasidir. Sira anlamlidir (`serbest` < `bekliyor` < `ic_kullanim` < `kapali`). Deger
-eklemek ya da sirayi degistirmek once JSON'a, sonra dort dile ayni degisiklikte girer;
-`tests/test_enums.py` bu siniflari JSON'a karsi sinar.
+JSON sirasidir. Sira anlamlidir (`taslak` < `incelemede` < `onayli`). Deger eklemek ya da
+sirayi degistirmek once JSON'a, sonra dort dile ayni degisiklikte girer; `tests/test_enums.py`
+bu siniflari JSON'a karsi sinar.
 """
 
 from enum import StrEnum
-
-
-class LicenseStatus(StrEnum):
-    """Kaynagin lisans durumu; sira kisitliligi artar (kapi en kisitlayiciyi secer)."""
-
-    SERBEST = "serbest"
-    BEKLIYOR = "bekliyor"
-    IC_KULLANIM = "ic_kullanim"
-    KAPALI = "kapali"
-
-    def kisitlilik_sirasi(self) -> int:
-        """Bildirim sirasindaki konum: 0 (`serbest`) en az, 3 (`kapali`) en cok kisitlidir."""
-        return tuple(type(self)).index(self)
 
 
 class DerlemeTuru(StrEnum):

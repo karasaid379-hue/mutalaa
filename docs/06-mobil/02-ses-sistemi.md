@@ -1,31 +1,41 @@
 # Ses sistemi
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)
+> **Sürüm:** 2.1 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-40](../00-ozet/02-karar-defteri.md#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)
 
-Bu dosya tilavetin çalınmasını tanımlar. [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) expo-audio ile XState'i seçer. react-native-track-player v5 ticari kullanım için lisans istiyor, v4 ise donduruldu ([RNTP](https://github.com/doublesymmetry/react-native-track-player)); eski plandaki expo-av ve react-native-fs de kullanılmaz ([K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)). expo-audio bilgileri "latest" belgesinden alındı; belgenin önerdiği sürüm ~58.0.9 ([expo-audio](https://docs.expo.dev/versions/latest/sdk/audio/)). SDK 57'deki karşılıklar Doğrulanacak. Mini oynatıcı ve Dinleme sayfasının görünüşü [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) dosyasındadır.
+Bu dosya tilavetin nereden geldiğini, nasıl çalındığını ve cihazda nasıl saklandığını tanımlar. Kaynak, okuyucu ve teknoloji seçiminin dayanağı [Ses kaynağı araştırması](./04-ses-kaynak-arastirmasi.md) dosyasındadır; karar [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme). [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) expo-audio ile XState'i seçer; react-native-track-player v5 ticari kullanım için ücretli, expo-av ve react-native-fs kullanılmaz ([K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)). Mini oynatıcı ve Dinleme sayfasının görünüşü [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) dosyasındadır.
+
+**Tasarımın özeti.** Ses, okuyucunun kaydına ait 114 sure dosyasıdır. Âyetler dosya içinde karedir; dosyalar kendi depomuzdan sunulur (ayna). Dinleme çevrimiçi öncelikli, kalıcı indirme isteğe bağlıdır.
 
 ## 1. Kapsam
 
-Rapor Dinleme sayfası için ön dinlemeli hafız seçici, aralık seçimi, "her âyeti ×N" ve "aralığı ×N" tekrarı, âyet süresiyle orantılı bekleme çarpanı, 0,75–1,5 perde düzeltmeli hız, Kur'an + meal dönüşümü ve uyku zamanlayıcısı önerir ([araştırma raporu](../09-kaynakca.md); [Quran.com repeatMachine](https://github.com/quran/quran.com-frontend-next/blob/production/src/xstate/actors/repeatMachine/repeatMachine.ts); [Diyanet](https://kuran.diyanet.gov.tr/mushaf)).
-
 | v1 | Sonra |
 |---|---|
-| Âyet, aralık, sure, sayfa ve cüz çalma; her âyeti ×N, aralığı ×N; bekleme çarpanı; 0,75–1,5 hız | Kesintisiz liste motoru (SDK 58, bölüm 4) |
-| Arka planda ve kilit ekranında çalma; âyet vurgusu; zamanlaması olan hafızda kelime vurgusu; takip modu ve çip | Kur'an + meal dönüşümü (Faz 4 · v1.x, bölüm 8) |
-| Uyku zamanlayıcısı; sure ve cüz indirme ([Depolama yöneticisi](./03-depolama-yoneticisi.md)) | Kelime telaffuz sesi (Açık soru, bölüm 11) |
+| 7 okuyucu, 9 kayıt ([§3.2](#32-okuyucular-ve-kayıtlar)); indirmeden çevrimiçi dinleme | Yeni kayıtlar katalog sürümüyle (araştırma §4.3) |
+| Âyet, aralık, sure, sayfa ve cüz çalma; kesintisiz dinleme ve sonraki sureye geçiş; Nâs kuralı | Kelime takibi (`kelimeTakibi` bayrağı, §6) |
+| Her âyeti ×N, aralığı ×N; âyet arası bekleme; 0,75–1,5 hız | Kur'an + meal dönüşümü (v1.x, §8) |
+| Arka planda ve kilit ekranında çalma; kilit ekranında sonraki/önceki sure | Kelime telaffuz sesi (Açık soru) |
+| Âyet vurgusu, takip modu ve çip; uyku zamanlayıcısı | iOS yedekten dışlama için yerel modül (SK-7) |
+| Tek sure ve kaydın tamamını indirme; çevrimdışı çalma; otomatik kaynak seçimi | — |
 
-## 2. expo-audio: verdikleri ve sınırları
+## 2. expo-audio (SDK 58): verdikleri ve sınırları
+
+Sürüm `expo-audio` ~58.0.10 ([bundledNativeModules sdk-58](https://github.com/expo/expo/blob/sdk-58/packages/expo/bundledNativeModules.json); [expo-audio v58](https://docs.expo.dev/versions/v58.0.0/sdk/audio/); [CHANGELOG](https://github.com/expo/expo/blob/sdk-58/packages/expo-audio/CHANGELOG.md)). Okuma 30 Ekim 2026.
 
 | Konu | Belgedeki durum | Kullanım |
 |---|---|---|
-| Arka plan | `enableBackgroundPlayback` eklenti seçeneği Android'de medya oynatma ön plan hizmeti ve kilit ekranı kontrolleri, iOS'ta audio arka plan modu ekler | Açık |
-| Kilit ekranı | `setActiveForLockScreen(active, metadata, options)`, `updateLockScreenMetadata`, `clearLockScreenControls`. "Only one player can control the lock screen at a time." `interruptionMode` `doNotMix` ya da `doNotMixPersistent` olmalı | Motorun tek oynatıcısında; her âyette üst veri güncellenir |
-| Android'de süre | Kilit ekranı kontrolü yoksa ses arka planda yaklaşık 3 dakika sonra durur (işletim sistemi sınırı) | Her çalmada kilit ekranı açılır |
-| Hız | `setPlaybackRate(rate, pitchCorrectionQuality?)`, `shouldCorrectPitch`; Android 0,1–2,0, iOS 0,0–2,0 | 0,75–1,5, perde düzeltmeli |
-| Oynatma listesi | `createAudioPlaylist`; next, previous, skipTo; döngü `none/single/all`; `trackChanged`; "gapless playback support". Kilit ekranında liste SDK 58 ile gelir ([Expo SDK 58 beta](https://expo.dev/changelog/sdk-58-beta)) | SDK 58 sonrası |
-| Durum güncellemesi | `updateInterval` varsayılan 500 ms; `playbackStatusUpdate` içinde `didJustFinish`, `isBuffering`, `playing`, `currentTime` | 100 ms |
-| Aralık döngüsü | Yok; oynatıcıda yalnız `loop` var | Tekrar mantığı XState'te |
+| Arka plan | Eklentinin `enableBackgroundPlayback` seçeneği Android'de `mediaPlayback` ön plan hizmeti, iOS'ta `UIBackgroundModes: audio` ekler | Açık |
+| Kilit ekranı | `setActiveForLockScreen(active, metadata?, options?)`, `updateLockScreenMetadata`, `clearLockScreenControls`; aynı anda tek oynatıcı ya da liste denetler; `interruptionMode` `doNotMix` ya da `doNotMixPersistent` olmalı | Her çalmada açılır |
+| Kilit ekranında sonraki/önceki | Yalnız `AudioPlaylist` ile (58.0.0: "Support lockscreen controls with playlists"). Tek `AudioPlayer`'da düğme görünmez, olay gelmez ([#43538](https://github.com/expo/expo/issues/43538)). Listede düğme yerel `next()`/`previous()` çağırır; JS'e `trackChanged` gelir | Sonraki/önceki **sure** |
+| Android'de süre | Kilit ekranı denetimi yoksa ses arka planda yaklaşık 3 dakika sonra durur | Kilit ekranı her iki motorda açılır |
+| Oynatma listesi | `createAudioPlaylist`; `add`, `insert`, `remove`, `clear`, `next`, `previous`, `skipTo`, `seekTo`, `loop` (`none/single/all`); `trackChanged`, `playlistStatusUpdate`; "gapless playback support" | `PlaylistEngine` |
+| Hız | Oynatıcıda `setPlaybackRate(rate, pitchCorrectionQuality?)` ve `shouldCorrectPitch`; listede yalnız yazılabilir `playbackRate`, perde denetimi yok | 0,75–1,5; listede perde cihazda ölçülür (SK-2) |
+| Konumlanma | `seekTo(seconds, toleranceBefore?, toleranceAfter?)` Promise döndürür; toleranslar yalnız iOS'ta | Kare başına konumlanma |
+| Durum | `playbackStatusUpdate`: `currentTime`, `duration`, `didJustFinish`, `isBuffering`, `playing`; `updateInterval` varsayılanı 500 ms | 100 ms; kare sınırı ayrı zamanlayıcıyla (§4.3) |
+| Kaynak | `AudioSource`: `{ uri, headers?, name? }`; uzak adres ve yerel `file://` aynı yolla | Akış ve yerel dosya |
+| Ön yükleme | `preload`, `clearPreloadedSource`, `getPreloadedSources` | `SingleEngine` sonraki sureyi ön yükler |
+| Oturum | `keepAudioSessionActive` (Android desteği 58.0.0) | Açık |
+| Bilinen sorunlar | Listeye kilit ekranı açıldıktan sonra `add()` Android'de çöküyor ([#52192](https://github.com/expo/expo/issues/52192)); React ağacı sökülünce bileşene bağlı oynatıcı kapanıyor ([#49906](https://github.com/expo/expo/issues/49906)); kulaklık ya da Bluetooth ayrılınca çalma duraklıyor | Liste kilit ekranından önce tam kurulur; oynatıcı modül düzeyindedir |
 
 ```ts
 // apps/mobile/src/features/audio/session.ts
@@ -35,51 +45,93 @@ export const configureAudioSession = () =>
   setAudioModeAsync({
     playsInSilentMode: true,                 // iOS sessiz düğmesi açıkken de çalar
     shouldPlayInBackground: true,
-    interruptionMode: 'doNotMixPersistent',  // kilit ekranı için şart
+    interruptionMode: 'doNotMixPersistent',  // kilit ekranı için şart; uzun dinlemede kalıcı odak
   });
 ```
 
-Belgeye göre `doNotMix` geçici, `doNotMixPersistent` kalıcı özel odak ister. Uzun dinleme için kalıcı odak uygun görünüyor; fark cihazda denenir (Doğrulanacak).
+`doNotMix` geçici, `doNotMixPersistent` kalıcı özel odak ister; ikincisinde öteki uygulamalar kendiliğinden devam etmez. Seçim cihazda doğrulanır (SS-4).
 
-## 3. Ses verisi biçimi
+## 3. Ses verisi
 
-| Ölçüt | Âyet başına dosya | Sure başına dosya + zaman damgası |
+### 3.1 Kayıt modeli
+
+- **Okuyucu** birden çok **kayıt** taşır (murattal, mücevved, muallim). Kayıt kimliği `{okuyucu}-{tarz}` biçimindedir: ASCII, küçük harf (ör. `alafasy-murattal`).
+- Kayıt **114 sure dosyasıdır**. Âyetler dosya içinde **karedir**: `[startMs, endMs)`, yarı açık. Sure dosyasının 1. âyetten önceki kısmı istiâze ya da besmele **özel bölütüdür**; QUD `specials.json` ve zamanlamadan gelir. Fâtiha'da besmele 1. âyettir; Tevbe'de besmele yoktur.
+- Model olgun Kur'an uygulamalarının "dosya × kare" desenidir (quran_android, quran-ios): âyet başına dosyalı kayıt da bu modele girer (her dosya tek kare), ama v1 kataloğunda yoktur.
+- Zamanlaması olmayan kayıtta sure tek karedir; âyete dayalı işlevler (âyetten başlatma, âyet tekrarı, âyet vurgusu) kapalı gösterilir. v1 kayıtlarının hepsinde tam âyet zamanlaması vardır.
+
+### 3.2 Okuyucular ve kayıtlar
+
+Seçim ölçütü: birbirinden bağımsız en az üç platformda üst sıralarda olmak, Hafs an Âsım 114 sure tam kayıt ve aynı dosyaya bağlı tam âyet zamanlaması ([araştırma §4](./04-ses-kaynak-arastirmasi.md#4-okuyucuların-seçimi)).
+
+| Kayıt | Okuyucu | Dosya kaynağı | Zamanlama |
+|---|---|---|---|
+| `alafasy-murattal` | Mishary Rashid Alafasy | MP3Quran | QUD (âyet, kelime) |
+| `maher-murattal` | Maher Al-Muaiqly | Tarteel CDN | QUD (âyet, kelime) |
+| `sudais-murattal` | Abdul Rahman Al-Sudais | Tarteel CDN | QUD (âyet, kelime) |
+| `ghamdi-murattal` | Saad Al-Ghamdi | Tarteel CDN | QUD (âyet, kelime) |
+| `abdulbasit-murattal` | Abdul Basit Abdul Samad | Tarteel CDN | QUD (âyet, kelime) |
+| `abdulbasit-mucevved` | Abdul Basit Abdul Samad | Tarteel CDN | QUD (âyet, kelime) |
+| `husary-murattal` | Mahmoud Khalil Al-Husary | MP3Quran | QUD (âyet, kelime) |
+| `minshawi-murattal` | Mohamed Siddiq El-Minshawi | MP3Quran | QUD (âyet, kelime) |
+| `minshawi-mucevved` | Mohamed Siddiq El-Minshawi | MP3Quran | QUD (âyet, kelime) |
+
+Yedek âyet zamanlaması MP3Quran `ayat_timing` uçlarıdır (aynı MP3Quran dosyasına bağlıysa). Kimlikler ve kaynak adresleri araştırma §4.3'tedir.
+
+### 3.3 Ayna
+
+Claude Code her kaydın sure dosyalarını kaynaktan (MP3Quran CDN, Tarteel CDN) **bir kez** `data/gelen/<kaynak>/<YYYY-AA-GG>/` altına indirir; toplu indirmede istek hızı sınırlanır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 2). İçerik hattı dosyaları buradan alır, `data/raw/ses/{kayit}/{tarih}/{sss}.mp3` altına yazar ve ölçer: bayt, sha256, süre, bit hızı türü (CBR ya da VBR). Zamanlamanın son âyet bitişi dosya süresini aşamaz; aşarsa ya da süre QUD'un ölçtüğünden 2 saniyeden fazla farklıysa o sure kayıttan düşer ve rapora yazılır. Yayınlayıcı dosyaları içerik deposuna değişmez ve sürümlü adresle koyar:
+
+```
+audio/{kayit}/{dosya_surumu}/{sss}.mp3
+```
+
+`dosya_surumu` dosyaların sha256 listesinden türeyen kısa özettir; kaynakta bir dosya değişirse yeni sürüm açılır, eski adres silinmez (eski indirmeler bozulmaz). Uygulama üçüncü taraf ses sunucusuna bağlanmaz; ASP.NET arka ucu ses baytlarını iletmez. Gerekçe ve bedel: [araştırma §5.2](./04-ses-kaynak-arastirmasi.md#52-ayna-dosyalar-kendi-içerik-depomuzdan).
+
+### 3.4 Paketler
+
+| Paket | Tablolar | İnişi |
 |---|---|---|
-| Tekrar ve aralık | Kuyruk âyet listesidir; sınır dosya sonudur | Sınır ilerleme olayından yakalanır; 100 ms güncellemeyle sonraki âyete taşma olabilir (çıkarım) |
-| Âyet arası bekleme | Dosya sonunda doğal | Zaman damgasında duraklatma gerekir |
-| Kesintisiz dinleme | Liste motoru ister | Doğal |
-| Dosya sayısı | Hafız başına 6.236 | 114 |
-| İndirme ve sürdürme | Âyet, sure ya da cüz; dosya düzeyinde sürdürme | Sure düzeyinde; bayt aralığıyla sürdürme |
-| Kelime zamanlaması | quran-align bu düzendeki EveryAyah dosyalarına hizalı | QF API sure dosyası için âyet `timestamps` ve isteğe bağlı `segments` verir ([QF ses](https://api-docs.quran.foundation/docs/sdk/audio/)) |
+| `ses-katalog` | `okuyucu(id, ad, ad_ar, sira)`, `kayit(id, okuyucu_id, tarz, rivayet, zamanlama, zamanlama_surumu, dosya_surumu, bit_hizi_kbps, bit_hizi_turu, toplam_bayt)`, `kayit_sure(kayit_id, sure, url, bayt, sha256, sure_ms)` | Manifestle kendiliğinden; küçük |
+| `ses-zaman-{kayit}` | `ayet_zaman(anchor, start_ms, end_ms)`, `kelime_zaman(anchor, kelime_no, start_ms, end_ms)`, `ozel_bolut(sure, tur, start_ms, end_ms)` | Kayıt ilk seçildiğinde kendiliğinden (yaklaşık 1 MB); sonra çevrimdışı |
 
-Rapora göre âyet başına dosyalar ve oynatma listesi "âyeti 3 kez tekrarla" ya da "2:255–2:257 aralığını tekrarla" gibi işlevleri basitleştirir; sure başına tek dosya ise bant genişliği açısından daha iyidir ([araştırma raporu](../09-kaynakca.md)).
-
-**Karar önerisi:** v1 âyet başına dosya kullanır. Cihazdaki yol EveryAyah düzenini izler: `audio/{hafiz}/{sss}{aaa}.mp3` ([Depolama yöneticisi §3](./03-depolama-yoneticisi.md#3-dosya-düzeni-ve-atomik-kurulum)). Paketteki dosya kaydı (`audio_timing.file`) ve sure başına indirme birimi (`audio_part`) [İçerik paketleri §3.5](../03-veri/03-icerik-paketleri.md#35-mushaf-ve-ses-paketleri)'tedir. Bir veri seti bu düzende hafız başına yaklaşık 6,24 bin satır ve 64 kbps MP3 listeler ([quranlab/quran-audio](https://huggingface.co/datasets/quranlab/quran-audio)). 64 kbps saatte 28,8 MB eder; bir tam tilavet kabaca 0,5–1,5 GB tutar (araştırma notu tahmini). Bit hızı Açık soru.
+Tablo ve sütun adları A27.2'de [İçerik paketleri](../03-veri/03-icerik-paketleri.md) §3.5 ile kesinleşir. `zamanlama` değeri `kelime`, `ayet` ya da `yok`tur. Ses dosyaları paketlerin içinde değildir.
 
 ## 4. Motor katmanı
 
 Makine expo-audio'yu doğrudan çağırmaz; `packages/player` içindeki arayüzü çağırır. Web sonra aynı arayüzü `HTMLAudioElement` ile uygular.
 
+### 4.1 Arayüz
+
 ```ts
-// packages/player/src/engine.ts
-export type EngineItem = {
-  kind: 'quran' | 'meal'; anchor: `q:${number}:${number}`;
-  uri: string;                // yerel dosya ya da akış adresi
-  durationMs: number | null;  // ses dizininden
-  title: string; artist: string;   // "Bakara · 255", hafız adı
+// packages/player/src/engine.ts (taslak; adlar A27.3'te kesinleşir)
+export type AyahAnchor = `q:${number}:${number}`;
+export type EngineFrame = {
+  kind: 'ayet' | 'besmele' | 'istiaze';
+  anchor: AyahAnchor | null;      // özel bölütte null
+  startMs: number; endMs: number; // dosya içinde, yarı açık
+};
+export type EngineTrack = {
+  recording: string;              // 'alafasy-murattal'
+  sure: number;                   // 1..114
+  uri: string;                    // yerel dosya ya da ayna adresi (§11)
+  frames: EngineFrame[];          // zamanlama yoksa tek kare: dosyanın tamamı
+  title: string; artist: string;  // "Bakara", okuyucu adı
 };
 export type EngineEvent =
-  | { type: 'ENGINE.ITEM_START'; index: number }
-  | { type: 'ENGINE.ITEM_END'; index: number; durationMs: number }
+  | { type: 'ENGINE.TRACK_START'; track: number; remote: boolean } // remote: kilit ekranından
+  | { type: 'ENGINE.FRAME_END'; track: number; frame: number }
+  | { type: 'ENGINE.TRACK_END'; track: number }
   | { type: 'ENGINE.BUFFERING' } | { type: 'ENGINE.READY' }
-  | { type: 'ENGINE.EXTERNAL_PAUSE' }                     // sistem durdurdu
+  | { type: 'ENGINE.EXTERNAL_PAUSE' }
   | { type: 'ENGINE.INTERRUPTED' } | { type: 'ENGINE.INTERRUPTION_END'; shouldResume: boolean }
-  | { type: 'ENGINE.ERROR'; index: number; code: string };
+  | { type: 'ENGINE.ERROR'; track: number; code: string };
 
 export interface AudioEngine {
-  readonly gapless: boolean;
-  load(items: EngineItem[], start: number, opts: { rate: number }): Promise<void>;
-  seekItem(index: number): Promise<void>;  // öğenin başına konumlanır, çalmaz
+  readonly lockScreenTrackControls: boolean;               // PlaylistEngine: true
+  load(tracks: EngineTrack[], at: { track: number; frame: number }, opts: { rate: number }): Promise<void>;
+  seekFrame(track: number, frame: number): Promise<void>;   // karenin başına; çalma durumu değişmez
+  watchFrameEnd(track: number, frame: number): void;        // o karenin sonunda FRAME_END ister
   play(): void; pause(): void; stop(): void;
   setRate(rate: number): void;
   setVolume(volume: number): void;
@@ -87,60 +139,23 @@ export interface AudioEngine {
 }
 ```
 
-Çalma ilerlemesi makineye olay olarak girmez. Motor konumu 100 ms'de bir `usePlayback` deposuna yazar; kelime vurgusu oradan okur ([Mobil mimari](./01-mobil-mimari.md), bölüm 5).
+Çalma ilerlemesi makineye olay olarak girmez. Motor konumu 100 ms'de bir `usePlayback` deposuna (`{ track, positionMs }`) yazar; âyet vurgusu ve takip oradan okur ([Mobil mimari](./01-mobil-mimari.md), bölüm 5).
+
+### 4.2 İki gerçekleme
 
 | Motor | Ne zaman | Nasıl |
 |---|---|---|
-| `SteppedEngine` | v1 (SDK 57); tekrar, bekleme ya da meal açıkken her zaman | Tek `AudioPlayer`; her öğede `replace()`; kilit ekranı aynı oynatıcıda |
-| `PlaylistEngine` | SDK 58'de; tekrar 1, bekleme 0, meal kapalıyken | `AudioPlaylist` ile kesintisiz çalma; kilit ekranı listede |
+| `PlaylistEngine` | Varsayılan | `AudioPlaylist`; her sure bir parça; kesintisiz sure geçişi; kilit ekranında sonraki/önceki sure. Liste çalma aralığının surelerinden kilit ekranı açılmadan önce tam kurulur (#52192). Kayıt değişince liste baştan kurulur |
+| `SingleEngine` | Yedek: hız 1 değilken listede perde bozulursa (SK-2), listede boşluk ya da çökme ölçülürse (SK-3) | Tek `AudioPlayer`; sure değişiminde `replace()` ve ardından açık `play()`; sonraki sure `preload()` ile hazır; kilit ekranı açık ama sonraki/önceki yok |
 
-SDK 57'de kilit ekranı oynatma listesiyle çalışmaz. Kilit ekranı olmadan Android sesi yaklaşık 3 dakika sonra keser. Bu yüzden v1 tek oynatıcılı `SteppedEngine` ile çıkar; yerel dosyalarda âyetler arası boşluk ölçülür (Doğrulanacak).
+Seçim `apps/mobile/src/features/audio/engine/index.ts` içinde tek bir kuralla yapılır; makine motoru bilmez. İki motor da modül düzeyinde tek örnektir, bileşen ömrüne bağlanmaz.
 
-```ts
-// apps/mobile/src/features/audio/engine/stepped.ts (özet)
-import { createAudioPlayer, type AudioStatus } from 'expo-audio';
+### 4.3 Kare sınırı
 
-export function createSteppedEngine(onProgress: (i: number, ms: number) => void): AudioEngine {
-  const player = createAudioPlayer(null, { updateInterval: 100 });   // imza Doğrulanacak
-  player.shouldCorrectPitch = true;
-  let items: EngineItem[] = [], index = -1, wantPlaying = false;
-  const bus = createEmitter<EngineEvent>();
-
-  player.addListener('playbackStatusUpdate', (s: AudioStatus) => {
-    onProgress(index, Math.round(s.currentTime * 1000));
-    if (s.didJustFinish) { wantPlaying = false; bus.emit({ type: 'ENGINE.ITEM_END', index, durationMs: Math.round(s.duration * 1000) }); }
-    else if (s.isBuffering) bus.emit({ type: 'ENGINE.BUFFERING' });
-    else if (wantPlaying && !s.playing) { wantPlaying = false; bus.emit({ type: 'ENGINE.EXTERNAL_PAUSE' }); } // sezgi; Doğrulanacak
-  });
-
-  async function seekItem(i: number) {
-    index = i;
-    player.replace({ uri: items[i].uri });
-    player.updateLockScreenMetadata({ title: items[i].title, artist: items[i].artist, albumTitle: 'Mütâlaa' });
-    bus.emit({ type: 'ENGINE.ITEM_START', index: i });
-  }
-
-  return {
-    gapless: false,
-    async load(next, start, { rate }) {
-      items = next;
-      await seekItem(start);
-      player.setPlaybackRate(rate);
-      player.setActiveForLockScreen(true, { title: next[start].title, artist: next[start].artist },
-        { showNextTrack: true, showPreviousTrack: true, showSeekForward: false, showSeekBackward: false });
-    },
-    seekItem,
-    play: () => { wantPlaying = true; player.play(); },
-    pause: () => { wantPlaying = false; player.pause(); },
-    stop: () => { wantPlaying = false; player.pause(); player.clearLockScreenControls(); },
-    setRate: (r) => player.setPlaybackRate(r),
-    setVolume: (v) => { player.volume = v; },
-    subscribe: bus.subscribe,
-  };
-}
-```
-
-Doğrulanacaklar: `replace()` sonrasında kilit ekranı bağının sürmesi ve kilit ekranındaki "sonraki/önceki" düğmelerinin JS'e olay olarak ulaşması (belgede yazmıyor). İleri ve geri sarma düğmeleri âyet düzeyinde anlamlı olmadığı için kapalıdır.
+- Âyet sonu sabit aralıklı sorguyla değil, **zamanlayıcıyla** yakalanır: `kalan = (frame.endMs − positionMs) ÷ rate`; `setTimeout(max(50, kalan))`. Tetiklenince konum yeniden okunur; sınıra 150 ms'den uzaksa yeniden kurulur, değilse `ENGINE.FRAME_END` gönderilir. Desen quran_android ve quran-ios'tadır.
+- Zamanlayıcı yalnız makine `watchFrameEnd` istediğinde kurulur: âyet tekrarı, bekleme, aralık sonu ve uyku "aralık bitince" için. Bunların hiçbiri yoksa dosya kesintisiz çalar; kare değişimi yalnız vurgu içindir.
+- Âyet tekrarı ve aralık başına dönüş `seekFrame` ile yapılır. VBR MP3'te Android konumlanması sapabilir (SK-1); bit hızı türü katalogdadır, cihazda ölçülür.
+- Arka planda JS zamanlayıcılarının sürdüğü varsayılır; cihazda doğrulanır (SS-3).
 
 ## 5. Oynatıcı durum makinesi
 
@@ -150,26 +165,28 @@ Makine `packages/player` içindedir ve XState v5 API'siyle yazılır (sürüm `p
 
 | Alan | Varsayılan | Anlamı |
 |---|---|---|
-| `reciter` | Son seçilen | `{ id, name, hasWordTiming }` |
+| `recording` | Son seçilen | `{ id, reciterName, timing: 'kelime' \| 'ayet' \| 'yok' }` |
 | `range` | — | `{ scope: 'ayet' \| 'aralik' \| 'sure' \| 'sayfa' \| 'cuz', from, to }`; uçlar `q:2:255` biçiminde |
-| `queue`, `index` | — | Çözülmüş kuyruk (`EngineItem[]`) ve çalan öğe |
+| `tracks`, `pos` | — | Çözülmüş parçalar (`EngineTrack[]`) ve çalan konum `{ track, frame }` |
 | `repeatEach`, `repeatEachDone` | 1, 0 | Her âyetin çalınma sayısı (1 = tekrarsız) |
 | `repeatRange`, `repeatRangeDone` | 1, 0 | Aralığın çalınma sayısı (0 = sınırsız) |
-| `delayMultiplier` | 0 | 0, 0,5, 1, 1,5 ya da 2; bekleme = süre ÷ hız × çarpan |
-| `mealAlternation` | `kapali` | `kapali`, `her_ayet`, `sure_sonu`, `sayfa_sonu` (v1.x) |
+| `delayMultiplier` | 0 | 0, 0,5, 1, 1,5 ya da 2; bekleme = âyet süresi ÷ hız × çarpan |
+| `autoNextSurah` | true | Aralık bitince ya da sure kapsamında sure bitince sonraki sure çalar |
+| `repeatQuran` | false | Nâs bitince Fâtiha'dan devam eder; kapalıysa çalma durur |
+| `mealAlternation` | `yok` | `yok`, `her_ayet`, `sure_sonu`, `sayfa_sonu` (v1.x) |
 | `follow` | true | Okuyucu çalan âyeti izler |
 | `rate` | 1 | 0,75–1,5 |
-| `sleep` | null | `{ mode: 'dakika', endsAt }` (15, 30, 60 dk) ya da `{ mode: 'aralik_sonu' }`; seçenekler bölüm 9 |
-| `pending`, `autoplay`, `error` | — | Öğe bitince uygulanacak adım; yüklemede çalmaya başla; son hata kodu |
+| `sleep` | null | `{ mode: 'dakika', endsAt }` (15, 30, 60 dk) ya da `{ mode: 'aralik_sonu' }` |
+| `pending`, `autoplay`, `error` | — | Kare bitince uygulanacak adım; yüklemede çalmaya başla; son hata kodu |
 
-Tekrar, bekleme, hız ve takip tercihleri MMKV'de saklanır.
+Tekrar, bekleme, hız, sonraki sure, tam tekrar ve takip tercihleri MMKV'de saklanır.
 
 ### 5.2 Olaylar
 
-- Çalma: `LOAD { reciterId, range, startAt?, autoplay? }`, `PLAY`, `PAUSE`, `TOGGLE`, `STOP`, `NEXT_AYAH`, `PREV_AYAH`, `SEEK_AYAH { anchor }` (arayüz ve kilit ekranı).
-- Ayar: `SET_RATE`, `SET_REPEAT`, `SET_DELAY`, `SET_MEAL_ALTERNATION`, `SET_SLEEP`, `SET_RECITER` (kuyruk aynı âyetten yeniden çözülür).
+- Çalma: `LOAD { recordingId, range, startAt?, autoplay? }`, `PLAY`, `PAUSE`, `TOGGLE`, `STOP`, `NEXT_AYAH`, `PREV_AYAH`, `NEXT_SURAH`, `PREV_SURAH`, `SEEK_AYAH { anchor }`.
+- Ayar: `SET_RATE`, `SET_REPEAT`, `SET_DELAY`, `SET_AUTO_NEXT`, `SET_REPEAT_QURAN`, `SET_MEAL_ALTERNATION`, `SET_SLEEP`, `SET_RECORDING` (parçalar aynı âyetten yeniden çözülür).
 - Okuyucu: `USER_SCROLLED` (takip kapanır), `RETURN_TO_CURRENT` (takip açılır).
-- Depolama: `PACK_REMOVED { packId }` (hafızın paketi silindiyse durur).
+- Depolama: `RECORDING_REMOVED { recordingId }` (kayıt katalogdan kalktı ya da dosyalar silindi; çalma durur).
 - Hata ekranı: `RETRY`, `SKIP`. Motor: `ENGINE.*` (bölüm 4).
 
 ### 5.3 Durumlar
@@ -178,8 +195,8 @@ Tekrar, bekleme, hız ve takip tercihleri MMKV'de saklanır.
 stateDiagram-v2
   [*] --> idle
   idle --> resolving: LOAD
-  resolving --> active: kuyruk hazır
-  resolving --> error: hafız ya da dosya yok
+  resolving --> active: parçalar hazır
+  resolving --> error: kayıt ya da dosya yok
   state active {
     [*] --> boot
     boot --> playing: autoplay
@@ -188,127 +205,92 @@ stateDiagram-v2
     paused --> playing: PLAY
     playing --> buffering: ENGINE.BUFFERING
     buffering --> playing: ENGINE.READY
-    playing --> routing: ENGINE.ITEM_END
-    routing --> playing: tekrar ya da sıradaki
+    playing --> routing: ENGINE.FRAME_END, ENGINE.TRACK_END
+    routing --> playing: devam, tekrar ya da sıradaki
     routing --> gap: bekleme var
-    routing --> paused: uyku, âyet ya da sure sonu
+    routing --> paused: uyku, aralık sonu
     gap --> playing: süre doldu
     gap --> paused: PAUSE
     playing --> interrupted: kesinti
     interrupted --> playing: devam sinyali
     interrupted --> paused: sinyal yok
   }
-  active --> ended: aralık bitti
-  active --> resolving: SET_RECITER
+  active --> ended: aralık bitti, Nâs bitti
+  active --> resolving: SET_RECORDING
   active --> error: ENGINE.ERROR
-  active --> idle: STOP, PACK_REMOVED
+  active --> idle: STOP, RECORDING_REMOVED
   ended --> active: PLAY
   error --> resolving: RETRY
   error --> active: SKIP
   error --> idle: STOP
 ```
 
-### 5.4 Öğe bitince karar
+`ENGINE.TRACK_START` ile `remote: true` gelirse (kilit ekranından sonraki ya da önceki sure) makine konumu o surenin ilk karesine taşır, tekrar sayaçlarını sıfırlar ve takip açıksa okuyucu o sureye gider.
+
+### 5.4 Kare bitince karar
 
 Kararı saf bir fonksiyon verir; motorsuz test edilir.
 
 ```ts
-// packages/player/src/decide.ts
-export type Step = { type: 'replay' } | { type: 'advance'; index: number; restart?: boolean };
+// packages/player/src/decide.ts (taslak)
+export type Pos = { track: number; frame: number };
+export type Step =
+  | { type: 'continue' }                       // aynı dosyada sıradaki kare; konumlanma yok
+  | { type: 'replay' }                         // aynı kareye seekFrame
+  | { type: 'jump'; to: Pos; restart?: boolean };   // başka kareye ya da sureye
 export type NextStep =
   | Step
   | { type: 'gap'; ms: number; then: Step }
-  | { type: 'pause'; then: Step }          // uyku: aralık bitince dur
+  | { type: 'pause'; then: Step }              // uyku: aralık bitince dur
   | { type: 'end' };
 
-export function decideAfterItem(c: PlayerContext, durationMs: number): NextStep {
-  const item = c.queue[c.index];
-  const isQuran = item.kind === 'quran';
+export function decideAfterFrame(c: PlayerContext, frameDurationMs: number): NextStep {
+  const isAyah = c.tracks[c.pos.track].frames[c.pos.frame].kind === 'ayet';
   let step: Step | null = null;
 
-  if (isQuran && c.repeatEachDone + 1 < c.repeatEach) step = { type: 'replay' };
-  else if (c.index + 1 < c.queue.length) step = { type: 'advance', index: c.index + 1 };
-  else if (c.repeatRange === 0 || c.repeatRangeDone + 1 < c.repeatRange) step = { type: 'advance', index: 0, restart: true };
+  if (isAyah && c.repeatEachDone + 1 < c.repeatEach) step = { type: 'replay' };
+  else {
+    const next = nextPos(c);                   // aralık içinde sıradaki kare; aralık sonunda null
+    if (next) step = next.track === c.pos.track && next.frame === c.pos.frame + 1
+      ? { type: 'continue' } : { type: 'jump', to: next };
+    else if (c.repeatRange === 0 || c.repeatRangeDone + 1 < c.repeatRange)
+      step = { type: 'jump', to: firstPos(c), restart: true };
+    else if (c.autoNextSurah) step = nextSurahStart(c);   // Nâs'tan sonra repeatQuran kapalıysa null
+  }
   if (!step) return { type: 'end' };
-
-  // aralık yeniden başlayacakken dur; tekrar kalmadıysa çalma zaten 'end' ile biter
-  if (c.sleep?.mode === 'aralik_sonu' && step.type === 'advance' && step.restart) return { type: 'pause', then: step };
-
-  if (isQuran && c.delayMultiplier > 0) {
-    return { type: 'gap', ms: Math.round((durationMs / c.rate) * c.delayMultiplier), then: step };
+  if (c.sleep?.mode === 'aralik_sonu' && step.type === 'jump' && step.restart) return { type: 'pause', then: step };
+  if (isAyah && c.delayMultiplier > 0) {
+    return { type: 'gap', ms: Math.round((frameDurationMs / c.rate) * c.delayMultiplier), then: step };
   }
   return step;
 }
 ```
 
-Bekleme her Kur'an öğesinden sonra, tekrarlar dahil uygulanır; hıfz çalışan kullanıcı aradaki sessizlikte âyeti kendisi tekrar eder. Meal öğelerinden sonra bekleme yoktur. Örnek test: `repeatEach: 2`, `delayMultiplier: 1`, `rate: 1` ve 10 saniyelik âyette ilk karar `{ type: 'gap', ms: 10000, then: { type: 'replay' } }`, ikinci karar sıradaki âyete ilerleyen bir beklemedir.
+- Bekleme her âyet karesinden sonra, tekrarlar dahil uygulanır; hıfz çalışan kullanıcı aradaki sessizlikte âyeti kendisi tekrar eder. Özel bölütlerden ve meal öğelerinden sonra bekleme ve tekrar yoktur.
+- `nextSurahStart`: sonraki surenin ilk karesi (istiâze ya da besmele bölütü varsa o). 114'ten sonra `repeatQuran` açıksa Fâtiha'nın başı, kapalıysa `null` (çalma durur).
+- Sure içinde `continue` dosyanın kesintisiz akmasıdır; `PlaylistEngine` sure sonunu kendisi geçer, makine yalnız konumu günceller.
+- Örnek test: `repeatEach: 2`, `delayMultiplier: 1`, `rate: 1`, 10 saniyelik âyette ilk karar `{ type: 'gap', ms: 10000, then: { type: 'replay' } }`; ikinci karar sıradaki kareye `continue` içeren bir beklemedir.
 
 ### 5.5 Makine
 
-Makine `createPlayerMachine(engine, resolveQueue, saved)` fabrikasıyla kurulur; eylemler motoru kapanış (closure) üzerinden çağırır. Kök durum `fromCallback` ile motor olaylarına abone olur, `resolving` `fromPromise` ile kuyruğu çözer. Ayar olayları ve takip olayları kökte işlenir. Çekirdek `active` durumu:
+Makine `createPlayerMachine(engine, resolveTracks, saved)` fabrikasıyla kurulur; eylemler motoru kapanış (closure) üzerinden çağırır. Kök durum `fromCallback` ile motor olaylarına abone olur, `resolving` `fromPromise` ile parçaları çözer. Ayar ve takip olayları kökte işlenir.
 
-```ts
-// packages/player/src/machine.ts (özet)
-active: {
-  entry: 'load',                         // motor kuyruğu yükler, kilit ekranını açar
-  initial: 'boot',
-  on: {
-    'ENGINE.ERROR': { target: 'error', actions: 'storeError' },
-    SET_RECITER: { target: 'resolving', actions: 'storeReciter' },
-    PACK_REMOVED: { guard: 'affectsReciter', target: 'idle', actions: 'stop' },
-    NEXT_AYAH: { target: '.playing', reenter: true, actions: ['stepNext', 'positionEngine'] },
-    SEEK_AYAH: { target: '.playing', reenter: true, actions: ['seekAnchor', 'positionEngine'] },
-  },
-  states: {
-    boot: { always: [{ guard: 'autoplay', target: 'playing' }, { target: 'paused' }] },
-    playing: {
-      entry: 'play',
-      on: {
-        PAUSE: 'paused', TOGGLE: 'paused', 'ENGINE.EXTERNAL_PAUSE': 'paused',
-        'ENGINE.BUFFERING': 'buffering', 'ENGINE.INTERRUPTED': 'interrupted',
-        'ENGINE.ITEM_END': { target: 'routing', actions: 'decide' },   // pending = decideAfterItem(...)
-      },
-    },
-    routing: {
-      always: [
-        { guard: 'pendingEnd', target: '#player.ended' },
-        { guard: 'pendingGap', target: 'gap' },
-        { guard: 'pendingPause', target: 'paused', actions: ['applyStep', 'positionEngine'] },
-        { target: 'playing', actions: ['applyStep', 'positionEngine'] },
-      ],
-    },
-    gap: {
-      entry: 'pause',
-      after: { gap: { target: 'playing', actions: ['applyStep', 'positionEngine'] } },  // delays.gap = pending.ms
-      on: { PAUSE: 'paused', PLAY: { target: 'playing', actions: ['applyStep', 'positionEngine'] } },
-    },
-    paused: { entry: 'pause', on: { PLAY: 'playing', TOGGLE: 'playing' } },
-    buffering: { on: { 'ENGINE.READY': 'playing', PAUSE: 'paused' }, after: { 20000: '#player.error' } },
-    interrupted: { on: { 'ENGINE.INTERRUPTION_END': [{ guard: 'shouldResume', target: 'playing' }, { target: 'paused' }] } },
-  },
-},
-```
-
-- `applyStep` saf bir atamadır. `replay` `repeatEachDone`, `restart` `repeatRangeDone` sayacını artırır; `advance` `index`'i değiştirir; uyku adımından sonra `sleep` temizlenir. XState v5'te bir geçişin eylemleri sırayla çalıştığı için `positionEngine` güncel `index`'i görür.
-- `ended` durumunda `PLAY` aralığı baştan başlatır. `error` durumunda `RETRY` kuyruğu yeniden çözer, `SKIP` sonraki âyete geçer.
-- Kuyruk çözücü hafızın görünürlüğünü (bölüm 12), âyet listesini (`core` eşlemeleri), yerel dosyayı ya da izinli akış adresini döndürür. İkisi de yoksa `not_downloaded` koduyla `error` durumuna geçilir ve "Bu sureyi indir" düğmesi çıkar.
-- Aktör uygulama kökünde bir kez oluşur; testler sahte motorla koşulur ([Test stratejisi](../07-yayin/03-test-stratejisi.md)).
+- `active` girişinde motor parçaları yükler ve kilit ekranını açar. `playing` girişinde ve her karar sonrasında, `pending` kararı kare sonu gerektiriyorsa `watchFrameEnd` çağrılır.
+- `applyStep` saf bir atamadır: `replay` `repeatEachDone`, `restart` `repeatRangeDone` sayacını artırır; `jump` ve `continue` `pos`'u değiştirir; uyku adımından sonra `sleep` temizlenir. XState v5'te bir geçişin eylemleri sırayla çalıştığı için `positionEngine` güncel `pos`'u görür; `continue`'da konumlanma yapılmaz.
+- Tamponda 20 saniye kalınırsa `error` (`buffering_timeout`). `ended` durumunda `PLAY` aralığı baştan başlatır. `error` durumunda `RETRY` parçaları yeniden çözer, `SKIP` sonraki âyete ya da sureye geçer.
+- Parça çözücü kaydın katalog satırını, `core`'daki âyet listesini, `ses-zaman-{kayit}` karelerini ve her sure için kaynağı (§11) döndürür. Kaynak yoksa `not_downloaded` koduyla `error` durumuna geçilir ve "Bu sure indirilmedi · İndir" düğmesi çıkar.
+- Aktör uygulama kökünde, modül düzeyinde bir kez oluşur; testler sahte motorla koşulur ([Test stratejisi](../07-yayin/03-test-stratejisi.md)).
 
 ## 6. Vurgu: âyet ve kelime
 
-- **Âyet vurgusu** her hafızda çalışır. Çalan öğenin çapası okuyucuya gider: Mushaf A'da âyetin glifleri, Mushaf B'de `ayah_box` kutuları, Mushaf C'de metin parçaları vurgulanır ([Mobil mimari](./01-mobil-mimari.md), bölüm 7).
-- **Kelime vurgusu** yalnız zamanlama verisi olan hafızlarda çalışır, diğerlerinde âyet düzeyinde kalır ([araştırma raporu](../09-kaynakca.md)). Mushaf B'de kelime kutusu olmadığı için yalnız âyet vurgusu vardır.
+- **Âyet vurgusu** bütün v1 kayıtlarında çalışır. `usePlayback` konumu `ayet_zaman` dizisinde ikili aramayla âyete çevrilir; okuyucuya giden çapa vurgulanır: Mushaf A'da âyetin glifleri, Mushaf B'de `ayah_box` kutuları, Mushaf C'de metin parçaları ([Mobil mimari](./01-mobil-mimari.md), bölüm 7).
+- **Kelime takibi** `kelimeTakibi` bayrağıyla sonra açılır. QUD kelime numarası âyet içinde 1 tabanlıdır ve QPC/DigitalKhatt kelime bölünmesine göredir; Tanzil kelime çapalarıyla (A11, A17) eşlemesi içerik hattında doğrulanır, eşleşmeyen âyette kelime vurgusu yapılmaz (SK-5). Mushaf B'de kelime kutusu olmadığı için yalnız âyet vurgusu vardır.
 - **Görünüm.** Âyette zemin tonu, kelimede zemin ile alt çizgi; renk tek başına anlam taşımaz. Hareketi Azalt açıkken yumuşak kaydırma yerine doğrudan atlanır.
-
-quran-align zamanlamaları CC BY 4.0 lisanslıdır, kelimelerin %98,5–99,9'unu ortalama 73 ms'nin altında sapmayla hizalar ve yalnız hizalandığı EveryAyah dosyaları için geçerlidir. Biçimi `{surah, ayah, segments:[[word_start_index, word_end_index, start_msec, end_msec], …]}`; kelimeler Tanzil `quran-uthmani.txt` metnine göre bölünür ([quran-align](https://raw.githubusercontent.com/cpfair/quran-align/master/README.md)). İçerik hattı veriyi kelime çapalarına çevirip `audio_timing` tablosuna yazar; `ses-{hafiz}` paketi bu tabloyu taşır.
-
-Doğrulanacaklar: quran-align dizinlerinin başlangıç değeri ve bitişin aralığa dahil olup olmadığı; Tanzil bölünmesinin QAC/QUL konum numaraları ve QPC glif kelimeleriyle örtüşmesi ([Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)); yeniden kodlanan dosyalarda zamanlamanın kayması (çıkarım; yeniden ölçülmeden `hasWordTiming` açılmaz). İzni alınacak Türk hafızlar için hazır zamanlama yoktur; kendi hizalamamız yapılana kadar vurgu âyet düzeyinde kalır (Açık soru).
-
-`packages/player/src/timing.ts` içindeki `activeWordAt(segments, tMs)` çalan kelimeyi `{ kelime, startMs, endMs }` dizisinde ikili aramayla bulur. `currentTime` ortam zamanı olduğu için hız değişse de bölütler geçerlidir. Vurgu gecikmesi 100 ms güncelleme aralığı ile hizalama sapmasının toplamıdır; her güncellemede yalnız durumu değişen kelime bileşenleri yeniden çizilir.
+- `packages/player/src/timing.ts`: `activeFrameAt(frames, tMs)` ve `activeWordAt(segments, tMs)` ikili aramayla çalışır. `currentTime` ortam zamanı olduğu için hız değişse de bölütler geçerlidir. Vurgu gecikmesi 100 ms güncelleme ile zamanlama sapmasının toplamıdır; her güncellemede yalnız durumu değişen bileşen yeniden çizilir.
 
 ## 7. Takip modu ve "Okunan âyete dön" çipi
 
-- Takip açıkken çalan âyet değişince okuyucu o âyete gider: mushafta sayfa çevrilir, Âyet âyet düzeninde liste kayar.
+- Takip açıkken çalan âyet değişince okuyucu o âyete gider: mushafta sayfa çevrilir, Âyet âyet düzeninde liste kayar. Sure değişince okuyucu yeni sureye geçer.
 - Kullanıcı elle kaydırmaya ya da sayfa çevirmeye başlayınca `USER_SCROLLED` gider ve takip kapanır. Programla yapılan kaydırma `onScrollBeginDrag` tetiklemez.
 - Okuyucunun tek çip yuvasında atlama zinciri önceliklidir ([Okuma deneyimi §9](../01-urun/02-okuma-deneyimi.md#9-atla-ve-dön)). Zincir yokken, takip kapalıysa ve çalan âyet ekranda değilse "Okunan âyete dön · Bakara 255" çıkar; tefsir görünümünde bu çip "Etkin âyete git" olur. Dokunmak `RETURN_TO_CURRENT` gönderir.
 - Atlama başlarken okuyucu `USER_SCROLLED` gönderir; takip kapanır ve çalan âyet atlama hedefini ezmez. Zincir açıkken çalan âyete Dinleme sayfasındaki "Okunan âyete git" düğmesiyle gidilir; bu geçiş atlama sayılır ve yığına yazılır.
@@ -319,7 +301,7 @@ export function useFollowPlayback(
   goTo: (a: AyahAnchor, animated: boolean) => void,
   isOnScreen: (a: AyahAnchor) => boolean,
 ) {
-  const anchor = useSelector(playerActor, (s) => s.context.queue[s.context.index]?.anchor);
+  const anchor = usePlayback((s) => s.activeAyah);   // konumdan türetilen çalan âyet
   const follow = useSelector(playerActor, (s) => s.context.follow);
   const playing = useSelector(playerActor, (s) => s.matches({ active: 'playing' }));
   const chainActive = useReader((s) => s.returnStack.length > 0);   // tek çip yuvasında zincir önce gelir
@@ -336,73 +318,73 @@ export function useFollowPlayback(
 
 ## 8. Kur'an + meal dönüşümü (v1.x)
 
-Diyanet'in dinleme modu meali âyet, sure ya da sayfa sonunda okutur ve meal seslendireni hafızdan ayrı seçtirir ([Diyanet](https://kuran.diyanet.gov.tr/mushaf)).
+Diyanet'in dinleme modu meali âyet, sure ya da sayfa sonunda okutur ve meal seslendireni okuyucudan ayrı seçtirir ([Diyanet](https://kuran.diyanet.gov.tr/mushaf)).
 
-| `mealAlternation` | Kuyruk |
+| `mealAlternation` | Sıra |
 |---|---|
 | `her_ayet` | K1, M1, K2, M2 … |
-| `sure_sonu` | Surenin Kur'an öğeleri, ardından aynı surenin meal öğeleri |
-| `sayfa_sonu` | Sayfanın Kur'an öğeleri, ardından aynı sayfanın meal öğeleri |
+| `sure_sonu` | Surenin Kur'an kareleri, ardından aynı surenin meal öğeleri |
+| `sayfa_sonu` | Sayfanın Kur'an kareleri, ardından aynı sayfanın meal öğeleri |
 
-- Tekrar ve bekleme yalnız Kur'an öğelerine uygulanır; meal bir kez okunur.
-- Meal sesi kaydı gerekir. Elmalılı metni serbesttir, seslendirenin icrası ayrı haktır; rapor uygulamaya özel seslendirmeyi çıkarım olarak önerir ([araştırma raporu](../09-kaynakca.md)).
-- Açık sorular: meal ses paketi, seslendiren sözleşmesi, sesli mealin Kurul durumu ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md); hukuki görüş değildir). Özellik `mealSesi` bayrağıyla kapalıdır.
+- Meal öğeleri ayrı dosyalardır (her biri tek kare); bu kip açıkken `SingleEngine` kullanılır. Tekrar ve bekleme yalnız Kur'an karelerine uygulanır; meal bir kez okunur.
+- Meal sesi için hazır dijital kayıt aranır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 1); aday kayıt `ses-kfgqpc-meal`'dir ([Kaynaklar](../04-icerik/01-kaynaklar.md) §3.7), Türkçe kapsamı tedarikte doğrulanır. Kaynak belirlenene kadar özellik `mealSesi` bayrağıyla kapalıdır.
 
 ## 9. Uyku zamanlayıcısı
 
-- Seçenekler kullanıcının gördüğü listedir ve [Okuma deneyimi §10](../01-urun/02-okuma-deneyimi.md#10-sesli-takip)'dan gelir: 15, 30 ve 60 dakika; "aralık bitince".
-- Dakika seçeneği makinenin dışında küçük bir zamanlayıcıdır. Süre dolunca `engine.setVolume` ile ses 5 saniyede kısılır, `PAUSE` gönderilir, ses düzeyi geri gelir. "Aralık bitince" `decideAfterItem` içinde çözülür (bölüm 5.4).
-- Durunca konum sonraki âyete alınır; "Devam" oradan başlar. Arka planda çalarken JS zamanlayıcılarının sürdüğü varsayılır (Doğrulanacak).
+- Seçenekler [Okuma deneyimi §10](../01-urun/02-okuma-deneyimi.md#10-sesli-takip)'dan gelir: 15, 30 ve 60 dakika; "aralık bitince".
+- Dakika seçeneği makinenin dışında küçük bir zamanlayıcıdır. Süre dolunca `engine.setVolume` ile ses 5 saniyede kısılır, `PAUSE` gönderilir, ses düzeyi geri gelir. "Aralık bitince" `decideAfterFrame` içinde çözülür (bölüm 5.4).
+- Durunca konum sonraki âyetin başına alınır; "Devam" oradan başlar.
 
 ## 10. Kesintiler ve ses odağı
 
 | Durum | Belgedeki davranış | Makinenin tepkisi |
 |---|---|---|
-| Kulaklık ya da Bluetooth ayrıldı | "audio automatically stops" | `ENGINE.EXTERNAL_PAUSE` → `paused`; kendiliğinden devam yok |
-| Telefon araması, başka uygulamanın sesi | `doNotMix*` ile Android odak kaybı bildirilir; `mixWithOthers` ile bildirilmez | `interrupted`; devam sinyali varsa `playing`, yoksa `paused`. Sinyalin JS'e ulaşması Doğrulanacak |
-| iOS medya servisi sıfırlandı | `mediaServicesDidReset`; oynatıcı yeniden yüklenip sürdürmeyi dener | `buffering` → `playing` |
+| Kulaklık ya da Bluetooth ayrıldı | Çalma duraklar (Android'de listeler için de, 58.0.0) | `ENGINE.EXTERNAL_PAUSE` → `paused`; kendiliğinden devam yok |
+| Telefon araması, başka uygulamanın sesi | `doNotMix*` ile odak kaybı; ayrı kesinti olayı yok, `playing: false` gelir | `interrupted`; devam sinyali varsa `playing`, yoksa `paused`. Ayrım cihazda doğrulanır (SS-4) |
+| iOS medya servisi sıfırlandı | `mediaServicesDidReset` | `buffering` → `playing` |
 | iOS sessiz düğmesi | `playsInSilentMode: true` | Çalma sürer |
-| Hafız ön dinlemesi, kelime sesi | Kilit ekranının tek sahibi olabilir | Ana çalma duraklar; ön dinleme ayrı oynatıcıda, kilit ekranı almadan çalar |
+| Ağ koptu (akışta) | Tampon biter, `isBuffering` | `buffering`; 20 sn sonra `error` (`network`); yerel dosya varsa çözücü ona geçer |
+| Okuyucu ön dinlemesi | Kilit ekranının tek sahibi olabilir | Ana çalma duraklar; ön dinleme ayrı oynatıcıda, kilit ekranı almadan çalar |
 
-Kaynak: [expo-audio](https://docs.expo.dev/versions/latest/sdk/audio/). Apple sesin denetimsiz ve kendiliğinden çalmamasını ister ([Apple HIG Erişilebilirlik](https://developer.apple.com/design/human-interface-guidelines/accessibility)); uygulama açılışta kendiliğinden çalmaz.
+Apple sesin denetimsiz ve kendiliğinden çalmamasını ister ([Apple HIG Erişilebilirlik](https://developer.apple.com/design/human-interface-guidelines/accessibility)); uygulama açılışta kendiliğinden çalmaz.
 
-## 11. İndirme, akış ve önbellek
+## 11. Kaynak seçimi, akış, indirme ve önbellek
 
-- **Ses paketi.** `ses-{hafiz}` küçük bir dizin paketidir; tabloları (`audio_timing`, `audio_part`) [İçerik paketleri §3.5](../03-veri/03-icerik-paketleri.md#35-mushaf-ve-ses-paketleri)'tedir. Dosyalar sure ya da cüz bazında `audio/{hafiz}/` altına iner, sha256 ile doğrulanır ve `device.db` `audio_file` tablosuna yazılır. Kuyruk, Yalnız Wi-Fi kuralı ve silme [Depolama yöneticisi](./03-depolama-yoneticisi.md) dosyasındadır.
-- **Akış.** Dosya yoksa, hafızın lisansı izin veriyorsa ve bağlantı varsa ses akışla çalar. Sonraki iki âyet `Paths.cache` altına ön yüklenir; sistem bu klasörü yer azalınca silebilir ([Expo FileSystem](https://docs.expo.dev/versions/latest/sdk/filesystem/), 18 Ekim 2026'da okundu).
-- **Hücresel veri.** "Hücresel veride akışla dinle" ayrı bir ayardır (64 kbps ≈ 0,48 MB/dakika). Yalnız Wi-Fi ayarı indirmeleri bağlar, akışı bağlamaz; ayar ekranı bunu yazar.
-- **Eksik dosya.** Feyzü'l-Furkân kullanıcıları "ses dosyası eksik" hatası aldıklarını yazıyor ([App Store](https://apps.apple.com/app/id378448713)). Kuyruk çözülürken her öğenin kaynağı denetlenir; eksikse çalmadan önce "Bu sure indirilmedi · İndir" gösterilir.
-- **Kelime telaffuz sesi.** QF kelime seslerini herkese açık CDN varlığı olarak sunar; kullanım QF şartlarına bağlıdır ([QF ses](https://api-docs.quran.foundation/docs/sdk/audio/); [QF Developer Terms](https://api-docs.quran.foundation/legal/developer-terms/)). v1'e girmesi Açık soru.
+- **Otomatik kaynak seçimi.** Her sure için sırayla: (1) `device.db` `audio_file` içinde doğrulanmış yerel dosya (`kayit`, `sure`, `dosya_surumu` eşleşmeli); (2) bağlantı varsa `kayit_sure.url` (ayna) akışı; (3) bağlantı yoksa `not_downloaded`. Kullanıcı seçim yapmaz. Kayıt değişince başka kaydın dosyası kullanılmaz.
+- **Akış.** Ayna adresleri değişmezdir; expo-audio dosyayı akışla çalar. Akışta sonraki sure `preload()` (yalnız `SingleEngine`) ya da liste ön tamponu ile hazırlanır. "Hücresel veride akışla dinle" ayrı bir ayardır (128 kbps ≈ 0,96 MB/dakika); "Yalnız Wi-Fi ile indir" ayarı akışı bağlamaz, ayar ekranı bunu yazar.
+- **İndirme.** Birimler: tek sure ve kaydın tamamı (114 sure). İşler [Depolama yöneticisi](./03-depolama-yoneticisi.md) §4 kuyruğunda (`download_job`, A29) çalışır; ses için ikinci kuyruk yoktur. Her dosya `File.createDownloadTask` ile `tmp/<iş>.part` dosyasına iner (ilerleme, duraklatma, sürdürme, iptal, `savable()`); bitince boyut `kayit_sure.bayt` ile ve `file.digest('SHA-256')` `kayit_sure.sha256` ile karşılaştırılır; tutarsa `Paths.document/mutalaa/audio/{kayit}/{dosya_surumu}/{sss}.mp3` altına taşınır ve `audio_file` satırı yazılır. Android sürdürmesi `If-Range` göndermediği için değişmez adres şarttır; sunucu 200 dönerse dosya baştan yazılır.
+- **Boyut.** Arayüz kaydın ve surenin boyutunu katalogdaki ölçülmüş değerden gösterir; kaydın tamamı için toplam ve cihazdaki boş alan indirmeden önce gösterilir.
+- **Çevrimdışı.** Bağlantı yokken yalnız indirilmiş sureler çalınabilir görünür; öteki sureler "İndirilmedi" etiketiyle gri durur. Kaydın bütün sureleri inmişse kayıt "Cihazda" rozetini taşır.
+- **Katalog güncellemesi.** Yeni `dosya_surumu` gelirse eski dosyalar çalınmaya devam eder; Depolama ekranı "Güncelleme var" gösterir, Wi-Fi'da sabitlenmiş kayıtlar kendiliğinden güncellenir ([Depolama yöneticisi](./03-depolama-yoneticisi.md)).
+- **Kelime telaffuz sesi.** Ayrı bir kelime telaffuz sesi kaynağı tedarikle aranır; v1'e girmesi Açık sorudur.
 
-## 12. Hafız lisans kapısı
+## 12. Kaynaklar, görünürlük ve atıf
 
-- **Hukuki durum.** Yaygın kıraat kaynakları açık lisans vermiyor; telif okuyucudadır ve okuyucu kaydın kaldırılmasını isteyebilir ([AlQuran Cloud](https://alquran.cloud/terms-and-conditions)). 633 sayılı Kanun m. 6 sesli Kur'an'ı Kurul onayına bağlar ([Lexpera 633](https://www.lexpera.com.tr/mevzuat/kanunlar/diyanet-isleri-baskanligi-kurulus-ve-gorevleri-hakkinda-kanun-633)). Rapor yazılı izinli 3–5 hafızla başlamayı ve sesi ücretli katmana koymamayı önerir. Hukuki görüş değildir.
-- **Görünürlük.** Hafız seçici yalnız `ses-{hafiz}` paketi derleme türünde görünen hafızları listeler. `internal` ve `public` derlemede bu `serbest` lisans ve Kurul onayı demektir; `bekliyor` ya da `ic_kullanim` hafızlar yalnız ekip içi `dev` derlemede duyulur (`isPackVisible`, [Mobil mimari](./01-mobil-mimari.md), bölüm 10).
-- **Kaldırma isteği.** Lisansı `kapali` olan paket manifeste yazılmaz ([P-01](../02-mimari/05-backend-api.md#103-kapı-kontrolleri)); hafızın paketi manifestten kalkarsa (genel kural [Depolama yöneticisi](./03-depolama-yoneticisi.md) DY-3) çalma durur (`PACK_REMOVED`), hafız listeden çıkar, dosyaları silinir ve "Bu hafızın kayıtları hak sahibinin isteğiyle kaldırıldı" açıklaması bir kez gösterilir. Notlar ve vurgular etkilenmez.
-- **Atıf.** Hafız adı, kayıt kaynağı ve quran-align atfı (Collin Fair, CC BY 4.0) Ayarlar › Kaynaklar ve lisanslar ekranında yer alır.
-- **QF akışı.** QF kimlik bilgileri arka uçta kalmalıdır ve içerik QF şartlarına tabidir. QF kaynağı ayrı bir bağdaştırıcının arkasında durur; arka uç vekili ve Kurul durumu netleşmeden açılmaz (Açık soru).
-- Hafız başına akış, indirme ve önbellek izinlerinin manifestte mi, ses dizin paketinde mi taşınacağı Açık soru.
+- **Kaynaklar.** Sure dosyaları MP3Quran ve Tarteel CDN'inden içerik hattıyla bir kez alınır; zamanlama QUD v4.0.0 ve MP3Quran'dan gelir ([araştırma §3](./04-ses-kaynak-arastirmasi.md#3-kaynakların-karşılaştırılması)). Her kaynağın kaydı A27.0'da `pipeline/sources/` altında açılır; kaydı olmayan kaynak hatta alınmaz ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 4; [Kaynaklar](../04-icerik/01-kaynaklar.md) §3.7). EveryAyah, QuranicAudio ve kopyaları kullanılmaz.
+- **Görünürlük.** `ses-katalog` ve `ses-zaman-*` paketleri kaynak kaydı olan içerik olarak kalite kapısından geçer (P-01) ve bütün derleme türlerinde yer alır; `test-ses` fikstürü `public`'e girmez ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5).
+- **Kaldırma.** Bir kayıt katalogdan kalkarsa çalma durur (`RECORDING_REMOVED`), kayıt listeden çıkar, dosyaları silinmek üzere işaretlenir ve açıklama bir kez gösterilir ([Depolama yöneticisi](./03-depolama-yoneticisi.md) DY-3). Notlar ve vurgular etkilenmez.
+- **Atıf.** Ayarlar › Kaynaklar ekranında her kayıt için okuyucu adı ve dosya kaynağı (MP3Quran, Tarteel); zamanlama için "Zamanlama: Quranic Universal Audio (QUD)" ve MP3Quran. Atıf satırları kaynak kayıtlarında (`atif_metni`) durur; kesin metin A32'de yazılır.
 
 ## 13. Açık sorular ve doğrulanacaklar
 
 | No | Konu | Tür |
 |---|---|---|
-| SS-1 | SDK 57'de expo-audio karşılıkları (`createAudioPlayer` imzası, kilit ekranı seçenekleri) | Doğrulanacak |
-| SS-2 | `replace()` sonrasında kilit ekranı bağı; "sonraki/önceki" olaylarının JS'e ulaşması | Doğrulanacak |
-| SS-3 | `SteppedEngine` âyet arası boşluk süresi; liste motoruna geçiş ölçütü | Doğrulanacak |
-| SS-4 | `doNotMix` ile `doNotMixPersistent` farkı; kesinti sonrası devam sinyali | Doğrulanacak |
-| SS-5 | Ses bit hızı | Açık soru |
-| SS-6 | quran-align dizin tabanı, kelime eşlemesi, yeniden kodlamanın etkisi | Doğrulanacak |
-| SS-7 | Türk hafızlar için kelime zamanlaması | Açık soru |
-| SS-8 | Meal ses paketi, seslendiren sözleşmesi, sesli mealin Kurul durumu | Açık soru |
+| SS-1 | expo-audio imzaları ve kilit ekranı seçenekleri | Kapandı (30 Ekim 2026): SDK 58 belgesi ve kaynak kodu (§2) |
+| SS-2 | Kilit ekranında sonraki/önceki | Kapandı (30 Ekim 2026): tek oynatıcıda yok (#43538); listede var, JS'e `trackChanged` gelir |
+| SS-3 | Listede boşluk süresi, kare zamanlayıcısının arka planda sürmesi | Doğrulanacak (cihaz, kullanıcı); araştırma SK-3 |
+| SS-4 | `doNotMix` ile `doNotMixPersistent` farkı; kesinti sonrası devam | Doğrulanacak (cihaz, kullanıcı) |
+| SS-5 | Bit hızı ve VBR konumlanma | Bit hızı katalogda ölçülür (A27.2); VBR sapması cihazda ölçülür (SK-1) |
+| SS-6 | Zamanlama biçimi ve dizin tabanı | QUD âyet satırı `[ref, start_ms, end_ms, canonical, silence_after_ms]`, kelime `[word_idx (1 tabanlı), start_ms, end_ms]`; kelime eşlemesi SK-5 |
+| SS-7 | Kelime takibi kapsamı | v1 kayıtlarının hepsinde QUD kelime zamanlaması var; açılış SK-5'e bağlı |
 | SS-9 | Takip çipi ile Bağlantılar dönüş çipinin önceliği | Kapandı: tek çip yuvası, zincir önceliklidir ([Okuma deneyimi §9](../01-urun/02-okuma-deneyimi.md#9-atla-ve-dön)) |
-| SS-10 | Hafız başına izin alanlarının yeri; QF akışı | Açık soru |
+| SS-11 | Listede perde düzeltmesi (0,75–1,5 hız) | Doğrulanacak (cihaz); araştırma SK-2 |
+| SS-12 | Besmele ve istiâze bölütünün kaynaklara göre sınırı | A27.2; araştırma SK-6 |
 
 ## İlgili dosyalar
 
-- [Mobil mimari](./01-mobil-mimari.md) · [Depolama yöneticisi](./03-depolama-yoneticisi.md)
+- [Ses kaynağı araştırması](./04-ses-kaynak-arastirmasi.md) · [Mobil mimari](./01-mobil-mimari.md) · [Depolama yöneticisi](./03-depolama-yoneticisi.md)
 - [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) · [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) · [Tasarım sistemi](../01-urun/04-tasarim-sistemi.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
-- [Karar defteri](../00-ozet/02-karar-defteri.md) · [Kaynakça](../09-kaynakca.md)
+- [Kaynaklar](../04-icerik/01-kaynaklar.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)
+- [Yayın süreci](../07-yayin/01-yayin-sureci.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
+- [A27 aşaması](../10-claude-code/asamalar/A27-ses-sistemi.md) · [Karar defteri](../00-ozet/02-karar-defteri.md) · [Kaynakça](../09-kaynakca.md)

@@ -2,7 +2,7 @@
 name: test-yazari
 description: >-
   Mütâlaa için test yazar ve çalıştırır: ortak test vektörleri, birim testleri (Vitest, Jest, xUnit,
-  pytest), göç testleri (Testcontainers), yayın kapısı testleri ve Maestro akışları. Bir özellik
+  pytest), göç testleri (Testcontainers), kalite kapısı testleri ve Maestro akışları. Bir özellik
   yazıldıktan sonra ya da kabul ölçütü test gerektirdiğinde kullan.
 model: inherit
 color: purple
@@ -24,7 +24,7 @@ Sen Mütâlaa'nın test mühendisisin. Kodu değil, kodun doğruluğunu sınayan
 4. Hata ayıklarken üretim kodunu değiştirmen gerekiyorsa küçük tut ve raporda açıkça belirt.
 
 ## Kesin kurallar
-- Testte Kur'an, meal, tefsir, hadis ya da Risale metnini hafızadan yazma. Kaynak dosyadan alınmış kısa parça (lisansı izin veriyorsa) ya da açıkça sentetik metin ("Deneme paragrafı 1") kullan.
+- Testte Kur'an, meal, tefsir, hadis ya da Risale metnini hafızadan yazma. Kaynak dosyadan alınmış kısa parça ya da açıkça sentetik metin ("Deneme paragrafı 1") kullan.
 - Türkçe yerel ayar tuzaklarını sına: `tr-TR` kültürü, `LANG=tr_TR.UTF-8`, `İ`/`ı`, BMP dışı karakter, NFC olmayan Arapça dizi.
 - Testi geçirmek için testi zayıflatma; başarısız testi atlama (`skip`) ile gizleme.
 - Uçtan uca testlerde `test-kucuk` ve `ses-test` fikstürlerini kullan; gerçek hafız kaydına bağlanma.

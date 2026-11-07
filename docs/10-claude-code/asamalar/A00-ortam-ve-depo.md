@@ -1,7 +1,7 @@
 # A00 · Ortam, klasör ve depo hazırlığı
 
-> **Sürüm:** 1.0 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-20](../../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-31](../../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code) · [K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)
-> **Faz:** 0 · Hazırlık · **Önkoşul:** yok · **İnsan adımı:** İ-01
+> **Sürüm:** 1.1 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-20](../../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-31](../../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code) · [K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
+> **Faz:** 0 · Hazırlık · **Önkoşul:** — · **İnsan adımı:** İ-01
 > **Ajanlar:** `arastirmaci` · `belge-bekcisi` · `inceleyici` · **Beceriler:** `windows-sorun` · **Tahmini oturum:** 1
 > **Başlat:** `/asama A00`
 
@@ -28,6 +28,13 @@ Claude Code ile geliştirmeye başlamadan önce bilgisayarın, proje klasörün�
 - Docker Compose ve `.env.example`: [A03](./A03-yerel-altyapi.md).
 - Sistem genelindeki kurulumlar ve ayarlar (kayıt defteri, güvenlik duvarı, küresel git ayarı): kullanıcı yapar (İ-01).
 
+## Tedarik
+| Gerekli yapı | Seçilen kaynak (ad, adres, sürüm ya da commit, biçim) | Alma yolu | Eksiksizlik kanıtı | Yedek aday |
+|---|---|---|---|---|
+| Zorunlu araçlar: Git, Node.js, pnpm, .NET SDK, uv | Git for Windows (güncel), Node.js 24 LTS, pnpm (kurulu sürüm; sabitleme A02'de, [K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)), .NET SDK 10.0, uv (güncel) | [Kurulum](../01-kurulum.md) §2'deki komutlar (`winget`, pnpm için `npm`); sistem geneli olduğu için kurulumu kullanıcı yapar (İ-01) | A00.1 sürüm tablosu: `git --version`, `node --version`, `pnpm --version`, `dotnet --list-sdks`, `uv --version` | `winget` kimliği bulunamazsa aracın resmî sayfasındaki yükleyici; Node ana sürümü 24 değilse yeni LTS için `/karar` |
+| Docker Desktop (Compose v2), WSL2, EAS CLI, Android araçları (isteğe bağlı) | Docker Desktop güncel (Compose v2), WSL2, EAS CLI güncel, `adb` | Kurulum §2 (`winget`, `npm install -g eas-cli`); kurulumu kullanıcı yapar | A00.1: `docker version`, `docker compose version`, `eas --version`, `adb --version`; eksik olanlar not düşülür (A03 ve A21'de gerekir) | — |
+| Claude Code | 2.1.295 ya da üstü (klasör bekçisi `onFailure` alanını kullanır) | Kurulum §2 | Kullanıcı sürümü `/status` çıktısından okur ve söyler | — |
+
 ## Adımlar
 
 ### A00.1 · Araç sürümleri
@@ -51,7 +58,7 @@ node .claude/skills/belge-esitle/baglanti-denetimi.mjs docs CLAUDE.md .claude
 - Ayar doğrulamasını kullanıcı yapar: oturumda `/doctor` ya da ayrı bir terminalde `claude doctor` çalıştırır ve "Invalid settings" bölümü olup olmadığını söyler. Claude Code oturumunun içinden `claude doctor` çalıştırılmaz (iç içe oturum, terminal yok).
 - Çalışma dizini proje kökü değilse dur: kullanıcı Claude Code'u kökte yeniden başlatır ([Kurulum](../01-kurulum.md) §5). Proje ayarları yüklendiyse `PowerShell aracı: 0` yazar.
 - Hook testlerinin hepsi geçmeli. Kullanıcının `/doctor` sonucunda "Invalid settings" bölümü olmamalı.
-- Kullanıcıdan `/hooks`, `/agents`, `/skills` ve `/status` komutlarını çalıştırmasını ve sonuçları doğrulamasını iste: 3 hook kaydı, 11 ajan, 16 beceri, "Setting sources" içinde proje ayarları ([Kurulum](../01-kurulum.md) §5). VS Code uzantısında `/hooks` kullanılamaz ve `/agents` sihirbazı kaldırılmıştır (19 Ekim 2026'da görüldü); bu ortamda aynı sayımlar diskten kanıtlanır: `.claude/settings.json` içindeki hook olayları, `.claude/agents/*.md` (11) ve `.claude/skills/*/SKILL.md` (16) dosyalarının başlık denetimi, kit testleri ve `doctor` becerisinin ayar dosyası ayrıştırması.
+- Kullanıcıdan `/hooks`, `/agents`, `/skills` ve `/status` komutlarını çalıştırmasını ve sonuçları doğrulamasını iste: 3 hook kaydı, 10 ajan, 14 beceri, "Setting sources" içinde proje ayarları ([Kurulum](../01-kurulum.md) §5). VS Code uzantısında `/hooks` kullanılamaz ve `/agents` sihirbazı kaldırılmıştır (19 Ekim 2026'da görüldü); bu ortamda aynı sayımlar diskten kanıtlanır: `.claude/settings.json` içindeki hook olayları, `.claude/agents/*.md` (10) ve `.claude/skills/*/SKILL.md` (14) dosyalarının başlık denetimi, kit testleri ve `doctor` becerisinin ayar dosyası ayrıştırması.
 - Klasör bekçisini canlı dene; deneme hedefi bilgisayarda olmayan bir sürücüdür, böylece onay verilse bile hiçbir yere yazılamaz. Kullanıcıya bilgisayarda `Z:` sürücüsü olup olmadığını sor; varsa kullanılmayan başka bir harf seç. (1) `Write` ile `Z:/mutalaa-bekci.txt` reddedilmeli; (2) `echo deneme > /z/mutalaa-bekci.txt` komutu onay sormalı ve kullanıcı reddetmeli. Onay penceresini görmek kullanıcıya bağlıdır; hook'un `ask` kararı oturum kaydında (transkript, `PreToolUse:Bash` kaydı) doğrulanabilir. Retleri rapora koy. Ayrıntı ve sınırlar: [Kurulum](../01-kurulum.md) §7.
 - **Bitti sayılır:** oturum proje kökünde; komutlar başarılı; kullanıcı sayıları ve ayar kaynağını doğruladı; iki dışarı yazma denemesi de engellendi.
 
@@ -95,7 +102,7 @@ node .claude/skills/belge-esitle/baglanti-denetimi.mjs docs CLAUDE.md .claude
   ```
 - `git status` ile girecek dosyaları göster; `docs/`, `CLAUDE.md`, `.claude/` (yerel ayar dosyası hariç), `.gitattributes`, `.editorconfig`, `.gitignore`.
 - İlk commit: depo boşsa `chore(kit): add Claude Code kit and project docs`. Depo önceden açılmışsa ilk commit zaten vardır (`ilk komit`, 000ed29); A00 kök dosyaları ayrı bir commit'le ekledi: `chore(kit): add root git config files`.
-- Push: A08'e kadar aşama sonunda `git push origin main` ile, onayınızla yapılır (zorla push yok); A08'den sonra aşama dalı, PR ve squash ([Proje yapısı](../../02-mimari/03-proje-yapisi.md) §6; [BÇ-27](../07-belge-celiskileri.md)). Uzak depo özel `karasaid379-hue/mutalaa` olarak oluşturulmuş ve remote eklidir; İ-16'nın kalan kısmı özel depo oluşturmak değil, `EXPO_TOKEN`/CI sırrıdır.
+- Push: A08'e kadar aşama sonunda `git push origin main` ile yapılır (onay sorulmaz, CLAUDE.md kural 11; zorla push yok); A08'den sonra aşama dalı, PR ve squash ([Proje yapısı](../../02-mimari/03-proje-yapisi.md) §6; [BÇ-27](../07-belge-celiskileri.md)). Uzak depo özel `karasaid379-hue/mutalaa` olarak oluşturulmuş ve remote eklidir; İ-16'nın kalan kısmı özel depo oluşturmak değil, `EXPO_TOKEN`/CI sırrıdır.
 - **Bitti sayılır:** `git log --oneline` ilk commit'i gösterir; `git status --short` temizdir; `git check-ignore .claude/settings.local.json .tmp/x data/x .env` dört yolu da yok sayıldı olarak gösterir; `shared/data/x` yok sayılmaz.
 
 ### A00.5 · Kullanıcı ortamı denetim listesi
@@ -113,7 +120,7 @@ node .claude/skills/belge-esitle/baglanti-denetimi.mjs docs CLAUDE.md .claude
 - [ ] Proje dışına yazma denemesi `klasor-bekcisi` tarafından reddedildi.
 - [ ] Yol kararı ilerleme dosyasında yazılı.
 - [ ] Git deposu açık; ilk commit var; `.gitignore` kit, gizli değer ve veri yollarını yok sayıyor.
-- [ ] İlerleme dosyasında A00 `tamam`, sıradaki aşama A01.
+- [ ] İlerleme dosyasında A00 `tamam`, sıradaki aşama A02.
 
 ## Doğrulama
 
@@ -153,4 +160,4 @@ docs/10-claude-code/asamalar/A00-ortam-ve-depo.md dosyasındaki aşamayı yürü
 
 ## İlgili dosyalar
 
-- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · [Kurulum](../01-kurulum.md) · Sonraki: [A01](./A01-yazisma-paketi.md)
+- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · [Kurulum](../01-kurulum.md) · Sonraki: [A02](./A02-tek-depo-iskeleti.md)

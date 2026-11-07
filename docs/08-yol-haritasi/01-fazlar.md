@@ -1,23 +1,23 @@
 # Fazlar
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)
+> **Sürüm:** 1.4 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Claude Code ile yürütmek için fazlar A00–A40 aşamalarına bölündü: [Aşama haritası](../10-claude-code/04-asama-haritasi.md) ([K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)).
 
-Bu plan takvim tarihi vermez. Fazlar engellerin kapanma sırasına göre dizilir; rapor yol haritasının telif ve mevzuat takvimine göre çizilmesini öneriyor. Süre ve büyüklük ifadelerinin hepsi tahmindir. Eski 24 aylık plan (`quran-app-docs/13-yol-haritasi/01-24-aylik-plan.md`) bu ürün için geçersizdir ([K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)). Rapor web okuyucuyu mobilden önce öneriyordu; [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) mobili öne aldı ve bu plan K-08'i izler.
+Bu plan takvim tarihi vermez. Fazlar bağımlılık sırasına göre dizilir. Süre ve büyüklük ifadelerinin hepsi tahmindir. Eski 24 aylık plan (`quran-app-docs/13-yol-haritasi/01-24-aylik-plan.md`) bu ürün için geçersizdir ([K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)). Rapor web okuyucuyu mobilden önce öneriyordu; [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) mobili öne aldı ve bu plan K-08'i izler.
 
 ## 1. Genel bakış
 
 | Faz | Amaç | Ana çıktı | Göreli büyüklük (tahmin) |
 |---|---|---|---|
-| Faz 0 · Hazırlık | En pahalı belirsizlikleri kod öncesi açmak, ortak temeli kurmak | Lisans defteri, çapa grameri ve vektörler, Kurul ön görüşmesi, OCR pilotu | Küçük–orta |
+| Faz 0 · Hazırlık | Ortak temeli kurmak, OCR kalitesi gibi en pahalı teknik belirsizliği kod öncesi ölçmek | Kaynak kayıtları ve ortak enum şeması, çapa grameri ve vektörler, editoryal veritabanı, CI, OCR pilotu | Küçük–orta |
 | Faz 1 · İçerik hattı | Hattan editoryal veritabanına, oradan ilk `core` paketine uçtan uca akış | `core` paketi, editör paneli, Publisher | Büyük |
-| Faz 2 · Mobil v1 (iç test) | Bütün v1 ekranları çevrimdışı; önce ekip, Kurul izin verirse davetli test kullanıcıları | `dev` ve `internal` derleme | Büyük |
-| Faz 3 · Mağaza v1 | Kurul onaylı içerikle mağaza yayını | `public` derleme | İş küçük, bekleme belirsiz |
-| Faz 4 · v1.x | Hesap, senkron, KVKK, ek paketler | Hesaplı sürüm | Orta |
+| Faz 2 · Mobil v1 (iç test) | Bütün v1 ekranları çevrimdışı; önce ekip, sonra davetli test kullanıcıları | `dev` ve `internal` derleme | Büyük |
+| Faz 3 · Mağaza v1 | Kalite kapısından geçmiş içerikle mağaza yayını | `public` derleme | Küçük |
+| Faz 4 · v1.x | Hesap, senkron, gizlilik işleri, ek paketler | Hesaplı sürüm | Orta |
 | Faz 5 · Web | Âyet ve sayfa başına adres, arama motorunda görünürlük | Next.js sitesi | Orta |
-| Faz 6 · Takvime bağlı | Hak süreleri dolunca ve lisanslar geldikçe içerik açmak | Olay bazlı paket sürümleri | Olay bazlı |
+| Faz 6 · Ek içerik | Çekirdek v1'e ve v1.x'e girmeyen ek içeriği paket olarak eklemek | Mushaf B, ek paketler | Orta |
 
 ## 2. Akış
 
@@ -25,63 +25,46 @@ Kalın oklar kritik yoldur. Kesikli oklar yan bağımlılıktır.
 
 ```mermaid
 flowchart LR
-  subgraph H["Hukuk ve lisans"]
-    K0["Kurul ön görüşmesi"]
-    HZ["Hafız görüşmeleri, yazılı izin"]
-    QAC["QAC lisans sorusu"]
-    AV["Avukat görüşü: Risale, atıf dizini"]
-  end
   subgraph I["İçerik"]
-    OCR["Elmalılı OCR pilotu"]
-    TR["Meal OCR'ı, düzeltme turları"]
+    OCR["Elmalılı OCR pilotu ve yol seçimi (A09)"]
+    TR["Meal: hazır metin ya da OCR, düzeltme turları"]
     CORE["core paketi"]
-    DON["İçerik dondurma"]
-    SES["Ses kayıtları, zamanlama"]
+    SESK["Ses kaynağı ve okuyucu araştırması (A27.1, K-41)"]
+    SES["Ses kataloğu, ayna ve zamanlama (A27.2)"]
   end
   subgraph U["Uygulama"]
     F0["Depo, çapa grameri, vektörler"]
     F2["Faz 2 · Mobil v1 (iç test)"]
   end
   subgraph Y["Yayın"]
-    BAS["Kurul başvurusu"]
-    ONAY["Kurul onayı"]
+    KK["Kalite kapısı ve promote"]
     F3["Faz 3 · Mağaza v1"]
   end
-  K0 ==> BAS
-  OCR ==> TR ==> CORE ==> DON ==> BAS ==> ONAY ==> F3
-  HZ ==> SES ==> BAS
+  OCR ==> TR ==> CORE ==> F2 ==> KK ==> F3
+  SESK --> SES --> F2
   F0 --> CORE
-  K0 -.-> F2
-  CORE --> F2 --> F3
-  QAC -.-> CORE
-  AV -.-> RIS["Risale dizini (bekliyor)"]
   F3 --> F4["Faz 4 · v1.x"] --> F5["Faz 5 · Web"]
-  T["Faz 6 olayları: 2028, 2031, lisanslar"] -.-> F4
+  F3 -.-> F6["Faz 6 · Ek içerik"]
 ```
 
 ## 3. Fazların ayrıntısı
 
 ### Faz 0 · Hazırlık
 
-**Amaç.** Rapor şu belirsizliklerin kod yazılmadan kapatılmasını istiyor: Kurul'un dijital eser başvuru usulü ve Medine düzenli fontlara bakışı, Risale haklarını bugün kimin kullandığı, metin içermeyen atıf dizininin hukuki durumu, Elmalılı'nın kaynak baskısı ve en az iki Türk hafızın izni.
+**Amaç.** Ortak temeli (depo, kaynak kayıtları, çapa grameri, editoryal veritabanı, CI) kurmak ve en pahalı teknik belirsizliği, Elmalılı'nın özgün baskısından metin çıkarmanın kalitesini, kod yazmadan önce ölçmek. Ses için hazır kayıtlar kullanılır ([K-40](../00-ozet/02-karar-defteri.md#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları), [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)).
 
 **İşler**
-- Kurul'a ön görüşme talebi ve soru listesi ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)).
-- Fikri haklar avukatına sorular (hukuki görüş değildir): Risale haklarını bugün kim kullanıyor; telifli metin dizin, gömme ve altın set için içeride işlenebilir ve harici bir dil modeli API'sine gönderilebilir mi; metinsiz atıf dizini mağaza derlemesinde yer alabilir mi ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md), §2.4).
-- QAC'ye yazılı lisans sorusu (S-15). Cevap gelene dek QAC'den türeyen kök ve lemma ayrı `kelime-kok` paketinde `bekliyor` durumunda kalır ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)).
-- KFGQPC'ye Hafs fontu için yazılı izin talebi; QF Developer Console hesabı ve şartların okunması.
-- En az iki Türk hafızla görüşme ([Sonra yapılacaklar](./02-sonra-yapilacaklar.md), S-07).
-- Lisans defteri v1: v1 kaynaklarının hepsi `license_status` taşır ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md)).
-- Elmalılı özgün baskısının (İstanbul 1935–1938, 6.442 sayfa) tarama envanteri ve OCR pilotu. Türkçe metnin Latin harfli, âyetlerin Arapça harfli olduğu bir tarama nüshasında doğrulanır ([K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) düzeltmesi); karakter hata oranı ölçülür.
+- Kaynak kayıtları ve ortak enum şeması (A06): v1 kaynaklarının hepsi `pipeline/sources/{kimlik}.toml` kaydı taşır ([Kaynaklar](../04-icerik/01-kaynaklar.md)).
+- Ses kaynağı ve okuyucu araştırması (A27.1, 30 Ekim 2026; [Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md)). Hazır kayıtlar kullanılır (K-40, K-41).
+- Elmalılı özgün baskısının (İstanbul 1935–1938, 6.442 sayfa) tarama envanteri ve OCR pilotu. Türkçe metnin Latin harfli, âyetlerin Arapça harfli olduğu bir tarama nüshasında doğrulanır ([K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) düzeltmesi); karakter hata oranı ölçülür. Pilotta kayıtlı hazır metin adayları da aynı örneklemde ölçülür ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)); hazır metin yolu yalnız eşik geçilirse seçilir.
 - Tek depo iskeleti, Docker Compose (`postgres:18`, `api`, `editor`, SeaweedFS S3 deposu; [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı)), GitHub Actions.
 - `packages/anchors` ve `shared/test-vectors/`; Python, TypeScript ve C# uygulamaları.
 - Expo hesabı (İ-15). EAS projesi ve `development`, `internal`, `production` profilleri Faz 0'da değil, Faz 2'de mobil iskeletle birlikte kurulur (A21); derleme türü `APP_FLAVOR` ile `dev`, `internal`, `public` değerini alır ([Mobil mimari](../06-mobil/01-mobil-mimari.md), bölüm 10).
 
 **Çıkış ölçütleri**
-- Kurul'a talep gitti; cevap ya da takip tarihi kayıtlı.
-- Lisans defterinde v1 kaynaklarının durumu dolu.
+- Kaynak kayıtları geçerli: `uv run mutalaa sources check` hatasız biter.
 - Vektör testleri üç dilde CI'da yeşil.
-- OCR yöntemi ölçümle seçildi ve yazıldı.
+- OCR yöntemi ya da hazır metin yolu ölçümle seçildi ve yazıldı.
 - Yerel ortam tek komutla kalkıyor.
 
 **Bağımlılık.** Yok.
@@ -92,36 +75,36 @@ flowchart LR
 
 **İşler**
 - Tanzil Uthmani ve Simple Clean alımı; değişmezlik testleri.
-- Elmalılı meali: 1930'ların dizgisine ve imlasına uygun OCR ve iki düzeltme turu; `meal:elmalili:{sure}:{ayet}` ([Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md)).
-- `quran_word`: QAC'den türeyen kök ve lemma `core` dışında, `kelime-kok` paketinde ve QAC cevap verene dek `bekliyor` ([Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)); Türkçe lemma anlamları yapay zekâ taslağı ve insan onayıyla ([K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları)).
-- `page_map` (Medine 604 sayfa); Mushaf A için QF şartlarıyla cüz başına QPC font paketleri.
-- `xref`: âyet ↔ meal, Kur'an içi kök ve lemma, lisansı teyit edilirse benzer âyet.
+- Elmalılı meali: A09 yol kararına göre ya kontrollü hazır metin (`taslak` giriş, özgün baskıyla karşılaştırma) ya da 1930'ların dizgisine ve imlasına uygun OCR; iki yolda da iki düzeltme turu; `meal:elmalili:{sure}:{ayet}` ([Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md)).
+- `quran_word`: QAC'den türeyen kök ve lemma (`qac-morfoloji`) ayrı ve isteğe bağlı `kelime-kok` paketindedir ve bütün derlemelerde yer alır ([Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)); Türkçe lemma anlamları için önce hazır Türkçe kelime anlamı kaynağı aranır, bulunamazsa yapay zekâ taslağı ve insan onayı kullanılır ([K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları)).
+- `page_map` (Medine 604 sayfa); Mushaf A için cüz başına QPC font paketleri (yazı tipleri ve düzen verisi GitHub ya da QUL'dan alınır).
+- `xref`: âyet ↔ meal, Kur'an içi kök ve lemma, benzer âyet.
 - Arama: `search_text`, FTS5, önek indeksi, trigram tablosu ([Arama](../03-veri/05-arama-fts5.md)).
-- Editör paneli: iktibas, kök etiketi, kelime anlamı ve metin düzeltme kuyrukları; lisans durumu yönetimi.
-- Publisher: lisans kapısı, paket başına `kurul_gerekli` alanı, imzalı manifestler, yerel S3 deposuna (SeaweedFS) yayın.
+- Editör paneli: iktibas, kök etiketi, kelime anlamı ve metin düzeltme kuyrukları.
+- Publisher: kalite kapısı (P-01, P-07…P-14), imzalı manifestler, yerel S3 deposuna (SeaweedFS) yayın.
 - Altın setler ve değerlendirme raporları.
-- Faz 2'yi bloklamayan uzun işler: Risale çapaları, âyet atıf dizini ve baskı sayfa eşlemesi; metin hukukçu görüşüne kadar `kapali`, görüş olumluysa yalnız `dev` derlemede `ic_kullanim`; dizin ve harici API adımı da bu görüşe bağlı ([K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik)); Tecrîd'in Arapça metni ve Naim kısmı `serbest` ([Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md#2-özet-tablo) §2), Kütüb-i Sitte Arapça metni kaynak belgesi netleşene dek `bekliyor`, Kâmil Miras ciltleri 1 Ocak 2028'e kadar `kapali` ([K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları), [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)); Elmalılı tefsir metninin OCR'ı ([K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali)).
+- Faz 2'yi bloklamayan uzun işler: Risale altyapısı ve metni (A20): paragraf çapaları, metinli atıf dizini ve lügat; kaynak A20'de araştırmayla seçilir ve Risale kelimesi kelimesine, kısaltılmadan ve sadeleştirilmeden yayımlanır ([K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)). Hadis hatları (A19): Tecrîd-i Sarîh tamamı (Naim ve Kâmil Miras ciltleri) ve Kütüb-i Sitte'nin Arapça metni ([K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları)). Elmalılı tefsir metninin OCR'ı ya da ölçümü geçerse hazır metin adayı ([K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali), [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)).
 
 **Çıkış ölçütleri**
 - `core` paketi aynı girdiyle aynı içerik özetini üretiyor.
-- Değişmezlik ve kapı testleri yeşil; public manifest yalnız `serbest` paket içeriyor.
+- Değişmezlik ve kalite kapısı testleri yeşil; `public` manifest onaysız birim, yapay zekâ taslağı, insan onayı isteyen türde aday bağlantı ve `test-` önekli kaynak içermiyor.
 - Mealin 6.236 âyeti iki düzeltme turundan geçti; kalan hata oranı ölçüldü.
 - v1 bağlantı türleri altın set kapılarını geçti ([Test stratejisi](../07-yayin/03-test-stratejisi.md)).
 
-**Bağımlılık.** Faz 0 (çapa grameri, lisans defteri, OCR yöntemi); QAC cevabı (kök ve lemma); QF hesabı (Mushaf A).
+**Bağımlılık.** Faz 0 (çapa grameri, kaynak kayıtları, OCR yöntemi ya da hazır metin yolu).
 
 ### Faz 2 · Mobil v1 (iç test)
 
-**Amaç.** Expo uygulamasının bütün v1 ekranları çevrimdışı çalışır. Test önce ekip içinde `dev` derlemeyle yapılır. Kurul kapalı teste izin verirse `internal` derleme EAS iç dağıtımla davetli test kullanıcılarına gider ve yalnız `serbest` içerik taşır ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)).
+**Amaç.** Expo uygulamasının bütün v1 ekranları çevrimdışı çalışır. Test önce ekip içinde `dev` derlemeyle yapılır; sonra `internal` derleme EAS iç dağıtımla davetli test kullanıcılarına gider ve onaylı içeriğin yanında onaysız birimleri "doğrulanmamış" rozetiyle gösterir ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5).
 
 **İşler**
 - Tasarım vitrini: bileşenler üç temada ve üç yazı boyutunda, ekranlardan önce (rapor önerisi).
-- Oku: Mushaf A ve C, meal modları, kelime kartı, Bağlantılar alt sayfası, geri dönüş yığını, mini oynatıcı. Mushaf B lisans gelince.
-- Kütüphane, Ara, Defterim, Ayarlar (Depolama, Kaynaklar ve lisanslar, Kurul onay bilgisi) ([Mobil ekranlar](../01-urun/03-mobil-ekranlar.md)).
+- Oku: Mushaf A ve C, meal modları, kelime kartı, Bağlantılar alt sayfası, geri dönüş yığını, mini oynatıcı.
+- Kütüphane, Ara, Defterim, Ayarlar (Depolama, Kaynaklar) ([Mobil ekranlar](../01-urun/03-mobil-ekranlar.md)).
 - Paket indirme, özet doğrulama, atomik değiştirme ([Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md)).
-- Ses: expo-audio ve XState. SDK 57'de tek oynatıcılı motor, SDK 58'den sonra kesintisiz oynatma listesi ([Riskler](./03-riskler.md), R-20); izinli hafız kaydı ya da `ses-test` fikstürü ([Ses sistemi](../06-mobil/02-ses-sistemi.md)).
-- Kişisel veri içermeyen hata raporu ([KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md)).
-- Maestro akışları, performans ve erişilebilirlik ölçümleri; ekipten ve izin varsa davetli test kullanıcılarından geri bildirim.
+- Ses ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)): 7 okuyucu, 9 kayıt; sure dosyası ve QUD zamanlaması; dosyalar kendi depomuzdaki aynadan; indirmeden çevrimiçi dinleme, sure ya da kaydın tamamını kalıcı indirme. expo-audio ve XState; SDK 58'de `AudioPlaylist` ile kilit ekranında sonraki/önceki sure ([Riskler](./03-riskler.md), R-20; [Ses sistemi](../06-mobil/02-ses-sistemi.md)). Sırası: araştırma (A27.1, tamam), katalog ve ayna (A27.2), mobil geliştirme (A27.3–A27.8), cihaz testi (A27.9, kullanıcı).
+- Kişisel veri içermeyen hata raporu ([Gizlilik](../07-yayin/02-gizlilik.md)).
+- Maestro akışları, performans ve erişilebilirlik ölçümleri; ekipten ve davetli test kullanıcılarından geri bildirim.
 
 **Çıkış ölçütleri**
 - Maestro akışları iOS ve Android'de yeşil.
@@ -129,81 +112,76 @@ flowchart LR
 - Erişilebilirlik kontrol listesi tamam.
 - İç test süresince kritik hata yok; çökmesiz oturum eşiği Açık soru.
 
-**Bağımlılık.** Faz 1 `core` paketi; davetli test kullanıcılarının paket indirebilmesi için canlı içerik deposu (S-03); dış test için Kurul ön görüşmesinin cevabı. Cevap gelene kadar dış test kullanıcısı alınmaz (K-06).
+**Bağımlılık.** Faz 1 `core` paketi; davetli test kullanıcılarının paket indirebilmesi için canlı içerik deposu (S-03).
 
 ### Faz 3 · Mağaza v1
 
 **Amaç.** App Store ve Google Play'de herkese açık sürüm.
 
-**İşler.** Kurul başvurusu ve onayı; onaylı sürümün manifeste sabitlenmesi; mağaza adı ve alan adı kontrolü (S-08); gizlilik metni ve mağaza beyanları; Kaynaklar ve lisanslar ekranının son hâli; ertelenmiş özellikleri vaat etmeyen mağaza metni; sürüm kontrol listesi.
+**İşler.** İç testte kalite kapısından geçen yayının `promote` ile `public` için üretilmesi (kullanıcı kararı); mağaza adı ve alan adı kontrolü (S-08); gizlilik metni ve mağaza beyanları; Kaynaklar ekranının son hâli; ertelenmiş özellikleri vaat etmeyen mağaza metni; sürüm kontrol listesi. Mağazaya gönderimi kullanıcı yapar ([Yayın süreci](../07-yayin/01-yayin-sureci.md) §7).
 
-**Çıkış ölçütleri.** Kurul onayı alındı ve public paketlerin içerik özetleri onaylı özetlerle aynı; public yapıt taraması yeşil; uygulama iki mağazada yayında.
+**Çıkış ölçütleri.** `public` kuru çalıştırması 0 ile bitiyor; terfide içerik özetleri iç kanalda test edilen yayınla aynı (P-14); public yapıt taraması yeşil; uygulama iki mağazada yayında.
 
-**Bağımlılık.** Kurul onayı (kritik yol); ses yayına girecekse hafız izinleri ve sesin Kurul onayı; canlı içerik deposu; gizlilik metni için alan adı. QAC cevap vermediyse `kelime-kok` paketi `bekliyor` kalır ve kelime kartı kök, lemma ve anlam satırları kapalı çıkar.
+**Bağımlılık.** Faz 2 (iç test); canlı içerik deposu; gizlilik metni için alan adı.
 
 ### Faz 4 · v1.x
 
-**Amaç.** İsteğe bağlı hesap, cihazlar arası senkron, KVKK yükümlülükleri ve hazır olan ek paketler.
+**Amaç.** İsteğe bağlı hesap, cihazlar arası senkron, hesaplı sürümün gizlilik işleri ve hazır olan ek paketler.
 
-**İşler.** ASP.NET Core Identity; Google ile girişle birlikte Apple ile Giriş; senkron (giden kutusu, `server_seq`, idempotent işlem kimlikleri, HLC birleştirme) ([Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md)); hesap silme ve dışa aktarma; KVKK işleri; barındırma konumu kararı; kelime defteri (`vocab`); hazırsa Elmalılı tefsir paketi; lisans gelirse Mushaf B ve ek hafızlar; "makine önerisi" rozetli anlamsal katman (S-10).
+**İşler.** ASP.NET Core Identity; Google ile girişle birlikte Apple ile Giriş; senkron (giden kutusu, `server_seq`, idempotent işlem kimlikleri, HLC birleştirme) ([Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md)); hesap silme ve dışa aktarma; gizlilik metninin hesap bölümü ve veri işleyenler listesi; barındırma konumu kararı; kelime defteri (`vocab`); hazırsa Elmalılı tefsir paketi (A37); ek okuyucu kayıtları (katalog sürümüyle); "makine önerisi" rozetli anlamsal katman (S-10).
 
-**Çıkış ölçütleri.** [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) birleştirme kuralları testlerle doğrulandı; iki cihazda değişen not iki sürüm olarak korunuyor; hesap silme uçtan uca test edildi; KVKK kontrol listesi tamam; avukat incelemesi yapıldı.
+**Çıkış ölçütleri.** [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) birleştirme kuralları testlerle doğrulandı; iki cihazda değişen not iki sürüm olarak korunuyor; hesap silme uçtan uca test edildi; gizlilik kontrol listesi tamam ([Gizlilik](../07-yayin/02-gizlilik.md) §4).
 
-**Bağımlılık.** Faz 3; barındırma seçimi; standart sözleşmeler.
+**Bağımlılık.** Faz 3; barındırma seçimi.
 
 ### Faz 5 · Web
 
 **Amaç.** Next.js 16 ile her âyete ve sayfaya ayrı adres ve arama motorunda görünürlük ([K-14](../00-ozet/02-karar-defteri.md#k-14--web)).
 
-**İşler.** Rapordaki rota önerisi: `/kuran/[sure]/[ayet]` (6.236 sayfa), `/mushaf/[sayfa]` (604 sayfa), meal ve tefsir rotaları, ileride Risale; `ensureStatic` ile sayfaların statik kalması. expo-sqlite'ın web derlemesinde FTS olmadığı için arama sunucuda ya da Orama ile yapılır. Hesapla senkron ve paylaşılan paketler (`anchors`, `search`, `reader-core`, `ui-tokens`).
+**İşler.** Rapordaki rota önerisi: `/kuran/[sure]/[ayet]` (6.236 sayfa), `/mushaf/[sayfa]` (604 sayfa), meal ve tefsir rotaları, Risale; `ensureStatic` ile sayfaların statik kalması. expo-sqlite'ın web derlemesinde FTS olmadığı için arama sunucuda ya da Orama ile yapılır. Hesapla senkron ve paylaşılan paketler (`anchors`, `search`, `reader-core`, `ui-tokens`).
 
-**Çıkış ölçütleri.** `mutalaa://q/2/255` ile `/kuran/2/255` aynı çapaya gider; vektör testleri web derlemesinde de yeşil; Kurul'un web kapsamı netleşti.
+**Çıkış ölçütleri.** `mutalaa://q/2/255` ile `/kuran/2/255` aynı çapaya gider; vektör testleri web derlemesinde de yeşil.
 
-**Bağımlılık.** Faz 3; hesap web'de istenirse Faz 4; web için Kurul cevabı (Açık soru).
+**Bağımlılık.** Faz 3; hesap web'de istenirse Faz 4.
 
-### Faz 6 · Takvime bağlı
+### Faz 6 · Ek içerik
 
-| Olay | Tarih | Etki | Kaynak |
-|---|---|---|---|
-| Tecrîd-i Sarîh'in Kâmil Miras ciltleri serbest | 1 Ocak 2028 | Ciltler `kapali` durumundan `serbest`e geçer; Türkçe Tecrîd tamamlanır | [Küre: Miras](https://kureansiklopedi.com/tr/detay/miras-kamil) |
-| Risale-i Nur serbest | 1 Ocak 2031 | `risale-{kitap}` paketleri `serbest` olur; kaynak müellif tashihli 1956–1960 baskıları, asıl nüsha karşılaştırma metni | [TDV İslâm Ansiklopedisi](https://islamansiklopedisi.org.tr/risale-i-nur-kulliyati) |
-| Çantay meali serbest | 1 Ocak 2035 | Ek meal; mealli gösterim Kurul onayı ister | [Küre: Çantay](https://kureansiklopedi.com/tr/detay/cantay-hasan-basri) |
-| Bilmen meal-tefsiri serbest | 1 Ocak 2042 | Ek meal ve tefsir; Kurul onayı ister | [Küre: Bilmen](https://kureansiklopedi.com/tr/detay/bilmen-omer-nasuhi) |
-| Lisanslar | Tarihsiz | Diyanet meali, Türk hattı, ek hafızlar, Risale lisansı | [Sonra yapılacaklar](./02-sonra-yapilacaklar.md) |
+**Amaç.** Çekirdek v1'e ve v1.x'e girmeyen ek içeriği yeni paket sürümleri olarak eklemek.
 
-Her olay aynı yolu izler: lisans defteri güncellenir, `license_status` değişir, içerik Kurul kapsamındaysa onay treni başlar, Publisher yeni paket sürümünü yayımlar. Risale 2031'den sonra da kelimesi kelimesine, kısaltılmadan ve sadeleştirilmeden yayımlanır ([K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)). Koruma süresi kuralı FSEK m. 26–27'den gelir ([FSEK, WIPO Lex](https://www.wipo.int/wipolex/en/text/499171)).
+**İşler**
+- Mushaf B: Türk hattı sayfa görselleriyle açılır (A40; önkoşul yalnız A24). Sayfa görselleri ve `ayah_box` verisi A40'ın tedarik adımında araştırılır.
+- Ek paketler: [Sonra yapılacaklar](./02-sonra-yapilacaklar.md) listesinden seçilen kitaplar (S-02), güncel dilli meal (S-05), diğer tefsir ve mealler (S-09), sesli meal (S-13) ve ek okuyucu kayıtları (katalog sürümüyle).
+
+**Çıkış ölçütleri.** Her ek paket aynı yolu izler: kaynak kaydı (`pipeline/sources/{kimlik}.toml`) açılır, içerik hattından geçer, editör onayıyla `onayli` olur, kalite kapısından geçer ve yeni paket sürümüyle yayımlanır.
+
+**Bağımlılık.** Mushaf B için A24; ek paketler için Faz 1 (içerik hattı ve Publisher).
 
 ## 4. Kritik yol
 
 | Zincir | Neden kritik | Erken uyarı | Kısaltma yolu |
 |---|---|---|---|
-| **Kurul süreci:** ön görüşme → dondurma → başvuru → onay | Başvuru usulü, ücret ve süre bilinmiyor. `core` Kur'an metnini ve meali taşıdığı için public derleme onaysız çıkamaz. | Ön görüşme talebine cevap gelmemesi; font sorusuna olumsuz cevap | Ön görüşme Faz 0'ın ilk işidir; başvuru dosyası Faz 2 ile paralel hazırlanır; düzeltme turları başvurudan önce kapanır |
-| **Elmalılı OCR kalitesi:** pilot → OCR → düzeltme → `core` | 6.442 sayfalık özgün baskıda Türkçe metin büyük olasılıkla Latin harfli, âyetler Arapça harfli; iş 1930'ların dizgisine ve imlasına uygun OCR ve düzeltmedir ([K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) düzeltmesi, [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python)). Güvenilir dijital özgün baskı bulunamadı. Onaydan sonraki düzeltme yeniden onay demektir. | Tarama nüshasında Latin harfin doğrulanamaması; pilotta yüksek hata oranı; düzeltme hızının planın gerisinde kalması | Yöntem pilotla seçilir; Türkçe ve Arapça kısımlar için OCR ayrı ayarlanır (öneri); düzeltme kuyruğu editör panelindedir; tefsir metni meal yolundan ayrılır |
-| **Hafız izinleri:** görüşme → izin → kayıt ve zamanlama → Kurul | Popüler kıraat kaynaklarının hiçbiri açık lisans vermiyor; Türk hafızlar için açık kaynak yok ([AlQuran Cloud](https://alquran.cloud/terms-and-conditions)). quran-align zamanlamaları yalnız hizalandığı EveryAyah dosyaları için geçerli ([quran-align](https://raw.githubusercontent.com/cpfair/quran-align/master/README.md)). | İzin reddi; yeni kayıtlar için zamanlama yönteminin bulunamaması | Rapor 3–5 okuyucuyla başlamayı öneriyor; QF akışı şartlarıyla seçenek olarak durur |
+| **Elmalılı OCR kalitesi:** pilot → OCR → düzeltme → `core` | 6.442 sayfalık özgün baskıda Türkçe metin büyük olasılıkla Latin harfli, âyetler Arapça harfli; iş 1930'ların dizgisine ve imlasına uygun OCR ve düzeltmedir ([K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) düzeltmesi, [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python)). Güvenilir dijital özgün baskı bulunamadı. Meal `core`'un parçasıdır; ikinci editör onayı tamamlanmayan âyet `public`'e girmez (P-10). | Tarama nüshasında Latin harfin doğrulanamaması; pilotta yüksek hata oranı; düzeltme hızının planın gerisinde kalması | Yöntem pilotla seçilir; Türkçe ve Arapça kısımlar için OCR ayrı ayarlanır (öneri); düzeltme kuyruğu editör panelindedir; tefsir metni meal yolundan ayrılır |
+| **Ses kaynağı:** araştırma → katalog ve ayna → oynatıcı → cihaz testi | Kapandı (30 Ekim 2026): hazır kayıtlar ve QUD zamanlaması kullanılır (K-40, K-41). Kalan risk teknik: kaynakta dosya değişmesi, VBR konumlanma ([Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md) §7) | Ayna dosyası sha256 ile tutmazsa içerik hattı durur | Ayna değişmez sürümlü adres kullanır; MP3Quran yedek âyet zamanlaması |
 
-İkincil bağımlılıklar: QAC cevabı (kök ve lemma katmanı), KFGQPC izni (Mushaf C fontu; yedek Amiri Quran), QF hesabı (Mushaf A fontları).
+İkincil bağımlılıklar: Mushaf A'nın QPC yazı tiplerinin ve düzen verisinin tedariki (A26); Mushaf C yazı tipinin seçimi (KFGQPC Hafs ya da Amiri Quran, görsel kaliteye göre; A24).
 
 ## 5. Sıra ve paralellik
 
-- Faz 0'daki hukuk işleri bekleme içerir. Bekleme süresi teknik işle doldurulur.
+- Bekleyen bir insan adımı yalnız kendisine bağlı alt adımı bekletir; aşamanın kalanı ve öteki aşamalar sürer ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 3, [İnsan adımları](../10-claude-code/06-insan-adimlari.md)).
 - Faz 1'deki Risale, hadis ve tefsir hatları uzun koşar ve Faz 2'yi bloklamaz.
-- Kurul başvuru dosyası Faz 2 ile paralel hazırlanır.
 - Faz 4 ve Faz 5 kısmen paralel yürüyebilir.
-- Faz 6 olayları herhangi bir fazın ortasında gelebilir.
+- Faz 6 işleri önkoşulları tamamlandıktan sonra herhangi bir fazın ortasında yürüyebilir.
 - Her faz çıkış ölçütleriyle kapanır. Ölçüte girmeyen istek [Sonra yapılacaklar](./02-sonra-yapilacaklar.md) listesine gider.
 
 ## 6. Açık sorular
 
-1. Sesin izni ya da onayı gecikirse Mağaza v1 sessiz mi çıkar?
-2. İç test dağıtımı Kurul açısından yayım sayılır mı? Cevap gelene kadar dış test kullanıcısı alınmaz (K-06).
-3. Web için ayrı Kurul onayı gerekir mi?
-4. Elmalılı tefsir paketi hangi faza girer? K-03 tefsir metnini ikinci aşamaya koyuyor; bu plan paketi kalite kapısını geçtiği ilk sürüme bağlar.
-5. Hadis paketleri ne zaman public olur? Arapça veri setlerinin kaynak belgeleri zayıf ([Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md)).
-6. Çökmesiz oturum eşiği ve referans cihazlar.
+1. Elmalılı tefsir paketi hangi faza girer? K-03 tefsir metnini ikinci aşamaya koyuyor; bu plan paketi kalite kapısını geçtiği ilk sürüme bağlar.
+2. Hadis paketleri ne zaman public olur? Arapça veri setlerinin kaynak belgeleri zayıf ([Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md)).
+3. Çökmesiz oturum eşiği ve referans cihazlar.
 
 ## İlgili dosyalar
 
 - [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md) · [Sonra yapılacaklar](./02-sonra-yapilacaklar.md) · [Riskler](./03-riskler.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
-- [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) · [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) · [Proje yapısı](../02-mimari/03-proje-yapisi.md)
+- [Yayın süreci](../07-yayin/01-yayin-sureci.md) · [Gizlilik](../07-yayin/02-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
+- [Kaynaklar](../04-icerik/01-kaynaklar.md) · [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) · [Proje yapısı](../02-mimari/03-proje-yapisi.md)
 - [Kaynakça](../09-kaynakca.md) · [Karar defteri](../00-ozet/02-karar-defteri.md)

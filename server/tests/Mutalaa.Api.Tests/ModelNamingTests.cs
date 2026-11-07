@@ -12,8 +12,8 @@ namespace Mutalaa.Api.Tests;
 
 /// <summary>
 /// IcerikDbContext modeli (veritabani ve Docker gerektirmez): tablo sayilari, ad politikasi (K-37 madde 4), capa sutunlarinda
-/// COLLATE "C", 11 PostgreSQL enum turu ve etiket sirasi, xmin, uretilen arama sutunlari.
-/// Her sinama hem varsayilan modelde hem model onbellegi atlanarak, tr-TR kulturunde yeniden kurulan modelde kosar.
+/// COLLATE "C", 10 PostgreSQL enum turu ve etiket sirasi, xmin, uretilen arama sutunlari.
+/// Her sinama hem varsayilan modelde hem model onbellegi atlanarak, tr-TR kulturunde yeniden olusturulan modelde kosar.
 /// </summary>
 public partial class ModelNamingTests
 {
@@ -26,7 +26,7 @@ public partial class ModelNamingTests
     [GeneratedRegex("^[a-z0-9_]+$", RegexOptions.CultureInvariant)]
     private static partial Regex SnakeCase();
 
-    /// <summary>Varsayilan ve tr-TR kulturunde yeniden kurulmus modelde ayni sinama.</summary>
+    /// <summary>Varsayilan ve tr-TR kulturunde yeniden olusturulmus modelde ayni sinama.</summary>
     private static void OnAllModels(Action<IModel> verify)
     {
         ModelFactory.ForEachModel(verify);
@@ -167,7 +167,7 @@ public partial class ModelNamingTests
             "unit_role_check", "unit_content_hash_check", "lemma_lang_check", "quran_word_fix_field_check",
             "surah_alias_surah_no_check", "surah_alias_kind_check", "xref_score_check", "xref_confidence_check",
             "review_hedef_tablo_check", "page_map_line_type_check", "pipeline_run_durum_check",
-            "source_check", "unit_check", "quran_word_check", "tr_root_index_check", "ayah_box_check", "audio_timing_check",
+            "unit_check", "quran_word_check", "tr_root_index_check", "ayah_box_check", "audio_timing_check",
             "review_yz_kaydi_check",
         ];
 
@@ -262,14 +262,14 @@ public partial class ModelNamingTests
     private static partial Regex CollatedColumn();
 
     [Fact]
-    public void Eleven_postgres_enums_exist_with_the_json_label_order()
+    public void Ten_postgres_enums_exist_with_the_json_label_order()
     {
         Dictionary<string, string[]> json = EnumsJson.Load();
 
         OnAllModels(model =>
         {
             var enums = model.GetPostgresEnums().ToList();
-            Assert.Equal(11, enums.Count);
+            Assert.Equal(10, enums.Count);
             Assert.All(enums, e => Assert.Equal(ContentSchema, e.Schema));
             Assert.Equal(
                 [.. json.Keys.Order(StringComparer.Ordinal)],
@@ -279,10 +279,11 @@ public partial class ModelNamingTests
                 Assert.Equal(json[pgEnum.Name], pgEnum.Labels.ToArray());
             }
 
-            // Npgsql MapEnum etiketleri alfabetik dizer (efcore.pg #3667); sira bizim verdigimiz sayisal sira olmali.
+            // Npgsql MapEnum etiketleri alfabetik dizer (efcore.pg #3667); sira bizim verdigimiz sayisal sira olmali
+            // (metin_durumu alfabetik sirada incelemede, onayli, taslak olurdu).
             Assert.Equal(
-                ["serbest", "bekliyor", "ic_kullanim", "kapali"],
-                [.. enums.Single(e => e.Name == "license_status").Labels]);
+                ["taslak", "incelemede", "onayli"],
+                [.. enums.Single(e => e.Name == "metin_durumu").Labels]);
         });
     }
 
@@ -393,7 +394,9 @@ public partial class ModelNamingTests
         });
 
         Assert.Equal(baseline, turkish);
-        Assert.Contains("enum|icerik.license_status|serbest,bekliyor,ic_kullanim,kapali", baseline);
+        Assert.Contains("enum|icerik.metin_durumu|taslak,incelemede,onayli", baseline);
+        Assert.Contains("enum|icerik.xref_type|atif,iktibas,ima,kok,lemma,konu,benzer_ayet,anlamsal", baseline);
+        Assert.Contains("enum|icerik.unit_status|etkin,kullanim_disi", baseline);
         Assert.True(baseline.Length > 200);
     }
 

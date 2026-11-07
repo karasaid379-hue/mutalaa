@@ -10,7 +10,7 @@ using Npgsql;
 namespace Mutalaa.Api.Tests;
 
 /// <summary>
-/// CHECK, UNIQUE ve uretilen sutun kisitlari (Docker'li). Her test kendi islemini acar ve sonunda geri alir;
+/// CHECK, UNIQUE ve uretilen sutun kisiti sinamalari (Docker'li). Her test kendi islemini acar ve sonunda geri alir;
 /// hem SqlState (23514 check, 23505 unique) hem ConstraintName dogrulanir. Yazma yolu gercek EF INSERT'idir.
 /// </summary>
 public class ConstraintTests(EditorialDatabase<ConstraintTests> fixture) : IClassFixture<EditorialDatabase<ConstraintTests>>
@@ -61,67 +61,6 @@ public class ConstraintTests(EditorialDatabase<ConstraintTests> fixture) : IClas
         await session.Context.SaveChangesAsync(ct);
 
         Assert.True(unit.Id > 0);
-    }
-
-    // --- source_check (Kurul onayi) ---
-
-    private const string ValidBoardApproval = "{\"onay_no\":\"test-1\",\"onayli_surum\":\"1\"}";
-
-    [Fact]
-    public async Task Source_check_rejects_a_board_approval_without_a_date()
-    {
-        CancellationToken ct = TestContext.Current.CancellationToken;
-        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
-        Source source = TestData.NewSource();
-        source.KurulOnay = ValidBoardApproval;
-        source.KurulOnayOzeti = TestData.Hash();
-        session.Context.Add(source);
-
-        await TestData.ExpectViolationAsync(Check, "source_check", () => session.Context.SaveChangesAsync(ct));
-    }
-
-    [Fact]
-    public async Task Source_check_rejects_a_board_approval_without_a_digest()
-    {
-        CancellationToken ct = TestContext.Current.CancellationToken;
-        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
-        Source source = TestData.NewSource();
-        source.KurulOnay = ValidBoardApproval;
-        source.KurulOnayTarihi = new DateOnly(2026, 10, 26);
-        session.Context.Add(source);
-
-        await TestData.ExpectViolationAsync(Check, "source_check", () => session.Context.SaveChangesAsync(ct));
-    }
-
-    [Fact]
-    public async Task Source_check_rejects_a_board_approval_missing_a_required_key()
-    {
-        CancellationToken ct = TestContext.Current.CancellationToken;
-        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
-        Source source = TestData.NewSource();
-        source.KurulOnay = "{\"onay_no\":\"test-1\"}";
-        source.KurulOnayTarihi = new DateOnly(2026, 10, 26);
-        source.KurulOnayOzeti = TestData.Hash();
-        session.Context.Add(source);
-
-        await TestData.ExpectViolationAsync(Check, "source_check", () => session.Context.SaveChangesAsync(ct));
-    }
-
-    [Fact]
-    public async Task Source_check_accepts_a_complete_board_approval_and_a_row_without_one()
-    {
-        CancellationToken ct = TestContext.Current.CancellationToken;
-        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
-        Source approved = TestData.NewSource();
-        approved.KurulOnay = ValidBoardApproval;
-        approved.KurulOnayTarihi = new DateOnly(2026, 10, 26);
-        approved.KurulOnayOzeti = TestData.Hash();
-        Source plain = TestData.NewSource();
-        session.Context.AddRange(approved, plain);
-
-        await session.Context.SaveChangesAsync(ct);
-
-        Assert.Equal(2L, await session.ScalarAsync<long>("SELECT count(*) FROM icerik.source WHERE slug = ANY(@slugs)", ct, ("slugs", new[] { approved.Slug, plain.Slug })));
     }
 
     // --- unit_check (kullanim disi birim halef ister) ---
@@ -400,7 +339,7 @@ public class ConstraintTests(EditorialDatabase<ConstraintTests> fixture) : IClas
         Assert.NotEqual(a.Id, b.Id);
     }
 
-    // --- T-02: unit tekillik ve yabanci anahtar kisitlari ---
+    // --- T-02: unit tekilligi ve yabanci anahtarlar ---
 
     private const string ForeignKey = "23503";
 
@@ -477,7 +416,7 @@ public class ConstraintTests(EditorialDatabase<ConstraintTests> fixture) : IClas
         Assert.Equal(0L, await session.ScalarAsync<long>("SELECT count(*) FROM icerik.source WHERE slug = @s", ct, ("s", source.Slug)));
     }
 
-    // --- T-03: page_map tekillik ve kalan CHECK kisitlari (ham SQL; parametreli kaynak kimligi) ---
+    // --- T-03: page_map tekilligi ve kalan CHECK ifadeleri (ham SQL; parametreli kaynak kimligi) ---
 
     private const string InsertPageMap =
         "INSERT INTO icerik.page_map (source_id, volume, page, line, start_anchor, end_anchor, data_version) "
@@ -541,10 +480,10 @@ public class ConstraintTests(EditorialDatabase<ConstraintTests> fixture) : IClas
         { "surah_alias_surah_no_check", "INSERT INTO icerik.surah_alias (surah_no, alias, alias_key, kind) VALUES (<v>, 'a', 'a', 'kanonik')", "0", "1" },
         { "surah_alias_surah_no_check", "INSERT INTO icerik.surah_alias (surah_no, alias, alias_key, kind) VALUES (<v>, 'a', 'a', 'kanonik')", "115", "114" },
         { "surah_alias_kind_check", "INSERT INTO icerik.surah_alias (surah_no, alias, alias_key, kind) VALUES (1, 'a', 'a', '<v>')", "yok", "diger_ad" },
-        { "xref_score_check", "INSERT INTO icerik.xref (src_anchor, dst_anchor, type, score, confidence, origin, data_version, license) VALUES ('q:2:255', 'meal:elmalili:2:255', 'atif', <v>, 0.5, 'hat', 'test', 'serbest')", "1.5", "1" },
-        { "xref_score_check", "INSERT INTO icerik.xref (src_anchor, dst_anchor, type, score, confidence, origin, data_version, license) VALUES ('q:2:255', 'meal:elmalili:2:255', 'atif', <v>, 0.5, 'hat', 'test', 'serbest')", "-0.1", "0" },
-        { "xref_confidence_check", "INSERT INTO icerik.xref (src_anchor, dst_anchor, type, score, confidence, origin, data_version, license) VALUES ('q:2:255', 'meal:elmalili:2:255', 'atif', 0.5, <v>, 'hat', 'test', 'serbest')", "1.5", "1" },
-        { "xref_confidence_check", "INSERT INTO icerik.xref (src_anchor, dst_anchor, type, score, confidence, origin, data_version, license) VALUES ('q:2:255', 'meal:elmalili:2:255', 'atif', 0.5, <v>, 'hat', 'test', 'serbest')", "-0.1", "0" },
+        { "xref_score_check", "INSERT INTO icerik.xref (src_anchor, dst_anchor, type, score, confidence, origin, data_version) VALUES ('q:2:255', 'meal:elmalili:2:255', 'atif', <v>, 0.5, 'hat', 'test')", "1.5", "1" },
+        { "xref_score_check", "INSERT INTO icerik.xref (src_anchor, dst_anchor, type, score, confidence, origin, data_version) VALUES ('q:2:255', 'meal:elmalili:2:255', 'atif', <v>, 0.5, 'hat', 'test')", "-0.1", "0" },
+        { "xref_confidence_check", "INSERT INTO icerik.xref (src_anchor, dst_anchor, type, score, confidence, origin, data_version) VALUES ('q:2:255', 'meal:elmalili:2:255', 'atif', 0.5, <v>, 'hat', 'test')", "1.5", "1" },
+        { "xref_confidence_check", "INSERT INTO icerik.xref (src_anchor, dst_anchor, type, score, confidence, origin, data_version) VALUES ('q:2:255', 'meal:elmalili:2:255', 'atif', 0.5, <v>, 'hat', 'test')", "-0.1", "0" },
         { "review_hedef_tablo_check", "INSERT INTO icerik.review (hedef_tablo, hedef_anahtar, alan, eylem, koken, oneren) VALUES ('<v>', 'x', 'metin', 'onayla', 'editor', 'test-editor')", "yok", "audio_timing" },
         { "page_map_line_type_check", "INSERT INTO icerik.page_map (source_id, page, line_type, start_anchor, end_anchor, data_version) VALUES (@s, 1, '<v>', 'q:1:1', 'q:1:1', 'test')", "yok", "besmele" },
         { "pipeline_run_durum_check", "INSERT INTO icerik.pipeline_run (run_id, komut, git_commit, parmak_izi, baslangic, durum) VALUES (uuidv7(), 'komut', 'abc', repeat('a', 64), now(), '<v>')", "yok", "basarili" },
@@ -583,7 +522,7 @@ public class ConstraintTests(EditorialDatabase<ConstraintTests> fixture) : IClas
     {
         string slug = TestData.UniqueSlug();
         await session.ExecuteAsync(
-            "INSERT INTO icerik.source (slug, tur, baslik, surum, license_name, atif_metni) VALUES (@s, 'meal', 'Deneme kaynagi', '1', 'Deneme', 'Deneme atfi')",
+            "INSERT INTO icerik.source (slug, tur, baslik, surum, atif_metni) VALUES (@s, 'meal', 'Deneme kaynagi', '1', 'Deneme atfi')",
             ct,
             ("s", slug));
         await session.ExecuteAsync("INSERT INTO icerik.root (id, letters, source_id, data_version) VALUES (1, 'kok-1', @s, 'test')", ct, ("s", slug));

@@ -49,14 +49,14 @@ public class MigrationTests(EditorialDatabase<MigrationTests> fixture, PostgresF
     }
 
     [Fact]
-    public async Task There_are_eleven_enum_types_in_the_icerik_schema()
+    public async Task There_are_ten_enum_types_in_the_icerik_schema()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
 
         long count = await Db.ScalarAsync<long>(
             "SELECT count(*) FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = 'icerik' AND t.typtype = 'e'", ct);
 
-        Assert.Equal(11L, count);
+        Assert.Equal(10L, count);
         Assert.Equal(PostgresEnums.Definitions.Count, (int)count);
     }
 
@@ -84,7 +84,7 @@ public class MigrationTests(EditorialDatabase<MigrationTests> fixture, PostgresF
             Assert.Empty(await session.Context.Database.GetAppliedMigrationsAsync(ct));
         }
 
-        // Model onbellegi atlanir: model ve goc SQL'i tr-TR altinda sifirdan kurulur.
+        // Model onbellegi atlanir: model ve goc SQL'i tr-TR altinda sifirdan olusturulur.
         await AsyncCultureScope.TurkishAsync(() => fresh.MigrateAsync(ct, uncachedModel: true));
 
         await using (DbSession session = fresh.OpenSession())
@@ -126,7 +126,7 @@ public class MigrationTests(EditorialDatabase<MigrationTests> fixture, PostgresF
 
         Assert.Equal(19L, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "icerik")));
         Assert.Equal(7L, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "kimlik")));
-        Assert.Equal(11L, await fresh.ScalarAsync<long>(EnumTypes, ct));
+        Assert.Equal(10L, await fresh.ScalarAsync<long>(EnumTypes, ct));
         Assert.Equal(await CatalogAsync(Db, ct), await CatalogAsync(fresh, ct));
     }
 
@@ -167,7 +167,7 @@ public class MigrationTests(EditorialDatabase<MigrationTests> fixture, PostgresF
 
         Assert.Equal(icerikTables, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "icerik")));
         Assert.Equal(kimlikTables, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "kimlik")));
-        Assert.Equal(11L, await fresh.ScalarAsync<long>(EnumTypes, ct));
+        Assert.Equal(10L, await fresh.ScalarAsync<long>(EnumTypes, ct));
         Assert.Equal(catalogBefore, await CatalogAsync(fresh, ct));
     }
 

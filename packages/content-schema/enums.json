@@ -1,7 +1,6 @@
 {
   "version": 1,
   "enums": {
-    "license_status": ["serbest", "bekliyor", "ic_kullanim", "kapali"],
     "xref_type": ["atif", "iktibas", "ima", "kok", "lemma", "konu", "benzer_ayet", "anlamsal"],
     "xref_status": ["aday", "onayli", "red"],
     "xref_origin": ["hat", "editor", "kullanici_oyu"],

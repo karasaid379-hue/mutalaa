@@ -1,9 +1,9 @@
 # Depolama yöneticisi
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses)
+> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
-[K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) proje sahibinin önerisidir (18 Ekim 2026): Ayarlar › Depolama ekranı v1'de bulunur; paket listesi, boyut, sürüm, tek dokunuşla silme, hafız başına ses silme, yalnız Wi-Fi ile indirme ve duraklatılabilir indirme kuyruğu içerir. Bu dosya ekranı, yerel tabloları, kuyruğu, eşikleri, otomatik temizliği, manifest güncellemelerini ve kenar durumları tanımlar. Kod `src/features/storage` ve `src/packs` içindedir ([Mobil mimari](./01-mobil-mimari.md)). Paket biçimleri [İçerik paketleri](../03-veri/03-icerik-paketleri.md) dosyasında kesinleşir.
+[K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) proje sahibinin önerisidir (18 Ekim 2026): Ayarlar › Depolama ekranı v1'de bulunur; paket listesi, boyut, sürüm, tek dokunuşla silme, okuyucu başına ses silme, yalnız Wi-Fi ile indirme ve duraklatılabilir indirme kuyruğu içerir. Bu dosya ekranı, yerel tabloları, kuyruğu, eşikleri, otomatik temizliği, manifest güncellemelerini ve kenar durumları tanımlar. Kod `src/features/storage` ve `src/packs` içindedir ([Mobil mimari](./01-mobil-mimari.md)). Paket biçimleri [İçerik paketleri](../03-veri/03-icerik-paketleri.md) dosyasında kesinleşir.
 
 ## 1. Ekran: Ayarlar › Depolama
 
@@ -21,7 +21,7 @@
 | Kullanılmayan sesleri otomatik sil[kapalı] |
 +--------------------------------------------+
 | INDIRME KUYRUGU (2)     [Tümünü duraklat]  |
-| Hafız 1 - Bakara  %62  18/29 MB            |
+| Alafasy - Bakara  %62  74/120 MB           |
 |                     [Duraklat] [İptal]     |
 | Mushaf A - 5. cüz   Wi-Fi bekleniyor       |
 |                  [Hücresel veriyle indir]  |
@@ -36,9 +36,9 @@
 | MUSHAF                                     |
 | Mushaf A - 12/30 cüz - 41 MB             > |
 +--------------------------------------------+
-| HAFIZ SESLERI                              |
-| Hafız 1 - 1,02 GB - 41 sure              > |
-| Hafız 2 - 96 MB - 3 sure                 > |
+| OKUYUCU SESLERI                            |
+| Alafasy murattal - 412 MB - 41 sure      > |
+| Husary murattal - 96 MB - 3 sure         > |
 +--------------------------------------------+
 | ÖNBELLEK - 22 MB                [Temizle]  |
 +--------------------------------------------+
@@ -52,8 +52,8 @@ Değerler örnektir. Görünüş ayrıntısı [Mobil ekranlar](../01-urun/03-mob
 | İndirme ayarları | "Yalnız Wi-Fi ile indir" (varsayılan açık), "Kullanılmayan sesleri otomatik sil" (varsayılan kapalı) | Cihaza özgü; MMKV'de |
 | İndirme kuyruğu | İş başına ilerleme, Duraklat, Sürdür, İptal; "Tümünü duraklat"; Wi-Fi bekleyen işte "Hücresel veriyle indir" | Kuyruk boşsa bölüm gizlenir |
 | Metin paketleri | Ad, boyut, sürüm, son kullanım, Sabitle, Sil, varsa Güncelle | `core` kilitli |
-| Mushaf | Mushaf A için 30 cüzlük ızgara (indirildi, iniyor, yok), "Tümünü indir"; Mushaf B satırı | Lisansla görünür |
-| Hafız sesleri | Hafız başına boyut ve sure sayısı; ayrıntıda sure listesi, sure başına ve hafız başına silme | K-18 |
+| Mushaf | Mushaf A için 30 cüzlük ızgara (indirildi, iniyor, yok), "Tümünü indir"; Mushaf B satırı | Paket manifestte varsa görünür |
+| Okuyucu sesleri | Kayıt başına boyut ve sure sayısı ("Cihazda" rozeti 114 surede); ayrıntıda sure listesi, sure başına ve kayıt başına silme, "Bütün Kur'an'ı indir" | K-18, K-41 |
 | Önbellek | Çıkarılmış fontlar, ön yüklenen sesler, yarım dosyalar; "Temizle" | Kullanıcı verisine dokunmaz |
 
 - Boyutlar 1000 tabanlı ve Türkçe biçimde gösterilir ("12,4 MB"). İşletim sistemi ekranlarıyla küçük fark olabilir.
@@ -64,13 +64,13 @@ Değerler örnektir. Görünüş ayrıntısı [Mobil ekranlar](../01-urun/03-mob
 
 - "Sil"e tek dokunuş paketi `pending_delete` durumuna alır. Satır "Silindi · Geri al" olur ve çubuk boşalacak alanı hemen gösterir.
 - "Geri al" ekrandan çıkılana kadar durur, zamanlayıcıyla kaybolmaz. Apple görünümlerin zamanla kapanması yerine açık eylemle kapanmasını önerir ([Apple HIG Erişilebilirlik](https://developer.apple.com/design/human-interface-guidelines/accessibility)).
-- Dosyalar ekrandan çıkınca ya da uygulama arka plana geçince silinir. Paket kullanılıyorsa önce bırakılır: ses `PACK_REMOVED` ile durur ([Ses sistemi](./02-ses-sistemi.md)), metin paketi DETACH edilir.
-- Onay yalnız toplu silmede ("Tüm indirmeleri sil", "Bu hafızın tüm sesleri") ve başka paketi etkileyen silmede istenir.
+- Dosyalar ekrandan çıkınca ya da uygulama arka plana geçince silinir. Paket kullanılıyorsa önce bırakılır: ses `RECORDING_REMOVED` ile durur ([Ses sistemi](./02-ses-sistemi.md)), metin paketi DETACH edilir.
+- Onay yalnız toplu silmede ("Tüm indirmeleri sil", "Bu kaydın tüm sesleri") ve başka paketi etkileyen silmede istenir.
 - `core` silinemez; satırda kilit simgesi ve "Uygulamayla gelir, silinemez" yazar. İndirilmiş bir `core` güncellemesi silinebilir; uygulama gömülü sürüme döner.
 
 ### 1.2 Sabitleme
 
-Sabitlenen paket ya da hafız otomatik temizliğe ve yer önerilerine girmez; güncellemeleri Wi-Fi'da kendiliğinden iner. Elle silme yine tek dokunuşla yapılır.
+Sabitlenen paket ya da kayıt otomatik temizliğe ve yer önerilerine girmez; güncellemeleri Wi-Fi'da kendiliğinden iner. Elle silme yine tek dokunuşla yapılır.
 
 ### 1.3 Erişilebilirlik ve metinler
 
@@ -81,7 +81,7 @@ Sabitlenen paket ya da hafız otomatik temizliğe ve yer önerilerine girmez; g�
 | Anahtar | Metin |
 |---|---|
 | `storage.total` | {used} kullanılıyor · Cihazda {free} boş |
-| `storage.autoClean.hint` | {days} gündür dinlenmeyen sure sesleri silinir. Sabitlenen hafızlar korunur. |
+| `storage.autoClean.hint` | {days} gündür dinlenmeyen sure sesleri silinir. Sabitlenen kayıtlar korunur. |
 | `storage.deleted` | Silindi · Geri al |
 | `storage.core.locked` | Uygulamayla gelir, silinemez. |
 | `storage.queue.waitingWifi` | Wi-Fi bekleniyor |
@@ -91,7 +91,7 @@ Sabitlenen paket ya da hafız otomatik temizliğe ve yer önerilerine girmez; g�
 | `storage.integrity` | Dosya doğrulanamadı. Yeniden indiriliyor. |
 | `storage.update` | {count} paket için güncelleme var ({size}). |
 | `storage.needsApp` | Bu güncelleme için uygulamanın yeni sürümü gerekiyor. |
-| `storage.licenseRemoved` | Bu içerik hak sahibinin isteğiyle kaldırıldı. Notların ve vurguların korunur. |
+| `storage.notVisible` | Bu içerik bu sürümde yok. Notların ve vurguların korunur. |
 | `storage.missing` | Bu içerik cihazda yok · İndir |
 
 ## 2. Yerel tablolar (`device.db`)
@@ -100,21 +100,18 @@ Bu tablolar `user.db` içinde durmaz. Cihaza özgüdür, senkrona girmez ve disk
 
 ```sql
 CREATE TABLE installed_pack (
-  pack_id           TEXT PRIMARY KEY,           -- 'core', 'tefsir-elmalili', 'mushaf-a-cuz-05', 'ses-{hafiz}'
+  pack_id           TEXT PRIMARY KEY,           -- 'core', 'tefsir-elmalili', 'mushaf-a-cuz-05', 'ses-katalog', 'ses-zaman-alafasy-murattal'
   kind              TEXT NOT NULL,              -- core | tefsir | hadis | risale | kelime_kok | mushaf_a | mushaf_b | ses
   version           TEXT NOT NULL,
-  sha256            TEXT NOT NULL,              -- doğrulanan dosyanın özeti (ses için dizin dosyası)
+  sha256            TEXT NOT NULL,              -- doğrulanan dosyanın özeti
   size_bytes        INTEGER NOT NULL,           -- manifestteki boyut
-  disk_bytes        INTEGER NOT NULL,           -- diskte kapladığı; ses için inen dosyalar dahil
-  license_status    TEXT NOT NULL,              -- serbest | bekliyor | ic_kullanim | kapali (son manifest)
-  kurul_gerekli     INTEGER NOT NULL DEFAULT 0, -- manifestten (K-06)
-  kurul_onay        TEXT,
+  disk_bytes        INTEGER NOT NULL,           -- diskte kapladığı (ses dosyaları audio_file içinde ayrı sayılır)
   min_app_version   TEXT,
   depends_on        TEXT NOT NULL DEFAULT '[]', -- JSON dizi
   path              TEXT NOT NULL,              -- packs/ altına göreli
   source            TEXT NOT NULL,              -- embedded | download
   state             TEXT NOT NULL,              -- active | pending_delete | disabled | broken
-  state_reason      TEXT,                       -- license | app_version | missing_file | integrity
+  state_reason      TEXT,                       -- not_visible | app_version | missing_file | integrity
   pinned            INTEGER NOT NULL DEFAULT 0,
   installed_at      INTEGER NOT NULL,
   last_used_at      INTEGER,
@@ -126,7 +123,7 @@ CREATE TABLE download_job (
   id              TEXT PRIMARY KEY,             -- UUIDv7
   pack_id         TEXT NOT NULL,
   target_version  TEXT NOT NULL,
-  scope           TEXT NOT NULL DEFAULT '',     -- ses için '{"sure":2}' ya da '{"cuz":3}'
+  scope           TEXT NOT NULL DEFAULT '',     -- ses için '{"kayit":"alafasy-murattal","sure":2}' ya da '{"kayit":"alafasy-murattal","tum":true}'
   url             TEXT NOT NULL,
   expected_sha256 TEXT,
   expected_bytes  INTEGER,
@@ -149,22 +146,20 @@ CREATE TABLE download_job (
 );
 
 CREATE TABLE audio_file (
-  reciter        TEXT NOT NULL,                 -- ses-{hafiz} paketindeki hafız kısa adı
-  sure           INTEGER NOT NULL,
-  ayet           INTEGER NOT NULL,
+  kayit          TEXT NOT NULL,                 -- ses-katalog kayıt kimliği: 'alafasy-murattal'
+  sure           INTEGER NOT NULL,              -- 1..114; ses sure başına tek dosyadır (K-41)
+  dosya_surumu   TEXT NOT NULL,                 -- katalogdaki kayit.dosya_surumu
   bytes          INTEGER NOT NULL,
-  sha256         TEXT NOT NULL,
-  pack_version   TEXT NOT NULL,
+  sha256         TEXT NOT NULL,                 -- indirmeden sonra file.digest('SHA-256'); katalogla aynı
   downloaded_at  INTEGER NOT NULL,
   last_played_at INTEGER,
-  PRIMARY KEY (reciter, sure, ayet)
+  PRIMARY KEY (kayit, sure, dosya_surumu)
 );
-CREATE INDEX audio_file_played ON audio_file (reciter, last_played_at);
+CREATE INDEX audio_file_played ON audio_file (kayit, last_played_at);
 ```
 
-- Sure ve cüz toplamları `audio_file` ile `core`'daki âyet-cüz eşlemesinden sorguyla hesaplanır.
+- Kayıt toplamları `audio_file` ile `ses-katalog` `kayit_sure` satırlarından sorguyla hesaplanır; kaydın tamamı 114 satırdır.
 - `last_used_at` paket başına saatte en fazla bir kez, `last_played_at` sure başına toplu yazılır.
-- Ayarlar › Kurul onay bilgisi ekranı `installed_pack.kurul_onay` alanını okur.
 
 ## 3. Dosya düzeni ve atomik kurulum
 
@@ -172,7 +167,7 @@ CREATE INDEX audio_file_played ON audio_file (reciter, last_played_at);
 Paths.document/mutalaa/
 ├─ db/user.db, db/device.db
 ├─ packs/<pack_id>/<sürüm>/pack.db        her sürüm ayrı klasörde
-├─ audio/<hafiz>/<sss><aaa>.mp3
+├─ audio/<kayit>/<dosya_surumu>/<sss>.mp3   sure başına tek dosya (K-41)
 └─ tmp/<iş_id>.part
 Paths.cache/mutalaa/
 ├─ qpc/        Mod A için çıkarılmış sayfa fontları
@@ -239,7 +234,7 @@ stateDiagram-v2
 - **Yalnız Wi-Fi.** Ayar açıkken hücresel ağdaki iş `waiting_wifi` olur. "Hücresel veriyle indir" o iş için `allow_cellular` açar ve boyutu gösterir. Ölçülü Wi-Fi bilgisinin kaynağı Doğrulanacak ([Mobil mimari](./01-mobil-mimari.md), bölüm 11).
 - **Yer.** Başlamadan önce ve her 10 MB'ta bir denetlenir (bölüm 6).
 - **Sürdürme.** Expo FileSystem `File.createDownloadTask` (`onProgress` ile) ve `DownloadTask` üzerinde `pause()`, `pauseAsync()`, `resumeAsync()`, `savable()`, `fromSavable()` sunar. iOS'ta `sessionType` varsayılan olarak `'background'`'dır ve aktarım uygulama askıya alınınca sürebilir; JS `DownloadTask` nesnesi uygulama kapanınca geri yüklenmez ([Expo FileSystem](https://docs.expo.dev/versions/latest/sdk/filesystem/)). Bu yüzden duraklatmada ve arka plana geçişte `savable()` çıktısı `resume_data` sütununa yazılır. HTTP aralık isteği belgede geçmiyor; SDK 57'de API'nin varlığıyla birlikte Doğrulanacak.
-- **Ses işleri** dosya düzeyinde sürer. Biten her dosya hemen `audio_file` tablosuna yazılır; kesilen iş kaldığı dosyadan devam eder.
+- **Ses işleri** sure dosyası düzeyinde sürer: tek sure ya da kaydın tamamı (114 dosya). Biten her dosya doğrulanıp hemen `audio_file` tablosuna yazılır; kesilen iş kaldığı dosyadan devam eder. Ses işlerini A27 üretir ([Ses sistemi](./02-ses-sistemi.md) §11). Android'de sürdürme `Range: bytes=N-` gönderir ama `If-Range` ya da ETag göndermez; bu yüzden ses adresleri değişmezdir (`audio/{kayit}/{dosya_surumu}/`) ve sunucu 206 yerine 200 dönerse dosya baştan yazılır.
 - **Arka plan.** v1'de indirme uygulama öndeyken sürer. Android'de arka planda indirme ve iOS'ta uygulama kapandıktan sonra tamamlama v1.x'te değerlendirilir (Açık soru).
 - **Hata türleri.** Bağlantı kopması, zaman aşımı, 5xx ve 429 geçicidir. 404 ve 410 manifestin yenilenmesini tetikler. İki kez tutmayan özet kalıcı hatadır.
 
@@ -259,10 +254,11 @@ export function nextRetryAt(attempts: number, now = Date.now()): number | null {
 ## 5. Bütünlük doğrulaması
 
 - `await new File(tempPath).digest('SHA-256')` küçük harfli onaltılık özet döndürür ([Expo FileSystem](https://docs.expo.dev/versions/latest/sdk/filesystem/)). Manifestteki `sha256` küçük harfe çevrilip karşılaştırılır.
-- Ses dosyaları ses dizinindeki özetle, dizin dosyası manifestteki özetle doğrulanır.
+- Ses dosyaları `ses-katalog` `kayit_sure` satırındaki bayt ve sha256 ile (`file.digest('SHA-256')`, SDK 58), paketler manifestteki özetle doğrulanır.
 - Özet tutmazsa `.part` silinir, `integrity_fails` artar ve iş sürdürme kullanılmadan baştan iner. İkinci kez tutmazsa manifest yenilenir; özet değiştiyse yeni özetle bir kez daha denenir, değişmediyse iş `failed` olur. Sentry'ye yalnız paket kimliği, sürüm ve bayt sayısı gider.
 - Doğrulanmamış dosya hiçbir zaman ATTACH edilmez ve çalınmaz.
-- Manifest her zaman imzalıdır ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)). Uygulama imzayı gömülü açık anahtarla doğrular. `public` derleme imzasız ya da imzası tutmayan manifesti reddeder ve son geçerli manifestle sürer; bu kesin kuraldır. Yerel yayınlayıcı ayrı bir geliştirme anahtarıyla imzalar, `public` ikili yalnız üretim açık anahtarını taşır (öneri). Algoritma ve anahtar yönetimi [İçerik paketleri](../03-veri/03-icerik-paketleri.md) dosyasında kesinleşir.
+- Manifest her derleme türünde imzalıdır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5). Uygulama imzayı gömülü açık anahtarla doğrular; imzasız ya da imzası tutmayan manifesti her derleme türünde reddeder ve son geçerli manifestle sürer. Bu kesin kuraldır. Yerel yayınlayıcı ayrı bir geliştirme anahtarıyla imzalar, `public` ikili yalnız üretim açık anahtarını taşır (öneri). Algoritma ve anahtar yönetimi [İçerik paketleri](../03-veri/03-icerik-paketleri.md) dosyasında kesinleşir.
+- Paket doğrulaması uygulamadaki ikinci kontrolü de içerir: paketin `pack_meta.flavor` değeri uygulamanın derleme türüyle aynı olmalı; `pack_source` içinde `public` derlemede `test-` önekli kaynak, `internal` derlemede `test-kucuk` ve `test-ses` dışında `test-` önekli kaynak bulunmamalıdır (P-12; [Mobil mimari](./01-mobil-mimari.md), bölüm 10; [Yayın süreci](../07-yayin/01-yayin-sureci.md) §4.3). Geçmeyen paket kurulmaz; iş `not_visible` hatasıyla biter.
 
 ## 6. Düşük depolama eşikleri
 
@@ -286,7 +282,7 @@ Araştırma notu ses için Wi-Fi'ı varsayılan yapan ve en uzun süredir kullan
 - Varsayılan kapalıdır. Açılınca süre seçilir: 30, 60 ya da 90 gün (varsayılan 90).
 - Günde en fazla bir kez, ilk kareden sonra boşta çalışır.
 - Son dinlenmesi (hiç dinlenmediyse indirilmesi) süreden eski sureleri bütün olarak siler; yarım sure bırakmaz.
-- Sabitlenmiş hafızları, çalma kuyruğundaki âyetleri ve son 7 günde inenleri korur.
+- Sabitlenmiş kayıtları, çalınan sureyi ve son 7 günde inenleri korur.
 - Sonuç Depolama ekranında yazar ("Son otomatik temizlik: 12 Ekim, 310 MB"). Bildirim gönderilmez.
 
 ## 8. Manifest güncellemeleri
@@ -298,7 +294,7 @@ flowchart TD
   A[Manifest alındı] --> B{İmza ve biçim geçerli mi}
   B -- hayır --> Z[Son geçerli manifest kalır]
   B -- evet --> C[Her kurulu paketi karşılaştır]
-  C --> D{Derleme türünde görünür mü}
+  C --> D{Manifestte var mı}
   D -- hayır --> E[Devre dışı bırak, açıkla, silmeyi planla]
   D -- evet --> F{Yeni sürüm var mı}
   F -- hayır --> G[Değişiklik yok]
@@ -309,10 +305,9 @@ flowchart TD
   J -- hayır --> L[Güncelle düğmesi ve rozet]
 ```
 
-- Görünmez olan paket (`kapali`; `internal` ve `public` derlemede `serbest` olmayan ya da gerekli Kurul onayı bulunmayan) `disabled` (`license`) olur. İçerik gizlenir, ses durur, dosyalar silinmek üzere işaretlenir ve `storage.licenseRemoved` bir kez gösterilir. Notlar ve vurgular kalır ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)).
-- Manifestten tamamen kalkan paketin ne olacağı Açık soru (DY-3). `public` derlemede ihtiyatla devre dışı bırakılması önerilir. Lisansı `kapali` olan paket bu yolla kalkar, çünkü Yayınlayıcı onu manifeste yazmaz (P-01).
+- Manifestten tamamen kalkan kurulu paketin ne olacağı Açık soru (DY-3). `public` derlemede ihtiyatla devre dışı bırakılması önerilir: paket `disabled` (`not_visible`) olur, içerik gizlenir, ses durur, dosyalar silinmek üzere işaretlenir ve `storage.notVisible` bir kez gösterilir. Notlar ve vurgular kalır. Yayınlayıcı kaynak kaydı olmayan içeriği hiçbir pakete yazmadığı için (P-01) paket bu yolla kalkabilir.
+- İndirilen paket uygulamadaki ikinci kontrolü geçmezse (bölüm 5) kurulmaz ve listelenmez; aynı `storage.notVisible` metni gösterilir.
 - `min_app_version` uymuyorsa paket indirilmez; mağaza bağlantılı `storage.needsApp` gösterilir.
-- `kurul_onay` değişen güncellemede satır "Kurul onaylı yeni sürüm" der.
 - Sürüm biçimi ve karşılaştırması [İçerik paketleri](../03-veri/03-icerik-paketleri.md) dosyasında kesinleşir (Açık soru). Daha düşük sürüme dönüş yalnız yayınlayıcının açık işaretiyle yapılır.
 - **Çapa denetimi.** Güncellemeden sonra o paketteki çapalara bağlı vurgu ve notların `content_hash` değeri yeni birimle karşılaştırılır. Değişenler Defterim'de "Metin güncellendi, vurgunun yerini kontrol et" etiketi alır ([Çapa şeması](../03-veri/01-capa-semasi.md); [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)).
 
@@ -321,7 +316,7 @@ flowchart TD
 | Durum | Davranış |
 |---|---|
 | Not ya da vurgunun bağlı olduğu paket silindi | Kullanıcı verisi silinmez; kayıtlar çapayla bağlıdır ([Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md)). Defterim kaydı adresiyle listeler, içerik yerine `storage.missing` gösterir. Yeniden inince `content_hash` denetimi yapılır. Adresin okunur adı paket yokken de görünmeli: `core` eser ve bölüm başlıklarını taşır ya da kullanıcı kaydı etiket saklar (Açık soru) |
-| Kullanılan paket silindi | Önce ses durur (`PACK_REMOVED`) ve DETACH yapılır, sonra dosya silinir. DETACH başarısızsa silme sonraki açılışa kalır |
+| Kullanılan paket ya da kayıt silindi | Önce ses durur (`RECORDING_REMOVED`) ve DETACH yapılır, sonra dosya silinir. DETACH başarısızsa silme sonraki açılışa kalır |
 | Paketin bağımlısı var (`depends_on`) | Onay penceresi bağımlıları listeler; onaylanırsa hepsi silinir |
 | İndirme sürerken mağaza güncellemesi | Süreç kapanır. Açılışta `device.db` göçleri kuyruktan önce çalışır, `running` işler `resume_data` ile sürer. Manifest yeniden okunur; hedef sürüm değiştiyse ya da `min_app_version` uymuyorsa yarım dosya silinir ve iş yeni sürümle kurulur |
 | İndirme sürerken EAS Update | Güncelleme sonraki soğuk açılışta uygulanır; indirme varken `reloadAsync()` çağrılmaz |
@@ -339,8 +334,8 @@ Yeniden indirilebilir paketlerin iCloud yedeğinden dışlanması için Expo Fil
 
 ## 10. Test senaryoları
 
-- **Birim:** geri çekilme süreleri, görünürlük kuralı, eşik hesabı, otomatik temizlik seçimi, sahte dosya sistemiyle uzlaştırma.
-- **Cihaz:** indirme ortasında uygulamayı öldürme; uçak modu; Wi-Fi'dan hücresele geçiş; bozuk dosya; dolmak üzere disk (küçük depolamalı Android öykünücüsü); kurulu bir paketi manifestten çıkaran manifest (Yayınlayıcı `kapali` paketi manifeste hiç yazmaz, [P-01](../02-mimari/05-backend-api.md#103-kapı-kontrolleri); beklenen davranış DY-3 ile kesinleşir, o zamana kadar bölüm 8'deki öneri sınanır) ve `min_app_version` artıran manifest; not bağlı paketi silip yeniden indirme.
+- **Birim:** geri çekilme süreleri, görünürlük kuralı (derleme türü × `test-` önekli kaynak), eşik hesabı, otomatik temizlik seçimi, sahte dosya sistemiyle uzlaştırma.
+- **Cihaz:** indirme ortasında uygulamayı öldürme; uçak modu; Wi-Fi'dan hücresele geçiş; bozuk dosya; dolmak üzere disk (küçük depolamalı Android öykünücüsü); kurulu bir paketi manifestten çıkaran manifest (Yayınlayıcı kaynak kaydı olmayan içeriği hiçbir pakete yazmaz, [P-01](../02-mimari/05-backend-api.md#103-kapı-kontrolleri); beklenen davranış DY-3 ile kesinleşir, o zamana kadar bölüm 8'deki öneri sınanır) ve `min_app_version` artıran manifest; başka derleme türüne ait paket; `public` derlemede `test-` önekli, `internal` derlemede `test-kucuk` ve `test-ses` dışında `test-` önekli kaynak taşıyan paket; not bağlı paketi silip yeniden indirme.
 - **Erişilebilirlik:** VoiceOver ve TalkBack ile Depolama ekranı.
 
 Ayrıntı [Test stratejisi](../07-yayin/03-test-stratejisi.md) dosyasındadır.
@@ -349,20 +344,20 @@ Ayrıntı [Test stratejisi](../07-yayin/03-test-stratejisi.md) dosyasındadır.
 
 | No | Konu | Tür |
 |---|---|---|
-| DY-1 | Manifest imzası | Kapandı: her zaman imzalı (K-06); algoritma ve anahtar yönetimi İçerik paketleri'nde |
-| DY-2 | Paket biçimleri: Mushaf A font BLOB'u, ses dizini, sıkıştırma | Açık soru |
+| DY-1 | Manifest imzası | Kapandı: her derleme türünde imzalı (K-21, K-42); algoritma ve anahtar yönetimi İçerik paketleri'nde |
+| DY-2 | Paket biçimleri: Mushaf A font BLOB'u, sıkıştırma | Açık soru (ses paketleri K-41 ile kapandı: `ses-katalog`, `ses-zaman-{kayit}`) |
 | DY-3 | Sürüm biçimi, düşük sürüme dönüş, manifestten kalkan paket | Açık soru |
-| DY-4 | Arka planda indirme (Android; iOS'ta kapanış sonrası tamamlama) | Açık soru |
-| DY-5 | iCloud yedeğinden dışlama | Açık soru |
+| DY-4 | Arka planda indirme (Android; iOS'ta kapanış sonrası tamamlama) | Açık soru: SDK 58'de Android'de arka plan indirme mekanizması yok; iOS'ta `sessionType: 'background'` aktarımı sürdürür, JS görevi uygulama kapanınca geri gelmez ([Ses kaynağı araştırması](./04-ses-kaynak-arastirmasi.md) §5.9) |
+| DY-5 | iCloud yedeğinden dışlama | Açık soru: Expo'da API yok (SDK 58); seçim A27.6'da (küçük yerel modül ya da yedeğe girmeyi kabul) |
 | DY-6 | Eşik değerleri; iOS'ta `availableDiskSpace` doğruluğu | Doğrulanacak |
 | DY-7 | Kullanıcı kaydında okunur etiket ve `content_hash` saklanması | Açık soru |
-| DY-8 | Ölçülü Wi-Fi algılama | Doğrulanacak |
-| DY-9 | SDK 57'de `createDownloadTask` ve `digest` varlığı; aralık isteğiyle sürdürme | Doğrulanacak |
+| DY-8 | Ölçülü Wi-Fi algılama | `@react-native-community/netinfo` 12.0.1 `details.isConnectionExpensive` verir; `expo-network`'te ölçülü alanı yok. Seçim A21'de |
+| DY-9 | `createDownloadTask` ve `digest` varlığı; aralık isteğiyle sürdürme | Kapandı (30 Ekim 2026): `createDownloadTask` SDK 56.0.0'dan, `file.digest` SDK 58.0.0'dan beri var; Android'de `If-Range` yok, değişmez adres şart |
 
 ## İlgili dosyalar
 
 - [Mobil mimari](./01-mobil-mimari.md) · [Ses sistemi](./02-ses-sistemi.md)
 - [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) · [Tasarım sistemi](../01-urun/04-tasarim-sistemi.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
+- [Yayın süreci](../07-yayin/01-yayin-sureci.md) · [Gizlilik](../07-yayin/02-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Kaynakça](../09-kaynakca.md)

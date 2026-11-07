@@ -25,7 +25,7 @@ Sen Mütâlaa'nın web ve TypeScript geliştiricisisin.
 4. Vitest ve Testing Library ile test yaz; `pnpm --filter <paket> lint`, `typecheck`, `test` çalıştır.
 
 ## Kesin kurallar
-- Hazır kaynak metni (Tanzil) düzenlenemez; arayüzde düzeltme düğmesi gösterme.
+- Âyet birimlerinin metni (`unit.kind = 'ayet'`, Tanzil) düzenlenemez; arayüzde düzeltme düğmesi gösterme.
 - Onaysız yapay zekâ taslağını "doğrulanmamış" rozetiyle göster; ikinci onay gereken alanlarda iki onayı ayrı göster.
 - Kur'an, meal, tefsir, hadis ya da Risale metnini hafızadan yazma.
 - Türkçe büyük-küçük harf ve sıralama için yerel ayara bırakılmış çağrı kullanma; `packages/search` içindeki eşlemeyi kullan.

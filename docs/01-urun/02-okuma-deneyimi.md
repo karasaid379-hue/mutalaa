@@ -1,7 +1,7 @@
 # Okuma Deneyimi
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses)
+> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu dosya okurun gördüğünü ve yaptığını tanımlar. Uygulama ayrıntısı [Mobil mimari](../06-mobil/01-mobil-mimari.md), rota ve ekran listesi [Mobil ekranlar](./03-mobil-ekranlar.md), görsel kurallar [Tasarım sistemi](./04-tasarim-sistemi.md) dosyasındadır.
 
@@ -26,7 +26,7 @@ Biçimler Quran.com'un üç okuma tercihine karşılık gelir ([QuranReader.ts](
 Çizim yollarının yetenekleri ve uygulaması [Mobil mimari §7](../06-mobil/01-mobil-mimari.md#7-mushaf-çizimi) dosyasındadır. A'da kelime seçimi ve kelime kartı vardır, B'de yalnız âyet seçimi vardır, C her zaman kullanılabilir ve büyütünce yeniden akar. Glif "metni" kelimeyle ilgisiz kod noktalarıdır ([sample-verse.json](https://github.com/quran/quran.com-frontend-next/blob/production/src/utils/sample-verse.json)); bu yüzden kopyalama, arama ve ekran okuyucu her zaman Tanzil Unicode metnini kullanır.
 
 **Varsayılanlar** ([Mobil mimari](../06-mobil/01-mobil-mimari.md#15-açık-sorular-ve-doğrulanacaklar) MM-13 sorusunu kapatır):
-- Çizim yolu C'dir: indirme gerektirmez ve lisanstan bağımsızdır. Tanıtım ekranı, paket bu derlemede görünüyorsa Mod A'yı Wi-Fi ile indirmeyi önerir.
+- Çizim yolu C'dir: indirme gerektirmez. Tanıtım ekranı, paket bu derlemede görünüyorsa Mod A'yı Wi-Fi ile indirmeyi önerir.
 - Okuma biçimi Mushaf + Meal'dir; ürünün temel vaadi budur. Mobil mimarideki `readingLayout` varsayılanı `mushaf_meal` olur.
 - Telefonda meal gösterimi "Sayfa | Meal" sekmesidir.
 
@@ -75,7 +75,7 @@ Ekran döndüğünde ya da panel kapandığında çapa ve ofset geri yüklenir. 
 |          (mushaf sayfası)            |
 | < Sonraki sayfa    42   Önceki >     |  sağdan sola düzende "Sonraki" solda
 | [ <- Okuduğun yere dön (Bakara 255) ]|  tek çip yuvası (bölüm 9, kural 9)
-| > Bakara · 255 · Hafız adı           |  mini oynatıcı
+| > Bakara · 255 · Okuyucu adı         |  mini oynatıcı
 | Oku | Kütüphane | Ara | Defterim | Ayarlar |
 +--------------------------------------+
 ```
@@ -115,8 +115,8 @@ Kısa dokunuş A'da, C'de ve Âyet âyet biçiminde kelime kartını açar. Kart
 | Satır | İçerik | Kaynak | Veri yoksa |
 |---|---|---|---|
 | 1 | Arapça kelime (büyük, Unicode), "Bakara 255 · 3. kelime" | Tanzil | Uygulanmaz |
-| 2 | Türkçe kelime anlamı | Onaylı lemma anlamı ([K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları)); `kelime-kok` paketi | Paket var, anlam onaysızsa "Anlam henüz onaylanmadı"; `dev` derlemesinde taslak "doğrulanmamış" rozetiyle (K-25). Paket yoksa satır gösterilmez |
-| 3 | Kök harfleri (ح ي ي), "Bu kök Kur'an'da N yerde geçer" | `kelime-kok` paketi (QAC) | Satır gösterilmez. Paket QAC'nin yazılı açıklamasına kadar yalnız `dev` derlemesindedir; mağaza ve iç test derlemesinde kart Arapça kelimeyi, konumunu ve eylemleri gösterir ([Kapsam ve fazlar §3](./01-kapsam-ve-fazlar.md#3-i̇çerik-seti)). Anlamların QAC'den bağımsız olarak `core`'a taşınması [İçerik paketleri](../03-veri/03-icerik-paketleri.md#10-açık-sorular) IP-6'dır (Açık soru) |
+| 2 | Türkçe kelime anlamı | Onaylı lemma anlamı ([K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları)); `kelime-kok` paketi | Paket var, anlam onaysızsa "Anlam henüz onaylanmadı"; `dev` ve `internal` derlemelerinde taslak "doğrulanmamış" rozetiyle (K-25, K-42). Paket yoksa satır gösterilmez |
+| 3 | Kök harfleri (ح ي ي), "Bu kök Kur'an'da N yerde geçer" | `kelime-kok` paketi (QAC) | Paket kurulu değilse satır gösterilmez; kart Arapça kelimeyi, konumunu ve eylemleri gösterir ([Kapsam ve fazlar §3](./01-kapsam-ve-fazlar.md#3-i̇çerik-seti)). |
 | 4 | Lemma ve kısa morfoloji satırı | `kelime-kok` paketi (QAC) | Satır gösterilmez |
 | 5 | ▶ Kelimenin sesi | Ses paketi ve kelime zamanlaması | Satır gizlenir |
 
@@ -130,7 +130,7 @@ Kart yukarı çekilince ya da "Bu kelime nerede geçiyor?" seçilince aynı alt 
 
 **Yerleşim.** Telefonda alt sayfanın büyük konumu (ekranın yaklaşık %90'ı), tablette sol sayfa. Başlıkta seçimin özeti ("sabr · kök ص ب ر · Bakara 2:153"), zincir varsa kırıntı izi ve "Kapat" durur.
 - Gruplar sabit sırayla gelir: **Kur'an, Meal, Tefsir, Hadis, Risale-i Nur, Kitaplar.** Boş grup gizlenir; Kitaplar kitaplar gelene kadar görünmez. Kur'an grubunda kök sonuçları lemma çipleriyle süzülür; `kelime-kok` paketi yoksa kök sonuçları gelmez.
-- Paket cihazda yoksa grup başlığında "Paketi indir (boyut)" durur. Risale metni derlemede yoksa grup metinsiz dizin satırları verir (bölüm 12); dizin de yoksa grup gizlenir.
+- Paket cihazda yoksa grup başlığında "Paketi indir (boyut)" durur; paket derlemede hiç yoksa grup gizlenir.
 - Grup içinde sıra: güven etiketi, puan, metin sırası. "Metin sırası" düğmesi mushaf ya da kitap sırasına geçirir. Puanları birleştiren "Önerilen" listesi (RRF) v1.x'tedir; gelince grupların başında durur ([Bağlantı modeli §7](../05-capraz-referans/01-baglanti-modeli.md#7-önerilen-listesi)).
 - Boş sonuç: "Bu seçim için bağlantı bulunamadı · Tam ifadeyi ara" (Ara sekmesini açar).
 
@@ -147,7 +147,7 @@ Kart yukarı çekilince ya da "Bu kelime nerede geçiyor?" seçilince aynı alt 
 | **orta** | Makul kanıtlı otomatik | Orta güven: otomatik, `0,70 ≤ confidence < 0,90` | İnce çerçeve, "otomatik" |
 | **düşük** | Zayıf kanıt: kısa ifade, kalıp söz | Düşük güven: otomatik, `0,50 ≤ confidence < 0,70` | Kesik çizgi; "Daha fazla (otomatik) · N" altında katlı |
 
-`anlamsal` satırlar "Makine önerisi" rozetiyle her zaman katlıdır. İç derlemede onay isteyen türdeki `aday` satır "Aday" rozetiyle açık görünür. `red` ve `confidence < 0,50` satırlar gösterilmez. Eski plan 0,6 altını gizliyordu (`quran-app-docs/04-okuma/03-risale-i-nur-okuyucu.md`); bu tasarım 0,50–0,70 arasını katlar ve okura bırakır. Yapay zekâ kaynaklı bağlantı "doğrulanmamış" rozeti taşır (K-25). Bağlantı oyu (👍/👎) ve hata bildirimi sunucu gerektirdiği için v1.x'tedir.
+`anlamsal` satırlar "Makine önerisi" rozetiyle her zaman katlıdır. İç derlemede onay isteyen türdeki `aday` satır "Aday" rozetiyle açık görünür. `red` ve `confidence < 0,50` satırlar gösterilmez. Eski plan 0,6 altını gizliyordu (`quran-app-docs/04-okuma/03-risale-i-nur-okuyucu.md`); bu tasarım 0,50–0,70 arasını katlar ve okura bırakır. Yapay zekâ kaynaklı bağlantı "doğrulanmamış" rozeti taşır (K-25). Bağlantı oyu (beğen, beğenme) ve hata bildirimi sunucu gerektirdiği için v1.x'tedir.
 
 ## 9. Atla ve dön
 
@@ -178,11 +178,11 @@ flowchart LR
 
 Durum makinesi [Ses sistemi](../06-mobil/02-ses-sistemi.md) dosyasındadır.
 
-**Mini oynatıcı** sekme çubuğunun üstünde durur: ▶/❚❚, "Bakara · 255", hafız adı, aralık ilerleme halkası. Dokunuş Dinleme sayfasını (modal olmayan alt sayfa) açar; çalma yoksa gizlenir.
+**Mini oynatıcı** sekme çubuğunun üstünde durur: ▶/❚❚, "Bakara · 255", okuyucu adı, aralık ilerleme halkası. Dokunuş Dinleme sayfasını (modal olmayan alt sayfa) açar; çalma yoksa gizlenir.
 
 | Denetim | Seçenekler |
 |---|---|
-| Hafız | Liste, 5 saniyelik ön dinleme, sık kullanılanlar |
+| Okuyucu | Liste (kayıt: murattal ya da mücevved), 5 saniyelik ön dinleme, sık kullanılanlar, "Cihazda" rozeti |
 | Kapsam | Bu âyet · âyet aralığı · sayfa · sure · cüz (Tanzil "Play Scope") |
 | Tekrar | Her âyeti ×1, 2, 3, 5, 10 · aralığı ×1, 2, 3, 5, 10 |
 | Âyet arası bekleme | Kapalı · 0,5× · 1× · 1,5× · 2× âyet süresi ([Ses sistemi §5.1](../06-mobil/02-ses-sistemi.md#51-bağlam); [Quran.com `delayMultiplier`](https://github.com/quran/quran.com-frontend-next/blob/production/src/xstate/actors/repeatMachine/repeatMachine.ts)) |
@@ -190,11 +190,11 @@ Durum makinesi [Ses sistemi](../06-mobil/02-ses-sistemi.md) dosyasındadır.
 | Kur'an + meal | Âyet, sure ya da sayfa sonunda meal ([Diyanet](https://kuran.diyanet.gov.tr/mushaf)); v1.x, sesli meal kaydı gerekir |
 | Uyku zamanlayıcısı | 15 · 30 · 60 dk · aralık bitince |
 
-- **Vurgu.** Çalan âyet zemin tonu ve kenar çizgisiyle, çalan kelime alt çizgiyle işaretlenir. Kelime vurgusu yalnız kelime zamanlaması olan okuyucularda yapılır ([quran-align](https://raw.githubusercontent.com/cpfair/quran-align/master/README.md)). A'da glifler, B'de âyet kutuları, C'de metin parçaları, Âyet âyet'te âyet öğesi işaretlenir.
+- **Vurgu.** Çalan âyet zemin tonu ve kenar çizgisiyle, çalan kelime alt çizgiyle işaretlenir. Kelime vurgusu yalnız kelime zamanlaması olan okuyucularda yapılır (QUD v4.0.0; [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)). A'da glifler, B'de âyet kutuları, C'de metin parçaları, Âyet âyet'te âyet öğesi işaretlenir.
 - **Takip et.** Çalan âyet sayfadan çıkınca sayfa çevrilir ya da liste kayar. Elle kaydırınca takip kapanır ve çip yuvasında "Okunan âyete dön" çıkar; atlama zinciri açıksa yuvayı geri dönüş çipi tutar (bölüm 9, kural 9). Hareketi Azalt açıkken doğrudan atlanır.
-- **Oynatma birimi.** v1 Expo SDK 57 üzerinde her âyet dosyasını ayrı çalar. Kesintisiz oynatma listeleri SDK 58 ile gelir ([Expo SDK 58 beta](https://expo.dev/changelog/sdk-58-beta)). Âyet geçişindeki boşluk prototipte ölçülür (Doğrulanacak); ayrıntı [Ses sistemi](../06-mobil/02-ses-sistemi.md).
-- **Arka plan ve kilit ekranı.** Kilit ekranında âyet ve hafız adı görünür; ileri ve geri âyet atlar. Android'de kilit ekranı kontrolü etkin değilse ses yaklaşık 3 dakika sonra kesilir ([expo-audio](https://docs.expo.dev/versions/latest/sdk/audio/)). Telefon görüşmesi ve kulaklık çıkarılması çalmayı duraklatır.
-- **Ses yoksa.** İndirilmemiş surede "Bu sure indirilmedi · İndir". Derlemede izinli hafız yoksa Dinleme sayfası "Bu sürümde izinli hafız sesi yok" der ve mini oynatıcı görünmez. Sesli Kur'an Kurul onayına tabidir ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)).
+- **Oynatma birimi.** Çalma birimi okuyucunun kaydına ait sure dosyasıdır; çalan âyet ve kelime zamanlama verisinden belirlenir ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)). Varsayılan motor `PlaylistEngine`dir (`expo-audio` oynatma listesi, her sure bir parça); yedek motor `SingleEngine`dir. Ayrıntı [Ses sistemi](../06-mobil/02-ses-sistemi.md).
+- **Arka plan ve kilit ekranı.** Kilit ekranında sure ve okuyucu adı görünür; sonraki ve önceki düğmeleri sureler arasında geçer (expo-audio'da âyet düzeyinde kilit ekranı düğmesi yok; [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)). Sure bitince sonraki sure çalar ("Sonraki sureye geç", varsayılan açık); Nâs'ın sonunda "Bütün Kur'an'ı tekrarla" kapalıysa çalma durur. Android'de kilit ekranı kontrolü etkin değilse ses yaklaşık 3 dakika sonra kesilir ([expo-audio](https://docs.expo.dev/versions/latest/sdk/audio/)). Telefon görüşmesi ve kulaklık çıkarılması çalmayı duraklatır.
+- **Ses yoksa.** İlk kullanımda hiçbir şey indirmeden çevrimiçi dinlenir. Bağlantı yoksa yalnız indirilmiş sureler çalınabilir; indirilmemiş surede "Bu sure indirilmedi · İndir" görünür. Sure ya da okuyucunun bütün Kur'an'ı Dinleme sayfasından indirilir ([Ses sistemi](../06-mobil/02-ses-sistemi.md) §11).
 
 ## 11. Hadis okuyucu
 
@@ -202,14 +202,13 @@ Kütüphane › Hadis › Tecrîd-i Sarîh › kitap › bâb › hadis. Adresle
 
 - **Telefon dikey:** Arapça üstte (sağdan sola, Amiri ya da Noto Naskh Arabic), Türkçe altta (Literata). Üst çubukta "Arapça | Türkçe | İkisi".
 - **Yatay ve tablet:** İki sütun; Arapça sağda, Türkçe solda, satırlar hadis başında hizalı. Düzen mushaf ve meal açık kitabıyla aynıdır.
-- **Başlık:** "Tecrîd-i Sarîh · 15", "Buhârî · 52" çipi, "Tercüme: Babanzâde Ahmed Naim".
-- **Kâmil Miras kısmı:** Bu ciltlerin Türkçesi de aynı ciltlerdeki Arapçası da 1 Ocak 2028'e kadar hatta alınmaz ([Hadis hazırlığı §2](../04-icerik/04-hadis-hazirligi.md#2-kapsam-ve-takvim)). Okuyucu Arapça birim varsa onu gösterir; Türkçe sütunda "Bu hadisin Türkçesi 1 Ocak 2028'de serbest kalıyor" yazar ([Küre: Miras](https://kureansiklopedi.com/tr/detay/miras-kamil)).
+- **Başlık:** "Tecrîd-i Sarîh · 15", "Buhârî · 52" çipi, "Tercüme: Babanzâde Ahmed Naim" ya da "Tercüme: Kâmil Miras" (hadisin ciltine göre).
 - **Kütüb-i Sitte:** Yalnız Arapça; Tecrîd'de karşılığı olan hadiste "Tecrîd'deki tercümesine git".
 - Arapça metindeki âyet iktibasları çini mavisi alt çizgiyle işaretlidir ve iktibas kartını açar. v1'de yapay zekâ çevirisi yoktur. Hadis derecesi gösterimi Açık soru.
 
 ## 12. Risale-i Nur okuyucu
 
-Kütüphane › Risale-i Nur › kitap › bölüm ağacı › paragraf. Adres `rn:sozler:soz-10:hakikat-3:p4`, cümle düzeyinde `:s2`. Metin kelimesi kelimesine gösterilir; kısaltma, sadeleştirme ve yapay zekâ özeti yoktur (K-25, K-30). Metin hukukçu görüşüne kadar `kapali` durumundadır ve hiçbir derlemede görünmez; görüş olumluysa yalnız ekip içi `dev` derlemesinde görünür (K-05, K-06).
+Kütüphane › Risale-i Nur › kitap › bölüm ağacı › paragraf. Adres `rn:sozler:soz-10:hakikat-3:p4`, cümle düzeyinde `:s2`. Metin kelimesi kelimesine gösterilir; kısaltma, sadeleştirme ve yapay zekâ özeti yoktur (K-25, K-30). Editör onayından geçen paragraflar `public` derlemeye girer; onaysızlar iç derlemelerde "doğrulanmamış" rozetiyle görünür ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
 
 **Metin.** Paragraflar soldan sağa akar (Literata). Her Arapça dizi ayrı parça olarak sağdan sola yazılır, Amiri ya da Noto Naskh Arabic ile çizilir ([W3C](https://www.w3.org/International/articles/inline-bidi-markup/)) ve Türkçe boyuttan %10–20 büyük tutulur; bu, Apple'ın "sağdan sola metni yaklaşık 2 punto büyütme" notuna dayanan bir çıkarımdır ([Apple HIG RTL](https://developer.apple.com/design/human-interface-guidelines/right-to-left)). Haşiye işaretleri lâl rengindedir ve kısa bir alt sayfa açar. "(Bakara Sûresi, 255)" gibi açık atıflar dokunulabilir. Ayarlar › Okuma'da baskı seçilirse kenarda "s. 61" işaretleri görünür (`page_map`); "Sayfaya git" o baskının sayfa numarasını kabul eder. Baskı listesi [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) dosyasındadır.
 
@@ -222,17 +221,11 @@ Kütüphane › Risale-i Nur › kitap › bölüm ağacı › paragraf. Adres `
 | Orta | Zor ve orta zorluktaki kelimeler |
 | Çok | Lügatte karşılığı olan bütün kelimeler |
 
-- Zorluk, Külliyat'taki sıklıktan ve lügatte karşılık olup olmamasından hesaplanır. Sıklık Kelime-Frekans deposunun CC0 verisinden gelir; anlam sütunu kullanılmaz ([Kelime-Frekans](https://github.com/alitekdemir/Risale-i-Nur-Kelime-Frekans)). Kademe eşikleri öneridir, okur testiyle ayarlanır.
+- Zorluk, Külliyat'taki sıklıktan ve lügatte karşılık olup olmamasından hesaplanır. Sıklık Kelime-Frekans deposunun verisinden gelir; anlam sütunu kullanılmaz ([Kelime-Frekans](https://github.com/alitekdemir/Risale-i-Nur-Kelime-Frekans)). Kademe eşikleri öneridir, okur testiyle ayarlanır.
 - Kısa anlam kelimeden hemen sonra küçük punto ve ikincil renkle yazılır. Kelimenin üstüne yerleştirme (ruby) Doğrulanacak. Kısa anlam metne eklenmez, kopyalanmaz, çapa ofsetini değiştirmez.
-- **Lügat kartı:** baş kelime, anlam, köken (Arapça, Farsça, Türkçe), varsa Arapça kök ve "Kur'an'da bu kök", Külliyat'tan bir örnek. Anlamlar kamu malı sözlüklerden (Redhouse 1890, [HathiTrust](https://catalog.hathitrust.org/Record/001771732)) ve özgün tanımlardan gelir.
+- **Lügat kartı:** baş kelime, anlam, köken (Arapça, Farsça, Türkçe), varsa Arapça kök ve "Kur'an'da bu kök", Külliyat'tan bir örnek. Anlamlar Redhouse 1890 ([HathiTrust](https://catalog.hathitrust.org/Record/001771732)) gibi sözlüklerden ve özgün tanımlardan gelir, editör onayından geçer ([Kaynaklar](../04-icerik/01-kaynaklar.md) §3.6).
 
 **İbare kartı.** Arapça diziye dokunmak iktibas kartını açar; eski planın "Tam âyete git / Karşılaştır" penceresi korunur. Âyet iktibasında âyet adresi, Unicode metin, Elmalılı meali, "Âyete git" ve "Karşılaştır" görünür. Hadiste `h:` adresi ve varsa Türkçesi görünür. Eşleşme yoksa "Kaynak bulunamadı" ve Bağlantılar paneline geçiş.
-
-**Dizin-önce görünüm.** `internal` ve mağaza derlemelerinde Risale metni yoktur. Metinsiz atıf dizini, üretimi ve yayını için hukukçu görüşü olumlu çıkarsa görünür ([Kapsam ve fazlar §9](./01-kapsam-ve-fazlar.md#9-açık-sorular), AS-04).
-- Kitap ve bölüm listesi yalnız yapısal adlarla verilir ("10. Söz", "3. Hakikat"). Bölüm başlıklarının metin sayılıp sayılmadığı Doğrulanacak.
-- Bölüm ekranı "Bu bölümde geçen âyetler" listesini verir: âyet adresi, Unicode metin, Elmalılı meali, Risale'deki yer (¶) ve seçili baskının sayfası. Dokunuş Kur'an okuyucusunu o âyette açar.
-- Kur'an tarafında Bağlantılar › Risale-i Nur grubu aynı yer bilgisini metinsiz verir.
-- Bilgi şeridi: "Risale-i Nur metni telif nedeniyle bu sürümde yok. Dizin âyet atıflarını ve baskı sayfalarını gösterir." "Neden?" bağlantısı Kaynaklar ve lisanslar ekranını açar.
 
 ## 13. Erişilebilirlik
 
@@ -259,10 +252,9 @@ Kurallar [Tasarım sistemi §9](./04-tasarim-sistemi.md#9-erişilebilirlik-kontr
 |---|---|---|
 | OD-1 | İki âyete yayılan seçimin çapası | [Çapa şeması](../03-veri/01-capa-semasi.md) |
 | OD-2 | Mod C ve Türkçe metinde yerel seçimin ofsetini almak | [Mobil mimari](../06-mobil/01-mobil-mimari.md) |
-| OD-3 | Medine düzeninde iki sayfaya bölünen âyet var mı | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) |
+| OD-3 | Medine düzeninde iki sayfaya bölünen âyet var mı | [Kaynaklar](../04-icerik/01-kaynaklar.md) |
 | OD-4 | ~~Güven etiketlerinin kesin eşikleri~~ **Çözüldü (19 Ekim 2026):** koşullar ve eşikler Bağlantı modeli §6'dakilerdir; bölüm 8 onları ekrandaki etiketlere bağlar. | [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md#6-puanlama) |
 | OD-5 | Lügat kısa anlamının kelime üstünde (ruby) gösterimi | Prototip |
-| OD-6 | Dizin görünümünde bölüm başlıkları | [Risale hazırlığı](../04-icerik/05-risale-hazirligi.md) |
 | OD-7 | Hadis derecesi verisi | [Hadis hazırlığı](../04-icerik/04-hadis-hazirligi.md) |
 | OD-8 | "Kaynak kopyala" için İSNAD biçim kuralı | Sonraki sürüm |
 | OD-9 | Hatim otomatik işaretleme süresi | Okur testi |

@@ -1,7 +1,7 @@
 # Proje yapısı
 
-> **Sürüm:** 1.7 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
+> **Sürüm:** 1.9 · **Tarih:** 7 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
 
 Kod tek depoda durur: TypeScript uygulamaları ve paketleri pnpm + Turborepo ile, .NET projeleri `server/` altındaki çözümle, Python içerik hattı `pipeline/` altında uv ile yönetilir. Bu dosya klasörleri, bağımlılık kurallarını, araçları, kod biçimini, Git kurallarını ve CI iş akışlarını tanımlar.
 
@@ -39,19 +39,19 @@ mutalaa/
 │  └─ ui-tokens/                 renk, tip ölçeği, boşluk jetonları
 ├─ server/
 │  ├─ Mutalaa.slnx · Directory.Build.props · Directory.Packages.props
-│  ├─ Mutalaa.Domain/            varlıklar, çapa, lisans kapısı kuralları, C# normalizasyon (Text/SearchNormalizer.cs; Text/IcKesme.g.cs üretilir)
+│  ├─ Mutalaa.Domain/            varlıklar, çapa, derleme türü ve kalite kapısı kuralları (Releases), C# normalizasyon (Text/SearchNormalizer.cs; Text/IcKesme.g.cs üretilir)
 │  ├─ Mutalaa.Infrastructure/    EF Core, göçler, Identity, S3, SQLite paket yazıcı
 │  ├─ Mutalaa.Api/               Minimal API uçları, openapi/v1.json
 │  ├─ Mutalaa.Publisher/         yayın konsolu
 │  └─ tests/                     Domain, Api ve Publisher test projeleri
 ├─ pipeline/                     içerik hattı (ayrıntı: 04-icerik/02-icerik-hatti.md)
 │  ├─ pyproject.toml · uv.lock · .python-version · mutalaa.toml
-│  ├─ sources/                   kaynak kayıtları (TOML) ve tarihli lisans kopyaları
+│  ├─ sources/                   kaynak kayıtları (`{kimlik}.toml`)
 │  ├─ prompts/                   sürümlü yapay zekâ istemleri
 │  ├─ stubs/                     tip bilgisi taşımayan paketler için mypy taslakları (snowballstemmer; A05)
-│  ├─ src/mutalaa_pipeline/      cli.py (`mutalaa` komutu), ingest/, normalize/, anchor/,
-│  │                             enrich/, qa/, export/
-│  └─ tests/                     birim testleri ve test vektörü koşucusu
+│  ├─ src/mutalaa_pipeline/      cli.py (`mutalaa` komutu), staged.py, zincir.py, ingest/, adimlar/,
+│  │                             normalize/, anchor/, enrich/, qa/, export/
+│  └─ tests/                     birim testleri, test vektörü koşucusu ve fixtures/tanzil/ (dosyadan betikle kesilmiş Tanzil parçaları)
 ├─ shared/test-vectors/
 │  ├─ package.json               JSONL biçim denetimi (Turborepo önbelleği için)
 │  ├─ normalize/                 tr.jsonl, ar.jsonl
@@ -64,14 +64,14 @@ mutalaa/
 │                                ic-kesme.txt (iç kesme listesi, A05; kopyaları packages/search/src/generated/ic-kesme.ts ve Text/IcKesme.g.cs `uv run mutalaa export ic-kesme` ile üretilir; Python dosyayı doğrudan okur)
 │                                sure-adlari.json (114 kayıt; Çapa şeması §12; A11'de gelir)
 ├─ infra/local/                  yerel konteyner yapılandırması (s3.example.json; s3.json git dışı)
-├─ data/                         git dışı: raw/, gelen/, staged/, ocr/, gold/, llm-cache/, reports/, logs/, packs/, kurul/, backups/ (§1.1)
+├─ data/                         git dışı: raw/, gelen/, staged/, ocr/, gold/, llm-cache/, reports/, logs/, packs/, backups/ (§1.1)
 ├─ docs/                         proje belgeleri (eski adıyla mutalaa-docs); Claude Code rehberi docs/10-claude-code/
-├─ scripts/                      backup-db.ps1, restore-db.ps1, lan-ip.ps1
-│  └─ ci/                        CI yardımcıları (A08): check-licenses.mjs, pr-title.mjs, license-exceptions.json ve *.test.mjs testleri
+├─ scripts/                      backup-db.ps1, restore-db.ps1, test-db.ps1, lan-ip.ps1, nightly.ps1 (gerçek Tanzil verisiyle yerel gece koşusu)
+│  └─ ci/                        CI yardımcıları (A08): list-licenses.mjs, pr-title.mjs ve *.test.mjs testleri
 ├─ CLAUDE.md · .claude/          Claude Code kiti: kılavuz, ajanlar, beceriler, kurallar, hook'lar (K-31)
 ├─ .tmp/                         git dışı geçici dosyalar ve Claude Code plan dosyaları
 ├─ .github/                      CI (§7)
-│  ├─ workflows/                 ci-ts.yml, ci-dotnet.yml, ci-pipeline.yml, ci-workflows.yml, pr-title.yml, eas-build.yml
+│  ├─ workflows/                 ci-ts.yml, ci-dotnet.yml, ci-pipeline.yml, ci-workflows.yml, pr-title.yml, eas-build.yml, nightly.yml
 │  └─ dependabot.yml             haftalık gruplu bağımlılık güncellemesi (Teknoloji yığını §4.2)
 ├─ docker-compose.yml · .env.example · .dockerignore
 ├─ package.json · pnpm-workspace.yaml · turbo.json · tsconfig.base.json   (.npmrc yalnız gerekirse, K-32)
@@ -81,28 +81,29 @@ mutalaa/
 
 Mobil özellik klasörlerinin iç düzeni ve rotalar [Mobil mimari](../06-mobil/01-mobil-mimari.md) bölüm 3 ve 4'te, hattın modülleri ve komutları [İçerik hattı](../04-icerik/02-icerik-hatti.md) dosyasındadır.
 
-Editör rotaları [Backend API](./05-backend-api.md#41-i̇nceleme-kuyrukları) §4.1'deki inceleme kuyruklarını şöyle karşılar: `kuyruk/baglanti` bağlantı adaylarını, `kuyruk/lemma` kelime anlamı taslaklarını ve Türkçe kelime → Arapça kök eşlemelerini (`tr_root_index`, `tr_form`), `kuyruk/ocr` OCR ve metin düzeltmelerini, `kaynaklar` kaynak lisansı taleplerini gösterir. `quran_word_fix` ve `surah_alias` için ayrı rota yoktur: kök ve lemma düzeltmeleri `kuyruk/lemma` ekranında ya da API karar uçlarıyla, sure adı varyantları API karar uçlarıyla işlenir; ayrı rota açılıp açılmayacağı Açık soru (A11, A15, A17).
+Hat paketinde `normalize/` ve `anchor/` yaprak kitaplıktır: TypeScript ve C# karşılıklarıyla aynı rolü taşır ve aynı test vektörlerine bağlıdır. Kaynağa özgü adım kodu (`normalize --source`, `anchor --source`; staged okuma ve yazma, parmak izi, manifest, komut gövdesi) `adimlar/` altındadır ve kitaplıkları kullanır, tersi olmaz. `staged.py` (`units.jsonl` okuma ve yazma) ve `zincir.py` (`ingest → normalize → anchor` zincirini bulma ve doğrulama) `normalize`, `anchor` ve `qa` adımlarının ortak yardımcılarıdır. `qa/` altında `run.py` (`qa run`), `rapor.py` (rapor okuma ve kabul kararı), `vektorler.py` (G-NOR koşucusu) ve `checks/` (kaynağa özgü kapılar), `export/` altında `pg.py`, `test_vectors.py`, `tanzil_ornekleri.py`, `ayet_sayilari.py` ve `ic_kesme.py` bulunur; modül tablosu İçerik hattı §2'dedir.
+
+Editör rotaları [Backend API](./05-backend-api.md#41-i̇nceleme-kuyrukları) §4.1'deki inceleme kuyruklarını şöyle karşılar: `kuyruk/baglanti` bağlantı adaylarını, `kuyruk/lemma` kelime anlamı taslaklarını ve Türkçe kelime → Arapça kök eşlemelerini (`tr_root_index`, `tr_form`), `kuyruk/ocr` OCR ve metin düzeltmelerini gösterir. `kaynaklar` kuyruk değildir: kaynak kayıtlarını (ad, sürüm, adres, atıf satırı, birim sayısı) salt okunur listeler. `quran_word_fix` ve `surah_alias` için ayrı rota yoktur: kök ve lemma düzeltmeleri `kuyruk/lemma` ekranında ya da API karar uçlarıyla, sure adı varyantları API karar uçlarıyla işlenir; ayrı rota açılıp açılmayacağı Açık soru (A11, A15, A17).
 
 ### 1.1 `data/` klasörü
 
 | Alt klasör | İçerik | Yedek |
 |---|---|---|
-| `raw/` | İndirilen kaynak dosyalar, tarama görselleri | Evet; lisans gereği depoya girmez |
-| `gelen/` | Kullanıcının elle getirdiği taramalar ve dosyalar; `ingest` bunları `raw/` altına kopyalar (öneri; A09) | Hayır; kopyası `raw/` altındadır |
+| `raw/` | İçerik hattının `gelen/` altından aldığı kaynak dosyalar ve tarama görselleri; değişmez, yalnız hat yazar | Evet; boyutu yüzünden git dışındadır, hattın bütün çıktıları buradan yeniden üretilir |
+| `gelen/` | Claude Code'un indirdiği kaynak dosyalar ve taramalar. Her kaynak `gelen/<kaynak>/<YYYY-AA-GG>/` altında yeni boş klasöre iner; adres ve tarih aşama dosyasının `.0` adımına yazılır, SHA-256 klasördeki `SHA256SUMS` dosyasındadır. `ingest` dosyaları `raw/` altına alır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 2) | Hayır; kopyası `raw/` altındadır (özet orada `fetch.json` içindedir), adres kaynak kaydındadır |
 | `staged/`, `reports/` | Hat modüllerinin ara çıktıları ve nitelik raporları | Hayır; yeniden üretilir |
 | `ocr/` | Sayfa başına OCR çıktısı ve koordinatlar ([İçerik hattı](../04-icerik/02-icerik-hatti.md) §5) | Hayır; `raw/` taramalarından yeniden üretilir, model yanıtları `llm-cache/` altındadır |
 | `gold/` | Altın metinler (OCR örneklemi, ör. `gold/elmalili-ocr/`) ve altın setler (bağlantı, kök); kişilerin elle hazırladığı ölçüm verisi | Evet; insan emeğidir ve yeniden üretilemez. Yedek betiği arşivler ([Yerel geliştirme](./04-yerel-gelistirme.md) §9) |
 | `llm-cache/` | Yapay zekâ taslak yanıtlarının önbelleği | Evet; yeniden üretmek ücretlidir |
 | `logs/` | Hat çalıştırma günlükleri (`{run_id}.jsonl`) | Hayır; tanı içindir |
-| `packs/` | Yayınlayıcı çıktısı (`{release}/` altında paketler, kapı raporu) | Hayır; yeniden üretilir |
-| `kurul/` | Kurul başvuru dosyası (öneri; A34) | Evet; teslim edilen dosyanın kopyasıdır |
+| `packs/` | Yayınlayıcı çıktısı (`{release}/` altında paketler, kalite kapısı raporu) | Hayır; yeniden üretilir |
 | `backups/` | `pg_dump` dosyaları ve `gold/` arşivleri | Evet; bilgisayar dışına da kopyalanır ([Yerel geliştirme](./04-yerel-gelistirme.md) §9) |
 
 ### 1.2 Test vektörü biçimi
 
-Her dosya JSONL'dir: UTF-8, BOM yok, LF satır sonu, satır başına bir JSON nesnesi. Python, TypeScript ve C# koşucuları aynı dosyaları okur. Vektörlerin hesaplanan alanları (`codepoints`, `utf16`, `cp_to_utf16`, `sha256`) ve sınır satırları `uv run mutalaa export test-vectors` ile üretilir; anlamsal beklentiler elle yazılır ve gözden geçirilir ([İçerik hattı](../04-icerik/02-icerik-hatti.md) §4). `--check` kipi diskle karşılaştırır. Âyet sayısı dizisi `uv run mutalaa export ayet-sayilari` ile üretilir (A04). Normalizasyon vektörlerinde (`normalize/tr.jsonl`, `normalize/ar.jsonl`) `expected` tamamen elle yazılır; üreteç yalnız biçimi, `\u` kaçışını ve kimlik düzenini denetler (A05). İç kesme listesi kopyaları `uv run mutalaa export ic-kesme [--check]` ile üretilir. Bir normalizasyon kuralı değişmeden önce o kuralı gösteren vektör eklenir.
+Her dosya JSONL'dir: UTF-8, BOM yok, LF satır sonu, satır başına bir JSON nesnesi. Python, TypeScript ve C# koşucuları aynı dosyaları okur. Vektörlerin hesaplanan alanları (`codepoints`, `utf16`, `cp_to_utf16`, `sha256`) ve sınır satırları `uv run mutalaa export test-vectors` ile üretilir; anlamsal beklentiler elle yazılır ve gözden geçirilir ([İçerik hattı](../04-icerik/02-icerik-hatti.md) §4). `--check` kipi diskle karşılaştırır. Âyet sayısı dizisi `uv run mutalaa export ayet-sayilari` ile üretilir (A04). Normalizasyon vektörlerinde (`normalize/tr.jsonl`, `normalize/ar.jsonl`) `expected` tamamen elle yazılır; üreteç yalnız biçimi, `\u` kaçışını ve kimlik düzenini denetler (A05). İstisna: `ar.jsonl` içindeki `ar-tz-NNNN` satırları [Arama](../03-veri/05-arama-fts5.md) §1.5 Arapça tablosunun Tanzil Uthmani dilimleridir ve `uv run mutalaa export test-vectors --tanzil-ornekleri` ile baştan üretilir (`input` Tanzil baytları, `expected` tablonun `ar` sütunu, `note` kaynak ve çapa; A10.7). İç kesme listesi kopyaları `uv run mutalaa export ic-kesme [--check]` ile üretilir. Bir normalizasyon kuralı değişmeden önce o kuralı gösteren vektör eklenir.
 
-Kimlik önekleri: `tr-` ve `ar-` (`normalize/`, ayrı iki dizi); `an-` (`anchors/valid` ve `anchors/invalid` tek ortak dizi), `cm-` (`compare`), `ct-` (`contains`), `ro-` (`route`), `of-` (`offsets`), `ch-` (`content-hash`). Üretilen sınır satırları `an-s…` ve `an-u-…` kimliklidir. Hata önceliğini sınayan çok ihlalli satırlar `invalid` içindedir ([K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)).
+Kimlik önekleri: `tr-` ve `ar-` (`normalize/`, ayrı iki dizi; Tanzil'den kurulan Arapça satırlar `ar-tz-`); `an-` (`anchors/valid` ve `anchors/invalid` tek ortak dizi), `cm-` (`compare`), `ct-` (`contains`), `ro-` (`route`), `of-` (`offsets`), `ch-` (`content-hash`). Üretilen sınır satırları `an-s…` ve `an-u-…` kimliklidir. Hata önceliğini sınayan çok ihlalli satırlar `invalid` içindedir ([K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)).
 
 ```json
 {"id":"tr-0001","input":"Işık","expected":{"dar":"ışık","genis":"isik"},"note":"I → ı"}
@@ -110,7 +111,7 @@ Kimlik önekleri: `tr-` ve `ar-` (`normalize/`, ayrı iki dizi); `an-` (`anchors
 {"id":"ar-0001","input":"بًب","expected":"بب","note":"U+064B (silme aralığının başı) silinir, harfler birleşir"}
 ```
 
-Beklenen değerler [Arama](../03-veri/05-arama-fts5.md) ve [Çapa şeması](../03-veri/01-capa-semasi.md) kurallarından gelir; yukarıdaki satırlar gerçek vektörlerdir ve biçimi gösterir. Arapça normalizasyon satırları sentetik `\u` dizileridir (Kur'an metni değildir; A05). `note` isteğe bağlıdır; `expected` dosyaya göre bir değer ya da nesnedir (ör. Türkçe dosyada `dar` ve `genis`). `arama/olcum.jsonl` vektör değil, arama ölçüm kümesidir: satır alanları `id`, `kategori`, `sorgu`, `beklenen` ([Arama](../03-veri/05-arama-fts5.md) §6); vektör koşucuları bu klasörü okumaz. `offsets/` dosyası en az bir Temel Çok Dilli Düzlem (BMP) dışı karakter içerir, çünkü JavaScript ve C# dizeleri UTF-16'dır ve ofsetler kanonik metnin kod noktalarıdır. Tanzil metni NFC'ye çevrilmeden saklandığı için ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)) `content-hash/` dosyası NFC olmayan bir Arapça dizi de içerir; böylece bir uygulamanın metni sessizce normalize etmesi testte yakalanır.
+Beklenen değerler [Arama](../03-veri/05-arama-fts5.md) ve [Çapa şeması](../03-veri/01-capa-semasi.md) kurallarından gelir; yukarıdaki satırlar gerçek vektörlerdir ve biçimi gösterir. `ar-0001` … `ar-0062` satırları sentetik `\u` dizileridir (Kur'an metni değildir; A05); `ar-tz-` satırlarının girdisi Tanzil Uthmani'nin baytlarıdır (A10.7). `note` isteğe bağlıdır; `expected` dosyaya göre bir değer ya da nesnedir (ör. Türkçe dosyada `dar` ve `genis`). `arama/olcum.jsonl` vektör değil, arama ölçüm kümesidir: satır alanları `id`, `kategori`, `sorgu`, `beklenen` ([Arama](../03-veri/05-arama-fts5.md) §6); vektör koşucuları bu klasörü okumaz. `offsets/` dosyası en az bir Temel Çok Dilli Düzlem (BMP) dışı karakter içerir, çünkü JavaScript ve C# dizeleri UTF-16'dır ve ofsetler kanonik metnin kod noktalarıdır. Tanzil metni NFC'ye çevrilmeden saklandığı için ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)) `content-hash/` dosyası NFC olmayan bir Arapça dizi de içerir; böylece bir uygulamanın metni sessizce normalize etmesi testte yakalanır.
 
 ## 2. Bağımlılık kuralları
 
@@ -147,10 +148,10 @@ flowchart LR
 3. `anchors` ve `search` yaprak pakettir; başka iç pakete bağlanmaz.
 4. Döngüsel bağımlılık yasaktır.
 5. `Mutalaa.Domain` başka projeye ve altyapı paketine (EF Core, Npgsql, AWS) bağlanmaz. `Mutalaa.Api` ile `Mutalaa.Publisher` birbirine bağlanmaz.
-6. Hat modülleri veriyi `data/staged/` ve PostgreSQL üzerinden devreder. Ortak yardımcılar (`config`, `db`, `logs`) başka modüle bağlanmaz.
+6. Hat modülleri veriyi `data/staged/` ve PostgreSQL üzerinden devreder. Ortak yardımcılar (`config`, `db`, `logs`) hat adımlarına bağlanmaz: yalnız yaprak modül `export/ortak.py` (hata türü, depo kökü, katı JSON) içe aktarılır ve `db` ayrıca `config`'e bağlanır. `normalize/` ve `anchor/` yaprak kitaplıktır (kural 3'ün Python karşılığı): kendi paketi dışında hiçbir hat modülünü (`export`, `cli`, `runctx`, `staged`, `zincir`, `adimlar`, `qa` …) içe aktarmaz. İki kural `tests/test_yaprak_kitapliklar.py` ile sınanır. Kaynağa özgü adım kodu `adimlar/` altındadır ve bu kitaplıkları kullanır. `staged.py` ve `zincir.py` yalnız `normalize`, `anchor` ve `qa` adımlarının ortak okuma ve zincir yardımcılarıdır; veritabanına dokunmaz. Ortak sabitler (`units.jsonl` ve `notice.txt` adları, SHA-256 ve `run_id` desenleri) yalnız `lineage.py` içinde tanımlıdır.
 7. Diller arası sözleşmeler dört dosya türüdür: test vektörleri, OpenAPI belgesi (`server/Mutalaa.Api/openapi/v1.json`), manifest şeması (`packages/content-schema/manifest.schema.json`) ve paket DDL'i (`packages/content-schema/sql/`).
 
-Denetim: TypeScript tarafında ESLint `no-restricted-imports` ve `import/no-restricted-paths` ([Mobil mimari](../06-mobil/01-mobil-mimari.md) aynı kuralı kullanır); .NET tarafında proje başvuruları ve Domain derlemesinin başvuru listesini sınayan bir mimari testi; Python tarafında `qa` testlerinde içe aktarma denetimi.
+Denetim: TypeScript tarafında ESLint `no-restricted-imports` ve `import/no-restricted-paths` ([Mobil mimari](../06-mobil/01-mobil-mimari.md) aynı kuralı kullanır); .NET tarafında proje başvuruları ve Domain derlemesinin başvuru listesini sınayan bir mimari testi; Python tarafında içe aktarma testleri: `test_normalize_unit.py` (`normalize` paketi `export` ve `cli` içe aktarmaz), `test_export_vectors.py` (vektör üreteci `normalize` ve `anchor` içe aktarmaz) ve `test_tekil_tanimlar.py` (ortak sabitlerin tek tanımı, AST taraması).
 
 ## 3. Paylaşılan ve platforma özgü kod
 
@@ -159,7 +160,7 @@ Denetim: TypeScript tarafında ESLint `no-restricted-imports` ve `import/no-rest
 | Çapa grameri | `packages/anchors`, `Mutalaa.Domain/Anchors`, `mutalaa_pipeline.anchor` | — |
 | Normalizasyon ve FTS sorgusu | `packages/search`, `Mutalaa.Domain/Text`, `mutalaa_pipeline.normalize` | — |
 | Paket şeması | `packages/content-schema/sql` | Bağlantı ve ATTACH yönetimi (`apps/mobile/src/db`) |
-| Manifest tipi ve görünürlük kuralı | Şema `content-schema`; C# kuralı `Mutalaa.Domain/Licensing` | `apps/mobile/src/packs/visibility.ts` |
+| Manifest tipi ve görünürlük kuralı | Şema `content-schema`; C# kuralı `Mutalaa.Domain/Releases` | `apps/mobile/src/packs/visibility.ts` |
 | Okuma mantığı | `packages/reader-core` | Mushaf A, B, C çizimi, jestler, sayfalayıcı |
 | Ses durum makinesi | `packages/player` | expo-audio motoru (mobil); HTMLAudioElement (web, sonra) |
 | Tasarım jetonları | `packages/ui-tokens` | NativeWind teması, Tailwind teması |
@@ -324,7 +325,7 @@ Python için `pyproject.toml` içinde `[tool.ruff] target-version = "py313"`, `l
   fix(search): map dotted capital I before lowercasing
   ```
 - **Etiketler.** Uygulama sürümleri `mobile-vX.Y.Z` etiketiyle işaretlenir. İçerik yayınları Git etiketiyle izlenmez; `release` tablosunda ve manifest geçmişinde izlenir.
-- **PR kontrol listesi.** Test eklendi mi; normalizasyon değiştiyse test vektörü eklendi mi; şema değiştiyse göç eklendi mi; OpenAPI belgesi güncel mi; KVKK ve erişilebilirlik etkisi düşünüldü mü (eski planın listesinden uyarlandı: `quran-app-docs/00-baslangic/04-contributing.md`).
+- **PR kontrol listesi.** Test eklendi mi; normalizasyon değiştiyse test vektörü eklendi mi; şema değiştiyse göç eklendi mi; OpenAPI belgesi güncel mi; gizlilik ve erişilebilirlik etkisi düşünüldü mü (eski planın listesinden uyarlandı: `quran-app-docs/00-baslangic/04-contributing.md`).
 
 ## 7. CI iş akışları (GitHub Actions)
 
@@ -332,14 +333,15 @@ Python için `pyproject.toml` içinde `[tool.ruff] target-version = "py313"`, `l
 
 | Dosya | Tetikleyici | `paths` özeti | İşler |
 |---|---|---|---|
-| [ci-ts.yml](../../.github/workflows/ci-ts.yml) | `pull_request`, `push` (`main`), elle | `apps/**`, `packages/**`, `shared/test-vectors/**`, `shared/data/**`, `scripts/ci/**`, `server/Mutalaa.Api/openapi/**`, kök TypeScript yapılandırma ve kilit dosyaları, kendi dosyası | Matris `LANG` = `C.UTF-8` ve `tr_TR.UTF-8` (`fail-fast: false`). Her ayakta etkin yerel ayar günlüğe yazılır. `C.UTF-8` ayağı: `turbo run lint typecheck test`, `scripts/ci` testleri, ESLint, `prettier --check .`, pnpm lisans kapısı, `expo install --check` (`apps/mobile` varsa), editör API istemcisi güncel mi (`apps/editor` varsa). `tr_TR.UTF-8` ayağı: `turbo run test` |
-| [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml) | `pull_request`, `push` (`main`), elle | `server/**`, `shared/test-vectors/**`, `shared/data/**`, `packages/content-schema/enums.json`, `docs/03-veri/02-editoryal-veritabani.md`, `global.json`, `.editorconfig`, `.config/dotnet-tools.json`, `scripts/ci/**`, kendi dosyası | `dotnet tool restore`, `restore --locked-mode`, `format --verify-no-changes`, `build -c Release`, `test` (Testcontainers ile PostgreSQL), normalizasyon ortamı günlüğü, OpenAPI belgesi güncel mi (belge varsa), NuGet lisans kapısı |
-| [ci-pipeline.yml](../../.github/workflows/ci-pipeline.yml) | `pull_request`, `push` (`main`), elle | `pipeline/**`, `shared/test-vectors/**`, `shared/data/**`, `packages/content-schema/enums.json`, `pnpm-workspace.yaml`, üretilen kopyalar (`ic-kesme.ts`, `ayet-sayilari.ts`, `IcKesme.g.cs`, `AyetSayilari.g.cs`), kendi dosyası | Matris `ubuntu-24.04` ve `windows-2025` (`fail-fast: false`): `uv sync --locked`, ortam günlüğü, `ruff check`, `ruff format --check`, `mypy`, `pytest`. Yalnız Linux: `mutalaa export test-vectors --check` ve `pip-licenses` listesi (kapı değil) |
+| [ci-ts.yml](../../.github/workflows/ci-ts.yml) | `pull_request`, `push` (`main`), elle | `apps/**`, `packages/**`, `shared/test-vectors/**`, `shared/data/**`, `scripts/ci/**`, `server/Mutalaa.Api/openapi/**`, kök TypeScript yapılandırma ve kilit dosyaları, kendi dosyası | Matris `LANG` = `C.UTF-8` ve `tr_TR.UTF-8` (`fail-fast: false`). Her ayakta etkin yerel ayar günlüğe yazılır. `C.UTF-8` ayağı: `turbo run lint typecheck test`, `scripts/ci` testleri, ESLint, `prettier --check .`, pnpm bağımlılık listesi (kapı değil), `expo install --check` (`apps/mobile` varsa), editör API istemcisi güncel mi (`apps/editor` varsa). `tr_TR.UTF-8` ayağı: `turbo run test` |
+| [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml) | `pull_request`, `push` (`main`), elle | `server/**`, `shared/test-vectors/**`, `shared/data/**`, `packages/content-schema/enums.json`, `docs/03-veri/02-editoryal-veritabani.md`, `global.json`, `.editorconfig`, `.config/dotnet-tools.json`, `scripts/ci/**`, kendi dosyası | `dotnet tool restore`, `restore --locked-mode`, `format --verify-no-changes`, `build -c Release`, `test` (Testcontainers ile PostgreSQL), normalizasyon ortamı günlüğü, OpenAPI belgesi güncel mi (belge varsa), NuGet bağımlılık listesi (kapı değil) |
+| [ci-pipeline.yml](../../.github/workflows/ci-pipeline.yml) | `pull_request`, `push` (`main`), elle | `pipeline/**`, `shared/test-vectors/**`, `shared/data/**`, `packages/content-schema/enums.json`, `pnpm-workspace.yaml`, üretilen kopyalar (`ic-kesme.ts`, `ayet-sayilari.ts`, `IcKesme.g.cs`, `AyetSayilari.g.cs`), sunucunun şema görüntüsü (`editoryal-sema.sql`), kendi dosyası | Matris `ubuntu-24.04` ve `windows-2025` (`fail-fast: false`): `uv sync --locked`, ortam günlüğü, `ruff check`, `ruff format --check`, `mypy`, `pytest`, `mutalaa sources check`. Yalnız Linux: `mutalaa export test-vectors --check` ve bağımlılık listesi (`pip-licenses`; kapı değil). `database` işi (yalnız `ubuntu-24.04`): `postgres:18` servisi, sunucunun şema görüntüsünün yüklenmesi ve `pytest -m veritabani` (`MUTALAA_DEGISMEZLIK_ZORUNLU=1`: veritabanı yoksa test atlanmaz, başarısız olur) |
+| [nightly.yml](../../.github/workflows/nightly.yml) | `schedule` (günlük 02:17 UTC), elle | Yok | `ubuntu-24.04`: `uv sync --locked`, `mutalaa sources check`, `pytest -m degismezlik -rs -q`; pytest çıkış kodu (boş seçimde `5` dahil) ve çıktıda en az bir `N passed` (N ≥ 1) aranır, yalnız atlayan ya da hiçbir şey seçmeyen koşu işi düşürür. Tanzil verisi CI'da indirilmez; yalnız fikstür testleri koşar, gerçek veri koşusu yereldedir (`scripts/nightly.ps1 [-ExportPg]`). Sonraki gece işleri bu dosyaya eklenir ([BÇ-42](../10-claude-code/07-belge-celiskileri.md#1-karar-bekleyenler)) |
 | [ci-workflows.yml](../../.github/workflows/ci-workflows.yml) | `pull_request`, `push` (`main`), elle | `.github/**` | actionlint (ShellCheck ve pyflakes ile); resmî Docker imajı `rhysd/actionlint:1.7.12`, özet (digest) ile sabit |
 | [pr-title.yml](../../.github/workflows/pr-title.yml) | `pull_request` (`opened`, `edited`, `synchronize`, `reopened`) | Yok (her PR) | PR başlığı `scripts/ci/pr-title.mjs` ile denetlenir (§6); başlık yalnız ortam değişkeninden okunur |
 | [eas-build.yml](../../.github/workflows/eas-build.yml) | Elle (`workflow_dispatch`) ve `mobile-v*` etiketi | Yok | EAS Build (`--no-wait`); mağazaya gönderim (`eas submit`) yoktur, elle yapılır |
 
-Bağımlılık güncellemesi için [dependabot.yml](../../.github/dependabot.yml) vardır (Teknoloji yığını §4.2). Yerel yardımcılar [scripts/ci/](../../scripts/ci/) altındadır: `check-licenses.mjs` (lisans kapısı), `license-exceptions.json` (istisna listesi; şu an boş), `pr-title.mjs` ve `node --test` testleri.
+Bağımlılık güncellemesi için [dependabot.yml](../../.github/dependabot.yml) vardır (Teknoloji yığını §4.2). Yerel yardımcılar [scripts/ci/](../../scripts/ci/) altındadır: `list-licenses.mjs` (bağımlılık listesi), `pr-title.mjs` ve `node --test` testleri.
 
 **Ortak kurallar**
 
@@ -358,20 +360,21 @@ Bağımlılık güncellemesi için [dependabot.yml](../../.github/dependabot.yml
 - pnpm sürümünü eylem kök `package.json` içindeki `devEngines.packageManager` alanından okur; `version` girdisi verilmez (K-32 ile uyumlu). Node sürümü `.nvmrc`'den gelir.
 - Yerel ayar karşıtlığı yalnız Linux'ta görülür (Windows'ta Node iki koşuda da `tr-TR`). `packages/anchors` ve `packages/search` Vitest kurulum dosyaları (`test/global-setup.ts`) koşu başında `locale=` ve `unicode=` yazar; Windows dışında `tr_TR` istenip ICU Türkçe çözmediyse test hata verir, böylece `tr_TR.UTF-8` ayağı sessizce İngilizce koşamaz.
 - Turborepo `test` görevi `env: ["LANG","LC_ALL"]` bildirir (§4.1); `tr_TR.UTF-8` ayağı `C.UTF-8` ayağının önbelleğinden gelmez.
-- Lisans kapısı: `pnpm licenses list -r --json --prod | node scripts/ci/check-licenses.mjs pnpm`. Kuralları ve kapsamı: [Teknoloji yığını §3](./02-teknoloji-yigini.md#3-lisans-notları).
+- Bağımlılık listesi: `pnpm licenses list -r --json --prod | node scripts/ci/list-licenses.mjs pnpm`; yalnız listeler, derlemeyi durdurmaz. Ayrıntı: [Teknoloji yığını §3](./02-teknoloji-yigini.md#3-kitaplık-notları-ve-bağımlılık-listesi).
 
 **ci-dotnet**
 
-- `dotnet test --solution server/Mutalaa.slnx -c Release --no-build` birleşimi çalışır (MTP kipi, [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform); [dotnet test belgesi](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test)). Yerelde 1755 testin 1755'i geçti. `--no-build` `--no-restore`'u da içerir. SDK 10'da hiç test koşmayan bir proje bütün koşuyu 8 koduyla düşürür.
+- `dotnet test --solution server/Mutalaa.slnx -c Release --no-build` birleşimi çalışır (MTP kipi, [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform); [dotnet test belgesi](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test)). A08 kapanışında (27 Ekim 2026) yerelde 1755 testin 1755'i geçti. `--no-build` `--no-restore`'u da içerir. SDK 10'da hiç test koşmayan bir proje bütün koşuyu 8 koduyla düşürür.
 - xunit.v3 testi tek başına çalıştırılıp çıktısı görülmek istenirse: `dotnet <test dll> -diagnostics -showLiveOutput -method <test adı>`. İş akışı bunu normalizasyon ortamı günlüğü için kullanır (globalleşme kipi ve kültür; A05).
 - `setup-dotnet` `global.json` içindeki SDK'yı kurar; NuGet önbelleği `packages.lock.json` dosyalarına bağlıdır.
-- Lisans kapısı: `nuget-license` yerel araçtır (`.config/dotnet-tools.json`); test projeleri dışlanır. Ayrıntı: Teknoloji yığını §3.
+- Bağımlılık listesi: `nuget-license` yerel araçtır (`.config/dotnet-tools.json`); test projeleri dışlanır; çıktı `list-licenses.mjs nuget` ile listelenir. Ayrıntı: Teknoloji yığını §3.
 
 **ci-pipeline**
 
 - Python sürümünü `setup-uv` kurmaz; `uv` `pipeline/.python-version` dosyasından 3.13'ü ister ve gerekirse indirir. `uv` sürümü `0.13.1` olarak sabittir (`version` girdisi).
 - `PYTHONUTF8` bilerek verilmez; kodlama hataları Windows ayağında görünür. Yerelde `PYTHONUTF8=0` koşusu tercih edilen kodlamayı `cp1254`'e düşürür; GitHub Windows ayağının `cp1252`'sinin tam karşılığı değildir, asıl kanıt CI'dır.
 - `mypy` ruff'tan sonra, `pytest`'ten önce koşar.
+- `database` işi servis kapsayıcısı kullandığı için yalnız Ubuntu'da koşar. Şema, .NET testlerinin EF modeliyle eşit tuttuğu `server/tests/Mutalaa.Api.Tests/Snapshots/editoryal-sema.sql` dosyasından `postgres:18` kapsayıcısıyla yüklenir; testler `pipeline/.env` dosyasındaki `MUTALAA_DB_URL` ile servis veritabanına bağlanır (dosya iş içinde yazılır, değer CI'ya özgüdür). Yerelde aynı sınama için geçici bir kapsayıcı kullanılabilir.
 
 **ci-workflows**
 
@@ -381,7 +384,7 @@ Bağımlılık güncellemesi için [dependabot.yml](../../.github/dependabot.yml
 
 - Yalnız elle ya da `mobile-v*` etiketiyle başlar. Etiket itmek ücretli bir üretim derlemesi başlatır (profil girdisi yoksa `production`); CLAUDE.md kural 11 gereği bu kullanıcının kararıdır. `apps/mobile/package.json` yoksa iş, sırrı görecek adımdan önce durur. `eas-cli` 26.0.0 sabittir (`latest` yok); `EXPO_TOKEN` yalnız `secrets.EXPO_TOKEN` olarak geçer.
 
-Gömülü `core` denetimi EAS'in derleme kancasında çalışır. `apps/mobile/package.json` içindeki `eas-build-post-install` betiği `node scripts/fetch-core.mjs` komutunu çağırır. Betik profilin `MANIFEST_URL` değerinden manifesti okur, imzasını derleme türünün açık anahtarıyla doğrular, `core` paketini indirir ve sha256'yı doğrular. İmzasız ya da imzası tutmayan manifestte derleme durur. `production` profilinde `core` için `kurul_onay` boşsa da derleme durur ([Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md), B-05 ve B-06). `development` profilinde `MANIFEST_URL` yerel SeaweedFS'i gösterir ve EAS bulutu ona ulaşamaz; bu profilde kanca indirmeyi atlar, geliştirme derlemesinde `core` Metro üzerinden yerel `assets/db/` klasöründen gelir ([Yerel geliştirme](./04-yerel-gelistirme.md) §6 adım 7; öneri, A23'te doğrulanır ve `/karar` ile yazılır). CI aynı denetimi yapıt üzerinde `verify --flavor public --embedded-core …` ile yineler ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) §5). Mağazaya gönderim (`eas submit`) bu denetimler ve Kurul onayı görüldükten sonra elle yapılır.
+Gömülü `core` denetimi EAS'in derleme kancasında çalışır. `apps/mobile/package.json` içindeki `eas-build-post-install` betiği `node scripts/fetch-core.mjs` komutunu çağırır. Betik profilin `MANIFEST_URL` değerinden manifesti okur, imzasını derleme türünün açık anahtarıyla doğrular, `core` paketini indirir ve sha256'yı doğrular. İmzasız ya da imzası tutmayan manifestte derleme durur. `development` profilinde `MANIFEST_URL` yerel SeaweedFS'i gösterir ve EAS bulutu ona ulaşamaz; bu profilde kanca indirmeyi atlar, geliştirme derlemesinde `core` Metro üzerinden yerel `assets/db/` klasöründen gelir ([Yerel geliştirme](./04-yerel-gelistirme.md) §6 adım 7; öneri, A23'te doğrulanır ve `/karar` ile yazılır). CI aynı denetimi yapıt üzerinde `verify --flavor public --embedded-core …` ile yineler ([Yayın süreci](../07-yayin/01-yayin-sureci.md) §5). Mağazaya gönderim (`eas submit`) bu denetimler geçtikten sonra elle yapılır.
 
 ## 8. Açık sorular
 

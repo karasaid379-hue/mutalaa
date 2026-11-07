@@ -1,0 +1,162 @@
+# A13 · Yayınlayıcı ve kalite kapısı (ilk `dev` `core`)
+
+> **Sürüm:** 1.2 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-41](../../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu)
+> **Faz:** 1 · İçerik hattı · **Önkoşul:** [A07](./A07-editoryal-veritabani.md) · [A12](./A12-arama-indeksi-ve-paket-semasi.md) · **İnsan adımı:** —
+> **Ajanlar:** `sunucu-gelistirici` · `test-yazari` · `hat-gelistirici` (fikstür kaynakları) · `arastirmaci` · `inceleyici` · **Beceriler:** `paket-yayini` · `ef-goc` · `icerik-hatti` · `metin-butunlugu` · `windows-sorun` · **Tahmini oturum:** 4–5
+> **Başlat:** `/asama A13`
+
+## Amaç
+`Mutalaa.Publisher` konsolu, kalite kapısının P-01 ve P-07…P-14 kuralları, SQLite paket yazıcısı, imzalı manifest ve yerel SeaweedFS'e yükleme kurulur. İmza, kanonik JSON, S3 ve komut satırı için hazır kitaplıklar kullanılır (Tedarik). Aşama, Tanzil metni ve `test-` önekli sentetik fikstürlerle ilk `dev` yayınını üretir; mobil aşamalar (A23) bu yayınla başlar. Meal, kelime ve bağlantılar hazır oldukça aynı komutla paketler yeniden yayımlanır.
+
+## Okunacak belgeler
+- [Backend API](../../02-mimari/05-backend-api.md): §2 çözüm yapısı, §10 Yayınlayıcı (tamamı), §11 test
+- [Yayın süreci](../../07-yayin/01-yayin-sureci.md): §2 kapının girdileri, §3 derleme türleri ve görünürlük, §4 kalite kapısı kuralları, §5 public derleme testi, §6 Kaynaklar ekranı
+- [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §1, §3–§7
+- [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §3 `source` (atıf ve bildirim alanları), §10 `release` ve içerik özeti
+- [Kaynaklar](../../04-icerik/01-kaynaklar.md): §1 kaynak kaydı ve atıf, §5 yeni kaynak ekleme
+- [Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md): §3 kullanıcı sırları, §4 `publisher` servisi ve `s3.json`, §6 adım 6, §8 örnek veri, §10.3–§10.4
+- [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §5 testler 6 ve 8, §7, §9 fikstürler
+- [Teknoloji yığını](../../02-mimari/02-teknoloji-yigini.md): §2.3 Yayınlayıcı kitaplıkları
+- [Belge çelişkileri](../07-belge-celiskileri.md): bu aşamaya atanmış BÇ-03, BÇ-04 ve BÇ-41
+
+## Kapsam
+**Yapılır**
+- `Mutalaa.Domain/Releases` altında kalite kapısı kuralları (P-01, P-07…P-14); `Mutalaa.Infrastructure/Packs` (`SqlitePackWriter`, `ManifestSigner`) ve `Storage` (S3).
+- Komutlar: `keys generate`, `build`, `publish`, `upload`, `verify`, `promote`, `rollback`, `watch`.
+- Paket tanımları: `core`, `kelime-kok`, genel metin paketi (`tefsir-*`, `hadis-*`); fikstür paketleri `test-kucuk` ve `tefsir-test-ornek`.
+- Sentetik fikstür kaynak kayıtları: `test-kucuk`, `test-tefsir-ornek`, `test-ses`.
+- İlk `dev` yayını; `internal` ve `public` için kuru çalıştırma kapı raporları.
+
+**Yapılmaz**
+- `apps/mobile/scripts/fetch-core.mjs`, `keys.ts` ve uygulamadaki imza doğrulaması (A23).
+- `risale-dizin` ve `risale-{kitap}` paket tanımları (A20). `mushaf-a-cuz-*` (A26). `ses-katalog` ve `ses-zaman-{kayit}` paketleri, ayna yüklemesi ve `ses-test` fikstürü (A27.2; K-41).
+- API'nin yayın uçları (A14); `watch` onların bıraktığı kayıtları işler. Canlı depo ve `internal` erişim yöntemi (İ-18, A34).
+
+## Tedarik
+Araştırma tarihi: 2 Kasım 2026. Sürümler NuGet ve npm kayıtlarından, yayım tarihleri deps.dev ve npm kaydından, GitHub sürümleri `git ls-remote` ile okundu. Ölçümler geçici bir projede (git dışı, .NET SDK 10.0.402, Windows) yapıldı; A13.0 yineler. Bu aşama içerik kaynağı almaz; yapılar kitaplık ve test verisidir.
+
+| Gerekli yapı | Seçilen kaynak (ad, adres, sürüm ya da commit, biçim) | Alma yolu | Eksiksizlik kanıtı | Yedek aday |
+|---|---|---|---|---|
+| Ed25519 imzası (Yayınlayıcı) | `NSec.Cryptography` 26.4.0 (NuGet, kararlı, 30 Nisan 2026; kaynak `ektrah/nsec` @02c51bb; nupkg; hedef çatı net9.0, bağımlılık `libsodium` [1.0.22, 1.0.23)) | `dotnet add package`; sürüm `server/Directory.Packages.props` içinde sabit | Ölçüldü: 64 baytlık imza, 32 baytlık açık anahtar; NSec imzası BouncyCastle imzasıyla bayt bayt aynı, çapraz doğrulama ve bozuk mesajın reddi geçti. Linux (CI) altında yerel kitaplığın yüklenmesi A13.4 testinde görülür | `BouncyCastle.Cryptography` 2.7.0 (NuGet, kararlı, 30 Temmuz 2026; `bcgit/bc-csharp` @4007498; net461, net6.0, netstandard2.0; yerel bağımlılık yok); aynı 32 baytlık tohumla aynı imzayı verir |
+| Kanonik JSON, RFC 8785 JCS (.NET) | `MackySoft.Json.Canonicalization` 0.1.0 (NuGet; `mackysoft/dotnet-foundations` @697d0b4; netstandard2.1; `Rfc8785JsonCanonicalizer.Canonicalize`, çıktı UTF-8 bayt dizisi). Ölçüt verisi: `cyberphone/json-canonicalization` @32a4819, `testdata/` (RFC 8785 yazarının deposu) | `dotnet add package`; ölçüt verisi `data/gelen/jcs-test-verisi/<YYYY-AA-GG>/` altına iner (A13.0) | Ölçüldü: altı girdi/çıktı çiftinin (arrays, french, structures, unicode, values, weird) hepsi bayt bayt aynı; manifest benzeri girdi (Türkçe harfler, `\n` ve `\u001f` kaçışları, iç içe nesne, anahtar sırası) `Jcs.Net` ile aynı 183 bayt | `Jcs.Net` 0.1.1 (NuGet; `IsraelIyonsi/Jcs.NET` @8aff616; net8.0; aynı altı çift geçti); ikinci yedek RFC yazarının C# referans uygulaması (`cyberphone/json-canonicalization/dotnet`, kaynak) |
+| Kanonik JSON ve imza doğrulama (JS; A23 için not) | `canonicalize` 5.1.0 (npm, 18 Eylül 2026; `erdtman/canonicalize` etiketi v5.1.0) ve `@noble/ed25519` 3.2.0 (npm, 27 Ağustos 2026; `paulmillr/noble-ed25519` etiketi 3.2.0) | `pnpm add` (A23) | npm kaydında son sürümler (2 Kasım 2026); fikstür manifestini ve altı RFC çiftini A23 aynı kitaplıklarla doğrular (A13'te ölçülmedi) | `@noble/curves` 2.4.0 (npm; `ed25519`) |
+| S3 istemcisi (Yayınlayıcı yüklemesi) ve yerel depo | `AWSSDK.S3` 4.0.104.8 (NuGet, 29 Ekim 2026; `AWSSDK.Core` [4.0.102.14, 5.0.0) ile); depo SeaweedFS `chrislusf/seaweedfs:4.48` (A03, `docker-compose.yml`) | `dotnet add package`; depo `docker compose up -d` | Kaynak kodunda `ClientConfig.RequestChecksumCalculation` ve `ResponseChecksumValidation` varsayılanı `WHEN_SUPPORTED`; `AmazonS3Config.ForcePathStyle` var. SeaweedFS `master` içindeki `weed/s3api/chunked_reader_v4.go` akışlı yükü ve `x-amz-trailer` sağlama toplamı başlığını işliyor; SeaweedFS S3 vikisi GetObject için Range isteklerini, PutObject için `x-amz-meta-*` üst verisini listeliyor. Canlı sınama (yol biçimi, `x-amz-meta-sha256`, Range, anonim okuma, 4.48 etiketi): A13.1 | Aynı paketle `RequestChecksumCalculation = WHEN_REQUIRED` ayarı; olmazsa `Minio` 7.0.0 (NuGet, kararlı). SeaweedFS yukarı akış etiketleri: 4.49, 4.50, 4.51 |
+| Komut satırı ve ana bilgisayar | `System.CommandLine` 2.0.14 (NuGet, kararlı, 25 Ekim 2026; `dotnet/dotnet` @0427b9ab; net8.0 ve netstandard2.0); `Microsoft.Extensions.Hosting` 10.0.14 (NuGet, 25 Ekim 2026; .NET 10 yama hattı) | `dotnet add package` | NuGet dizininde kararlı hat 2.0.x, son sürüm 2.0.14; 3.0.0-rc.3.26522.148 ön sürümdür ve alınmaz | `Spectre.Console.Cli` 0.57.2 (NuGet, kararlı) |
+| SQLite paket yazıcısı | `Microsoft.Data.Sqlite` 10.0.14 (NuGet, 25 Ekim 2026; `SQLitePCLRaw` e_sqlite3 paketiyle gelir) | `dotnet add package` | Ölçüldü: SQLite 3.53.3; `PRAGMA compile_options` içinde `ENABLE_FTS5`; `unicode61` ve `trigram` jetonlayıcılı FTS5 tabloları oluştu ve eşleşti | `SQLitePCLRaw.bundle_e_sqlite3` (NuGet; son kararlı 3.0.5) ile `Microsoft.Data.Sqlite.Core` |
+| Manifest şema doğrulaması (test) | `JsonSchema.Net` 9.6.0 (NuGet, 31 Ekim 2026) | `dotnet add package` (yalnız test projesi) | NuGet dizininde son kararlı sürüm; hedef çatı ve `manifest.schema.json` ile doğrulama A13.0 ve A13.4'te ölçülür | `NJsonSchema` (NuGet; sürüm A13.0'da ölçülür) |
+| Bütünleşik test altyapısı | `Testcontainers.PostgreSql` 4.16.0 ve `xunit.v3` 4.0.2 (A07'de `server/Directory.Packages.props` içinde sabit) | Yeni paket yok | Sürümler dosyada sabit | — |
+| Sentetik fikstür kaynakları: `test-kucuk`, `test-tefsir-ornek`, `test-ses` | Dışarıdan alınmaz; belirlenimci üreteçle üretilir | Yok | Üç kaynak kaydı `sources check` içinde geçerli; üreteç aynı girdide aynı baytları verir (A13.6) | — |
+
+Kendimiz yapacağımız işler: kalite kapısının P-01 ve P-07…P-14 kuralları (saf işlevler); `SqlitePackWriter`; manifest yazımı, imzalama ve doğrulama kodu (kitaplıkları birleştirir); depo yükleme sırası; sentetik metin ve ton üreteçleri.
+
+## Adımlar
+### A13.0 · Tedarik doğrulaması ve indirme
+- `arastirmaci` ile `## Tedarik` tablosundaki adreslerin açıldığını ve sürümlerin güncel olduğunu doğrula: NuGet dizini (`api.nuget.org/v3-flatcontainer`), npm kaydı, GitHub için `git ls-remote` (GitHub API'si kullanılmaz), RFC 8785 metni. Açılmayan adresin ya da kararlı sürümü kalkan paketin yerine yedek adayı kullan; sürüm değişirse tablo ve `server/Directory.Packages.props` birlikte güncellenir.
+- Kitaplıkların sürümünü paket kaydından doğrula (`dotnet list package`, NuGet dizini) ve `server/Directory.Packages.props` içinde sabitle: `NSec.Cryptography`, `MackySoft.Json.Canonicalization`, `AWSSDK.S3`, `System.CommandLine`, `Microsoft.Data.Sqlite`, `Microsoft.Extensions.Hosting`; test projesinde `JsonSchema.Net`. Ön sürüm alınmaz.
+- Ölçümleri yinele: altı RFC 8785 çifti (iki JCS kitaplığında), Ed25519 gidiş-dönüşü (NSec ve BouncyCastle imzası aynı mı), `PRAGMA compile_options` içinde `ENABLE_FTS5`. Ölçüm projesi `.tmp/` altında tutulur (git dışı); sonuç tabloya işlenir.
+- RFC 8785 örnek girdi ve çıktı dosyalarını (`cyberphone/json-canonicalization` @32a4819, `testdata/input` ve `testdata/output`, altı çift, 12 küçük dosya) `data/gelen/jcs-test-verisi/<YYYY-AA-GG>/` altında yeni boş klasöre indir ve `SHA256SUMS` yaz (sha256sum biçimi). Bu veri test girdisidir, içerik hattına girmez; dosyalar `packages/content-schema/test/fixtures/jcs/` altına kopyalanır (A13.4).
+- **Bitti sayılır:** tablodaki her adres açıldı; kitaplık sürümleri `Directory.Packages.props` içinde sabit ve `dotnet list package` çıktısıyla aynı; ölçümler yinelendi ve tablodaki sonuçlarla aynı; 12 test dosyası indirildi ve `SHA256SUMS` içinde.
+
+### A13.1 · Kararlar ve sınamalar
+- Bu aşamaya atanmış açık belge çelişkileri karara bağlanır: BÇ-03 (`content_digest` tanımı), BÇ-04 (terfi ve geri alma talebinin `watch`'a iletilmesi), BÇ-41 (özet sütunlarında biçim CHECK'i); bkz. [belge çelişkileri](../07-belge-celiskileri.md).
+- Tedarik ölçümleri kararların kanıtıdır: imza için Ed25519 ve `NSec.Cryptography` 26.4.0 (yedek BouncyCastle), kanonikleştirme için RFC 8785 JCS ve `MackySoft.Json.Canonicalization` 0.1.0, komut satırı için `System.CommandLine` 2.0.14. Aynı baytları üretecek JS yolu A23 için not edilir: `canonicalize` 5.1.0 ve `@noble/ed25519` 3.2.0 (öneri).
+- SeaweedFS sınaması (`docker compose up -d` sonrası, `AWSSDK.S3` ile): yol biçimi (`ForcePathStyle = true`), `x-amz-meta-sha256` üst verisi, HEAD, Range isteği ve anonim okuma ([Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md) §11). Varsayılan bütünlük sağlaması hata verirse `RequestChecksumCalculation = WHEN_REQUIRED` ayarlanır.
+- Kararlar `/karar` ile yazılır: imza algoritması ve kitaplık, kanonikleştirme, anahtar saklama (İçerik paketleri IP-7).
+- İmzanın yeri: imza ayrı dosyada değil, manifest içindeki `signature` alanındadır ve `dev` dahil her derlemede zorunludur (K-21 ve K-42 madde 5; İçerik paketleri §5, Backend API §10.5, [Yayın süreci](../../07-yayin/01-yayin-sureci.md) §4.2).
+- **Bitti sayılır:** kararlar karar defterinde; BÇ-03, BÇ-04 ve BÇ-41 çözüldü olarak işlendi; SeaweedFS sınama sonucu kaynak bağlantılı raporda.
+
+### A13.2 · Kapı kuralları (Domain)
+- `Mutalaa.Domain/Releases`: `BuildFlavor` ile birlikte P-01 ve P-07…P-14'ü saf işlev olarak değerlendiren kalite kapısı (ad öneri: `GateEvaluator`; [Yayın süreci](../../07-yayin/01-yayin-sureci.md) §4, Backend API §10.3). Her karar kural koduyla kapı raporu satırı üretir: paket ya da kaynak, "girdi" ya da "girmedi", gerekçe. Rapor `release.kapi_raporu` sütununa yazılır.
+- Sonuç türleri (öneri; bu adımda kesinleşir ve Backend API §10.3 ile Yayın süreci §4 buna göre eşitlenir): süzme kuralları (P-07, P-08, P-09, P-10, P-12) içeriği pakete almaz, rapora "girmedi" yazar ve derlemeyi durdurmaz; bütünlük kuralları (P-01, P-11, P-13, P-14) ihlalde yayını reddeder ve Yayınlayıcı `2` ile biter. Fikstürde bütünlük ihlali yoktur; bu yüzden `public` kuru çalıştırması 0 ile biter.
+- xUnit: derleme türü × içerik matrisinin her hücresi (`[Theory]`; Yayın süreci §5 madde 1): onaylı ve onaysız birim, onaysız yapay zekâ taslağı; onaylı, aday ve `red` bağlantı (insan onayı isteyen türler ile otomatik türlerin `confidence` eşiği 0,50'nin altı ve üstü); `test-` önekli kaynak (`internal`'da yalnız `test-kucuk` ve `test-ses`, `public`'te hiçbiri); kaynak kaydı olmayan paket; her P kuralı için en az bir olumlu ve bir olumsuz test. Testler `tr-TR` kültüründe de koşar.
+- `BuildFlavor` için `TryParseLabel` başarısız olunca `out` değeri `default` (`Dev`, en gevşek görünürlük) verir. Kapı `bool` dönüşünü zorunlu denetler ve başarısız ayrıştırmayı en kısıtlayıcı derleme (`public`) sayar; test bunu kilitler ([Backend API](../../02-mimari/05-backend-api.md) §7 A13 notu).
+- **Bitti sayılır:** kapı testleri yeşil; kural başına test listesi raporda.
+
+### A13.3 · Paket yazıcısı ve paket tanımları
+- `Mutalaa.Infrastructure/Packs/SqlitePackWriter` [Backend API](../../02-mimari/05-backend-api.md) §10.4'ü adım adım izler: `.db.tmp`, PRAGMA'lar, `Publisher:SchemaDir` (`packages/content-schema/sql/`) DDL'i, çapa sırasıyla tek işlemde hazırlanmış komutlar, FTS5 doldurma ve `29-arama-sonrasi` komutları, `pack_meta` anahtarları (İçerik paketleri §3.1), `pack_source`, `attribution` (Editoryal veritabanı §3 eşlemesi), `ANALYZE`, `VACUUM`, `journal_mode=DELETE`, öz denetim, `Pooling=False`, taşıma, `SHA256.HashDataAsync` ve `Convert.ToHexStringLower`. Açılışta `ENABLE_FTS5` aranır (`Microsoft.Data.Sqlite` 10.0.14 ile ölçüldü: var).
+- `content_digest` ve içerik özeti (Yayın süreci §2.2; terfide P-14 karşılaştırır) aynı sıralama kuralıyla (çapaların bayt sırası, `COLLATE "C"`) hesaplanır; içerik değişmediyse yeni paket sürümü üretilmez. `content_digest` girdileri Backend API §10.5'te (şema sürümü, `normalizer_version`, kaynak özetleri, bağlantı alanları) ile İçerik paketleri §6'da (`anchor` + `content_hash` satırları) farklı tanımlıdır (BÇ-03); fark planda gösterilir ve `/karar` ile tek tanıma bağlanır.
+- Paket tanımları: `core` (Tanzil birimleri; A11 çıktıları: `quran_word` Tanzil satırları, `page_map` ve işaret tablosu; sure adları onaylıysa `shared/data/sure-adlari.json`'dan `sure` tablosu; meal hazır oldukça), `kelime-kok` ve genel metin paketi. A11 çıktısı henüz yoksa ilgili tablolar boş kalır; A11'den sonra `publish --flavor dev` yeniden çalışır. Süzme kaynak düzeyindedir; aynı paket derlemeye göre farklı içerik taşıyabilir (İçerik paketleri §7). `xref_idx` P-07 ile süzülür; `approved` ve `folded` önceden hesaplanır.
+- `label` birim başlıklarından ve sure adlarından üretilir. Sure adları henüz onaylı değilse (İ-23) sayısal biçim yazılır ve `sure` tablosu boş kalır (öneri); ad uydurulmaz. Onaydan sonra yeniden yayınla düzelir.
+- Tanzil'in kendi bildirimi (`notice_text`, bayt bayt) `core` paketinde `attribution.notice_text` alanına yazılır; SHA-256'sı kilitteki `bildirim_sha256` değerine eşittir (Test stratejisi §5 test 6).
+- P-11 için Yayınlayıcı Tanzil birimlerinin `content_hash` değerini `data/raw/tanzil-*` altındaki ham dosyadan yeniden hesaplar (yapılandırma anahtarı öneri: `Publisher:RawDir`) ve her kaynağın `atif_metni` ile `atif_url` değerini pakete aynen yazar. `app` profilindeki konteyner yalnız `data/packs` klasörünü bağlar; ham dosya için birim eklenir ya da Yayınlayıcı ana makinede çalışır (öneri).
+- Okuma notları (EF sınırı, [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md) §12): dönüştürülmüş çapa sütunlarında (`AnchorRef`, `AnchorSpan`) LINQ ile `LIKE` ya da aralık işleci çevrilmez; bu sorgular ham SQL ya da `AsNoTracking()` ile projeksiyon kullanır. `unit` okumaları `tsv_tr` ve `tsv_ar` gölge sütunlarını da seçer; yayınlayıcı yalnız gereken sütunları projekte eder. `dogrulanmis` saklanmaz, hedefin onaylı durumundan türetilir (§8 notu, K-37).
+- **Bitti sayılır:** yazıcı testleri yeşil; aynı veritabanından iki `build` aynı `content_digest` değerlerini veriyor.
+
+### A13.4 · Manifest, imza ve anahtarlar
+- Manifest İçerik paketleri §5 alanlarıyla yazılır ve `manifest.schema.json`'a karşı doğrulanır (testte `JsonSchema.Net`). `url` = `{PublicBaseUrl}/packs/{flavor}/{pack_id}/{version}/{pack_id}-{version}.db`.
+- İmza `signature {alg, kid, value}`; girdi, `signature` alanı çıkarılmış manifestin kanonik JSON biçimidir: RFC 8785 JCS, `MackySoft.Json.Canonicalization` ile (A13.1 kararı). Algoritma Ed25519, kitaplık `NSec.Cryptography`: özel anahtar 32 baytlık ham tohum (`RawPrivateKey`), açık anahtar 32 bayt, imza 64 bayttır. Her derleme türünde zorunludur.
+- RFC 8785 çiftleri (A13.0) `packages/content-schema/test/fixtures/jcs/` altına kopyalanır; Yayınlayıcı testi altı çifti bayt bayt karşılaştırır, A23'ün JS testi aynı dosyaları okur.
+- Yayınlayıcı yapılandırmayı .NET genel ana bilgisayarıyla okur (`Host.CreateApplicationBuilder`, öneri); kullanıcı sırları yalnız `Development` ortamında yüklenir. Kit ayarları Claude Code komutlarına `DOTNET_ENVIRONMENT=Development` verir; elle açılan terminalde değer komutun başına yazılır. Yayınlayıcının csproj dosyasında `UserSecretsId` yoksa `dotnet user-secrets init --project server/Mutalaa.Publisher` çalışır (yalnız csproj'a kimlik yazar).
+- `keys generate --flavor dev`: özel anahtar ve `kid` kullanıcı sırlarına (`Signing:dev:PrivateKey`, `Signing:dev:Kid`) yazılır, açık anahtar ekrana basılır (öneri). Konteynerdeki Yayınlayıcı için `.env` içindeki `PUBLISHER_DEV_SIGNING_KEY` değerini kullanıcı yazar; Claude Code `.env` okumaz.
+- A23'ün çapraz testi için açık anahtar ve imzalı örnek manifest `packages/content-schema/test/fixtures/` altına yazılır; yalnız açık malzeme (öneri).
+- `verify --flavor <f> [--manifest <yol>] [--embedded-core <yol>]`: imza, şema, adres, boyut, sha256 ve kapı kuralları. İmzasız ya da bozuk imzalı manifest 3 ile reddedilir.
+- **Bitti sayılır:** imza gidiş-dönüş, kurcalanmış manifest ve imzasız manifest testleri yeşil; altı RFC 8785 çifti bayt bayt eşit; CI'da (Linux) NSec yerel kitaplığı yükleniyor.
+
+### A13.5 · Depo, komutlar ve yayın durumları
+- `Storage`: `AWSSDK.S3` `ServiceURL` ve `ForcePathStyle = true`; anahtar düzeni ve `Cache-Control` değerleri §10.5 tablosundaki gibi; tür `application/vnd.sqlite3`; `x-amz-meta-sha256`; sağlama toplamı ayarı A13.1 sınamasının sonucuna göredir. Sıra: paketler → HEAD doğrulaması → manifest geçmişi → `manifest.json`. Var olan anahtara farklı sha256 yazılmaz (çıkış 4); aynı sha256 atlanır.
+- Komutlar §10.1'deki gibidir; `build` çıktısı `data/packs/{flavor}/{surum}/` altındadır. `watch` `pg_try_advisory_lock` ve `FOR UPDATE SKIP LOCKED` kullanır. Çıkış kodları: `0` başarı, `2` kapı reddi, `3` doğrulama, `4` depo, `1` diğer.
+- BÇ-04 (terfi ve geri alma talebi) A13.1'de kabul edilirse `release` tablosuna eklenen alanlar yeni bir EF göçüdür; BÇ-41'in CHECK kısıtları (`source.dosya_sha256` gibi özet sütunları) aynı göçle gelir. `sunucu-gelistirici` göçü `ef-goc` becerisiyle ekler, `dotnet ef migrations has-pending-model-changes` temiz kalır, A07'nin şema dökümü anlık görüntüsü bilinçli olarak güncellenir ve fark commit'te gözden geçirilir.
+- `release` durumları: `hazirlaniyor → dogrulandi → yayinlandi`; başarısız deneme `basarisiz` (Editoryal veritabanı §10, Backend API §10.6); geri almada `geri_cekildi`. Okuma tek `REPEATABLE READ` salt okunur anlık görüntüdedir. Sürüm CalVer `YYYY.M.N`; komutta verilmezse ayın sıradaki numarası (öneri).
+- Bütünleşik test (Testcontainers, `postgres:18`): her içerik türünden birer örnek (onaylı ve onaysız birim, yapay zekâ taslağı, onaylı, aday ve `red` bağlantı) ve `test-kucuk`, `test-tefsir-ornek`, `test-ses` kaynaklarını taşıyan fikstür veritabanından üç derleme üretilir; P-01 ve P-07…P-14, FTS sorgusu ve imza denetlenir (Backend API §11, Yayın süreci §5 madde 2).
+- **Bitti sayılır:** `dotnet test --solution server/Mutalaa.slnx` yeşil.
+
+### A13.6 · Fikstürler ve ilk `dev` yayını
+- `hat-gelistirici`: `pipeline/sources/test-kucuk.toml` (`tur = "kitap"`), `test-tefsir-ornek.toml` (`tur = "tefsir"`) ve `test-ses.toml` (`tur = "ses"`) kaynak kayıtları yeni şemadadır: zorunlu alanlar `slug`, `tur`, `baslik`, `atif_metni`; `atif_metni` "Sentetik test verisi (Mütâlaa)" olur (öneri). `uv --directory pipeline run mutalaa sources check` 0 hata ve 0 uyarı verir (G-KAY); kayıt sayısı üç artar. Belirlenimci üreteç (komut öneri: `uv run mutalaa ingest fikstur --source test-kucuk`) "Deneme paragrafı 1 …" biçiminde açıkça sentetik Türkçe metin üretir; `test-kucuk` Maestro arama akışı için "Işık" sözcüğünü içerir (Test stratejisi §9). Metin kendi ürettiğimizdir; ilk kayıtta NFC. `test-ses` kaynağının içeriği (`ses-test` paketi: üretilmiş tonlar ve sahte zamanlama) A27.2'de gelir; bu aşamada kapı testleri `test-ses` satırını kullanır.
+- Çapalar ve paket kimlikleri (öneri, `/karar` ile): `k:test-kucuk:bolum-1:p{n}` → paket `test-kucuk`; `tf:test-ornek:{s}-{ilk}-{son}:p{n}` → paket `tefsir-test-ornek`. Kur'an, meal, tefsir, hadis ya da Risale metnine benzeyen içerik yazılmaz.
+- İlk yayın: `keys generate --flavor dev`, `publish --flavor dev`, manifest kontrolü, `verify --flavor dev`. Açık anahtar ve yayın sürümü ilerleme dosyasına not edilir (A23 için).
+- Kuru çalıştırma: `internal` ve `public` için `--dry-run`. Beklenen: `internal` raporunda `core` ve `test-kucuk` girer, `tefsir-test-ornek` P-12 ile girmez; `public` raporunda `core` girer, `test-kucuk` ve `tefsir-test-ornek` P-12 ile girmez. İki kuru çalıştırma da 0 ile biter.
+- **Bitti sayılır:** manifest imzalı ve üç paketi listeliyor; `verify --flavor dev` 0; kuru çalıştırma raporları beklenen kodları gösteriyor ve ikisi de 0 ile bitiyor.
+
+## Kabul ölçütleri
+- [ ] P-01 ve P-07…P-14'ün her biri en az bir olumlu ve bir olumsuz testle kapsanıyor; derleme türü × içerik matrisi `tr-TR` kültüründe de yeşil.
+- [ ] Bütünleşik testte `public` çıktısında onaysız birim, yapay zekâ taslağı, aday bağlantı ve `test-` kaynak 0; `internal` çıktısında `test-` kaynak olarak yalnız `test-kucuk` ve `test-ses`; hiçbir derlemede `red` bağlantı yok.
+- [ ] Her `pack_source` satırı bir kaynak kaydına denk geliyor (P-01); `attribution` satırı kaynak kaydındaki `atif_metni` ve `atif_url` değerini aynen taşıyor (P-11).
+- [ ] Aynı veritabanından iki `build` aynı `content_digest` değerlerini üretiyor.
+- [ ] İmzasız ve bozuk imzalı manifest `verify` tarafından 3 çıkış koduyla reddediliyor.
+- [ ] `publish --flavor dev` 0 ile bitiyor; `dev/manifest.json` `core`, `test-kucuk` ve `tefsir-test-ornek` paketlerini ve dolu `signature` alanını taşıyor; `verify --flavor dev` 0.
+- [ ] `core` paketinin öz denetim raporunda `integrity_check` `ok`, `q:2:255` sorgusu bir satır, FTS sorgusu sonuç; `attribution.notice_text` Tanzil'in kendi bildirimiyle bayt bayt aynı ve SHA-256'sı kilitteki `bildirim_sha256` değerine eşit.
+- [ ] `internal` ve `public` kuru çalıştırmaları 0 ile bitiyor ve kapı raporları A13.6'daki P kodlarını gösteriyor.
+- [ ] Kitaplık sürümleri `server/Directory.Packages.props` içinde sabit; altı RFC 8785 çifti Yayınlayıcı testinde bayt bayt eşit; SeaweedFS sınaması raporda.
+- [ ] İmza, kanonikleştirme ve fikstür çapası kararları karar defterinde; BÇ-03, BÇ-04 ve BÇ-41 çözüldü; `test-` kaynak kayıtları `sources check` içinde geçerli ve kartları Kaynaklar belgesinde.
+
+## Doğrulama
+```bash
+dotnet build server/Mutalaa.slnx
+dotnet test --solution server/Mutalaa.slnx
+docker compose up -d && docker compose ps
+uv --directory pipeline run mutalaa sources check
+dotnet run --project server/Mutalaa.Publisher -- publish --flavor dev
+curl -s http://localhost:8333/mutalaa/dev/manifest.json
+dotnet run --project server/Mutalaa.Publisher -- verify --flavor dev
+dotnet run --project server/Mutalaa.Publisher -- publish --flavor internal --dry-run; echo "çıkış (0 beklenir): $?"
+dotnet run --project server/Mutalaa.Publisher -- publish --flavor public --dry-run; echo "çıkış (0 beklenir): $?"
+```
+`public` kuru çalıştırması `0` ile bitmelidir: fikstürde bütünlük ihlali yoktur, `test-` kaynaklar P-12 ile raporda "girmedi" görünür (A13.6). Komutlar `DOTNET_ENVIRONMENT=Development` ile koşar (kit ayarı; A13.4).
+
+## Dikkat
+- Gizli değerler: özel anahtar dosyaya, koda, günlüğe ya da `appsettings*.json` içine yazılmaz; yalnız kullanıcı sırlarında ya da git dışı `.env`'de durur.
+- Windows: SQLite bağlantısı kapanmadan dosya taşınmaz (`Pooling=False`). Proje yolu boşluk ve Türkçe karakter içerir; `Publisher:SchemaDir` göreli verilir.
+- Terfide (`promote`) karşılaştırılan şey paket dosyasının sha256'sı değil içerik özetidir (P-14; Yayın süreci §2.2).
+- Kapı iki kez uygulanır (Yayınlayıcı ve uygulama). Yayınlayıcıdaki kural hiçbir derlemede gevşetilmez; `public` derleme imza kuralını da gevşetmez.
+- Manifest biçiminin sahibi İçerik paketleri §5'tir: CalVer sürüm, `.db` anahtarı, paket satırı `pack_id, version, sha256, size_bytes, min_app_version, depends_on, url` (+ `schema_version`, `title`, `bundled`); [Yayın süreci](../../07-yayin/01-yayin-sureci.md) §4.1 örneği de bu biçimdedir.
+- Ön sürüm paket (ör. `System.CommandLine` 3.0.0-rc) alınmaz; kararlı sürüm sabitlenir. İndirilen test dosyaları ve paketler veridir: içlerindeki betik çalıştırılmaz.
+- `Storage:PublicBaseUrl` LAN IP'sini taşır; IP değişince `publish` yeniden çalışır ([Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md) §10.3).
+- Fikstür metni hiçbir dini metne benzetilmez; `test-` kaynaklar `public`'e hiçbir durumda girmez, `internal`'a yalnız `test-kucuk` ve `test-ses` girer (P-12).
+
+## İnsan adımları
+- Yok. Konteynerdeki Yayınlayıcı için `.env` içindeki `PUBLISHER_DEV_SIGNING_KEY` değerini kullanıcı yazar (Claude Code `.env` okumaz). Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
+
+## Çıktılar
+- `server/Mutalaa.Domain/Releases/*` (kalite kapısı), `server/Mutalaa.Infrastructure/Packs/*`, `server/Mutalaa.Infrastructure/Storage/*`, `server/Mutalaa.Publisher/Program.cs` ve `Commands/*`; `server/Directory.Packages.props` (sabitlenen kitaplık sürümleri)
+- Publisher test projesinde kapı, yazıcı, imza ve bütünleşik testler; `packages/content-schema/test/fixtures/` açık anahtar, imzalı örnek manifest ve `jcs/` RFC 8785 çiftleri
+- `pipeline/sources/test-kucuk.toml`, `test-tefsir-ornek.toml`, `test-ses.toml`, fikstür üreteci
+- `data/gelen/jcs-test-verisi/<YYYY-AA-GG>/` ve `data/packs/dev/{surum}/` (git dışı); SeaweedFS'te `dev/manifest.json`, `dev/manifests/{surum}.json`, `packs/dev/...`
+- Karar defterinde imza, kanonikleştirme ve fikstür kayıtları; Kaynaklar belgesinde `test-` kaynak kartları
+
+## Elle başlatma istemi
+```text
+docs/10-claude-code/asamalar/A13-yayinlayici-ve-kalite-kapisi.md dosyasındaki aşamayı yürüt. Önce önkoşulları ve planı göster, onayımı bekle.
+```
+
+## İlgili dosyalar
+- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A12](./A12-arama-indeksi-ve-paket-semasi.md) · Sonraki: [A14](./A14-api-editor-uclari.md)

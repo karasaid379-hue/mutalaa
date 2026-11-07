@@ -47,10 +47,15 @@ line-ending = "lf"
 python_version = "3.13"
 strict = true
 mypy_path = "stubs"  # snowballstemmer tip bilgisi tasimaz: yerel taslak (ignore_missing_imports yok)
-files = ["src"]
+files = ["src"]  # scripts/ klasoru acildiginda ("src", "scripts") yapilir; var olmayan yol mypy hatasi verir
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "--strict-markers"
+markers = [
+  "degismezlik: Tanzil metninin hicbir adimda degismedigini kanitlayan testler (gercek veri ya da fikstur)",
+  "veritabani: yerel PostgreSQL test veritabani (mutalaa_test) gerektiren testler",
+]
 
 [dependency-groups]
 dev = [

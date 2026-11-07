@@ -61,7 +61,7 @@ Tam şartname: [Çapa şeması](../../../docs/03-veri/01-capa-semasi.md). Bu öz
 
 - Çapa bir kez verilir, yeniden numaralanmaz, silinmez; kullanım dışı kalır (`status = 'kullanim_disi'`) ve `successors` yönlendirmesi taşır.
 - Metin düzeltmesinde çapa aynı kalır, `content_hash` değişir; kullanıcı kayıtları yeniden çapalanır (belge §9).
-- Her yayında önceki yayının bütün çapaları etkin ya da yönlendirmeli olmalıdır (yayın kapısı adımı).
+- Her yayında önceki yayının bütün çapaları etkin ya da yönlendirmeli olmalıdır (kalite kapısı adımı).
 
 ## Uygulamalar (aynı vektörlerle kilitli)
 

@@ -1,5 +1,4 @@
 using Mutalaa.Domain.Anchors;
-using Mutalaa.Domain.Licensing;
 
 namespace Mutalaa.Domain.Links;
 
@@ -44,10 +43,4 @@ public sealed class Xref
     public int VotesDown { get; set; }
 
     public required string DataVersion { get; set; }
-
-    /// <summary>
-    /// Iki ucun ve baglanti verisinin en kisitlayici lisansi. Veritabaninda varsayilan yok; CLR varsayilani
-    /// en serbest deger (Serbest) oldugu icin zorunlu.
-    /// </summary>
-    public required LicenseStatus License { get; set; }
 }

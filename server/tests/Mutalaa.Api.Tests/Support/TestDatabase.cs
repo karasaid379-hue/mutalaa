@@ -10,7 +10,7 @@ namespace Mutalaa.Api.Tests.Support;
 
 /// <summary>
 /// Test kabindaki tek bir veritabani. Baglam Api'nin kullandigi DI yolundan (AddIcerikDb + AddEditorIdentity, <see cref="ModelFactory"/>) alinir:
-/// Identity modeli DI'daki IdentityOptions'a bagli oldugu icin DI'siz kurulan model farkli cikar.
+/// Identity modeli DI'daki IdentityOptions'a bagli oldugu icin DI'siz olusturulan model farkli cikar.
 /// Ham baglanti yalniz test duzenegi ve katalog sorgulari icindir; yazilan SQL parametrelidir.
 /// </summary>
 public sealed class TestDatabase : IAsyncDisposable
@@ -78,7 +78,7 @@ public sealed class TestDatabase : IAsyncDisposable
     }
 
     /// <summary>
-    /// Model onbellegi atlanan yeni bir saglayici (model ve veri kaynagi cagiranin kulturunde sifirdan kurulur);
+    /// Model onbellegi atlanan yeni bir saglayici (model ve veri kaynagi cagiranin kulturunde sifirdan olusturulur);
     /// cagiran yok eder. Veritabani onceden goc edilmis olmali (enum turleri yeni veri kaynagi tarafindan yuklenir).
     /// </summary>
     public ServiceProvider BuildUncachedServices() => ModelFactory.BuildServices(uncachedModel: true, configuration: Configuration);

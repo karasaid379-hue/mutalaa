@@ -1,6 +1,5 @@
-"""`mutalaa` komut satiri girisi."""
+"""`mutalaa` komut satiri girisi (cikis kodlari: `cikis.py`)."""
 
-from datetime import UTC, date, datetime
 from enum import StrEnum
 from pathlib import Path
 from typing import Annotated
@@ -13,16 +12,33 @@ from mutalaa_pipeline.export.ortak import GirdiHatasi, kok_coz
 
 app = typer.Typer(
     name="mutalaa",
-    help="Mutalaa icerik hatti.",
+    help=(
+        "Mutalaa icerik hatti. Cikis kodlari: 0 basarili, 1 QA kapisi kaldi,"
+        " 2 girdi ya da yapilandirma hatasi (kayitsiz ya da gecersiz kaynak kaydi dahil)."
+    ),
     no_args_is_help=True,
     add_completion=False,
+    # Iz (traceback) yerel degiskenleri gosterirse baglanti dizesi sizabilir.
+    pretty_exceptions_show_locals=False,
 )
 
 export_app = typer.Typer(no_args_is_help=True, help="Disa aktarim: veri dosyalari ve vektorler.")
 app.add_typer(export_app, name="export")
 
-sources_app = typer.Typer(no_args_is_help=True, help="Kaynak kayitlari ve lisans durumlari.")
+sources_app = typer.Typer(
+    no_args_is_help=True, help="Kaynak kayitlari (pipeline/sources/*.toml): liste ve denetim."
+)
 app.add_typer(sources_app, name="sources")
+
+ingest_app = typer.Typer(
+    no_args_is_help=True, help="Kaynak alimi: data/gelen -> data/raw -> data/staged."
+)
+app.add_typer(ingest_app, name="ingest")
+
+qa_app = typer.Typer(
+    no_args_is_help=True, help="QA kapilari (G-KAY, G-BUT, G-CAP, G-NOR) ve olcumler."
+)
+app.add_typer(qa_app, name="qa")
 
 KokSecenegi = Annotated[
     Path | None,
@@ -40,14 +56,14 @@ class Bicim(StrEnum):
     TABLO = "tablo"
 
 
-def bugun() -> date:
-    """Yeniden kontrol karsilastirmasinin bugunu (testlerde degistirilebilir)."""
-    return datetime.now(UTC).date()
+class TanzilVaryanti(StrEnum):
+    UTHMANI = "uthmani"
+    SIMPLE_CLEAN = "simple-clean"
 
 
 def _hata(hata: GirdiHatasi) -> typer.Exit:
     typer.echo(f"hata: {hata}", err=True)
-    return typer.Exit(code=2)
+    return typer.Exit(code=cikis.GIRDI_HATASI)
 
 
 @export_app.command("ayet-sayilari")
@@ -91,20 +107,47 @@ def export_test_vectors(
     check: Annotated[
         bool, typer.Option("--check", help="Yazmadan diskle karsilastirir; fark varsa 1.")
     ] = False,
+    tanzil_ornekleri: Annotated[
+        bool,
+        typer.Option(
+            "--tanzil-ornekleri",
+            help=(
+                "Arama belgesi 1.5 Arapca tablosunun Tanzil Uthmani satirlarini (ar-tz-)"
+                " belgeden ve data/gelen dosyasindan bastan uretir (A10.7); bulunamazsa ya"
+                " da tablodaki degeri vermezse 2 ile durur."
+            ),
+        ),
+    ] = False,
+    config: Annotated[
+        Path | None,
+        typer.Option("--config", help="Baska bir mutalaa.toml (yalniz --tanzil-ornekleri ile)."),
+    ] = None,
     kok: KokSecenegi = None,
 ) -> None:
     """`shared/test-vectors` dosyalarinin hesaplanan alanlarini ve sinir satirlarini uretir."""
     try:
         depo = kok_coz(kok)
+        ek: list[test_vectors.Satir] | None = None
+        if config is not None and not tanzil_ornekleri:
+            raise GirdiHatasi("--config yalniz --tanzil-ornekleri ile verilir")
+        if tanzil_ornekleri:
+            # Ice aktarma: yapilandirma, normallestirici ve ingest yalniz bu secenekte yuklenir.
+            from mutalaa_pipeline.config import ayarlar_yukle
+            from mutalaa_pipeline.export import tanzil_ornekleri as tz
+
+            uretim = tz.uret(depo, ayarlar_yukle(config).veri_kok)
+            ek = uretim.satirlar
+            for eslesme in uretim.eslesmeler:
+                typer.echo(f"tanzil: {eslesme.ozet()}")
         if check:
-            farklar = test_vectors.denetle(depo)
+            farklar = test_vectors.denetle(depo, ek)
             if farklar:
                 for fark in farklar:
                     typer.echo(f"fark: {fark}")
                 raise typer.Exit(code=1)
             typer.echo("test-vectors: fark yok")
             return
-        yazilanlar = test_vectors.uret(depo)
+        yazilanlar = test_vectors.uret(depo, ek)
     except GirdiHatasi as hata:
         raise _hata(hata) from hata
     for yol in yazilanlar:
@@ -140,6 +183,197 @@ def export_ic_kesme(
         typer.echo("ic-kesme: degisiklik yok")
 
 
+@export_app.command("pg")
+def export_pg_komutu(
+    source: Annotated[str, typer.Option("--source", help="Kaynak kimligi, or. tanzil-uthmani.")],
+    run: Annotated[
+        str | None,
+        typer.Option("--run", help="anchor run_id; verilmezse manifestli en son anchor."),
+    ] = None,
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="Islemi geri alir; hicbir satir yazmaz.")
+    ] = False,
+    force: Annotated[
+        bool, typer.Option("--force", help="Kabul edilir; export pg parmak izi atlamaz (K-39).")
+    ] = False,
+    config: Annotated[Path | None, typer.Option("--config", help="Baska bir mutalaa.toml.")] = None,
+    kok: KokSecenegi = None,
+) -> None:
+    """Staged birimleri PostgreSQL'e yukler (tek islem, idempotent; K-39). Cikis 0, 1 ya da 2."""
+    # Ice aktarma: psycopg ve yapilandirma yalniz bu komutta yuklenir.
+    from mutalaa_pipeline.config import ayarlar_yukle
+    from mutalaa_pipeline.export import pg
+
+    try:
+        depo = kok_coz(kok)
+        ayarlar = ayarlar_yukle(config)
+    except GirdiHatasi as hata:
+        raise _hata(hata) from hata
+    kod = pg.komut_export_pg(
+        ayarlar, depo_kok=depo, source=source, run=run, dry_run=dry_run, force=force
+    )
+    if kod != cikis.BASARILI:
+        raise typer.Exit(code=kod)
+
+
+@ingest_app.command("tanzil")
+def ingest_tanzil(
+    variant: Annotated[
+        TanzilVaryanti,
+        typer.Option("--variant", help="Tanzil varyanti: uthmani ya da simple-clean."),
+    ],
+    gelen_tarih: Annotated[
+        str | None,
+        typer.Option(
+            "--gelen-tarih",
+            help="data/gelen/tanzil altindaki tarih klasoru, YYYY-AA-GG; verilmezse en yenisi.",
+        ),
+    ] = None,
+    kilit_oner: Annotated[
+        bool,
+        typer.Option(
+            "--kilit-oner",
+            help="Kilidin ilk degerlerini gelen dosyadan hesaplayip yazdirir; hicbir sey yazmaz.",
+        ),
+    ] = False,
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="raw ve staged'e yazmaz; kilit yine denetlenir.")
+    ] = False,
+    force: Annotated[
+        bool, typer.Option("--force", help="Parmak izi ayni olsa da calistirir.")
+    ] = False,
+    limit: Annotated[
+        int | None,
+        typer.Option("--limit", help="Tanzil'de reddedilir (kismi alim kilidi ve G-BUT'u bozar)."),
+    ] = None,
+    config: Annotated[Path | None, typer.Option("--config", help="Baska bir mutalaa.toml.")] = None,
+    kok: KokSecenegi = None,
+) -> None:
+    """Gelen Tanzil dosyasini kilitle karsilastirir, raw'a alir, staged uretir. Cikis 0 ya da 2."""
+    # Ice aktarma: psycopg ve yapilandirma yalniz bu komutta yuklenir.
+    from mutalaa_pipeline.config import ayarlar_yukle
+    from mutalaa_pipeline.ingest import tanzil
+
+    try:
+        if limit is not None:
+            raise GirdiHatasi("--limit Tanzil alimi icin desteklenmez (kismi alim kilidi bozulur)")
+        if kilit_oner:
+            if dry_run or force:
+                raise GirdiHatasi("--kilit-oner ile --dry-run ve --force verilmez")
+            depo = kok_coz(kok)
+            ayarlar = ayarlar_yukle(config)
+            metin = tanzil.kilit_oner_metni(depo, ayarlar.veri_kok, variant.value, gelen_tarih)
+            typer.echo(metin, nl=False)
+            return
+    except GirdiHatasi as hata:
+        raise _hata(hata) from hata
+    kod = tanzil.komut_ingest_tanzil(
+        varyant=variant.value,
+        gelen_tarih=gelen_tarih,
+        dry_run=dry_run,
+        force=force,
+        config=config,
+        kok=kok,
+    )
+    if kod != cikis.BASARILI:
+        raise typer.Exit(code=kod)
+
+
+def _limit_reddet(limit: int | None) -> None:
+    """Tanzil adimlarinda kismi calisma kabul edilmez (G-BUT ve capa kumesi bozulur)."""
+    if limit is not None:
+        raise GirdiHatasi("--limit Tanzil adimlari icin desteklenmez (kismi cikti G-BUT'u bozar)")
+
+
+@app.command("normalize")
+def normalize_komutu(
+    source: Annotated[str, typer.Option("--source", help="Kaynak kimligi, or. tanzil-uthmani.")],
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="staged ve manifest yazmaz; her sey yine denetlenir.")
+    ] = False,
+    force: Annotated[
+        bool, typer.Option("--force", help="Parmak izi ayni olsa da calistirir.")
+    ] = False,
+    limit: Annotated[
+        int | None,
+        typer.Option("--limit", help="Tanzil'de reddedilir (kismi cikti capa kumesini bozar)."),
+    ] = None,
+    config: Annotated[Path | None, typer.Option("--config", help="Baska bir mutalaa.toml.")] = None,
+    kok: KokSecenegi = None,
+) -> None:
+    """Arama metnini uretir: ar_norm (Simple Clean + AR-4, K-39). Cikis 0 ya da 2."""
+    # Ice aktarma: normallestirici (regex, snowballstemmer) yalniz bu komutta yuklenir.
+    from mutalaa_pipeline.adimlar import normalize_tanzil
+
+    try:
+        _limit_reddet(limit)
+    except GirdiHatasi as hata:
+        raise _hata(hata) from hata
+    kod = normalize_tanzil.komut_normalize(
+        source=source, dry_run=dry_run, force=force, config=config, kok=kok
+    )
+    if kod != cikis.BASARILI:
+        raise typer.Exit(code=kod)
+
+
+@app.command("anchor")
+def anchor_komutu(
+    source: Annotated[str, typer.Option("--source", help="Kaynak kimligi, or. tanzil-uthmani.")],
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="staged ve manifest yazmaz; her sey yine denetlenir.")
+    ] = False,
+    force: Annotated[
+        bool, typer.Option("--force", help="Parmak izi ayni olsa da calistirir.")
+    ] = False,
+    limit: Annotated[
+        int | None,
+        typer.Option("--limit", help="Tanzil'de reddedilir (kismi cikti capa kumesini bozar)."),
+    ] = None,
+    config: Annotated[Path | None, typer.Option("--config", help="Baska bir mutalaa.toml.")] = None,
+    kok: KokSecenegi = None,
+) -> None:
+    """Capa, content_hash ve kuresel ayet sirasini uretir (q:{sure}:{ayet}). Cikis 0 ya da 2."""
+    from mutalaa_pipeline.adimlar import anchor_tanzil
+
+    try:
+        _limit_reddet(limit)
+    except GirdiHatasi as hata:
+        raise _hata(hata) from hata
+    kod = anchor_tanzil.komut_anchor(
+        source=source, dry_run=dry_run, force=force, config=config, kok=kok
+    )
+    if kod != cikis.BASARILI:
+        raise typer.Exit(code=kod)
+
+
+@qa_app.command("run")
+def qa_run(
+    source: Annotated[str, typer.Option("--source", help="Kaynak kimligi, or. tanzil-uthmani.")],
+    run: Annotated[
+        str | None,
+        typer.Option("--run", help="anchor run_id; verilmezse manifestli en son anchor."),
+    ] = None,
+    gate: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--gate",
+            help=(
+                "Yalniz bu kapi(lar)i kosar (G-KAY, G-BUT, G-CAP, G-NOR);"
+                " eksik rapor export pg'ye yetmez."
+            ),
+        ),
+    ] = None,
+    config: Annotated[Path | None, typer.Option("--config", help="Baska bir mutalaa.toml.")] = None,
+    kok: KokSecenegi = None,
+) -> None:
+    """QA kapilarini kosar ve data/reports/{run_id}.json raporunu yazar. Cikis 0, 1 ya da 2."""
+    from mutalaa_pipeline.qa import run as qa_calistir
+
+    kod = qa_calistir.komut_qa_run(source=source, run=run, gate=gate, config=config, kok=kok)
+    if kod != cikis.BASARILI:
+        raise typer.Exit(code=kod)
+
+
 @sources_app.command("list")
 def sources_list(
     bicim: Annotated[
@@ -147,9 +381,9 @@ def sources_list(
     ] = Bicim.TABLO,
     kok: KokSecenegi = None,
 ) -> None:
-    """`pipeline/sources/*.toml` kayitlarini listeler; gecmis yeniden kontrol `!` ile isaretli."""
+    """`pipeline/sources/*.toml` kayitlarini listeler: slug, tur, surum, kaynak_url."""
     try:
-        sonuclar = sources.yukle(kok_coz(kok), lisans_dosyalari=False)
+        sonuclar = sources.yukle(kok_coz(kok))
     except GirdiHatasi as hata:
         raise _hata(hata) from hata
     bozuk = False
@@ -160,7 +394,7 @@ def sources_list(
     if bozuk:
         raise typer.Exit(code=cikis.GIRDI_HATASI)
     kayitlar = [s.kaynak for s in sonuclar if s.kaynak is not None]
-    satirlar = sources.satirlar(kayitlar, bugun())
+    satirlar = sources.satirlar(kayitlar)
     if bicim is Bicim.JSON:
         typer.echo(sources.json_metni(satirlar))
     elif satirlar:
@@ -171,9 +405,9 @@ def sources_list(
 
 @sources_app.command("check")
 def sources_check(kok: KokSecenegi = None) -> None:
-    """Kaynak kayitlarini, lisans kopyalarini ve SHA-256 ozetlerini denetler (G-LIS)."""
+    """Kaynak kayitlarinin bicimini ve zorunlu alanlarini denetler (G-KAY); cikis 0 ya da 2."""
     try:
-        sonuclar = sources.yukle(kok_coz(kok), lisans_dosyalari=True)
+        sonuclar = sources.yukle(kok_coz(kok))
     except GirdiHatasi as hata:
         raise _hata(hata) from hata
     hata_sayisi = 0
@@ -185,15 +419,6 @@ def sources_check(kok: KokSecenegi = None) -> None:
         for mesaj in sonuc.uyarilar:
             typer.echo(f"uyari: {sonuc.dosya}: {mesaj}", err=True)
             uyari_sayisi += 1
-        if sonuc.kaynak is not None and sources.gecmis_mi(sonuc.kaynak, bugun()):
-            typer.echo(
-                f"uyari: {sonuc.dosya}: yeniden kontrol tarihi gecti: {sonuc.kaynak.slug}",
-                err=True,
-            )
-            uyari_sayisi += 1
-    for ad in sources.yetim_kopyalar(kok_coz(kok), sonuclar):
-        typer.echo(f"uyari: licenses/{ad}: hicbir kayit bu lisans kopyasini gostermiyor", err=True)
-        uyari_sayisi += 1
     if not sonuclar:
         typer.echo("kayit yok")
     else:

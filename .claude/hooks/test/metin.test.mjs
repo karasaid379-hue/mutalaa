@@ -25,7 +25,7 @@ test('CRLF yakalanır, .ps1 serbest', () => {
 });
 
 test('ASCII dışı dosya adı yakalanır', () => {
-  assert.match(checkFile(f('docs/yazismalar/kurul-ön-görüşme.md', 'x\n')).join(), /ASCII/);
+  assert.match(checkFile(f('docs/örnek/çalışma-notu.md', 'x\n')).join(), /ASCII/);
 });
 
 test('JSON ve JSONL ayrıştırılır; tsconfig yorumlara izin verir', () => {

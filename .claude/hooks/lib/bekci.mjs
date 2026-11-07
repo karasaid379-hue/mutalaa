@@ -42,8 +42,10 @@ const ASK_INSIDE = [
   { re: /^claude\.md$/, why: 'CLAUDE.md projenin anayasasıdır; değişikliği kullanıcı onaylar.' },
   { re: /^\.claude\/settings(\.local)?\.json$/, why: 'Claude Code ayarları değişiyor; kullanıcı onaylar.' },
   {
-    re: /^\.claude\/(hooks|agents|skills|rules)(\/|$)/,
-    why: 'Kit dosyası (ajan, beceri, kural ya da hook) değişiyor; kullanıcı onaylar.',
+    // Ajan, beceri ve kural dosyaları sıradan çalışma dosyasıdır (kullanıcı kararı, 2026-10-31).
+    // Güvenliği taşıyan hook dosyaları (bekçi kendi kendini gevşetemesin) onaylı kalır.
+    re: /^\.claude\/hooks(\/|$)/,
+    why: 'Hook dosyası (güvenlik katmanı) değişiyor; kullanıcı onaylar.',
   },
   {
     re: /^docs\/00-ozet\/02-karar-defteri\.md$/,
@@ -366,31 +368,20 @@ export function riskyGit(args) {
   const sub = rest.find((a) => !a.startsWith('-'));
   const opts = rest.slice(rest.indexOf(sub) + 1);
   const has = (...xs) => opts.some((o) => xs.includes(o));
+  // CLAUDE.md kural 11 (kullanıcı kararı, 2026-10-31): push, reset, clean, restore, rebase, checkout --,
+  // stash drop, branch -D ve benzeri geri dönüşü zor işlemler için onay sorulmaz. Zorla push
+  // settings.json deny listesindedir. Burada yalnız depo tarihini ve güvenlik denetimlerini
+  // yok eden işlemler sorulur.
   switch (sub) {
-    case 'push':
-    case 'reset':
-    case 'clean':
-    case 'restore':
-    case 'rebase':
     case 'filter-branch':
     case 'filter-repo':
     case 'update-ref':
     case 'gc':
       return `git ${sub}`;
     case 'commit':
-      return has('--amend', '--no-verify', '-n') ? 'git commit --amend / --no-verify' : null;
-    case 'stash':
-      return has('drop', 'clear') ? 'git stash drop / clear' : null;
-    case 'branch':
-      return has('-D', '-d', '--delete', '-f', '--force', '-M') ? 'git branch silme ya da zorlama' : null;
-    case 'switch':
-      return has('--discard-changes', '-f', '--force', '-C') ? 'git switch değişiklikleri atarak' : null;
-    case 'checkout':
-      return has('--', '.', '-f', '--force') ? 'git checkout ile değişiklikleri atma' : null;
+      return has('--no-verify', '-n') ? 'git commit --no-verify' : null;
     case 'reflog':
       return has('expire', 'delete') ? 'git reflog expire / delete' : null;
-    case 'tag':
-      return has('-d', '--delete', '-f', '--force') ? 'git tag silme ya da zorlama' : null;
     default:
       return null;
   }
@@ -496,8 +487,8 @@ export function scanEffects(cmd, { rootC, cwd, platform = process.platform, real
       if (to !== '-' && !HOME_REF.test(to)) here = api.resolve(here, fromGitBashPath(to, platform));
     }
     const eff = commandEffects(c.argv);
-    if (eff.risky) ask.push(`Geri dönüşü zor işlem (${eff.risky}); kullanıcı onaylar (CLAUDE.md kural 11).`);
-    if (eff.recursiveDelete) ask.push('Özyinelemeli silme; kullanıcı onaylar (CLAUDE.md kural 11).');
+    if (eff.risky) ask.push(`Depo tarihini ya da güvenlik denetimini yok eden işlem (${eff.risky}); kullanıcı onaylar.`);
+    // Özyinelemeli silme sorulmaz (kural 11); proje dışı hedefler scanCommand'da, data/raw ve .git deny'dadır.
     for (const raw of [...c.writes, ...eff.targets]) {
       if (!raw || URL_LIKE.test(raw) || SAFE_SPECIAL.has(raw.toLowerCase()) || HOME_REF.test(raw)) continue;
       if (platform === 'win32' && raw.startsWith('/') && !/^\/[A-Za-z](\/|$)/.test(raw)) continue; // dışarıda; scanCommand yakalar

@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import {
   DERLEME_TURU,
   INCELEME_DURUMU,
-  LICENSE_STATUS,
   METIN_DURUMU,
   SOURCE_KIND,
   SURUM_DURUMU,
@@ -25,7 +24,6 @@ const json = JSON.parse(
 
 // JSON key -> code constant. A new JSON key without an entry here fails the key-set test.
 const IN_CODE: Record<string, readonly string[]> = {
-  license_status: LICENSE_STATUS,
   xref_type: XREF_TYPE,
   xref_status: XREF_STATUS,
   xref_origin: XREF_ORIGIN,
@@ -53,13 +51,8 @@ describe('enums.json <-> src/enums.ts', () => {
     }
   });
 
-  it('license_status order is serbest < bekliyor < ic_kullanim < kapali', () => {
-    expect([...LICENSE_STATUS]).toStrictEqual(['serbest', 'bekliyor', 'ic_kullanim', 'kapali']);
-    expect(json.enums['license_status']).toStrictEqual([
-      'serbest',
-      'bekliyor',
-      'ic_kullanim',
-      'kapali',
-    ]);
+  it('metin_durumu order is taslak < incelemede < onayli (not alphabetical)', () => {
+    expect([...METIN_DURUMU]).toStrictEqual(['taslak', 'incelemede', 'onayli']);
+    expect(json.enums['metin_durumu']).toStrictEqual(['taslak', 'incelemede', 'onayli']);
   });
 });

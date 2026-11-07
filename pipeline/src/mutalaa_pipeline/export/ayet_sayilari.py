@@ -1,9 +1,9 @@
 """Tanzil ust verisinden sure basina ayet sayilari ve uc dilde uretilmis kopyalari (A04.1).
 
-Indirilen XML guvenilmeyen veridir: yalniz ayristirilir. Kok ogenin `type`, `version`,
-`copyright`, `license` oznitelikleri ile `<sura>` ogelerinin `index`, `ayas`, `start`
-oznitelikleri okunur. Sure adlari okunmaz, yazilmaz, gunluge basilmaz. Sayilar asla
-"duzeltilmez": ihlalde komut 2 ile cikar.
+Indirilen XML guvenilmeyen veridir: yalniz ayristirilir. Kok ogenin `type` ve `version`
+oznitelikleri ile `<sura>` ogelerinin `index`, `ayas`, `start` oznitelikleri okunur. Sure
+adlari okunmaz, yazilmaz, gunluge basilmaz. Sayilar asla "duzeltilmez": ihlalde komut 2 ile
+cikar.
 """
 
 import contextlib
@@ -18,6 +18,7 @@ from typing import Final
 from xml.parsers import expat
 
 from mutalaa_pipeline.export.ortak import GirdiHatasi, ayni_mi, kati_json, utf8_oku, yaz
+from mutalaa_pipeline.lineage import OZET_DESENI
 
 SURE_SAYISI: Final = 114
 TOPLAM_AYET: Final = 6236  # Capa semasi bolum 2 madde 1
@@ -36,15 +37,12 @@ _JSON_ANAHTARLARI: Final = (
     "kaynak_url",
     "alinma_tarihi",
     "sha256",
-    "lisans",
-    "telif",
     "surum",
     "sayilar",
 )
 _SAYI: Final = re.compile(r"0|[1-9][0-9]{0,8}")
 _TARIH: Final = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 _URL: Final = re.compile(r"https://[!-~]+")
-_SHA256: Final = re.compile(r"[0-9a-f]{64}")
 _YASAK_BILDIRIMLER: Final = (b"<!DOCTYPE", b"<!ENTITY")
 
 
@@ -53,8 +51,6 @@ class UstVeri:
     """XML'den okunan alanlar."""
 
     surum: str
-    telif: str
-    lisans: str
     sayilar: tuple[int, ...]
 
 
@@ -65,8 +61,6 @@ class AyetSayilariBelgesi:
     kaynak_url: str
     alinma_tarihi: str
     sha256: str
-    lisans: str
-    telif: str
     surum: str
     sayilar: tuple[int, ...]
 
@@ -120,8 +114,6 @@ def ayristir(veri: bytes) -> UstVeri:
     if kok.get("type") != "metadata":
         raise GirdiHatasi("kok ogenin 'type' ozniteligi 'metadata' degil")
     surum = _oznitelik(kok, "version", "kok oge")
-    telif = _oznitelik(kok, "copyright", "kok oge")
-    lisans = _oznitelik(kok, "license", "kok oge")
 
     sureler = list(kok.iter("sura"))
     if len(sureler) != SURE_SAYISI:
@@ -146,7 +138,7 @@ def ayristir(veri: bytes) -> UstVeri:
         raise GirdiHatasi(f"2. sure {sayilar[1]} ayet; {IKINCI_SURE_AYET} bekleniyor")
     if toplam != TOPLAM_AYET:
         raise GirdiHatasi(f"ayet toplami {toplam}; {TOPLAM_AYET} bekleniyor")
-    return UstVeri(surum=surum, telif=telif, lisans=lisans, sayilar=tuple(sayilar))
+    return UstVeri(surum=surum, sayilar=tuple(sayilar))
 
 
 def _url_denetle(url: str) -> str:
@@ -174,8 +166,6 @@ def belge_kur(veri: bytes, url: str, tarih: str) -> AyetSayilariBelgesi:
         kaynak_url=url,
         alinma_tarihi=tarih,
         sha256=hashlib.sha256(veri).hexdigest(),
-        lisans=ust.lisans,
-        telif=ust.telif,
         surum=ust.surum,
         sayilar=ust.sayilar,
     )
@@ -187,8 +177,6 @@ def json_metni(belge: AyetSayilariBelgesi) -> str:
         "kaynak_url": belge.kaynak_url,
         "alinma_tarihi": belge.alinma_tarihi,
         "sha256": belge.sha256,
-        "lisans": belge.lisans,
-        "telif": belge.telif,
         "surum": belge.surum,
         "sayilar": list(belge.sayilar),
     }
@@ -218,14 +206,12 @@ def json_coz(metin: str) -> AyetSayilariBelgesi:
             raise GirdiHatasi(f"{JSON_YOLU}: sayilar[{sira - 1}] pozitif tam sayi degil")
         dogrulanmis.append(sayi)
     sha256 = _dizgi_alani(icerik, "sha256")
-    if _SHA256.fullmatch(sha256) is None:
+    if OZET_DESENI.fullmatch(sha256) is None:
         raise GirdiHatasi(f"{JSON_YOLU}: 'sha256' 64 kucuk harf onaltilik olmali")
     return AyetSayilariBelgesi(
         kaynak_url=_url_denetle(_dizgi_alani(icerik, "kaynak_url")),
         alinma_tarihi=_tarih_denetle(_dizgi_alani(icerik, "alinma_tarihi")),
         sha256=sha256,
-        lisans=_dizgi_alani(icerik, "lisans"),
-        telif=_dizgi_alani(icerik, "telif"),
         surum=_dizgi_alani(icerik, "surum"),
         sayilar=tuple(dogrulanmis),
     )

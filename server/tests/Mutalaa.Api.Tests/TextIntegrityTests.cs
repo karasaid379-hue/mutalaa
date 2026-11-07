@@ -19,7 +19,7 @@ public class TextIntegrityTests(EditorialDatabase<TextIntegrityTests> fixture) :
     /// <summary>NFC altinda degisen (bir donusturucu eklenirse fark edilecek) girdiler: testin anlamli kalmasi icin korunur.</summary>
     private static readonly string[] NfcUnstable = ["nfd_decomposed_e_acute", "arabic_shadda_then_fatha_nfc_unstable"];
 
-    /// <summary>Ad -> girdi. Kod noktalari Cp(...) ile kurulur; xunit'e yalniz ad gider (gorunmez karakterler gosterim adini bozmasin).</summary>
+    /// <summary>Ad -> girdi. Kod noktalari Cp(...) ile olusturulur; xunit'e yalniz ad gider (gorunmez karakterler gosterim adini bozmasin).</summary>
     private static readonly Dictionary<string, string> Inputs = new(StringComparer.Ordinal)
     {
         // U+00E9 ile e + U+0301: ayni gorunur, NFC altinda tek kod noktasina birlesir.

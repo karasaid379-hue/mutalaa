@@ -1,7 +1,7 @@
 # Mobil mimari
 
-> **Sürüm:** 1.2 · **Tarih:** 24 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar)
+> **Sürüm:** 1.4 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu dosya Expo uygulamasının iç yapısını tanımlar: klasörler, rotalar, durum yönetimi, veri erişimi, üç mushaf modunun çizimi, sağdan sola sayfalayıcı, performans bütçeleri, derleme türleri, hata yönetimi, hata izleme, erişilebilirlik ve dil. Ses ayrıntısı [Ses sistemi](./02-ses-sistemi.md), paket indirme ve silme ayrıntısı [Depolama yöneticisi](./03-depolama-yoneticisi.md) dosyasındadır. Ekranların görünüşü [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md), okuma akışı [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) dosyasında anlatılır.
 
@@ -13,7 +13,7 @@ Kod örnekleri yön gösterir. Kitaplık API adları ilgili belgelerden alındı
 
 1. **Çevrimdışı önce.** Uygulama ilk açılıştan itibaren gömülü `core` paketiyle internetsiz çalışır. Ağ yalnız manifest, paket ve ses için kullanılır.
 2. **İçerik salt okunur, kullanıcı verisi ayrı.** İçerik paketleri değişmeyen dosyalardır. Kullanıcının yazdığı her şey ayrı veritabanında durur ve içeriğe yalnız çapa ile bağlanır ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)).
-3. **Lisans kapısı istemcide de çalışır.** Yayınlayıcı her derleme türü için ayrı manifest üretir. Uygulama aynı kuralı ikinci kez uygular ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)).
+3. **Kalite kapısı istemcide de çalışır.** Yayınlayıcı her derleme türü için ayrı paket ve ayrı, imzalı manifest üretir; kalite kapısını paket üretilmeden önce uygular. Uygulama paketin derleme türünü ve kaynaklarını ikinci kez denetler ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5, bölüm 10).
 4. **Tek oynatıcı.** Ses tek bir durum makinesinden yönetilir ([K-28](../00-ozet/02-karar-defteri.md#k-28--ses)).
 5. **Kişisel veri ve okuma içeriği telemetriye girmez** (bölüm 12).
 6. **Mod değişse de veri kopmaz.** Üç mushaf modu aynı çapaları kullanır; vurgu ve notlar her modda görünür ([K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek)).
@@ -39,7 +39,7 @@ Kaynak: [Expo SDK 58 beta](https://expo.dev/changelog/sdk-58-beta).
 
 | Değişiklik | Etkisi | Yapılacak |
 |---|---|---|
-| expo-audio kilit ekranında oynatma listesi | Kesintisiz liste motoru açılabilir | [Ses sistemi](./02-ses-sistemi.md), bölüm 4 |
+| expo-audio kilit ekranında oynatma listesi (SDK 58.0.0) | `PlaylistEngine` varsayılan motor; kilit ekranında sonraki/önceki sure | [Ses sistemi](./02-ses-sistemi.md), bölüm 2 ve 4 ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)) |
 | expo-sqlite libSQL desteği kaldırıldı | Kullanmıyoruz | — |
 | expo-sqlite `NativeArrayBuffer` yerine `ArrayBuffer` | Mushaf A font BLOB okuma kodu etkilenir | Font önbelleği testleri yeniden koşulur |
 | Expo Router yerel sekmeler kararlı | Mini oynatıcı yerleşimi yeniden denenir | Doğrulanacak |
@@ -56,8 +56,8 @@ apps/mobile/
 ├─ eas.json                 derleme ve güncelleme profilleri
 ├─ metro.config.js          .db varlık uzantısı, Sentry
 ├─ assets/
-│  ├─ db/core-<sürüm>.db    gömülü çekirdek paket (içerik hattından derlemeye kopyalanır)
-│  ├─ fonts/                Literata, IBM Plex Sans, Amiri Quran, Amiri, Noto Naskh Arabic
+│  ├─ db/core-<sürüm>.db    gömülü çekirdek paket (git dışı; `scripts/fetch-core.mjs` kanal manifestinden indirir)
+│  ├─ fonts/                Literata, IBM Plex Sans, Amiri Quran ya da KFGQPC Hafs, Amiri, Noto Naskh Arabic
 │  └─ images/
 ├─ app/                     Expo Router rotaları; yalnız ekran ve yönlendirme
 └─ src/
@@ -117,7 +117,7 @@ flowchart TD
   L --> D
   F --> P[src/packs: manifest, kurulum]
   P --> D
-  X --> E[src/features/audio: AudioEngine]
+  X --> E[src/features/audio: AudioEngine (PlaylistEngine, SingleEngine)]
   D --> N1[expo-sqlite]
   E --> N2[expo-audio]
   P --> N3[expo-file-system]
@@ -143,11 +143,10 @@ app/
 │  ├─ ayarlar/index.tsx
 │  ├─ ayarlar/gorunum.tsx              tema, yazı boyutları
 │  ├─ ayarlar/mushaf.tsx               mushaf modu, sayfa çevirme yönü
-│  ├─ ayarlar/hafiz.tsx
+│  ├─ ayarlar/okuyucu.tsx
 │  ├─ ayarlar/depolama/index.tsx       Depolama yöneticisi
-│  ├─ ayarlar/depolama/[packId].tsx    paket ya da hafız ayrıntısı
-│  ├─ ayarlar/kaynaklar.tsx            kaynaklar ve lisanslar
-│  └─ ayarlar/kurul.tsx                Kurul onay bilgisi
+│  ├─ ayarlar/depolama/[packId].tsx    paket ya da okuyucu kaydı ayrıntısı
+│  └─ ayarlar/kaynaklar.tsx            Kaynaklar: atıf satırları ve açık kaynak bağımlılık listesi
 ├─ not/[id].tsx                        not düzenleyici; kök düzeyinde tam ekran modal
 ├─ [...capa].tsx                       derin bağlantı, tek yakalayıcı rota: mutalaa://q/2/255, mutalaa://q/2/255/3-7 …
 └─ onboarding/index.tsx
@@ -161,6 +160,7 @@ Ağacın tamamı ve eklemeleri (Fihrist, Oku içindeki tefsir, hatim modalı, di
 - **Mini oynatıcı** sekme çubuğunun üstünde durur. SDK 56'da Expo Router react-navigation bağımlılığını bıraktı ([Expo SDK 56](https://expo.dev/changelog/sdk-56)); `Tabs` için özel sekme çubuğu yöntemi Doğrulanacak. SDK 58'deki yerel sekmelerle yerleşim yeniden denenir.
 - **Alt sayfalar:** Tek bir `SheetHost` aynı anda tek alt sayfa açar. Yeni sayfa eskisinin yerini alır, üst üste yığılmaz ve her sayfada görünür bir "Kapat" düğmesi bulunur ([NN/g](https://www.nngroup.com/articles/bottom-sheet/)). Bağlantılar panelinin kendi iç geri yığını vardır.
 - **Çip yuvası:** Okuyucu ekranının altında, mini oynatıcının hemen üstünde tek bir `ChipSlot` bulunur. Atlama zinciri açıkken (`useReader` geri dönüş yığını boş değilken) yuvayı "↩ Okuduğun yere dön" ve "Burada kal" tutar. Zincir yokken, takip kapalıysa ve çalan âyet ekranda değilse "Okunan âyete dön" çıkar ([Ses sistemi](./02-ses-sistemi.md), bölüm 7). İki çip hiçbir zaman birlikte görünmez ([Okuma deneyimi §9](../01-urun/02-okuma-deneyimi.md#9-atla-ve-dön)).
+- **Kaynaklar ekranı.** Ayarlar › Kaynaklar çevrimdışı açılır ve iki bölüm gösterir. İçerik kaynakları bölümü her kaynağın adını, sürümünü, atıf satırını, kaynak bağlantısını ve varsa kaynağın kendi bildirimini listeler. Veri koddan gelmez: `core` ile kurulu paketlerin `attribution` tablolarındaki `title`, `version`, `required_credit`, `source_url` ve `notice_text` alanları birleştirilir; Yayınlayıcı atıf alanlarını kaynak kaydından aynen yazar (`atif_metni` → `required_credit`, `atif_url` → `source_url`; `notice_text` aynı adla; P-11 ve [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 4). Açık kaynak yazılım bölümü, derlemede `scripts/ci/list-licenses.mjs --json` çıktısından üretilen bağımlılık listesini (paket adı, sürüm, paketin bildirdiği lisans) gösterir; liste yalnız gösterilir. Ayrıntı [Yayın süreci](../07-yayin/01-yayin-sureci.md) §6 ve [İçerik paketleri](../03-veri/03-icerik-paketleri.md) §3.1'dedir.
 
 ## 5. Durum yönetimi
 
@@ -168,7 +168,7 @@ Ağacın tamamı ve eklemeleri (Fihrist, Oku içindeki tefsir, hatim modalı, di
 
 | Durum | Yer | Kalıcılık | Örnek |
 |---|---|---|---|
-| Tercihler | Zustand `useSettings` + MMKV; senkrona girenler ayrıca `user.db` `setting` | Kalıcı | Tema, mushaf modu, yazı boyutları, hafız |
+| Tercihler | Zustand `useSettings` + MMKV; senkrona girenler ayrıca `user.db` `setting` | Kalıcı | Tema, mushaf modu, yazı boyutları, ses kaydı (okuyucu) |
 | Okuyucunun geçici durumu | Zustand `useReader` | Bellek | Açık sayfa, seçim, geri dönüş yığını |
 | Okuma konumu | `user.db` `reading_position` (cihaz başına) + MMKV kopyası; atlama zinciri açıkken yazılmaz | Kalıcı | Son âyet ve sayfa |
 | İçerik sorguları | TanStack Query; anahtar paket sürümünü içerir | Bellek önbelleği | Sayfanın âyetleri, meal, tefsir paragrafı |
@@ -251,8 +251,8 @@ Oynatıcı aktörü kökte bir kez oluşur ve gezinmeden etkilenmez. Bileşenler
 
 | Dosya | İçerik | Bağlantı | Yazma | Konum |
 |---|---|---|---|---|
-| `core-<sürüm>.db` ve ATTACH edilen metin paketleri | Kur'an, meal, bağlantı indeksleri; `tefsir-elmalili`, `hadis-*`, `risale-*`, `kelime-kok` (QAC kaynaklı kök ve lemma ile Türkçe kelime anlamları; bugün yalnız `dev`) | Tek içerik bağlantısı | Yok (`PRAGMA query_only`) | `Paths.document/mutalaa/packs/` |
-| `mushaf-a-cuz-NN`, `mushaf-b`, `ses-{hafiz}` paketleri | Font, görsel, ses dizini, zamanlama | Paket başına ayrı salt okunur bağlantı (LRU) | Yok | Aynı |
+| `core-<sürüm>.db` ve ATTACH edilen metin paketleri | Kur'an, meal, bağlantı indeksleri; `tefsir-elmalili`, `hadis-*`, `risale-*`, `kelime-kok` (QAC kaynaklı kök ve lemma ile Türkçe kelime anlamları) | Tek içerik bağlantısı | Yok (`PRAGMA query_only`) | `Paths.document/mutalaa/packs/` |
+| `mushaf-a-cuz-NN`, `mushaf-b`, `ses-katalog`, `ses-zaman-{kayit}` paketleri | Font, görsel, ses kataloğu, âyet ve kelime zamanlaması (ses dosyaları paket dışında, aynadan) | Paket başına ayrı salt okunur bağlantı (LRU) | Yok | Aynı |
 | `user.db` | `bookmark`, `highlight`, `note`, `reading_position`, `hatim`, `hatim_page`, `collection`, `setting` | Drizzle | Var; WAL | `Paths.document/mutalaa/db/` |
 | `device.db` | `installed_pack`, `download_job`, `audio_file` | Drizzle | Var; WAL | Aynı |
 
@@ -370,11 +370,11 @@ export const userDb = drizzle(sqlite, { schema });
 | | A · Medine düzeni | B · Türk hattı | C · Akan Unicode |
 |---|---|---|---|
 | Kaynak | `mushaf-a-cuz-{01..30}`: QPC sayfa fontları + satır düzeni | `mushaf-b`: sayfa görselleri + `ayah_box` | `core`: Tanzil metni |
-| Font ya da görsel | Sayfa başına QPC V2 fontu, ihtiyaç anında yüklenir | expo-image | Amiri Quran (OFL); izin alınırsa KFGQPC Hafs |
+| Font ya da görsel | Sayfa başına QPC V2 fontu, ihtiyaç anında yüklenir | expo-image | Amiri Quran ya da KFGQPC Hafs (görsel kaliteye göre seçilir) |
 | Kelime seçimi | Var (glif başına) | Yok | Var (kelime parçası başına) |
 | Âyet vurgusu | Kelime glifleri üzerinden | `ayah_box` katmanı | Metin parçası zemini |
 | Ekran okuyucu | Paralel Unicode katmanı | Âyet başına etiket | Doğrudan metin |
-| Kullanılabilirlik | Paket ve lisans gelince | Lisans gelince | Her zaman |
+| Kullanılabilirlik | Cüz paketi kurulunca | `mushaf-b` paketi kurulunca | Her zaman |
 
 Ortak sözleşme:
 
@@ -385,7 +385,7 @@ export type WordAnchor = `q:${number}:${number}:${number}`;
 
 export interface HighlightInput {
   activeAyah?: AyahAnchor;        // sesle okunan âyet
-  activeWord?: WordAnchor;        // yalnız zamanlaması olan hafızlarda
+  activeWord?: WordAnchor;        // yalnız kelime zamanlaması olan kayıtlarda, kelimeTakibi açıkken
   selection?: { from: WordAnchor; to: WordAnchor };
   user: { anchor: string; color: string; label: string }[]; // vurgular; renk tek başına anlam taşımaz
 }
@@ -397,11 +397,11 @@ export interface MushafRenderer {
 }
 ```
 
-**Kelime kartı ve `kelime-kok` paketi.** QAC kaynaklı kök ve lemma verisi ile Türkçe kelime anlamları `core` paketinde değil, ayrı `kelime-kok` paketindedir ([İçerik paketleri §1](../03-veri/03-icerik-paketleri.md#1-paket-listesi), §3.3). Paket `bekliyor` durumunda olduğu için bugün yalnız `dev` derlemede görünür ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)). Kart iki durumda da çalışır:
-- Paket varsa Arapça kelime, Türkçe anlam, kök, lemma, "Bu kök Kur'an'da N yerde geçer" satırı ve "Kökü incele" görünür.
-- Paket yoksa (`internal`, `public`) Arapça kelime, konumu ve eylemler görünür. Türkçe anlam, kök satırı, sıklık ve "Kökü incele" boşluk bırakmadan gizlenir; eksiklik uyarısı gösterilmez. Anlamların QAC'den bağımsız olarak `core`'a taşınması İçerik paketleri IP-6'dır (Açık soru).
+**Kelime kartı ve `kelime-kok` paketi.** QAC kaynaklı kök ve lemma verisi ile Türkçe kelime anlamları `core` paketinde değil, ayrı `kelime-kok` paketindedir ([İçerik paketleri §1](../03-veri/03-icerik-paketleri.md#1-paket-listesi), §3.3). Paket bütün derleme türlerinde yer alır; boyutu yüzünden ayrı ve isteğe bağlı bir pakettir. Kart iki durumda da çalışır:
+- Paket kuruluysa Arapça kelime, Türkçe anlam, kök, lemma, "Bu kök Kur'an'da N yerde geçer" satırı ve "Kökü incele" görünür.
+- Paket kurulu değilse Arapça kelime, konumu ve eylemler görünür. Türkçe anlam, kök satırı, sıklık ve "Kökü incele" boşluk bırakmadan gizlenir; eksiklik uyarısı gösterilmez.
 
-Kök ve lemma türündeki bağlantılar (`kok`, `lemma`) ve Ara sekmesindeki kök araması da aynı veriden türediği için yalnız paket varken görünür. Bu bağlantıların `core` yerine `kelime-kok` ile dağıtılması [İçerik paketleri](../03-veri/03-icerik-paketleri.md) ile uyumlanmalı.
+Kök ve lemma türündeki bağlantılar (`kok`, `lemma`) ve Ara sekmesindeki kök araması da aynı veriden türediği için yalnız paket kuruluyken görünür. Bu bağlantıların `core` yerine `kelime-kok` ile dağıtılması [İçerik paketleri](../03-veri/03-icerik-paketleri.md) ile uyumlanmalı.
 
 ### 7.1 Mod A · Medine düzeni
 
@@ -427,11 +427,7 @@ CREATE TABLE glyph_word (
 );
 ```
 
-**Lisans ve kaynak.** QPC sayfa fontlarının üst verisi yalnız "All rights reserved" der ([QCF_P001](https://raw.githubusercontent.com/mustafa0x/qpc-fonts/f93bf5f3/mushaf-woff2/QCF_P001.woff2)). Quran Foundation geliştirici şartları, Developer Console hesabı olan ve atıf yapan geliştiricinin fontları uygulamaya gömmesine izin verir. Aynı şartlar API içeriğini en fazla bir hafta önbelleğe almaya izin verir ve hazır veritabanı dağıtımını yasaklar ([QF Developer Terms](https://api-docs.quran.foundation/legal/developer-terms/)). Buradan iki Açık soru çıkar (hukuki görüş değildir):
-- Fontları kendi depomuzdan cüz paketi olarak indirmek "uygulamaya gömme" sayılır mı?
-- Satır düzeni verisinin kaynağı ne olacak? QF sayfa düzeni API'sinden gelirse ([QF page layout](https://api-docs.quran.foundation/docs/tutorials/fonts/page-layout/)) önbellek ve hazır veritabanı kısıtları çevrimdışı paketle çelişir. QUL düzen verisinde çoğu kaynakta lisans alanı yoktur ([QUL SSS](https://qul.tarteel.ai/faq)).
-
-Kurul'un Medine düzenli fontlara bakışı da belirsizdir. Rapor, mushaf çizim yönteminin bu cevap gelmeden kesinleşmemesini önerir ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md)).
+**Kaynak.** QPC sayfa fontları ve Medine satır düzeni verisi GitHub'dan ya da QUL'dan alınır. Adaylar `mustafa0x/qpc-fonts` (sayfa fontları; [örnek dosya](https://raw.githubusercontent.com/mustafa0x/qpc-fonts/f93bf5f3/mushaf-woff2/QCF_P001.woff2)), QUL (Tarteel) mushaf verisi ([QUL glif fontları](https://qul.tarteel.ai/docs/glyph-based)) ve quran.com'un açık kaynak depolarıdır. Seçim, sürüm (commit SHA) ve eksiksizlik kanıtı (604 sayfanın hepsi için font ve satır düzeni) A26'nın `## Tedarik` bölümünde yazılır. Kaynak kayıtları `qpc-v2-font` ve `medine-604-duzen`dir ([Kaynaklar](../04-icerik/01-kaynaklar.md#31-kuran-metni-fontlar-ve-mushaf-düzeni) §3.1).
 
 **Font yükleme.** Quran.com her sayfa için çalışma anında ayrı bir font yükler ([fontFaceHelper.ts](https://github.com/quran/quran.com-frontend-next/blob/production/src/utils/fontFaceHelper.ts)). Uygulama aynı yolu expo-font ile izler:
 
@@ -577,7 +573,7 @@ export function MushafImagePage({ page, uri, imgW, imgH, boxes, active, onAyahPr
 }
 ```
 
-- **Tema.** Brif koyu temada görüntünün ters çevrilmesini ister. İki yol var. Birincisi, sayfalar saydam zeminli mürekkep maskesi olarak paketlenir ve expo-image `tintColor` ile temanın metin rengine boyanır; renkli tezhip bu yolda tek renge iner. İkincisi, renk ters çevirme filtresi kullanılır; React Native `filter` desteği platforma göre Doğrulanacak. Görsel biçimi lisanslı kaynağa bağlı olduğu için Açık soru.
+- **Tema.** Brif koyu temada görüntünün ters çevrilmesini ister. İki yol var. Birincisi, sayfalar saydam zeminli mürekkep maskesi olarak paketlenir ve expo-image `tintColor` ile temanın metin rengine boyanır; renkli tezhip bu yolda tek renge iner. İkincisi, renk ters çevirme filtresi kullanılır; React Native `filter` desteği platforma göre Doğrulanacak. Görsel biçimi A40'ın tedarikinde seçilen kaynağa bağlı olduğu için Açık soru (MM-7).
 - **Seçim.** Kelime seçimi yoktur ([K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek)). Kelime aralığına yapılmış kullanıcı vurguları bu modda âyet kutusunun kenarında bir işaretle gösterilir.
 - **Yakınlaştırma.** Kıstırma ile yakınlaştırma kutu katmanını da aynı dönüşümle büyütür. Taranmış görseller tema, seçim ve net yakınlaştırma özelliklerini kaybeder ([araştırma raporu](../09-kaynakca.md)).
 - **Bellek.** Aynı anda en fazla üç çözülmüş sayfa tutulur (açık sayfa ve iki komşu).
@@ -589,7 +585,8 @@ Mod C sayfa sınırlarını korur ve satırları akıtır. Sayfa, Medine sayfas�
 ```tsx
 // src/features/reader/mushaf-c/AyahFlow.tsx (özet)
 <Text selectable style={{   // uzun basış işletim sisteminin seçimini açar
-  fontFamily: 'AmiriQuran', writingDirection: 'rtl', textAlign: 'justify',
+  fontFamily: 'AmiriQuran',   // seçilen Arapça aile (Amiri Quran ya da KFGQPC Hafs)
+  writingDirection: 'rtl', textAlign: 'justify',
   fontSize: base * arabicScale, lineHeight: base * arabicScale * 2.1,   // 2,0–2,3 aralığı
 }}>
   {words.map((w) => (
@@ -603,16 +600,16 @@ Mod C sayfa sınırlarını korur ve satırları akıtır. Sayfa, Medine sayfas�
 // styles.activeAyah: zemin tonu; styles.activeWord: zemin + alt çizgi. Renk tek başına anlam taşımaz.
 ```
 
-- **Font.** Amiri Quran (OFL) expo-font yapılandırma eklentisiyle derleme anında gömülür; belge bunu çalışma anında yüklemekten daha verimli bulur ([expo-font](https://docs.expo.dev/versions/latest/sdk/font/)). Amiri Quran test edilen 65 Kur'an kod noktasının 53'ünü içerir; eksikler saygı işaretleri ve Hafs dışı hareke işaretleridir. Türkçe Latin harfi içermez, bu yüzden Türkçe metinde kullanılmaz ([google/fonts: Amiri Quran](https://github.com/google/fonts/tree/main/ofl/amiriquran)). KFGQPC Hafs yalnız yazılı izinle girer.
+- **Font.** Arapça yazı tipi Amiri Quran ya da KFGQPC Hafs'tır; ikisi görsel kaliteye göre seçilir. Seçilen font expo-font yapılandırma eklentisiyle derleme anında gömülür; belge bunu çalışma anında yüklemekten daha verimli bulur ([expo-font](https://docs.expo.dev/versions/latest/sdk/font/)). Amiri Quran test edilen 65 Kur'an kod noktasının 53'ünü içerir; eksikler saygı işaretleri ve Hafs dışı hareke işaretleridir. Türkçe Latin harfi içermez, bu yüzden Türkçe metinde kullanılmaz ([google/fonts: Amiri Quran](https://github.com/google/fonts/tree/main/ofl/amiriquran)).
 - **Seçim.** Uzun basış uygulama seçimi başlatmaz; işletim sisteminin seçim tutamaçlarını açar (`selectable`) ve sistemin "Kopyala" menüsü her durumda çalışır. React Native `Text` seçilen aralığın ofsetini bildirmez (Doğrulanacak, MM-15); eylem çubuğu için yerel bir seçim köprüsü ya da salt okunur metin alanı gerekir. Köprü hazır olana kadar aralık üst çubuktaki "Seç" düğmesiyle kurulur: başlangıç kelimesine, sonra bitiş kelimesine dokunulur. Kısa dokunuş kelime kartını açar; `selectable` paragraf içinde `onPress` parçalarının sorunsuz çalışması Doğrulanacak. Aynı kural meal, tefsir ve Risale metinlerinde geçerlidir ([Okuma deneyimi §3](../01-urun/02-okuma-deneyimi.md#3-seçim)).
 - **Ekran okuyucu.** Paragraf tek öğe olarak okunur. Ekran okuyucu kullanıcılarına her âyetin ayrı öğe olduğu "Âyet âyet" düzeni önerilir (bölüm 13).
 - **Âyet sonu işareti.** U+06DD fontun kapsamındadır. Rakamla birleşik çizimi Doğrulanacak.
 
 ### 7.4 Mod seçimi ve eksik paket
 
-- Varsayılanlar [Okuma deneyimi §2](../01-urun/02-okuma-deneyimi.md#2-okuma-biçimleri) ile kesinleşti: çizim yolu C (indirme gerektirmez), okuma biçimi Mushaf + Meal (`mushaf_meal`). Tanıtım ekranı, paket derlemede görünüyorsa Mod A'yı Wi-Fi ile indirmeyi önerir.
+- Varsayılanlar [Okuma deneyimi §2](../01-urun/02-okuma-deneyimi.md#2-okuma-biçimleri) ile kesinleşti: çizim yolu C (indirme gerektirmez), okuma biçimi Mushaf + Meal (`mushaf_meal`). Tanıtım ekranı, paket manifestte varsa Mod A'yı Wi-Fi ile indirmeyi önerir.
 - Mod A seçiliyken cüz paketi yoksa sayfa Mod C ile çizilir ve üstte "Bu cüzün Medine düzeni indirilmedi · İndir" şeridi görünür. Okuma hiçbir zaman beklemez.
-- Mod B'nin paketi derleme türünde görünmüyorsa seçenek listede yer almaz.
+- Mod B'nin paketi manifestte yoksa seçenek listede yer almaz.
 - Ekran okuyucu açılınca "Erişilebilir metin modu" önerilir (bölüm 13).
 
 ## 8. Sağdan sola sayfalayıcı
@@ -690,7 +687,6 @@ Uygulama kuralları:
 |---|---|---|---|
 | Kullanıcılar | Yalnız ekip | Davetli test kullanıcıları | Herkes |
 | Dağıtım | Geliştirme derlemesi | EAS iç dağıtım | Mağaza |
-| Görünen lisans durumları | `serbest`, `bekliyor`, `ic_kullanim` | Yalnız `serbest` | Yalnız `serbest` (gerekiyorsa Kurul onaylı) |
 | Paket deposu | Yerel SeaweedFS, S3 arayüzü (K-21; Doğrulanacak) | Canlı S3 uyumlu depo | Canlı S3 uyumlu depo (öneri Cloudflare R2) |
 | Uygulama kimliği | `….dev` | `….internal` | Ana kimlik |
 | Derin bağlantı şeması | `mutalaa-dev` | `mutalaa-internal` | `mutalaa` |
@@ -698,7 +694,17 @@ Uygulama kuralları:
 | Sentry | Kapalı | Açık | Açık |
 | Geliştirici menüsü | Var | Var | Yok |
 
-`kapali` içerik hiçbir derlemeye girmez. `bekliyor` ve `ic_kullanim` içerik yalnız ekip içi `dev` derlemede görünür; Risale metni de bu yüzden yalnız `dev`'dedir ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı), [K-05](../00-ozet/02-karar-defteri.md#k-05--risale-i-nur-ve-lisansı-bekleyen-içerik)). Kurul onayı bekleyen Kur'an metni, meal ve sesin kapalı testte gösterilip gösterilemeyeceği Kurul'a sorulacak (Açık soru). Cevap gelene kadar dış test kullanıcısı alınmaz ve `internal` derleme Kurul kuralını `public` gibi uygular. Üç derleme ayrı uygulama kimliğiyle kurulur; böylece yalnız `dev`'de görünen paketler diğer sürümlerin veri alanına girmez. Kimlikler yer tutucudur; alan adı kararı [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) listesindedir.
+İçerik görünürlüğü editoryal kaliteye bağlıdır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5):
+
+| İçerik | `dev` | `internal` | `public` |
+|---|---|---|---|
+| Onaylı birim, onaylı bağlantı | var | var | var |
+| Onaysız birim, onaysız yapay zekâ taslağı | "doğrulanmamış" rozetiyle | "doğrulanmamış" rozetiyle | yok |
+| Aday bağlantı (onay isteyen tür) | var | var | yok |
+| `red` bağlantı | yok | yok | yok |
+| `test-` önekli kaynak | var | yalnız uçtan uca fikstürler (`test-kucuk`, `test-ses`) | yok |
+
+Süzme kaynak ve birim düzeyinde, paket üretilirken yapılır; aynı paket kimliği derleme türüne göre farklı içerik taşıyabilir. Yayınlayıcı her derleme türü için ayrı paket ve ayrı, imzalı manifest üretir. İnsan onayı isteyen türün (`atif`, `iktibas`, `ima`, `konu`) aday bağlantısı yalnız `dev` ve `internal`'dadır; otomatik türler (`kok`, `lemma`, `benzer_ayet`, `anlamsal`) `confidence ≥ 0,50` ile her derlemeye girer ([Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md#8-yayın-kuralı-ve-insan-onayı) §8). Kuralların sahibi [Yayın süreci](../07-yayin/01-yayin-sureci.md) belgesidir (§3 görünürlük, §4 kalite kapısı kuralları: P-01 ve P-07…P-14); tablo [İçerik paketleri](../03-veri/03-icerik-paketleri.md) §7 ile aynıdır. Üç derleme ayrı uygulama kimliğiyle kurulur; böylece iç derlemelerde görünen içerik (`test-` kaynaklar, onay isteyen türdeki aday bağlantılar, doğrulanmamış taslaklar) mağaza sürümünün veri alanına girmez. Kimlikler yer tutucudur; alan adı kararı [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) listesindedir.
 
 ```ts
 // app.config.ts (özet)
@@ -743,34 +749,35 @@ expo-audio eklentisinde mikrofon izni kapatılır; uygulama ses kaydetmez. `fals
 ```ts
 // src/packs/visibility.ts
 import type { Flavor } from '@/lib/env';
-export type LicenseStatus = 'serbest' | 'bekliyor' | 'ic_kullanim' | 'kapali';
 
+// internal derlemeye girebilen tek `test-` önekli kaynaklar: uçtan uca fikstürler (P-12).
+const INTERNAL_FIXTURES = new Set(['test-kucuk', 'test-ses']);
+
+/** Uygulamadaki ikinci kontrol. Girdi paketin kendi üst verisidir: `pack_meta.flavor` ve `pack_source`. */
 export function isPackVisible(
-  p: {
-    pack_id: string; license_status: LicenseStatus; kurul_gerekli: boolean;
-    kurul_onay: { onay_no: string; onay_tarihi: string; onayli_surum: string; icerik_ozeti: string } | null;
-  },
+  p: { flavor: string; source_ids: readonly string[] },
   flavor: Flavor,
 ): boolean {
-  if (p.license_status === 'kapali') return false;          // hiçbir derlemede
-  if (flavor === 'dev') return true;                        // serbest, bekliyor, ic_kullanim (yalnız ekip)
-  if (p.license_status !== 'serbest') return false;         // internal ve public: yalnız serbest
-  // public: gerekiyorsa Kurul onayı şart. internal: Kurul'un kapalı test cevabı gelene kadar aynı kural.
-  return !p.kurul_gerekli || Boolean(p.kurul_onay);
+  if (p.flavor !== flavor) return false;    // başka derleme türünün paketi açılmaz
+  if (flavor === 'dev') return true;        // dev: `test-` önekli kaynaklar dahil hepsi
+  return p.source_ids.every(                // internal: yalnız fikstürler; public: hiçbiri
+    (id) => !id.startsWith('test-') || (flavor === 'internal' && INTERNAL_FIXTURES.has(id)),
+  );
 }
 ```
 
-Manifest paket başına `kurul_gerekli` taşır ve her zaman imzalıdır ([K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı)). Uygulama imzayı gömülü açık anahtarla doğrular. `public` derleme imzasız ya da imzası tutmayan manifesti reddeder ve son geçerli manifestle sürer; bu kesin kuraldır ([Depolama yöneticisi](./03-depolama-yoneticisi.md), bölüm 5).
+Manifest paket satırı kaynak bilgisi taşımaz (alanlar [İçerik paketleri](../03-veri/03-icerik-paketleri.md) §5'tedir). Bu yüzden kontrol paket doğrulamasının bir adımıdır ve indirilen dosyanın `pack_meta` ile `pack_source` tablolarından okunur ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) §8). Ölçüt yalnız derleme türü ve kaynak önekidir; birimin onay durumu paket üretilirken Yayınlayıcıda uygulanır (P-08, P-10). Manifest her derleme türünde imzalıdır. Uygulama imzayı gömülü açık anahtarla doğrular; imzasız ya da imzası tutmayan manifesti her derleme türünde reddeder ve son geçerli manifestle sürer. Bu kesin kuraldır ([Depolama yöneticisi](./03-depolama-yoneticisi.md), bölüm 5).
 
 ```ts
 // src/lib/flags.ts
-type Rule = boolean | 'paket';   // 'paket': ilgili paket görünürse açık
+type Rule = boolean | 'paket';   // 'paket': ilgili paket bu derlemede görünürse (isPackVisible) açık
 const MATRIX = {
   mushafA:           { dev: 'paket', internal: 'paket', public: 'paket' },
   mushafB:           { dev: 'paket', internal: 'paket', public: 'paket' },
-  kelimeKok:         { dev: 'paket', internal: 'paket', public: 'paket' },   // paket `bekliyor`: bugün yalnız dev
+  kelimeKok:         { dev: 'paket', internal: 'paket', public: 'paket' },   // her derlemede; ayrı ve isteğe bağlı paket
   tecvidRenkleri:    { dev: true,  internal: false,   public: false },   // V4 doğrulanmadı
   mealSesi:          { dev: true,  internal: false,   public: false },   // v1.x
+  kelimeTakibi:      { dev: true,  internal: false,   public: false },   // QUD kelime eşlemesi doğrulanınca (K-41 madde 9)
   hesapVeSenkron:    { dev: false, internal: false,   public: false },   // v1.x (K-15)
   tasarimVitrini:    { dev: true,  internal: true,    public: false },
   gelistiriciMenusu: { dev: true,  internal: true,    public: false },
@@ -779,7 +786,7 @@ const MATRIX = {
 
 Kurallar:
 - Bayraklar derleme anında sabitlenir. v1'de uzaktan bayrak servisi yoktur.
-- EAS Update yalnız JavaScript taşır. Gömülü `core` veritabanı EAS Update ile değiştirilmez; yeni içerik ya yeni ikiliyle ya da yayın kapısından geçen manifest güncellemesiyle gelir. Kurul onayı içerik sürümüne bağlı olduğu için bu kural zorunludur ([araştırma raporu](../09-kaynakca.md); [Lexpera 633](https://www.lexpera.com.tr/mevzuat/kanunlar/diyanet-isleri-baskanligi-kurulus-ve-gorevleri-hakkinda-kanun-633)).
+- EAS Update yalnız JavaScript taşır. Gömülü `core` veritabanı EAS Update ile değiştirilmez; yeni içerik ya yeni ikiliyle ya da kalite kapısından geçen imzalı manifest güncellemesiyle gelir. Gömülü `core` her `public` sürümde Yayınlayıcının `verify --flavor public --embedded-core` komutuyla denetlenir; EAS Update bu denetimin dışında kalacağı için kural zorunludur ([Yayın süreci](../07-yayin/01-yayin-sureci.md)).
 - Kütüphane sekmesi Elmalılı tefsiri, hadis ve Risale bölümlerini paket görünürlüğüne göre gösterir.
 
 ## 11. Hata ve çevrimdışı davranış
@@ -792,7 +799,7 @@ export type AppError =
   | { kind: 'integrity'; packId: string; expected: string; actual: string }
   | { kind: 'storage_full'; neededBytes: number; freeBytes: number }
   | { kind: 'pack_missing'; packId: string; anchor?: string }
-  | { kind: 'license_blocked'; packId: string }
+  | { kind: 'not_visible'; packId: string }
   | { kind: 'manifest_invalid'; reason: 'imzasiz' | 'imza_gecersiz' | 'bicim' }
   | { kind: 'db'; op: string; cause: unknown }
   | { kind: 'audio'; code: string }
@@ -807,7 +814,7 @@ export type AppError =
 | `integrity` | "Dosya doğrulanamadı. Yeniden indirilecek." | Evet | Bir kez baştan |
 | `storage_full` | "Yer yetersiz." + temizlik önerisi | Hayır | Yer açılınca |
 | `pack_missing` | "Bu içerik cihazda yok. İndir" | Hayır | Kullanıcı başlatır |
-| `license_blocked` | "Bu içerik bu sürümde yok." | Hayır | Yok |
+| `not_visible` | "Bu içerik bu sürümde yok." | Hayır | Yok |
 | `manifest_invalid` | Gösterilmez; son geçerli katalog kullanılır | Evet | Sonraki denetimde |
 | `db`, `unknown` | "Bir sorun oluştu." + "Yeniden dene" | Evet | Kullanıcı başlatır |
 | `audio` | [Ses sistemi](./02-ses-sistemi.md) | Evet (kodla) | Âyeti atla ya da yeniden dene |
@@ -827,7 +834,7 @@ Ağ durumu tek bir `src/lib/network.ts` modülünden okunur. Bağlantı türü (
 
 ## 12. Hata izleme (Sentry) ve gizlilik
 
-Sentry yalnız çökme ve hata kaydı için kullanılır. Kullanıcı kimliği, cihaz adı, IP, okunan âyet, arama sorgusu, not metni ve ekran görüntüsü gönderilmez. Rapor analitikte kişisel veri bulunmamasını önerir ([araştırma raporu](../09-kaynakca.md)). Okuma alışkanlığı kişinin dinî inancını gösterebilir. KVKK bu tür veriyi özel nitelikli sayar (m. 6; Doğrulanacak, [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md)). Hukuki görüş değildir.
+Sentry yalnız çökme ve hata kaydı için kullanılır. Kullanıcı tanımlayıcısı, cihaz adı, IP, okunan âyet, arama sorgusu, not metni ve ekran görüntüsü gönderilmez. Rapor analitikte kişisel veri bulunmamasını önerir ([araştırma raporu](../09-kaynakca.md)). Okuma alışkanlığı kişinin dinî tercihini gösterebileceği için okunan içerik ve konum hata kaydına hiç girmez. Gizlilik tasarımının bütünü [Gizlilik](../07-yayin/02-gizlilik.md) dosyasındadır.
 
 ```ts
 // src/lib/telemetry.ts
@@ -862,9 +869,9 @@ if (flavor !== 'dev') {
 // Kırıntı veri alanlarının adları Sentry React Native sürümüne göre Doğrulanacak.
 ```
 
-- Oturum tekrarı (session replay) eklenmez.
+- Oturum tekrarı (session replay) eklenmez. v1'de analitik ya da izleme SDK'sı yoktur; Sentry tek dış telemetri hizmetidir.
 - Sentry'nin proje ayarında IP saklama kapatılır (Doğrulanacak).
-- Sentry yurt dışında veri işleyen bir hizmettir. KVKK 9. madde kapsamında standart sözleşme ve 5 iş günü içinde Kurum'a bildirim gerekebilir ([EY Türkiye](https://www.ey.com/tr_tr/insights/law/kvkk-degisikliginin-yurt-disi-veri-aktarimina-etkisi); [Cottgroup](https://cottgroup.com/tr/blog/kvkk-gdpr/item/standart-sozlesme-bildirim-yukumlulugu-ve-yaptirimlari)). Hukuki görüş değildir; ayrıntı [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) dosyasında.
+- Sentry barındırılan bir hizmettir; bu yüzden olaydaki her alan yukarıdaki süzgeçlerden geçer ve `extra` içinde yalnız `errorKind`, `packId` ve `packVersion` kalır. Servisin veri bölgesi Doğrulanacak ([Gizlilik](../07-yayin/02-gizlilik.md)).
 
 ## 13. Erişilebilirlik uygulaması
 
@@ -930,14 +937,11 @@ export const trUpper = (s: string) => s.replace(/i/g, 'İ').replace(/ı/g, 'I').
 
 | No | Konu | Tür | Nerede kapanır |
 |---|---|---|---|
-| MM-1 | QPC fontlarını cüz paketi olarak dağıtmak QF şartlarında "gömme" sayılır mı; Kurul'un Medine fontlarına bakışı | Açık soru | [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) |
-| MM-2 | Mod A satır düzeni verisinin kaynağı ve lisansı | Açık soru | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) |
 | MM-3 | expo-font yerelde woff2 kabul ediyor mu; TTF ile cüz paketi boyutu | Doğrulanacak | Prototip |
 | MM-4 | expo-font ile font boşaltma; 604 sayfalık bellek ölçümü; gerekirse Skia | Doğrulanacak / Açık soru | Prototip, karar defteri |
 | MM-5 | ATTACH sınırı ve Risale kitap paketleriyle arama | Doğrulanacak | [Arama](../03-veri/05-arama-fts5.md) |
 | MM-6 | `PRAGMA query_only` ile ATTACH; URI dosya adı desteği | Doğrulanacak | Prototip |
-| MM-7 | Mod B görsel biçimi (maske ve `tintColor` ya da ters çevirme filtresi) | Açık soru | Lisans gelince |
-| MM-8 | Manifestte "Kurul onayı gerekli" alanı | Kapandı: `kurul_gerekli` ve manifest imzası (K-06) | [İçerik paketleri](../03-veri/03-icerik-paketleri.md) |
+| MM-7 | Mod B görsel biçimi (maske ve `tintColor` ya da ters çevirme filtresi) | Açık soru | A40: kaynak seçimi ve prototip |
 | MM-9 | Mini oynatıcının Expo Router sekmeleriyle yerleşimi (SDK 57 ve 58) | Doğrulanacak | Prototip |
 | MM-10 | Sayfalayıcı kitaplığı (FlatList, pager-view, FlashList) | Doğrulanacak | Prototip ölçümü |
 | MM-11 | Hermes'te Türkçe büyük-küçük harf ve `Intl` | Doğrulanacak | Birim testi |
@@ -952,6 +956,6 @@ export const trUpper = (s: string) => s.replace(/i/g, 'İ').replace(/ı/g, 'I').
 - [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) · [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md) · [Tasarım sistemi](../01-urun/04-tasarim-sistemi.md)
 - [Genel mimari](../02-mimari/01-genel-mimari.md) · [Teknoloji yığını](../02-mimari/02-teknoloji-yigini.md) · [Proje yapısı](../02-mimari/03-proje-yapisi.md) · [Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)
 - [Çapa şeması](../03-veri/01-capa-semasi.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md) · [Arama (FTS5)](../03-veri/05-arama-fts5.md)
-- [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
+- [Kaynaklar](../04-icerik/01-kaynaklar.md) · [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md)
+- [Yayın süreci](../07-yayin/01-yayin-sureci.md) · [Gizlilik](../07-yayin/02-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
 - [Karar defteri](../00-ozet/02-karar-defteri.md) · [Sözlük](../00-ozet/03-sozluk.md) · [Kaynakça](../09-kaynakca.md)

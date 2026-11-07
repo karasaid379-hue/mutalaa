@@ -14,6 +14,11 @@ yazilir; `expected` hesaplanmaz. Uretec yalniz bicimi (Turkce: kapali `dar`/`gen
 dizgi; Arapca: dizgi), kimlik duzenini ve kacisi denetler ve yeniden yazar. Bu modul
 normalizasyon modulunu ice aktarmaz: beklenen deger normallestiriciden uretilirse vektor
 kendini dogrular.
+
+Tek istisna `ar-tz-` onekli satirlardir (A10.7): Arama §1.5 Arapca tablosunun girdileri Tanzil
+Uthmani baytlariyla `export/tanzil_ornekleri.py` tarafindan kurulur ve `hazirla`ya verilir;
+`expected` yine normallestiriciden degil belgedeki tablodan gelir. Bu modul o satirlari yalniz
+yazar (ya da `tanzil` verilmediyse oldugu gibi korur ve bicimini denetler).
 """
 
 import hashlib
@@ -79,6 +84,7 @@ HATA_KODLARI: Final = frozenset(
 
 _KIMLIK: Final = re.compile(r"(?P<onek>[a-z]{2})-[a-z0-9]+(?:-[a-z0-9]+)*")
 URETILEN_ONEKLER: Final = ("an-s", "an-u-")
+TANZIL_ONEKI: Final = "ar-tz-"  # A10.7: Tanzil baytlarindan kurulan Arapca satirlar
 _BOM: Final = chr(0xFEFF)  # kaynakta gorunmez karakter olmasin diye chr ile
 
 _SATIR_ALANLARI: Final = ("id", "input", "expected", "note")
@@ -534,13 +540,28 @@ def dosya_metni(satirlar: Sequence[Satir]) -> str:
 # --- Komutlar -----------------------------------------------------------------------------
 
 
-def hazirla(kok: Path) -> dict[str, list[Satir]]:
-    """Dokuz dosyayi okur, denetler, sinir satirlarini yeniler; dosya -> siralanmis satirlar."""
+def _tanzil_satirlarini_degistir(okunan: dict[str, list[Satir]], tanzil: Sequence[Satir]) -> None:
+    """`ar-tz-` satirlarini verilenlerle degistirir; `ar-` oteki satirlarina dokunmaz (A10.7)."""
+    for satir in tanzil:
+        if not satir.id.startswith(TANZIL_ONEKI):
+            raise GirdiHatasi(f"tanzil satiri {TANZIL_ONEKI} ile baslamali")
+    kalan = [s for s in okunan[NORMALIZE_AR] if not s.id.startswith(TANZIL_ONEKI)]
+    okunan[NORMALIZE_AR] = [*kalan, *tanzil]
+
+
+def hazirla(kok: Path, tanzil: Sequence[Satir] | None = None) -> dict[str, list[Satir]]:
+    """Dokuz dosyayi okur, denetler, sinir satirlarini yeniler; dosya -> siralanmis satirlar.
+
+    `tanzil` verilirse `normalize/ar.jsonl` icindeki `ar-tz-` satirlari bastan bunlarla
+    degistirilir (A10.7); verilmezse mevcut `ar-tz-` satirlari oldugu gibi korunur.
+    """
     belge = json_oku(kok)
     okunan = {dosya: _dosya_oku(kok, dosya) for dosya in DOSYALAR}
     # Eski sinir satirlari normalize edilmeden atilir; her calistirmada yeniden kurulur.
     for dosya in (VALID, INVALID):
         okunan[dosya] = [s for s in okunan[dosya] if not s.id.startswith(URETILEN_ONEKLER)]
+    if tanzil is not None:
+        _tanzil_satirlarini_degistir(okunan, tanzil)
     _yinelenenleri_denetle(okunan)
     sonuc = {
         dosya: [_normalize(dosya, satir) for satir in satirlar]
@@ -553,10 +574,10 @@ def hazirla(kok: Path) -> dict[str, list[Satir]]:
     return {dosya: sorted(satirlar, key=lambda s: s.id) for dosya, satirlar in sonuc.items()}
 
 
-def uret(kok: Path) -> list[str]:
+def uret(kok: Path, tanzil: Sequence[Satir] | None = None) -> list[str]:
     """Dokuz dosyayi yazar; degisen dosyalarin goreli yollarini dondurur."""
     yazilan: list[str] = []
-    for dosya, satirlar in hazirla(kok).items():
+    for dosya, satirlar in hazirla(kok, tanzil).items():
         goreli = f"{VEKTOR_KLASORU}/{dosya}"
         if yaz(kok, goreli, dosya_metni(satirlar)):
             yazilan.append(goreli)
@@ -601,10 +622,10 @@ def _ilk_fark(kok: Path, goreli: str, satirlar: Sequence[Satir]) -> str:
     return f"{goreli} (bos satir ya da dosya sonu farki)"
 
 
-def denetle(kok: Path) -> list[str]:
+def denetle(kok: Path, tanzil: Sequence[Satir] | None = None) -> list[str]:
     """Yazmadan uretir ve diskle bayt bayt karsilastirir; farkli dosyalarin iletilerini dondurur."""
     farklar: list[str] = []
-    for dosya, satirlar in hazirla(kok).items():
+    for dosya, satirlar in hazirla(kok, tanzil).items():
         goreli = f"{VEKTOR_KLASORU}/{dosya}"
         if not ayni_mi(kok, goreli, dosya_metni(satirlar)):
             farklar.append(_ilk_fark(kok, goreli, satirlar))

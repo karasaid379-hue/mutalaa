@@ -1,105 +1,88 @@
 # Kaynakça
 
-> **Sürüm:** 1.0 · **Tarih:** 18 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-06](00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-23](00-ozet/02-karar-defteri.md#k-23--doküman-yeri)
+> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-42](00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-23](00-ozet/02-karar-defteri.md#k-23--doküman-yeri)
 
-Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo belge sayfası (FileSystem ve Font) raporda yok; mobil dosyalarında kullanıldıkları için eklendi. Notlar kaynakların araştırma tarihindeki hâlini özetler; bir olgu kullanılmadan önce kaynak yeniden açılır. Araştırma ortamında bazı birincil siteler (ör. tanzil.net, mevzuat.gov.tr) doğrudan okunamadı; bu durumda kopyası okunan kaynak notta belirtildi. Eski plan dosyaları `quran-app-docs/` altında arşivdedir ve burada listelenmez.
+Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo belge sayfası (FileSystem ve Font) raporda yok; mobil dosyalarında kullanıldıkları için eklendi. Notlar kaynakların araştırma tarihindeki hâlini özetler; bir olgu kullanılmadan önce kaynak yeniden açılır. Eski plan dosyaları `quran-app-docs/` altında arşivdedir ve burada listelenmez.
 
-## 1. Mevzuat
-
-### Kur'an yayımı ve Kurul
-
-- [633 sayılı Kanun, güncel metin (Lexpera)](https://www.lexpera.com.tr/mevzuat/kanunlar/diyanet-isleri-baskanligi-kurulus-ve-gorevleri-hakkinda-kanun-633). m. 6 Kurul onayı, m. 5/ı meal incelemesi, erişim engeli.
-- [Değişikliğin yürürlüğü (Yeni Akit)](https://www.yeniakit.com.tr/haber/diyanete-yeni-yetki-yururluge-girdi-sakincali-kuran-meallerini-toplayip-imha-edebilecek-1937002.html). 7549 sayılı Kanunla gelen hükmün 4 Haziran 2025'te yürürlüğe girmesi.
-- [Meclis kabulü (Karar)](https://www.karar.com/guncel-haberler/duzenleme-mecliste-yasalasti-diyanet-kuran-i-kerim-meali-1963979). İçeriğin çıkarılması, erişim engeli, iki haftalık itiraz.
-- [2018 kararnamesi (Memurlar.net)](https://www.memurlar.net/haber/761684/diyanetten-kur-an-i-kerim-ve-meallere-yakin-takip.html). Kuralın 2018'den beri var olması.
-- [Basım ve Yayım Kriterleri Yönetmeliği, 2022 (Memurlar.net)](https://www.memurlar.net/haber/1045766/kur-an-i-kerim-basim-ve-yayim-kriterleri-hakkinda-yonetmelik-resmi-gazete-de-yayimlandi.html). Dijital eserlerin onayı; onaylı eserin değiştirilemezliği.
-- [Yönetmeliğin basılı mushaf kuralları (Cumhuriyet)](https://www.cumhuriyet.com.tr/turkiye/resmi-gazetede-yayimlandi-diyanetten-kuran-karari-1998786). Kurul'un uygun gördüğü yazı tipleri; çerçeve içinde Türkçe karakter kuralı.
-- [Diyanet döner sermaye yönetmeliği (Memurlar.net)](https://www.memurlar.net/haber/850408). Dijital dini yayınların inceletilmesi için ücret hükmü.
-
-### Telif (FSEK) ve Risale-i Nur hakları
-
-- [FSEK güncel metni (mevzuat.gov.tr)](https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=5846&MevzuatTur=1&MevzuatTertip=3). 5846 sayılı Kanunun güncel metni; kullanılmadan önce kaynak yeniden açılır.
-- [FSEK metni (WIPO Lex)](https://www.wipo.int/wipolex/en/text/499171). Koruma süresi (m. 26–27), işlenme eser (m. 6), güzel sanat eseri (m. 4), manevi haklar (m. 16, 19). Yalnız 2008'e kadarki metindir; 6552 değişikliğini ve m. 47 iptal notunu taşımaz.
-- [Bakanlığın 2014 açıklaması (AA/Sondakika)](https://www.sondakika.com/guncel/haber-risale-i-nur-kulliyati-nin-basimi-6272228/). Mirasçıların birlikte tasarrufu ve muvafakatname şartı.
-- [Topluluğun görüşü (Timeturk)](https://www.timeturk.com/tr/2014/07/08/risale-i-nurlar-yasaklaniyor-mu.html). Yayının "mutlak vekil" talebelere emanet edildiği görüşü.
-- [Hakların Diyanet'e verilmesi, 2014 (Hürriyet)](https://www.hurriyet.com.tr/yazarlar/yalcin-bayer/nereden-nereye-27679980). Bakanlar Kurulu kararı.
-- [AYM, 14.05.2015, E.2014/177, K.2015/49 (RG 11.06.2015, sayı 29383)](https://www.resmigazete.gov.tr/eskiler/2015/06/20150611.htm). FSEK m. 47 değişikliğinin iptal kararı; Resmî Gazete'de yayımlanması.
-- [AYM iptal haberi (T24)](https://t24.com.tr/haber/aym-risale-i-nur-yasagini-iptal-etti,299364). 14 Mayıs 2015 tarihli iptal kararı (RG 11 Haziran 2015).
-- [Fikri hakların anayasal himayesi (Lexpera, 2023)](https://www.lexpera.com.tr/literatur/armagan-makaleler/fikri-haklarin-anayasal-himayesi-uzerine-notlar-2-soyut-norm-denetimi-iptal-davasi-934-937/1). İptalin akademik teyidi.
-
-### KVKK
-
-- [KVKK değişikliğinin yurt dışı aktarıma etkisi (EY Türkiye)](https://www.ey.com/tr_tr/insights/law/kvkk-degisikliginin-yurt-disi-veri-aktarimina-etkisi). Üç kademeli aktarım rejimi; açık rızanın arızi aktarıma sınırlanması.
-- [Standart sözleşme bildirimi (Cottgroup)](https://cottgroup.com/tr/blog/kvkk-gdpr/item/standart-sozlesme-bildirim-yukumlulugu-ve-yaptirimlari). 5 iş günü bildirim ve 2026 ceza aralığı.
-- [Veri merkezi ve bulut sözleşmeleri (Hukukçular Evi)](https://hukukcularevi.com/danismanlik/veri-merkezi-bulut-hizmet-sozlesmeleri-veri-lokalizasyonu/). Yurt dışı bulut hizmetlerinin değişiklikten etkilenmesi.
-
-## 2. Lisans ve veri kaynakları
+## 1. Veri kaynakları
 
 ### Kur'an metni, fontlar, düzenler
 
-- [Tanzil metni, OpenITI kopyası](https://raw.githubusercontent.com/OpenITI/0025AH/master/data/0001Quran/0001Quran.Mushaf/0001Quran.Mushaf.Tanzil001-ara1.mARkdown). Lisans başlığı ve "değiştirmek yasak" şartı; tanzil.net doğrudan okunamadı.
-- [Tanzil çeviri şartları (OPUS)](https://opus.nlpl.eu/Tanzil/corpus/version/Tanzil). Çevirilerin yalnız ticari olmayan amaçla sunulması.
-- [KFGQPC Uthmanic Hafs v0.09 font dosyası](https://raw.githubusercontent.com/mustafa0x/qpc-fonts/f93bf5f3/various-woff2/UthmanicHafs1%20Ver09.woff2). Gömülü lisans ve çelişen telif alanı.
-- [QCF_P001 sayfa fontu](https://raw.githubusercontent.com/mustafa0x/qpc-fonts/f93bf5f3/mushaf-woff2/QCF_P001.woff2). "All rights reserved" meta verisi.
-- [Quran Foundation geliştirici şartları](https://api-docs.quran.foundation/legal/developer-terms/). Önbellek, Content Sync, font gömme, gömme vektörleri, 30 gün fesih.
+- [Tanzil indirme sayfası](https://tanzil.net/download/). Uthmani ve Simple Clean metin dosyalarının indirme seçenekleri ve bildirim bloğu (okuma 28 Ekim 2026).
+- [KFGQPC Uthmanic Hafs v0.09 font dosyası](https://raw.githubusercontent.com/mustafa0x/qpc-fonts/f93bf5f3/various-woff2/UthmanicHafs1%20Ver09.woff2). Hafs Kur'an yazı tipi dosyası; Mushaf C yazı tipi adayı.
+- [QCF_P001 sayfa fontu](https://raw.githubusercontent.com/mustafa0x/qpc-fonts/f93bf5f3/mushaf-woff2/QCF_P001.woff2). QPC sayfa yazı tipi örneği (1. sayfa; Mushaf A).
 - [QF sayfa düzeni](https://api-docs.quran.foundation/docs/tutorials/fonts/page-layout/). Dokuz mushaf düzeni; Türk düzeni yok.
 - [QF ses](https://api-docs.quran.foundation/docs/sdk/audio/). Âyet zaman damgaları ve kelime segmentleri.
 - [QUL mushaf düzenleri](https://qul.tarteel.ai/mushaf_layouts). 31 düzen; Türk düzeni yok.
-- [QUL SSS](https://qul.tarteel.ai/faq). Verinin kaynak bazında lisanslanması.
 - [Âyet berkenar (Küre Ansiklopedi)](https://kureansiklopedi.com/tr/detay/ayet-berkenar-a2f19). Türk sayfa düzeninin ilkesi.
 
 ### Morfoloji, kelime ve konu verisi
 
-- [QAC SSS](https://corpus.quran.com/faq.jsp). Doğruluk tahmini ve "ticari olmayan" şartı.
-- [QAC indirme](https://corpus.quran.com/download/). GPL, değiştirme yasağı, atıf şartı.
+- [QAC SSS](https://corpus.quran.com/faq.jsp). Doğruluk tahmini ve kelime sayısı.
+- [QAC indirme](https://corpus.quran.com/download/). Morfoloji dosyalarının indirme sayfası.
 - [QUL lemma verisi](https://qul.tarteel.ai/resources/morphology/75). `lemmas` ve `word_lemmas` tabloları.
 - [QUL kaynakları](https://qul.tarteel.ai/resources). Benzer âyet ve müteşâbih kayıtları.
 - [QUL konu dizini](https://qul.tarteel.ai/resources/ayah-topics/45). 2.512 başlıklı hiyerarşik dizin.
-- [QuranWBW](https://legacy.quranwbw.com/2). Kelime meallerinin kopyalanma yasağı.
-- [hablullah/data-quran](https://github.com/hablullah/data-quran). CC BY-NC-ND kelime çevirileri.
+- [QuranWBW](https://legacy.quranwbw.com/2). Kelime kelime anlam gösterimi örneği.
+- [hablullah/data-quran](https://github.com/hablullah/data-quran). Kelime çevirileri veri seti.
 - [kaikki (Wiktionary dökümü)](https://kaikki.org/dictionary/Turkish/meaning/e/eh/ehlî.html). Türkçe kelimeden Arapça köke etimoloji örneği.
 - [ZemberekDotNet](https://github.com/JnRMnT/ZemberekDotNet). .NET içinde Türkçe lemmatizasyon.
 
-### Meal, tefsir, kitap ve koruma süreleri
+### Meal, tefsir ve kitaplar
 
-- [Elmalılı yaşam tarihleri (MKÜ kaydı)](https://openaccess.mku.edu.tr/items/1b02bae2-408d-43ea-920d-6c26605c442a). 1878–1942; meal 2013'ten beri serbest. Kayıt 2026-10-26'da 403 verdi, dayanak olarak doğrulanamadı (Doğrulanacak); 1942 vefat yılı Küre'de doğrulandı.
 - [Hak Dini Kur'an Dili (Küre)](https://kureansiklopedi.com/tr/detay/hak-dini-kuran-dili-2). Yazım sözleşmesi ve 1935–39 baskısı.
-- [Hasan Basri Çantay (Küre)](https://kureansiklopedi.com/tr/detay/cantay-hasan-basri). Vefat tarihi; meal 2035'te serbest.
-- [Ömer Nasuhi Bilmen (Küre)](https://kureansiklopedi.com/tr/detay/bilmen-omer-nasuhi). Vefat tarihi; eserler 2042'de serbest.
-- [Kâmil Miras (Küre)](https://kureansiklopedi.com/tr/detay/miras-kamil). Tecrîd ciltleri; 2028.
+- [Hasan Basri Çantay (Küre)](https://kureansiklopedi.com/tr/detay/cantay-hasan-basri). Hayatı ve meali.
+- [Ömer Nasuhi Bilmen (Küre)](https://kureansiklopedi.com/tr/detay/bilmen-omer-nasuhi). Hayatı ve eserleri.
+- [Kâmil Miras (Küre)](https://kureansiklopedi.com/tr/detay/miras-kamil). Tecrîd-i Sarîh tercümesi ve ciltleri.
+- [et-Tecrîdü's-sarîh (Küre)](https://kureansiklopedi.com/tr/detay/et-tecridus-sarih). Naim'in ciltleri, III. cildin yayımı ve Miras'ın payı (Hansu, 20.11.2024).
+- [Babanzâde Ahmed Naim (TDV İA)](https://islamansiklopedisi.org.tr/babanzade-ahmed-naim). Tecrîd çevirisinde "ilk üç cilt".
+- [Hak Dini Kur'an Dili (TDV İA)](https://islamansiklopedisi.org.tr/hak-dini-kuran-dili). 1935–1939 baskısı; 1960 ve 1971 ofset baskıları.
+- [Johanna Pink, GloQur](https://gloqur.de/?p=2195). Elmalılı metninin aktarımı ve adıyla satılan meal.
+- [Zebîdî (TDV İA)](https://islamansiklopedisi.org.tr/zebidi-ahmed-b-ahmed). Tecrîd-i Sarîh'in Arapça yazarı; vefatı 893/1488.
 - [Ahmed Cevdet Paşa (Kültür ve Turizm Bakanlığı)](https://www.ktb.gov.tr/EN-118064/ahmed-cevdet-pasa.html). Kısas-ı Enbiyâ ve 1973 sadeleştirmesi.
 - [Mevlid (TDV İA)](https://islamansiklopedisi.org.tr/mevlid--suleyman-celebi). Tenkitli neşirler; Latin harfli baskıların güvenilirliği.
-- [QuranEnc Türkçe çeviri](https://quran.islamcontent.com/en/turkish_shaban/112). "Tüm hakları saklıdır" kaydı.
-- [Quranpedia veri lisansı](https://quranpedia.net/dumps/LICENSE.md). Klasik tefsirlerin uygulamalarda serbest kullanımı.
-- [OpenITI (Zenodo)](https://zenodo.org/records/3082463). CC BY-NC-SA külliyat.
+- [QuranEnc Türkçe çeviri](https://quran.islamcontent.com/en/turkish_shaban/112). Türkçe çeviri örneği.
+- [Quranpedia](https://quranpedia.net/). Klasik Arapça tefsir dökümleri.
+- [OpenITI (Zenodo)](https://zenodo.org/records/3082463). Arapça klasik metin külliyatı.
 - [Tibyân ve Mevâkib baskıları (SDÜ kaydı)](https://opact.sdu.edu.tr/vufind/Record/7755/Description). 1899–1906 Osmanlıca baskılar.
 
 ### Risale-i Nur
 
-- [Risale-i Nur Külliyatı (TDV İA)](https://islamansiklopedisi.org.tr/risale-i-nur-kulliyati). Müellifin vefat yılı; 2031 eşiği.
+- [Risale-i Nur Külliyatı (TDV İA)](https://islamansiklopedisi.org.tr/risale-i-nur-kulliyati). Külliyatın yapısı ve müellif bilgisi.
 - [alitekdemir/Risale-i-Nur-Diyanet](https://github.com/alitekdemir/Risale-i-Nur-Diyanet). Asıl nüsha metninin kopyası; 15 kitap klasörü.
-- [Aynı deponun README dosyası](https://raw.githubusercontent.com/alitekdemir/Risale-i-Nur-Diyanet/master/README.md). Kaynak açıklaması; geçersiz CC BY-ND iddiası.
-- [Risale-i Nur Kelime-Frekans](https://github.com/alitekdemir/Risale-i-Nur-Kelime-Frekans). CC0 sıklık verisi; anlam sütunu kopyalanmaz.
-- [Redhouse 1890 sözlüğü (HathiTrust)](https://catalog.hathitrust.org/Record/001771732). Kamu malı lügat kaynağı.
+- [Aynı deponun README dosyası](https://raw.githubusercontent.com/alitekdemir/Risale-i-Nur-Diyanet/master/README.md). Kaynak açıklaması.
+- [Risale-i Nur Kelime-Frekans](https://github.com/alitekdemir/Risale-i-Nur-Kelime-Frekans). Kelime sıklık verisi.
+- [Redhouse 1890 sözlüğü (HathiTrust)](https://catalog.hathitrust.org/Record/001771732). Lügat kaynağı.
 - [Risale maddesi (TDV İA, PDF)](https://cdn2.islamansiklopedisi.org.tr/dosya/35/C35011446.pdf). Dört ana mecmuanın 130 parçası.
 - [14 ciltlik büyük boy baskı (kitapyurdu)](https://www.kitapyurdu.com/kitap/risalei-nur-kulliyati-buyuk-boy-14-cilt-takim/429602.html). 7.550 sayfalık ölçek.
 
+### Lügat ve tarama kaynakları
+
+- [Redhouse (TDV İA)](https://islamansiklopedisi.org.tr/redhouse-sir-james-william). Redhouse ve sözlüğü.
+- [Lugat-ı Nâcî (TDV İA)](https://islamansiklopedisi.org.tr/lugat-i-naci). Yayın tarihleri ve 1322 baskısı.
+- [Müstecâbîzâde İsmet Bey (TDV İA)](https://islamansiklopedisi.org.tr/mustecabizade-ismet-bey). Lugat-ı Nâcî'nin müellifi.
+- [Tâhirülmevlevî (TDV İA)](https://islamansiklopedisi.org.tr/tahirulmevlevi). Lugat-ı Nâci'nin 1322 baskısındaki düzenleme.
+
 ### Ses ve hadis
 
-- [AlQuran Cloud şartları](https://alquran.cloud/terms-and-conditions). Ses telifinin okuyucuda kalması; kaldırma talebi.
-- [Islamic Network lisans tartışması](https://community.islamic.network/d/231-clarification-on-licensing-and-usage-rights-for-quran-recitation-api). Ücret duvarı ve okuyucu telifi.
-- [quran-align](https://raw.githubusercontent.com/cpfair/quran-align/master/README.md). CC BY 4.0 kelime zamanlamaları ve doğruluğu.
+- [Quranic Universal Audio (QUD) v4.0.0](https://github.com/QUD-Technologies/quranic-universal-audio/releases/tag/v4.0.0) ve [NOTICE](https://raw.githubusercontent.com/QUD-Technologies/quranic-universal-audio/main/NOTICE.md). 102 kayıt için âyet ve kelime zamanlaması; NOTICE kaynağın kendi bildirimidir (okuma 30 Ekim 2026).
+- [MP3Quran API](https://www.mp3quran.net/eng/api). Sure başına MP3, `ayat_timing` âyet zamanlaması (okuma 30 Ekim 2026).
+- [Tarteel QUL kayıt belgesi](https://qul.tarteel.ai/resources/recitation/118/docs). Tarteel kayıtları ve `audio-cdn.tarteel.ai` adresindeki sure dosyaları.
+- [Quran Foundation quickstart](https://api-docs.quran.foundation/docs/quickstart/), [Content OpenAPI v4](https://api-docs.quran.foundation/openAPI/content/v4.json) ve [Content Sync](https://api-docs.quran.foundation/docs/tutorials/content-sync/getting-started/). Prelive yalnız Fâtiha ve Bakara; ses uçları ve 7 günlük eşitleme. Anahtar isteyen içerik kaynağı seçilmediği için v1 kataloğu QF'ye bağlı değildir ([K-42](00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 2; [Ses kaynağı araştırması](06-mobil/04-ses-kaynak-arastirmasi.md) §3.5).
+- [Maqra](https://github.com/Abdalla-Eldoumani/maqra) ve [EveryAyah](https://everyayah.com/). EveryAyah'ın bayt bayt kopyası ve âyet başına dosya düzeni; kullanılmıyor (K-41).
+- [quran_android](https://github.com/quran/quran_android), [quran-ios](https://github.com/quran/quran-ios) ve [quran.com ön yüzü](https://github.com/quran/quran.com-frontend-next). Gapless ses, zamanlama veritabanı ve dosya × kare deseni.
+- [Assabile en iyi sesler](https://www.assabile.com/quran/best-voices), [tvQuran](https://www.tvquran.com/) ve [Way2Quran](https://way2quran.com/reciters). Okuyucu popülerliği; ölçüm türleri birbirinden farklıdır ([Ses kaynağı araştırması](06-mobil/04-ses-kaynak-arastirmasi.md) §4.2).
 - [fawazahmed0 hadith-api editions.json](https://raw.githubusercontent.com/fawazahmed0/hadith-api/1/editions.json). Kaynağı belgelenmemiş Türkçe koleksiyonlar.
 - [AhmedBaset/hadith-json README](https://raw.githubusercontent.com/AhmedBaset/hadith-json/main/README.md). Sunnah.com'dan kazınmış 50.884 hadis.
-- [Sunnah.com geliştirici sayfası](https://sunnah.com/developers). Anahtarlı ve kısmi API.
+- [Sunnah.com geliştirici sayfası](https://sunnah.com/developers). Anahtarlı ve kısmi API; anahtar isteyen içerik kaynağı seçilmez ([K-42](00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 2).
 
 ### İncil yazılımlarının veri setleri
 
 - [STEPBible-Data](https://github.com/STEPBible/STEPBible-Data). Sözlüksel anahtarlar ve tipli varlıklar.
-- [OpenBible bağlantıları (Hugging Face)](https://huggingface.co/datasets/NuBerea/openbible). Oylarla puanlanmış CC BY bağlantı seti.
+- [OpenBible bağlantıları (Hugging Face)](https://huggingface.co/datasets/NuBerea/openbible). Oylarla puanlanmış bağlantı seti.
 
-## 3. Teknoloji sürümleri
+## 2. Teknoloji sürümleri
 
 ### Sürümler ve yaşam döngüsü
 
@@ -117,13 +100,14 @@ Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo 
 ### Kitaplıklar, veri ve arama
 
 - [expo-audio](https://docs.expo.dev/versions/latest/sdk/audio/). Arka plan, kilit ekranı, oynatma listesi; aralık döngüsü yok.
+- [expo-audio v58](https://docs.expo.dev/versions/v58.0.0/sdk/audio/), [expo-audio CHANGELOG](https://github.com/expo/expo/blob/sdk-58/packages/expo-audio/CHANGELOG.md) ve [expo-file-system v58](https://docs.expo.dev/versions/v58.0.0/sdk/filesystem/). `AudioPlaylist` kilit ekranı, `createDownloadTask`, `file.digest` (okuma 30 Ekim 2026).
 - [Expo SQLite (SDK 58 belgesi)](https://docs.expo.dev/versions/v58.0.0/sdk/sqlite.md). Web derlemesinde FTS yok.
 - [Expo FileSystem](https://docs.expo.dev/versions/latest/sdk/filesystem/). Belge ve önbellek klasörleri, indirme görevleri, dosya özeti (mobil dosyalarından).
 - [expo-font](https://docs.expo.dev/versions/latest/sdk/font/). Fontların derleme anında gömülmesi ve çalışma anında yüklenmesi (mobil dosyalarından).
 - [SQLite FTS5](https://sqlite.org/fts5.html). Tokenizer, önek indeksi, bm25.
 - [expo-sqlite ve Drizzle (React Native Relay)](https://reactnativerelay.com/article/building-offline-first-react-native-apps-2026-expo-sqlite-drizzle-orm-sync-strategies). Canlı sorgular ve göçler.
-- [react-native-track-player](https://github.com/doublesymmetry/react-native-track-player). v5 ticari lisanslı, v4 donduruldu.
-- [React Native Reusables](https://github.com/founded-labs/react-native-reusables). MIT bileşen kitaplığı.
+- [react-native-track-player](https://github.com/doublesymmetry/react-native-track-player). v5 ticari kullanımda ücretli, v4 donduruldu.
+- [React Native Reusables](https://github.com/founded-labs/react-native-reusables). Bileşen kitaplığı.
 - [PostgreSQL metin arama yapılandırmaları](https://docs.w3cub.com/postgresql~18/textsearch-psql). `turkish` ve `arabic`.
 - [Orama dil desteği](https://docs.orama.com/open-source/supported-languages). Türkçe ve Arapça gövdeleyiciler.
 - [Quran.com GitHub](https://github.com/quran). Web ve mobil kod tabanları.
@@ -140,16 +124,16 @@ Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo 
 - [Gömme modeli karşılaştırması (wz-it)](https://wz-it.com/en/blog/best-embedding-models-german/). Qwen3-Embedding ve BGE-M3 puanları.
 - [EmbeddingGemma (Google)](https://developers.googleblog.com/introducing-embeddinggemma/). Cihazda çalışabilen gömme modeli.
 
-## 4. Tasarım ve erişilebilirlik
+## 3. Tasarım ve erişilebilirlik
 
 - [Apple HIG: Erişilebilirlik](https://developer.apple.com/design/human-interface-guidelines/accessibility). Dokunma hedefi, kontrast, %200 büyütme, Hareketi Azalt.
 - [Apple HIG: Sağdan sola](https://developer.apple.com/design/human-interface-guidelines/right-to-left). Gezinme denetimlerinin çevrilmesi; Arapça boyut dengesi.
 - [NN/g: Alt sayfalar](https://www.nngroup.com/articles/bottom-sheet/). Modal olmayan alt sayfa kuralları.
 - [NN/g: Yaşlı kullanıcılar](https://www.nngroup.com/articles/usability-for-senior-citizens/). Büyük yazı, kullanıcı denetiminde boyut, yüksek kontrast.
 - [W3C: Satır içi çift yönlü işaretleme](https://www.w3.org/International/articles/inline-bidi-markup/). Türkçe içinde Arapça dizilerin işaretlenmesi.
-- [Literata](https://github.com/googlefonts/literata). OFL gövde fontu.
+- [Literata](https://github.com/googlefonts/literata). Gövde fontu.
 - [google/fonts: Literata](https://github.com/google/fonts/tree/main/ofl/literata). Türkçe harf kapsamı.
-- [google/fonts: Amiri Quran](https://github.com/google/fonts/tree/main/ofl/amiriquran). OFL Kur'an fontu; Türkçe Latin harfi yok.
+- [google/fonts: Amiri Quran](https://github.com/google/fonts/tree/main/ofl/amiriquran). Kur'an fontu; Türkçe Latin harfi yok.
 - [google/fonts: Noto Naskh Arabic](https://github.com/google/fonts/tree/main/ofl/notonaskharabic). Metin içi Arapça.
 - [google/fonts: Scheherazade New](https://github.com/google/fonts/tree/main/ofl/scheherazadenew). Türkçe harfleri eksik; Türkçe metinde kullanılmaz.
 - [İznik çinisi (Wikipedia)](https://en.wikipedia.org/wiki/Iznik_pottery). Paletin tarihsel sırası.
@@ -161,7 +145,7 @@ Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo 
 - [Quran for Android QuranInfo.kt](https://github.com/quran/quran_android/blob/main/common/data/src/main/java/com/quran/data/core/QuranInfo.kt). Sağdan sola sayfalama.
 - [Kindle Word Wise (Amazon)](https://press.aboutamazon.com/2014/11/new-features-for-kindle-e-readers-now-available). Lügat yoğunluğu ayarına örnek.
 
-## 5. Rakip ve örnek ürünler
+## 4. Rakip ve örnek ürünler
 
 ### Türkiye
 
@@ -200,7 +184,7 @@ Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo 
 - [Accordance Amplify](https://accordancefiles1.com/helpfiles/OSX13/content/topics/05_dd/amplify_resources_in_acc.htm). Seçili kelimeyi başka kaynakta arama.
 - [YouVersion (BibleInYear)](https://bibleinyear.com/blog/youversion-bible-app). Okuma planları; bağışla finansman.
 
-## 6. Yöntem ve akademik
+## 5. Yöntem ve akademik
 
 - [Arapça normalizasyon (IAJIT 2022)](https://www.ccis2k.org/iajit/images/Year2022/No.4/20568.pdf). Hareke ve harf birleştirme reçetesi.
 - [KITAB passim](https://kitab-project.org/methods/text-reuse). Metin yeniden kullanımı; Smith-Waterman hizalaması.
@@ -217,6 +201,6 @@ Bu liste Ekim 2026 araştırma raporundaki bağlantılardan seçildi. İki Expo 
 ## İlgili dosyalar
 
 - [README](README.md) · [Karar defteri](00-ozet/02-karar-defteri.md) · [Sözlük](00-ozet/03-sozluk.md)
-- [Kaynaklar ve lisans defteri](04-icerik/01-kaynaklar-ve-lisans-defteri.md)
-- [Yayın kapısı ve Kurul](07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK ve gizlilik](07-yayin/02-kvkk-ve-gizlilik.md)
+- [Kaynaklar](04-icerik/01-kaynaklar.md)
+- [Yayın süreci](07-yayin/01-yayin-sureci.md) · [Gizlilik](07-yayin/02-gizlilik.md)
 - [Fazlar](08-yol-haritasi/01-fazlar.md) · [Riskler](08-yol-haritasi/03-riskler.md)

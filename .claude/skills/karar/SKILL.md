@@ -1,10 +1,11 @@
 ---
 name: karar
 description: >-
-  Mütâlaa karar defterine (docs/00-ozet/02-karar-defteri.md) yeni karar ekler ya da var olan kararı
-  günceller; eski kararı silmez, "Geçersiz" diye işaretler, özet tabloyu ve etkilenen belgeleri
-  günceller. Kullanıcının verdiği bir kararı kaydetmek gerektiğinde ya da kullanıcı /karar <konu>
-  yazdığında kullan; kararı kullanıcı verir, bu beceri kaydı hazırlar ve onay alır.
+  Mütâlaa karar defterine (docs/00-ozet/02-karar-defteri.md) yeni karar ekler ya da var olan kararın
+  metnini yerinde günceller; özet tabloyu ve bağlı dosyaları aynı değişiklikte eşitler, kaldırılan
+  kararın numarasını yeniden kullanmaz. Kullanıcının verdiği bir kararı kaydetmek gerektiğinde ya da
+  kullanıcı /karar <konu> yazdığında kullan; kararı kullanıcı verir, bu beceri kaydı hazırlar ve
+  onay alır.
 argument-hint: "[konu ya da K-numarası]"
 ---
 
@@ -22,7 +23,7 @@ Karar defteri projenin tek doğruluk kaynağıdır. Kararı kullanıcı verir; s
 
 ## 2. Taslağı hazırla
 
-Yeni kararın numarası, defterdeki en büyük numaranın bir fazlasıdır. Biçim:
+Yeni kararın numarası, defterdeki en büyük numaranın bir fazlasıdır; kaldırılan kararın numarası yeniden kullanılmaz. Biçim:
 
 ```markdown
 ### K-32 · Kısa başlık
@@ -33,8 +34,9 @@ Yeni kararın numarası, defterdeki en büyük numaranın bir fazlasıdır. Biç
 ```
 
 Var olan bir karar değişiyorsa:
-- Eski karar silinmez. Eski bölüme bir satır eklenir: `- **Güncelleme (YYYY-AA-GG):** … [K-32](#k-32--kısa-başlık) ile değişti.` Karar tamamen geçersizse başlığın altına `- **Durum:** Geçersiz (YYYY-AA-GG); yerini [K-32](#…) aldı.` yazılır.
-- Özet tablodaki satır yeni kararı gösterecek biçimde güncellenir; yeni karar için tabloya satır eklenir.
+- Karar metni bugünkü kuralı anlatır. Metin yerinde güncellenir; artık geçerli olmayan cümle metinde kalmaz (eski metin git geçmişindedir).
+- Özet tablodaki satır ve bağlı dosyalar (belgeler, CLAUDE.md, kurallar, beceriler, ajanlar) aynı değişiklikte eşitlenir; yeni karar için tabloya satır eklenir.
+- Karar bütünüyle kalkıyorsa bölümü ve özet satırı silinir; ona giden bağlantılar aynı değişiklikte bugünkü kurala yönlendirilir.
 
 Başlık çapası GitHub kuralıyla türetilir: küçük harf, harf-rakam-tire-boşluk dışındaki işaretler silinir, boşluk tireye döner. Örnek: `### K-31 · Geliştirme aracı: Claude Code` → `#k-31--geliştirme-aracı-claude-code`.
 
@@ -45,11 +47,11 @@ Başlık çapası GitHub kuralıyla türetilir: küçük harf, harf-rakam-tire-b
 ## 4. Yaz ve yay
 
 - Karar defterini güncelle.
-- Etkilenen belgeleri `belge-bekcisi` ajanıyla güncelle; her belgenin başlığındaki "Bağlı kararlar" satırına yeni karar bağlantısını ekle.
-- Bağlantı denetimini çalıştır: `node .claude/skills/belge-esitle/baglanti-denetimi.mjs docs`.
+- Etkilenen belgeleri `belge-bekcisi` ajanıyla güncelle; her belgenin başlığındaki "Bağlı kararlar" satırına yeni karar bağlantısını ekle. Karara bağlı kit dosyalarını (CLAUDE.md, kurallar, beceriler, ajanlar) aynı değişiklikte eşitle.
+- Bağlantı denetimini çalıştır: `node .claude/skills/belge-esitle/baglanti-denetimi.mjs docs CLAUDE.md .claude`.
 - Commit: `docs(docs): record K-32 <kısa İngilizce özet>` (`/commit` kurallarıyla).
 
 ## Kurallar
 
-- Hukuki konularda karar metni hukuki görüş gibi yazılmaz; "hukuki görüş değildir" uyarısı ve kaynak eklenir.
+- Kaynak, tedarik ve derleme görünürlüğüyle ilgili kararlar [K-42](../../../docs/00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) kaynak ilkesine uyar.
 - Kod ve belge çelişiyorsa önce karar netleşir, sonra kod ya da belge değişir.

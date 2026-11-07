@@ -1,9 +1,9 @@
 # Backend API
 
-> **Sürüm:** 1.4 · **Tarih:** 27 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-06](../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)
+> **Sürüm:** 1.6 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
-Bu dosya ASP.NET Core 10 çözümünü, uçları, kimlik doğrulamayı, hata modelini, EF Core kurallarını ve Yayınlayıcı konsolunu tanımlar. Tablolar [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md), paket ve manifest biçimi [İçerik paketleri](../03-veri/03-icerik-paketleri.md), kapı kuralları [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) dosyasındadır.
+Bu dosya ASP.NET Core 10 çözümünü, uçları, kimlik doğrulamayı, hata modelini, EF Core kurallarını ve Yayınlayıcı konsolunu tanımlar. Tablolar [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md), paket ve manifest biçimi [İçerik paketleri](../03-veri/03-icerik-paketleri.md), kalite kapısı kuralları [Yayın süreci](../07-yayin/01-yayin-sureci.md) dosyasındadır.
 
 ---
 
@@ -24,8 +24,7 @@ server/
 ├─ Mutalaa.Domain/          bağımlılıksız çekirdek
 │  ├─ Anchors/              AnchorRef, AnchorSpan, ayrıştırıcı ([GeneratedRegex], CultureInvariant)
 │  ├─ Content/ Links/       Source, Unit, QuranWord, Lemma, Root, Xref ve öteki tablo varlıkları, enum'lar
-│  ├─ Licensing/            LicenseStatus, BuildFlavor; LicenseGate (A13; saf fonksiyonlar)
-│  ├─ Releases/ Reviews/    Release, PipelineRun, Review ve durum enum'ları; içerik özeti, inceleme ve ikinci onay kuralları (A13, A14)
+│  ├─ Releases/ Reviews/    BuildFlavor, Release, PipelineRun, Review ve durum enum'ları; kalite kapısı (saf fonksiyonlar), içerik özeti, inceleme ve ikinci onay kuralları (A13, A14)
 │  └─ Text/                 SearchNormalizer, IcKesme.g.cs (üretilir), ContentHash, kod noktası ofsetleri
 ├─ Mutalaa.Infrastructure/  Persistence/ (IcerikDbContext, Configurations/, Converters/), Identity/, Migrations/,
 │                           Storage/ (S3), Packs/ (SqlitePackWriter, ManifestSigner) (A13)
@@ -85,8 +84,7 @@ public sealed class FeatureOptions { public bool Editor { get; set; } = true; pu
 | `GET /health/live`, `/health/ready` | Anonim | Süreç ve PostgreSQL |
 | `POST /api/v1/auth/login`, `/auth/logout`; `GET /auth/me` | Anonim, editor | Çerezle oturum |
 | `GET`, `POST /api/v1/users`; `PUT /users/{id}/roles` | admin | Editör hesabı ve rol; kendi kendine kayıt yok |
-| `GET /api/v1/sources`, `/sources/{slug}` | editor | Lisans, Kurul, `embed_ok`, `kisitlar`, birim sayısı |
-| `PUT /api/v1/sources/{slug}/license-status`, `/kurul-onay`, `/embed-ok` | admin | `review` satırı açar; ikinci onayla uygulanır |
+| `GET /api/v1/sources`, `/sources/{slug}` | editor | Kaynak kaydı (ad, tür, sürüm, adres, atıf satırı, dosya özeti), birim sayısı; salt okunur |
 | `GET /api/v1/units?source=&prefix=&q=&cursor=`; `GET /units/{anchor}` | editor | `q` C# normalizasyonundan geçer, `search_text` üzerinde aranır |
 | `POST /api/v1/units/{anchor}/corrections` | editor | Yalnız kendi ürettiğimiz metinlerde düzeltme önerisi; metin NFC'ye çevrilir. Hazır kaynak metninde (Tanzil) 422 `degistirilemez-metin` |
 | `GET /api/v1/reviews?hedef_tablo=&alan=&durum=acik&cursor=`; `GET /reviews/{id}` | editor | Kuyruk ve ayrıntı (`onceki`, `onerilen`, kanıt, `yz_modeli`, `guven`) |
@@ -94,9 +92,9 @@ public sealed class FeatureOptions { public bool Editor { get; set; } = true; pu
 | `GET /api/v1/reviews/stats` | editor | Kuyruk başına açık kayıt |
 | OCR sayfa görseli ucu (yöntem ve yol A14'te `/karar` ile belirlenir) | editor | OCR inceleme ekranının sayfa görseli ([Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) §7); yalnız `data/raw/{baskı}/` altından, salt okunur (öneri; A14) |
 | `POST /api/v1/releases` | admin | `{derleme, paketler?, not}` → 202, `Location`, `durum: hazirlaniyor` |
-| `POST /api/v1/releases/preview` | admin | Paket üretmeden kapı raporu |
+| `POST /api/v1/releases/preview` | admin | Paket üretmeden kalite kapısı raporu |
 | `GET /api/v1/releases?derleme=`, `/releases/{id}` | editor | Durum, kapı raporu, manifest |
-| `POST /api/v1/releases/{id}/promote`, `/rollback` | admin | `public` terfisi; manifesti bu yayına çevirme |
+| `POST /api/v1/releases/{id}/promote`, `/rollback` | admin | `public` terfisi (yalnız kullanıcı kararıyla); manifesti bu yayına çevirme |
 
 ### 4.1 İnceleme kuyrukları
 
@@ -110,16 +108,15 @@ Hat ve editör önerileri tek `review` tablosundan geçer. Onay `onerilen` değe
 | Kök ve lemma düzeltmesi | `quran_word_fix` | `root_id`, `lemma_id`, `pos`, `features` | [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) §4 |
 | Türkçe kelime → Arapça kök | `tr_root_index`, `tr_form` | eşleme | [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) §5 |
 | Sure adı varyantları | `surah_alias` | `alias` | [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md) |
-| Kaynak lisansı | `source` | `license_status`, `kurul_onay`, `embed_ok` | [Lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) |
 
 - **Çözüldü (19 Ekim 2026):** `review.hedef_tablo` denetim listesi `quran_word_fix`, `tr_root_index`, `tr_form` ve `surah_alias` değerlerini taşır ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §8).
 - Kendi `status` alanı olan tablolarda (`xref`, `quran_word_fix`, `surah_alias`) onay `onayli`, ret `red` yazar.
-- İkinci onay gereken alanlarda (meal ve tefsir metni, `license_status`, `kurul_onay`, `embed_ok`) ilk onay `inceleyen` alanını doldurur, kayıt `acik` kalır. Farklı bir editörün onayı değeri uygular ve `ikinci_inceleyen` alanını doldurur.
+- İkinci onay gereken alanlarda (meal ve tefsir metni) ilk onay `inceleyen` alanını doldurur, kayıt `acik` kalır. Farklı bir editörün onayı değeri uygular ve `ikinci_inceleyen` alanını doldurur.
 - Onaysız yapay zekâ taslağı (`yz_modeli` dolu) "doğrulanmamış" sayılır ([K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)).
 
 ### 4.2 Uç kuralları
 
-- JSON alan adları veritabanı sütunlarıyla aynıdır (snake_case); enum değerleri veritabanı etiketleriyle aynıdır (`ic_kullanim`, `onaylandi`, `hazirlaniyor`).
+- JSON alan adları veritabanı sütunlarıyla aynıdır (snake_case); enum değerleri veritabanı etiketleriyle aynıdır (`incelemede`, `onaylandi`, `hazirlaniyor`).
 - Sayfalama imleçlidir: `?cursor=&limit=` (en çok 200), yanıt `{ "items": [...], "next_cursor": "..." }`.
 - Yanıtlar `ETag` (PostgreSQL `xmin`) taşır; karar uçları `If-Match` ister, uyuşmazsa 412 döner.
 - Çapa yol parçası olarak gönderilir; istemci `encodeURIComponent` kullanır.
@@ -160,16 +157,16 @@ Hat ve editör önerileri tek `review` tablosundan geçer. Onay `onerilen` değe
 | `yayin-suruyor`, `durum-gecisi-gecersiz` | 409 | Süren yayın; izin verilmeyen durum geçişi |
 | `surum-uyusmazligi` | 412 | `If-Match` tutmadı |
 | `degistirilemez-metin` | 422 | Hazır kaynak metnine (Tanzil) düzeltme |
-| `lisans-kapisi`, `kurul-onayi-eksik` | 422 | Yayın kapıya takıldı; kapı raporu eklidir |
+| `kalite-kapisi` | 422 | Yayın kalite kapısına takıldı; kapı raporu eklidir |
 | `imlec-eskidi` | 410 | v1.x senkron çekmesinde imleç silinmiş satır saklama sınırının (`gc_seq`) gerisinde; cihaz tam yeniden eşitleme yapar ([Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md) §8) |
 | `saat_ileri` | Doğrulanacak | v1.x senkron işleminin HLC fiziksel kısmı sunucu saatinden 10 dakikadan fazla ileride (öneri, KV-2); uygulama "Cihaz saatini kontrol edin" der. Ad Kullanıcı verisi ve senkron §3'teki gibidir; istek düzeyinde hata mı, işlem sonucu mu olduğu Doğrulanacak |
 
 ## 7. EF Core 10 ve Npgsql
 
 - `IcerikDbContext` bütün tabloları eşler; API ve Yayınlayıcı aynı bağlamı kullanır. Adlar `EFCore.NamingConventions` ile snake_case'tir; tablo adları tekildir ve `ToTable("source")` gibi açıkça yazılır. Identity tabloları ayrı `kimlik` şemasında durur (uygulandı, A07; K-37). `icerik` şemasındaki anahtar, yabancı anahtar ve tekil dizin adları PostgreSQL'in varsayılan adlarıdır (`{tablo}_pkey` …); ayrıntı [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §12.
-- PostgreSQL enum türleri (`license_status`, `xref_status`, `inceleme_durumu`, `derleme_turu`, `surum_durumu` …) C# enum'larına bağlanır (`IcKullanim` → `ic_kullanim`). Her tür `HasPostgresEnum(şema, ad, etiketler)` ile açık sırayla tanımlanır; `MapEnum` yalnız ad çevirmenidir, çünkü Npgsql 10 `MapEnum` etiketleri alfabetik dizer ([efcore.pg #3667](https://github.com/npgsql/efcore.pg/issues/3667)). `SetPostgresVersion(18, 0)` verilir. Bir Domain testi her değerin etiketini, bir PostgreSQL testi `pg_enum` sırasını JSON ile karşılaştırır.
-- **Uygulandı (A06, 2026-10-26): etiket eşlemesi Domain'de saftır.** `Mutalaa.Domain/Licensing` içinde `LicenseStatus` ve `BuildFlavor`, `Content` içinde `SourceKind`, `Links` içinde `XrefType`, `XrefStatus` ve `XrefOrigin` bulunur. Her enum için aynı dosyada `...Labels` sınıfı vardır: `ToLabel` (açık `switch`; tanımsız sayısal değerde `ArgumentOutOfRangeException`) ve `TryParseLabel` (Ordinal, büyük-küçük harfe duyarlı, kırpmasız). Yansıma, `Enum.ToString` ve kültürlü dönüşüm yoktur; Domain Npgsql'e bağlanmaz. Bildirim sırası `packages/content-schema/enums.json` sırasıdır ve sayısal değerler bu sıradır (`Serbest = 0` … `Kapali = 3`). `EnumLabelTests` her JSON türünü ve sırasını sınar. **Uygulandı (A07, 27 Ekim 2026):** Npgsql eşlemesi (veritabanı etiketi ↔ C# enum) `Mutalaa.Infrastructure/Persistence/PostgresEnums` içindedir; `PostgresEnumTests` PostgreSQL etiketlerini ve sırasını `enums.json` ile karşılaştırır.
-- **A13 için not (kod incelemesi bulgusu):** `TryParseLabel` başarısız olunca `value = default` verir; `LicenseStatus` için bu en gevşek değer `Serbest`'tir. Lisans kapısı (A13) `TryParseLabel`'in `bool` dönüşünü zorunlu denetlemeli, yalnız `out` değerine bakmamalıdır; başarısız ayrıştırma kapıyı kapalı (en kısıtlayıcı) sonuçlandırmalıdır (öneri; kapı tasarımı A13'tedir).
+- PostgreSQL enum türleri (10 tür: `source_kind`, `xref_type`, `xref_status`, `xref_origin`, `derleme_turu`, `unit_kind`, `unit_status`, `metin_durumu`, `inceleme_durumu`, `surum_durumu`) C# enum'larına bağlanır (`TextStatus.Incelemede` → `incelemede`). Her tür `HasPostgresEnum(şema, ad, etiketler)` ile açık sırayla tanımlanır; `MapEnum` yalnız ad çevirmenidir, çünkü Npgsql 10 `MapEnum` etiketleri alfabetik dizer ([efcore.pg #3667](https://github.com/npgsql/efcore.pg/issues/3667)) ve anlamlı sırayı bozar (`metin_durumu` sırası `taslak`, `incelemede`, `onayli`'dir; alfabetik sıra `incelemede`, `onayli`, `taslak` olurdu). `SetPostgresVersion(18, 0)` verilir. Bir Domain testi her değerin etiketini, bir PostgreSQL testi `pg_enum` sırasını JSON ile karşılaştırır.
+- **Uygulandı (A06, 26 Ekim 2026; A07, 27 Ekim 2026): etiket eşlemesi Domain'de saftır.** `Mutalaa.Domain/Releases` içinde `BuildFlavor` ve `ReleaseStatus`, `Content` içinde `SourceKind`, `UnitKind`, `UnitStatus` ve `TextStatus`, `Links` içinde `XrefType`, `XrefStatus` ve `XrefOrigin`, `Reviews` içinde `ReviewStatus` bulunur. Her enum için aynı dosyada `...Labels` sınıfı vardır: `ToLabel` (açık `switch`; tanımsız sayısal değerde `ArgumentOutOfRangeException`) ve `TryParseLabel` (Ordinal, büyük-küçük harfe duyarlı, kırpmasız). Yansıma, `Enum.ToString` ve kültürlü dönüşüm yoktur; Domain Npgsql'e bağlanmaz. Bildirim sırası `packages/content-schema/enums.json` sırasıdır ve sayısal değerler bu sıradır (`Taslak = 0`, `Incelemede = 1`, `Onayli = 2`). `EnumLabelTests` her JSON türünü ve sırasını sınar. Npgsql eşlemesi (veritabanı etiketi ↔ C# enum) `Mutalaa.Infrastructure/Persistence/PostgresEnums` içindedir; `PostgresEnumTests` PostgreSQL etiketlerini ve sırasını `enums.json` ile karşılaştırır.
+- **A13 için not (kod incelemesi bulgusu):** `TryParseLabel` başarısız olunca `value = default` verir; `BuildFlavor` için bu en gevşek görünürlük olan `Dev`'dir. Kalite kapısı (A13) `TryParseLabel`'in `bool` dönüşünü zorunlu denetlemeli, yalnız `out` değerine bakmamalıdır; başarısız ayrıştırma kapıyı kapalı (en kısıtlayıcı: `public`) sonuçlandırmalıdır (öneri; kapı tasarımı A13'tedir).
 - Çapa sütunları `AnchorRef` değer dönüştürücüsüyle bağlanır; zaman `timestamptz` ve UTC'dir; eşzamanlılık belirteci `xmin`'dir. **Çözüldü (27 Ekim 2026):** `xmin` gölge `uint` özelliktir (`IsRowVersion()`, `xid`); göçte sütun üretilmez ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §12). Dönüştürülmüş çapa sütunlarında LINQ `LIKE` ve aralık işleci çevrilmez; bu sorgular ham SQL ya da `AsNoTracking()` ile projeksiyon kullanır (A13, A14).
 - Okumalar `AsNoTracking()` ile, toplu karar `ExecuteUpdateAsync` ile, ham SQL yalnız parametreli `FromSql` ile yazılır. `ExecuteUpdateAsync` `xmin` denetimi (`WHERE xmin = …`) eklemez ve `updated_at` değerini kendiliğinden yazmaz: `UpdatedAtInterceptor` yalnız `SaveChanges`te çalışır. Toplu kararda `If-Match` karşılaştırması ve `updated_at = now()` SQL'e açıkça yazılır.
 
@@ -178,7 +175,7 @@ Hat ve editör önerileri tek `review` tablosundan geçer. Onay `onerilen` değe
 ## 8. Günlük ve telemetri
 
 - Serilog konsola yazar (geliştirmede okunur biçim, konteynerde sıkıştırılmış JSON); `UseSerilogRequestLogging` her isteği tek satırla kaydeder. OpenTelemetry iz ve ölçüleri ASP.NET Core, HttpClient ve Npgsql'den toplar; dışa aktarım yalnız `OTEL_EXPORTER_OTLP_ENDPOINT` verilirse açılır.
-- Günlüğe parola, belirteç, çerez, not içeriği ve e-posta yazılmaz; v1.x'te IP saklama süresi [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) ile belirlenir.
+- Günlüğe parola, belirteç, çerez, not içeriği ve e-posta yazılmaz; v1.x'te IP saklama süresi [Gizlilik](../07-yayin/02-gizlilik.md) ile belirlenir.
 
 ## 9. Kültürden bağımsız metin işleme
 
@@ -219,12 +216,12 @@ NFC `LowerTurkish` içinde değildir; yalnız `SplitScripts` ön adımında, bö
 
 | Komut | İş |
 |---|---|
-| `publish --flavor <dev\|internal\|public> [--pack <id>]… [--dry-run]` | Derleme, imza ve yükleme tek adımda; `--dry-run` yalnız kapı raporu üretir |
-| `build --flavor <f> [--out <klasör>]` | Kapı, paket, sha256, imzalı manifest; varsayılan çıktı `data/packs/{flavor}/{surum}/` |
+| `publish --flavor <dev\|internal\|public> [--pack <id>]… [--dry-run]` | Derleme, imza ve yükleme tek adımda; `--dry-run` yalnız kalite kapısı raporu üretir |
+| `build --flavor <f> [--out <klasör>]` | Kalite kapısı, paket, sha256, imzalı manifest; varsayılan çıktı `data/packs/{flavor}/{surum}/` |
 | `upload --flavor <f> --surum <s>` | Üretilmiş yayını depoya yükler |
-| `promote --surum <s> --to public` | İç kanalda test edilen yayını `public` için derler ve yükler |
+| `promote --surum <s> --to public` | İç kanalda test edilen yayını `public` için derler ve yükler (yalnız kullanıcı kararıyla) |
 | `rollback --flavor <f> --to <surum>` | Manifesti geçmişteki yayına çevirir |
-| `verify --flavor <f> [--manifest <yol>] [--embedded-core <yol>]` | İmza, şema, adres, boyut, sha256 ve kapı kurallarını yeniden denetler ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) §5) |
+| `verify --flavor <f> [--manifest <yol>] [--embedded-core <yol>]` | İmza, şema, adres, boyut, sha256 ve kalite kapısı kurallarını yeniden denetler ([Yayın süreci](../07-yayin/01-yayin-sureci.md) §5) |
 | `watch` | API'nin `hazirlaniyor` bıraktığı talepleri sırayla işler |
 | `keys generate --flavor <f>` | Ed25519 anahtar çifti; özel anahtar kullanıcı sırlarına, açık anahtar ekrana (öneri) |
 
@@ -238,7 +235,7 @@ NFC `LowerTurkish` içinde değildir; yalnız `SplitScripts` ön adımında, bö
 flowchart TD
   A["release: hazirlaniyor"] --> B["Kilit: pg_try_advisory_lock, FOR UPDATE SKIP LOCKED"]
   B --> C["Anlık görüntü: REPEATABLE READ"]
-  C --> D["Lisans kapısı: kaynak, veri seti, bağlantı"]
+  C --> D["Kalite kapısı: kaynak kaydı, birim durumu, bağlantı"]
   D -->|"red"| X["kapi_raporu yazılır, çıkış 2"]
   D -->|"geçti"| E["Paket başına content_digest"]
   E -->|"son sürümle aynı"| F["Önceki sürüm manifestte kalır"]
@@ -254,31 +251,30 @@ flowchart TD
 
 ### 10.3 Kapı kontrolleri
 
+Kalite kapısı kaynak kaydına ve editoryal kaliteye bakar ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5). Kural kodları ve metinleri [Yayın süreci](../07-yayin/01-yayin-sureci.md) §4 ile aynıdır.
+
 | Kod | Kural | Derleme |
 |---|---|---|
-| P-01 | Kaynak kaydı olmayan ya da `kapali` kaynaklı içerik hiçbir pakete girmez | Hepsi |
-| P-02 | `kisitlar.hazir_vt_yasak` taşıyan kaynak hiçbir pakete girmez (QF şartları) | Hepsi |
-| P-03 | Paketin durumu kaynaklarının en kısıtlayıcısıdır (`serbest` < `bekliyor` < `ic_kullanim` < `kapali`). `public` ve `internal` yalnız `serbest` alır; `bekliyor` ve `ic_kullanim` yalnız ekip içi `dev` derlemesine girer (K-06, 18 Ekim 2026 güncellemesi; `LicenseGate.Check`, [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) §4) | Hepsi |
-| P-04 | `kurul_gerekli` kaynakta `kurul_onay` doludur ve yayının içerik özeti `source.kurul_onay_ozeti` ile aynıdır; değilse paket kapı raporunda "girmedi" olur ve `public` derleme durur: manifest yayımlanmaz, çıkış kodu `2` ([Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) §4) | public |
-| P-05 | Kapı veri setlerine de uygulanır. QAC kaynaklı kök ve lemma verisi `core` paketine yazılmaz; kendi lisans durumuyla ayrı pakete (öneri `kelime-kok`) yazılır ve kaynak `bekliyor` kaldıkça `public`'e girmez (K-06 uygulama notu) | Hepsi |
-| P-06 | `embed_ok = false` kaynaktan türeyen gömme vektörü ve `anlamsal` bağlantı pakete girmez; Quran Foundation içeriği hiç gömülmez ([Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md)) | Hepsi |
-| P-07 | Bağlantı üç koşulla girer: kaynak eser görünür; hedef eser görünür ya da ayrı kayıtlı bir dizine aittir; `xref.license` derlemeye izin verir. `red` hiç girmez; `aday` yalnız `dev` ve `internal`'a girer | Hepsi |
+| P-01 | Kaynak kaydı olmayan içerik hiçbir pakete girmez | Hepsi |
+| P-07 | Bağlantı: kaynak eser görünür; hedef eser görünür ya da ayrı kayıtlı bir dizine ait; `red` hiç girmez; insan onayı isteyen türün (`atif`, `iktibas`, `ima`, `konu`) `aday` satırı yalnız `dev` ve `internal`'a girer, otomatik türler (`kok`, `lemma`, `benzer_ayet`, `anlamsal`) `confidence ≥ 0,50` ile her derlemeye girer | Hepsi |
 | P-08 | Onaysız yapay zekâ taslağı `public`'e girmez; iç derlemelere "doğrulanmamış" işaretiyle girer | public |
 | P-09 | `quran_word_fix`, `tr_root_index` ve `tr_form` satırlarından yalnız onaylılar uygulanır | Hepsi |
 | P-10 | Yalnız `metin_durumu = onayli` birimler `public`'e girer | public |
-| P-11 | Tanzil birimlerinin `content_hash` değeri ham Tanzil dosyasından yeniden hesaplananla aynıdır (değiştirme yasağı); her kaynağın `atif_metni` ve `atif_url` değeri pakete aynen yazılır ([Lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md)) | Hepsi |
-| P-12 | Slug'ı `test-` ile başlayan kaynak `public`'e girmez | public |
-| P-13 | `depends_on` döngüsüzdür; her bağımlılık aynı manifestte görünür | Hepsi |
-| P-14 | Terfide kaynakların içerik özetleri iç kanalda test edilen yayındakiyle aynıdır | public |
+| P-11 | Tanzil birimlerinin `content_hash` değeri ham dosyadan yeniden hesaplananla aynı; her kaynağın `atif_metni` ve `atif_url` değeri pakete aynen yazılır | Hepsi |
+| P-12 | Slug'ı `test-` ile başlayan kaynak `public`'e girmez; `internal`'a yalnız uçtan uca fikstürler (`test-kucuk`, `test-ses`) girer | public, internal |
+| P-13 | `depends_on` döngüsüz; her bağımlılık aynı manifestte | Hepsi |
+| P-14 | Terfide içerik özetleri iç kanalda test edilen yayınla aynı | public |
 
-Kapı raporu her paket ve kaynak için "girdi" ya da "girmedi" kararını kural koduyla `release.kapi_raporu` sütununa yazar.
+Kural kodları sabittir; yeniden numaralanmaz. Kapı raporu her paket ve kaynak için "girdi" ya da "girmedi" kararını kural koduyla `release.kapi_raporu` sütununa yazar. `public` kuru çalıştırması (`publish --flavor public --dry-run`) 0 ile biter.
+
+P-10 ile K-38 uyumludur. Hazır ve çıkarılmış metinler `taslak` girer (`onayli` ile giriş yalnız Tanzil gibi kanonik başvuru kaynakları içindir); bu yüzden editör onayından geçmeden `public` derlemeye girmezler. Meal ve tefsirde ikinci onay da aranır ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme), madde 4; [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §4). Kapı kuralının kendisi değişmez.
 
 ### 10.4 Paket yazımı
 
 1. `{pack_id}-{version}.db.tmp` açılır; derleme süresince `PRAGMA page_size=4096; journal_mode=OFF; synchronous=OFF`.
 2. DDL `packages/content-schema/sql/` altından çalışır; `PRAGMA user_version` şema sürümüdür.
 3. Satırlar çapa sırasıyla tek işlemde, hazırlanmış komutlarla yazılır. FTS5 tabloları doldurulur; `'rebuild'` ve `'optimize'` çalışır ([Arama](../03-veri/05-arama-fts5.md)).
-4. `pack_meta` anahtarları [İçerik paketleri](../03-veri/03-icerik-paketleri.md) §3'teki listeyle yazılır (`content_digest`, `kurul_gerekli`, `normalizer_version` dahil). Ardından `ANALYZE`, `VACUUM`, `PRAGMA journal_mode=DELETE`.
+4. `pack_meta` anahtarları [İçerik paketleri](../03-veri/03-icerik-paketleri.md) §3'teki listeyle yazılır (`content_digest`, `normalizer_version` dahil). Ardından `ANALYZE`, `VACUUM`, `PRAGMA journal_mode=DELETE`.
 5. Öz denetim: `PRAGMA integrity_check` sonucu `ok`; beklenen tablolar var; `q:2:255` ve bir FTS sorgusu sonuç döner.
 6. Bağlantı kapanır (`Pooling=False`; Windows açık dosyayı taşıtmaz), dosya `.db` adına taşınır, sha256 ve boyut hesaplanır (`SHA256.HashDataAsync`, `Convert.ToHexStringLower`).
 
@@ -287,8 +283,8 @@ Açılışta `PRAGMA compile_options` içinde `ENABLE_FTS5` aranır; yoksa Yayı
 ### 10.5 Sürüm, özet, imza ve depo düzeni
 
 - **Sürüm** CalVer `YYYY.M.N` biçimindedir ve yayının `surum` değerinden gelir. İçeriği değişmeyen paket önceki sürümünü korur ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) §6).
-- **`content_digest`**: paket şema sürümü, `normalizer_version`, pakete giren kaynakların içerik özetleri ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §10), giren bağlantıların `id`, `status`, `data_version` değerleri ve lisans alanları üzerinden SHA-256.
-- **Manifest** [İçerik paketleri](../03-veri/03-icerik-paketleri.md) §5 alanlarını taşır, paket başına `kurul_gerekli` dahil. `url` mutlaktır: `{PublicBaseUrl}/packs/{flavor}/{pack_id}/{version}/{pack_id}-{version}.db`.
+- **`content_digest`**: paket şema sürümü, `normalizer_version`, pakete giren kaynakların içerik özetleri ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §10), giren bağlantıların `id`, `status` ve `data_version` değerleri üzerinden SHA-256.
+- **Manifest** [İçerik paketleri](../03-veri/03-icerik-paketleri.md) §5 alanlarını taşır: paket satırı `pack_id, version, sha256, size_bytes, min_app_version, depends_on, url` (ek olarak `schema_version`, `title`, `bundled`). `url` mutlaktır: `{PublicBaseUrl}/packs/{flavor}/{pack_id}/{version}/{pack_id}-{version}.db`.
 - **İmza** (`signature: {alg, kid, value}`) her derleme türünde zorunludur. İmzasız ya da imzası tutmayan manifesti `verify` reddeder, uygulama yok sayar; `public` derlemede bu kural gevşetilmez. Girdi, `signature` alanı çıkarılmış manifestin kanonik JSON biçimidir (öneri RFC 8785 JCS). Her derleme türünün ayrı anahtarı vardır; açık anahtarlar uygulamaya gömülür. Algoritma, kanonikleştirme ve .NET kitaplığı (NSec ya da BouncyCastle) Doğrulanacak.
 
 | Nesne | Anahtar | `Cache-Control` |
@@ -306,12 +302,12 @@ Açılışta `PRAGMA compile_options` içinde `ENABLE_FTS5` aranır; yoksa Yayı
 
 - `release.durum`: `hazirlaniyor` → `dogrulandi` (paketler ve imzalı manifest hazır) → `yayinlandi` → `geri_cekildi`. Başarısız deneme `basarisiz` olarak işaretlenir ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md), `surum_durumu`); hata `kapi_raporu` içindedir ve aynı talep yeni bir `release` satırıyla yeniden denenir.
 - Aynı anda tek Yayınlayıcı çalışır (`pg_try_advisory_lock`); `watch` kaydı `FOR UPDATE SKIP LOCKED` ile alır. Paket anahtarları değişmediği ve manifest en son yazıldığı için yarıda kalan komut kaldığı yerden sürer.
-- **Terfi:** `promote`, test edilen yayının `surum` değeriyle `public` derlemesi üretir (`(surum, derleme)` tekildir); P-14 içerik özetlerini karşılaştırır.
+- **Terfi:** `promote`, test edilen yayının `surum` değeriyle `public` derlemesi üretir (`(surum, derleme)` tekildir); yalnız kullanıcı kararıyla çalışır. P-14 içerik özetlerini karşılaştırır.
 - **Geri alma:** `rollback` geçmişteki yayını yeni bir imzalı manifest olarak yazar ve geri alınan yayını `geri_cekildi` yapar. Paketler silinmediği için anında çalışır; uygulama manifesti istenen durum sayar.
 
 ## 11. Test
 
-Domain testleri test vektörlerini, `LicenseGate` matrisini ve `tr-TR` kültüründe yeniden koşumu kapsar. API testleri `WebApplicationFactory` ve Testcontainers `postgres:18` ile her uçta yetki matrisini ve ikinci onay akışını sınar. Yayınlayıcı testleri fikstür veritabanından üç derleme üretir; P-01…P-14, FTS sorgusu, aynı girdide aynı `content_digest` ve imza doğrulaması denetlenir ([Test stratejisi](../07-yayin/03-test-stratejisi.md)).
+Domain testleri test vektörlerini, kalite kapısı kurallarının derleme türü × içerik durumu matrisini ve `tr-TR` kültüründe yeniden koşumu kapsar. API testleri `WebApplicationFactory` ve Testcontainers `postgres:18` ile her uçta yetki matrisini ve ikinci onay akışını sınar. Yayınlayıcı testleri fikstür veritabanından üç derleme üretir; P-01 ve P-07…P-14, FTS sorgusu, aynı girdide aynı `content_digest` ve imza doğrulaması denetlenir ([Test stratejisi](../07-yayin/03-test-stratejisi.md)).
 
 ## 12. Açık sorular
 
@@ -319,12 +315,17 @@ Domain testleri test vektörlerini, `LicenseGate` matrisini ve `tr-TR` kültür�
 2. **Çözüldü (19 Ekim 2026):** `surum_durumu` türü başarısız yayın için `basarisiz` değerini taşır ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) §2 ve §10).
 3. v1.x'te kullanıcı veritabanının editoryal veritabanından ayrılması ve oy aktarım sıklığı ([Genel mimari](./01-genel-mimari.md)).
 4. İmza algoritması, JSON kanonikleştirme, anahtar saklama ve değişimi ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) IP-7).
-5. **Çözüldü (19 Ekim 2026):** paket adı `kelime-kok`; `tr_form` bu pakettedir. `tr_root_index` QAC'ye bağlıdır: `core`'daki meal birimleri için `kelime-kok`'ta, diğer metin paketlerinde kendi paketinde, Risale için `risale-dizin`'de durur ve kaynağın lisansıyla süzülür ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) §1, §3.2, §3.3).
-6. Hesap silmede bekleme süresi (eski planda 30 gün) ve IP saklama süresi ([KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md)).
+5. **Çözüldü (19 Ekim 2026):** paket adı `kelime-kok`; `tr_form` bu pakettedir. `tr_root_index` QAC'ye bağlıdır: `core`'daki meal birimleri için `kelime-kok`'ta, diğer metin paketlerinde kendi paketinde, Risale için `risale-dizin`'de durur ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) §1, §3.2, §3.3).
+6. Hesap silmede bekleme süresi (eski planda 30 gün) ve IP saklama süresi ([Gizlilik](../07-yayin/02-gizlilik.md)).
+
+## 13. Ses (K-41)
+
+- **v1'de ses için API ucu yoktur.** Uygulama ses kataloğunu ve zamanlamayı paketlerden (`ses-katalog`, `ses-zaman-{kayit}`), ses dosyalarını içerik deposundaki aynadan (`audio/{kayit}/{dosya_surumu}/{sss}.mp3`) alır; ASP.NET arka ucu ses baytlarını iletmez ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme), [Ses sistemi](../06-mobil/02-ses-sistemi.md)).
+- **Yayınlayıcı** ses paketlerini üretir ve ayna dosyalarını depoya yükler (A27.2). Ses kaynaklarının kaynak kaydı (P-01) ve atıf satırı (P-11) pakete yazılır; `test-ses` kaynağı yalnız `dev` ve `internal` derlemesine girer (P-12).
 
 ## İlgili dosyalar
 
 - [Genel mimari](./01-genel-mimari.md) · [Teknoloji yığını](./02-teknoloji-yigini.md) · [Proje yapısı](./03-proje-yapisi.md) · [Yerel geliştirme](./04-yerel-gelistirme.md)
 - [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md) · [İçerik paketleri](../03-veri/03-icerik-paketleri.md) · [Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md) · [Arama](../03-veri/05-arama-fts5.md)
 - [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) · [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) · [Anlamsal katman](../05-capraz-referans/04-anlamsal-katman.md)
-- [Yayın kapısı ve Kurul](../07-yayin/01-yayin-kapisi-ve-kurul.md) · [KVKK ve gizlilik](../07-yayin/02-kvkk-ve-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)
+- [Yayın süreci](../07-yayin/01-yayin-sureci.md) · [Gizlilik](../07-yayin/02-gizlilik.md) · [Test stratejisi](../07-yayin/03-test-stratejisi.md)

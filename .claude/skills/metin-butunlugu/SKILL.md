@@ -18,7 +18,7 @@ Kaynaklar: [Çapa şeması](../../../docs/03-veri/01-capa-semasi.md) §7–§8, 
 | Kaynaktan alınan (Tanzil Uthmani ve Simple Clean, hazır Arapça hadis metinleri) | Kaynağın dağıttığı hâliyle, bayt bayt saklanır. NFC dahil hiçbir dönüşüm yok. Birim metni kaynak dosyanın aynen bir parçasıdır: `kaynak[başlangıç:bitiş] == unit.text`. |
 | Kendi ürettiğimiz (Elmalılı ve Risale transkripsiyonu, Naim aktarımı, kelime anlamları) | İlk kayıtta bir kez kanonikleştirilir, sonra değişmez. |
 
-Neden: Tanzil şartları metni değiştirmeyi yasaklar ve NFC şedde ile harekenin sırasını değiştirir (U+0651 U+064E → U+064E U+0651).
+Neden: NFC şedde ile harekenin sırasını değiştirir (U+0651 U+064E → U+064E U+0651).
 
 **Kendi metnimizde ilk kayıt adımları (bu sırayla; K-35 madde 7):**
 1. Silinir: U+FEFF, U+00AD, U+200E, U+200F, U+202A–U+202E, U+2066–U+2069, U+061C. Korunur: U+200C, U+200D.

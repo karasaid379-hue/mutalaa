@@ -16,16 +16,17 @@ public partial class ModelSqlTests
         GeneratedSql.All.Single(s => s.StartsWith($"CREATE TABLE icerik.{table} (", StringComparison.Ordinal));
 
     [Fact]
-    public void License_status_enum_is_created_in_the_documented_label_order()
+    public void Metin_durumu_enum_is_created_in_the_documented_label_order()
     {
+        // Sayisal sira alfabetik degildir (alfabetik: incelemede, onayli, taslak).
         Assert.Contains(
-            "CREATE TYPE icerik.license_status AS ENUM ('serbest', 'bekliyor', 'ic_kullanim', 'kapali');",
+            "CREATE TYPE icerik.metin_durumu AS ENUM ('taslak', 'incelemede', 'onayli');",
             Sql,
             StringComparison.Ordinal);
     }
 
     [Fact]
-    public void All_eleven_enum_types_are_created_in_enums_json_label_order()
+    public void All_ten_enum_types_are_created_in_enums_json_label_order()
     {
         Dictionary<string, string[]> json = EnumsJson.Load();
         foreach ((string name, string[] labels) in json.Select(e => (e.Key, e.Value)))
@@ -34,7 +35,7 @@ public partial class ModelSqlTests
             Assert.Contains(expected, Sql, StringComparison.Ordinal);
         }
 
-        Assert.Equal(11, TypeStatement().Matches(Sql).Count);
+        Assert.Equal(10, TypeStatement().Matches(Sql).Count);
     }
 
     [GeneratedRegex(@"CREATE TYPE icerik\.[a-z_]+ AS ENUM", RegexOptions.CultureInvariant)]
@@ -54,10 +55,14 @@ public partial class ModelSqlTests
     public void Ddl_defaults_are_written_into_the_migration()
     {
         string source = CreateTable("source");
-        Assert.Contains("license_status icerik.license_status NOT NULL DEFAULT 'bekliyor'::icerik.license_status", source, StringComparison.Ordinal);
-        Assert.Contains("kisitlar jsonb NOT NULL DEFAULT '{}'", source, StringComparison.Ordinal);
-        Assert.Contains("embed_ok boolean NOT NULL DEFAULT FALSE", source, StringComparison.Ordinal);
         Assert.Contains("created_at timestamp with time zone NOT NULL DEFAULT (now())", source, StringComparison.Ordinal);
+        Assert.Contains("updated_at timestamp with time zone NOT NULL DEFAULT (now())", source, StringComparison.Ordinal);
+
+        string gloss = CreateTable("lemma_gloss");
+        Assert.Contains("kuran_anlamlari jsonb NOT NULL DEFAULT '[]'", gloss, StringComparison.Ordinal);
+        Assert.Contains("yalnizca_etimolojik boolean NOT NULL DEFAULT FALSE", gloss, StringComparison.Ordinal);
+        Assert.Contains("status icerik.xref_status NOT NULL DEFAULT 'aday'::icerik.xref_status", gloss, StringComparison.Ordinal);
+        Assert.Contains("evidence jsonb NOT NULL DEFAULT '{}'", CreateTable("xref"), StringComparison.Ordinal);
 
         string unit = CreateTable("unit");
         Assert.Contains("role text NOT NULL DEFAULT 'govde'", unit, StringComparison.Ordinal);

@@ -1,7 +1,7 @@
-# A04 · Çapa grameri ve ortak test vektörleri (TS, C#, Python)
+# A04 · Çapa grameri ve ortak test vektörleri
 
-> **Sürüm:** 1.1 · **Tarih:** 25 Ekim 2026 · **Durum:** Tamam (2026-10-25) · **Bağlı kararlar:** [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-07](../../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek)
-> **Faz:** 0 · Hazırlık · **Önkoşul:** [A02](./A02-tek-depo-iskeleti.md) · **İnsan adımı:** yok
+> **Sürüm:** 1.2 · **Tarih:** 1 Kasım 2026 · **Durum:** Tamam (2026-10-25) · **Bağlı kararlar:** [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-07](../../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
+> **Faz:** 0 · Hazırlık · **Önkoşul:** [A02](./A02-tek-depo-iskeleti.md) · **İnsan adımı:** —
 > **Ajanlar:** `web-gelistirici` · `sunucu-gelistirici` · `hat-gelistirici` · `test-yazari` · `metin-denetcisi` · `arastirmaci` · `inceleyici` · **Beceriler:** `capa-gramer` · `test-vektoru` · `metin-butunlugu` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A04`
 
@@ -11,7 +11,7 @@ Kalıcı adres grameri (K-26) üç dilde aynı davranışla yazılır ve ortak t
 ## Okunacak belgeler
 - [Çapa şeması](../../03-veri/01-capa-semasi.md): tamamı (§2 gramer ve anlam kuralları, §3 desenler, §4 örnekler, §7 kanonik metin, §8 ofsetler, §11 API ve dil karşılıkları)
 - [Proje yapısı](../../02-mimari/03-proje-yapisi.md): §1.2 vektör biçimi, §3 paylaşılan kodun yeri, §4.1 `shared/test-vectors` paketi
-- [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §2 (örnekler ve tuzaklar; dosya adları eski, aşağıdaki düzen geçerli)
+- [Test stratejisi](../../07-yayin/03-test-stratejisi.md): §2 (ortak test vektörleri: örnekler ve tuzaklar)
 - [Backend API](../../02-mimari/05-backend-api.md): §2 (`Anchors/`, `Text/`), §9 kültürden bağımsızlık
 - [Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md): §10.2 (BOM, `Rune`, ofsetler)
 
@@ -28,11 +28,18 @@ Kalıcı adres grameri (K-26) üç dilde aynı davranışla yazılır ve ortak t
 - Tanzil üst verisinin kalıcı alımı ve dizinin Tanzil metniyle çapraz denetimi (A10, A11).
 - EF Core değer dönüştürücüsü (A07). Hermes'te vektör koşumu ve öz test ekranı (A21, A32). Yeniden çapalama (A30).
 
+## Tedarik
+| Gerekli yapı | Seçilen kaynak (ad, adres, sürüm ya da commit, biçim) | Alma yolu | Eksiksizlik kanıtı | Yedek aday |
+|---|---|---|---|---|
+| Sure başına âyet sayısı (114 elemanlı dizinin kaynağı) | Tanzil Quran Metadata: [`quran-data.xml`](https://tanzil.net/res/text/metadata/quran-data.xml), sürüm 1.0 ([belge sayfası](https://tanzil.net/docs/quran_metadata)); 77.234 bayt, SHA-256 `8867c1d88191472adec9db694b3cd9f135b1a2ef580574d32cf888dcb22c5c7a` | `hat-gelistirici` dosyayı 2026-10-24'te `.tmp/tanzil-ust-veri/` altına indirdi; `uv run mutalaa export ayet-sayilari` diziyi ve üç dildeki kopyayı üretir; kalıcı alım A11'dedir | 114 eleman, toplam 6.236, 2. sure 286; üç dilin dizi testi ve `export ayet-sayilari --check` geçiyor | — (A10 ve A11'de Tanzil metniyle çapraz denetlenir) |
+| Çapa, ofset ve `content_hash` uygulamaları | Çapa grameri projeye özgüdür ([Çapa şeması](../../03-veri/01-capa-semasi.md)); üç dilin standart kitaplıkları: TypeScript (yerleşik dize işlevleri), C# (`System.Text.Rune`, `SHA256`), Python (`re`, `hashlib`, `unicodedata`) | A02'de kurulan Vitest, xunit.v3 ve pytest altyapısı; yeni dış bağımlılık eklenmez | Yedi vektör dosyası (560 satır) üç dilde yeşil (aşama kaydı) | — |
+| Test vektörleri | Elle yazılan sentetik JSONL; hesaplanan alanlar `uv run mutalaa export test-vectors` ile üretilir; Kur'an, meal, hadis ve Risale metni vektöre girmez | Depodaki `shared/test-vectors/` | `export test-vectors --check` ve `@mutalaa/test-vectors` biçim denetleyicisi geçiyor | — |
+
 ## Adımlar
 ### A04.1 · Âyet sayısı dizisi (Tanzil üst verisi)
-- `arastirmaci` Tanzil üst veri dosyasının resmî adresini, biçimini ve kullanım şartını doğrular. Adres hafızadan yazılmaz. **Çözüldü (2026-10-24):** belge sayfası [tanzil.net/docs/quran_metadata](https://tanzil.net/docs/quran_metadata); dosya [`quran-data.xml`](https://tanzil.net/res/text/metadata/quran-data.xml) (sürüm 1.0). Kullanım şartı belirsiz: dosyadaki lisans satırı CC BY 3.0, Tanzil SSS'si ise "non-commercial purposes" diyor. Kullanıcı kararı D1: devam edilir ve belirsizlik kayda geçer ([lisans defteri §3.1](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md); soru [Tanzil taslağı](../../yazismalar/tanzil-arama-metni.md) 2. soru, [İ-08](../06-insan-adimlari.md)). Hukuki görüş değildir.
+- `arastirmaci` Tanzil üst veri dosyasının resmî adresini ve biçimini doğrular. Adres hafızadan yazılmaz. **Çözüldü (2026-10-24):** belge sayfası [tanzil.net/docs/quran_metadata](https://tanzil.net/docs/quran_metadata); dosya [`quran-data.xml`](https://tanzil.net/res/text/metadata/quran-data.xml) (sürüm 1.0).
 - `hat-gelistirici` dosyayı `.tmp/tanzil-ust-veri/` altına indirir ve SHA-256'sını hesaplar. `data/raw` altına yazılmaz; kalıcı alım A11'dedir.
-- Üretici `uv run mutalaa export ayet-sayilari --kaynak <xml> --url <adres> --tarih <YYYY-AA-GG> [--check]` sure başına âyet sayısını dosyadan okur (sure adlarını okumaz; DOCTYPE/ENTITY ve UTF-16/NUL girdiyi reddeder) ve `shared/data/ayet-sayilari.json` yazar: `kaynak_url`, `alinma_tarihi`, `sha256`, `lisans`, `telif`, `surum`, 114 elemanlı `sayilar`. Aynı komut üç kopyayı üretir: `packages/anchors/src/generated/ayet-sayilari.ts`, `pipeline/src/mutalaa_pipeline/anchor/ayet_sayilari.py`, `server/Mutalaa.Domain/Anchors/AyetSayilari.g.cs`. `--check` yazmadan diskle karşılaştırır; fark varsa 1 ile çıkar. Üretilmiş dosyalar elle düzenlenmez.
+- Üretici `uv run mutalaa export ayet-sayilari --kaynak <xml> --url <adres> --tarih <YYYY-AA-GG> [--check]` sure başına âyet sayısını dosyadan okur (sure adlarını okumaz; DOCTYPE/ENTITY ve UTF-16/NUL girdiyi reddeder) ve `shared/data/ayet-sayilari.json` yazar: `kaynak_url`, `alinma_tarihi`, `sha256`, `surum`, 114 elemanlı `sayilar`. Aynı komut üç kopyayı üretir: `packages/anchors/src/generated/ayet-sayilari.ts`, `pipeline/src/mutalaa_pipeline/anchor/ayet_sayilari.py`, `server/Mutalaa.Domain/Anchors/AyetSayilari.g.cs`. `--check` yazmadan diskle karşılaştırır; fark varsa 1 ile çıkar. Üretilmiş dosyalar elle düzenlenmez.
 - Her dilde test: 114 eleman, toplam 6.236, 2. sure 286 (Çapa şeması §2 ve §4); kopya JSON'la aynı.
 - **Bitti sayılır:** JSON ve üç kopya depoda; üç dilin dizi testi yeşil.
 
@@ -95,7 +102,7 @@ pnpm --filter @mutalaa/test-vectors build
 pnpm --filter @mutalaa/anchors test
 LANG=tr_TR.UTF-8 pnpm --filter @mutalaa/anchors test
 dotnet test --solution server/Mutalaa.slnx
-(cd pipeline && uv run pytest && uv run ruff check . && uv run mypy src && uv run mutalaa export test-vectors --check)
+uv --directory pipeline run pytest && uv --directory pipeline run ruff check . && uv --directory pipeline run mypy src && uv --directory pipeline run mutalaa export test-vectors --check
 for g in 'q:1:1' 'q:2:255:3-7' 'q:2:255-257' 'konu:tevhid' 'meal:elmalili:2:255@10-48' \
          'tf:elmalili:2-255-257:p3' 'tf:elmalili:2-255-255:p1' 'tf:elmalili:mukaddime:p4' \
          'tf:elmalili:sure-2-giris:p1' 'rn:sozler:soz-10:hakikat-3:p4:s2' 'rn:sozler:soz-10:hasiye-1:p1' \
@@ -119,7 +126,7 @@ git check-ignore -q shared/data/ayet-sayilari.json && echo "HATA: shared/data yo
 - Vektör adları ve satır alanları Çapa şeması §11, Test stratejisi §2 ve Proje yapısı §1.2'de aynıdır (`id`, `input`, `expected`, `note`; geçerli çapada `expected.ref` ve `expected.canonical`). Python modülü `pipeline/src/mutalaa_pipeline/anchor/capa.py`.
 
 ## İnsan adımları
-- Yok. Tanzil üst verisinin kullanım şartı belirsiz çıktı; kullanıcı kararı D1 (2026-10-24): devam ve kayda geçir. Tanzil'e gönderilecek soru [İ-08](../06-insan-adimlari.md) altındadır ve gönderim kullanıcıdadır.
+- Yok.
 
 ## Çıktılar
 - `shared/test-vectors/anchors/*.jsonl`, `offsets/offsets.jsonl`, `content-hash/hash.jsonl`; biçim denetleyicisinin alan denetimi
@@ -134,7 +141,7 @@ docs/10-claude-code/asamalar/A04-capa-ve-test-vektorleri.md dosyasındaki aşama
 
 ## Aşama kaydı (kapanış 2026-10-25)
 
-Plan kararları (2026-10-24): D1 Tanzil üst veri şartı belirsiz, devam ve kayda geçir; D2 belirsiz ayrıntılar [K-35](../../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) ile kapatıldı; D3 Kur'an `compare` okuma sırasıyla; D4 `unitOf`, `toUnitSpan`, `coveredAyahs` üç dilde.
+Plan kararları (2026-10-24): D2 belirsiz ayrıntılar [K-35](../../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) ile kapatıldı; D3 Kur'an `compare` okuma sırasıyla; D4 `unitOf`, `toUnitSpan`, `coveredAyahs` üç dilde.
 
 ### Kabul ölçütleri ve kanıt
 
@@ -162,9 +169,7 @@ Plan kararları (2026-10-24): D1 Tanzil üst veri şartı belirsiz, devam ve kay
 | Kaynak | [`quran-data.xml`](https://tanzil.net/res/text/metadata/quran-data.xml); belge sayfası [Quran Metadata](https://tanzil.net/docs/quran_metadata) (sürüm 1.0); kaynak arastirmaci okuması 2026-10-24 |
 | Alınma tarihi | 2026-10-24 |
 | SHA-256 | `8867c1d88191472adec9db694b3cd9f135b1a2ef580574d32cf888dcb22c5c7a` |
-| Lisans ve telif | dosyada `cc-by`; "(C) 2008-2009 Tanzil.info" |
 | Boyut ve yer | 77.234 bayt; yalnız `.tmp/tanzil-ust-veri/` altında (git dışı); `data/raw` altında yok, kalıcı alım A11'de |
-| Kullanım şartı | Belirsiz: dosyadaki CC BY 3.0 satırı ile SSS'deki "non-commercial purposes" cümlesi uzlaştırılamadı. Karar D1: devam ve kayıt; [lisans defteri §3.1](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md). Hukuki görüş değildir |
 
 ### Bozma denemesi (2026-10-25)
 
@@ -175,7 +180,6 @@ Plan kararları (2026-10-24): D1 Tanzil üst veri şartı belirsiz, devam ve kay
 - `inceleyici`: engelleyici yok. Önemli bulgu: üretecin DOCTYPE reddi UTF-16 ya da NUL içeren girdiyle atlatılabiliyordu; üreteç bu girdileri de reddedecek biçimde düzeltildi.
 - `metin-denetcisi`: engelleyici yok. Python `tfb` kolunda hata önceliği TypeScript ve C#'tan ayrışıyordu; düzeltildi, ortak öncelik vektörleri eklendi (`an-0092…an-0107`). Ham U+FEFF, U+2028 gibi literaller `\u` kaçışına çevrildi.
 - `test-yazari` kapsam denetimi: §2 kuralları, §4 tabloları ve K-35 maddelerinin hepsi bir vektörde. Eklenenler: `contains` için sure, ad ve eser farkı; `compare` için eser farkı; `invalid` için öncelik satırları.
-- `lisans-denetcisi`: engelleyici yok.
 - Çapraz sınama: 2232 girdi üzerinde üç dilin kanonik biçimi, `unitOf`, `toUnitSpan`, `coveredAyahs`, rotalar, `compare` ve `contains` sonuçları eşit çıktı.
 
 ### Açık kalanlar ve devreden işler
@@ -184,9 +188,8 @@ Plan kararları (2026-10-24): D1 Tanzil üst veri şartı belirsiz, devam ve kay
 - **A08.** Turbo `test` görevine `LANG`/`LC_ALL` bildirilmeli (`"env": ["LANG","LC_ALL"]` ya da `passThroughEnv`); şu an `turbo run test` iki `LANG` için aynı özeti veriyor. NFC vektörleri Linux'ta yeniden koşmalı (.NET ICU/NLS ve Python Unicode sürümü farklı olabilir). `LANG` karşıtı koşu Linux CI'dadır.
 - **A21 ve A32.** Hermes'te vektör koşumu; `\p{Mn}`, adlı grup ve ileri bakış desteğinin sınanması.
 - **Hata türleri vektörle sabitlenmedi.** TypeScript `RangeError`; C# `InvalidOperationException`, `NotSupportedException`, `ArgumentException`, `ArgumentOutOfRangeException`; Python `ValueError`. Hata kodu (`AnchorError.code`) yalnız ayrıştırmada vardır. Vektörler yalnız "hata verir" sonucunu kilitler.
-- **A11.** Tanzil üst veri kaynağı kartı ve kalıcı alım; kullanım şartı belirsiz ([lisans defteri §3.1](../../04-icerik/01-kaynaklar-ve-lisans-defteri.md)).
-- **A13 ve A34.** Tanzil atfı (CC BY 3.0) paketlenirken eklenir.
-- **İ-08.** Mağaza yayını öncesi Tanzil'e 2. soru (üst veri dosyaları dahil); gönderim kullanıcıdadır ([taslak](../../yazismalar/tanzil-arama-metni.md)).
+- **A11.** Tanzil üst veri kaynağı kartı ve kalıcı alım ([Kaynaklar](../../04-icerik/01-kaynaklar.md) §3.1).
+- **A13, A32 ve A34.** Tanzil atfı kaynak kaydındaki `atif_metni` alanından gelir: Yayınlayıcı paketin `attribution` satırına yazar (A13), Ayarlar › Kaynaklar ekranı gösterir (A32), atıf denetimi A34'tedir.
 
 ### Kullanıcıya bırakıldı
 

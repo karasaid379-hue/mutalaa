@@ -1,7 +1,7 @@
 name: ci-dotnet
 
 # .NET: restore (locked), format check, Release build, tests (xunit.v3 on Microsoft.Testing.Platform,
-# Testcontainers with postgres), license gate for shipped projects.
+# Testcontainers with postgres), dependency list for shipped projects.
 on:
   pull_request:
     paths:
@@ -86,14 +86,15 @@ jobs:
           git diff --exit-code server/Mutalaa.Api/openapi
           test -z "$(git status --porcelain -- server/Mutalaa.Api/openapi)"
 
-      # Test projects are excluded: only code that ships or is served over the network is gated.
+      # Listed only (K-42): no license stops the build. Test projects are excluded: the list covers
+      # code that ships or is served over the network.
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
-      - name: Dependency license gate (shipped projects)
+      - name: Dependency licenses (listed)
         run: |
           set +e
           dotnet tool run nuget-license -i server/Mutalaa.slnx -t -o JsonPretty -exclude-projects "*Tests*" -fo "$RUNNER_TEMP/nuget-licenses.json"
           echo "nuget-license exit code: $?"
           set -e
-          node scripts/ci/check-licenses.mjs nuget "$RUNNER_TEMP/nuget-licenses.json"
+          node scripts/ci/list-licenses.mjs nuget "$RUNNER_TEMP/nuget-licenses.json"

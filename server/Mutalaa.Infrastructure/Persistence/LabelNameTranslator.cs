@@ -4,7 +4,7 @@ namespace Mutalaa.Infrastructure.Persistence;
 
 /// <summary>
 /// C# enum uyesi adini ortak enum JSON etiketine ceviren Npgsql ad cevirmeni. Etiketler Domain'deki ToLabel eslemesinden gelir;
-/// kurucuda kurulan ordinal sozluk kulturden bagimsizdir. [PgName] kullanilmaz. Ornekler statiktir (bkz. PostgresEnums).
+/// kurucuda olusturulan ordinal sozluk kulturden bagimsizdir. [PgName] kullanilmaz. Ornekler statiktir (bkz. PostgresEnums).
 /// </summary>
 public sealed class LabelNameTranslator<T> : INpgsqlNameTranslator
     where T : struct, Enum

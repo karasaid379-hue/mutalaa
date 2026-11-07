@@ -1,5 +1,3 @@
-using Mutalaa.Domain.Licensing;
-
 namespace Mutalaa.Domain.Releases;
 
 /// <summary>icerik.release satiri (Editoryal veritabani 10). Yayimlanmis surum degismez.</summary>
@@ -20,9 +18,6 @@ public sealed class Release
 
     /// <summary>jsonb.</summary>
     public string KapiRaporu { get; set; } = "{}";
-
-    /// <summary>jsonb.</summary>
-    public string KaynakDurumu { get; set; } = "{}";
 
     /// <summary>jsonb.</summary>
     public string Ozetler { get; set; } = "{}";

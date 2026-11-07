@@ -1,7 +1,7 @@
 # Tasarım Sistemi: Sade Osmanlı
 
-> **Sürüm:** 1.1 · **Tarih:** 19 Ekim 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-24](../00-ozet/02-karar-defteri.md#k-24--tasarım-dili) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları)
+> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-24](../00-ozet/02-karar-defteri.md#k-24--tasarım-dili) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
 
 Bu dosya "Sade Osmanlı" tasarım dilinin jetonlarını, tipografisini, ölçeklerini, hareket kurallarını, bileşenlerini, motif ve simge kurallarını, erişilebilirlik kontrol listesini ve jetonların koda nasıl aktığını tanımlar. Brifteki ve rapordaki değerler aynen kullanılır; bu dosyanın eklediği değerler "öneri" diye işaretlidir. Kontrast oranları WCAG formülüyle hesaplandı; rapordaki değerler yeniden hesaplanınca aynı çıktı.
 
@@ -84,14 +84,14 @@ Hesaplanan değerler: metnin zemine karşı kontrastı Kâğıt'ta en az 13,0:1,
 
 ### 3.1 Yazı tipleri
 
-| Rol | Yazı tipi | Lisans | Not |
-|---|---|---|---|
-| Türkçe gövde (meal, tefsir, Risale, hadis çevirisi) | Literata, optik boyut eksenli değişken | OFL ([googlefonts/literata](https://github.com/googlefonts/literata)) | Türkçe harfler ve â î û tam; TRK dil sistemi var ([google/fonts](https://github.com/google/fonts/tree/main/ofl/literata)) |
-| Arayüz | IBM Plex Sans | OFL olduğu biliniyor; lisans dosyası Doğrulanacak | Brifin seçimi. Rapor Inter önermişti (Açık soru). Türkçe kapsamı Doğrulanacak. |
-| Kur'an Unicode metni | Amiri Quran; yazılı izinle KFGQPC Hafs | OFL ([google/fonts](https://github.com/google/fonts/tree/main/ofl/amiriquran)) | 65 Kur'an kod noktasının 53'ü; Türkçe Latin harfi yok, yalnız Arapça dizide kullanılır |
-| Metin içi Arapça | Amiri ya da Noto Naskh Arabic | OFL ([Amiri](https://github.com/google/fonts/tree/main/ofl/amiri), [Noto Naskh](https://github.com/google/fonts/tree/main/ofl/notonaskharabic)) | İkisi de 65 kod noktasının tamamını içerir |
-| Mushaf A | QPC V2 sayfa yazı tipleri (tecvid V4) | QF şartları ([QF Developer Terms](https://api-docs.quran.foundation/legal/developer-terms/)) | Sayfa başına, cüz paketiyle |
-| Sure adı hattı | Açık soru | | Quran.com ayrı bir sure adları yazı tipi taşır; lisansı doğrulanmadı |
+| Rol | Yazı tipi | Not |
+|---|---|---|
+| Türkçe gövde (meal, tefsir, Risale, hadis çevirisi) | Literata, optik boyut eksenli değişken ([googlefonts/literata](https://github.com/googlefonts/literata)) | Türkçe harfler ve â î û tam; TRK dil sistemi var ([google/fonts](https://github.com/google/fonts/tree/main/ofl/literata)) |
+| Arayüz | IBM Plex Sans | Brifin seçimi. Rapor Inter önermişti (Açık soru). Türkçe kapsamı Doğrulanacak. |
+| Kur'an Unicode metni | Amiri Quran ([google/fonts](https://github.com/google/fonts/tree/main/ofl/amiriquran)) ya da KFGQPC Hafs; seçim görsel kaliteye dayanır | 65 Kur'an kod noktasının 53'ü; Türkçe Latin harfi yok, yalnız Arapça dizide kullanılır |
+| Metin içi Arapça | Amiri ya da Noto Naskh Arabic ([Amiri](https://github.com/google/fonts/tree/main/ofl/amiri), [Noto Naskh](https://github.com/google/fonts/tree/main/ofl/notonaskharabic)) | İkisi de 65 kod noktasının tamamını içerir |
+| Mushaf A | QPC V2 sayfa yazı tipleri (tecvid V4) | Sayfa başına, cüz paketiyle; kaynağı A26'da tedarikle sabitlenir |
+| Sure adı hattı | Açık soru | Quran.com ayrı bir sure adları yazı tipi taşır; kaynağı tedarikle araştırılır |
 
 Scheherazade New ve IBM Plex Sans Arabic Türkçe metinde kullanılmaz; ikisinde de ğ, ş ve İ eksik ([google/fonts](https://github.com/google/fonts/tree/main/ofl/scheherazadenew)). Latin IBM Plex Sans ayrı bir ailedir ve ayrıca ölçülür.
 
@@ -173,21 +173,20 @@ Genel bileşenler React Native Reusables'tan gelir (düğme, iletişim kutusu, s
 | Bileşen | Amaç | Durumlar | Erişilebilirlik ve not |
 |---|---|---|---|
 | `SurahHeader`, `Besmele` | Sure başı: tezhip çerçevesi, hat ad, Türkçe ad, âyet sayısı; besmele Fâtiha'da 1. âyet, Tevbe'de yok | tam · kompakt · etkin (ses bu surede) | Başlık rolü: "Bakara Sûresi, 286 âyet" |
-| `PageView` | Mushaf sayfası kabı (A, B, C) | hazır · yazı tipi yükleniyor · cüz yok (C ve şerit) · lisans kapısı · hata | "Sayfa 42, Bakara 253–256" |
+| `PageView` | Mushaf sayfası kabı (A, B, C) | hazır · yazı tipi yükleniyor · cüz yok (C ve şerit) · hata | "Sayfa 42, Bakara 253–256" |
 | `AyahMarker` | Âyet sonu işareti ve numarası | normal · etkin · seçili · yer imli · notlu · vurgulu · secde | "255. âyet sonu"; dokunuş eylem çubuğunu açar |
 | `JuzMarker`, `SecdeMarker` | Cüz başı tezhibi; secde için lâl kenar işareti ve "Secde âyeti" yazısı | | Renk tek başına kullanılmaz |
 | `AyahItem`, `MealPane`, `TefsirPane` | Âyet âyet öğesi; hizalı meal; etkin âyeti izleyen tefsir | etkin · seçili · bağlı · ayrık | Âyet öğesi özel eylemler taşır |
 | `WordCard` | Kelime kartı | yükleniyor · anlam yok · kök paketi yok (kök satırı gizli) · ses yok | Görünür "Kapat" |
 | `SelectionToolbar`, `HighlightSwatch` | Seçim eylemleri; vurgu rengi seçici | kelime · aralık · âyet (B) | Yazılı etiketler; renk adı ve simgesi |
-| `LinkPanel`, `LinkResult` | Bağlantılar paneli; sonuç satırı | boş · paket eksik · lisans kapısı · önizleme açık | Adres, gerekçe ve etiket birlikte okunur |
+| `LinkPanel`, `LinkResult` | Bağlantılar paneli; sonuç satırı | boş · paket eksik · önizleme açık | Adres, gerekçe ve etiket birlikte okunur |
 | `ReasonChip`, `ConfidenceBadge` | Gerekçe; güven etiketi | kesin (dolu) · yüksek (çerçeveli) · orta (ince çerçeve) · düşük (kesik çizgi) | Etiket yazıyla |
 | `Breadcrumb` | Kırıntı izi | tek satır; taşarsa baştan "…" | Her öğe düğme |
 | `ChipSlot` | Okuyucunun altındaki tek çip yuvası | geri dönüş · okunan âyet · etkin âyet · boş | Zincir açıkken `BackChip`, yoksa `FollowChip`; iki çip birlikte görünmez ([Okuma deneyimi §9](./02-okuma-deneyimi.md#9-atla-ve-dön)) |
 | `BackChip`, `FollowChip` | "↩ Okuduğun yere dön" ve "Burada kal"; "Okunan âyete dön", "Etkin âyete git" | `ChipSlot` içinde | `BackChip` iki ayrı 44 pt hedef taşır |
-| `MiniPlayer`, `PlayerSheet`, `ReciterRow` | Sekme üstü oynatıcı; Dinleme sayfası (ana, hafız listesi, aralık seçici iç görünümleri); hafız satırı ve ön dinleme | çalıyor · duraklatıldı · yükleniyor · hata · indirilmiş | İlerleme yazıyla da okunur |
+| `MiniPlayer`, `PlayerSheet`, `ReciterRow` | Sekme üstü oynatıcı; Dinleme sayfası (ana, okuyucu listesi, aralık seçici iç görünümleri); okuyucu kaydı satırı, ön dinleme ve "Cihazda" rozeti | çalıyor · duraklatıldı · yükleniyor · hata · indirilmiş | İlerleme yazıyla da okunur |
 | `SegmentedControl`, `FontSizeSlider` | "Sayfa · Meal", "Meal · Tefsir", biçim seçimleri; kademeli boyut ve canlı önizleme | seçili · devre dışı | Radyo grubu rolü; kaydırıcının artı ve eksi düğmeleri de var |
-| `StorageRow` | Paket satırı: ad, boyut, sürüm, lisans | indirilmedi · kuyrukta · iniyor % · duraklatıldı · indirildi · güncelleme var · hata | Yüzde yazıyla |
-| `LicenseBadge`, `LicenseGate` | Lisans durumu rozeti; lisans paneli | Durum adları yalnız `dev` derlemesinde | |
+| `StorageRow` | Paket satırı: ad, boyut, sürüm | indirilmedi · kuyrukta · iniyor % · duraklatıldı · indirildi · güncelleme var · hata | Yüzde yazıyla |
 | `UnverifiedBadge` | "doğrulanmamış" rozeti | | [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) |
 | `LugatGloss`, `LugatCard`, `IbareCard`, `CitationLink`, `FootnoteMarker` | Risale katmanları | | Kısa anlam metne eklenmez |
 | `HadithPair` | İki sütunlu hadis | Arapça · Türkçe · ikisi | |
@@ -211,8 +210,8 @@ Kaynak: araştırma raporu ve tasarım notu ([Kaynakça](../09-kaynakca.md)).
 
 ## 8. İkonografi
 
-- Tek bir çizgi simge takımı kullanılır: 24 pt ızgara, 1,5 pt çizgi, yuvarlak uçlar; IBM Plex Sans'ın ağırlığına uyar. Takım seçimi Doğrulanacak: Expo SDK 56'dan beri `@expo/vector-icons` yerini `@react-native-vector-icons/*` paketlerine bırakıyor ([Expo SDK 56](https://expo.dev/changelog/sdk-56)); React Native Reusables'ın kullandığı takım ve lisansı ayrıca okunmalı.
-- Alana özgü simgeler ayrıca çizilir: mushaf, meal, tefsir, hadis, Risale, kök, iktibas, âyet sonu, secde, cüz, hafız, hatim, lügat, bağlantı, geri dönüş.
+- Tek bir çizgi simge takımı kullanılır: 24 pt ızgara, 1,5 pt çizgi, yuvarlak uçlar; IBM Plex Sans'ın ağırlığına uyar. Takım seçimi Doğrulanacak: Expo SDK 56'dan beri `@expo/vector-icons` yerini `@react-native-vector-icons/*` paketlerine bırakıyor ([Expo SDK 56](https://expo.dev/changelog/sdk-56)); React Native Reusables'ın kullandığı takım ayrıca okunmalı.
+- Alana özgü simgeler ayrıca çizilir: mushaf, meal, tefsir, hadis, Risale, kök, iktibas, âyet sonu, secde, cüz, okuyucu, hatim, lügat, bağlantı, geri dönüş.
 - Sekme simgeleri her zaman yazılı etiketle görünür. Yalnız simgeden oluşan düğme erişilebilirlik etiketi taşır.
 - Anlamlı simgeler yazı boyutuyla büyür ([Apple HIG Tipografi](https://developer.apple.com/design/human-interface-guidelines/typography)).
 - Sağdan sola düzende yalnız gezinme okları (sayfalayıcıdaki ‹ ›) çevrilir. Diğer simgeler çevrilmez ([Apple HIG RTL](https://developer.apple.com/design/human-interface-guidelines/right-to-left)).
@@ -315,7 +314,7 @@ Ekranlardan önce kurulan, yalnız geliştirici derlemelerinde görünen bir ekr
 - **Rota:** `app/(tabs)/ayarlar/gelistirici/vitrin.tsx`. `tasarimVitrini` bayrağı `dev` ve `internal` derlemede açık, `public` derlemede kapalıdır; orada rota Ayarlar'a yönlendirilir ([Mobil mimari §10](../06-mobil/01-mobil-mimari.md#10-derleme-türleri-ve-özellik-bayrakları)).
 - **Denetimler:** tema, yazı boyutu (varsayılan, kademe 8, %200), Hareketi Azalt, sayfa çevirme yönü, dokunma alanlarını gösteren katman.
 - **Bölümler:** renkler (değer ve çalışma anında hesaplanan kontrast; eşik altı çift `isaret` çerçevesiyle işaretlenir) · tipografi (bütün roller, â î û içeren Türkçe örnek, Fâtiha'nın ilk âyeti, karışık yönlü meal paragrafı) · okuyucu parçaları (Fâtiha sayfası C ile, `AyahMarker` durumları, `WordCard`, bütün güven etiketleriyle `LinkResult`, `ChipSlot`, `MiniPlayer`, `PlayerSheet`) · genel bileşenler · motifler.
-- **Örnek metin:** yalnız Tanzil metni ve Elmalılı meali; Risale metni vitrinde yer almaz.
+- **Örnek metin:** Kur'an örnekleri Tanzil metninden, meal örnekleri kaynak dosyasından alınmış parçalardan gelir; Risale katmanları açıkça sentetik metinle gösterilir ("Deneme paragrafı 1 …"). Metin hafızadan yazılmaz.
 - **Kullanım:** her jeton ya da bileşen değişikliğinden sonra üç tema ve üç boyutta ekran görüntüsü alınıp karşılaştırılır ([Test stratejisi](../07-yayin/03-test-stratejisi.md)).
 
 ## 12. Açık sorular
@@ -323,8 +322,8 @@ Ekranlardan önce kurulan, yalnız geliştirici derlemelerinde görünen bir ekr
 | No | Soru | Sahibi |
 |---|---|---|
 | TS-1 | Arayüz yazı tipi: brif IBM Plex Sans der, rapor Inter önerir. Seçim karar defterine işlenmeli; IBM Plex Sans'ın Türkçe ve â î û kapsamı ölçülmeli. | Proje sahibi |
-| TS-2 | Sure adı hattı için yazı tipi ve lisansı | [Kaynaklar ve lisans defteri](../04-icerik/01-kaynaklar-ve-lisans-defteri.md) |
-| TS-3 | Simge takımı ve lisansı | Bu dosya, sonraki sürüm |
+| TS-2 | Sure adı hattı için yazı tipi | [Kaynaklar](../04-icerik/01-kaynaklar.md) |
+| TS-3 | Simge takımı | Bu dosya, sonraki sürüm |
 | TS-4 | Ek rol jetonlarının, vurgu renklerinin ve `bolum-risale` zümrüdünün onayı | Proje sahibi |
 | TS-5 | Tecvid renklerinin (V4) üç temada kontrastı | v1.x |
 | TS-6 | Mod B görsellerinin Gece temasında boyanması ya da ters çevrilmesi | [Mobil mimari](../06-mobil/01-mobil-mimari.md) (MM-7) |

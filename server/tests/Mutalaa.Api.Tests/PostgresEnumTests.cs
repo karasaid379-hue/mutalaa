@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Mutalaa.Api.Tests.Support;
 using Mutalaa.Domain.Content;
-using Mutalaa.Domain.Licensing;
 using Mutalaa.Domain.Links;
 using Mutalaa.Domain.Releases;
 using Mutalaa.Domain.Reviews;
@@ -49,7 +48,7 @@ public class PostgresEnumTests(EditorialDatabase<PostgresEnumTests> fixture) : I
         Dictionary<string, string[]> json = EnumsJson.Load();
         Dictionary<string, string[]> database = await LoadFromDatabaseAsync(ct);
 
-        Assert.Equal(11, json.Count);
+        Assert.Equal(10, json.Count);
         Assert.Equal(json.Keys.Order(StringComparer.Ordinal), database.Keys.Order(StringComparer.Ordinal));
         foreach ((string type, string[] labels) in json)
         {
@@ -90,7 +89,7 @@ public class PostgresEnumTests(EditorialDatabase<PostgresEnumTests> fixture) : I
         // Invariant: varsayilan (onbellekli) saglayici.
         await RoundTripAsync(() => Db.OpenRollbackSessionAsync(ct), ct);
 
-        // tr-TR: model onbellegi atlanan yeni saglayici ve yeni veri kaynagi tr-TR kulturunde sifirdan kurulur
+        // tr-TR: model onbellegi atlanan yeni saglayici ve yeni veri kaynagi tr-TR kulturunde sifirdan olusturulur
         // (etiket cevirmeni, model ve Npgsql enum eslemesi kulturle yeniden olusur); onbellekli ilk kosuyu tekrarlamaz.
         await AsyncCultureScope.TurkishAsync(async () =>
         {
@@ -101,7 +100,7 @@ public class PostgresEnumTests(EditorialDatabase<PostgresEnumTests> fixture) : I
 
     /// <summary>
     /// Her enum'un her uyesi bir kez yazilir ve geri okunur: LabelNameTranslator ve PostgreSQL etiketi tum uyelerde uyusur
-    /// (ic_kullanim gibi i/I iceren etiketler tr-TR'de de ayni). Islem geri alinir.
+    /// (iktibas, ima ve kullanim_disi gibi i/I iceren etiketler tr-TR'de de ayni). Islem geri alinir.
     /// </summary>
     private static async Task RoundTripAsync(Func<Task<RollbackSession>> openSession, CancellationToken ct)
     {
@@ -114,13 +113,9 @@ public class PostgresEnumTests(EditorialDatabase<PostgresEnumTests> fixture) : I
         List<Source> sources = [];
         foreach (SourceKind kind in Enum.GetValues<SourceKind>())
         {
-            foreach (LicenseStatus license in Enum.GetValues<LicenseStatus>())
-            {
-                Source source = TestData.NewSource();
-                source.Tur = kind;
-                source.LicenseStatus = license;
-                sources.Add(source);
-            }
+            Source source = TestData.NewSource();
+            source.Tur = kind;
+            sources.Add(source);
         }
 
         context.AddRange(sources);
@@ -157,7 +152,6 @@ public class PostgresEnumTests(EditorialDatabase<PostgresEnumTests> fixture) : I
                     Xref xref = TestData.NewXref(src: $"rn:sozler:soz-10:p{++ord}", dst: "q:2:255", type: type);
                     xref.Origin = origin;
                     xref.Status = status;
-                    xref.License = (LicenseStatus)(ord % Enum.GetValues<LicenseStatus>().Length);
                     xrefs.Add(xref);
                 }
             }
@@ -191,7 +185,6 @@ public class PostgresEnumTests(EditorialDatabase<PostgresEnumTests> fixture) : I
         foreach (Source source in sources)
         {
             Assert.Equal(source.Tur, readSources[source.Slug].Tur);
-            Assert.Equal(source.LicenseStatus, readSources[source.Slug].LicenseStatus);
         }
 
         List<Unit> readUnits = await context.Units.AsNoTracking().OrderBy(u => u.Id).ToListAsync(ct);
@@ -201,7 +194,7 @@ public class PostgresEnumTests(EditorialDatabase<PostgresEnumTests> fixture) : I
         foreach (Xref xref in xrefs)
         {
             Xref read = readXrefs[xref.SrcAnchor.ToString()];
-            Assert.Equal((xref.Type, xref.Origin, xref.Status, xref.License), (read.Type, read.Origin, read.Status, read.License));
+            Assert.Equal((xref.Type, xref.Origin, xref.Status), (read.Type, read.Origin, read.Status));
         }
 
         Assert.Equal(reviews.Select(r => r.Durum), (await context.Reviews.AsNoTracking().OrderBy(r => r.Id).ToListAsync(ct)).Select(r => r.Durum));

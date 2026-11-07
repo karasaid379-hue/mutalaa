@@ -24,3 +24,12 @@ end_of_line = crlf
 
 [server/Mutalaa.Infrastructure/Migrations/*.cs]
 generated_code = true
+
+[pipeline/tests/fixtures/tanzil/**]
+charset = unset
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = false
+
+[pipeline/sources/tanzil-*.toml]
+trim_trailing_whitespace = false

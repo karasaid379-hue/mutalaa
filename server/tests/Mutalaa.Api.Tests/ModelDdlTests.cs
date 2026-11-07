@@ -110,7 +110,7 @@ public partial class ModelDdlTests
             }
         });
 
-        // Sabit sayi yok: belgedeki CHECK sayisi x 2 model (onbellekli ve yeni kurulmus).
+        // Sabit sayi yok: belgedeki CHECK sayisi x 2 model (onbellekli ve yeni olusturulmus).
         Assert.True(DocConstraints().Checks.Count > 0);
         Assert.Equal(DocConstraints().Checks.Count * 2, count);
     }

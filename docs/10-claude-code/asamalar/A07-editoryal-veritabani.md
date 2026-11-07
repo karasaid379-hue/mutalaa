@@ -1,8 +1,8 @@
 # A07 · Editoryal veritabanı (EF Core 10 + PostgreSQL 18)
 
-> **Sürüm:** 1.1 · **Tarih:** 21 Ekim 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-06](../../00-ozet/02-karar-defteri.md#k-06--yayın-kapısı) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
-> **Faz:** 0 · Hazırlık · **Önkoşul:** [A03](./A03-yerel-altyapi.md) · [A04](./A04-capa-ve-test-vektorleri.md) · [A06](./A06-lisans-defteri-ve-enumlar.md) · **İnsan adımı:** yok
-> **Ajanlar:** `sunucu-gelistirici` · `test-yazari` · `arastirmaci` · `inceleyici` · **Beceriler:** `ef-goc` · `lisans-kapisi` · **Tahmini oturum:** 2–3
+> **Sürüm:** 1.2 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
+> **Faz:** 0 · Hazırlık · **Önkoşul:** [A03](./A03-yerel-altyapi.md) · [A04](./A04-capa-ve-test-vektorleri.md) · [A06](./A06-kaynak-kayitlari-ve-enumlar.md) · **İnsan adımı:** —
+> **Ajanlar:** `sunucu-gelistirici` · `test-yazari` · `arastirmaci` · `inceleyici` · **Beceriler:** `ef-goc` · **Tahmini oturum:** 2–3
 > **Başlat:** `/asama A07`
 
 ## Amaç
@@ -17,8 +17,8 @@
 
 ## Kapsam
 **Yapılır**
-- Domain varlıkları; A06'daki enum'lar kullanılır. Kalan beş tür (`unit_kind`, `unit_status`, `metin_durumu`, `inceleme_durumu`, `surum_durumu`) aynı etiket kuralıyla C#'a ve `packages/content-schema/enums.json` dosyasına eklenir ([K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)); böylece 11 türün hepsi tek dosyayla karşılaştırılır.
-- `IcerikDbContext` (`Mutalaa.Infrastructure/Persistence`) ve 19 tablo: `source`, `unit`, `root`, `lemma`, `lemma_gloss`, `quran_word`, `quran_word_fix`, `tr_root_index`, `tr_form`, `surah_alias`, `xref`, `review`, `page_map`, `ayah_box`, `audio_timing`, `release`, `pipeline_run`, `hadith_number_map`, `hadith_location`; §2'deki 11 enum türü.
+- Domain varlıkları; A06'daki enum'lar kullanılır. Kalan beş tür (`unit_kind`, `unit_status`, `metin_durumu`, `inceleme_durumu`, `surum_durumu`) aynı etiket kuralıyla C#'a ve `packages/content-schema/enums.json` dosyasına eklenir ([K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)); böylece 10 türün hepsi tek dosyayla karşılaştırılır.
+- `IcerikDbContext` (`Mutalaa.Infrastructure/Persistence`) ve 19 tablo: `source`, `unit`, `root`, `lemma`, `lemma_gloss`, `quran_word`, `quran_word_fix`, `tr_root_index`, `tr_form`, `surah_alias`, `xref`, `review`, `page_map`, `ayah_box`, `audio_timing`, `release`, `pipeline_run`, `hadith_number_map`, `hadith_location`; §2'deki 10 enum türü.
 - Identity: `EditorUser`, roller `editor` ve `admin`; tablolar `kimlik` şemasında ([K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları), Backend API §7).
 - İlk göç, idempotent SQL betiği, göç paketi denemesi, `seed` komutu ve testler.
 
@@ -26,6 +26,14 @@
 - `xref_vote` ve `embedding` tabloları: ikisi de v1.x'tir (§7, §9.2); `embedding` ayrıca pgvector ister. Faz 4'te (A35–A36 ya da anlamsal katman işi) eklenir.
 - API uçları, çerezli oturum ve yetki politikaları (A14). Hat yüklemesi ve `staging_unit` (A10). Yayınlayıcı okumaları (A13).
 - `quran_marker` gibi belgede olmayan tablolar (A11'in kararıyla, kendi göçünde).
+
+## Tedarik
+| Gerekli yapı | Seçilen kaynak (ad, adres, sürüm ya da commit, biçim) | Alma yolu | Eksiksizlik kanıtı | Yedek aday |
+|---|---|---|---|---|
+| EF Core 10, Npgsql sağlayıcısı ve göç aracı | `Microsoft.EntityFrameworkCore` 10.0.14 (`.Relational` ve `.Design` dahil); `Npgsql.EntityFrameworkCore.PostgreSQL` 10.0.3; `dotnet-ef` 10.0.14 (yerel araç); sürüm okumaları aşağıdaki "A07.1 doğrulamaları" tablosundadır | NuGet; sürümler yalnız `server/Directory.Packages.props` içinde, araç `.config/dotnet-tools.json` içinde | `dotnet build` uyarısız; `dotnet ef migrations has-pending-model-changes` fark bildirmiyor | — |
+| Adlandırma ve editör kimliği | `EFCore.NamingConventions` 10.0.1 (snake_case); `Microsoft.AspNetCore.Identity.EntityFrameworkCore` 10.0.14 | NuGet (`Directory.Packages.props`) | `ModelNamingTests`; `kimlik` şemasında 7 tablo | — |
+| Veritabanı testi altyapısı | `Testcontainers.PostgreSql` 4.16.0 (imaj `postgres:18.6-trixie`); `xunit.v3` 4.0.2 | NuGet; imaj Docker Hub | `MigrationTests`, `PostgresEnumTests` ve şema dökümü testi yeşil | — |
+| Şema belirtimi | [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md) DDL'i (19 tablo, 10 enum türü, `source` için 16 sütun) ve `packages/content-schema/enums.json` (10 tür) | Depo içi belge ve JSON; dışarıdan yapı alınmaz | `ModelDdlTests` ve `EnumDocumentTests`: belge, model ve JSON aynı küme | — |
 
 ## Adımlar
 ### A07.1 · Doğrulanacaklar
@@ -42,7 +50,8 @@
 ### A07.2 · Domain ve `IcerikDbContext` (`sunucu-gelistirici`)
 - Varlıklar `Mutalaa.Domain` altında (`Content/`, `Links/`, `Releases/`, `Reviews/`; Backend API §2). Domain EF Core'a bağlanmaz.
 - Bağlam: varsayılan şema `icerik`; tablo adları tekil ve `ToTable("source")` gibi açıkça; sütunlar snake_case; zaman `timestamptz` ve UTC; eşzamanlılık `xmin`.
-- Enum'lar §2'deki 11 PostgreSQL türüne eşlenir; etiketler ve sıra `packages/content-schema/enums.json` ve §2 ile aynı.
+- Enum'lar §2'deki 10 PostgreSQL türüne eşlenir; etiketler ve sıra `packages/content-schema/enums.json` ve §2 ile aynı.
+- `source` 16 sütundur ve birincil anahtarı `slug`'dır (Editoryal veritabanı §3); sütunlar kaynak kaydındaki alanlarla aynı adları taşır ([A06](./A06-kaynak-kayitlari-ve-enumlar.md), [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 4).
 - Çapa sütunları (`anchor` ve `_anchor` ile bitenler) `UseCollation("C")` ve `AnchorRef` değer dönüştürücüsüyle bağlanır; geçersiz çapa yazılamaz. `parent_path` ve `review.hedef_anahtar` çapa değildir, düz metindir. `unit.anchor` `@` taşımaz.
 - Tür eşlemeleri §12'deki gibi: `int4range` → `NpgsqlRange<int>`, `jsonb`, `tsvector`. `tsv_tr` ve `tsv_ar` `HasComputedColumnSql(…, stored: true)`; GiST ve GIN dizinleri `HasMethod(…)`; kısmi dizinler (`review_queue`, `xref_queue`, `review_xref`) ve CHECK kısıtları belgedeki ifadelerle.
 - Ham SQL yalnız `xref_natural_key`'dir (gerçek `UNIQUE NULLS NOT DISTINCT` kısıtı; hat `ON CONFLICT ON CONSTRAINT` ile hedefler). `page_map` `AreNullsDistinct(false)` ile adlı tekil dizin olarak EF'de kurulur (§12).
@@ -55,8 +64,8 @@
 - **Bitti sayılır:** `seed` art arda iki kez çalışınca iki rol ve tek yönetici var (test).
 
 ### A07.4 · İlk göç ve yerel uygulama
-- `dotnet ef migrations add <ad>` ile `server/Mutalaa.Infrastructure/Migrations` altında tek göç. SQL `dotnet ef migrations script --idempotent` ile `.tmp/` altına yazılır; `inceleyici` belgedeki DDL ile tablo tablo karşılaştırır.
-- Bağlantı dizesi kullanıcı sırlarındadır (Yerel geliştirme §3). Api projesinin csproj dosyasında `UserSecretsId` yoksa önce `dotnet user-secrets init --project server/Mutalaa.Api` çalışır (onay ister; yalnız csproj'a kimlik yazar, sır yazmaz). `.env`'deki parola değiştirildiyse `dotnet user-secrets … set` komutunu kullanıcı çalıştırır; Claude Code parolayı görmez.
+- `dotnet ef migrations add CreateEditorialSchema` ile `server/Mutalaa.Infrastructure/Migrations` altında tek göç (dosya adı `<zaman damgası>_CreateEditorialSchema`). SQL `dotnet ef migrations script --idempotent` ile `.tmp/` altına yazılır; `inceleyici` belgedeki DDL ile tablo tablo karşılaştırır.
+- Bağlantı dizesi kullanıcı sırlarındadır (Yerel geliştirme §3). Api projesinin csproj dosyasında `UserSecretsId` yoksa önce `dotnet user-secrets init --project server/Mutalaa.Api` çalışır (yalnız csproj'a kimlik yazar, sır yazmaz; onay sorulmaz, CLAUDE.md kural 11). `.env`'deki parola değiştirildiyse `dotnet user-secrets … set` komutunu kullanıcı çalıştırır; Claude Code parolayı görmez.
 - Komutlar `Development` ortamında çalışır: kit ayarları Claude Code komutlarına `ASPNETCORE_ENVIRONMENT=Development` ve `DOTNET_ENVIRONMENT=Development` verir (`.claude/settings.json` › `env`); kullanıcı sırları yalnız bu ortamda yüklenir. Elle açılan terminalde değer komutun başına yazılır (`ef-goc`).
 - Yerel veritabanına `dotnet ef database update …` ile uygulanır. Göç paketi `dotnet ef migrations bundle` ile `.tmp/` altına üretilerek denenir (CI ve canlı için; Backend API §7).
 - **Bitti sayılır:** yerelde `icerik` ve `kimlik` şemaları ve bütün tablolar var; model ile göç arasında fark yok.
@@ -64,16 +73,16 @@
 ### A07.5 · Testler (`test-yazari`, `sunucu-gelistirici`)
 - Konum `server/tests/Mutalaa.Api.Tests/` (öneri; Api testleri zaten Testcontainers `postgres:18` kullanır, Backend API §11).
 - `MigrationTests`: boş kaba bütün göçler uygulanır, bekleyen göç kalmaz (Test stratejisi §6).
-- Enum testi: 11 türün `pg_enum` etiketleri `enumsortorder` sırasıyla `enums.json` ile aynı; JSON'daki değerler de §2 ile aynı.
+- Enum testi: 10 türün `pg_enum` etiketleri `enumsortorder` sırasıyla `enums.json` ile aynı; JSON'daki değerler de §2 ile aynı.
 - Şema dökümü: konteyner içinde `pg_dump --schema-only`; A07.1'deki değişken satırlar ayıklanır; sonuç `server/tests/Mutalaa.Api.Tests/Snapshots/editoryal-sema.sql` ile karşılaştırılır. Bilinçli değişiklikte anlık görüntü `MUTALAA_UPDATE_SNAPSHOTS=1` ortam değişkeniyle yeniden yazılır (test bilerek kırmızı biter; `CI` doluysa reddedilir) ve farkı commit'te gözden geçirilir.
-- Kısıt testleri: biçimsiz `content_hash` reddedilir; `kurul_onay` dolu ama tarih ya da özet boşsa reddedilir; `status = 'kullanim_disi'` ve boş `successors` reddedilir; `xref_natural_key` NULL aralıklı kopyayı reddeder; `char_start >= char_end` reddedilir; `tsv_tr` ve `tsv_ar` saklı üretilen sütundur (`pg_attribute.attgenerated = 's'`).
+- Kısıt testleri: biçimsiz `content_hash` reddedilir; `status = 'kullanim_disi'` ve boş `successors` reddedilir; `xref_natural_key` NULL aralıklı kopyayı reddeder; `char_start >= char_end` reddedilir; `tsv_tr` ve `tsv_ar` saklı üretilen sütundur (`pg_attribute.attgenerated = 's'`).
 - Değer dönüştürücü: geçersiz çapa yazma girişimi hata verir. `seed` idempotentliği.
 - **Bitti sayılır:** `dotnet test --solution server/Mutalaa.slnx` yeşil (Docker Desktop açık).
 
 ## Kabul ölçütleri
 - [x] `dotnet build server/Mutalaa.slnx` uyarısız ve hatasız.
 - [x] `dotnet test --solution server/Mutalaa.slnx` yeşil; `MigrationTests` boş veritabanına bütün göçleri uyguluyor ve bekleyen göç yok.
-- [x] PostgreSQL'deki 11 enum türünün etiketleri ve sırası `enums.json` ve Editoryal veritabanı §2 ile aynı (test).
+- [x] PostgreSQL'deki 10 enum türünün etiketleri ve sırası `enums.json` ve Editoryal veritabanı §2 ile aynı (test).
 - [x] Şema dökümü testi yeşil; anlık görüntü dosyası depoda.
 - [x] `dotnet ef migrations has-pending-model-changes` fark bildirmiyor.
 - [x] Yerel veritabanında `icerik` şemasında 19 tablo var (göç geçmişi tablosu hariç); Identity tabloları `kimlik` şemasında.
@@ -99,14 +108,14 @@ grep -rniE '"(Password|AdminPassword|SecretKey|PrivateKey)"[[:space:]]*:[[:space
 Komutlar `Development` ortamında koşar (kit ayarı; A07.4). Son satır JSON anahtarı olarak yazılmış gizli değerleri ve bağlantı dizesinin içindeki `Password=` değerini arar.
 
 ## Dikkat
-- Şemanın tek sahibi EF Core göçleridir; Python hattı şema değiştirmez. Uygulanmış göç değiştirilmez; API açılışında otomatik göç yoktur. Ayrıntı: `ef-goc`.
+- Şemanın tek sahibi EF Core göçleridir; Python hattı şema değiştirmez. Uygulanmış göç değiştirilmez (tek istisna: ilk göç [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 8 ile bir kez yeniden üretildi; hiçbir canlı ortama dağıtılmamıştı, içerik satırı yoktu ve yerel veritabanları önce yedeklendi); API açılışında otomatik göç yoktur. Ayrıntı: `ef-goc`.
 - Enum'a eklenen değer geri alınamaz; yıkıcı değişiklik genişlet, taşı, daralt adımlarıyla yapılır (§12).
 - Çapa sütunları `COLLATE "C"`; aralıklar `int4range` ve yarı açık `[)`. `metin` sütunu kanonik metindir: hazır kaynak metni (Tanzil) değiştirilemez, NFC yalnız kendi metnimize ilk kayıtta uygulanır (K-26).
-- `license_status` sırası kapının davranışını belirler; etiketler A06'daki JSON'dan sapmaz. Ayrıntı: `lisans-kapisi`.
+- Enum sırası anlamlıdır (ör. `metin_durumu`: `taslak`, `incelemede`, `onayli`). Npgsql `MapEnum` etiketleri alfabetik dizdiği için türler `HasPostgresEnum` ile açık sırayla tanımlanır; etiketler A06'daki JSON'dan sapmaz.
 - Saat: `timestamptz` sütununa yalnız `DateTimeKind.Utc` değer yazılır (Yerel geliştirme §10.4). Uygulama açılışta `InvariantCulture` kullanır.
-- Gizli değerler `dotnet user-secrets` ile verilir; bu komut kullanıcı onayı ister. Bağlantı dizesi ve yönetici parolası dosyaya ya da commit'e yazılmaz.
+- Gizli değerler `dotnet user-secrets` ile verilir (onay sorulmaz, CLAUDE.md kural 11). Bağlantı dizesi ve yönetici parolası dosyaya ya da commit'e yazılmaz.
 - Testcontainers Docker Desktop ister; Docker kapalıysa testler kırmızı görünür, bu bir kod hatası sayılmaz.
-- Belge farkları: ED-7 çözüldü (19 Ekim 2026); Backend API Editoryal veritabanının tür adlarını (`license_status`, `xref_status`) ve `basarisiz` değerini kullanır. Backend API §4.1 ve §12 madde 1–2'deki açık sorular da çözüldü (19 Ekim 2026): `hedef_tablo` listesi Editoryal veritabanı §8'de, `basarisiz` değeri §2'dedir. Şema bu belgeyi izler.
+- Belge farkları: ED-7 çözüldü (19 Ekim 2026); Backend API Editoryal veritabanının tür adlarını (`xref_status`) ve `basarisiz` değerini kullanır. Backend API §4.1 ve §12 madde 1–2'deki açık sorular da çözüldü (19 Ekim 2026): `hedef_tablo` listesi Editoryal veritabanı §8'de, `basarisiz` değeri §2'dedir. Şema bu belgeyi izler.
 - Commit kapsamı: `Mutalaa.Domain` ve `Mutalaa.Infrastructure` değişiklikleri için `server` ([Proje yapısı](../../02-mimari/03-proje-yapisi.md) §6); ör. `feat(server): add editorial schema and first migration`.
 
 ## İnsan adımları
@@ -125,12 +134,11 @@ Komutlar `Development` ortamında koşar (kit ayarı; A07.4). Son satır JSON an
 docs/10-claude-code/asamalar/A07-editoryal-veritabani.md dosyasındaki aşamayı yürüt. Önce önkoşulları ve planı göster, onayımı bekle.
 ```
 
-## İlgili dosyalar
-- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A06](./A06-lisans-defteri-ve-enumlar.md) · Sonraki: [A08](./A08-ci-is-akislari.md)
-
 ## Aşama kaydı (kapanış 2026-10-27)
 
-Plan kararları (2026-10-26): BÇ-05 `review.yz_kaydi jsonb` olarak çözüldü; `enums.json` 11 türe çıktı; parola yalnız uzunluk >= 12. Üçü, ad politikası ve dizin kuralıyla birlikte [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) olarak kaydedildi.
+Bu kayıttaki göç adı, tür ve sütun sayıları, [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 8 ile yeniden üretilen ilk göçe göre verilmiştir.
+
+Plan kararları (2026-10-26): BÇ-05 `review.yz_kaydi jsonb` olarak çözüldü; `enums.json` 10 türe çıktı; parola yalnız uzunluk >= 12. Üçü, ad politikası ve dizin kuralıyla birlikte [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) olarak kaydedildi.
 
 ### A07.1 doğrulamaları (iki `arastirmaci`, 26 Ekim 2026)
 
@@ -138,12 +146,12 @@ Plan kararları (2026-10-26): BÇ-05 `review.yz_kaydi jsonb` olarak çözüldü;
 |---|---|
 | EF Core 10 sürümü | 10.0.14 (25 Ekim, plan dışı güvenlik sürümü), `dotnet-ef` 10.0.14; araç eskiyse yalnız uyarı çıkar ([OperationExecutor.cs](https://raw.githubusercontent.com/dotnet/efcore/release/10.0/src/EFCore.Design/Design/OperationExecutor.cs)). Kodda 10.0.14 sabitlendi |
 | Npgsql EF 10.0.3 `MapEnum` | Etiketleri alfabetik dizer, tasarım gereği ([efcore.pg #3390](https://github.com/npgsql/efcore.pg/issues/3390), [#3667](https://github.com/npgsql/efcore.pg/issues/3667)); açık `HasPostgresEnum` ile sıra korunur. `SetPostgresVersion(18, 0)` gerekir ([NpgsqlDbContextOptionsBuilder.cs](https://raw.githubusercontent.com/npgsql/efcore.pg/v10.0.3/src/EFCore.PG/Infrastructure/NpgsqlDbContextOptionsBuilder.cs)) |
-| `EFCore.NamingConventions` | 10.0.1 EF Core 10 destekler (Apache-2.0); kültür verilmezse Invariant; açık adları ezmez ([nuspec](https://api.nuget.org/v3-flatcontainer/efcore.namingconventions/10.0.1/efcore.namingconventions.nuspec)) |
+| `EFCore.NamingConventions` | 10.0.1 EF Core 10 destekler; kültür verilmezse Invariant; açık adları ezmez ([nuspec](https://api.nuget.org/v3-flatcontainer/efcore.namingconventions/10.0.1/efcore.namingconventions.nuspec)) |
 | `xmin` | `uint` + `IsRowVersion()` -> `xid`, sütun adı `xmin`; göçte sütun üretilmez, gölge özellik çalışır ([Npgsql eşzamanlılık](https://www.npgsql.org/efcore/modeling/concurrency.html)); `DbUpdateConcurrencyException` testle doğrulandı |
 | PostgreSQL 18 `uuidv7()` | 18.0'da eklendi ([functions-uuid](https://www.postgresql.org/docs/18/functions-uuid.html)); yerel kapta 18.6'da çalıştı (`uuid_extract_version` = 7) |
 | Üretilen sütun varsayılanı | VIRTUAL; sanal sütun dizinlenemez, bu yüzden `STORED` açık yazılır ([sql-createtable](https://www.postgresql.org/docs/18/sql-createtable.html), [ddl-generated-columns](https://www.postgresql.org/docs/18/ddl-generated-columns.html)) |
 | `pg_dump` değişken satırlar | `\restrict` ve `\unrestrict` rastgele anahtar taşır; sürüm yorumları ara sürümle değişir ([app-pgdump](https://www.postgresql.org/docs/18/app-pgdump.html), [CVE-2025-8714](https://www.postgresql.org/support/security/CVE-2025-8714/)); dört satır ayıklanır |
-| Testcontainers | `Testcontainers.PostgreSql` 4.16.0 (MIT); parametresiz `PostgreSqlBuilder()` `[Obsolete]` ([NuGet](https://www.nuget.org/packages/Testcontainers.PostgreSql)); imaj `postgres:18.6-trixie` |
+| Testcontainers | `Testcontainers.PostgreSql` 4.16.0; parametresiz `PostgreSqlBuilder()` `[Obsolete]` ([NuGet](https://www.nuget.org/packages/Testcontainers.PostgreSql)); imaj `postgres:18.6-trixie` |
 | Identity EF | 10.0.14; çerçeve başvurusu istemez; şema sürümü varsayılanı V1 (passkey tablosu yok, `kimlik` 7 tablo); model `IdentityOptions`'ı DI'dan okur ([IdentityUserContext.cs](https://raw.githubusercontent.com/dotnet/aspnetcore/release/10.0/src/Identity/EntityFrameworkCore/src/IdentityUserContext.cs)) |
 
 ### Kabul ölçütleri ve kanıt
@@ -151,21 +159,21 @@ Plan kararları (2026-10-26): BÇ-05 `review.yz_kaydi jsonb` olarak çözüldü;
 | Ölçüt | Kanıt |
 |---|---|
 | Derleme | `dotnet build server/Mutalaa.slnx --no-incremental`: 0 uyarı, 0 hata |
-| Testler | `dotnet test --solution server/Mutalaa.slnx` 1755/1755 (Domain 1544, Publisher 2, Api 209); Debug iki koşu ve Release bir koşu; `dotnet format ... --verify-no-changes` çıkış 0 |
-| Enum sırası | `PostgresEnumTests`: 11 türün `pg_enum` etiketleri `enumsortorder` sırasıyla `enums.json` ile aynı; `EnumDocumentTests`: `enums.json` = belge §2; TypeScript 15, Python `test_enums.py` 33 |
-| Anlık görüntü | `Snapshots/editoryal-sema.sql` (1393 satır) depoda; `SchemaSnapshotTests` ardışık iki koşuda yeşil |
+| Testler | `dotnet test --solution server/Mutalaa.slnx` 27 Ekim 2026 kapanış koşusunda 1755/1755 (Domain 1544, Publisher 2, Api 209; Debug iki koşu ve Release bir koşu); yeniden üretilen göçle 1 Kasım 2026'da 1747 geçti; `dotnet format ... --verify-no-changes` çıkış 0 |
+| Enum sırası | `PostgresEnumTests`: 10 türün `pg_enum` etiketleri `enumsortorder` sırasıyla `enums.json` ile aynı; `EnumDocumentTests`: `enums.json` = belge §2; TypeScript 14, Python `test_enums.py` 32 |
+| Anlık görüntü | `Snapshots/editoryal-sema.sql` (1363 satır) depoda; `SchemaSnapshotTests` ardışık iki koşuda yeşil |
 | Bekleyen değişiklik | `dotnet ef migrations has-pending-model-changes`: "No changes have been made" |
-| Yerel veritabanı | `icerik` 19 tablo (+ göç geçmişi), `kimlik` 7 tablo, 11 enum; göç geçmişinde yalnız `20261026222825_CreateEditorialSchema` |
+| Yerel veritabanı | `icerik` 19 tablo (+ göç geçmişi), `kimlik` 7 tablo, 10 enum; `icerik.source` 16 sütun; göç geçmişinde yalnız `20261101095907_CreateEditorialSchema` |
 | `seed` | İki çalıştırma çıkış 0; `kimlik.roles` 2, `kimlik.users` 1, yönetici `admin` rolünde; günlükte parola, e-posta ve bağlantı dizesi yok |
-| İdempotent betik | `.tmp/editoryal-goc.sql` geçici veritabanında art arda iki kez hatasız uygulandı; Up -> Down -> Up döngüsü çalıştı; belge DDL'i ile `ModelDdlTests` (sütun, tip, NOT NULL, DEFAULT, 18 CHECK, 18 FK) ve DDL sadakati denetçisi karşılaştırdı; kabul edilmiş farklar Editoryal veritabanı §12'de |
+| İdempotent betik | `.tmp/editoryal-goc.sql` geçici veritabanında art arda iki kez hatasız uygulandı ve Up -> Down -> Up döngüsü çalıştı (27 Ekim 2026); belge DDL'i ile `ModelDdlTests` (sütun, tip, NOT NULL, DEFAULT, 17 CHECK, 18 FK) ve DDL sadakati denetçisi karşılaştırdı; kabul edilmiş farklar Editoryal veritabanı §12'de |
 | Gizli değer | `appsettings*.json` taraması boş; diff taramaları boş |
 | Göç paketi | `.tmp/efbundle.exe` üretildi (git dışı) |
 
 ### İnceleme
 
-Çok ajanlı denetim (7 bakış açısı: kod doğruluğu, metin bütünlüğü, lisans, DDL sadakati, test yeterliği, güvenlik, belge sapması; 49 ajan, her bulgu çürütülmeye çalışıldı): 50 bulgu, engelleyici yok; 37 onaylı, 6 kısmi, 7 çürütülen. Düzeltilenler: `Down()` 11 enum türünü ve `kimlik` şemasını düşürüyor; `kimlik.users` e-posta dizini tekil; bağlantı dizesi bağlam kurulurken okunuyor; `Api.csproj` biçimi; `AnchorSpan` üç anlamının belgelenmesi; K-26 için `unit.metin` bayt-bayt saklama testi (`TextIntegrityTests`); `unit.anchor`, FK, `page_map` ve kalan 13 CHECK testleri; Down döngüsü testi; test kabının rastgele parolası ve yalnız 127.0.0.1; belge sapmalarının tamamı (Backend API §2/§3/§6/§7, Editoryal veritabanı §1/§4/§5/§8/§11/§12/§13, A13/A14, Test stratejisi §6, Yerel geliştirme, Teknoloji yığını).
+Çok ajanlı denetim (bakış açıları: kod doğruluğu, metin bütünlüğü, DDL sadakati, test yeterliği, güvenlik, belge sapması; her bulgu çürütülmeye çalışıldı): 50 bulgu, engelleyici yok; 37 onaylı, 6 kısmi, 7 çürütülen. Düzeltilenler: `Down()` 10 enum türünü ve `kimlik` şemasını düşürüyor; `kimlik.users` e-posta dizini tekil; bağlantı dizesi bağlam kurulurken okunuyor; `Api.csproj` biçimi; `AnchorSpan` üç anlamının belgelenmesi; K-26 için `unit.metin` bayt-bayt saklama testi (`TextIntegrityTests`); `unit.anchor`, FK, `page_map` ve kalan 13 CHECK testleri; Down döngüsü testi; test kabının rastgele parolası ve yalnız 127.0.0.1; belge sapmalarının tamamı (Backend API §2/§3/§6/§7, Editoryal veritabanı §1/§4/§5/§8/§11/§12/§13, A13/A14, Test stratejisi §6, Yerel geliştirme, Teknoloji yığını).
 
-Devreden öneriler: `content_hash` ile `metin` tutarlılığı veritabanında denetlenmiyor (A10 yükleme kapısı); `source` özet sütunlarında biçim CHECK'i yok ([BÇ-41](../07-belge-celiskileri.md), A13/A14); kilit yalnız `AccessFailedAsync` / `CheckPasswordSignInAsync(lockoutOnFailure: true)` ile işler (A14 uç testi); `NoAction` FK'de EF izlenen çocuğu NULL'a çektiği için silme 23503 yerine 23502 verebilir (A14 hata eşlemesi); `unit` okumaları `tsv_*` sütunlarını da seçer (A13/A14 projeksiyon); `Program.cs` seed dalı için süreç düzeyi çıkış kodu testi yazılmadı; `THIRD_PARTY_NOTICES` A34'e eklendi; `halfvec` .NET türü v1.x'te doğrulanacak.
+Devreden öneriler: `content_hash` ile `metin` tutarlılığı veritabanında denetlenmiyor (A10 yükleme kapısı); `source.dosya_sha256` ve öteki özet sütunlarında biçim CHECK'i yok ([BÇ-41](../07-belge-celiskileri.md), A13/A14); kilit yalnız `AccessFailedAsync` / `CheckPasswordSignInAsync(lockoutOnFailure: true)` ile işler (A14 uç testi); `NoAction` FK'de EF izlenen çocuğu NULL'a çektiği için silme 23503 yerine 23502 verebilir (A14 hata eşlemesi); `unit` okumaları `tsv_*` sütunlarını da seçer (A13/A14 projeksiyon); `Program.cs` seed dalı için süreç düzeyi çıkış kodu testi yazılmadı; `THIRD_PARTY_NOTICES` girdisi (Ayarlar › Kaynaklar ekranının açık kaynak bölümü) A34'e eklendi; `halfvec` .NET türü v1.x'te doğrulanacak.
 
 ### Kullanıcıya bırakıldı
 
@@ -173,4 +181,7 @@ Yok (emülatör işi yok). Kullanıcı üç `dotnet user-secrets` değerini gird
 
 ### Sürprizler
 
-Npgsql `MapEnum` etiketleri alfabetik diziyor (lisans kapısı sırasını bozardı); EF göç dosyaları, `dotnet user-secrets init` çıktısı ve kilit dosyaları BOM ve CRLF yazıyor; `migrations bundle` kilit dosyasına `win-x64` ekliyor; `.env` parolası kurulumdan sonra değişince kapsayıcı ve veritabanı eski parolada kalıyor. Hepsi `ef-goc` ve `windows-sorun` becerilerine işlendi.
+Npgsql `MapEnum` etiketleri alfabetik diziyor (`metin_durumu` sırasını bozardı: `taslak`, `incelemede`, `onayli`); EF göç dosyaları, `dotnet user-secrets init` çıktısı ve kilit dosyaları BOM ve CRLF yazıyor; `migrations bundle` kilit dosyasına `win-x64` ekliyor; `.env` parolası kurulumdan sonra değişince kapsayıcı ve veritabanı eski parolada kalıyor. Hepsi `ef-goc` ve `windows-sorun` becerilerine işlendi.
+
+## İlgili dosyalar
+- [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A06](./A06-kaynak-kayitlari-ve-enumlar.md) · Sonraki: [A08](./A08-ci-is-akislari.md)

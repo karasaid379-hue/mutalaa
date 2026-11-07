@@ -74,7 +74,7 @@ const skills = new Map(
 );
 
 test('beceriler: ad, açıklama, bilinen alanlar, enjeksiyon yok', () => {
-  assert.ok(skills.size >= 16, `beceri sayısı ${skills.size}`);
+  assert.ok(skills.size >= 14, `beceri sayısı ${skills.size}`);
   for (const [name, { data, body }] of skills) {
     for (const k of Object.keys(data)) assert.ok(SKILL_KEYS.has(k), `skills/${name}: bilinmeyen alan ${k}`);
     assert.equal(data.name, name, `skills/${name}: name klasör adıyla aynı olmalı`);
@@ -88,7 +88,7 @@ test('beceriler: ad, açıklama, bilinen alanlar, enjeksiyon yok', () => {
 
 test('ajanlar: ad, açıklama, araçlar, model, renk, önceden yüklenen beceriler', () => {
   const files = fs.readdirSync(at('.claude', 'agents')).filter((f) => f.endsWith('.md'));
-  assert.ok(files.length >= 11, `ajan sayısı ${files.length}`);
+  assert.ok(files.length >= 10, `ajan sayısı ${files.length}`);
   for (const f of files) {
     const { data } = parseFrontmatter(read('.claude', 'agents', f), `agents/${f}`);
     const name = f.slice(0, -3);
@@ -131,14 +131,22 @@ test('settings.json: geçerli JSON, kip, okuma sınırı, hook betikleri var', (
     assert.ok(s.permissions.deny.includes(r), `deny: ${r}`);
   }
   assert.ok(s.permissions.deny.indexOf('Read(!**/.env.example)') > s.permissions.deny.indexOf('Read(**/.env.*)'));
-  for (const r of ['Bash(node *)', 'PowerShell(node *)']) assert.ok(!s.permissions.allow.includes(r), `geniş izin: ${r}`);
+  // Kullanıcı kararı (2026-10-31): terminal komutları ve araştırma onaysız çalışır. Güvenlik
+  // deny listesinde, ask listesinde (ücretli iş, genel kurulum) ve klasör bekçisindedir.
+  for (const r of ['Bash', 'WebSearch', 'WebFetch']) assert.ok(s.permissions.allow.includes(r), `allow: ${r}`);
+  for (const r of ['Bash(eas build *)', 'Bash(eas update *)', 'Bash(git config --global *)']) {
+    assert.ok(s.permissions.ask.includes(r), `ask: ${r}`);
+  }
+  for (const r of ['Bash(git push --force *)', 'Bash(eas submit *)', 'Bash(npm publish *)', 'Bash(pnpm publish *)']) {
+    assert.ok(s.permissions.deny.includes(r), `deny: ${r}`);
+  }
   const pre = s.hooks.PreToolUse[0];
   for (const tool of ['Write', 'Edit', 'NotebookEdit', 'Bash', 'PowerShell', 'Monitor']) {
     assert.ok(pre.matcher.split('|').includes(tool), `PreToolUse eşleyicisi: ${tool}`);
   }
   assert.equal(pre.hooks[0].onFailure, 'block', 'klasör bekçisi çalışamazsa işlem durmalı');
   for (const rule of [...s.permissions.allow, ...s.permissions.ask, ...s.permissions.deny]) {
-    assert.match(rule, /^(Bash|PowerShell|Read|Edit|WebFetch)\(.+\)$|^WebSearch$/, `kural biçimi: ${rule}`);
+    assert.match(rule, /^(Bash|PowerShell|Read|Edit|WebFetch)\(.+\)$|^(Bash|PowerShell|WebSearch|WebFetch)$/, `kural biçimi: ${rule}`);
     assert.ok(!rule.startsWith('Write('), `Write(...) kuralı denetlenmez; Read/Edit kullan: ${rule}`);
   }
   for (const [event, groups] of Object.entries(s.hooks)) {
@@ -174,6 +182,74 @@ test('ilerleme dosyası: durum işaretleri ve 41 aşama satırı', () => {
   const md = read('docs', '10-claude-code', '05-ilerleme.md');
   assert.ok(md.includes('<!-- durum:baslangic -->') && md.includes('<!-- durum:bitis -->'));
   for (const id of STAGES) assert.match(md, new RegExp(`^\\| ${id} \\|`, 'm'), `ilerleme: ${id} satırı yok`);
+});
+
+// K-42: her aşama dosyası tedarikle başlar ve projede hukuk ya da izin yapısı yoktur.
+test('aşama dosyaları: ## Tedarik bölümü Kapsam ile Adımlar arasındadır (K-42)', () => {
+  for (const id of STAGES) {
+    const f = stageFiles.find((x) => x.startsWith(`${id}-`));
+    const text = read('docs', '10-claude-code', 'asamalar', f);
+    const kapsam = text.indexOf('\n## Kapsam');
+    const tedarik = text.indexOf('\n## Tedarik');
+    const adimlar = text.indexOf('\n## Adımlar');
+    assert.ok(tedarik > 0, `${f}: "## Tedarik" bölümü yok`);
+    assert.ok(kapsam < tedarik && tedarik < adimlar, `${f}: "## Tedarik" Kapsam ile Adımlar arasında olmalı`);
+    const section = text.slice(tedarik, adimlar);
+    assert.ok(
+      section.includes('| Gerekli yapı |') || section.includes('dışarıdan yapı almaz'),
+      `${f}: Tedarik bölümü tablo ("| Gerekli yapı |") ya da "dışarıdan yapı almaz" satırı taşımalı`,
+    );
+  }
+});
+
+test('aşama dosyaları: tedarik adımı A09–A40 aşamalarının ilk adımıdır (K-42)', () => {
+  for (let n = 9; n <= 40; n++) {
+    const id = `A${String(n).padStart(2, '0')}`;
+    if (id === 'A39') continue; // devre dışı
+    const f = stageFiles.find((x) => x.startsWith(`${id}-`));
+    const text = read('docs', '10-claude-code', 'asamalar', f);
+    const adimlar = text.slice(text.indexOf('\n## Adımlar'));
+    const first = /\n### (A\d\d\.\d) · (.*)/.exec(adimlar);
+    assert.ok(first, `${f}: adım başlığı yok`);
+    assert.match(first[2], /^Tedarik/, `${f}: ilk adım (${first[1]}) tedarik adımı olmalı`);
+  }
+});
+
+test('hukuk ve izin yapısı yok (K-42): yasak terimler belgelerde, kitte ve kaynak kayıtlarında geçmez', () => {
+  assert.ok(!fs.existsSync(at('docs', 'yazismalar')), 'docs/yazismalar klasörü olmamalı');
+  const FORBIDDEN = [
+    /\bKurul\b/,
+    /avukat/i,
+    /yazışma/i,
+    /yazisma/i,
+    /hukuki görüş/i,
+    /license_status/,
+    /embed_ok/,
+    /kurul_gerekli/,
+    /ic_kullanim/,
+    /lisans kapısı/i,
+    /lisans defteri/i,
+  ];
+  const files = [at('CLAUDE.md')];
+  const walk = (dir, accept) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) walk(p, accept);
+      else if (accept(e.name)) files.push(p);
+    }
+  };
+  walk(at('docs'), (n) => n.endsWith('.md'));
+  walk(at('.claude'), (n) => n.endsWith('.md'));
+  files.push(...fs.readdirSync(at('pipeline', 'sources')).filter((n) => n.endsWith('.toml')).map((n) => at('pipeline', 'sources', n)));
+  const hits = [];
+  for (const f of files) {
+    const text = fs.readFileSync(f, 'utf8');
+    for (const re of FORBIDDEN) {
+      const m = re.exec(text);
+      if (m) hits.push(`${path.relative(ROOT, f)}: "${m[0]}"`);
+    }
+  }
+  assert.deepEqual(hits, []);
 });
 
 test('bağlantılar: docs, CLAUDE.md ve .claude içinde kırık bağlantı yok', () => {

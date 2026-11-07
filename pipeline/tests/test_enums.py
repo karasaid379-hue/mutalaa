@@ -9,7 +9,6 @@ import pytest
 from mutalaa_pipeline.enums import (
     DerlemeTuru,
     IncelemeDurumu,
-    LicenseStatus,
     MetinDurumu,
     SourceKind,
     SurumDurumu,
@@ -24,7 +23,6 @@ from mutalaa_pipeline.export.ortak import GirdiHatasi, depo_koku, kati_json, utf
 JSON_YOLU = "packages/content-schema/enums.json"
 
 SINIFLAR: dict[str, type[StrEnum]] = {
-    "license_status": LicenseStatus,
     "xref_type": XrefType,
     "xref_status": XrefStatus,
     "xref_origin": XrefOrigin,
@@ -38,7 +36,6 @@ SINIFLAR: dict[str, type[StrEnum]] = {
 }
 
 BEKLENEN_SAYILAR = {
-    "license_status": 4,
     "xref_type": 8,
     "xref_status": 3,
     "xref_origin": 3,
@@ -85,6 +82,7 @@ def farklar(
 def test_json_yuklenir_ve_tur_kumesi_tam() -> None:
     json_enums = enums_yukle()
     assert set(json_enums) == set(SINIFLAR)
+    assert len(json_enums) == len(SINIFLAR) == 10
     for ad, sayi in BEKLENEN_SAYILAR.items():
         assert len(json_enums[ad]) == sayi
 
@@ -112,13 +110,20 @@ def test_farklar_gercek_dosyada_bos() -> None:
     assert farklar(enums_yukle()) == []
 
 
-def test_kisitlilik_sirasi_json_sirasidir() -> None:
-    json_etiketleri = enums_yukle()["license_status"]
-    assert json_etiketleri == ("serbest", "bekliyor", "ic_kullanim", "kapali")
-    for sira, etiket in enumerate(json_etiketleri):
-        assert LicenseStatus(etiket).kisitlilik_sirasi() == sira
-    assert LicenseStatus.SERBEST.kisitlilik_sirasi() < LicenseStatus.BEKLIYOR.kisitlilik_sirasi()
-    assert LicenseStatus.IC_KULLANIM.kisitlilik_sirasi() < LicenseStatus.KAPALI.kisitlilik_sirasi()
+def test_metin_durumu_sirasi_json_sirasidir() -> None:
+    """Sira anlamlidir (alfabetik degil): taslak < incelemede < onayli."""
+    json_etiketleri = enums_yukle()["metin_durumu"]
+    assert json_etiketleri == ("taslak", "incelemede", "onayli")
+    assert tuple(uye.value for uye in MetinDurumu) == json_etiketleri
+    assert sorted(json_etiketleri) != list(json_etiketleri)
+
+
+def test_lisans_durumu_turu_yok() -> None:
+    """K-42: `license_status` turu ve `LicenseStatus` sinifi kalkti."""
+    from mutalaa_pipeline import enums
+
+    assert "license_status" not in enums_yukle()
+    assert not hasattr(enums, "LicenseStatus")
 
 
 # --- Bozma denemesi: gercek dosyaya dokunulmaz, gecici kopya kullanilir ---------------------
@@ -139,11 +144,11 @@ def test_kopya_degismeden_yesil(tmp_path: Path) -> None:
 
 
 def test_silinen_deger_kirmizi(tmp_path: Path) -> None:
-    gercek = list(enums_yukle()["license_status"])
-    silinmis = [d for d in gercek if d != "ic_kullanim"]
-    bulunan = farklar(enums_yukle(kopya_yaz(tmp_path, {"license_status": silinmis})))
+    gercek = list(enums_yukle()["metin_durumu"])
+    silinmis = [d for d in gercek if d != "incelemede"]
+    bulunan = farklar(enums_yukle(kopya_yaz(tmp_path, {"metin_durumu": silinmis})))
     assert len(bulunan) == 1
-    assert bulunan[0].startswith("license_status:")
+    assert bulunan[0].startswith("metin_durumu:")
 
 
 def test_sira_degisikligi_kirmizi(tmp_path: Path) -> None:

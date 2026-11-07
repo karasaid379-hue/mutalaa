@@ -9,7 +9,6 @@ using Microsoft.Extensions.Options;
 using Mutalaa.Api.Tests.Support;
 using Mutalaa.Domain.Anchors;
 using Mutalaa.Domain.Content;
-using Mutalaa.Domain.Licensing;
 using Mutalaa.Domain.Links;
 using Mutalaa.Infrastructure;
 using Mutalaa.Infrastructure.Identity;
@@ -31,7 +30,6 @@ public class ContextBehaviorTests
         Tur = SourceKind.Meal,
         Baslik = "Deneme kaynagi",
         Surum = "1",
-        LicenseName = "Deneme",
         AtifMetni = "Deneme atfi",
     };
 
@@ -120,7 +118,6 @@ public class ContextBehaviorTests
             Type = XrefType.Atif,
             Origin = XrefOrigin.Hat,
             DataVersion = "t",
-            License = LicenseStatus.Serbest,
         };
         context.Add(xref);
         // uuidv7() veritabaninda uretilir: istemci gecici deger tutar, SaveChanges'ta veritabani degeri gelir.
@@ -130,11 +127,12 @@ public class ContextBehaviorTests
         context.Add(fix);
         Assert.True(context.Entry(fix).Property(x => x.Id).IsTemporary);
 
-        Source source = NewSource();
-        source.LicenseStatus = LicenseStatus.Serbest;
-        context.Add(source);
-        Assert.False(context.Entry(source).Property(x => x.LicenseStatus).IsTemporary);
-        Assert.Equal(LicenseStatus.Serbest, source.LicenseStatus);
+        // unit.rev: veritabani varsayilani 1, CLR varsayilani 0. Bilincle yazilan 0 gecici deger sayilmaz ve korunur.
+        Unit unit = TestData.NewUnit("test-kaynak", "rn:sozler:soz-10:p1");
+        unit.Rev = 0;
+        context.Add(unit);
+        Assert.False(context.Entry(unit).Property(x => x.Rev).IsTemporary);
+        Assert.Equal(0, unit.Rev);
 
         ModelFactory.ForEachModel(model =>
         {

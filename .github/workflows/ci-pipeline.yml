@@ -1,6 +1,7 @@
 name: ci-pipeline
 
-# Content pipeline (Python 3.13, uv): ruff, mypy, pytest on Ubuntu and Windows.
+# Content pipeline (Python 3.13, uv): ruff, mypy, pytest on Ubuntu and Windows; the database tests
+# run on Ubuntu against PostgreSQL 18 loaded with the server's schema snapshot.
 # PYTHONUTF8 is deliberately NOT set: encoding mistakes must show up on the Windows leg.
 on:
   pull_request:
@@ -14,6 +15,7 @@ on:
       - 'packages/anchors/src/generated/ayet-sayilari.ts'
       - 'server/Mutalaa.Domain/Text/IcKesme.g.cs'
       - 'server/Mutalaa.Domain/Anchors/AyetSayilari.g.cs'
+      - 'server/tests/Mutalaa.Api.Tests/Snapshots/editoryal-sema.sql'
       - '.gitattributes'
       - '.github/workflows/ci-pipeline.yml'
   push:
@@ -28,6 +30,7 @@ on:
       - 'packages/anchors/src/generated/ayet-sayilari.ts'
       - 'server/Mutalaa.Domain/Text/IcKesme.g.cs'
       - 'server/Mutalaa.Domain/Anchors/AyetSayilari.g.cs'
+      - 'server/tests/Mutalaa.Api.Tests/Snapshots/editoryal-sema.sql'
       - '.gitattributes'
       - '.github/workflows/ci-pipeline.yml'
   workflow_dispatch:
@@ -80,8 +83,47 @@ jobs:
       - name: Test vectors are current
         if: runner.os == 'Linux'
         run: uv run mutalaa export test-vectors --check
-      # Listed only: the pipeline is never distributed (psycopg is LGPL-3.0), so this does not gate.
-      - name: Dependency licenses (listed, not gated)
+      # Listed only (K-42): no license stops the build.
+      - name: Dependency licenses (listed)
         if: runner.os == 'Linux'
         continue-on-error: true
         run: uv run --with "pip-licenses==5.5.5" pip-licenses --from=mixed --format=markdown
+
+  database:
+    # The `veritabani` tests (export pg against the editorial schema) need PostgreSQL; the schema is
+    # the snapshot the .NET tests keep equal to the EF model. A missing database fails the run
+    # (MUTALAA_DEGISMEZLIK_ZORUNLU) instead of skipping. Service containers need a Linux runner.
+    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: mutalaa
+          POSTGRES_PASSWORD: ci-only
+          POSTGRES_DB: mutalaa_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mutalaa -d mutalaa_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      MUTALAA_DEGISMEZLIK_ZORUNLU: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: '0.13.1'
+          enable-cache: true
+          working-directory: pipeline
+      - run: uv sync --locked
+
+      - name: Load the editorial schema
+        run: docker run --rm -i --network host -e PGPASSWORD=ci-only postgres:18 psql -h 127.0.0.1 -U mutalaa -d mutalaa_test -v ON_ERROR_STOP=1 -q < ../server/tests/Mutalaa.Api.Tests/Snapshots/editoryal-sema.sql
+      - name: Point the tests at the service database
+        run: printf 'MUTALAA_DB_URL=postgresql://mutalaa:ci-only@127.0.0.1:5432/mutalaa\n' > .env
+      - run: uv run pytest -m veritabani -p no:cacheprovider -rs
