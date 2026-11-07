@@ -330,7 +330,13 @@ Eski planın okuyucu tasarımları, "okuma simetrisi" çekirdeği (son okunan ye
   - İçerik hattı §6 hatın `onayli` satıra dokunmamasını ister; Tanzil `onayli` girer (K-38 madde 4), bu yüzden hatın hangi sütunlara yazabileceği açıkça yazılmalıdır.
   - Bildirim bloğundaki yıl satırı indirmeye göre değişebilir: kilidin üç özeti farkın bildirimde mi metinde mi olduğunu ayırır. Bildirim, kaynağın kendi metni olarak dosyadaki gibi saklanır.
 - **Değerlendirilen alternatifler:** Kilidin yalnız metin satırlarına bakması (Test stratejisi §5 madde 1'den sapar). Simple Clean'i ayrı `q:` birimi yapmak (`unit.anchor` tekilliğini bozar). AR-4'ü A12'ye ertelemek (kullanıcı A10'da uygulamayı seçti).
-- **Kaynak:** Proje sahibinin kararı (28 Ekim 2026): kilit sıkı ve tanılı, AR-4 A10'da uygulanır, A10 için onay sorulmadan ilerlenir. Plan: A10 planı ve beş açılı bağımsız denetimi (28 Ekim 2026). Resmî okuma: [indirme sayfası](https://tanzil.net/download/), 28 Ekim 2026. İlk kilit değerleri indirmeden sonra bu karara tarihli bir notla eklenir.
+- **Kaynak:** Proje sahibinin kararı (28 Ekim 2026): kilit sıkı ve tanılı, AR-4 A10'da uygulanır, A10 için onay sorulmadan ilerlenir. Plan: A10 planı ve beş açılı bağımsız denetimi (28 Ekim 2026). Resmî okuma: [indirme sayfası](https://tanzil.net/download/), 28 Ekim 2026. İlk kilit değerleri aşağıdaki notta.
+- **Not (7 Kasım 2026): ilk kilit değerleri.** A10.0'da (2 Kasım 2026) iki dosya [indirme formundan](https://tanzil.net/download/) alındı: "Text (with aya numbers)", sürüm 1.1, `marks`, `sajdah` ve `tatweel` işaretli, `rub` ve `stanween` işaretsiz. Kilit (`pipeline/src/mutalaa_pipeline/ingest/tanzil.lock.json`) bu değerlerle yazıldı; sonraki her değişiklik bu karara tarihli bir notla eklenir.
+
+  | Varyant | Bayt | `sha256` | `metin_sha256` | `bildirim_sha256` |
+  |---|---|---|---|---|
+  | `uthmani` | 1.396.087 | `6933e133dd56db778c801bf738848454e43648105a151e8d84d86a7cae39ec5f` | `76781116345a687997d203ae154d64ceae9d06722139cd0e454c0d446f6da1d8` | `3d54147d3373080c297dad2820317c02229eb467903aff50be01772439660844` |
+  | `simple-clean` | 794.313 | `054b3d9f79c0c2e44df7f9ddf42561797b3b5cb4fbdafbf2e99c805ccf1a6b49` | `834762a34ad2c4459347514acec6ac893408f1ac96968829c59756c841dfc1fd` | `19f0d8a50e08ac0b7dd9bc5f2a6f4906f295117acc682a6ee2b16a8611f4a203` |
 
 ### K-40 · Ses kaynağı: hazır dijital tilavet kaynakları
 - **Karar:** Hafız sesi alınmaz; yeni kayıt yapılmaz. Ses için hazır dijital tilavet kayıtları kullanılır. Kaynak, alım ve sunum [K-41](#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)'dedir.
