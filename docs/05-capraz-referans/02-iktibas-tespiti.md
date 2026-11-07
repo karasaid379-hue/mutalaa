@@ -101,9 +101,9 @@ Eşleştirmeye özgü iki ek adım: ؤ → و ve ئ → ي; tek başına ء sili
 
 | Girdi | Anahtar | Not |
 |---|---|---|
-| ٱلرَّحْمَٰنِ (Uthmani) | الرحمن | imlâî ile aynı |
-| ٱلْكِتَٰبُ (Uthmani) | الكتب | imlâî الكتاب ile ayrışır |
-| ٱلصَّلَوٰةَ (Uthmani) | الصلوه | imlâî الصلاة → الصلاه |
+| ٱلرَّحْمَـٰنِ (Uthmani) | الرحمن | imlâî ile aynı |
+| ٱلْكِتَـٰبُ (Uthmani) | الكتب | imlâî الكتاب ile ayrışır |
+| ٱلصَّلَوٰةَ (Uthmani) | الصلوه | imlâî الصلاة → الصلاه |
 | شَىْءٍ | شي | ى → ي, ء silinir |
 
 Örnekler Uthmani resmin imlâî yazımdan ayrıldığını gösterir. Kitaplardaki alıntılar çoğunlukla imlâî yazıldığı için Kur'an iki biçimde indekslenir (rapor).

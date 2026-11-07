@@ -91,9 +91,9 @@ Başlıca `evidence` anahtarları: `iktibas` → `matched_words`, `coverage`, `i
 | Tür | Tanım | Örnek (biçim örneği) |
 |---|---|---|
 | `atif` | Âyete ya da hadise adı ve numarasıyla açık gönderme | `tf:elmalili:2-255-257:p3@40-63` "(Bakara Sûresi, 255)" → `q:2:255` |
-| `iktibas` | Âyet metninin Arapça olarak aynen ya da küçük yazım farkıyla alıntısı; tam ya da kısmi | Risale paragrafındaki وَاِنْ مِنْ شَىْءٍ اِلَّا يُسَبِّحُ بِحَمْدِهٖ → `q:17:44` + kelime aralığı |
+| `iktibas` | Âyet metninin Arapça olarak aynen ya da küçük yazım farkıyla alıntısı; tam ya da kısmi | Risale paragrafındaki Arapça âyet alıntısı (Risale yazımıyla) → `q:17:44` + kelime aralığı |
 | `ima` | Lafzı vermeden âyetin manasına işaret | Başlığı bir âyetin manası olan bölüm → o âyet, `origin = 'editor'` |
-| `kok` | İki birimin aynı Arapça kökten kelime taşıması | "sabır" geçen `rn:…:p4` ↔ `q:2:153` (بِٱلصَّبْرِ, ٱلصَّٰبِرِينَ), kök ص ب ر |
+| `kok` | İki birimin aynı Arapça kökten kelime taşıması | "sabır" geçen `rn:…:p4` ↔ `q:2:153` (بِٱلصَّبْرِ, ٱلصَّـٰبِرِينَ), kök ص ب ر |
 | `lemma` | Aynı Arapça lemmanın paylaşılması; kökten dar ve kesin | Türkçe "şükür" ← شُكْر |
 | `benzer_ayet` | Ortak ifade, âlim listesi ya da müteşâbih kaydı | QUL Similar Ayah: 1:1 → 27:30, 59:22, 1:3, 41:2 ([QUL](https://qul.tarteel.ai/resources/ayah-theme/74)) |
 | `konu` | Birimin bir konu düğümüne bağlanması | `q:2:255` → `konu:tevhid` |

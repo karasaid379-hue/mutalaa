@@ -204,7 +204,7 @@ Hesap gelmeden önce veri yalnız cihazdadır. Ayarlar › Yedekle kullanıcı v
   "device_id": "8f14e45f-ceea-467a-9b1c-2d3e4f5a6b7c",
   "tables": {
     "bookmark": [{ "id": "01a14f8c-f400-7a3b-9c2d-5e6f7a8b9c0d", "anchor": "q:2:255", "label": "Bakara 255",
-                   "excerpt": "ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ…", "content_hash": "…", "title": null,
+                   "excerpt": "ٱللَّهُ لَآ إِلَـٰهَ إِلَّا هُوَ…", "content_hash": "…", "title": null,
                    "collection_id": null, "sort_key": "a0", "hlc": "01a14f8cf400-0000-8f14e45fceea167a",
                    "updated_at": 1792336000000, "deleted_at": null, "base_version": 0,
                    "device_id": "8f14e45f-ceea-467a-9b1c-2d3e4f5a6b7c" }],
