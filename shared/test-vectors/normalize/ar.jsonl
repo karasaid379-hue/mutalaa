@@ -60,3 +60,10 @@
 {"id":"ar-0060","input":"\u0628 \u064b \u0628","expected":"\u0628 \u0628","note":"hareke silinince boşalan sözcük atılır"}
 {"id":"ar-0061","input":"\u0628\ufffe\u0628","expected":"\u0628 \u0628","note":"U+FFFE (Cn) Arapça bloğunda değil: Türkçe parçada, Arapçada ayırıcı"}
 {"id":"ar-0062","input":"\u0628\ufdd0\u0628","expected":"\u0628 \u0628","note":"U+FDD0 (Cn) Arapça bloğunda: L, M, N dışı olduğu için ayırıcı"}
+{"id":"ar-tz-0001","input":"\u0628\u0650\u0633\u0652\u0645\u0650 \u0671\u0644\u0644\u0651\u064e\u0647\u0650 \u0671\u0644\u0631\u0651\u064e\u062d\u0652\u0645\u064e\u0640\u0670\u0646\u0650 \u0671\u0644\u0631\u0651\u064e\u062d\u0650\u064a\u0645\u0650","expected":"\u0628\u0633\u0645 \u0627\u0644\u0644\u0647 \u0627\u0644\u0631\u062d\u0645\u0646 \u0627\u0644\u0631\u062d\u064a\u0645","note":"tanzil-uthmani q:1:1"}
+{"id":"ar-tz-0002","input":"\u0671\u0644\u0652\u0623\u064e\u0631\u0652\u0636\u0650","expected":"\u0627\u0644\u0627\u0631\u0636","note":"tanzil-uthmani q:2:11"}
+{"id":"ar-tz-0003","input":"\u0645\u064f\u0648\u0633\u064e\u0649\u0670\u0653","expected":"\u0645\u0648\u0633\u064a","note":"tanzil-uthmani q:2:51"}
+{"id":"ar-tz-0004","input":"\u0631\u064e\u062d\u0652\u0645\u064e\u0629\u064b","expected":"\u0631\u062d\u0645\u0647","note":"tanzil-uthmani q:3:8"}
+{"id":"ar-tz-0005","input":"\u0645\u064f\u0624\u0652\u0645\u0650\u0646\u064f\u0648\u0646\u064e","expected":"\u0645\u0648\u0645\u0646\u0648\u0646","note":"tanzil-uthmani q:5:88"}
+{"id":"ar-tz-0006","input":"\u0634\u064e\u0649\u0652\u0621\u064d","expected":"\u0634\u064a\u0621","note":"tanzil-uthmani q:2:20"}
+{"id":"ar-tz-0007","input":"\u064a\u064e\u0633\u0652\u0640\u0654\u064e\u0644\u064f\u0648\u0646\u064e\u0643\u064e","expected":"\u064a\u0633\u0644\u0648\u0646\u0643","note":"tanzil-uthmani q:2:189"}
