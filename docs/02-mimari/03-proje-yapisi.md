@@ -90,7 +90,7 @@ Editör rotaları [Backend API](./05-backend-api.md#41-i̇nceleme-kuyrukları) �
 | Alt klasör | İçerik | Yedek |
 |---|---|---|
 | `raw/` | İçerik hattının `gelen/` altından aldığı kaynak dosyalar ve tarama görselleri; değişmez, yalnız hat yazar | Evet; boyutu yüzünden git dışındadır, hattın bütün çıktıları buradan yeniden üretilir |
-| `gelen/` | Claude Code'un indirdiği kaynak dosyalar ve taramalar. Her kaynak `gelen/<kaynak>/<YYYY-AA-GG>/` altında yeni boş klasöre iner; adres, tarih ve SHA-256 kaynak kaydına geçer. `ingest` dosyaları `raw/` altına alır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 2) | Hayır; kopyası `raw/` altındadır, adres ve SHA-256 kaynak kaydındadır |
+| `gelen/` | Claude Code'un indirdiği kaynak dosyalar ve taramalar. Her kaynak `gelen/<kaynak>/<YYYY-AA-GG>/` altında yeni boş klasöre iner; adres ve tarih aşama dosyasının `.0` adımına yazılır, SHA-256 klasördeki `SHA256SUMS` dosyasındadır. `ingest` dosyaları `raw/` altına alır ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 2) | Hayır; kopyası `raw/` altındadır (özet orada `fetch.json` içindedir), adres kaynak kaydındadır |
 | `staged/`, `reports/` | Hat modüllerinin ara çıktıları ve nitelik raporları | Hayır; yeniden üretilir |
 | `ocr/` | Sayfa başına OCR çıktısı ve koordinatlar ([İçerik hattı](../04-icerik/02-icerik-hatti.md) §5) | Hayır; `raw/` taramalarından yeniden üretilir, model yanıtları `llm-cache/` altındadır |
 | `gold/` | Altın metinler (OCR örneklemi, ör. `gold/elmalili-ocr/`) ve altın setler (bağlantı, kök); kişilerin elle hazırladığı ölçüm verisi | Evet; insan emeğidir ve yeniden üretilemez. Yedek betiği arşivler ([Yerel geliştirme](./04-yerel-gelistirme.md) §9) |

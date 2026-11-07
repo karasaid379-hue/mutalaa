@@ -49,7 +49,7 @@ Görünürlük editoryal kaliteye bağlıdır; süzme kaynak ve birim düzeyinde
 | `internal` | Davetli test kullanıcıları, EAS iç dağıtım (Faz 2) | Onaylı birim ve bağlantı; onaysız birim ve yapay zekâ taslağı "doğrulanmamış" rozetiyle; aday bağlantı (her tür); `test-` önekli kaynaklardan yalnız uçtan uca fikstürler (`test-kucuk`, `test-ses`) |
 | `public` | Mağaza kullanıcıları (Faz 3 ve sonrası) | Onaylı birim ve onaylı bağlantı; otomatik türdeki bağlantı (`kok`, `lemma`, `benzer_ayet`, `anlamsal`) `confidence ≥ 0,50` ile |
 
-`red` durumundaki bağlantı hiçbir derlemeye girmez; kaynak kaydı olmayan içerik hiçbir pakete girmez (P-01). İnsan onayı isteyen türdeki (`atif`, `iktibas`, `ima`, `konu`) `aday` bağlantı yalnız `dev` ve `internal`'dadır; otomatik türler güven eşiğiyle her derlemeye girer ([Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) §8). `test-` önekli kaynak durumundan bağımsız `public`'e girmez; `internal`'a yalnız `test-kucuk` ve `test-ses` girer (P-12). Kural [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5 ile sabittir; manifest her derlemede imzalıdır.
+`red` durumundaki bağlantı hiçbir derlemeye girmez; kaynak kaydı olmayan içerik hiçbir pakete girmez (P-01). İnsan onayı isteyen türdeki (`atif`, `iktibas`, `ima`, `konu`) `aday` bağlantı yalnız `dev` ve `internal`'dadır; otomatik türler güven eşiğiyle her derlemeye girer ([Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) §8). `test-` önekli kaynak `public`'e girmez; `internal`'a yalnız `test-kucuk` ve `test-ses` girer (P-12). Kural [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5 ile sabittir; manifest her derlemede imzalıdır.
 
 ```mermaid
 flowchart LR
@@ -143,7 +143,6 @@ Not: QAC kaynaklı kök ve lemma verisi boyutu yüzünden `core`'dan ayrı, iste
 | Kütüb-i Sitte Arapça okuyucu | v1 | Kaynak, eksiksizlik ve numaralandırma ölçümüyle seçilir; metin editör onayından geçmeden mağazaya girmez |
 | Tecrîd ↔ Buhârî numara eşlemesi (`h:tecrid:15` ↔ `h:buhari:52`) | v1 | |
 | Hadis ↔ âyet bağlantıları (hadis içindeki âyet iktibasları, insan onaylı) | v1 | |
-| Yapay zekâ ile hadis çevirisi | Faz atanmadı | Rapor erteleme önerir; gelirse "doğrulanmamış" rozeti taşır (K-25). |
 
 ### 4.4 Risale-i Nur
 
@@ -186,11 +185,11 @@ Not: QAC kaynaklı kök ve lemma verisi boyutu yüzünden `core`'dan ayrı, iste
 | Kök ve lemma (Kur'an içi) | v1 | `kelime-kok` paketiyle |
 | Türkçe kelime → Arapça kök (meal, tefsir, Risale) | v1 | Onaylı yüksek frekanslı lemmalarla başlar, v1.x'te genişler ([Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)). |
 | İfade eşleşmesi (FTS5 ifade sorgusu) | v1 | |
-| Benzer âyet | v1 | Sözlüksel satırlar kendi indeksimizden, âlim kaynaklı ilişkiler QUL ve QurSim'den ([Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) §5) |
+| Benzer âyet | v1 | Sözlüksel satırlar kendi indeksimizden, âlim kaynaklı ilişkiler QurSim'den (yedek: `arriqaaq/ilm` GitHub kopyası; [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) §5) |
 | Konu bağlantıları | v1.x | |
 | Anlamsal komşular | Faz atanmadı | Sonra yapılacaklar listesinde |
 | Geri dönüş yığını, kırıntı izi, "↩ Okuduğun yere dön" | v1 | |
-| Bağlantı oyu (👍/👎) ve hata bildirimi | v1.x | Sunucu gerekir |
+| Bağlantı oyu (beğen, beğenme) ve hata bildirimi | v1.x | Sunucu gerekir |
 | Bağlantıyı derin bağlantıyla paylaşma | v1 | |
 
 ### 4.7 Arama
@@ -267,11 +266,12 @@ Not: QAC kaynaklı kök ve lemma verisi boyutu yüzünden `core`'dan ayrı, iste
 | Özellik | Etiket | Not |
 |---|---|---|
 | Hesapsız tam kullanım | v1 | K-15 |
+| Gizlilik metni ve mağaza gizlilik beyanları (App Privacy, Veri güvenliği) | v1 | [Gizlilik](../07-yayin/02-gizlilik.md) §2.5 ve §2.6 |
 | Senkrona hazır yerel şema (UUIDv7, HLC, `deleted_at`, `base_version`, `device_id`) | v1 | [Kullanıcı verisi ve senkron](../03-veri/04-kullanici-verisi-ve-senkron.md) |
 | Hesap (ASP.NET Core Identity; Google sunulursa Apple ile Giriş de) | v1.x | |
 | Cihazlar arası senkron (HLC ve veri türüne göre birleştirme) | v1.x | K-16 |
 | Not çakışmasında iki sürümü gösterip kullanıcıya seçtirme | v1.x | |
-| Hesap silme, gizlilik metni | v1.x | [Gizlilik](../07-yayin/02-gizlilik.md) |
+| Hesap silme, hesaplı sürümün gizlilik metni | v1.x | [Gizlilik](../07-yayin/02-gizlilik.md) §3 |
 | Web'de aynı hesapla okuma | Web | |
 | Metin CRDT ile ortak düzenleme | Faz atanmadı | Yalnız ortak düzenleme gelirse |
 
@@ -287,7 +287,7 @@ Bu işlerin sahibi [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacakla
 - Mağaza adı ve alan adı kontrolü (K-01).
 - Diğer tefsir ve mealler, Arapça klasik tefsir.
 - Anlamsal katman ve "kaynaklara sor".
-- PDF dışa aktarma, yapay zekâ ile hadis çevirisi.
+- PDF dışa aktarma.
 
 ---
 

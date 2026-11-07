@@ -94,8 +94,8 @@ CREATE TABLE source (
 | `qac-morfoloji` | morfoloji | Kök, lemma ve sözcük türü (`quran_word.morph_source`, bölüm 5) |
 | `tecrid-naim` · `tecrid-miras` | hadis_ceviri | Ahmed Naim Türkçesi ve Kâmil Miras ciltleri ([K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları)) |
 | `risale-1956-1960`, `risale-asil-nusha` | risale | Risale metninin dayandığı baskı ve nüsha kayıtları ([Risale hazırlığı](../04-icerik/05-risale-hazirligi.md)) |
-| `zamanlama-qud`, `zamanlama-mp3quran` (A27.2'de açılır) | zamanlama | QUD v4.0.0 (âyet ve kelime); MP3Quran yedek âyet zamanlaması ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) madde 3; [Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md)) |
-| `ses-mp3quran`, `ses-tarteel-cdn` (A27.2'de açılır) | ses | Dosyalar içerik hattıyla bir kez alınır, kendi depomuzdan sunulur (K-41 madde 3–4) |
+| `zamanlama-qud`, `zamanlama-mp3quran` (A27.0'da açılır) | zamanlama | QUD v4.0.0 (âyet ve kelime); MP3Quran yedek âyet zamanlaması ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) madde 3; [Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md)) |
+| `ses-mp3quran`, `ses-tarteel-cdn` (A27.0'da açılır) | ses | Dosyalar içerik hattıyla bir kez alınır, kendi depomuzdan sunulur (K-41 madde 3–4) |
 | `medine-604-duzen` | mushaf_duzeni | Kaynak ve sürüm A26.0 tedarik adımında sabitlenir (ED-5) |
 
 ## 4. `unit`

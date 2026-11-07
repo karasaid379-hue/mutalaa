@@ -184,7 +184,7 @@ flowchart TD
 Kaynak kayıtları (`elmalili-meal`, `elmalili-tefsir`; baskı kimliği `elmalili-1935`) eseri `baslik`, müellifi `yazar`, tarama adresini `kaynak_url`, atıf satırını `atif_metni` ve aktarım sürümünü `surum` alanında taşır. Künyenin geri kalanı `baski_bilgisi` alanındadır: baskı kimliği, baskı yeri ve yılları, matbaa, seri, cilt ve sayfa sayıları, tarama kaynağı (nüsha ya da kütüphane, yer numarası, tarama tarihi) ve aktarım kılavuzu sürümü; editörler `review` kayıtlarındadır.
 
 - **Sürüm.** Meal veri seti `elmalili-meal` adıyla anlamsal sürüm taşır (1.0.0 ilk onaylı sürüm). Sürüm dondurma A34'te yapılır; sonraki düzeltmeler yeni sürüm olur. Onaylı birimde sonradan yapılan düzeltme birimi yeniden inceleme ve ikinci onaydan geçirir ([Yayın süreci](../07-yayin/01-yayin-sureci.md) §7.3).
-- **Atıf (uygulama, OCR yolu).** "Meal: Elmalılı Muhammed Hamdi Yazır, *Hak Dini Kur'an Dili*, İstanbul 1935–1939. Özgün baskıdan Mütâlaa tarafından aktarılmıştır. Sürüm 1.0.0."
+- **Atıf (uygulama, OCR yolu).** "Elmalılı Muhammed Hamdi Yazır, Hak Dini Kur'an Dili, İstanbul 1935–1939. Metin özgün baskıdan Mütâlaa tarafından aktarılmıştır. Aktarım sürümü 1.0.0." (kaynak kaydındaki `atif_metni`, `{sürüm}` doldurulmuş hâliyle)
 - **Atıf (uygulama, hazır metin yolu).** "Meal: Elmalılı Muhammed Hamdi Yazır, *Hak Dini Kur'an Dili*, İstanbul 1935–1939. {X} kaynağından alınmış, Mütâlaa tarafından özgün baskıyla karşılaştırılıp düzeltilmiştir. Sürüm 1.0.0." `{X}` kaynağın adı ve revizyonudur (K-38 madde 2).
 - **Atıf (okur alıntısı).** "Elmalılı, *Hak Dini Kur'an Dili*, c. {cilt}, s. {sayfa}; Mütâlaa aktarımı {sürüm}."
 

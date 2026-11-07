@@ -22,7 +22,7 @@ Bu dosya bağlantıların veri modelini, puanlamasını, yayın kuralını, seç
 | 1 · Deterministik | İktibas | n-gram indeksi + hizalama + bağlam + insan onayı | `iktibas` | v1 |
 | 2 · Sözlüksel | Kök, lemma | QAC + Türkçe→kök sözlüğü | `kok`, `lemma` | v1 |
 | 2 · Sözlüksel | İfade, konkordans | FTS5 ifade sorgusu, KWIC | yok (sorgu anında) | v1 |
-| 2 · Küratörlü | Benzer âyet | Kendi n-gram indeksimiz; QUL, QurSim | `benzer_ayet` | v1, kısmen |
+| 2 · Küratörlü | Benzer âyet | Kendi n-gram indeksimiz; QurSim (yedek: `arriqaaq/ilm`) | `benzer_ayet` | v1, kısmen |
 | 2 · Küratörlü | İma | Editör; dil modeli aday önerir | `ima` | v1, editör girdikçe |
 | 2 · Küratörlü | Konu | Atıf dizini ve kök kümelerinden tohum + editör | `konu` | v1.x |
 | 3 · Olasılıksal | Anlamsal komşu | Önceden hesaplanmış gömmeler | `anlamsal` | v1.x |
@@ -100,7 +100,7 @@ Başlıca `evidence` anahtarları: `iktibas` → `matched_words`, `coverage`, `i
 | `anlamsal` | Gömme benzerliğiyle önerilen komşu | `rn:…:p4` → `q:…`, kalibre puan 0,72 |
 
 - **İma.** Risale'de âyetler çoğu zaman başlık olur ve pek çok âyet metni verilmeden açıklanır ([RİNAP](https://rinap.uskudar.edu.tr/uploads/site/6/content/files/risale-i-nurun-tefsirdeki-yeri-compressed.pdf)). Sözlüksel tespit bunları bulamaz; imayı editör girer, dil modeli yalnız `aday` önerir.
-- **Benzer âyet.** QUL 4.001 benzer âyet ve 5.277 müteşâbih kaydı, QurSim âlim kaynaklı 7.600'den fazla çift sunar ([QUL](https://qul.tarteel.ai/resources); [QurSim](https://aclanthology.org/L12-1051/)). Sözlüksel benzer âyetler Tanzil metninde kendi n-gram indeksimizle hesaplanır ([02 §5](./02-iktibas-tespiti.md)); QUL ve QurSim satırları âlim kaynaklı ve müteşâbih ilişkileri ekler. Raporun "sözlüksel benzerlik" ve "âlim kaynaklı ilişki" türleri `evidence.subtype` değerleridir.
+- **Benzer âyet.** QUL 4.001 benzer âyet ve 5.277 müteşâbih kaydı, QurSim âlim kaynaklı 7.600'den fazla çift sunar ([QUL](https://qul.tarteel.ai/resources); [QurSim](https://aclanthology.org/L12-1051/)). Sözlüksel benzer âyetler Tanzil metninde kendi n-gram indeksimizle hesaplanır ([02 §5](./02-iktibas-tespiti.md)); QurSim satırları âlim kaynaklı ilişkileri ekler. QUL veri setlerinin indirmesi oturum açma istediği için QUL alınmaz; QUL biçimli kısmi kopya (`arriqaaq/ilm`) yedektir ([Kaynaklar](../04-icerik/01-kaynaklar.md) §3.2). Raporun "sözlüksel benzerlik" ve "âlim kaynaklı ilişki" türleri `evidence.subtype` değerleridir.
 - **Konu (v1.x).** QUL'un 2.512 başlıklı konu dizini (ontoloji başlıkları QAC'den, tematik başlıklar Clear Quran çevirisinden) hazır kaynaktır ([QUL konular](https://qul.tarteel.ai/resources/ayah-topics/45)). Eski planın beş küratörlük, 15–25 bin $'lık taksonomisi yerine konular atıf dizini ve kök kümelerinden tohumlanır, Risale'ye özgü kavramlar (haşir delilleri, esmâ tecellileri, ene ve zerre) dil modeli önerisi ve editör onayıyla eklenir (rapor). Yalnız birim → konu satırı saklanır; aynı konuyu paylaşan birimler sorgu anında bulunur.
 
 ## 6. Puanlama
@@ -115,12 +115,12 @@ kok         idf_n(r) = ln(6236/df(r)) / ln(6236)      df: r kökünü taşıyan 
             birim-birim  score(A,B) = Σ idf_n(r ∈ K(A)∩K(B)) / Σ idf_n(r ∈ K(A))
             tek kelime   score = idf_n(r) · (aynı lemma ? 1 : 0,8) · (yalnızca etimolojik ? 0,5 : 1)
 lemma       kok ile aynı, lemma sıklığıyla
-benzer_ayet sözlüksel min(1, ortak/7)·(0,5 + 0,5·kapsama); QUL score/100; QurSim derecesi 0–1'e (ölçek Doğrulanacak)
+benzer_ayet sözlüksel min(1, ortak/7)·(0,5 + 0,5·kapsama); QurSim derecesi 0–1'e (ölçek Doğrulanacak); yedek QUL biçimli kopyada score/100
 konu        score(A,B|T) = w(A,T)·w(B,T)·idf_n(T)     w: 1,0 doğrudan, 0,5 dolaylı
 anlamsal    score = confidence = kalibre(kosinüs), grup çifti başına izotonik eşleme (04 §5)
 ```
 
-Rapor iktibası kapsama × uzunlukla puanlar ve kalıp ifadeye indirim uygular. Kapsama 0,5–1'e yumuşatılır, çünkü uzun âyetten alınan yedi kelimelik parça saf kapsamayla sıfıra yakın puan alırdı. Kalıp indirimini `1/f` yapar. Örneğin 18 âyette geçen تَجْرِي مِن تَحْتِهَا الْأَنْهَارُ خَالِدِينَ bağlamsız her hedefte 1/18 alır ([QUL](https://qul.tarteel.ai/morphology_phrases?page=61)). IDF, ق و ل gibi yaygın köklerin öne geçmesini önler.
+Rapor iktibası kapsama × uzunlukla puanlar ve kalıp ifadeye indirim uygular. Kapsama 0,5–1'e yumuşatılır, çünkü uzun âyetten alınan yedi kelimelik parça saf kapsamayla sıfıra yakın puan alırdı. Kalıp indirimini `1/f` yapar. Örneğin 18 âyette geçen تَجْرِى مِن تَحْتِهَا ٱلْأَنْهَـٰرُ خَـٰلِدِينَ bağlamsız her hedefte 1/18 alır ([QUL](https://qul.tarteel.ai/morphology_phrases?page=61)). IDF, ق و ل gibi yaygın köklerin öne geçmesini önler.
 
 | Etiket | Koşul | Görünüm |
 |---|---|---|

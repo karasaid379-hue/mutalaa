@@ -149,7 +149,7 @@ Gerekçe:
 4. Kullanıcının IP adresi birden çok üçüncü taraf ses sunucusuna gitmez; yalnız zaten kullanılan içerik deposu ve CDN'e gider ([Gizlilik](../07-yayin/02-gizlilik.md) §2.4).
 5. ASP.NET arka ucu ses baytlarını iletmez; depo nesne deposudur.
 
-Bedel: dokuz kayıt için yaklaşık 12–16 GB depolama (kaba tahmin, §4.4). R2 fiyatı ve çıkış ücreti İ-18 ile hesap açılırken doğrulanır; ücretli işlem kural 11 gereği onay ister.
+Bedel: dokuz kayıt için yaklaşık 19,74 GB depolama (1.026 dosya, 3 Kasım 2026 ön ölçümü; [Kaynaklar](../04-icerik/01-kaynaklar.md) §3.7). R2 fiyatı ve çıkış ücreti İ-18 ile hesap açılırken doğrulanır; ücretli işlem kural 11 gereği onay ister.
 
 ### 5.3 Paketler
 

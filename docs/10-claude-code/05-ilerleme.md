@@ -1,16 +1,16 @@
 # İlerleme
 
-> **Sürüm:** 1.3 · **Tarih:** 7 Kasım 2026 · **Durum:** Canlı belge (`/asama` günceller)
+> **Sürüm:** 1.4 · **Tarih:** 8 Kasım 2026 · **Durum:** Canlı belge (`/asama` günceller)
 > **Bağlı kararlar:** [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
 
 Bu dosya aşamaların durumunu tutar. Aşağıdaki durum bloğu her oturumun başında Claude Code'a otomatik verilir (`.claude/hooks/oturum-baslangici.mjs`). Bloğun işaret satırlarını (`<!-- durum:baslangic -->`, `<!-- durum:bitis -->`) silmeyin.
 
 <!-- durum:baslangic -->
-- Aktif aşama: yok (A10 tamam; PR bekliyor, dal feat/a10-tanzil-alimi; sonraki iş K-42 son doğrulama turunun kalan bakışları)
+- Aktif aşama: yok (A10 tamam; PR bekliyor, dal feat/a10-tanzil-alimi; K-42 son doğrulaması tamam, bekleyen kararlar kullanıcıda)
 - Son tamamlanan: A10 · Tanzil alımı ve değişmezlik testleri (2026-11-07)
 - Sıradaki: A11 (proje sahibinin tercihi, 2026-10-28: önce omurga A10–A13, sonra mobil A21–A32; kitaplar arkadan ham girip olgunlaşır; A09 insan adımları paralel ilerler)
 - Bekleyen insan adımları: İ-10 ve İ-17 (A09 için); İ-16 (kalan: EXPO_TOKEN, İ-15 Expo hesabına bağlı; A21/A34); İ-23 (sure adlarının editör denetimi, A11.3); A10 devri: pipeline/.env parolasını yerel konteynerle hizalamak (windows-sorun becerisi, ALTER USER), sonra scripts/nightly.ps1 -ExportPg yerel veritabanına yükler
-- Son güncelleme: 2026-11-07
+- Son güncelleme: 2026-11-08
 <!-- durum:bitis -->
 
 ## Aşama tablosu
@@ -81,6 +81,7 @@ Her aşama oturumunun sonunda bir satır eklenir: `YYYY-AA-GG · Aşama · ne ya
 - 2026-10-30 · A27 (araştırma, belge işi) · sekiz araştırma (QUD, MP3Quran, Maqra/EveryAyah, Quran Foundation, okuyucu popülerliği, Expo ses ve dosya sistemi, başka sağlayıcılar, açık kaynak uygulama mimarileri); K-41 (7 okuyucu, 9 kayıt, sure dosyası + QUD zamanlaması, ayna, çevrimiçi öncelikli dinleme); BÇ-17 çözüldü; Ses sistemi 2.0, A27 2.0 ve ilgili belgeler eşitlendi · A10'a dönülür
 - 2026-11-01 · K-42 · kaynak ilkesi ve kalite temelli görünürlük belgelere işlendi: her aşama tedarikle başlar, kaynakları Claude Code indirir, derleme görünürlüğü editoryal kaliteye bağlıdır; A01 ve A39 devre dışı; kaynak kaydı şeması, 10 enum türü ve 25 kayıt; insan adımları ve belge çelişkileri yeniden düzenlendi · A10
 - 2026-11-07 · A10 · Tanzil bağdaştırıcısı ve sıkı kilit, `normalize` (AR-4), `anchor`, QA kapıları (G-KAY, G-BUT, G-CAP, G-NOR), `export pg`, değişmezlik testleri, `ar-tz-` vektörleri, gece iş akışı ve `scripts/nightly.ps1`; gerçek veriyle uçtan uca (geçici PostgreSQL 18); iki tur bağımsız inceleme; K-39 ilk kilit notu; BÇ-37 çözüldü · A11
+- 2026-11-08 · K-42 son doğrulama · beş anlam bakışı (81 bulgu) tarandı; doğrulanan ve açıkça hatalı bulgular belgelerde, kitte ve CLAUDE.md'de düzeltildi (kayıt dosya özeti taşımaz, aday bağlantı satırı, K-41 oynatma birimi, yapay zekâ ile hadis çevirisi satırları, Sentry sürümü, Vikikaynak özeti, benzer âyet kaynağı, Tanzil baytından alınan Kur'an kalıbı, ses aynası boyutu); kararı kullanıcıya ait olanlar bırakıldı (Kelime-Frekans anlam sütunu, Mushaf A için QPC V1 ya da V2, Expo SDK 58 ile K-09) · A11
 
 ## İlgili dosyalar
 

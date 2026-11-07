@@ -149,7 +149,7 @@ def sw(a, b, match=2, fuzzy=1, miss=-2, gap=-2, sim=80):
 
 ## 7. Kısa ve kalıp ifadeler
 
-En büyük yanlış pozitif kaynağı kısa ve kalıplaşmış ifadelerdir. QUL 5.641 tekrarlanan ifade listeler. Örneğin تَجْرِي مِن تَحْتِهَا الْأَنْهَارُ خَالِدِينَ 18 âyette, altı kelimelik uzantısı 15 âyette geçer ([QUL](https://qul.tarteel.ai/morphology_phrases?page=61)). f değerini kendi indeksimiz hesaplar; QUL listesi bu hesabı denetlemek için kullanılır.
+En büyük yanlış pozitif kaynağı kısa ve kalıplaşmış ifadelerdir. QUL 5.641 tekrarlanan ifade listeler. Örneğin تَجْرِى مِن تَحْتِهَا ٱلْأَنْهَـٰرُ خَـٰلِدِينَ 18 âyette, altı kelimelik uzantısı 15 âyette geçer ([QUL](https://qul.tarteel.ai/morphology_phrases?page=61)). f değerini kendi indeksimiz hesaplar; QUL listesi bu hesabı denetlemek için kullanılır.
 
 | Durum | Kural |
 |---|---|

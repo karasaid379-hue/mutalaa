@@ -2,7 +2,7 @@
 > **Sürüm:** 1.10 · **Tarih:** 7 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
 
-İçerik hattı, kaynak dosyalarını alır, normalize eder, kalıcı adres (çapa) verir, zenginleştirir, denetler ve editoryal veritabanına (PostgreSQL 18) yükler. Python 3.13 ile yazılır, paketleri `uv` yönetir. Hat yalnız geliştirme makinesinde çalışır, üretim sunucusunda çalışmaz (K-12). Kaynak dosyalarını hat indirmez: aşamanın tedarik adımında Claude Code indirir (`data/gelen/<kaynak>/<YYYY-AA-GG>/`), hat yalnız kaynak kaydı olan dosyayı işler ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 2 ve 4). SQLite içerik paketlerini hat üretmez; paketleri editör onayından sonra .NET yayınlayıcı (`server/Mutalaa.Publisher`) kalite kapısından geçirerek üretir.
+İçerik hattı, kaynak dosyalarını alır, normalize eder, kalıcı adres (çapa) verir, zenginleştirir, denetler ve editoryal veritabanına (PostgreSQL 18) yükler. Python 3.13 ile yazılır, paketleri `uv` yönetir. Hat yalnız geliştirme makinesinde çalışır, üretim sunucusunda çalışmaz (K-12). Kaynak dosyalarını hat indirmez: aşamanın tedarik adımında Claude Code indirir (`data/gelen/<kaynak>/<YYYY-AA-GG>/`), hat yalnız kaynak kaydı olan dosyayı işler ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 2 ve 4). SQLite içerik paketlerini hat üretmez; paketleri .NET yayınlayıcı (`server/Mutalaa.Publisher`) kalite kapısından geçirerek üretir; `public` pakete yalnız editörde onaylı içerik girer, onaysız içerik `dev` ve `internal` paketlerinde "doğrulanmamış" rozetiyle yer alır ([Yayın süreci](../07-yayin/01-yayin-sureci.md) §3).
 
 ## 1. Akış
 
@@ -16,7 +16,8 @@ flowchart LR
   Q -- kaldı --> X[Rapor + inceleme kuyruğu]
   P --> E[Editör paneli<br/>insan onayı]
   E --> P2[(onayli)]
-  P2 --> Y[.NET yayınlayıcı<br/>kalite kapısı]
+  P -->|"dev, internal: doğrulanmamış rozetli"| Y[.NET yayınlayıcı<br/>kalite kapısı]
+  P2 -->|"public: yalnız onaylı"| Y
   Y --> Z[SQLite paketleri + manifest.json]
 ```
 
@@ -294,7 +295,7 @@ def run_ingest(adapter: SourceAdapter, ctx: "RunContext") -> "IngestSonucu":
 
 ## 9. QA kapıları
 
-Bir birim, aşağıdaki kapıları geçmeden ve editörde onaylanmadan yayına aday olamaz. Yayınlayıcı kalite kapısını ayrıca uygular ([Yayın süreci](../07-yayin/01-yayin-sureci.md) §4; [Test stratejisi](../07-yayin/03-test-stratejisi.md)).
+Bir birim, aşağıdaki kapıları geçmeden PostgreSQL'e alınmaz; `public` pakete girmesi için ayrıca editörde onaylanmış olması gerekir (onaysız birim yalnız `dev` ve `internal` paketlerinde "doğrulanmamış" rozetiyle yer alır). Yayınlayıcı kalite kapısını ayrıca uygular ([Yayın süreci](../07-yayin/01-yayin-sureci.md) §4; [Test stratejisi](../07-yayin/03-test-stratejisi.md)).
 
 | Kapı | Denetim | Kalırsa |
 |---|---|---|

@@ -217,7 +217,7 @@ Görünürlük [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kali
 | Paket kaynağı | Yerel S3 deposu (bilgisayarın LAN IP adresi) | İç test kanalı (Açık soru) | Canlı depo |
 | Onaylı birim, onaylı bağlantı | Var | Var | Var |
 | Onaysız birim, onaysız yapay zekâ taslağı | "Doğrulanmamış" rozetiyle | "Doğrulanmamış" rozetiyle | Yok |
-| `aday` bağlantılar | Var, "doğrulanmamış" işaretli | Var, "doğrulanmamış" işaretli | Yok |
+| `aday` bağlantı (insan onayı isteyen tür) | Var, "doğrulanmamış" işaretli | Var, "doğrulanmamış" işaretli | Yok |
 | `red` bağlantılar | Yok | Yok | Yok |
 | `test-` önekli kaynak | Var | Yalnız `test-kucuk`, `test-ses` | Yok |
 
