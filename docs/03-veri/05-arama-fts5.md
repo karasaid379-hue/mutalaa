@@ -1,6 +1,6 @@
 # Arama (SQLite FTS5)
 
-> **Sürüm:** 1.4 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Sürüm:** 1.5 · **Tarih:** 7 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · K-21 ([karar defteri](../00-ozet/02-karar-defteri.md))
 
 Arama cihazda SQLite FTS5 ile yapılır. Arama metni içerik hattında normalize edilir ve kanonik metinden ayrı sütunlarda durur; kanonik metin değişmez (K-26). Diğer belgelerdeki `search_text` adı bu sütunların (`tr_narrow`, `tr_wide`, `tr_stem`, `ar_norm`) ortak adıdır. Önek indeksi, Arapça için trigram tablosu ve bm25 sıralaması kullanılır; hedef orta seviye Android'de 50 ms altıdır (K-17). Normalleştirme kuralları yalnız bu dosyada tanımlıdır; Python, TypeScript ve C# uygulamaları `shared/test-vectors/` ile birbirine kilitlenir.
@@ -82,7 +82,7 @@ Vektör satırları `id`, `input`, `expected` ve isteğe bağlı `note` alanlar�
 {"id":"tr-0004","input":"Kur'ân'ın","expected":{"dar":"kurân","genis":"kuran"},"note":"iç kesme listesi + ek"}
 ```
 
-A05'te `tr.jsonl` 86, `ar.jsonl` 62 satırdır. Beklenen değerler elle yazılmıştır; üreteç yalnız biçimi, kaçışı ve kimlik düzenini denetler. Aşağıdaki Türkçe tablonun her satırı `tr.jsonl` içinde birebir vardır; kimlikler gerçek vektörlerdir (`IŞIK` büyük harf örneği `tr-0015`'tir).
+`tr.jsonl` 86, `ar.jsonl` 69 satırdır (62 sentetik satır A05'ten, 7 Tanzil satırı A10.7'den). Beklenen değerler elle yazılmıştır; üreteç yalnız biçimi, kaçışı ve kimlik düzenini denetler (`ar-tz-` satırları aşağıda anlatılır). Aşağıdaki Türkçe tablonun her satırı `tr.jsonl` içinde birebir vardır; kimlikler gerçek vektörlerdir (`IŞIK` büyük harf örneği `tr-0015`'tir).
 
 | Kimlik | Girdi | Dar | Geniş | Sınanan kural |
 |---|---|---|---|---|
@@ -99,7 +99,7 @@ A05'te `tr.jsonl` 86, `ar.jsonl` 62 satırdır. Beklenen değerler elle yazılm�
 | `tr-0014` | `a` + U+0302 + `lem` | `âlem` | `alem` | NFC |
 | `tr-0015` | `IŞIK` | `ışık` | `isik` | büyük harf I → ı |
 
-`ar.jsonl` satırları (`ar-0001` … `ar-0062`) `\u` kaçışıyla kurulan **sentetik** harf ve işaret dizileridir; besmele, âyet ya da başka bir metinden alıntı değildir. Her satır bir kuralı sınar (silme aralığının uçları ve dışı, birleştirme, NFC olmayan sıra, ayırıcılar, biçim karakterleri, bölme). Aşağıdaki tablo Kur'an kelimeleriyle yazılmıştır; bu girdilerin Tanzil baytlarıyla satırları A10.7'de betikle eklenir. Tablodaki yazım Tanzil baytlarıyla aynı olmayabilir ve vektöre kopyalanmaz.
+`ar.jsonl` satırları (`ar-0001` … `ar-0062`) `\u` kaçışıyla kurulan **sentetik** harf ve işaret dizileridir; besmele, âyet ya da başka bir metinden alıntı değildir. Her satır bir kuralı sınar (silme aralığının uçları ve dışı, birleştirme, NFC olmayan sıra, ayırıcılar, biçim karakterleri, bölme). Aşağıdaki tablo Kur'an kelimeleriyle yazılmıştır. Uygulandı (A10.7): bu girdilerin Tanzil Uthmani baytlarıyla satırları `shared/test-vectors/normalize/ar.jsonl` içinde `ar-tz-0001` … `ar-tz-0007` kimliğiyle durur (`input` Tanzil Uthmani baytları, `note` kaynak ve çapa, ör. `tanzil-uthmani q:1:1`); `uv run mutalaa export test-vectors --tanzil-ornekleri` bunları bu tablodan ve `data/gelen` altındaki Tanzil dosyasından baştan üretir. Tablodaki yazım Tanzil baytlarıyla aynı olmayabilir ve vektöre kopyalanmaz.
 
 | Girdi | `ar` | Sınanan kural |
 |---|---|---|

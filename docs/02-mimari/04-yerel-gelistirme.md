@@ -315,12 +315,14 @@ PYTHONUTF8=1
    cd pipeline
    uv run mutalaa sources check
    uv run mutalaa ingest tanzil --variant uthmani
+   uv run mutalaa ingest tanzil --variant simple-clean
    uv run mutalaa normalize --source tanzil-uthmani
    uv run mutalaa anchor --source tanzil-uthmani
    uv run mutalaa qa run --source tanzil-uthmani
    uv run mutalaa export pg --source tanzil-uthmani
    cd ..
    ```
+   `normalize` iki ingest çalıştırmasını da (Uthmani ve Simple Clean) okur; biri yoksa çıkış `2` verir. `qa run` dört kapıyı (G-KAY, G-BUT, G-CAP, G-NOR) çalıştırır; `export pg` yalnız geçen raporla yükler, kapı kalmışsa çıkış `1` verir.
 5. **API'yi ve editörü açın.**
    ```powershell
    dotnet watch --project server/Mutalaa.Api        # http://localhost:5080/scalar/v1
@@ -374,7 +376,7 @@ PYTHONUTF8=1
 |---|---|---|
 | `editor` ve `admin` rolleri, ilk yönetici | `Mutalaa.Api -- seed` | İdempotent; parola yalnız kullanıcı sırlarında ya da `.env`'de |
 | `source` satırları | Hattın `ingest` adımı, `pipeline/sources/{kimlik}.toml` kayıtlarından | Değerler [Kaynaklar](../04-icerik/01-kaynaklar.md) ile aynıdır; kaynak kaydı olmayan kaynak hatta alınmaz ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 4); `uv run mutalaa sources check` kayıtları denetler |
-| Tanzil metni | `ingest tanzil --variant uthmani` | Metin dağıtıldığı gibi saklanır, NFC bile uygulanmaz; kaynağın kendi bildirimi (`notice_text`) bayt bayt saklanır, atıf satırı ve tanzil.net bağlantısı kaynak kaydından gelir |
+| Tanzil metni | `ingest tanzil --variant {uthmani\|simple-clean}`, ardından `normalize`, `anchor`, `qa run`, `export pg` | Metin dağıtıldığı gibi saklanır, NFC bile uygulanmaz; kaynağın kendi bildirimi (`notice_text`) bayt bayt saklanır, atıf satırı ve tanzil.net bağlantısı kaynak kaydından gelir |
 | Elmalılı meali | A09 yol kararına göre hazır metin ya da OCR çıktısı geldiğinde | Uydurma ya da yer tutucu meal metni yazılmaz |
 | Uçtan uca test fikstürleri: metin paketi `test-kucuk`, ses paketi `ses-test` (kaynağı `test-ses`) | Slug `test-` ile başlar; içerik kendi ürettiğimiz sentetik metin ve tondur | `dev` ve `internal` derlemeye girer (`internal`'a yalnız bu uçtan uca fikstürler girer); Yayınlayıcı `test-` kaynaklarını `public` derlemeye hiçbir durumda almaz ([Backend API](./05-backend-api.md) P-12; [Test stratejisi](../07-yayin/03-test-stratejisi.md) §9) |
 | Arayüz geliştirmek için sentetik eser kaynakları (ör. `test-tefsir-ornek`, `test-risale-ornek`) | Slug `test-` ile başlar; içerik sentetik metindir | Yalnız `dev` derlemesinde görünür; `internal`'a yalnız `test-kucuk` ve `test-ses` girer, `public`'e P-12 ile hiç girmez |

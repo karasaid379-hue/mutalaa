@@ -1,6 +1,6 @@
 # Test stratejisi
 
-> **Sürüm:** 1.10 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Sürüm:** 1.11 · **Tarih:** 7 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
 
 Bu dosya neyin, hangi araçla, ne zaman test edildiğini tanımlar. Eşik değerlerinin çoğu bu dosyanın önerisidir; ilk ölçümden sonra kalibre edilir ve öyle işaretlidir.
@@ -12,7 +12,7 @@ Bu dosya neyin, hangi araçla, ne zaman test edildiğini tanımlar. Eşik değer
 | Ortak test vektörleri | pytest, Vitest, xUnit | `shared/test-vectors/` |
 | Birim | pytest (`pipeline/`), Vitest (`packages/`, `apps/editor`), Jest + jest-expo (`apps/mobile`), xUnit (`server/`) | Her PR |
 | İçerik kalitesi | Altın set değerlendirmesi, değişmezlik testleri | Gece ve sürüm |
-| Veritabanı | Göç testleri (Testcontainers, `postgres:18`) | Her PR |
+| Veritabanı | Göç testleri (Testcontainers, `postgres:18`); Python hattının `veritabani` testleri (`postgres:18` servisi, `ci-pipeline` `database` işi) | Her PR |
 | Kalite kapısı | Publisher birim, bütünleşik ve yapıt taraması | Her PR ve sürüm |
 | Mobil | React Native Testing Library, Maestro | PR ve gece |
 | Performans, erişilebilirlik | Kıyas ekranı, `gfxinfo`, Instruments, tarayıcılar, elle kontrol | Sürüm |
@@ -36,7 +36,7 @@ Düzenin tamamı [Proje yapısı](../02-mimari/03-proje-yapisi.md) §1'dedir. He
 
 Çapa vektörleri [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)'teki ayrıntıları da kilitler: hata kodlarının önceliği, Kur'an'da okuma sırasına göre `compare`, `contains` ekleri, birim işlevleri (`unitOf`, `toUnitSpan`, `coveredAyahs`), rota kuralları, ofset işlevlerinin hataları ve kendi metnimizin ilk kayıt adım sırası ([Çapa şeması](../03-veri/01-capa-semasi.md) §2, §7, §11). Bir işlevi uygulayan her dil aynı vektörde aynı sonucu verir; `content-hash/` TypeScript'te koşmaz, çünkü cihaz özet hesaplamaz.
 
-Örnekler (çıktılar yerel Python denemesiyle doğrulandı; kesin kurallar [Arama](../03-veri/05-arama-fts5.md) ve [Çapa şeması](../03-veri/01-capa-semasi.md) dosyalarındadır). Satırlar farklı dosyalardandır: `tr-` ve `ar-` `normalize/`, `an-0001` ve `an-0004` `anchors/valid.jsonl`, `an-0002`, `an-0003`, `an-0005` ve `an-0006` `anchors/invalid.jsonl`, `of-` `offsets/offsets.jsonl`. Kimlik önekleri: `valid` ve `invalid` tek ortak `an-` dizisini paylaşır; `cm-` `compare`, `ct-` `contains`, `ro-` `route`, `of-` `offsets`, `ch-` `content-hash` dosyasındadır. Üretilen sınır satırları `an-s…` ve `an-u-…` kimliklidir; birden çok kuralı bozan öncelik satırları `invalid` içindedir (A04, K-35 madde 1). Aşağıdaki satırlar biçimi gösterir; gerçek vektörlerde `expected` ayrıca `unit`, `unit_span` ve `ayahs` taşır ve not alanı dayanak gösterir. `tr-` ve `ar-` satırları gerçek vektörlerden aynen alınmıştır (A05, [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)): `tr.jsonl` 86, `ar.jsonl` 62 satırdır; `expected` değerleri elle yazılır ve `uv run mutalaa export test-vectors` yalnız biçimi, kaçışı ve kimlik düzenini denetler. Arapça satırlar `\u` kaçışlı sentetik harf ve işaret dizileridir, Kur'an metni değildir; Arama §1.5'teki Kur'an kelimeli Arapça tablonun Tanzil baytlarıyla satırları A10.7'de eklenir.
+Örnekler (çıktılar yerel Python denemesiyle doğrulandı; kesin kurallar [Arama](../03-veri/05-arama-fts5.md) ve [Çapa şeması](../03-veri/01-capa-semasi.md) dosyalarındadır). Satırlar farklı dosyalardandır: `tr-` ve `ar-` `normalize/`, `an-0001` ve `an-0004` `anchors/valid.jsonl`, `an-0002`, `an-0003`, `an-0005` ve `an-0006` `anchors/invalid.jsonl`, `of-` `offsets/offsets.jsonl`. Kimlik önekleri: `valid` ve `invalid` tek ortak `an-` dizisini paylaşır; `cm-` `compare`, `ct-` `contains`, `ro-` `route`, `of-` `offsets`, `ch-` `content-hash` dosyasındadır. Üretilen sınır satırları `an-s…` ve `an-u-…` kimliklidir; birden çok kuralı bozan öncelik satırları `invalid` içindedir (A04, K-35 madde 1). Aşağıdaki satırlar biçimi gösterir; gerçek vektörlerde `expected` ayrıca `unit`, `unit_span` ve `ayahs` taşır ve not alanı dayanak gösterir. `tr-` ve `ar-` satırları gerçek vektörlerden aynen alınmıştır (A05, [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)): `tr.jsonl` 86, `ar.jsonl` 69 satırdır; `expected` değerleri elle yazılır ve `uv run mutalaa export test-vectors` yalnız biçimi, kaçışı ve kimlik düzenini denetler. `ar-0001` … `ar-0062` satırları `\u` kaçışlı sentetik harf ve işaret dizileridir, Kur'an metni değildir. `ar-tz-0001` … `ar-tz-0007` satırlarının girdisi Arama §1.5'teki Kur'an kelimeli Arapça tablonun Tanzil Uthmani baytlarıdır (`note`: kaynak ve çapa, ör. `tanzil-uthmani q:1:1`); `expected` tablonun `ar` sütunudur ve bu satırları `uv run mutalaa export test-vectors --tanzil-ornekleri` baştan üretir (A10.7).
 
 ```jsonl
 {"id":"tr-0001","input":"Işık","expected":{"dar":"ışık","genis":"isik"},"note":"I → ı"}
@@ -94,7 +94,7 @@ Jest Node üzerinde çalışır ve Hermes'i sınamaz. Bu yüzden `dev` derlemede
 
 ## 3. Birim testleri
 
-- **Python (pytest):** `ingest`, `normalize`, `anchor`, `enrich`, `qa` modülleri; ağ ve model çağrısı fikstürle değiştirilir; yavaş testler işaretlenir.
+- **Python (pytest):** `ingest`, `adimlar`, `normalize`, `anchor`, `staged`, `zincir`, `qa`, `export` (ve ilgili aşamada `enrich`) modülleri; ağ ve model çağrısı fikstürle değiştirilir; yavaş testler işaretlenir. Tanımlı işaretler `pyproject.toml` içindedir ve `--strict-markers` ile zorunludur: `degismezlik` (Tanzil metninin hiçbir adımda değişmediğini kanıtlayan testler; bölüm 5) ve `veritabani` (yerel PostgreSQL test veritabanı `mutalaa_test` gerektirir; bölüm 6). Testlerde Kur'an metni hafızadan yazılmaz: kaynak dosyadan betikle kesilmiş parça (`pipeline/tests/fixtures/tanzil/`) ya da açıkça sentetik "Deneme" metni kullanılır.
 - **TypeScript (Vitest):** `anchors`, `content-schema`, `search`, `reader-core`, `player`, `ui-tokens` ve editör paneli. Ses durum makinesi (XState) geçiş testleriyle sınanır.
 - **C# (xUnit):** `Mutalaa.Domain`, `Mutalaa.Publisher`, `Mutalaa.Api`.
 
@@ -148,22 +148,46 @@ def prf(pred: set, gold: set) -> tuple[float, float, float]:
 
 ## 5. Kur'an metni değişmezlik testleri
 
-Tanzil metni bayt bayt saklanır; hiçbir dönüşüm uygulanmaz ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)). Bu testler her gece ve her sürümde koşar. Sahipleri: 1–4 A10 (`pipeline/tests/test_degismezlik.py`, `degismezlik` işareti; fikstürle koşan sürümleri CI'da, gerçek veriyle koşanlar yerelde `scripts/nightly.ps1` ile), 5 A24, 6 A13, 7 A11, 8 A13.
+Tanzil metni bayt bayt saklanır; hiçbir dönüşüm uygulanmaz ([K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)). Bu testler her gece ve her sürümde koşar: fikstür katmanı gece CI işinde (`.github/workflows/nightly.yml`), gerçek veri katmanı yerelde (`scripts/nightly.ps1`) ve sürümde. Sahipleri: 1–4 A10 (`pipeline/tests/test_degismezlik.py`), 5 A24, 6 A13, 7 A11, 8 A13.
 
-1. İndirilen (`data/gelen/tanzil/<YYYY-AA-GG>/`) Uthmani ve Simple Clean dosyalarının SHA-256'sı `pipeline/src/mutalaa_pipeline/ingest/tanzil.lock.json` içindeki sabit değere eşittir. Kilit ayrıca âyet satırlarının (`metin_sha256`) ve bildirim bloğunun (`bildirim_sha256`) özetini tutar; fark metinde mi bildirimde mi olduğu iletide görünür ([K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) madde 4).
+1. İndirilen (`data/gelen/tanzil/<YYYY-AA-GG>/`) Uthmani ve Simple Clean dosyalarının SHA-256'sı `pipeline/src/mutalaa_pipeline/ingest/tanzil.lock.json` içindeki sabit değere eşittir (`data/raw` altındaki kopya da). Kilit ayrıca âyet satırlarının (`metin_sha256`) ve bildirim bloğunun (`bildirim_sha256`) özetini tutar; fark metinde mi bildirimde mi olduğu iletide görünür ([K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) madde 4). Kaynak kaydındaki `notice_text`'in SHA-256'sı `bildirim_sha256` değerine, kaydın `surum` ve `kaynak_url` alanları kilitteki değerlere eşittir.
 2. 114 sure ve 6.236 âyet vardır.
-3. Her `q:{sure}:{ayet}` biriminin kanonik metni Tanzil satırıyla bayt bayt aynıdır. Birimlerden Tanzil dosyası yeniden üretilir ve kaynakla karşılaştırılır (bildirim satırları hariç).
-4. Her birimin `content_hash` değeri o metnin SHA-256'sıdır.
+3. Her `q:{sure}:{ayet}` biriminin kanonik metni Tanzil satırıyla bayt bayt aynıdır. Birimlerden Tanzil dosyası yeniden üretilir ve kaynakla karşılaştırılır: `data/staged` ingest çıktısından (`units.jsonl`, `notice.txt` ve manifestteki satır düzeni) ve PostgreSQL'deki birimlerden (`unit.metin` ve `source.notice_text`). Sonuç dosyayla bayt bayt aynıdır; bildirim satırları hariç karşılaştırma da ayrıca yapılır.
+4. Her birimin `content_hash` değeri o metnin SHA-256'sıdır (`data/staged` anchor çıktısında ve PostgreSQL'de); metin ayrıca ham dosyanın aynı bayt dilimidir.
 5. Okuyucunun metin seçicisi yalnız kanonik metni okur; `search_text` hiçbir ekranda görünmez (`reader-core` testi).
 6. `core` paketinde Tanzil'in kendi bildirimi (`notice_text`) bayt bayt bulunur ve SHA-256'sı kilitteki `bildirim_sha256` değerine eşittir.
 7. Sayfa eşlemesi: 1. sayfa Fâtiha 1–7'dir, 604. sayfa Nâs 6 ile biter, 0 ve 605 geçersizdir (`quran-app-docs/04-okuma/01-quran-okuyucu.md` testleri).
 8. Terfide (`promote`) `public` yayının içerik özetleri iç kanalda test edilen yayınınkine eşittir (P-14; [Yayın süreci](./01-yayin-sureci.md) §2.2).
 
+**1–4 numaralı testlerin düzeni.** `test_degismezlik.py` `degismezlik` işaretini taşır (`pytest -m degismezlik`) ve iki katmandan oluşur:
+
+- **Fikstür katmanı** her ortamda koşar (CI dahil). `pipeline/tests/fixtures/tanzil/` altında iki varyantın (Uthmani ve Simple Clean) parçası durur: kaynak dosyadan betikle kesilmiş ilk 40 âyet satırı (`1|1` … `2|33`) ve dosyanın tam bildirim bloğu. Parçalar elle yazılmamıştır; `KAYNAK.txt` kesim betiğini, kaynak dosyaların ve parçaların SHA-256 değerlerini taşır. `.gitattributes` bu klasör için `-text` der: git baytları dönüştürmez, dosyalar editörde açılıp kaydedilmez. Parçalar gerçek komut işlevleriyle `ingest → normalize → anchor` zincirinden geçer ve sonuç kaynak parçayla bayt bayt karşılaştırılır. Kaynak kaydındaki `notice_text` ile kilitteki `bildirim_sha256` eşitliği de veri istemez ve bu katmandadır.
+- **Gerçek veri katmanı** `data/gelen/tanzil` altındaki tam dosyalarla koşar; veri yoksa atlanır. PostgreSQL yarısı (test adında `postgresql`) ayrıca bağlantı ve yüklenmiş birim ister; veritabanı yoksa atlanır. `MUTALAA_DEGISMEZLIK_ZORUNLU=1` iken veri ya da veritabanının bulunamaması atlama değil başarısızlıktır (`scripts/nightly.ps1` ve `ci-pipeline` `database` işi bunu kullanır).
+
+Gece iş akışı yalnız fikstür katmanını koşar ve en az bir test geçmezse düşer: pytest çıkış kodu (boş seçimde `5` dahil) ve çıktıda en az bir `N passed` (N ≥ 1) aranır; yalnız atlayan ya da hiçbir şey seçmeyen koşu sessiz geçmez. Gerçek veriyle koşu yereldir: `scripts/nightly.ps1 [-ExportPg]` (CRLF) sırasıyla `sources check`, iki `ingest`, `normalize`, `anchor`, `qa run`, `export test-vectors --tanzil-ornekleri --check` ve `MUTALAA_DEGISMEZLIK_ZORUNLU=1` ile `pytest -m degismezlik` komutlarını koşar ve ilk hatada durur. `-ExportPg` ayrıca birimleri PostgreSQL'e yükler (önce `--dry-run`, sonra gerçek yükleme) ve testlerin PostgreSQL yarısını koşar; bayrak yoksa o yarı dışarıda bırakılır (`-k "not postgresql"`).
+
+**Hat testlerinin dosyaları (`pipeline/tests/`).**
+
+| Dosya | Kapsam | İşaret |
+|---|---|---|
+| `test_degismezlik.py` | 1–4 numaralı testler: fikstür ve gerçek veri katmanı (yukarıda) | `degismezlik` |
+| `test_bosluk_korunumu.py` | Kenar ve özel boşluk korunumu (K-26, K-39 madde 7): baştaki ve sondaki boşluk, çift boşluk, NBSP, TAB, U+2028, U+0085 ve metin içindeki dik çizgi. Sentetik "Deneme" metniyle ayrıştırma, `ingest → normalize → anchor` zinciri ve `content_hash` ham dilimle sınanır | `degismezlik` |
+| `test_tanzil_bicim.py` | Dosya biçimi, katı ayrıştırma ve bayt bayt yeniden kurma; bozuk kopyalar parçadan bayt düzeyinde üretilir | kısmen `degismezlik` |
+| `test_ingest_tanzil.py` | Kilit, bağdaştırıcı ve `ingest tanzil` komutu: tek baytı değişmiş dosya çıkış `2`; `raw` yazımı (diske eşitleme, aynı baytlar için yeni kopya açılmaması, çakışma); kilit uyuşmazlığı iletisinin uzunluk sınırı | — |
+| `test_normalize_tanzil.py`, `test_anchor_tanzil.py` | `normalize --source` (AR-4, `provenance.ar_norm`) ve `anchor --source` (çapa alanları, küresel sıra, `content_hash`, önceki çalıştırmayla karşılaştırma); atlama koşulları ve üst adım yeniden koşunca atlamanın kapanması | — |
+| `test_staged.py` | `units.jsonl` kanonik yazımı ve katı okuma | — |
+| `test_zincir_tanzil.py` | Fikstür parçalarıyla uçtan uca zincir: `ingest ×2 → normalize → anchor → qa` | — |
+| `test_qa_tanzil.py`, `test_qa_komut.py`, `test_qa_rapor.py` | Kapılar (her biri için geçen bir temel girdi ve tek kusurlu kalan girdiler), `qa run` komutu ve çıkış kodları, raporlardan kabul kararı (en yeni kararlayıcı rapor, kısmi `--gate` koşusu) | — |
+| `test_tekil_tanimlar.py` | Ortak sabitlerin (`units.jsonl` ve `notice.txt` adları, SHA-256 ve `run_id` desenleri, `kisa_ozet`) yalnız `lineage.py` içinde tanımlandığını kaynak ağacını AST ile tarayarak sınar | — |
+| `test_tanzil_ornekleri.py` | `export test-vectors --tanzil-ornekleri` (A10.7): sentetik tablo ve fikstür parçası | — |
+| `test_export_pg.py` | `export pg` kaynak zinciri, QA kapısı ve K-39 yazım kuralları (sentetik veri) | kısmen `veritabani` |
+| `test_zincir_pg.py` | 6.236 ayetlik sentetik zincirin `export pg` ile `mutalaa_test` veritabanına yüklenmesi; yüklenen birimlerden dosya bayt bayt yeniden kurulur | `veritabani` |
+
 **Çözüldü (NFC, K-26).** Kanonik metin kaynağın dağıttığı hâlidir: Tanzil metnine NFC uygulanmaz, NFC yalnız kendi ürettiğimiz metinlerde ilk kayıtta yapılır, ofsetler kanonik metnin kod noktalarıdır. Gerekçe teknik: NFC Arapça harekelerin sırasını değiştirebilir; şedde + fetha (U+0651 U+064E) NFC'de fetha + şedde (U+064E U+0651) olur (yerel Python denemesi, 18 Ekim 2026). Tanzil metni NFC değilse NFC'ye çevirmek bayt değiştirir ve kanonik metni kaynaktan ayırır. Test 3 Kur'an birimlerinde Tanzil baytlarını korur, ayrıca metnin NFC olup olmadığını raporlar. Ofset tanımının Kur'an birimlerine nasıl uygulanacağı [Çapa şeması](../03-veri/01-capa-semasi.md) dosyasında karara bağlanır.
 
 ## 6. Veritabanı göç testleri
 
-**Editoryal veritabanı (PostgreSQL 18, EF Core 10).** Bütün göçler boş bir `postgres:18.6-trixie` kabına uygulanır, bekleyen göç kalmaz. Şema dökümü (`pg_dump --schema-only`) depodaki anlık görüntüyle karşılaştırılır. Python hattının bütünleşik testleri aynı şemaya karşı koşar.
+**Editoryal veritabanı (PostgreSQL 18, EF Core 10).** Bütün göçler boş bir `postgres:18.6-trixie` kabına uygulanır, bekleyen göç kalmaz. Şema dökümü (`pg_dump --schema-only`) depodaki anlık görüntüyle karşılaştırılır. Python hattının bütünleşik testleri (`veritabani` işareti) aynı şemaya karşı koşar: yerelde `mutalaa_test` veritabanına bağlanır, dış işlem içinde çalışır ve sonunda geri alır. CI'da `ci-pipeline.yml` içindeki `database` işi `postgres:18` servisine anlık görüntüyü (`editoryal-sema.sql`) yükler ve `pytest -m veritabani` koşar; `MUTALAA_DEGISMEZLIK_ZORUNLU=1` olduğu için veritabanı yoksa test atlanmaz, başarısız olur.
 
 ```csharp
 public sealed class MigrationTests : IAsyncLifetime
@@ -290,16 +314,16 @@ VoiceOver ve TalkBack'in harekeli Kur'an Arapçasıyla davranışı hakkında ka
 | Tetik | Koşanlar |
 |---|---|
 | Her PR | Vektörler (3 dil), birim testleri, tip denetimi, lint, bağımlılık listesi (yalnız listeler), Publisher kapı testleri, göç ve enum testleri, kontrast testi |
-| Gece | İçerik hattı tam koşu, altın set değerlendirmesi, değişmezlik testleri, `internal` paket üretimi, emülatörde Maestro. A08 gece işi kurmaz. Gece işi A10'da `.github/workflows/nightly.yml` olarak açılır (`schedule` ve `workflow_dispatch`; `uv run pytest -m degismezlik` ve `uv run mutalaa sources check`; tanzil.net'ten hiçbir şey indirilmez). CI'da yalnız fikstür testleri koşar, gerçek veriyle koşu yerelde `scripts/nightly.ps1` ile yapılır ([BÇ-42](../10-claude-code/07-belge-celiskileri.md#1-karar-bekleyenler)) |
+| Gece | İçerik hattı tam koşu, altın set değerlendirmesi, değişmezlik testleri, `internal` paket üretimi, emülatörde Maestro. Gece işi `.github/workflows/nightly.yml` dosyasıdır (`schedule` ve `workflow_dispatch`; `uv run mutalaa sources check`, `uv run pytest -m degismezlik`; tanzil.net'ten hiçbir şey indirilmez). CI'da yalnız fikstür testleri koşar ve en az bir test geçmezse iş düşer (bölüm 5); gerçek veriyle koşu yerelde `scripts/nightly.ps1 [-ExportPg]` ile yapılır. Sonraki gece işleri aynı iskelete eklenir ([BÇ-42](../10-claude-code/07-belge-celiskileri.md#1-karar-bekleyenler)) |
 | Sürüm | Hepsi, public yapıt taraması, referans cihazda performans, elle erişilebilirlik, aşağıdaki kontrol listesi |
 
-**Her PR satırının bugünkü karşılığı (A08, 27 Ekim 2026).** Beş iş akışı koşar ([Proje yapısı §7](../02-mimari/03-proje-yapisi.md#7-ci-iş-akışları-github-actions)): `ci-ts` (TypeScript vektörleri ve birim testleri, lint, tip denetimi, `tr_TR.UTF-8` ve `C.UTF-8` ayakları), `ci-dotnet` (C# vektörleri ve birim testleri, Testcontainers ile veritabanı ve göç testleri, `dotnet format`), `ci-pipeline` (Python vektörleri ve testleri, ruff, mypy; Ubuntu ve Windows), `pr-title` (PR başlığı biçimi) ve `ci-workflows` (iş akışı dosyalarının actionlint denetimi). Bağımlılıklar yalnız listelenir (`scripts/ci/list-licenses.mjs`; [Teknoloji yığını §3](../02-mimari/02-teknoloji-yigini.md#3-kitaplık-notları-ve-bağımlılık-listesi), [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 6); hiçbir lisans PR'ı ya da derlemeyi durdurmaz. Politika kapısı olarak yalnız PR başlığı biçimi (`pr-title`) vardır. Publisher kapı testleri ve kontrast testi ilgili aşamalar geldikçe bu iş akışlarına eklenir (A13 ve mobil aşamalar); bugünkü koşular yalnız var olan testleri çalıştırır.
+**Her PR satırının bugünkü karşılığı (A08, 27 Ekim 2026).** Beş iş akışı koşar ([Proje yapısı §7](../02-mimari/03-proje-yapisi.md#7-ci-iş-akışları-github-actions)): `ci-ts` (TypeScript vektörleri ve birim testleri, lint, tip denetimi, `tr_TR.UTF-8` ve `C.UTF-8` ayakları), `ci-dotnet` (C# vektörleri ve birim testleri, Testcontainers ile veritabanı ve göç testleri, `dotnet format`), `ci-pipeline` (Python vektörleri ve testleri, ruff, mypy; Ubuntu ve Windows; ayrıca Ubuntu'da `postgres:18` servisiyle `database` işi: `pytest -m veritabani`), `pr-title` (PR başlığı biçimi) ve `ci-workflows` (iş akışı dosyalarının actionlint denetimi). Bağımlılıklar yalnız listelenir (`scripts/ci/list-licenses.mjs`; [Teknoloji yığını §3](../02-mimari/02-teknoloji-yigini.md#3-kitaplık-notları-ve-bağımlılık-listesi), [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 6); hiçbir lisans PR'ı ya da derlemeyi durdurmaz. Politika kapısı olarak yalnız PR başlığı biçimi (`pr-title`) vardır. Publisher kapı testleri ve kontrast testi ilgili aşamalar geldikçe bu iş akışlarına eklenir (A13 ve mobil aşamalar); bugünkü koşular yalnız var olan testleri çalıştırır.
 
 ## 13. Sürüm kontrol listesi
 
 - [ ] CI'nın bütün işleri yeşil; sürüm numarası ve değişiklik notu hazır.
 - [ ] Altın set kapıları geçti; değerlendirme raporu `release` kaydına bağlı.
-- [ ] Değişmezlik testleri yeşil.
+- [ ] Değişmezlik testleri yeşil (gerçek veriyle yerel koşu `scripts/nightly.ps1 -ExportPg` dahil).
 - [ ] Kapı raporu okundu; `public` kuru çalıştırması 0 ile bitti; public yapıt taraması yeşil; public manifest imzalı ve imza uygulamadaki açık anahtarla doğrulanıyor.
 - [ ] Terfide `public` içerik özetleri iç kanalda test edilen yayınla aynı (P-14).
 - [ ] Kaynaklar ekranı yeni kaynakları, atıfları ve fontları içeriyor.
