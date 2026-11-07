@@ -1,6 +1,6 @@
 # A10 · Tanzil alımı ve değişmezlik testleri
 
-> **Sürüm:** 1.2 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-39](../../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
+> **Sürüm:** 1.3 · **Tarih:** 7 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-39](../../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A05](./A05-arama-normalizasyonu.md) · [A06](./A06-kaynak-kayitlari-ve-enumlar.md) · [A07](./A07-editoryal-veritabani.md) · **İnsan adımı:** —
 > **Ajanlar:** `hat-gelistirici` · `metin-denetcisi` · `arastirmaci` · `test-yazari` · `inceleyici` · **Beceriler:** `icerik-hatti` · `metin-butunlugu` · `capa-gramer` · `windows-sorun` · **Tahmini oturum:** 2–3
 > **Başlat:** `/asama A10`
@@ -67,7 +67,7 @@ Adresler 2 Kasım 2026'da açıldı (HTTP 200); sayılar aynı günkü ölçümd
   | ikisi de işaretli | 1.409.970 | 794.910 |
 
   `rub` 199 işaret ekler; `stanween` yalnız Uthmani'de bayt ekler ve belirteç sayısını değiştirmez.
-- Kaynak kayıtları: `pipeline/sources/tanzil-uthmani.toml` ve `tanzil-simple-clean.toml` güncellenir. `kaynak_url` form sayfasıdır (`https://tanzil.net/download/`); `surum` dosya başlığındaki sürümdür (iki dosyada da "Version 1.1"); `notlar` form seçeneklerini ve indirme tarihini taşır. `notice_text`, dosyadaki bildirim bloğunun (6.237–6.266. satırlar) baytlarının katı UTF-8 çözümüdür (K-39 madde 6): `ingest/tanzil_bicim.py` içindeki `bildirim_bul` ile çıkarılır ve betikle TOML'a kopyalanır, elle yazılmaz; baştaki iki boş satır ve satır sonu boşlukları korunur. TOML çok satırlı değişmez dizgede açılıştan hemen sonraki ilk LF atıldığı için bayt eşitliği G-KAY ile sınanır (A10.5).
+- Kaynak kayıtları: `pipeline/sources/tanzil-uthmani.toml` ve `tanzil-simple-clean.toml` güncellenir. `kaynak_url` form sayfasıdır (`https://tanzil.net/download/`); `surum` dosya başlığındaki sürümdür (iki dosyada da "Version 1.1"); `notlar` form seçeneklerini ve indirme tarihini taşır. `notice_text`, dosyadaki bildirim bloğunun (6.237–6.266. satırlar) baytlarının katı UTF-8 çözümüdür (K-39 madde 6): `ingest/tanzil_bicim.py` içindeki `ayristir(...).bildirim` ile çıkarılır ve betikle TOML'a kopyalanır, elle yazılmaz; baştaki iki boş satır ve satır sonu boşlukları korunur. TOML çok satırlı değişmez dizgede açılıştan hemen sonraki ilk LF atıldığı için bayt eşitliği G-KAY ile sınanır (A10.5).
 - Kitaplık sürümleri `pipeline/uv.lock` kaydındadır; bu aşama yeni bağımlılık eklemez.
 - **Bitti sayılır:** iki dosya ve `SHA256SUMS` `data/gelen/tanzil/<YYYY-AA-GG>/` altında; SHA-256 ve ölçümler ilerleme notunda; yedek kopyalarla karşılaştırma yazılı; iki kayıt güncel ve `uv --directory pipeline run mutalaa sources check` 0 hata, 0 uyarıyla bitiyor.
 
@@ -128,18 +128,18 @@ Adresler 2 Kasım 2026'da açıldı (HTTP 200); sayılar aynı günkü ölçümd
 - **Bitti sayılır:** tablonun yedi girdisinin Tanzil karşılığı `ar.jsonl`'da ve üç koşucu yeşil; ya da farklar aşama kaydında ve `/karar` ile çözülecek.
 
 ## Kabul ölçütleri
-- [ ] `uv --directory pipeline run mutalaa sources check` 0 ile çıkıyor; iki Tanzil kaydı `kaynak_url` (`https://tanzil.net/download/`), `surum` ve dosyadaki bildirim bloğuyla bayt bayt aynı `notice_text` taşıyor.
-- [ ] `data/gelen/tanzil/<YYYY-AA-GG>/` altında iki dosya ve `SHA256SUMS` var; SHA-256 değerleri A10.0 ölçümüyle aynı; `data/backups/gelen/tanzil/` kopyalarıyla karşılaştırma ilerleme notunda.
-- [ ] `tanzil.lock.json` iki varyantın adresini, sürümünü, indirme seçeneklerini ve üç özetini (`sha256`, `metin_sha256`, `bildirim_sha256`) taşıyor; tek baytı değiştirilmiş bir ham dosyanın kopyasıyla çalışan bağdaştırıcı testi `2` çıkış kodunu doğruluyor; `sha256(notice_text) == bildirim_sha256` testi yeşil.
-- [ ] `icerik.unit` içinde 6.236 `tanzil-uthmani` satırı var; ikinci `export pg` 0 satır değiştiriyor (rapor sayıları).
-- [ ] SQL denetiminde `content_hash` yeniden hesabıyla uyuşmayan satır sayısı 0.
-- [ ] `uv --directory pipeline run pytest -m degismezlik` dört testte yeşil; `uv --directory pipeline run pytest` ve `uv --directory pipeline run ruff check .` yeşil.
-- [ ] QA raporunda G-KAY, G-BUT, G-CAP ve G-NOR "geçti"; NFC durumu bilgi olarak yazılı.
-- [ ] `shared/data/ayet-sayilari.json` ve üç kopyası Tanzil sayımıyla aynı (114 eleman, toplam 6.236); besmele gözlemi raporda.
-- [ ] `source.notice_text` Tanzil bildiriminin tam metnini taşıyor (dosyadaki bildirim bloğuyla bayt bayt karşılaştırma).
-- [ ] Simple Clean kararı karar defterinde (K-39); `metin-denetcisi` raporunda kanonik metne dokunan dönüşüm yok.
-- [ ] `pipeline/.env` var (A03); bağlantı dizesi koda, günlüğe ve rapora yazılmamış; değişmezlik testi 3'ün PostgreSQL yarısı atlanmadan koştu.
-- [ ] `normalize/ar.jsonl` Arama §1.5 Arapça tablosunun Tanzil satırlarını taşıyor (girdi Tanzil baytları, `note` kaynak ve çapa) ve üç koşucu yeşil; ya da farklar aşama kaydında.
+- [x] `uv --directory pipeline run mutalaa sources check` 0 ile çıkıyor; iki Tanzil kaydı `kaynak_url` (`https://tanzil.net/download/`), `surum` ve dosyadaki bildirim bloğuyla bayt bayt aynı `notice_text` taşıyor. Kanıt: `sources check` 25 kayıt, 0 hata, 0 uyarı; iki Tanzil kaydının `notice_text` değeri dosyadaki bildirim bloğuyla bayt bayt aynı (G-KAY ve `test_degismezlik.py`); `kaynak_url` `https://tanzil.net/download/`, `surum` 1.1.
+- [x] `data/gelen/tanzil/<YYYY-AA-GG>/` altında iki dosya ve `SHA256SUMS` var; SHA-256 değerleri A10.0 ölçümüyle aynı; `data/backups/gelen/tanzil/` kopyalarıyla karşılaştırma ilerleme notunda. Kanıt: `sha256sum -c SHA256SUMS` iki dosyada OK (`6933e133…`, `054b3d9f…`). `data/backups/gelen/tanzil/` kopyaları başka dosyadır (`rub` ve `stanween` işaretli; 1.409.970 ve 794.910 bayt, `aa0bf927…` ve `1862ee63…`), silinmedi.
+- [x] `tanzil.lock.json` iki varyantın adresini, sürümünü, indirme seçeneklerini ve üç özetini (`sha256`, `metin_sha256`, `bildirim_sha256`) taşıyor; tek baytı değiştirilmiş bir ham dosyanın kopyasıyla çalışan bağdaştırıcı testi `2` çıkış kodunu doğruluyor; `sha256(notice_text) == bildirim_sha256` testi yeşil. Kanıt: `tanzil.lock.json` adres, sürüm, seçenekler, alınma tarihi, boyut ve üç özeti taşır. `test_komut_tek_bayt_degisince_cikis_2` ve `test_kilit_uyusmazliginda_ileti_farki_ayirir_ve_hicbir_sey_yazmaz` kilit uyuşmazlığında çıkış `2` ve boş `raw` doğrular; `test_kayit_bildirimi_kilitteki_ozetle_ayni` yeşil.
+- [x] `icerik.unit` içinde 6.236 `tanzil-uthmani` satırı var; ikinci `export pg` 0 satır değiştiriyor (rapor sayıları). Kanıt: geçici `postgres:18` konteynerinde (yerel konteynerin parolası `pipeline/.env` ile uyuşmuyor, aşama kaydına bakın) 6.236 `tanzil-uthmani` satırı, hepsi `onayli`; `export pg --dry-run` yazmadı, ilk `export pg` 6.236 birim ve 2 kaynak ekledi, ikincisi 6.236 değişmeyen, 0 eklenen, 0 güncellenen (rapor sayıları).
+- [x] SQL denetiminde `content_hash` yeniden hesabıyla uyuşmayan satır sayısı 0. Kanıt: aynı veritabanında `content_hash` ile `sha256(metin)` uyuşmayan satır sayısı 0.
+- [x] `uv --directory pipeline run pytest -m degismezlik` dört testte yeşil; `uv --directory pipeline run pytest` ve `uv --directory pipeline run ruff check .` yeşil. Kanıt: `MUTALAA_DEGISMEZLIK_ZORUNLU=1` ile `pytest -m degismezlik` 29 geçti, 0 atlandı (`scripts/nightly.ps1 -ExportPg`, geçici veritabanı); yerelde veritabanısız 27 geçti, 2 atlandı. `pytest` 2.178 geçti, 19 atlandı; `ruff check`, `ruff format --check` ve `mypy` temiz.
+- [x] QA raporunda G-KAY, G-BUT, G-CAP ve G-NOR "geçti"; NFC durumu bilgi olarak yazılı. Kanıt: `qa run` dört kapıda `gecti` (G-BUT: 114 sure, 6.236 birim, bayt farkı 0; G-CAP: 6.236 çapa; G-NOR: 155 vektör, 0 kalan). NFC bilgisi: Uthmani'de 5.782 NFC olmayan âyet, Simple Clean'de 0; AR-8 sayıları 0; normalizasyondan sonra kalan Mn 0.
+- [x] `shared/data/ayet-sayilari.json` ve üç kopyası Tanzil sayımıyla aynı (114 eleman, toplam 6.236); besmele gözlemi raporda. Kanıt: QA ölçümü `ayet_sayilari_json`: 114 eleman, toplam 6.236, iki Tanzil dosyası ve üç kopya aynı. Besmele: ayrı satır yok; Fâtiha'da 1. âyet (4 belirteç); 2–114. surelerde (9 hariç) ilk dört belirteç 1:1 ile Simple Clean'de 112, Uthmani'de 110 surede bayt bayt aynı (95. ve 97. surede yazım farkı, A11 inceler); A24 bu sonucu okur.
+- [x] `source.notice_text` Tanzil bildiriminin tam metnini taşıyor (dosyadaki bildirim bloğuyla bayt bayt karşılaştırma). Kanıt: `source.notice_text` 1.108 (Uthmani) ve 1.113 bayt (Simple Clean); `unit.metin` ile `notice_text`ten yeniden kurulan Uthmani dosyası kaynakla bayt bayt aynı (SHA-256 `6933e133…`; `test_degismezlik.py` ve `metin-denetcisi` bağımsız doğrulaması).
+- [x] Simple Clean kararı karar defterinde (K-39); `metin-denetcisi` raporunda kanonik metne dokunan dönüşüm yok. Kanıt: K-39 ve 7 Kasım 2026 notu; `metin-denetcisi` kanonik metne dokunan dönüşüm bulmadı (26 mutantın 25'i yakalandı, kalan eşdeğerdi ve doğrudan testle sınandı).
+- [x] `pipeline/.env` var (A03); bağlantı dizesi koda, günlüğe ve rapora yazılmamış; değişmezlik testi 3'ün PostgreSQL yarısı atlanmadan koştu. Kanıt: `pipeline/.env` var, bağlantı dizesi koda, günlüğe ve rapora yazılmadı. Testin PostgreSQL yarısı geçici konteynerde atlanmadan koştu; yerel veritabanında koşmadı, çünkü `pipeline/.env` parolası yerel konteynerinkiyle uyuşmuyor (`28P01`). **Kullanıcıya bırakıldı:** parolayı hizalamak (`windows-sorun` becerisi, `ALTER USER`).
+- [x] `normalize/ar.jsonl` Arama §1.5 Arapça tablosunun Tanzil satırlarını taşıyor (girdi Tanzil baytları, `note` kaynak ve çapa) ve üç koşucu yeşil; ya da farklar aşama kaydında. Kanıt: `ar-tz-0001` … `ar-tz-0007` (`q:1:1`, `q:2:11`, `q:2:51`, `q:3:8`, `q:5:88`, `q:2:20`, `q:2:189`) `ar.jsonl` içinde; `export test-vectors --tanzil-ornekleri --check` "fark yok"; pytest, vitest (`@mutalaa/search`, 181) ve `dotnet test` (1.761) yeşil.
 
 ## Doğrulama
 ```bash
@@ -172,10 +172,10 @@ Bu aşamanın insan adımı yoktur: Tanzil dosyalarını Claude Code indirir (A1
 
 ## Çıktılar
 - `data/gelen/tanzil/<YYYY-AA-GG>/` (git dışı): `quran-uthmani.txt`, `quran-simple-clean.txt`, `SHA256SUMS`
-- `pipeline/src/mutalaa_pipeline/ingest/tanzil.py`, `ingest/tanzil.lock.json`, `ingest/tanzil_bicim.py` (ölçüm güncellemesi), `qa/checks/tanzil.py`, `config.py`
+- `pipeline/src/mutalaa_pipeline/ingest/tanzil.py`, `ingest/tanzil.lock.json`, `ingest/tanzil_bicim.py` (ölçüm güncellemesi), `adimlar/normalize_tanzil.py`, `adimlar/anchor_tanzil.py`, `staged.py`, `zincir.py`, `qa/run.py`, `qa/rapor.py`, `qa/vektorler.py`, `qa/checks/tanzil.py`, `export/tanzil_ornekleri.py`
 - `shared/test-vectors/normalize/ar.jsonl` eki (Tanzil satırları) ve `export test-vectors` seçeneği
 - `pipeline/sources/tanzil-uthmani.toml`, `tanzil-simple-clean.toml` güncellemesi
-- `pipeline/tests/test_degismezlik.py`, bağdaştırıcı testleri ve küçük Tanzil parçası fikstürü; `.gitattributes` eki
+- `pipeline/tests/test_degismezlik.py`, `test_bosluk_korunumu.py`, bağdaştırıcı, adım, QA ve zincir testleri, katman testleri (`test_tekil_tanimlar.py`, `test_yaprak_kitapliklar.py`) ve küçük Tanzil parçası fikstürü (`tests/fixtures/tanzil/`); `.gitattributes` eki
 - `.github/workflows/nightly.yml` (kuruldu; fikstür testleri eklenir) ve `scripts/nightly.ps1` (yerelde gerçek veriyle koşu; CRLF)
 - `data/raw/tanzil-*/`, `data/staged/tanzil-*/`, `data/reports/` (git dışı); PostgreSQL'de `source`, `unit`, `pipeline_run` satırları
 - Karar defterinde ilk kilit değerleri (K-39'a tarihli not); Kaynaklar §3.1'de çözülen "Doğrulanacak" maddeleri
@@ -184,6 +184,52 @@ Bu aşamanın insan adımı yoktur: Tanzil dosyalarını Claude Code indirir (A1
 ```text
 docs/10-claude-code/asamalar/A10-tanzil-alimi.md dosyasındaki aşamayı yürüt. Önce önkoşulları ve planı göster, onayımı bekle.
 ```
+
+## Aşama kaydı (2026-11-07)
+
+Durum: tamam (7 Kasım 2026); PR bekliyor. A10.0 2 Kasım 2026'da yapıldı (indirme ve kaynak kayıtları: `a3d338d`); kod ve testler 3–7 Kasım 2026. Commit'ler: `f5a135c` hat adımları, `5909c10` vektörler, `99be379` değişmezlik testleri, `5dd947e` gece iş akışı, `f440f7c` K-39 notu, `d57bb45` belgeler, `64fb569` kit becerisi, `cdf5756` belge örnekleri.
+
+### Kararlar ve gerekçeleri
+
+- **Adım kodu `adimlar/` altında.** `normalize --source` ve `anchor --source` kodu `normalize/` ve `anchor/` paketlerine konmadı: A05'in mimari testi (`test_normalize_unit.py`) normalize paketinin `export` ve `cli` içe aktarmamasını şart koşar ve iki paket TypeScript ve C# karşılıklarıyla aynı yaprak kitaplık rolündedir. Adım kodu (staged okuma ve yazma, parmak izi, manifest, komut gövdesi) `adimlar/normalize_tanzil.py` ve `adimlar/anchor_tanzil.py` içindedir; kural `tests/test_yaprak_kitapliklar.py` ile sınanır.
+- **Kilit sıkı ve tanılı** (K-39 madde 4). Üç özet (`sha256`, `metin_sha256`, `bildirim_sha256`); uyuşmazlık her durumda çıkış `2` verir ve `data/raw`'a kopyalamadan önce durur. İleti farkın bildirimde mi metinde mi olduğunu söyler; "yeni Tanzil sürümü kilit güncellenerek (`/karar`) alınır" uyarısı 300 karakter sınırında kesilmez.
+- **Ham kopya.** Aynı baytlar `raw` altında zaten varsa yeni kopya açılmaz (gece koşusu `raw`'u şişirmez). Aynı tarihli klasörde başka bayt varsa çıkış `2` verilir ve yeni bir `data/gelen` tarih klasörü kullanılır; İçerik hattı §5'in ilk taslağındaki "yeni klasör ve uyarı" yerine bu seçildi, çünkü `raw` değişmezliği için daha güvenlidir. Dosyalar diske eşitlenmeden klasör görünür olmaz.
+- **QA kabulü tek yerde (`qa/rapor.py`).** Bir anchor çalıştırmasının kabulü, o çalıştırmaya ait raporların en yenisinden okunur. Kapısı kalan ya da tamamlanamayan sonraki koşu eski `gecti` raporunu geçersiz kılar; başarılı kısmi (`--gate`) koşu kararı değiştirmez. `export pg` ve G-CAP tabanı aynı işlevi kullanır.
+- **G-CAP tabanı** hemen önceki anchor çalıştırması değil, dört kapıyı geçmiş en yeni önceki çalıştırmadır; böyle biri yoksa taban yoktur ve rapora uyarı yazılır.
+- **Ortak sabitler** (`units.jsonl` ve `notice.txt` adları, SHA-256 ve `run_id` desenleri) yalnız `lineage.py` içinde tanımlıdır; `test_tekil_tanimlar.py` bunu AST ile korur.
+- **Gece iş akışı** yalnız atlayan ya da hiç test seçmeyen (pytest çıkış `5`) koşuda düşer: en az bir "passed" şartı vardır. Gerçek veriyle koşu yerelde `scripts/nightly.ps1 [-ExportPg]` ile yapılır.
+
+### Kanıtlar (7 Kasım 2026, temiz çalışma ağacı)
+
+- **Gerçek veriyle uçtan uca** (`scripts/nightly.ps1 -ExportPg`, geçici `postgres:18`): `sources check` 25 kayıt, 0 hata, 0 uyarı; `ingest` iki varyantta 6.236'şar birim; `normalize` ve `anchor` 6.236; `qa run` dört kapıda `gecti` (rapor `01a1b640-bd03-7416-8469-480e1486fd8a`, `onceki_anchor_run_id` dolu); `export pg --dry-run` hiçbir satır yazmadı; `export pg` 6.236 birim ve 2 kaynak satırı ekledi; ikinci `export pg` 6.236 değişmeyen, 0 eklenen, 0 güncellenen; vektör denetimi "fark yok"; `degismezlik` 29 geçti, 0 atlandı. Parmak izi aynıyken `ingest`, `normalize` ve `anchor` ikinci koşuda "atlandi" der.
+- **SQL:** `icerik.unit` içinde 6.236 `tanzil-uthmani` satırı (114 sure, `ord` 1–6236, hepsi `onayli`), `content_hash` uyuşmazlığı 0, Simple Clean için `q:` birimi yok; `source.notice_text` 1.108 (Uthmani) ve 1.113 bayt (Simple Clean), `dosya_sha256` kilitle aynı.
+- **Kapılar:** `pytest` 2.178 geçti, 19 atlandı (atlananlar yerel PostgreSQL testleri; geçici konteynerde 17 geçti); `ruff check`, `ruff format --check`, `mypy` temiz; `pnpm --filter @mutalaa/search test` 181; `dotnet test --solution server/Mutalaa.slnx` 1.761/1.761; kit testleri 68/68; actionlint ve `check-jsonschema` temiz; belge bağlantı denetimi temiz.
+- **QA ölçümleri:** NFC olmayan âyet Uthmani'de 5.782, Simple Clean'de 0; AR-8 sayıları 0 (Farsça `ی`, `ک`, Arapça-Hint rakam); normalizasyondan sonra kalan Mn 0; AR-4 ek sözcük 7.592 (3.982 âyette); `ayet-sayilari.json` ve üç kopyası iki dosyayla aynı (114 sure, 6.236 âyet); besmele ayrı satır değil (Fâtiha'da 1. âyet, 4 belirteç).
+
+### İnceleme (3–7 Kasım 2026)
+
+İlk inceleme üç bağımsız bakışla yapıldı (doğruluk, metin bütünlüğü, saldırgan ve mutasyon): 20 bulgu, 14'ü iki bağımsız çürütme denemesine alındı, 13'ü doğrulandı, 1'i çürütüldü. 10'u kodda ve testlerde düzeltildi: QA kabulü ve G-CAP tabanı, boşluk korunumu testi, yanlış nedenle geçen çıkış-2 testleri, kirli ağaç kuralı testi, kesilen uyarı iletisi, ham kopya `fsync`, yinelenen sabitler ve ölü koşul, K-39 `metin` farkı testi. İkisi ana oturumda kapandı (K-39 ilk kilit notu, belge ve kit kayması); biri kullanıcı adımıdır (`pipeline/.env` parolası).
+
+Son tur `inceleyici` ve `metin-denetcisi` ile yapıldı; kritik bulgu yok.
+
+- `inceleyici` bir önemli bulgu verdi ve düzeltildi: zincir ya da kilit hatasıyla biten `qa run` rapora `anchor_run_id` yazmadan çıktığı için eski `gecti` raporunu geçersiz kılmıyordu (test önce kırmızı, sonra yeşil). Rapor `fsync` ve `cikis_kodu` tipi sertleştirildi; `nightly.yml` geçici dosyasız hâle getirildi.
+- `metin-denetcisi` kanonik metne dokunan dönüşüm bulmadı. Gerçek veride staged çıktıdan ve PostgreSQL'den dosya bayt bayt yeniden kuruldu, 26 mutantın 25'i yakalandı, kalan eşdeğer mutant `parse` içindeki yinelenen özet denetimiydi (doğrudan testle sınandı). Belgelerde Tanzil baytı olmayan, elle yazılmış üç Kur'an örneği buldu; `cdf5756` ile Tanzil diliminden alındı.
+
+### Sapmalar
+
+- `normalize/tanzil.py` ve `anchor/tanzil.py` yerine `adimlar/` paketi (yukarıda).
+- Aynı gün farklı SHA-256: yeni klasör ve uyarı yerine çıkış `2`.
+- `ingest tanzil` ek bayrakları `--gelen-tarih` ve `--kok`; `qa run` bayrakları `--run`, `--gate`.
+- Manifest `Duzen` alanında satır aralığı kapalı ve 1 tabanlı, bayt aralığı yarı açıktır (İçerik hattı §5'e yazıldı).
+
+### Devredilenler
+
+- **Kullanıcı:** `pipeline/.env` içindeki `MUTALAA_DB_URL` parolası yerel konteynerinkiyle uyuşmuyor (psycopg `28P01`). Düzeltme `windows-sorun` becerisindeki `ALTER USER` adımıdır; ardından `scripts/nightly.ps1 -ExportPg` yerel veritabanına yükler. Ölçütler 4, 5 ve 11 o zamana dek geçici konteynerde kanıtlıdır.
+- **A11:** Tanzil örneği beş kutulu kopyaydı (1.409.970 bayt, 82.459 belirteç); seçilen dosya 1.396.087 bayt, 82.260 belirteç ve `rub` işaretsizdir, A11 sayılarını bu dosyayla yeniden doğrular. 95. ve 97. surede Uthmani'nin ilk dört belirteci 1:1'dekinden farklı yazılmıştır, A11 inceler.
+- **A12:** Simple Clean'in pakette tutulup tutulmayacağı (K-39 madde 1).
+- **A13:** `core` paketinde Tanzil bildirimi ve `bildirim_sha256` eşitliği (test 6), terfide içerik özeti eşitliği (test 8, P-14); QA günlüğünde kapı adı (`qa_kapi` olayı yalnız sayı taşır); rapor ve manifest yazımında `os.replace` için yeniden deneme (OneDrive `EPERM`).
+- **A24:** okuyucunun metin seçicisi testi (test 5) ve QA raporundaki besmele gözlemi.
+- **Bilinçli Tanzil sürüm geçişi:** kilit `/karar` ile güncellenip `content_hash` değişirse yalnız `anchor`'ı yeniden koşmak G-CAP'i geçirmez ([İçerik hattı](../../04-icerik/02-icerik-hatti.md) §13 madde 6); gerektiğinde `/karar` ile tasarlanır.
 
 ## İlgili dosyalar
 - [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A09](./A09-elmalili-ocr-pilotu.md) · Sonraki: [A11](./A11-kuran-yapisi-ve-sayfa-eslemesi.md)
