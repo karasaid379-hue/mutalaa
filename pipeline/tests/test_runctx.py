@@ -326,3 +326,26 @@ def test_rapor_alanlari(tmp_path: Path) -> None:
     assert "deneme uyarisi" in veri
     assert "sure_sn" in veri
     assert not list((tmp_path / "data" / "reports").glob("*.tmp"))
+
+
+def test_rapor_yeniden_adlandirmadan_once_diske_esitlenir(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Guc kesilirse sifir uzunluklu en yeni rapor kalmasin: fsync, os.replace'ten once."""
+    olaylar: list[str] = []
+    gercek_fsync = runctx.os.fsync
+    gercek_replace = runctx.os.replace
+
+    def fsync(fd: int) -> None:
+        olaylar.append("fsync")
+        gercek_fsync(fd)
+
+    def replace(kaynak: object, hedef: object) -> None:
+        olaylar.append("replace")
+        gercek_replace(kaynak, hedef)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(runctx.os, "fsync", fsync)
+    monkeypatch.setattr(runctx.os, "replace", replace)
+    ctx = ctx_kur(tmp_path, depo_kur(tmp_path))
+    ctx.rapor_yaz("tamam", 0)
+    assert olaylar == ["fsync", "replace"]

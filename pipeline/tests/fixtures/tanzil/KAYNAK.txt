@@ -1,0 +1,65 @@
+Tanzil fiksturleri (A10.1) - kaynak ve kesim bilgisi
+====================================================
+
+Bu klasordeki *-parca.txt dosyalari ELLE YAZILMAMISTIR. Tanzil dosyalarindan asagidaki
+betikle kesilmis bayt dilimleridir (Kur'an metni hafizadan yazilmaz; K-26, K-42).
+Her parca: okuma sirasinin 1|1'den baslayan kesintisiz ilk 40 ayet satiri (1|1 ... 2|33)
++ dosyanin tam bildirim blogu (ilk ayet olmayan satirdan dosya sonuna; 2 bos satir ve
+28 '#' satiri). NFC, kirpma ya da satir sonu cevirisi yoktur. .gitattributes bu klasor icin
+"-text" der: git baytlari donusturmez. Dosyalari editorde acip kaydetmeyin.
+
+Kaynak dosyalar (git disi; data/gelen/tanzil/2026-11-02/):
+  quran-uthmani.txt       1396087 bayt  sha256 6933e133dd56db778c801bf738848454e43648105a151e8d84d86a7cae39ec5f
+  quran-simple-clean.txt   794313 bayt  sha256 054b3d9f79c0c2e44df7f9ddf42561797b3b5cb4fbdafbf2e99c805ccf1a6b49
+Form: https://tanzil.net/download/  (Uthmani ve Simple Clean, "Text (with aya numbers)",
+sure|ayet|metin; marks, sajdah, tatweel acik; rub, stanween kapali; dosya basligi Version 1.1)
+
+Parcalar:
+  uthmani-parca.txt        10657 bayt  sha256 386f0769502a99f069cc58bfe0682cede4492664cfa3af04f6eeef0eb3d9b7bc
+  simple-clean-parca.txt    6520 bayt  sha256 f163da6bed0f2049f1465361497ca1e12d16de7194add81b60c7114132a20004
+
+Kesim, kaynak dosyalara bagli oldugu icin CI'da calismaz; yerelde yeniden uretmek icin
+(betigi data/gelen disindaki bir klasore koyun, Python'u -I ile calistirin):
+  python -I -X utf8 kes.py data/gelen/tanzil/2026-11-02 pipeline/tests/fixtures/tanzil
+Cikti ozetleri yukaridakilerle ayni olmalidir.
+
+Kesim betigi (kes.py):
+----------------------------------------------------------------------------------------
+"""Tanzil parcalarini gercek dosyalardan keser (A10.1).
+
+Kullanim (proje kokunden; dosya veridir, betik dosyanin disindadir):
+    python -I -X utf8 kes.py <gelen-klasoru> <hedef-klasoru>
+
+Her dosya icin: okuma sirasinin 1|1'den baslayan ilk 40 ayet satiri + dosyanin tam bildirim
+blogu (ilk ayet olmayan satirdan dosya sonuna kadar olan baytlar). Metin elle yazilmaz,
+donusturulmez; yalniz bayt dilimi alinir.
+"""
+
+import hashlib
+import re
+import sys
+from pathlib import Path
+
+AYET = 40
+DOSYALAR = {
+    "quran-uthmani.txt": "uthmani-parca.txt",
+    "quran-simple-clean.txt": "simple-clean-parca.txt",
+}
+ONEK = re.compile(rb"[0-9]+\|[0-9]+\|")
+
+
+def kes(veri: bytes) -> bytes:
+    satirlar = veri.split(b"\n")
+    ayet_say = next(i for i, s in enumerate(satirlar) if ONEK.match(s) is None)
+    ilk = b"".join(s + b"\n" for s in satirlar[:AYET])
+    bildirim = veri[sum(len(s) + 1 for s in satirlar[:ayet_say]) :]
+    return ilk + bildirim
+
+
+gelen, hedef = Path(sys.argv[1]), Path(sys.argv[2])
+for ad, cikti in DOSYALAR.items():
+    veri = (gelen / ad).read_bytes()
+    parca = kes(veri)
+    (hedef / cikti).write_bytes(parca)
+    print(ad, len(veri), hashlib.sha256(veri).hexdigest())
+    print(cikti, len(parca), hashlib.sha256(parca).hexdigest())

@@ -1,0 +1,36 @@
+{
+  "varyantlar": {
+    "uthmani": {
+      "url": "https://tanzil.net/download/",
+      "secenekler": {
+        "marks": true,
+        "sajdah": true,
+        "tatweel": true,
+        "rub": false,
+        "stanween": false
+      },
+      "surum": "1.1",
+      "alinma_tarihi": "2026-11-02",
+      "boyut": 1396087,
+      "sha256": "6933e133dd56db778c801bf738848454e43648105a151e8d84d86a7cae39ec5f",
+      "metin_sha256": "76781116345a687997d203ae154d64ceae9d06722139cd0e454c0d446f6da1d8",
+      "bildirim_sha256": "3d54147d3373080c297dad2820317c02229eb467903aff50be01772439660844"
+    },
+    "simple-clean": {
+      "url": "https://tanzil.net/download/",
+      "secenekler": {
+        "marks": true,
+        "sajdah": true,
+        "tatweel": true,
+        "rub": false,
+        "stanween": false
+      },
+      "surum": "1.1",
+      "alinma_tarihi": "2026-11-02",
+      "boyut": 794313,
+      "sha256": "054b3d9f79c0c2e44df7f9ddf42561797b3b5cb4fbdafbf2e99c805ccf1a6b49",
+      "metin_sha256": "834762a34ad2c4459347514acec6ac893408f1ac96968829c59756c841dfc1fd",
+      "bildirim_sha256": "19f0d8a50e08ac0b7dd9bc5f2a6f4906f295117acc682a6ee2b16a8611f4a203"
+    }
+  }
+}

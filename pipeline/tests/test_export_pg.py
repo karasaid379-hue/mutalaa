@@ -18,7 +18,7 @@ from hat_yardimci import ayarlar_kur
 from test_sources import alanlar_kur, kayit_yaz, kok_kur
 from typer.testing import CliRunner
 
-from mutalaa_pipeline import cli, lineage, sources
+from mutalaa_pipeline import cli, lineage, qa, sources
 from mutalaa_pipeline.config import Ayarlar
 from mutalaa_pipeline.db import baglan
 from mutalaa_pipeline.export import pg
@@ -163,8 +163,13 @@ def zincir_kur(
     qa_sha: str | None = None,
     qa_yaz: bool = True,
     notice: str | None = BILDIRIM,
+    units_bayt: bytes | None = None,
 ) -> str:
-    """ingest (iki kaynak) -> normalize -> anchor zinciri ve QA raporu; anchor run_id doner."""
+    """ingest (iki kaynak) -> normalize -> anchor zinciri ve QA raporu; anchor run_id doner.
+
+    `units_bayt` verilirse anchor `units.jsonl` dosyasi satirlardan degil bu baytlardan kurulur
+    (bozuk JSON, UTF-8 olmayan bayt gibi satir duzeyinde kurulamayan girdiler icin).
+    """
     satirlar = satirlar if satirlar is not None else varsayilan_satirlar()
     yeni = [str(s.uretici.uret()) for _ in range(5)]
     ing_ana, ing_ek, norm, anc, qa = yeni
@@ -194,6 +199,8 @@ def zincir_kur(
         json.dumps(k, ensure_ascii=True, sort_keys=True, separators=(",", ":")) + "\n"
         for k in satirlar
     ).encode("utf-8")
+    if units_bayt is not None:
+        units = units_bayt
     _staged_calisma(s, ANA, anc, "anchor", {"units.jsonl": units}, [norm_girdi])
     s.anchor_run = anc
     if qa_yaz:
@@ -210,6 +217,15 @@ def zincir_kur(
     return anc
 
 
+class BaglantiAcildi(BaseException):
+    """Dosya onkosulu hatasinda veritabani baglantisi acilmamali.
+
+    `Exception` degil `BaseException`: `komut_calistir` her `Exception`i cikis 2'ye cevirir. Bir
+    dogrulama kalksa ve akis baglantiya kadar ilerlese bile "== 2" iddiasi YANLIS NEDENLE gecmez;
+    bu istisna komuttan disari cikar ve test hatayla biter.
+    """
+
+
 class Cagrilmaz:
     """Dosya onkosulu hatasinda veritabani baglantisi acilmamali."""
 
@@ -218,7 +234,7 @@ class Cagrilmaz:
 
     def __call__(self) -> psycopg.Connection:
         self.sayi += 1
-        raise AssertionError("baglanti acilmamali")
+        raise BaglantiAcildi("baglanti acilmamali")
 
 
 def calistir(
@@ -237,6 +253,27 @@ def calistir(
         baglanti=baglanti,  # type: ignore[arg-type]
         **kw,  # type: ignore[arg-type]
     )
+
+
+def hata_ile(
+    s: Senaryo,
+    kod: int,
+    parca: str,
+    capsys: pytest.CaptureFixture[str],
+    **kw: object,
+) -> str:
+    """Dosya onkosulu hatasi: cikis kodu VE iletideki neden birlikte sinanir (stderr doner).
+
+    Baglanti acilsaydi `BaglantiAcildi` komuttan cikar; ileti de bos gecemez: ayni cikis kodunu
+    veren baska bir denetim, sinanan denetimin yerine gecemez.
+    """
+    capsys.readouterr()
+    sonuc = calistir(s, **kw)
+    hata = capsys.readouterr().err
+    assert sonuc == kod, hata
+    assert parca in hata, hata
+    assert hata.isascii()
+    return hata
 
 
 def son_rapor(s: Senaryo) -> dict[str, object]:
@@ -423,6 +460,37 @@ def test_ozet_farki_cikis_1_ve_geri_alinir(tmp_path: Path, conn: psycopg.Connect
     assert unit_say(conn) == 3  # q:1:4 de eklenmedi: islem geri alindi
     assert say(conn, "SELECT count(*) FROM icerik.unit WHERE metin = 'Deneme metni 1'") == 1
     # basarisiz satiri dis islemin icinde gorulur; calisiyor satiri kalmaz
+    assert say(conn, "SELECT count(*) FROM icerik.pipeline_run WHERE durum = 'basarisiz'") == 1
+    assert say(conn, "SELECT count(*) FROM icerik.pipeline_run WHERE durum = 'calisiyor'") == 0
+
+
+@pytest.mark.veritabani
+def test_yalniz_metin_farki_content_hash_ayni_olsa_da_cikis_1_ve_geri_alinir(
+    tmp_path: Path, conn: psycopg.Connection, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """K-39 madde 2: veritabanindaki metin staged'den farkliysa `content_hash` ayni olsa da durur.
+
+    Metni elle (ya da bir hatayla) degismis ama `content_hash`i eski kalmis satir sessizce
+    gecilmez ve hat tarafindan duzeltilmez (UPDATE listesinde `metin` yok): islem geri alinir.
+    """
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s)
+    assert calistir(s, conn) == 0
+    conn.execute("UPDATE icerik.unit SET metin = metin || 'x' WHERE anchor = 'q:1:2'")
+    zincir_kur(s)  # staged ayni: yalnizca veritabanindaki metin kaymis
+    capsys.readouterr()
+    assert calistir(s, conn) == 1
+    assert "var olan capada content_hash/metin farki (1): q:1:2" in capsys.readouterr().err
+    assert say(conn, "SELECT count(*) FROM icerik.unit WHERE metin = 'Deneme metni 2x'") == 1
+    assert (
+        say(
+            conn,
+            "SELECT count(*) FROM icerik.unit WHERE anchor = 'q:1:2' AND content_hash = %s",
+            ozet("Deneme metni 2"),
+        )
+        == 1
+    )  # content_hash eski kaldi: fark yalniz metinde
+    assert unit_say(conn) == 3
     assert say(conn, "SELECT count(*) FROM icerik.pipeline_run WHERE durum = 'basarisiz'") == 1
     assert say(conn, "SELECT count(*) FROM icerik.pipeline_run WHERE durum = 'calisiyor'") == 0
 
@@ -626,7 +694,7 @@ def test_betimleyici_alanlar_k39_madde_3() -> None:
         "alinma_tarihi",
         "dosya_sha256",
     )
-    assert pg.KAPILAR == ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
+    assert qa.KAPILAR == ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
 
 
 def test_insert_ve_select_yalniz_hedef_sutunlari_kullanir() -> None:
@@ -697,75 +765,175 @@ def test_hedef_sutunlar_sunucu_sema_goruntusuyle_ayni() -> None:
 # --- dosya onkosullari (veritabani gerekmez) ---------------------------------------------
 
 
-def test_qa_raporu_yoksa_cikis_1(tmp_path: Path) -> None:
+def test_qa_raporu_yoksa_cikis_1(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     s = senaryo_kur(tmp_path)
     zincir_kur(s, qa_yaz=False)
-    bag = Cagrilmaz()
-    assert (
-        pg.komut_export_pg(s.ayarlar, depo_kok=s.kok, source=ANA, kayit={ANA: (EK,)}, baglanti=bag)
-        == 1
-    )
-    assert bag.sayi == 0
+    hata_ile(s, 1, "QA raporu yok", capsys)
 
 
-def test_qa_kapisi_kaldiysa_cikis_1(tmp_path: Path) -> None:
+def test_qa_kapisi_kaldiysa_cikis_1(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     s = senaryo_kur(tmp_path)
     zincir_kur(s, kapilar={**TUM_GECTI, "G-CAP": "kaldi"})
-    assert calistir(s) == 1
+    hata_ile(s, 1, "QA kapisi gecmedi: G-CAP", capsys)
 
 
-def test_qa_raporu_dort_kapiyi_icermiyorsa_cikis_1(tmp_path: Path) -> None:
+def test_qa_raporu_dort_kapiyi_icermiyorsa_cikis_1(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     s = senaryo_kur(tmp_path)
     zincir_kur(s, kapilar={"G-CAP": "gecti"})
-    assert calistir(s) == 1
+    hata_ile(s, 1, "dort kapiyi da icermiyor", capsys)
 
 
-def test_qa_raporu_eski_g_lis_adiyla_cikis_1(tmp_path: Path) -> None:
+def test_qa_raporu_eski_g_lis_adiyla_cikis_1(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     """Kapi G-LIS'ten G-KAY'a donustu: eski adli rapor dort kapiyi da icermez."""
     s = senaryo_kur(tmp_path)
     zincir_kur(s, kapilar=dict.fromkeys(("G-LIS", "G-BUT", "G-CAP", "G-NOR"), "gecti"))
-    assert calistir(s) == 1
+    hata_ile(s, 1, "dort kapiyi da icermiyor", capsys)
 
 
-def test_qa_raporu_ozeti_uyusmuyorsa_cikis_1(tmp_path: Path) -> None:
+def test_qa_raporu_ozeti_uyusmuyorsa_cikis_1(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     s = senaryo_kur(tmp_path)
     zincir_kur(s, qa_sha="0" * 64)
-    assert calistir(s) == 1
+    hata_ile(s, 1, "ozeti icin QA raporu yok", capsys)
 
 
-def test_zincirdeki_ingest_en_son_degilse_cikis_1(tmp_path: Path) -> None:
+def qa_raporu_ekle(s: Senaryo, **alanlar: object) -> None:
+    """Ayni anchor calismasi icin, mevcut raporlardan SONRA gelen bir `qa run` raporu."""
+    anchor = lineage.son_basarili(s.veri / "staged" / ANA, "anchor")
+    assert anchor is not None
+    rapor: dict[str, object] = {
+        "komut": "qa run",
+        "kaynak": ANA,
+        "anchor_run_id": anchor[0],
+        "units_sha256": lineage.sha256_dosya(anchor[1] / "units.jsonl"),
+        "cikis_kodu": 0,
+    }
+    rapor.update(alanlar)
+    yol = s.veri / "reports" / f"{s.uretici.uret()}.json"
+    yol.write_text(json.dumps(rapor), encoding="utf-8", newline="\n")
+
+
+def test_sonraki_tamamlanamayan_qa_kosusu_gecen_raporu_gecersiz_kilar(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """`qa run` vektor dosyasi hatasi gibi bir nedenle 2 ile bitti: kapi iddia etmez."""
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s)
+    qa_raporu_ekle(s, cikis_kodu=2)
+    hata_ile(s, 1, "son QA kosusu tamamlanmadi (cikis 2)", capsys)
+
+
+def test_sonraki_kalan_kismi_qa_kosusu_gecen_raporu_gecersiz_kilar(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s)
+    qa_raporu_ekle(s, cikis_kodu=1, kapilar={"G-KAY": "kaldi"})
+    hata_ile(s, 1, "QA kapisi gecmedi: G-KAY", capsys)
+
+
+def test_zincirdeki_ingest_en_son_degilse_cikis_1(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     s = senaryo_kur(tmp_path)
     zincir_kur(s)
     # EK icin daha yeni bir ingest calistirmasi: zincirdeki artik en son degil.
     yeni = str(s.uretici.uret())
     _staged_calisma(s, EK, yeni, "ingest", {"units.jsonl": b'{"deneme":3}\n'}, [])
-    assert calistir(s) == 1
+    hata_ile(s, 1, "icin en son ingest degil", capsys)
 
 
-def test_staged_content_hash_metinle_tutmuyorsa_cikis_1(tmp_path: Path) -> None:
+def test_staged_content_hash_metinle_tutmuyorsa_cikis_1(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     s = senaryo_kur(tmp_path)
     zincir_kur(s, [satir(1, content_hash="0" * 64), satir(2)])
-    assert calistir(s) == 1
+    hata_ile(s, 1, "staged content_hash metinle tutmuyor (1): q:1:1", capsys)
 
 
-def test_notice_txt_toml_ile_farkliysa_cikis_2(tmp_path: Path) -> None:
+def test_notice_txt_toml_ile_farkliysa_cikis_2(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     s = senaryo_kur(tmp_path)
     zincir_kur(s, notice=BILDIRIM + "\n")  # TOML'dakinden bir LF fazla: rstrip yok
-    assert calistir(s) == 2
+    hata_ile(s, 2, "notice.txt ile TOML notice_text ayni degil", capsys)
 
 
-def test_bozuk_units_satiri_cikis_2(tmp_path: Path) -> None:
+BOZUK_SATIRLAR = [
+    ("kind", [satir(1, kind="yok"), satir(2)], "satir 1: kind gecersiz"),
+    ("kind_metin_degil", [satir(1, kind=7)], "satir 1: kind gecersiz"),
+    ("bos_aralik", [satir(1, ayah_hi=1)], "satir 1: ord ya da ayah_lo/ayah_hi gecersiz"),
+    ("ord_sifir", [satir(1, ord=0)], "satir 1: ord ya da ayah_lo/ayah_hi gecersiz"),
+    ("ord_bool", [satir(1, ord=True)], "satir 1: ord ya da ayah_lo/ayah_hi gecersiz"),
+    ("ord_ondalik", [satir(1, ord=1.5)], "satir 1: JSON gecersiz"),  # ondalik sayi desteklenmez
+    ("metin_durumu", [satir(1, metin_durumu="taslak")], "satir 1: metin_durumu onayli degil"),
+    ("yinelenen_capa", [satir(1), satir(1)], "satir 2: yinelenen anchor"),
+    ("source_id", [satir(1, source_id=EK)], "satir 1: source_id --source ile ayni degil"),
+    ("provenance_metin", [satir(1, provenance="deneme")], "satir 1: provenance nesne degil"),
+    ("provenance_liste", [satir(1, provenance=[])], "satir 1: provenance nesne degil"),
+    ("anchor_metin_degil", [satir(1, anchor=5)], "satir 1: anchor metin degil"),
+    ("anchor_gecersiz", [satir(1, anchor="q:1:300")], "satir 1: anchor gecersiz"),
+    ("anchor_buyuk_harf", [satir(1, anchor="Q:1:1")], "satir 1: anchor gecersiz"),
+    ("metin_bos", [satir(1, text="")], "satir 1: text bos ya da NUL iceriyor"),
+    ("metin_nul", [satir(1, text="Deneme\x00")], "satir 1: text bos ya da NUL iceriyor"),
+    ("metin_degil", [satir(1, text=3)], "satir 1: text bos ya da NUL iceriyor"),
+    ("content_hash_bicim", [satir(1, content_hash="ABC")], "content_hash 64 haneli"),
+    ("ar_norm_sayi", [satir(1, ar_norm=3)], "satir 1: ar_norm gecersiz"),
+    ("ar_norm_nul", [satir(1, ar_norm="a\x00")], "satir 1: ar_norm gecersiz"),
+    ("data_version_bos", [satir(1, data_version="")], "satir 1: data_version gecersiz"),
+    ("data_version_sayi", [satir(1, data_version=1)], "satir 1: data_version gecersiz"),
+]
+
+
+@pytest.mark.parametrize(
+    ("satirlar", "ileti"),
+    [pytest.param(s, i, id=kimlik) for kimlik, s, i in BOZUK_SATIRLAR],
+)
+def test_bozuk_units_satiri_cikis_2(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    satirlar: list[dict[str, object]],
+    ileti: str,
+) -> None:
     s = senaryo_kur(tmp_path)
-    zincir_kur(s, [satir(1, kind="yok"), satir(2)])
-    assert calistir(s) == 2
-    zincir_kur(s, [satir(1, ayah_hi=1)])  # bos aralik
-    assert calistir(s) == 2
-    zincir_kur(s, [satir(1, metin_durumu="taslak")])
-    assert calistir(s) == 2
-    zincir_kur(s, [satir(1), satir(1)])  # yinelenen capa
-    assert calistir(s) == 2
-    zincir_kur(s, [satir(1, source_id=EK)])
-    assert calistir(s) == 2
+    zincir_kur(s, satirlar)
+    hata_ile(s, 2, ileti, capsys)
+
+
+@pytest.mark.parametrize("eksik", ["anchor", "kind", "ord", "ayah_lo", "text", "provenance"])
+def test_units_satirinda_alan_eksikse_cikis_2(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], eksik: str
+) -> None:
+    kayit = satir(1)
+    del kayit[eksik]
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s, [kayit])
+    hata_ile(s, 2, f"satir 1: alan eksik: {eksik}", capsys)
+
+
+@pytest.mark.parametrize(
+    ("baytlar", "ileti"),
+    [
+        pytest.param(b"", "bos ya da son satir LF ile bitmiyor", id="bos"),
+        pytest.param(b'{"anchor":"q:1:1"}', "bos ya da son satir LF ile bitmiyor", id="lf_yok"),
+        pytest.param(b"{bozuk\n", "satir 1: JSON gecersiz", id="json_bozuk"),
+        pytest.param(b'{"a":1,"a":2}\n', "satir 1: JSON gecersiz", id="yinelenen_anahtar"),
+        pytest.param(b'{"a":1.5}\n', "satir 1: JSON gecersiz", id="ondalik_sayi"),
+        pytest.param(b"\xff\n", "satir 1: UTF-8 degil", id="utf8_degil"),
+        pytest.param(b"[1]\n", "satir 1: nesne degil", id="nesne_degil"),
+    ],
+)
+def test_units_jsonl_bicim_hatalari_cikis_2(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], baytlar: bytes, ileti: str
+) -> None:
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s, units_bayt=baytlar)
+    hata_ile(s, 2, ileti, capsys)
 
 
 def test_kayitsiz_ek_kaynak_cikis_2(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -773,13 +941,7 @@ def test_kayitsiz_ek_kaynak_cikis_2(tmp_path: Path, capsys: pytest.CaptureFixtur
     s = senaryo_kur(tmp_path)
     zincir_kur(s)
     (s.kok / "pipeline" / "sources" / f"{EK}.toml").unlink()
-    bag = Cagrilmaz()
-    assert (
-        pg.komut_export_pg(s.ayarlar, depo_kok=s.kok, source=ANA, kayit={ANA: (EK,)}, baglanti=bag)
-        == 2
-    )
-    assert bag.sayi == 0
-    assert "kayitsiz" in capsys.readouterr().err
+    hata_ile(s, 2, "kayitsiz", capsys)
 
 
 def test_gecersiz_kayit_cikis_2(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -787,55 +949,147 @@ def test_gecersiz_kayit_cikis_2(tmp_path: Path, capsys: pytest.CaptureFixture[st
     s = senaryo_kur(tmp_path)
     zincir_kur(s)
     toml_yeniden(s, EK, license_status="serbest")
-    bag = Cagrilmaz()
-    assert (
-        pg.komut_export_pg(s.ayarlar, depo_kok=s.kok, source=ANA, kayit={ANA: (EK,)}, baglanti=bag)
-        == 2
-    )
-    assert bag.sayi == 0
-    assert "gecersiz" in capsys.readouterr().err
+    hata_ile(s, 2, "kayit gecersiz", capsys)
 
 
 @pytest.mark.parametrize("atif", ["", "   "])
-def test_atif_metni_bos_cikis_2(tmp_path: Path, atif: str) -> None:
+def test_atif_metni_bos_cikis_2(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], atif: str
+) -> None:
     """G-KAY: `atif_metni` dolu olmali."""
     s = senaryo_kur(tmp_path)
     zincir_kur(s)
     toml_yeniden(s, ANA, atif_metni=atif)
-    bag = Cagrilmaz()
-    assert (
-        pg.komut_export_pg(s.ayarlar, depo_kok=s.kok, source=ANA, kayit={ANA: (EK,)}, baglanti=bag)
-        == 2
-    )
-    assert bag.sayi == 0
+    hata_ile(s, 2, "kayit gecersiz", capsys)
 
 
-def test_notice_txt_var_toml_notice_yoksa_cikis_2(tmp_path: Path) -> None:
+def test_notice_txt_var_toml_notice_yoksa_cikis_2(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     """G-KAY: dosyada bildirim blogu varsa TOML'daki `notice_text` bayt bayt ayni olmali."""
     s = senaryo_kur(tmp_path)
     zincir_kur(s)
     toml_yeniden(s, ANA, notice_text=None)
-    assert calistir(s) == 2
+    hata_ile(s, 2, "notice.txt ile TOML notice_text ayni degil", capsys)
 
 
-def test_kanonik_kaynakta_notice_txt_yoksa_cikis_2(tmp_path: Path) -> None:
+def test_kanonik_kaynakta_notice_txt_yoksa_cikis_2(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     """G-KAY: TOML bildirim tasiyan kanonik kaynakta `notice.txt` yoksa bayt denetimi atlanmaz."""
     s = senaryo_kur(tmp_path)
     zincir_kur(s, notice=None)
-    assert calistir(s) == 2
+    hata_ile(s, 2, "TOML notice_text var ama notice.txt yok", capsys)
 
 
-def test_tanimsiz_kaynak_cikis_2(tmp_path: Path) -> None:
+def test_tanimsiz_kaynak_cikis_2(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     s = senaryo_kur(tmp_path)
-    assert calistir(s, source="test-baska") == 2
+    hata_ile(s, 2, "tanimsiz kaynak", capsys, source="test-baska")
 
 
-def test_anchor_calismasi_yoksa_ve_run_gecersizse_cikis_2(tmp_path: Path) -> None:
+def test_anchor_calismasi_yoksa_ve_run_gecersizse_cikis_2(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     s = senaryo_kur(tmp_path)
-    assert calistir(s) == 2
+    hata_ile(s, 2, "manifestli anchor calistirmasi yok", capsys)
     zincir_kur(s)
-    assert calistir(s, run="uuid-degil") == 2
-    assert calistir(s, run=str(s.uretici.uret())) == 2
+    hata_ile(s, 2, "--run bir UUID degil", capsys, run="uuid-degil")
+    hata_ile(
+        s, 2, "--run icin manifestli anchor calistirmasi yok", capsys, run=str(s.uretici.uret())
+    )
+
+
+# --- zincir butunlugu: ham dosya, manifest ve cikti ozetleri -------------------------------
+
+
+def calisma(s: Senaryo, kaynak: str, adim: str) -> tuple[Path, dict[str, object]]:
+    """Kaynagin en son `adim` calistirmasi: (klasor, manifest)."""
+    kayit = lineage.son_basarili(s.veri / "staged" / kaynak, adim)
+    assert kayit is not None, (kaynak, adim)
+    return kayit[1], kayit[2]
+
+
+def test_ham_dosya_degismisse_cikis_2(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """Ham dosya manifestteki ozetle tutmuyor (`data/raw` degismez)."""
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s)
+    ham = s.veri / "raw" / ANA / TARIH / f"{ANA}.txt"
+    ham.write_bytes(ham.read_bytes() + b"Deneme degisiklik\n")
+    hata_ile(s, 2, "ham dosya yok ya da ozeti tutmuyor", capsys)
+
+
+def test_ham_dosya_yoksa_cikis_2(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s)
+    (s.veri / "raw" / EK / TARIH / f"{EK}.txt").unlink()
+    hata_ile(s, 2, "ham dosya yok ya da ozeti tutmuyor", capsys)
+
+
+def test_ham_girdi_ozeti_gecersizse_cikis_2(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s)
+    klasor, manifest = calisma(s, ANA, "ingest")
+    girdiler = manifest["girdiler"]
+    assert isinstance(girdiler, list)
+    girdiler[0]["sha256"] = "ABC"
+    lineage.manifest_yaz(klasor, manifest)
+    hata_ile(s, 2, "ham dosya ozeti gecersiz", capsys)
+
+
+def test_anchor_ciktisi_bozulmussa_cikis_2(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Anchor `units.jsonl` dosyasi manifestteki ozetle tutmuyor: ilk eleyen cikti denetimidir."""
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s)
+    klasor, _ = calisma(s, ANA, "anchor")
+    units = klasor / "units.jsonl"
+    units.write_bytes(units.read_bytes() + b"\n")
+    hata_ile(s, 2, "anchor calistirmasinin ciktilari saglam degil", capsys)
+
+
+def test_anchor_manifestinde_units_ozeti_yoksa_cikis_2(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Manifest saglam bir baska cikti listeler ama `units.jsonl` ozeti tasimaz."""
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s)
+    klasor, manifest = calisma(s, ANA, "anchor")
+    baska = klasor / "baska.txt"
+    baska.write_bytes(b"Deneme baska cikti\n")
+    manifest["ciktilar"] = [
+        {
+            "yol": f"staged/{ANA}/{klasor.name}/baska.txt",
+            "sha256": lineage.sha256_bayt(baska.read_bytes()),
+        }
+    ]
+    lineage.manifest_yaz(klasor, manifest)
+    assert lineage.ciktilar_saglam(s.veri, manifest)  # cikti denetimi bunu yakalamaz
+    hata_ile(s, 2, "units.jsonl ozeti manifestle tutmuyor", capsys)
+
+
+@pytest.mark.parametrize(("kaynak", "adim"), [(ANA, "normalize"), (ANA, "ingest"), (EK, "ingest")])
+def test_zincirdeki_calismanin_ciktisi_bozulmussa_cikis_2(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], kaynak: str, adim: str
+) -> None:
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s)
+    klasor, _ = calisma(s, kaynak, adim)
+    units = klasor / "units.jsonl"
+    units.write_bytes(units.read_bytes() + b"\n")
+    hata_ile(s, 2, "zincirdeki calistirmanin ciktilari saglam degil", capsys)
+
+
+def test_zincirde_manifesti_olmayan_calisma_cikis_2(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    s = senaryo_kur(tmp_path)
+    zincir_kur(s)
+    klasor, _ = calisma(s, EK, "ingest")
+    (klasor / "manifest.json").unlink()
+    hata_ile(s, 2, "zincirde manifesti olmayan calistirma", capsys)
 
 
 def test_rapor_baglanti_dizesi_ve_icerik_yazmaz(tmp_path: Path) -> None:

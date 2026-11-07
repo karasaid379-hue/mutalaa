@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 import platform
+import re
 import subprocess
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -19,13 +20,25 @@ from typing import Final
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.logs import json_baytlari
 
+# Staged calistirma klasorunun dosya adlari ve ozet/run_id desenleri TEK yerde tanimlidir; baska
+# modul kendi kopyasini tasimaz (tests/test_tekil_tanimlar.py kaynak agacini tarar).
 MANIFEST_ADI: Final = "manifest.json"
+UNITS_ADI: Final = "units.jsonl"
+NOTICE_ADI: Final = "notice.txt"  # kaynagin bildirim blogu, bayt bayt (export pg bu adi bekler)
 UV_LOCK_YOLU: Final = "pipeline/uv.lock"
 UUID_UZUNLUGU: Final = 36
+RUN_ID_DESENI: Final = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+OZET_DESENI: Final = re.compile(r"[0-9a-f]{64}")
+KISA_OZET_UZUNLUGU: Final = 12
 
 
 def sha256_bayt(veri: bytes) -> str:
     return hashlib.sha256(veri).hexdigest()
+
+
+def kisa_ozet(ozet: str) -> str:
+    """Iletilerde gosterilen kisaltilmis ozet (ilk 12 karakter)."""
+    return ozet[:KISA_OZET_UZUNLUGU]
 
 
 def sha256_dosya(yol: Path) -> str:

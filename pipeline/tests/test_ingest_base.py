@@ -6,7 +6,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
-from hat_yardimci import ctx_kur, depo_kur
+from hat_yardimci import KIRLI_GIT, TEMIZ_GIT, ctx_kur, depo_kur
 from test_sources import alanlar_kur, kayit_yaz
 
 from mutalaa_pipeline import lineage
@@ -130,9 +130,37 @@ def test_ikinci_kosu_atlanir_force_ve_kirli_agac_atlamaz(tmp_path: Path) -> None
     assert ad.parse_sayisi == parse_sonra_ilk  # parse calismadi
     assert kos(temiz_git=True, force=True) is False  # --force
     assert kos(temiz_git=False) is False  # kirli agac (tmp deposu git degil)
-    # kirli calistirmanin manifesti onceki sayilmaz; ayni parmak izi olsa bile atlanmaz
+    # Kirli calistirma gercek git'i kullanir (tmp deposu git degil: commit yok); parmak izi de
+    # farklidir. Ayni commit'te yalniz `git_dirty` farki icin bkz.
+    # test_kirli_agacta_uretilen_onceki_calisma_ayni_committe_bile_sayilmaz.
     assert kos(temiz_git=True) is False
     assert kos(temiz_git=True) is True
+
+
+def test_kirli_agacta_uretilen_onceki_calisma_ayni_committe_bile_sayilmaz(
+    tmp_path: Path,
+) -> None:
+    """K-39 madde 8: kirli agacta uretilen cikti bir commit'e baglanamaz.
+
+    Ayni commit ve ayni girdi: parmak izi ayni, yalniz onceki calismanin `git_dirty` degeri
+    farkli. Kosul olmasaydi ikinci kosu (temiz agac) kirli agactaki ciktiyi guncel sayardi.
+    """
+    kok = depo_kur(tmp_path, KAYNAK)
+    ad = SahteBagdastirici()
+
+    def kos(git: lineage.GitDurumu) -> bool:
+        return run_ingest(ad, ctx_kur(tmp_path, kok, kaynaklar=[KAYNAK], git=git)).atlandi
+
+    assert kos(KIRLI_GIT) is False
+    assert kos(TEMIZ_GIT) is False  # onceki kirli agacta uretildi: atlanmaz
+    parse_sonra = ad.parse_sayisi
+    assert parse_sonra == 2
+    assert kos(TEMIZ_GIT) is True  # onceki temiz agacta uretildi, parmak izi ayni: atlanir
+    assert ad.parse_sayisi == parse_sonra
+    kirli, temiz = (m for _, _, m in lineage.calismalar(tmp_path / "data" / "staged" / KAYNAK))
+    assert (kirli["git_dirty"], temiz["git_dirty"]) == (True, False)
+    assert kirli["git_commit"] == temiz["git_commit"] == "0" * 40
+    assert kirli["parmak_izi"] == temiz["parmak_izi"]  # tek fark `git_dirty`
 
 
 def test_parametre_degisirse_atlanmaz(tmp_path: Path) -> None:

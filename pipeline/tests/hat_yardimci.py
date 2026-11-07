@@ -11,6 +11,9 @@ from mutalaa_pipeline.runctx import RunContext, Uuid7Uretici
 
 SAHTE_DSN = "postgresql://u:GIZLI-DENEME@127.0.0.1:1/x"
 PAROLA = "GIZLI-DENEME"
+# Ayni commit, farkli agac durumu: parmak izi ayni kalir, yalniz `git_dirty` degisir.
+TEMIZ_GIT = GitDurumu(commit="0" * 40, kirli=False)
+KIRLI_GIT = GitDurumu(commit="0" * 40, kirli=True)
 
 
 def depo_kur(tmp_path: Path, *slugs: str, **degisim: object) -> Path:
@@ -34,6 +37,7 @@ def ctx_kur(
     kaynaklar: Iterable[str] = (),
     db_url: str | None = None,
     temiz_git: bool = False,
+    git: GitDurumu | None = None,
     **kw: object,
 ) -> RunContext:
     ctx = RunContext.olustur(
@@ -45,6 +49,8 @@ def ctx_kur(
         uretici=Uuid7Uretici(),
         **kw,  # type: ignore[arg-type]
     )
-    if temiz_git:
-        ctx._git = GitDurumu(commit="0" * 40, kirli=False)
+    if git is not None:
+        ctx._git = git
+    elif temiz_git:
+        ctx._git = TEMIZ_GIT
     return ctx

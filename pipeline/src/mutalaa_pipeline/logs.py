@@ -17,6 +17,9 @@ from typing import Final
 SEVIYELER: Final = {"DEBUG": 10, "INFO": 20, "WARNING": 30, "ERROR": 40}
 MASKE: Final = "[gizli]"
 EN_UZUN_DEGER: Final = 200
+# Konsola yazilan hata iletisinin en uzun hali (`ileti_temizle`); uzun iletiler bu sinirda kesilir,
+# bu yuzden iletinin onemli kismi (ornegin bir uyari cumlesi) sinirin icinde kalmalidir.
+ILETI_EN_UZUN: Final = 300
 
 # scheme://...@ biciminde kullanici bilgisi tasiyan baglanti dizesi
 BAGLANTI_DESENI: Final = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://[^\s\"']*@[^\s\"']*")
@@ -70,7 +73,7 @@ def guvenli_deger(deger: object, gizliler: Iterable[str] = ()) -> object:
     return f"[{type(deger).__name__}]"
 
 
-def ileti_temizle(metin: str, gizliler: Iterable[str] = (), *, en_uzun: int = 300) -> str:
+def ileti_temizle(metin: str, gizliler: Iterable[str] = (), *, en_uzun: int = ILETI_EN_UZUN) -> str:
     """Hata iletisini konsola yazmadan once temizler.
 
     Gizli degerler maskelenir; ASCII disi karakter varsa (icerik olabilir) ileti yerine uzunlugu

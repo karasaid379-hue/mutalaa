@@ -320,6 +320,24 @@ def test_atlama_kosullari(tmp_path: Path) -> None:
     assert karar(onceki=None) is False
 
 
+def test_atlama_onceki_kirli_agacta_uretildiyse_kapali(tmp_path: Path) -> None:
+    """Onceki manifest kirli agacta yazildiysa, parmak izi ayni olsa da atlanmaz (K-39 madde 8)."""
+    veri_kok, m = atlama_kur(tmp_path)
+    assert m["git_dirty"] is False  # atlama_kur manifesti temiz agactan
+
+    def karar(onceki: dict[str, object]) -> bool:
+        return lineage.atlanabilir(
+            onceki=onceki, parmak="p1", git_kirli=False, force=False, veri_kok=veri_kok
+        )
+
+    assert karar(m) is True
+    assert karar({**m, "git_dirty": True}) is False
+    # Yalniz acikca `False` olan onceki temiz sayilir: alan yoksa ya da bool degilse atlanmaz.
+    assert karar({k: v for k, v in m.items() if k != "git_dirty"}) is False
+    for bool_olmayan in (None, 0, "false"):
+        assert karar({**m, "git_dirty": bool_olmayan}) is False
+
+
 def test_atlama_cikti_bozuksa_kapali(tmp_path: Path) -> None:
     veri_kok, m = atlama_kur(tmp_path)
     cikti = veri_kok / "staged" / "test-kaynak" / "RUN" / "units.jsonl"

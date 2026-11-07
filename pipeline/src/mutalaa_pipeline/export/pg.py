@@ -18,7 +18,6 @@ ya da gecersiz kaynak kaydi dahil). Iletilere satir icerigi ve baglanti dizesi y
 capa, sayi, ozet ve alan adi.
 """
 
-import json
 import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -40,21 +39,16 @@ from mutalaa_pipeline.config import Ayarlar
 from mutalaa_pipeline.db import VeritabaniHatasi, baglan
 from mutalaa_pipeline.enums import SourceKind
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kati_json
+from mutalaa_pipeline.lineage import NOTICE_ADI, OZET_DESENI, RUN_ID_DESENI, UNITS_ADI
+from mutalaa_pipeline.qa.rapor import QaRaporlari
 from mutalaa_pipeline.runctx import QaKaldi, RunContext, komut_calistir
 from mutalaa_pipeline.sources.kayit import Kaynak
 
 ANCHOR_ADIMI: Final = "anchor"
 INGEST_ADIMI: Final = "ingest"
-UNITS_ADI: Final = "units.jsonl"
-NOTICE_ADI: Final = "notice.txt"
 EXPORT_ADIMI: Final = "export"
-QA_KOMUTU: Final = "qa run"
-KAPILAR: Final = ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
-GECTI: Final = "gecti"
 ZINCIR_DERINLIGI: Final = 8
 ILK_N_CAPA: Final = 5
-RUN_ID_DESENI: Final = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
-OZET_DESENI: Final = re.compile(r"[0-9a-f]{64}")
 TARIH_DESENI: Final = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 
 # `--source` ile birlikte yuklenen birimsiz kaynaklar (K-39 madde 1).
@@ -279,39 +273,13 @@ def _zincir_denetle(
 
 
 def _qa_denetle(ctx: RunContext, source_id: str, anchor_run_id: str, units_sha: str) -> str:
-    """Ayni anchor calistirmasi ve ayni `units_sha256` icin dort kapida `gecti` raporu ister."""
-    klasor = ctx.veri_kok / "reports"
-    adaylar: list[tuple[str, dict[str, object]]] = []
-    if klasor.is_dir():
-        for yol in sorted(klasor.glob("*.json"), key=lambda p: p.name):
-            try:
-                veri = json.loads(yol.read_bytes().decode("utf-8"))
-            except (OSError, UnicodeDecodeError, json.JSONDecodeError):
-                continue
-            if (
-                isinstance(veri, dict)
-                and veri.get("komut") == QA_KOMUTU
-                and veri.get("kaynak") == source_id
-                and veri.get("anchor_run_id") == anchor_run_id
-                and veri.get("units_sha256") == units_sha
-            ):
-                adaylar.append((yol.name.removesuffix(".json"), veri))
-    if not adaylar:
-        raise QaKaldi("bu anchor calistirmasi ve ozeti icin QA raporu yok (once qa run)")
-    tam = [
-        (rapor_id, veri)
-        for rapor_id, veri in adaylar
-        if isinstance(veri.get("kapilar"), dict) and all(k in veri["kapilar"] for k in KAPILAR)  # type: ignore[operator]
-    ]
-    if not tam:
-        raise QaKaldi(f"QA raporu dort kapiyi da icermiyor ({', '.join(KAPILAR)})")
-    rapor_id, veri = tam[-1]
-    kapilar = veri["kapilar"]
-    assert isinstance(kapilar, dict)
-    kalanlar = [k for k in KAPILAR if kapilar.get(k) != GECTI]
-    if kalanlar:
-        raise QaKaldi("QA kapisi gecmedi: " + ", ".join(kalanlar))
-    return rapor_id
+    """Ayni anchor calismasi ve ayni `units_sha256` icin dort kapida `gecti` diyen rapor ister.
+
+    Karar o calismanin EN YENI kararlayici raporundadir (`qa/rapor.py`): kapisi kalan ya da
+    tamamlanamayan sonraki bir kosu, daha eski bir `gecti` raporunu gecersiz kilar; basarili bir
+    kismi (`--gate`) kosu karari degistirmez.
+    """
+    return QaRaporlari(ctx.veri_kok).onayla(source_id, anchor_run_id, units_sha)
 
 
 # --- satirlar ----------------------------------------------------------------------------

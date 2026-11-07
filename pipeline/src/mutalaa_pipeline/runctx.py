@@ -126,6 +126,8 @@ class RunContext:
     limit: int | None = None
     sayilar: dict[str, int] = field(default_factory=dict)
     uyarilar: list[str] = field(default_factory=list)
+    # Rapora eklenen alanlar (ornegin `qa run` kapilari); temel rapor alanlarini ezemez.
+    rapor_ek: dict[str, object] = field(default_factory=dict)
     gunluk: Gunluk = field(init=False)
     _sonuclar: dict[str, Sonuc] | None = field(default=None, init=False, repr=False)
     _git: lineage.GitDurumu | None = field(default=None, init=False, repr=False)
@@ -280,10 +282,14 @@ class RunContext:
         self.uyarilar.append(ileti_temizle(mesaj, self.ayarlar.gizli_degerler()))
 
     def rapor_yaz(self, durum: str, cikis_kodu_: int) -> Path:
-        """`data/reports/{run_id}.json`: yalniz sayilar, uyarilar ve sure."""
+        """`data/reports/{run_id}.json`: yalniz sayilar, uyarilar ve sure.
+
+        `rapor_ek` alanlari (ornegin `qa run` icin `kaynak`, `anchor_run_id`, `units_sha256`,
+        `kapilar`) temel alanlarin yanina eklenir; temel bir alanin adi kullanilamaz.
+        """
         bitis = self.saat()
         gizliler = self.ayarlar.gizli_degerler()
-        rapor = {
+        rapor: dict[str, object] = {
             "run_id": self.run_id,
             "komut": self.komut,
             "adim": self.adim,
@@ -298,12 +304,19 @@ class RunContext:
             "uyarilar": self.uyarilar,
             "parametreler": self.parametreler,
         }
+        for ad, deger in self.rapor_ek.items():
+            if ad in rapor:
+                raise ValueError("rapor_ek temel bir rapor alanini ezemez")
+            rapor[ad] = deger
         veri = json_baytlari(guvenli_deger(rapor, gizliler))
         klasor = self.veri_kok / RAPOR_KLASORU
         klasor.mkdir(parents=True, exist_ok=True)
         hedef = klasor / f"{self.run_id}.json"
         gecici = klasor / f"{self.run_id}.json.tmp"
-        gecici.write_bytes(veri)
+        with gecici.open("wb") as dosya:  # guc kesilirse sifir uzunluklu rapor kalmasin
+            dosya.write(veri)
+            dosya.flush()
+            os.fsync(dosya.fileno())
         os.replace(gecici, hedef)
         return hedef
 

@@ -18,6 +18,7 @@ from typing import Final
 from xml.parsers import expat
 
 from mutalaa_pipeline.export.ortak import GirdiHatasi, ayni_mi, kati_json, utf8_oku, yaz
+from mutalaa_pipeline.lineage import OZET_DESENI
 
 SURE_SAYISI: Final = 114
 TOPLAM_AYET: Final = 6236  # Capa semasi bolum 2 madde 1
@@ -42,7 +43,6 @@ _JSON_ANAHTARLARI: Final = (
 _SAYI: Final = re.compile(r"0|[1-9][0-9]{0,8}")
 _TARIH: Final = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 _URL: Final = re.compile(r"https://[!-~]+")
-_SHA256: Final = re.compile(r"[0-9a-f]{64}")
 _YASAK_BILDIRIMLER: Final = (b"<!DOCTYPE", b"<!ENTITY")
 
 
@@ -206,7 +206,7 @@ def json_coz(metin: str) -> AyetSayilariBelgesi:
             raise GirdiHatasi(f"{JSON_YOLU}: sayilar[{sira - 1}] pozitif tam sayi degil")
         dogrulanmis.append(sayi)
     sha256 = _dizgi_alani(icerik, "sha256")
-    if _SHA256.fullmatch(sha256) is None:
+    if OZET_DESENI.fullmatch(sha256) is None:
         raise GirdiHatasi(f"{JSON_YOLU}: 'sha256' 64 kucuk harf onaltilik olmali")
     return AyetSayilariBelgesi(
         kaynak_url=_url_denetle(_dizgi_alani(icerik, "kaynak_url")),

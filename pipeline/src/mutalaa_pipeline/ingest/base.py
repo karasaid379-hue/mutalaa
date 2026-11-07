@@ -9,16 +9,15 @@ import json
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Final, Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from mutalaa_pipeline import lineage
 from mutalaa_pipeline.anchor import AnchorError, AnchorRef, parse, sort_key
 from mutalaa_pipeline.export.ortak import GirdiHatasi
+from mutalaa_pipeline.lineage import UNITS_ADI
 
 if TYPE_CHECKING:
     from mutalaa_pipeline.runctx import RunContext
-
-UNITS_ADI: Final = "units.jsonl"
 
 
 @dataclass(frozen=True)
