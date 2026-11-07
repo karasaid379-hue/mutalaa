@@ -22,27 +22,27 @@ Kaynak: [İçerik hattı](../../../docs/04-icerik/02-icerik-hatti.md); kaynak li
 | `qa` | Kapılar ve ölçümler | `data/reports` |
 | `export` | PostgreSQL'e yükleme, inceleme kuyruğu, test vektörleri | PostgreSQL, depo |
 
-Ortak yardımcılar (`config`, `db`, `logs`) başka modüle bağlanmaz. Modüller veriyi `data/staged/` ve PostgreSQL üzerinden devreder.
+Ortak yardımcılar (`config`, `db`, `logs`) hat adımlarına bağlanmaz (yalnız `export/ortak.py` ve `db` → `config`); `normalize/` ve `anchor/` kendi paketi dışını içe aktarmaz (`tests/test_yaprak_kitapliklar.py`). Modüller veriyi `data/staged/` ve PostgreSQL üzerinden devreder.
 
 ## Komutlar (`cd pipeline` sonra)
 
 | Komut | İş |
 |---|---|
 | `uv run mutalaa sources list` · `sources check` | Kaynak kayıtlarını listeler (`slug`, `tur`, `surum`, `kaynak_url`); kaydın biçimini ve zorunlu alanlarını denetler (çıkış `0` ya da `2`) |
-| `uv run mutalaa ingest tanzil --variant uthmani` | `data/gelen/tanzil/` altındaki dosyayı alır (indirmez), SHA-256'sını kilitle karşılaştırır, `data/raw`'a yazar, `data/staged` üretir |
+| `uv run mutalaa ingest tanzil --variant {uthmani\|simple-clean}` | `data/gelen/tanzil/` altındaki dosyayı alır (indirmez), SHA-256'sını kilitle karşılaştırır (tutmazsa çıkış `2`), `data/raw`'a yazar, `data/staged` üretir |
 | `uv run mutalaa ingest scans --edition elmalili-1935 --dir data/gelen/elmalili-1935/<YYYY-AA-GG>/c01 --cilt 1` | Bir cildin tarama görsellerini `data/raw` altına kaydeder (taramalar önce `data/gelen/elmalili-1935/<YYYY-AA-GG>/` altına iner) |
 | `uv run mutalaa ocr run --edition elmalili-1935 --engine <motor> --pages c01:1-40` · `ocr eval --edition elmalili-1935 --gold <klasör>` | OCR (sayfa seçimi cilt niteliklidir) ve CER/WER ölçümü |
-| `uv run mutalaa normalize --source <kimlik>` · `anchor --source <kimlik>` | Arama metni; çapa ve özet |
+| `uv run mutalaa normalize --source <kimlik>` · `anchor --source <kimlik>` | Arama metni (Tanzil için `ar_norm`, AR-4); çapa ve özet (`q:` çapası, `content_hash`) |
 | `uv run mutalaa enrich citations …` · `enrich glosses --wave 1` | İktibas adayları; kelime anlamı taslakları |
-| `uv run mutalaa qa run --source <kimlik> [--gate G-CAP]` | QA kapıları |
+| `uv run mutalaa qa run --source <kimlik> [--run <run_id>] [--gate <kapı>]` | QA kapıları (G-KAY, G-BUT, G-CAP, G-NOR); rapor `data/reports/{run_id}.json`; `--gate` kısmi koşu `export pg`ye yetmez |
 | `uv run mutalaa export pg --source <kimlik> [--dry-run]` · `export review-queue …` · `export test-vectors` | Yükleme, kuyruk, vektörler |
 | `uv run mutalaa llm estimate --task glosses --sample 50` | Maliyet tahmini |
 
-Ortak bayraklar: `--dry-run`, `--force`, `--limit N`, `--config <dosya>`. Çıkış kodları: `0` başarılı, `1` QA kapısı kaldı, `2` girdi ya da yapılandırma hatası (kayıtsız ya da geçersiz kaynak kaydı dahil).
+Ortak bayraklar: `--dry-run`, `--force`, `--config <dosya>`; `--limit N` yalnız sınırlanabilir adımlarda geçerlidir (Tanzil `ingest`, `normalize` ve `anchor` onu çıkış `2` ile reddeder). `qa run` `--source`, `--run`, `--gate` ve `--config` alır; `--dry-run`, `--force` ve `--limit` almaz. Çıkış kodları: `0` başarılı, `1` QA kapısı kaldı, `2` girdi ya da yapılandırma hatası (kayıtsız ya da geçersiz kaynak kaydı dahil).
 
 ## Veri soyu ve idempotentlik
 
-- `data/raw/{kaynak}/{YYYY-MM-DD}/` değişmez; aynı gün farklı SHA-256 yeni klasör ve uyarı demektir.
+- `data/raw/{kaynak}/{YYYY-MM-DD}/` değişmez; aynı baytlar `raw` altında zaten varsa yeni kopya açılmaz, aynı gün farklı SHA-256 çıkış `2` ile durur (yeni bir `data/gelen/<kaynak>/<tarih>/` klasörü kullanılır).
 - `data/staged/{kaynak}/{run_id}/` her çalıştırmada yeniden üretilir; satırlar çapaya göre sıralı; içerik dosyalarına zaman damgası yazılmaz.
 - Her adım parmak izi hesaplar; aynıysa atlanır (`--force` hariç). Her çalıştırma bir manifest yazar.
 - Yükleme çapaya göre upsert; `xref` için yalnız `origin = 'hat'` ve `status = 'aday'`, `unit` için yalnız `metin_durumu = 'taslak'` satırlar güncellenir; `onayli` ve `red` satırlara dokunulmaz. Tanzil istisnası: `onayli` satırda yalnız türetilmiş sütunlar güncellenir, `metin` ve `content_hash` hiç (K-39). `xref` tekillik anahtarı `(type, src_anchor, src_span, dst_anchor, dst_span)`.
