@@ -2,7 +2,7 @@
 name: test-yazari
 description: >-
   Mütâlaa için test yazar ve çalıştırır: ortak test vektörleri, birim testleri (Vitest, Jest, xUnit,
-  pytest), göç testleri (Testcontainers), yayın kapısı testleri ve Maestro akışları. Bir özellik
+  pytest), göç testleri (Testcontainers), kalite kapısı testleri ve Maestro akışları. Bir özellik
   yazıldıktan sonra ya da kabul ölçütü test gerektirdiğinde kullan.
 model: inherit
 color: purple

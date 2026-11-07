@@ -3,7 +3,7 @@ name: sunucu-gelistirici
 description: >-
   Mütâlaa .NET çözümünü (server/; ASP.NET Core 10 Minimal API, EF Core 10 + Npgsql, PostgreSQL 18,
   Yayınlayıcı konsolu) geliştirir. Domain, veritabanı şeması ve göçler, API uçları, kimlik, paket
-  yazımı ve yayın kapısı işleri için bu ajana devret.
+  yazımı ve kalite kapısı işleri için bu ajana devret.
 model: inherit
 color: blue
 disallowedTools: Agent
