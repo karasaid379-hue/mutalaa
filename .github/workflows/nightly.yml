@@ -40,5 +40,11 @@ jobs:
           working-directory: pipeline
       - run: uv sync --locked
       - run: uv run mutalaa sources check
-      # -rs lists skipped tests: real-data tests are skipped here by design.
-      - run: uv run pytest -m degismezlik -rs
+      # -rs lists skipped tests: real-data tests are skipped here by design. The fixture tests
+      # (tests/fixtures/tanzil) must run: a selection that only skips, or selects nothing (pytest
+      # exit code 5), fails the job instead of passing silently.
+      - name: Run the immutability tests
+        run: |
+          sonuc="$(uv run pytest -m degismezlik -rs -q -p no:cacheprovider)" || { echo "$sonuc"; exit 1; }
+          echo "$sonuc"
+          grep -Eq '(^|[^0-9])[1-9][0-9]* passed' <<< "$sonuc"
