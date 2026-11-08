@@ -6,9 +6,9 @@
 Bu dosya aşamaların durumunu tutar. Aşağıdaki durum bloğu her oturumun başında Claude Code'a otomatik verilir (`.claude/hooks/oturum-baslangici.mjs`). Bloğun işaret satırlarını (`<!-- durum:baslangic -->`, `<!-- durum:bitis -->`) silmeyin.
 
 <!-- durum:baslangic -->
-- Aktif aşama: yok
+- Aktif aşama: A12 · Arama indeksi ve paket şeması (2026-11-09)
 - Son tamamlanan: A10 · Tanzil alımı ve değişmezlik testleri (2026-11-07; PR #10 birleştirildi)
-- Sıradaki: A12 (A11 onay/dışa aktarma kalanı İ-23 ve A14 sonrası `/asama A11`)
+- Sıradaki: A13 (A11 onay/dışa aktarma kalanı İ-23 ve A14 sonrası `/asama A11`)
 - Bekleyen insan adımları: İ-10 ve İ-17 (A09 için); İ-16 (kalan: EXPO_TOKEN, İ-15 Expo hesabına bağlı; A21/A34); İ-23 (sure adlarının editör denetimi, A11.3)
 - Son güncelleme: 2026-11-09
 <!-- durum:bitis -->
@@ -31,7 +31,7 @@ Durum değerleri: `bekliyor`, `sürüyor`, `tamam`, `engelli` (neden Not sütunu
 | A09 | Elmalılı OCR pilotu | bekliyor | | | | K-38 (27 Ekim 2026) ile kapsam genişledi: OCR motorları ve hazır metin adayları aynı altın örneklemde ölçülür (A09.6–A09.9); aday dosyaları Claude Code indirir (K-42). Belgeler güncel, kod yok. İnsan adımları: İ-10 altın metin, İ-17 API anahtarı ve bütçe (İ-09 yalnız internetteki taramalar ofset sınamasını geçmezse). BÇ-22 açık |
 | A10 | Tanzil alımı ve değişmezlik testleri | tamam | 2026-10-28 | 2026-11-07 | `586fd79` K-39; `fca0c57` hat çatısı; `9a4e8a5` `export pg` ve metin biçimi; `a3d338d` indirme kayıtları (A10.0); `f5a135c` hat adımları; `5909c10` vektörler; `99be379` değişmezlik testleri; `5dd947e` gece iş akışı; `f440f7c` K-39 notu; `d57bb45` belgeler; `64fb569` kit becerisi; `cdf5756` belge örnekleri | PR #10 birleştirildi. A10.0 (2 Kasım 2026): iki Tanzil dosyası `data/gelen/tanzil/2026-11-02/` altına indirildi (Uthmani `6933e133…`, Simple Clean `054b3d9f…`; formun açılış seçenekleri); `data/backups/gelen/tanzil/` kopyaları `rub` ve `stanween` işaretli, özetleri farklı, silinmedi. Kararlar: K-39 uygulandı (sıkı kilit, Simple Clean `q:` birimi değil, hat yazma kuralı, AR-4); adım kodu `adimlar/` altında (A05 mimari testi), QA kabulü tek yerde (`qa/rapor.py`: en yeni kararlayıcı rapor), G-CAP tabanı dört kapıyı geçmiş son çalıştırma, aynı gün farklı SHA-256 çıkış `2`. Kanıt (temiz ağaç, geçici `postgres:18`, `scripts/nightly.ps1 -ExportPg`): 6.236 birim, ikinci `export pg` 0 değişiklik, `content_hash` uyuşmazlığı 0, QA dört kapı `gecti`, `degismezlik` 29 geçti 0 atlandı; `pytest` 2.178 geçti 19 atlandı, TS 181, .NET 1.761/1.761, kit 68/68; `ar-tz-0001…0007` üç dilde yeşil. İnceleme: iki tur (ilk tur 20 bulgu, 13 doğrulandı, 10 kodda düzeltildi; son tur `inceleyici` ve `metin-denetcisi`, kritik yok, bir önemli bulgu düzeltildi); `metin-denetcisi` belgelerde elle yazılmış üç Kur'an örneği buldu, Tanzil diliminden değiştirildi. BÇ-37 çözüldü. Kullanıcıya bırakıldı: `pipeline/.env` parolasının hizalanması (ölçütler 4, 5 ve 11 geçici konteynerde kanıtlı; yerel veritabanı bekliyor). Devredilenler: A11 (Tanzil sayıları, 95. ve 97. sure), A12 (Simple Clean paketi), A13 (test 6 ve 8, QA günlüğünde kapı adı, `os.replace` yeniden denemesi), A24 (test 5, besmele), sürüm geçişi mekanizması (İçerik hattı §13) |
 | A11 | Kur'an yapısı ve sayfa eşlemesi | engelli | 2026-11-08 | | `3bb41e9` K-43; `4866d3d` kaynak kayıtları; `ffecf62` `quran_marker` göçü; `582d01c` kelime bölmesi; `e484737` üst veri, işaretler ve `page_map`; `e15c6a4` sure adı adayları | A11.0–A11.2, A11.4–A11.6 tamam; A11.3 adaylar tamam (114 kanonik aday, 837 aday + 837 review); A11.3 onay ve dışa aktarma İ-23 ve A14 bekliyor |
-| A12 | Arama indeksi ve paket şeması | bekliyor | | | | |
+| A12 | Arama indeksi ve paket şeması | sürüyor | 2026-11-09 | | | Dal `feat/a12-arama-indeksi` (A11 dalının üstünden). Kararlar (plan onayı): cihazda `snowball-stemmers-js`, `tr_stem_lex` kalkar; Simple Clean pakette yok |
 | A13 | Yayınlayıcı ve kalite kapısı | bekliyor | | | | |
 | A14 | API editör uçları | bekliyor | | | | |
 | A15 | Editör paneli | bekliyor | | | | |
