@@ -1,6 +1,6 @@
 # A12 · Arama indeksi ve paket şeması
 
-> **Sürüm:** 1.1 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
+> **Sürüm:** 1.2 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A05](./A05-arama-normalizasyonu.md) · [A10](./A10-tanzil-alimi.md) · **İnsan adımı:** —
 > **Ajanlar:** `web-gelistirici` (TS paketleri) · `sunucu-gelistirici` · `hat-gelistirici` · `test-yazari` · `arastirmaci` · `inceleyici` · **Beceriler:** `test-vektoru` · `paket-yayini` · `metin-butunlugu` · **Tahmini oturum:** 3
 > **Başlat:** `/asama A12`
@@ -65,7 +65,7 @@ Kendimiz yapacağımız işler: paket DDL dosyaları, `manifest.schema.json`, FT
 - `packages/content-schema/sql/` altında paket türü başına dosyalar (adlar öneri): `00-ortak.sql` (`PRAGMA user_version = 1`, `pack_meta`, `pack_source`, `attribution`), `10-metin.sql` (`unit`, `xref_idx`, `tr_root_index`), `20-arama.sql` (`unit_search`, `unit_fts`, `unit_tri`, `tr_stem_lex`), `21-arama-iceriksiz.sql`, `29-arama-sonrasi.sql` (`rebuild`, `rank`, `optimize`), `30-core.sql` (`quran_word`, `page_map`, `sure`), `40-kelime-kok.sql`, `50-risale-dizin.sql` (`unit_ref`), `60-mushaf-a.sql`, `61-mushaf-b.sql`, `70-ses.sql`. Paket türü → dosya listesi tek bir JSON'da durur (öneri: `sql/paketler.json`).
 - Tablo ve sütun adları [İçerik paketleri](../../03-veri/03-icerik-paketleri.md) §3 ve [Arama](../../03-veri/05-arama-fts5.md) §2 ile birebir aynıdır; yeni ad uydurulmaz. `risale-{kitap}` arama tabloları ve `tr_root_index` taşımaz; bunlar `risale-dizin` içindedir.
 - `kind`, `status` gibi değerler A06'nın `packages/content-schema/enums.json` dosyasıyla karşılaştırılır (Test stratejisi §6).
-- A11 cüz, hizb ve secde için tablo kararı verdiyse tablo `30-core.sql` dosyasına eklenir.
+- A11 `quran_marker` tablosunu kurdu ([K-43](../../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları) madde 2: `quran_marker(kind TEXT, no INTEGER, anchor TEXT, secde_turu TEXT, PRIMARY KEY (kind, no)) WITHOUT ROWID`, [İçerik paketleri](../../03-veri/03-icerik-paketleri.md) §3.2); tablo `30-core.sql` dosyasına eklenir.
 - Simple Clean kararı (A10.3 devri): pakette tutulup tutulmayacağı planda önerilir ve `/karar` ile yazılır (öneri: tutulmaz; Kur'an `ar_norm` Simple Clean'den gelir). `21-arama-iceriksiz.sql`, `risale-dizin` için ve boyuta göre içeriksiz kurulabilecek metin paketleri için uygulanabilir yazılır ([Arama](../../03-veri/05-arama-fts5.md) §2: içeriksiz tablo arama metnini ikinci kez saklamaz).
 - **Bitti sayılır:** her paket türünün dosya listesi Node düzeneğinde ve C# duman testinde hatasız kuruluyor; `PRAGMA user_version` 1 dönüyor.
 

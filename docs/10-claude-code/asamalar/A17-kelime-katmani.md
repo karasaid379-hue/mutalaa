@@ -1,6 +1,6 @@
 # A17 · Kelime katmanı: `quran_word`, `kelime-kok`, anlam taslakları
 
-> **Sürüm:** 1.2 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)
+> **Sürüm:** 1.3 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-43](../../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A10](./A10-tanzil-alimi.md) · [A11](./A11-kuran-yapisi-ve-sayfa-eslemesi.md) (A11.2) · [A15](./A15-editor-paneli.md) · **İnsan adımı:** İ-12 · İ-17
 > **Ajanlar:** `hat-gelistirici` · `arastirmaci` · `sunucu-gelistirici` (paket tanımı gerekirse) · `test-yazari` · `inceleyici` · **Beceriler:** `icerik-hatti` · `capa-gramer` · `metin-butunlugu` · `paket-yayini` · **Tahmini oturum:** 3–4 Claude Code oturumu; insan dalgaları ayrıca
 > **Başlat:** `/asama A17`
@@ -64,7 +64,7 @@ Kendimiz yapacağımız işler: QAC segmentlerini kelimeye toplama; Buckwalter d
 
 ### A17.3 · QAC alımı, morfoloji ve sayılar
 - `uv --directory pipeline run mutalaa ingest qac`: dosya `data/gelen/qac-morfoloji/<tarih>/` altından alınır, `data/raw/qac-morfoloji/{tarih}/` altına SHA-256 ile yazılır ve hiç değiştirilmez.
-- `uv --directory pipeline run mutalaa enrich morphology`: segmentler kelime düzeyine toplanır; kök ve lemma gövde segmentinden gelir. Âyet başına kelime sayısı Tanzil bölmesiyle karşılaştırılır (durak işaretleri hariç); A11'in birleştirme listesiyle fark beklenmez, çıkarsa editöre liste olarak gider (G-BUT raporlar; ÇŞ-1). Kelime numarası QAC konumudur; Tanzil bölmesi ayrışırsa eşleme önerisi planda sunulur ve `/karar` ile yazılır.
+- `uv --directory pipeline run mutalaa enrich morphology`: segmentler kelime düzeyine toplanır; kök ve lemma gövde segmentinden gelir. Âyet başına kelime sayısı Tanzil bölmesiyle karşılaştırılır (durak işaretleri hariç); A11'in birleştirme listesiyle fark beklenmez. Kelime numarası QAC ve QPC1 konumudur ve eşleme tablosu yoktur ([K-43](../../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları) madde 1; BÇ-32 çözüldü). Fark çıkarsa G-BUT kırmızı olur ve A11'in bölmesi düzeltilir; birleştirme listesindeki her değişiklik `/karar` ister. QUL ve QUD numaralandırması ayrı açık sorudur (ÇŞ-1, SK-5).
 - `root`, `lemma` (`lang = 'ar'`, `qac_ref`), `quran_word.root_id`, `lemma_id`, `pos`, `features`, `morph_source = 'qac-morfoloji'`; `occurrences`, `ayah_count` ve `idf_q = ln(6236 / ayah_count)`.
 - `root.id` ve `lemma.id` kalıcıdır; ikinci çalıştırma QAC dizgisine göre aynı kimlikleri verir.
 - `quran_word` satırlarında yalnız QAC sütunları güncellenir; Tanzil sütunları ve satırların kendisi A11'indir (A11.2 sütun sahipliği).
@@ -141,7 +141,7 @@ dotnet run --project server/Mutalaa.Publisher -- publish --flavor public --dry-r
 - `pipeline/src/mutalaa_pipeline/ingest/qac.py`, `ingest/quranwbw.py`, `enrich/morphology.py`, `enrich/glosses.py`, `qa/` uyum ve örneklem hesapları, testler
 - `pipeline/sources/qac-morfoloji.toml`, `quranwbw-tr.toml`, `mustafa0x-morfoloji.toml`; `data/gelen/` altında üç kaynak klasörü ve `SHA256SUMS` dosyaları; `pipeline/prompts/kelime-anlami/v1.md`
 - PostgreSQL'de `quran_word` QAC alanları, `root`, `lemma`, `lemma_gloss`, `review` kayıtları
-- `kelime-kok` paketi (`dev` ve `internal` yayını, `public` kuru çalıştırması); karar defterinde ÇŞ-1 eşlemesi; taslakların `review` satırlarında G-YZ kayıtları (`yz_modeli`, `yz_kaydi`; yer K-37'de)
+- `kelime-kok` paketi (`dev` ve `internal` yayını, `public` kuru çalıştırması); QAC kelime sayımı K-43 bölmesiyle karşılaştırılır (eşleme tablosu yok; ÇŞ-1 yalnız QUL ve QUD farkları için açık); taslakların `review` satırlarında G-YZ kayıtları (`yz_modeli`, `yz_kaydi`; yer K-37'de)
 
 ## Elle başlatma istemi
 ```text
