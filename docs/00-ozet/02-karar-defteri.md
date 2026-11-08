@@ -1,7 +1,7 @@
 # Karar Defteri
 
-> **Sürüm:** 1.2 · **Tarih:** 31 Ekim 2026 · **Durum:** Onaylı
-> **Kapsam:** 16–18 Ekim 2026 beyin fırtınası oturumunda verilen bütün kararlar ve sonraki eklemeler (K-31, 19 Ekim 2026; K-32, K-33 ve K-34, 21 Ekim 2026; K-35, 24 Ekim 2026; K-36, 25 Ekim 2026; K-37, 26 Ekim 2026; K-38, 27 Ekim 2026; K-39 ve K-40, 28 Ekim 2026; K-41, 30 Ekim 2026; K-42, 31 Ekim 2026).
+> **Sürüm:** 1.3 · **Tarih:** 8 Kasım 2026 · **Durum:** Onaylı
+> **Kapsam:** 16–18 Ekim 2026 beyin fırtınası oturumunda verilen bütün kararlar ve sonraki eklemeler (K-31, 19 Ekim 2026; K-32, K-33 ve K-34, 21 Ekim 2026; K-35, 24 Ekim 2026; K-36, 25 Ekim 2026; K-37, 26 Ekim 2026; K-38, 27 Ekim 2026; K-39 ve K-40, 28 Ekim 2026; K-41, 30 Ekim 2026; K-42, 31 Ekim 2026; K-43, 8 Kasım 2026).
 > **Kural:** Karar metni bugünkü kuralı anlatır. Karar değişince metin yerinde güncellenir; özet tablo ve bağlı dosyalar aynı değişiklikte eşitlenir. Kaldırılan kararın numarası yeniden kullanılmaz.
 
 Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrıntılandırır ama değiştiremez. Çelişki görülürse bu dosya geçerlidir.
@@ -52,6 +52,7 @@ Bu dosya projenin tek doğruluk kaynağıdır. Diğer dosyalar bir kararı ayrı
 | K-40 | Ses kaynağı | Hafız sesi alınmaz; hazır dijital tilavet kayıtları kullanılır; kaynak, alım ve sunum K-41'de | [Bu dosya, K-40](#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları) |
 | K-41 | Ses sistemi | 7 popüler okuyucu, 9 kayıt; sure dosyası + QUD zamanlaması; dosyalar kendi depomuzdan (ayna); çevrimiçi öncelikli, isteğe bağlı kalıcı indirme; `PlaylistEngine` | [Bu dosya, K-41](#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) |
 | K-42 | Kaynak ilkesi | İzin, lisans ve hukuk süreci işlenmez; her aşama tedarikle başlar (araştır, belirle, işle); kaynakları Claude Code internetten ve GitHub'dan indirir; kaynak kaydı ve atıf; kalite temelli derleme görünürlüğü | [Bu dosya, K-42](#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) |
+| K-43 | Kur'an yapı verisi | Kelime numarası QAC konumudur, eşleme tablosu yok; `quran_marker` (cuz, hizb, rub, secde); Tanzil yapı verisine `review` açılmaz, hat upsert eder ve silmez; sure adı adayı `review` satırıyla gelir, aynı geniş anahtar tek aday | [Bu dosya, K-43](#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları) |
 
 ---
 
@@ -338,6 +339,8 @@ Eski planın okuyucu tasarımları, "okuma simetrisi" çekirdeği (son okunan ye
   | `uthmani` | 1.396.087 | `6933e133dd56db778c801bf738848454e43648105a151e8d84d86a7cae39ec5f` | `76781116345a687997d203ae154d64ceae9d06722139cd0e454c0d446f6da1d8` | `3d54147d3373080c297dad2820317c02229eb467903aff50be01772439660844` |
   | `simple-clean` | 794.313 | `054b3d9f79c0c2e44df7f9ddf42561797b3b5cb4fbdafbf2e99c805ccf1a6b49` | `834762a34ad2c4459347514acec6ac893408f1ac96968829c59756c841dfc1fd` | `19f0d8a50e08ac0b7dd9bc5f2a6f4906f295117acc682a6ee2b16a8611f4a203` |
 
+- **Güncelleme (8 Kasım 2026, A11):** Kilide Tanzil üst veri dosyası için ayrı bir `ust_veri` bölümü eklenir (`url`, `surum`, `alinma_tarihi`, `boyut`, `sha256`); `varyantlar` kümesi ve metin varyantlarının alanları değişmez. Üst veri dosyası metin satırı ve bildirim bloğu taşımadığı için `metin_sha256` ve `bildirim_sha256` yoktur; denetim dosya özeti ve boyutuyla yapılır ve uyuşmazlık çıkış 2 verir. Yapı verisine yazma kuralı [K-43](#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları) madde 3'tedir.
+
 ### K-40 · Ses kaynağı: hazır dijital tilavet kaynakları
 - **Karar:** Hafız sesi alınmaz; yeni kayıt yapılmaz. Ses için hazır dijital tilavet kayıtları kullanılır. Kaynak, alım ve sunum [K-41](#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)'dedir.
 - **Gerekçe:** Proje sahibinin tercihi: hazır dijital kaynaklarla ilerlemek. Hazır yapı önce gelir ([K-42](#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
@@ -376,6 +379,21 @@ Eski planın okuyucu tasarımları, "okuma simetrisi" çekirdeği (son okunan ye
   8. **Uygulama notu.** Editoryal veritabanının ilk göçü bir kez yeniden üretilir: hiçbir canlı ortama dağıtılmadı, içerik satırı yok ve yerel veritabanları önce yedeklenir.
 - **Gerekçe:** Proje izin ve hukuk süreci olmadan, internetteki hazır yapılarla aşama aşama ilerler; hiçbir aşama yarıda kalmaz.
 - **Kaynak:** Proje sahibinin kararı ve seçimleri (31 Ekim 2026).
+
+### K-43 · Kur'an yapı verisi: kelime numarası, işaret tablosu ve aday satırları
+- **Karar:**
+  1. **Kelime numarası ([BÇ-32](../10-claude-code/07-belge-celiskileri.md)).** `q:{s}:{a}:{k}` içindeki `k` QAC ve QPC1 konumudur; eşleme tablosu tutulmaz. Tanzil metni bu konuma şöyle bölünür: belirteçler boşlukla ayrılır; yalnız U+06D6–U+06ED karakterlerinden oluşan belirteç kelime sayılmaz; sure 2–114'ün (9 hariç) 1. âyetinde ilk dört belirteç besmeledir ve numara almaz (sure 1'in 1. âyeti besmeledir ve kelimeleri sayılır). Tanzil'de bitişik iki belirtecin QAC ve QPC1'de tek kelime olduğu dört âyet kodda sabit bir listeyle birleştirilir: 2:181 (3. belirteç), 8:6 (4.), 13:37 (8.), 37:130 (3.). Birleşen kelimenin aralığı iki belirteci ve aradaki boşluğu kapsar. Listedeki her değişiklik `/karar` ister. A11 bölmeyi QPC1 düzeniyle, A17 QAC ile sınar; fark çıkarsa G-BUT kırmızı olur ve bölme düzeltilir. QUL ve QUD numaralandırması (ÇŞ-1, SK-5) bu karardan bağımsızdır.
+  2. **İşaret tablosu ([BÇ-06](../10-claude-code/07-belge-celiskileri.md)).** Cüz, hizb ve secde için editoryal `quran_marker` tablosu açılır: `kind` (`cuz`, `hizb`, `rub`, `secde`; metin ve CHECK, PostgreSQL enum'u değil), `no`, `anchor` (başlangıç âyeti; `secde` için secde âyeti), `secde_turu` (`recommended` ya da `obligatory`, Tanzil'in kendi etiketi; yalnız `secde` satırında dolu), `source_id`, `data_version`. Birincil anahtar `(kind, no)`. Hizb her dördüncü çeyrektir; 240 çeyrek `rub` olarak da saklanır. Menzil ve rükû v1'de yüklenmez, ara dosyada kalır. `core` paketi aynı adlı tabloyu taşır: `quran_marker(kind TEXT, no INTEGER, anchor TEXT, secde_turu TEXT, PRIMARY KEY (kind, no)) WITHOUT ROWID`. Değerler yalnız Tanzil üst veri dosyasından gelir. Secde türü Tanzil'in etiketidir, fıkhî hüküm olarak gösterilmez.
+  3. **Yapı verisine hat yazma kuralı (K-39'un uzantısı).** Tanzil'den türeyen yapı verisi kanonik başvuru verisidir ve `review` açılmaz: `quran_word` Tanzil sütunları, `quran_marker` ve `page_map` (`source_id = 'tanzil-ust-veri'`). Yükleme upsert'tür ve satır silmez. Var olan satırın değeri değişmişse ya da veritabanında olup ara dosyada olmayan satır varsa işlem geri alınır (çıkış 1). Hat `quran_word`'ün QAC sütunlarına (`root_id`, `lemma_id`, `pos`, `features`, `morph_source`) hiç yazmaz; onlar A17'nindir. Yayınlayıcı `page_map` satırlarında `tanzil-ust-veri` kaynak kimliğini `layout = 'medine-604'` olarak yazar.
+  4. **Sure adı adayları.** Hat her yeni `surah_alias` adayı için bir `review` satırı açar: `hedef_tablo = 'surah_alias'`, `hedef_anahtar = '{surah_no}:{alias}'` (ilk `:` ile bölünür), `alan = 'status'`, `eylem = 'oner'`, `koken = 'hat'`, `oneren = 'hat'`, `onceki` boş. `onerilen` jsonb alanı `kind`, `alias`, `risky`, `kaynaklar` (dosya ve satır), `anlam` (yalnız kanonik satırda) ve aynı geniş anahtarı veren öteki yazımları (`yazimlar`) taşır. `surah_alias` tablosunda kaynak ya da anlam sütunu açılmaz. Hat `aday` dışındaki satırlara ve var olan `review` satırlarına dokunmaz; onayı editör verir.
+  5. **Aynı geniş anahtar tek aday.** Aynı surede aynı `alias_key` değerini veren yazımlar tek `surah_alias` satırıdır. Görünen yazım şu öncelikle seçilir: Vikipedi tablosu, Vikipedi madde başlığı ve yönlendirmeleri, `quran-meta`, Tanzil `tname`, kural üretimi. Ötekiler `onerilen.yazimlar` içinde listelenir.
+- **Gerekçe:**
+  - Tedarik ölçümünde (1 Kasım 2026) Tanzil bölmesi, dört âyetlik birleştirme listesiyle, QAC ve QPC1 sayımıyla âyet âyet 0 farkla aynıdır (77.429 kelime). Böylece Çapa şeması §6'nın "QAC konumuna sabitlenir" cümlesi eşleme tablosu olmadan uygulanır.
+  - Cüz, hizb ve secde için hiçbir şemada tablo yoktu; okuyucu (A24) ve hatim (A30) bunlara dayanır. Çeyreğin saklanması başka bir bölümlemeye de izin verir.
+  - Tanzil metni `onayli` girer (K-38 madde 4, K-39 madde 2); aynı kaynağın yapı verisi için `review` açmak editöre anlamsız iş çıkarır. Sure adları ise başka yayımlanmış listelerden gelir ve editör denetimi ister (İ-23).
+  - `surah_alias` birincil anahtarı `(surah_no, alias)` olduğu için kaynak ve anlam bilgisi inceleme kaydında durur; göç gerekmez ve editör bilgiyi kuyrukta görür.
+- **Değerlendirilen alternatifler:** Numarayı Tanzil belirteç sırasına bağlayıp QAC için eşleme tablosu tutmak (dört âyette numara QAC ve QPC1'den kayar). Menzil ve rükûyu da yüklemek (v1 arayüzünde kullanılmıyor). `surah_alias`'a `kaynaklar` ve `anlam` sütunu eklemek. Her yazımı ayrı aday yapmak (editörün onaylayacağı satır sayısını artırır; ayrıştırıcı yalnız geniş anahtara baktığı için ek bir kazanç sağlamaz).
+- **Kaynak:** Proje sahibinin kararı (8 Kasım 2026): A11 planı ve dört soruya verilen yanıtlar. Ölçümler: [Kaynaklar](../04-icerik/01-kaynaklar.md) §3.1, [A11 Tedarik](../10-claude-code/asamalar/A11-kuran-yapisi-ve-sayfa-eslemesi.md).
 
 ---
 
