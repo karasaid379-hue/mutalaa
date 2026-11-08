@@ -24,6 +24,7 @@ from mutalaa_pipeline.logs import json_baytlari
 # modul kendi kopyasini tasimaz (tests/test_tekil_tanimlar.py kaynak agacini tarar).
 MANIFEST_ADI: Final = "manifest.json"
 UNITS_ADI: Final = "units.jsonl"
+KELIMELER_ADI: Final = "words.jsonl"  # anchor adiminda units.jsonl'in yaninda (quran_word)
 NOTICE_ADI: Final = "notice.txt"  # kaynagin bildirim blogu, bayt bayt (export pg bu adi bekler)
 UV_LOCK_YOLU: Final = "pipeline/uv.lock"
 UUID_UZUNLUGU: Final = 36

@@ -49,6 +49,7 @@ from mutalaa_pipeline.zincir import (
     Calisma,
     calisma_bul,
     ham_dosya,
+    kelimeler_oku,
     onceki_calisma,
     saglam_olmali,
     son_calisma,
@@ -174,6 +175,7 @@ def yukle(
     kilitler = tanzil.kilit_yukle()
     girdi = QaGirdisi(
         anchor_satirlari=units_oku(anchor, "anchor units.jsonl"),
+        kelime_satirlari=kelimeler_oku(anchor, "anchor words.jsonl"),
         uthmani=_varyant(
             ctx, KAYNAK, ingestler[KAYNAK], kayitlar[KAYNAK], kilitler["uthmani"], sure_tablosu
         ),

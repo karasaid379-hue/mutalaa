@@ -13,6 +13,14 @@ Tanzil (K-39): birimler `onayli` girer; hat var olan satirda yalniz turetilmis s
 `metin`, `content_hash`, `metin_durumu`, `status`, `successors`, `rev`, `marks` ve `source_id`
 SET listesine girmez. `export pg` parmak izi atlamasi yapmaz (`--force` kabul edilir, etkisizdir).
 
+Kelimeler (A11.2, K-43 madde 3): `tanzil-uthmani` icin anchor calismasinin `words.jsonl`
+dosyasi ayni islemde `icerik.quran_word` tablosuna yuklenir. Yukleme upsert'tir ve satir silmez:
+var olmayan kelime eklenir; var olan satirin Tanzil sutunlarindan (`surah`, `ayah`, `word`,
+`ayah_index`, `text_uthmani`, `norm`, `char_start`, `char_end`, `source_id`, `data_version`) biri
+degismisse ya da veritabaninda olup staged'de olmayan bir `source_id` kelimesi varsa islem geri
+alinir (cikis 1). QAC sutunlarina (`root_id`, `lemma_id`, `pos`, `features`, `morph_source`)
+INSERT'te bile yazilmaz; onlar A17'nindir.
+
 Cikis kodlari: 0 basarili, 1 QA kapisi/ozet farki/eksik capa, 2 girdi ve yapilandirma (kayitsiz
 ya da gecersiz kaynak kaydi dahil). Iletilere satir icerigi ve baglanti dizesi yazilmaz; yalniz
 capa, sayi, ozet ve alan adi.
@@ -32,17 +40,24 @@ from psycopg.types.json import Jsonb
 from psycopg.types.range import Range
 
 from mutalaa_pipeline import lineage
-from mutalaa_pipeline.anchor import AnchorError
+from mutalaa_pipeline.anchor import AnchorError, Q
 from mutalaa_pipeline.anchor import format as anchor_format
 from mutalaa_pipeline.anchor import parse as anchor_parse
 from mutalaa_pipeline.config import Ayarlar
 from mutalaa_pipeline.db import VeritabaniHatasi, baglan
 from mutalaa_pipeline.enums import SourceKind
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kati_json
-from mutalaa_pipeline.lineage import NOTICE_ADI, OZET_DESENI, RUN_ID_DESENI, UNITS_ADI
+from mutalaa_pipeline.lineage import (
+    KELIMELER_ADI,
+    NOTICE_ADI,
+    OZET_DESENI,
+    RUN_ID_DESENI,
+    UNITS_ADI,
+)
 from mutalaa_pipeline.qa.rapor import QaRaporlari
 from mutalaa_pipeline.runctx import QaKaldi, RunContext, komut_calistir
 from mutalaa_pipeline.sources.kayit import Kaynak
+from mutalaa_pipeline.staged import satirlari_oku as staged_satirlari_oku
 
 ANCHOR_ADIMI: Final = "anchor"
 INGEST_ADIMI: Final = "ingest"
@@ -53,6 +68,23 @@ TARIH_DESENI: Final = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 
 # `--source` ile birlikte yuklenen birimsiz kaynaklar (K-39 madde 1).
 EK_KAYNAKLAR: Final[Mapping[str, tuple[str, ...]]] = {"tanzil-uthmani": ("tanzil-simple-clean",)}
+
+# `words.jsonl` zorunlu olan kaynaklar: anchor calismasi kelime dosyasini listelemelidir.
+KELIME_KAYNAKLARI: Final = frozenset({"tanzil-uthmani"})
+# `quran_word` Tanzil sutunlari (K-43 madde 3); QAC sutunlarina hat hic yazmaz.
+KELIME_SUTUNLARI: Final = (
+    "anchor",
+    "surah",
+    "ayah",
+    "word",
+    "ayah_index",
+    "text_uthmani",
+    "norm",
+    "char_start",
+    "char_end",
+    "source_id",
+    "data_version",
+)
 
 UNIT_TURLERI: Final = frozenset(
     {"ayet", "meal", "tefsir", "risale", "hadis", "hadis_ceviri", "kitap"}
@@ -117,6 +149,23 @@ class Satir:
 
 
 @dataclass(frozen=True)
+class KelimeSatiri:
+    """`words.jsonl` satiri (`quran_word` Tanzil sutunlari); metin yalniz veritabanina gider."""
+
+    anchor: str
+    surah: int
+    ayah: int
+    word: int
+    ayah_index: int
+    text_uthmani: str
+    norm: str
+    char_start: int
+    char_end: int
+    source_id: str
+    data_version: str
+
+
+@dataclass(frozen=True)
 class ZincirRun:
     run_id: str
     adim: str
@@ -143,6 +192,9 @@ class Hazirlik:
     bildirimler: dict[str, str | None]
     parmak: str
     manifest: dict[str, object] = field(default_factory=dict)
+    kelimeler: list[KelimeSatiri] = field(default_factory=list)
+    kelimeler_yol: str | None = None
+    kelimeler_sha256: str | None = None
 
 
 # --- yardimcilar -------------------------------------------------------------------------
@@ -375,6 +427,130 @@ def _icerik_ozeti_denetle(satirlar: list[Satir]) -> None:
         raise QaKaldi(f"staged content_hash metinle tutmuyor ({len(bozuk)}): {_capalar(bozuk)}")
 
 
+def _kelime_satirlari_oku(
+    veri: bytes, source_id: str, birimler: Sequence[Satir]
+) -> list[KelimeSatiri]:
+    """`words.jsonl` baytlarini kati okur ve `units.jsonl` satirlariyla tutarliligini denetler.
+
+    Bicim hatasi `GirdiHatasi` (cikis 2); birimlerle tutarsizlik hat hatasidir, `QaKaldi`
+    (cikis 1). Iletiler yalniz satir numarasi, capa ve alan adi tasir.
+    """
+    kelimeler: list[KelimeSatiri] = []
+    gorulen: set[str] = set()
+    for satir in staged_satirlari_oku(veri, KELIMELER_ADI):
+        yer = f"{KELIMELER_ADI} satir {satir.no}"
+        if set(satir.veri) != set(KELIME_SUTUNLARI):
+            raise GirdiHatasi(f"{yer}: alan kumesi beklenen degil")
+        kelime = KelimeSatiri(
+            anchor=satir.metin("anchor"),
+            surah=satir.sayi("surah"),
+            ayah=satir.sayi("ayah"),
+            word=satir.sayi("word"),
+            ayah_index=satir.sayi("ayah_index"),
+            text_uthmani=satir.metin("text_uthmani"),
+            norm=satir.metin("norm"),
+            char_start=satir.sayi("char_start"),
+            char_end=satir.sayi("char_end"),
+            source_id=satir.metin("source_id"),
+            data_version=satir.metin("data_version"),
+        )
+        try:
+            ref = anchor_parse(kelime.anchor)
+            kanonik = anchor_format(ref) == kelime.anchor
+        except AnchorError:
+            raise GirdiHatasi(f"{yer}: anchor gecersiz") from None
+        konum = ref.anchor
+        if not kanonik or not isinstance(konum, Q) or konum.ilk is None or konum.son is not None:
+            raise GirdiHatasi(f"{yer}: anchor kelime capasi degil")
+        if (konum.sure, konum.ayet, konum.ilk) != (kelime.surah, kelime.ayah, kelime.word):
+            raise GirdiHatasi(f"{yer}: alanlar capayla tutmuyor")
+        if kelime.anchor in gorulen:
+            raise GirdiHatasi(f"{yer}: yinelenen anchor")
+        gorulen.add(kelime.anchor)
+        if kelime.source_id != source_id:
+            raise GirdiHatasi(f"{yer}: source_id --source ile ayni degil")
+        for alan, deger in (
+            ("text_uthmani", kelime.text_uthmani),
+            ("norm", kelime.norm),
+            ("data_version", kelime.data_version),
+        ):
+            if deger == "" or "\x00" in deger:
+                raise GirdiHatasi(f"{yer}: {alan} bos ya da NUL iceriyor")
+            try:
+                deger.encode("utf-8")
+            except UnicodeEncodeError:
+                raise GirdiHatasi(f"{yer}: {alan} UTF-8 olarak yazilamaz") from None
+        if not 0 <= kelime.char_start < kelime.char_end or kelime.ayah_index < 1:
+            raise GirdiHatasi(f"{yer}: aralik ya da ayah_index gecersiz")
+        kelimeler.append(kelime)
+    _kelime_birim_tutarliligi(kelimeler, birimler)
+    return kelimeler
+
+
+def _kelime_birim_tutarliligi(kelimeler: Sequence[KelimeSatiri], birimler: Sequence[Satir]) -> None:
+    """Her kelime ayet metninin dilimidir, `ayah_index` `ord`dur, numaralar kesintisizdir."""
+    ayetler: dict[tuple[int, int], Satir] = {}
+    for birim in birimler:
+        konum = anchor_parse(birim.anchor).anchor
+        if isinstance(konum, Q) and konum.ilk is None:
+            ayetler[(konum.sure, konum.ayet)] = birim
+    dilim: list[str] = []
+    ayetsiz: list[str] = []
+    numara: list[str] = []
+    sayac: dict[tuple[int, int], int] = {}
+    for kelime in kelimeler:
+        ayet = (kelime.surah, kelime.ayah)
+        birim_ = ayetler.get(ayet)
+        if birim_ is None:
+            ayetsiz.append(kelime.anchor)
+            continue
+        sayac[ayet] = sayac.get(ayet, 0) + 1
+        if sayac[ayet] != kelime.word:
+            numara.append(kelime.anchor)
+        if (
+            kelime.ayah_index != birim_.ord
+            or birim_.metin[kelime.char_start : kelime.char_end] != kelime.text_uthmani
+        ):
+            dilim.append(kelime.anchor)
+    kelimesiz = [f"q:{sure}:{ayet}" for sure, ayet in ayetler if (sure, ayet) not in sayac]
+    for ad, liste in (
+        ("kelimenin ayeti units icinde yok", ayetsiz),
+        ("kelime ayet metninin dilimi ya da ayah_index degil", dilim),
+        ("kelime numarasi ayet icinde kesintisiz degil", numara),
+        ("ayetin hic kelimesi yok", kelimesiz),
+    ):
+        if liste:
+            raise QaKaldi(f"{ad} ({len(liste)}): {_capalar(liste)}")
+
+
+def _kelimeler_hazirla(
+    ctx: RunContext,
+    source_id: str,
+    klasor: Path,
+    manifest: Mapping[str, object],
+    birimler: Sequence[Satir],
+) -> tuple[list[KelimeSatiri], str | None, str | None]:
+    """Kelime kaynaklarinda anchor calismasinin `words.jsonl` dosyasini okur (yoksa cikis 2)."""
+    if source_id not in KELIME_KAYNAKLARI:
+        return [], None, None
+    beklenen = _manifest_ozet(manifest, KELIMELER_ADI)
+    if beklenen is None:
+        raise GirdiHatasi(f"anchor manifestinde {KELIMELER_ADI} yok (once anchor --force)")
+    dosya = klasor / KELIMELER_ADI
+    try:
+        veri = dosya.read_bytes()
+    except OSError:
+        raise GirdiHatasi(f"{KELIMELER_ADI} okunamadi") from None
+    ozet = lineage.sha256_bayt(veri)
+    if ozet != beklenen:
+        raise GirdiHatasi(f"{KELIMELER_ADI} ozeti manifestle tutmuyor")
+    return (
+        _kelime_satirlari_oku(veri, source_id, birimler),
+        lineage.goreli_yol(ctx.veri_kok, dosya),
+        ozet,
+    )
+
+
 # --- hazirlik ----------------------------------------------------------------------------
 
 
@@ -419,10 +595,15 @@ def hazirla(
     qa_rapor_id = _qa_denetle(ctx, source_id, anchor_run_id, units_sha)
     satirlar = _satirlari_oku(units_bayt, source_id)
     _icerik_ozeti_denetle(satirlar)
+    kelimeler, kelimeler_yol, kelimeler_sha = _kelimeler_hazirla(
+        ctx, source_id, klasor, manifest, satirlar
+    )
     # G-KAY: TOML notice_text dosyadaki bildirimle bayt bayt ayni; farkliysa cikis 2.
     bildirimler = {slug: _bildirim(ingest[slug], kaynaklar[slug]) for slug in kaynak_idleri}
     units_yol = lineage.goreli_yol(ctx.veri_kok, units_dosya)
     girdiler = [lineage.Girdi(units_yol, units_sha, anchor_run_id)]
+    if kelimeler_yol is not None and kelimeler_sha is not None:
+        girdiler.append(lineage.Girdi(kelimeler_yol, kelimeler_sha, anchor_run_id))
     for slug in kaynak_idleri:
         girdiler += [lineage.Girdi(d["yol"], d["sha256"]) for d in ham[slug]]
     parmak = ctx.parmak_izi(girdiler)
@@ -440,15 +621,22 @@ def hazirla(
         kaynaklar=kaynaklar,
         bildirimler=bildirimler,
         parmak=parmak,
+        kelimeler=kelimeler,
+        kelimeler_yol=kelimeler_yol,
+        kelimeler_sha256=kelimeler_sha,
     )
 
 
 def _manifest_kur(h: Hazirlik) -> dict[str, object]:
+    kelime: dict[str, object] = (
+        {"words_sha256": h.kelimeler_sha256} if h.kelimeler_sha256 is not None else {}
+    )
     return {
         "source_id": h.source_id,
         "kaynaklar": list(h.kaynak_idleri),
         "anchor_run_id": h.anchor_run_id,
         "units_sha256": h.units_sha256,
+        **kelime,
         "qa_rapor": h.qa_rapor_id,
         "zincir": [
             {
@@ -658,6 +846,79 @@ UPDATE_UNIT: Final = (
 )
 
 
+KELIME_STAGING_OLUSTUR: Final = (
+    'CREATE TEMP TABLE staging_word (anchor text COLLATE "C", surah smallint, ayah smallint,'
+    " word smallint, ayah_index smallint, text_uthmani text, norm text, char_start integer,"
+    " char_end integer, source_id text, data_version text) ON COMMIT DROP"
+)
+KELIME_STAGING_COPY: Final = (
+    "COPY pg_temp.staging_word (" + ", ".join(KELIME_SUTUNLARI) + ") FROM STDIN"
+)
+# Yalniz Tanzil sutunlari adlandirilir; root_id, lemma_id, pos, features, morph_source yazilmaz.
+INSERT_KELIME: Final = (
+    "INSERT INTO icerik.quran_word ("
+    + ", ".join(KELIME_SUTUNLARI)
+    + ") SELECT "
+    + ", ".join(f"s.{alan}" for alan in KELIME_SUTUNLARI)
+    + " FROM pg_temp.staging_word s"
+    " WHERE NOT EXISTS (SELECT 1 FROM icerik.quran_word w WHERE w.anchor = s.anchor)"
+    " ORDER BY s.ayah_index, s.word"
+)
+FARKLI_KELIME: Final = (
+    "SELECT w.anchor FROM icerik.quran_word w JOIN pg_temp.staging_word s ON s.anchor = w.anchor"
+    " WHERE ("
+    + ", ".join(f"w.{alan}" for alan in KELIME_SUTUNLARI[1:])
+    + ") IS DISTINCT FROM ("
+    + ", ".join(f"s.{alan}" for alan in KELIME_SUTUNLARI[1:])
+    + ") ORDER BY w.anchor"
+)
+EKSIK_KELIME: Final = (
+    "SELECT w.anchor FROM icerik.quran_word w WHERE w.source_id = %s AND NOT EXISTS"
+    " (SELECT 1 FROM pg_temp.staging_word s WHERE s.anchor = w.anchor) ORDER BY w.anchor"
+)
+
+
+def _kelimeleri_yukle(conn: psycopg.Connection, h: Hazirlik) -> dict[str, int]:
+    """`quran_word` upsert'i (K-43 madde 3): ekler; degisen ya da eksik satirda `QaKaldi`.
+
+    Tanzil sutunlarindan biri degismis bir satir ya da staged'de olmayan bir `source_id` kelimesi
+    islemi geri aldirir (cikis 1). Satir silinmez, QAC sutunlarina yazilmaz.
+    """
+    conn.execute("DROP TABLE IF EXISTS pg_temp.staging_word")
+    conn.execute(KELIME_STAGING_OLUSTUR)
+    with conn.cursor() as imlec, imlec.copy(KELIME_STAGING_COPY) as kopya:
+        for k in h.kelimeler:
+            kopya.write_row(
+                (
+                    k.anchor,
+                    k.surah,
+                    k.ayah,
+                    k.word,
+                    k.ayah_index,
+                    k.text_uthmani,
+                    k.norm,
+                    k.char_start,
+                    k.char_end,
+                    k.source_id,
+                    k.data_version,
+                )
+            )
+    farkli = _capa_listesi(conn, FARKLI_KELIME)
+    if farkli:
+        raise QaKaldi(
+            f"var olan kelimenin Tanzil sutunu degismis ({len(farkli)}): {_capalar(farkli)}"
+        )
+    eksik = _capa_listesi(conn, EKSIK_KELIME, (h.source_id,))
+    if eksik:
+        raise QaKaldi(f"veritabanindaki kelime staged icinde yok ({len(eksik)}): {_capalar(eksik)}")
+    eklenen = conn.execute(INSERT_KELIME).rowcount
+    return {
+        "kelime_staging": len(h.kelimeler),
+        "kelime_eklenen": eklenen,
+        "kelime_degismeyen": len(h.kelimeler) - eklenen,
+    }
+
+
 def _pipeline_run_yaz(
     conn: psycopg.Connection,
     ctx: RunContext,
@@ -698,6 +959,8 @@ def _yukle(conn: psycopg.Connection, ctx: RunContext, h: Hazirlik) -> dict[str, 
         guncellenen=guncellenen,
         degismeyen=len(h.satirlar) - eklenen - guncellenen,
     )
+    if h.kelimeler_sha256 is not None:
+        sayilar.update(_kelimeleri_yukle(conn, h))
     conn.execute(
         "UPDATE icerik.pipeline_run SET durum = 'basarili', bitis = %s, manifest = %s"
         " WHERE run_id = %s::uuid",

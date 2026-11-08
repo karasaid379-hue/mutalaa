@@ -16,7 +16,7 @@ from typing import Final
 
 from mutalaa_pipeline import lineage
 from mutalaa_pipeline.export.ortak import GirdiHatasi
-from mutalaa_pipeline.lineage import OZET_DESENI, RUN_ID_DESENI, UNITS_ADI
+from mutalaa_pipeline.lineage import KELIMELER_ADI, OZET_DESENI, RUN_ID_DESENI, UNITS_ADI
 from mutalaa_pipeline.runctx import RAW_KLASORU, STAGED_KLASORU, RunContext
 from mutalaa_pipeline.sources.kayit import SLUG_DESENI
 from mutalaa_pipeline.staged import Satir, satirlari_oku
@@ -166,15 +166,31 @@ def girdi_olarak(calisma: Calisma, ad: str = UNITS_ADI) -> lineage.Girdi:
     return lineage.Girdi(yol=calisma.goreli(ad), sha256=ozet, ust_run_id=calisma.run_id)
 
 
+def dosya_oku(calisma: Calisma, ad: str, etiket: str) -> list[Satir]:
+    """Calismanin `ad` dosyasini (JSONL), manifestteki ozetle dogrulayarak okur.
+
+    Manifestte dosyanin ozeti yoksa (eski bir calisma) ya da ozet tutmuyorsa `GirdiHatasi`.
+    """
+    ozet = calisma.cikti_ozeti(ad)
+    if ozet is None:
+        raise GirdiHatasi(f"{etiket}: manifestte {ad} ozeti yok ({calisma.adim} {calisma.run_id})")
+    try:
+        veri = (calisma.klasor / ad).read_bytes()
+    except OSError:
+        raise GirdiHatasi(f"{etiket}: {ad} okunamadi") from None
+    if lineage.sha256_bayt(veri) != ozet:
+        raise GirdiHatasi(f"{etiket}: {ad} ozeti manifestle tutmuyor")
+    return satirlari_oku(veri, etiket)
+
+
 def units_oku(calisma: Calisma, etiket: str) -> list[Satir]:
     """Calismanin `units.jsonl` dosyasini, manifestteki ozetle dogrulayarak okur."""
-    try:
-        veri = (calisma.klasor / UNITS_ADI).read_bytes()
-    except OSError:
-        raise GirdiHatasi(f"{etiket}: units.jsonl okunamadi") from None
-    if lineage.sha256_bayt(veri) != calisma.cikti_ozeti():
-        raise GirdiHatasi(f"{etiket}: units.jsonl ozeti manifestle tutmuyor")
-    return satirlari_oku(veri, etiket)
+    return dosya_oku(calisma, UNITS_ADI, etiket)
+
+
+def kelimeler_oku(calisma: Calisma, etiket: str) -> list[Satir]:
+    """Anchor calismasinin `words.jsonl` dosyasini, manifestteki ozetle dogrulayarak okur."""
+    return dosya_oku(calisma, KELIMELER_ADI, etiket)
 
 
 def ust_calismalar(ctx: RunContext, calisma: Calisma) -> list[Calisma]:

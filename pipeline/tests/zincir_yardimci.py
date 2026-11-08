@@ -9,6 +9,7 @@ durumlari sinanir. `(sure + ayet) % 3 == 0` ayetlerinde Uthmani'nin ikinci kelim
 eklenir: normalize hali farkli olur ve AR-4 o sozcugu ar_norm sonuna ekler.
 """
 
+import copy
 import dataclasses
 import hashlib
 import shutil
@@ -22,7 +23,12 @@ from hat_yardimci import ctx_kur
 from tanzil_yardimci import TARIH, gelen_yaz, sentetik_bildirim
 from test_sources import alanlar_kur, kayit_yaz, kok_kur
 
-from mutalaa_pipeline.adimlar.anchor_tanzil import anchor_satirlari, komut_anchor, run_anchor
+from mutalaa_pipeline.adimlar.anchor_tanzil import (
+    anchor_satirlari,
+    kelime_satirlari,
+    komut_anchor,
+    run_anchor,
+)
 from mutalaa_pipeline.adimlar.normalize_tanzil import (
     EK_KAYNAK,
     KAYNAK,
@@ -31,15 +37,16 @@ from mutalaa_pipeline.adimlar.normalize_tanzil import (
     run_normalize,
 )
 from mutalaa_pipeline.anchor.ayet_sayilari import AYET_SAYILARI
+from mutalaa_pipeline.anchor.quran import BESMELE_BELIRTEC, BIRLESTIRME, besmele_onekli_mi
 from mutalaa_pipeline.enums import SourceKind
-from mutalaa_pipeline.export.ortak import depo_koku
+from mutalaa_pipeline.export.ortak import GirdiHatasi, depo_koku
 from mutalaa_pipeline.ingest import tanzil, tanzil_bicim
 from mutalaa_pipeline.ingest.base import run_ingest
 from mutalaa_pipeline.ingest.tanzil import KilitGirdisi, dosya_adi
 from mutalaa_pipeline.qa.checks.tanzil import QaGirdisi, Varyant
 from mutalaa_pipeline.runctx import RunContext
 from mutalaa_pipeline.sources.kayit import Kaynak
-from mutalaa_pipeline.staged import Satir, units_yaz
+from mutalaa_pipeline.staged import Satir, kelimeler_yaz, units_yaz
 from mutalaa_pipeline.zincir import (
     NORMALIZE_ADIMI,
     calismalar,
@@ -91,13 +98,22 @@ def sentetik_kelime(n: int, uthmani: bool, *, ek_elif: bool = False, ilk: bool =
 
 
 def sentetik_ayet(sure: int, ayet: int, varyant: str) -> str:
-    """`(sure, ayet)` icin deterministik sentetik ayet metni (3-5 kelime)."""
+    """`(sure, ayet)` icin deterministik sentetik ayet metni (3-5 kelime).
+
+    Besmele onekli ayetlerde (sure 2-114, 9 haric, 1. ayet; K-43) metnin basina SENTETIK besmele
+    eklenir: 1:1'in dort sentetik kelimesi. Boylece `anchor/quran.py` kuralinin dort belirteci
+    atmasi kelime birakir; gercek besmele yazilmaz.
+    """
     uthmani = varyant == "uthmani"
     kelimeler = []
-    for k in range(3 + ayet % 3):
+    # Birlestirme listesindeki ayetlerde (K-43) birlesecek iki belirtec bulunmalidir.
+    adet = max(3 + ayet % 3, BIRLESTIRME.get((sure, ayet), 0) + 1)
+    for k in range(adet):
         n = sure * 31 + ayet * 7 + k
         ek = uthmani and k == 1 and (sure + ayet) % 3 == 0
         kelimeler.append(sentetik_kelime(n, uthmani, ek_elif=ek, ilk=k == 0))
+    if besmele_onekli_mi(sure, ayet):
+        kelimeler = sentetik_ayet(1, 1, varyant).split(" ")[:BESMELE_BELIRTEC] + kelimeler
     return " ".join(kelimeler)
 
 
@@ -325,8 +341,10 @@ def qa_girdisi(
         _ingest_satirlari(EK_KAYNAK, dosya_adi("simple-clean"), s.ham_sha256, s.ayrisma),
     )[0]
     anchor = anchor_satirlari([Satir("normalize", i, r) for i, r in enumerate(normalize, 1)], "1.1")
+    kelimeler = kelime_satirlari(anchor, "1.1")
     return QaGirdisi(
         anchor_satirlari=[Satir("anchor", i, r) for i, r in enumerate(anchor, 1)],
+        kelime_satirlari=[Satir("words", i, r) for i, r in enumerate(kelimeler, 1)],
         uthmani=u,
         simple=s,
         depo_kok=depo_kok if depo_kok is not None else depo_koku(),
@@ -407,12 +425,19 @@ def anchor_bozdur(
     ctx = z.ctx("anchor", [KAYNAK], temiz_git=False)
     normalize = calismalar(ctx, KAYNAK, NORMALIZE_ADIMI)[-1]
     satirlar = anchor_satirlari(units_oku(normalize, "normalize units.jsonl"), "1.1")
+    saglam = copy.deepcopy(satirlar)
     sonuc = degistir(satirlar)
-    cikti = units_yaz(ctx, KAYNAK, sonuc if sonuc is not None else satirlar)
+    bozuk = sonuc if sonuc is not None else satirlar
+    try:
+        kelimeler = kelime_satirlari(bozuk, "1.1")
+    except GirdiHatasi:  # bozulmus satirlardan kelime uretilemiyorsa bozulmamis halinden uretilir
+        kelimeler = kelime_satirlari(saglam, "1.1")
+    cikti = units_yaz(ctx, KAYNAK, bozuk)
+    kelime_cikti = kelimeler_yaz(ctx, KAYNAK, kelimeler)
     ctx.manifest_yaz(
         ctx.staged_dizin(KAYNAK),
         girdiler=[girdi_olarak(normalize)],
-        ciktilar=[cikti],
+        ciktilar=[cikti, kelime_cikti],
         parmak="0" * 64,
     )
     return ctx

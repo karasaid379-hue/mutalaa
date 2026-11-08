@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Final
 from mutalaa_pipeline import lineage
 from mutalaa_pipeline.anchor import AnchorError, parse, sort_key
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kati_json
-from mutalaa_pipeline.lineage import UNITS_ADI
+from mutalaa_pipeline.lineage import KELIMELER_ADI, UNITS_ADI
 
 if TYPE_CHECKING:
     from mutalaa_pipeline.runctx import RunContext
@@ -113,8 +113,26 @@ def units_yaz(
     ctx: "RunContext", source_id: str, satirlar: Iterable[Mapping[str, object]]
 ) -> lineage.Cikti:
     """`staged/{kaynak}/{run_id}/units.jsonl` dosyasini yazar (`--dry-run`'da yazmaz)."""
+    return satirlari_yaz(ctx, source_id, UNITS_ADI, satirlar)
+
+
+def kelimeler_yaz(
+    ctx: "RunContext", source_id: str, satirlar: Iterable[Mapping[str, object]]
+) -> lineage.Cikti:
+    """`staged/{kaynak}/{run_id}/words.jsonl` dosyasini yazar (`--dry-run`'da yazmaz).
+
+    Satir bicimi ve siralama `units.jsonl` ile aynidir; her satirin `anchor` degeri tekil bir
+    kelime capasidir (`q:{sure}:{ayet}:{kelime}`), sira `sort_key`.
+    """
+    return satirlari_yaz(ctx, source_id, KELIMELER_ADI, satirlar)
+
+
+def satirlari_yaz(
+    ctx: "RunContext", source_id: str, ad: str, satirlar: Iterable[Mapping[str, object]]
+) -> lineage.Cikti:
+    """`staged/{kaynak}/{run_id}/{ad}` dosyasini kanonik satirlarla yazar."""
     veri, sayi = units_baytlari(satirlar)
-    hedef = ctx.staged_dizin(source_id) / UNITS_ADI
+    hedef = ctx.staged_dizin(source_id) / ad
     if not ctx.dry_run:
         hedef.parent.mkdir(parents=True, exist_ok=True)
         hedef.write_bytes(veri)

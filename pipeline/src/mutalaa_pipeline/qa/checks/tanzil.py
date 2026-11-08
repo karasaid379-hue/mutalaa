@@ -14,12 +14,18 @@ Kapilar:
   basligiyla tutarli.
 * G-BUT: 114 sure ve 6.236 ayet (JSON ve kopyalari, anchor satirlari, iki ham dosya), bos birim
   ve kontrol karakteri yok, her birimin metni ham dosyanin ayni bayt dilimi, `steps` bos, ham
-  dosyalar kilitle ayni. NFC durumu yalniz olcumdur (kapi degil, K-26).
+  dosyalar kilitle ayni. Kelime satirlari (A11.2, K-43): her kelimenin metni ayet metninin
+  `[char_start, char_end)` dilimidir, araliklar ortusmez, numaralar her ayette 1'den kesintisizdir,
+  her ayetin en az bir kelimesi vardir ve satirlar bolme kuralindan yeniden uretilenle ayni;
+  toplam kelime sayisi `sayilar` ve `olcumler`de. NFC durumu yalniz olcumdur (kapi degil, K-26).
 * G-CAP: capa gramere uyar ve kanoniktir, tekildir, okuma sirasindadir ve 6.236 ayetin hepsini
   kapsar; `ord`, `ayah_lo`, `ayah_hi` kuresel siradir; `content_hash` yeniden hesapla tutar;
-  onceki anchor calismasindaki her capa durur ve ozeti degismemistir.
+  onceki anchor calismasindaki her capa durur ve ozeti degismemistir. Kelime capalari
+  (`q:{sure}:{ayet}:{kelime}`) gramere uyar, kanoniktir, tekildir, okuma sirasindadir ve
+  `surah`, `ayah`, `word`, `ayah_index` capayla ve ayet satiriyla tutarlidir.
 * G-NOR: normalizasyon vektorleri Python'da gecer; her satirin `ar_norm` degeri ham
-  dosyalardan yeniden uretilince (AR-4) tutar ve `provenance.ar_norm` dogrudur.
+  dosyalardan yeniden uretilince (AR-4) tutar ve `provenance.ar_norm` dogrudur. Her kelimenin
+  `norm` degeri `normalize_ar(text_uthmani)` ile ayni ve bos degildir.
 
 Olcumler (`olcumler`, kapi degil; rapora yazilir): NFC durumu, AR-8 karakterleri, normalizasyondan
 sonra kalan birlesen isaretler (Mn), besmele, AR-4 eki ve `ayet-sayilari.json` dizisinin iki ham
@@ -39,10 +45,20 @@ from typing import Final
 
 from mutalaa_pipeline import lineage
 from mutalaa_pipeline.adimlar.anchor_tanzil import KIND, METIN_DURUMU, ayet_coz
+from mutalaa_pipeline.adimlar.anchor_tanzil import kelime_satirlari as kelimelere_bolunmus
 from mutalaa_pipeline.adimlar.normalize_tanzil import EK_KAYNAK, KAYNAK, ar4_birlestir
-from mutalaa_pipeline.anchor import AnchorRef, Q, SortKey, content_hash, parse, sort_key
+from mutalaa_pipeline.anchor import (
+    AnchorError,
+    AnchorRef,
+    Q,
+    SortKey,
+    content_hash,
+    parse,
+    sort_key,
+)
 from mutalaa_pipeline.anchor import format as anchor_format
 from mutalaa_pipeline.anchor.ayet_sayilari import AYET_SAYILARI
+from mutalaa_pipeline.anchor.quran import BIRLESTIRME
 from mutalaa_pipeline.export import ayet_sayilari
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest.tanzil import KilitGirdisi, dosya_adi
@@ -117,6 +133,7 @@ class QaGirdisi:
     depo_kok: Path
     onceki: Onceki | None = None
     sure_tablosu: Sequence[int] = AYET_SAYILARI
+    kelime_satirlari: Sequence[Satir] = ()  # anchor calismasinin words.jsonl satirlari (A11.2)
 
     @cached_property
     def normalize_cifti(self) -> dict[str, tuple[str, str]]:
@@ -127,6 +144,11 @@ class QaGirdisi:
             for ay in self.uthmani.ayrisma.ayetler
             if ay.capa in simple
         }
+
+    @property
+    def uthmani_surumu(self) -> str:
+        """Anchor satirlarinin `data_version` ekinde beklenen surum (kaynak kaydindan)."""
+        return f"{self.uthmani.kayit.surum}"
 
     @cached_property
     def baslangic(self) -> tuple[int, ...]:
@@ -262,6 +284,162 @@ def g_kay(g: QaGirdisi) -> KapiSonucu:
     return KapiSonucu("G-KAY", tuple(bulgular), sayilar)
 
 
+# --- kelime satirlari (A11.2, K-43) ------------------------------------------------------
+
+
+def _kelime_gruplari(g: QaGirdisi) -> dict[tuple[int, int], list[Satir]]:
+    """Kelime satirlari `(sure, ayet)` ile gruplanir (dosya sirasi korunur)."""
+    gruplar: dict[tuple[int, int], list[Satir]] = {}
+    for satir in g.kelime_satirlari:
+        gruplar.setdefault((satir.sayi("surah"), satir.sayi("ayah")), []).append(satir)
+    return gruplar
+
+
+def _ayet_haritasi(g: QaGirdisi, alan: str) -> dict[tuple[int, int], Satir]:
+    """`(sure, ayet) -> anchor satiri`; gecersiz capalar atlanir (G-CAP bildirir)."""
+    harita: dict[tuple[int, int], Satir] = {}
+    for satir in g.anchor_satirlari:
+        konum = ayet_coz(satir.metin("anchor"))
+        if konum is not None and satir.var(alan):
+            harita[konum] = satir
+    return harita
+
+
+def _kelime_but(g: QaGirdisi) -> tuple[list[str], dict[str, int]]:
+    """Kelime satirlarinin G-BUT denetimleri: dilim, ortusme, numara, kapsam, yeniden uretim."""
+    satirlar = g.kelime_satirlari
+    if not satirlar:
+        return ["kelime satirlari: words.jsonl bos ya da okunmadi"], {"kelime": 0}
+    ayetler = _ayet_haritasi(g, "text")
+    gruplar = _kelime_gruplari(g)
+    dilim: list[str] = []
+    ortusme: list[str] = []
+    numara: list[str] = []
+    ayetsiz: list[str] = []
+    for konum, grup in gruplar.items():
+        ayet = ayetler.get(konum)
+        if ayet is None:
+            ayetsiz += [s.metin("anchor") for s in grup]
+            continue
+        metin = ayet.metin("text")
+        onceki_son = 0
+        for sira, satir in enumerate(grup, start=1):
+            capa = satir.metin("anchor")
+            bas, son = satir.sayi("char_start"), satir.sayi("char_end")
+            if satir.sayi("word") != sira:
+                numara.append(capa)
+            if not 0 <= bas < son <= len(metin) or metin[bas:son] != satir.metin("text_uthmani"):
+                dilim.append(capa)
+            if bas < onceki_son:
+                ortusme.append(capa)
+            onceki_son = max(onceki_son, son)
+    kelimesiz = sorted(f"q:{sure}:{ayet}" for sure, ayet in ayetler if (sure, ayet) not in gruplar)
+    bulgular: list[str] = []
+    for ad, liste, neden in (
+        ("kelime dilim", dilim, "metin ayet metninin [char_start, char_end) dilimi degil"),
+        ("kelime ortusme", ortusme, "aralik onceki kelimenin araligiyla ortusuyor"),
+        ("kelime numarasi", numara, "numara ayet icinde 1'den kesintisiz degil"),
+        ("kelimesi olmayan ayet", kelimesiz, "ayetin hic kelime satiri yok"),
+        ("kelime ayeti", ayetsiz, "kelimenin ayeti anchor satirlarinda yok"),
+    ):
+        if liste:
+            bulgular.append(f"{ad}: {len(liste)} birim: {neden}: {_capalar(liste)}")
+    try:
+        beklenen = {
+            str(r["anchor"]): r
+            for r in kelimelere_bolunmus([s.veri for s in g.anchor_satirlari], g.uthmani_surumu)
+        }
+    except GirdiHatasi as hata:
+        bulgular.append(f"kelime bolme kurali uygulanamadi: {_g(hata, 120)}")
+    else:
+        var = {s.metin("anchor"): s.veri for s in satirlar}
+        farkli = sorted(c for c, v in var.items() if c in beklenen and not _esit(v, beklenen[c]))
+        for ad, liste in (
+            ("bolme kuralindan uretilenden farkli kelime satiri", farkli),
+            ("kuralda olup words.jsonl'de olmayan kelime", sorted(set(beklenen) - set(var))),
+            ("words.jsonl'de olup kuralda olmayan kelime", sorted(set(var) - set(beklenen))),
+        ):
+            if liste:
+                bulgular.append(f"{ad}: {len(liste)} birim: {_capalar(liste)}")
+    return bulgular, {"kelime": len(satirlar), "kelime_ayet": len(gruplar)}
+
+
+def _kelime_cap(g: QaGirdisi) -> tuple[list[str], dict[str, int]]:
+    """Kelime capalarinin G-CAP denetimleri: gramer, teklik, sira, alan tutarliligi."""
+    ayet_sirasi = {konum: s.sayi("ord") for konum, s in _ayet_haritasi(g, "ord").items()}
+    data_version = f"{KAYNAK}@{g.uthmani.kayit.surum}"
+    gecersiz: list[str] = []
+    tekrar: list[str] = []
+    tutarsiz: list[str] = []
+    sabit: list[str] = []
+    gorulen: set[str] = set()
+    anahtarlar: list[tuple[SortKey, str]] = []
+    for satir in g.kelime_satirlari:
+        capa = satir.metin("anchor")
+        if capa in gorulen:
+            tekrar.append(capa)
+        gorulen.add(capa)
+        try:
+            ref = parse(capa)
+            kanonik = anchor_format(ref) == capa
+        except (AnchorError, ValueError):
+            gecersiz.append(capa)
+            continue
+        cozulen = ref.anchor
+        if (
+            not kanonik
+            or ref.span is not None
+            or not isinstance(cozulen, Q)
+            or cozulen.ilk is None
+            or cozulen.son is not None
+        ):
+            gecersiz.append(capa)
+            continue
+        anahtarlar.append((sort_key(ref), capa))
+        if (
+            satir.sayi("surah") != cozulen.sure
+            or satir.sayi("ayah") != cozulen.ayet
+            or satir.sayi("word") != cozulen.ilk
+            or ayet_sirasi.get((cozulen.sure, cozulen.ayet)) != satir.sayi("ayah_index")
+        ):
+            tutarsiz.append(capa)
+        if satir.metin("source_id") != KAYNAK or satir.metin("data_version") != data_version:
+            sabit.append(capa)
+    siralama = [
+        capa for (onceki, _), (simdiki, capa) in pairwise(anahtarlar) if not onceki < simdiki
+    ]
+    bulgular: list[str] = []
+    for ad, liste, neden in (
+        ("gecersiz kelime capasi", gecersiz, "kanonik bir q:{sure}:{ayet}:{kelime} capasi degil"),
+        ("yinelenen kelime capasi", tekrar, "capa birden fazla satirda"),
+        ("kelime okuma sirasi", siralama, "satir onceki capadan sonra gelmiyor"),
+        ("kelime alanlari", tutarsiz, "surah, ayah, word ya da ayah_index capayla tutmuyor"),
+        ("kelime sabit alani", sabit, "source_id ya da data_version yanlis"),
+    ):
+        if liste:
+            bulgular.append(f"{ad}: {len(liste)} birim: {neden}: {_capalar(liste)}")
+    return bulgular, {"kelime_capa": len(gorulen)}
+
+
+def _kelime_nor(g: QaGirdisi) -> list[str]:
+    """Her kelimenin `norm` degeri `normalize_ar(text_uthmani)` ile ayni ve bos degil."""
+    farkli = [
+        s.metin("anchor")
+        for s in g.kelime_satirlari
+        if s.metin("norm") != normalize_ar(s.metin("text_uthmani"))
+    ]
+    bos = [s.metin("anchor") for s in g.kelime_satirlari if s.metin("norm") == ""]
+    bulgular: list[str] = []
+    if farkli:
+        bulgular.append(
+            f"kelime norm: {len(farkli)} birim: normalize_ar(text_uthmani) ile ayni degil:"
+            f" {_capalar(farkli)}"
+        )
+    if bos:
+        bulgular.append(f"bos kelime norm: {len(bos)} birim: {_capalar(bos)}")
+    return bulgular
+
+
 # --- G-BUT -------------------------------------------------------------------------------
 
 
@@ -336,6 +514,8 @@ def g_but(g: QaGirdisi) -> KapiSonucu:
             bulgular.append(f"{v.kaynak}: ayet satirlari kilitteki metin_sha256 ile tutmuyor")
         if v.ayrisma.bildirim_sha256 != v.kilit.bildirim_sha256:
             bulgular.append(f"{v.kaynak}: bildirim blogu kilitteki bildirim_sha256 ile tutmuyor")
+    kelime_bulgulari, kelime_sayilari = _kelime_but(g)
+    bulgular += kelime_bulgulari
     sayilar = {
         "birim": len(satirlar),
         "sure": len(sayim),
@@ -344,6 +524,7 @@ def g_but(g: QaGirdisi) -> KapiSonucu:
         "bos_birim": len(bos),
         "kontrol_karakteri": len(kontrol),
         "bayt_farki": len(farkli),
+        **kelime_sayilari,
     }
     return KapiSonucu("G-BUT", tuple(bulgular), sayilar)
 
@@ -427,7 +608,14 @@ def g_cap(g: QaGirdisi) -> KapiSonucu:
         if liste:
             bulgular.append(f"{ad}: {len(liste)} birim: {neden}: {_capalar(liste)}")
 
-    sayilar = {"capa": len(var), "beklenen_capa": len(beklenen_kume), "onceki_run": 0}
+    kelime_bulgulari, kelime_sayilari = _kelime_cap(g)
+    bulgular += kelime_bulgulari
+    sayilar = {
+        "capa": len(var),
+        "beklenen_capa": len(beklenen_kume),
+        "onceki_run": 0,
+        **kelime_sayilari,
+    }
     if g.onceki is not None:
         sayilar["onceki_run"] = 1
         simdiki_ozetler = {s.metin("anchor"): s.metin("content_hash") for s in satirlar}
@@ -502,6 +690,7 @@ def g_nor(g: QaGirdisi) -> KapiSonucu:
     ):
         if liste:
             bulgular.append(f"{ad}: {len(liste)} birim: {neden}: {_capalar(liste)}")
+    bulgular += _kelime_nor(g)
     sayilar = {
         "vektor": vektor.toplam,
         "vektor_kalan": len(vektor.kalan),
@@ -606,6 +795,15 @@ def _json_olcumu(g: QaGirdisi) -> dict[str, object]:
     }
 
 
+def _kelime_olcumu(g: QaGirdisi) -> dict[str, object]:
+    """Kelime bolmesi (K-43): toplam kelime, kelimeli ayet ve birlestirme listesi (kapi degil)."""
+    return {
+        "toplam": len(g.kelime_satirlari),
+        "ayet": len(_kelime_gruplari(g)),
+        "birlestirme": sorted(f"{s}:{a}:{i}" for (s, a), i in BIRLESTIRME.items()),
+    }
+
+
 def olcumler(g: QaGirdisi) -> dict[str, object]:
     """Rapora yazilan olcumler: NFC (bilgi), AR-8, Mn, besmele, AR-4, ayet sayilari (kapi degil)."""
     cifter = g.normalize_cifti
@@ -643,4 +841,5 @@ def olcumler(g: QaGirdisi) -> dict[str, object]:
         for v in (g.uthmani, g.simple)
     }
     sonuc["ayet_sayilari_json"] = _json_olcumu(g)
+    sonuc["kelime"] = _kelime_olcumu(g)
     return sonuc
