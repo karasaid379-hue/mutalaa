@@ -18,6 +18,7 @@ from ust_veri_yardimci import (
     SECDE_SAYISI,
     TARIH,
     URL,
+    ar_ad,
     kayitlari_yaz,
     kilit_xml_icin,
     konum,
@@ -80,7 +81,7 @@ def test_satir_alanlari_tur_no_sura_aya() -> None:
         "start",
         "rukus",
     }
-    assert (sure["ad_ar"], sure["tname"], sure["ename"]) == ("Deneme 2", "Deneme-2", "Deneme 2")
+    assert (sure["ad_ar"], sure["tname"], sure["ename"]) == (ar_ad(2), "Deneme-2", "Deneme 2")
     assert {s["type"] for s in yapi["secde"]} == {"recommended", "obligatory"}
     assert all("type" not in s for s in yapi["cuz"])
 

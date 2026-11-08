@@ -17,7 +17,14 @@ from mutalaa_pipeline.qa.checks import tanzil as qa_tanzil
 from mutalaa_pipeline.staged import UNITS_ADI as STAGED_UNITS_ADI
 
 PAKET = Path(mutalaa_pipeline.__file__).parent
-TEKIL_DIZGELER = {"units.jsonl", "words.jsonl", "markers.jsonl", "pages.jsonl", "notice.txt"}
+TEKIL_DIZGELER = {
+    "units.jsonl",
+    "words.jsonl",
+    "markers.jsonl",
+    "pages.jsonl",
+    "aliases.jsonl",
+    "notice.txt",
+}
 TEKIL_DESENLER = {
     r"[0-9a-f]{64}",  # SHA-256 (64 kucuk harfli onaltilik)
     r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",  # run_id (UUID)
@@ -60,6 +67,7 @@ def test_lineage_tanimlari_beklenen_degerleri_tasir() -> None:
     assert lineage.KELIMELER_ADI == "words.jsonl"
     assert lineage.ISARETLER_ADI == "markers.jsonl"
     assert lineage.SAYFALAR_ADI == "pages.jsonl"
+    assert lineage.ALIASLAR_ADI == "aliases.jsonl"
     assert lineage.NOTICE_ADI == "notice.txt"
     assert lineage.OZET_DESENI.fullmatch("a" * 64) is not None
     assert lineage.OZET_DESENI.fullmatch("A" * 64) is None

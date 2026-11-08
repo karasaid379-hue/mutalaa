@@ -1,0 +1,36 @@
+{
+  "vikipedi": {
+    "url": "https://tr.wikipedia.org/wiki/Sureler_listesi",
+    "surum": "37447386",
+    "alinma_tarihi": "2026-11-08",
+    "dosyalar": {
+      "revizyon.json": {
+        "boyut": 280,
+        "sha256": "2d5b013101df2f07efb44f9f6515972e32491183a2ece1cd6903eea9bde66c4a"
+      },
+      "sureler-listesi.wikitext": {
+        "boyut": 15110,
+        "sha256": "76731fb49f847ee43147e31556a4d35892641483b1cd0094fcf4285139915e97"
+      },
+      "yonlendirmeler-01.json": {
+        "boyut": 40331,
+        "sha256": "a51d474f99ea86b58ae779f67b016773abbc26f13d91462b40c75f144ad00e06"
+      },
+      "yonlendirmeler-02.json": {
+        "boyut": 29324,
+        "sha256": "ee90aaf9299fe491db483a726bdec3058d48f36ab1de6a78a123db67cae4f37a"
+      }
+    }
+  },
+  "quran_meta": {
+    "url": "https://registry.npmjs.org/quran-meta/-/quran-meta-7.0.0.tgz",
+    "surum": "7.0.0",
+    "alinma_tarihi": "2026-11-08",
+    "dosyalar": {
+      "quran-meta-7.0.0.tgz": {
+        "boyut": 187556,
+        "sha256": "0e05d5313abe87ee7679c524c05dd67a9457191c0637c24541922c0e971fc8b4"
+      }
+    }
+  }
+}

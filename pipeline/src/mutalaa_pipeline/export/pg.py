@@ -70,9 +70,12 @@ TARIH_DESENI: Final = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 EK_KAYNAKLAR: Final[Mapping[str, tuple[str, ...]]] = {
     "tanzil-uthmani": ("tanzil-simple-clean",),
     "tanzil-ust-veri": (),  # yapi verisi: quran_marker ve page_map (export/pg_yapi.py)
+    "sure-adlari-vikipedi": (),  # sure adi adaylari: surah_alias ve review (pg_sure_adlari.py)
 }
 # Birim degil yapi satiri yukleyen kaynaklar (K-43 madde 3): units.jsonl yerine markers/pages.
 YAPI_KAYNAKLARI: Final = frozenset({"tanzil-ust-veri"})
+# Sure adi aday satiri yukleyen kaynaklar (K-43 madde 4-5): surah_alias + review, units yok.
+SURE_ADI_KAYNAKLARI: Final = frozenset({"sure-adlari-vikipedi"})
 
 # `words.jsonl` zorunlu olan kaynaklar: anchor calismasi kelime dosyasini listelemelidir.
 KELIME_KAYNAKLARI: Final = frozenset({"tanzil-uthmani"})
@@ -194,6 +197,18 @@ class SayfaSatiri:
 
 
 @dataclass(frozen=True)
+class AdaySatiri:
+    """`aliases.jsonl` satiri (`surah_alias` adayi); `onerilen` `review.onerilen` alanidir."""
+
+    surah_no: int
+    alias: str
+    alias_key: str
+    kind: str
+    risky: bool
+    onerilen: dict[str, object]
+
+
+@dataclass(frozen=True)
 class ZincirRun:
     run_id: str
     adim: str
@@ -226,6 +241,8 @@ class Hazirlik:
     yapi: bool = False  # True: isaretler ve sayfalar yuklenir (units/quran_word yok)
     isaretler: list[IsaretSatiri] = field(default_factory=list)
     sayfalar: list[SayfaSatiri] = field(default_factory=list)
+    sure_adi: bool = False  # True: adaylar yuklenir (surah_alias + review; units yok)
+    adaylar: list[AdaySatiri] = field(default_factory=list)
 
 
 # --- yardimcilar -------------------------------------------------------------------------
@@ -620,6 +637,10 @@ def hazirla(
         from mutalaa_pipeline.export import pg_yapi
 
         return pg_yapi.hazirla(ctx, source_id, run, ek_kaynaklar)
+    if source_id in SURE_ADI_KAYNAKLARI:
+        from mutalaa_pipeline.export import pg_sure_adlari
+
+        return pg_sure_adlari.hazirla(ctx, source_id, run, ek_kaynaklar)
     kaynak_idleri = (source_id, *ek_kaynaklar)
     # G-KAY: kayit gecerli ve atif_metni dolu; kayitsiz ya da gecersiz kayitta cikis 2.
     kaynaklar = ctx.require_sources(kaynak_idleri)
@@ -994,6 +1015,10 @@ def _yukle(conn: psycopg.Connection, ctx: RunContext, h: Hazirlik) -> dict[str, 
         from mutalaa_pipeline.export import pg_yapi
 
         sayilar.update(pg_yapi.yukle(conn, h))
+    elif h.sure_adi:
+        from mutalaa_pipeline.export import pg_sure_adlari
+
+        sayilar.update(pg_sure_adlari.yukle(conn, h))
     else:
         _staging_yukle(conn, h.satirlar)
         _denetimler(conn, h.source_id)

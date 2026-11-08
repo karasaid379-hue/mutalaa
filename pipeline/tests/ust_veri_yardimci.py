@@ -38,6 +38,18 @@ SECDE_SAYISI = 15
 KOK_URL = "https://deneme.invalid/"
 
 
+ARAPCA_HARFLER = [chr(k) for k in (*range(0x628, 0x63B), *range(0x641, 0x649), 0x64A) if k != 0x629]
+
+
+def ar_ad(sure: int) -> str:
+    """Sure icin SENTETIK, benzersiz Arapca harfli ad (gercek ad degil; normalize_ar altinda da
+    benzersiz kalan harflerden uretilir)."""
+    n = len(ARAPCA_HARFLER)
+    return (
+        ARAPCA_HARFLER[sure % n] + ARAPCA_HARFLER[(sure // n) % n] + ARAPCA_HARFLER[(sure * 5) % n]
+    )
+
+
 def konum(sira: int) -> tuple[int, int]:
     """Kuresel ayet sirasi (1..6236) -> `(sure, ayet)` (gercek ayet sayilari tablosundan)."""
     sure = bisect_left(BASLANGIC, sira)
@@ -68,7 +80,7 @@ def sentetik_xml(
             "index": s,
             "ayas": adet,
             "start": BASLANGIC[s - 1],
-            "name": f"Deneme {s}",
+            "name": ar_ad(s),
             "tname": f"Deneme-{s}",
             "ename": f"Deneme {s}",
             "type": "Meccan" if s % 2 else "Medinan",

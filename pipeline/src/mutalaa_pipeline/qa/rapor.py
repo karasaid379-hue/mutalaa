@@ -17,7 +17,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
-from mutalaa_pipeline.qa import GECTI, KALDI, KAPILAR, QA_KOMUTU, kaynak_kapilari
+from mutalaa_pipeline.qa import GECTI, KALDI, QA_KOMUTU, kaynak_kapilari
+from mutalaa_pipeline.qa import KAPILAR as KAPILAR
 from mutalaa_pipeline.runctx import RAPOR_KLASORU, QaKaldi
 
 
@@ -133,7 +134,7 @@ class QaRaporlari:
                 return rapor.rapor_id
             # basarili kismi (--gate) kosu ya da kapi iddia etmeyen rapor: daha eski rapora bakilir
         gerekli = kaynak_kapilari(source_id)
-        sayi = "dort" if gerekli == KAPILAR else "uc"
+        sayi = {2: "iki", 3: "uc", 4: "dort"}[len(gerekli)]
         raise QaKaldi(f"QA raporu {sayi} kapiyi da icermiyor ({', '.join(gerekli)})")
 
     def onayli_mi(self, source_id: str, anchor_run_id: str, units_sha: str) -> bool:

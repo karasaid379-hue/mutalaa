@@ -30,7 +30,14 @@ from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest import tanzil, tanzil_bicim
 from mutalaa_pipeline.komut_ortak import komutu_yurut
 from mutalaa_pipeline.lineage import NOTICE_ADI
-from mutalaa_pipeline.qa import GECTI, KALDI, KAPILAR, QA_KOMUTU, UST_VERI_KAYNAGI
+from mutalaa_pipeline.qa import (
+    GECTI,
+    KALDI,
+    KAPILAR,
+    QA_KOMUTU,
+    SURE_ADI_KAYNAGI,
+    UST_VERI_KAYNAGI,
+)
 from mutalaa_pipeline.qa.checks.tanzil import (
     KAPI_ISLEVLERI,
     KapiSonucu,
@@ -267,6 +274,10 @@ def komut_qa_run(
         from mutalaa_pipeline.qa.run_ust_veri import komut_qa_run_ust_veri
 
         return komut_qa_run_ust_veri(run=run, gate=gate, config=config, kok=kok)
+    if source == SURE_ADI_KAYNAGI:  # sure adi adaylari: G-KAY, G-BUT (A11.3)
+        from mutalaa_pipeline.qa.run_sure_adlari import komut_qa_run_sure_adlari
+
+        return komut_qa_run_sure_adlari(run=run, gate=gate, config=config, kok=kok)
     desteklenen = source == KAYNAK
 
     def govde(ctx: RunContext) -> int:

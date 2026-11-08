@@ -26,6 +26,7 @@ MANIFEST_ADI: Final = "manifest.json"
 UNITS_ADI: Final = "units.jsonl"
 ISARETLER_ADI: Final = "markers.jsonl"  # ust veri anchor adiminda: quran_marker satirlari
 SAYFALAR_ADI: Final = "pages.jsonl"  # ust veri anchor adiminda: page_map satirlari
+ALIASLAR_ADI: Final = "aliases.jsonl"  # sure adi adaylari (surah_alias + review)
 KELIMELER_ADI: Final = "words.jsonl"  # anchor adiminda units.jsonl'in yaninda (quran_word)
 NOTICE_ADI: Final = "notice.txt"  # kaynagin bildirim blogu, bayt bayt (export pg bu adi bekler)
 UV_LOCK_YOLU: Final = "pipeline/uv.lock"

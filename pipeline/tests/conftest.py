@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 if TYPE_CHECKING:
+    from sure_adlari_yardimci import SureAdlariZinciri
     from ust_veri_yardimci import UstVeriZinciri
 
 MUTALAA_DEGISKENLERI = (
@@ -42,8 +43,26 @@ def ust_veri_zinciri(
     """
     from ust_veri_yardimci import json_kopyalarini_yaz, ust_veri_hazirla
 
-    with pytest.MonkeyPatch.context() as mp:
+    with pytest.MonkeyPatch.context() as mp:  # yama yalniz kurulum sirasinda gecerlidir
         uz = ust_veri_hazirla(tam_sablon, tmp_path_factory.mktemp("ustveri") / "t", mp)
         json_kopyalarini_yaz(uz.z.kok, uz.xml)
         uz.hepsi()
-        yield uz
+    yield uz
+
+
+@pytest.fixture(scope="session")
+def sure_adlari_zinciri(ust_veri_zinciri: "UstVeriZinciri") -> Iterator["SureAdlariZinciri"]:
+    """Sentetik sure adi zinciri (A11.3): ingest, anchor ve qa kosulmus; bir kez kurulur.
+
+    `ust_veri_zinciri` kokune sentetik Vikipedi/quran-meta dosyalari, kilit ve riskli ad listesi
+    eklenir. Her test `zincir.ortam(monkeypatch)` ile kilit ve liste yollarini kurar.
+    """
+    from sure_adlari_yardimci import SureAdlariZinciri
+    from zincir_yardimci import ortam_kur
+
+    sz = SureAdlariZinciri(ust_veri_zinciri)
+    with pytest.MonkeyPatch.context() as mp:  # yama yalniz kurulum sirasinda gecerlidir
+        ortam_kur(ust_veri_zinciri.z, mp)
+        sz.ortam(mp)
+        sz.hepsi()
+    yield sz

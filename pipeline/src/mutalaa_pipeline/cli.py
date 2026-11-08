@@ -294,6 +294,45 @@ def ingest_tanzil(
         raise typer.Exit(code=kod)
 
 
+@ingest_app.command("sure-adlari")
+def ingest_sure_adlari(
+    gelen_tarih: Annotated[
+        str | None,
+        typer.Option(
+            "--gelen-tarih",
+            help=(
+                "data/gelen/sure-adlari-vikipedi ve data/gelen/quran-meta altindaki tarih"
+                " klasoru, YYYY-AA-GG; verilmezse her kaynagin en yenisi."
+            ),
+        ),
+    ] = None,
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="raw ve staged'e yazmaz; kilit yine denetlenir.")
+    ] = False,
+    force: Annotated[
+        bool, typer.Option("--force", help="Parmak izi ayni olsa da calistirir.")
+    ] = False,
+    limit: Annotated[
+        int | None, typer.Option("--limit", help="Sure adi alimi icin reddedilir.")
+    ] = None,
+    config: Annotated[Path | None, typer.Option("--config", help="Baska bir mutalaa.toml.")] = None,
+    kok: KokSecenegi = None,
+) -> None:
+    """Vikipedi sure listesi, yonlendirmeler ve quran-meta adlarini alir. Cikis 0 ya da 2."""
+    from mutalaa_pipeline.ingest import sure_adlari
+
+    try:
+        if limit is not None:
+            raise GirdiHatasi("--limit sure adi alimi icin desteklenmez")
+    except GirdiHatasi as hata:
+        raise _hata(hata) from hata
+    kod = sure_adlari.komut_ingest_sure_adlari(
+        gelen_tarih=gelen_tarih, dry_run=dry_run, force=force, config=config, kok=kok
+    )
+    if kod != cikis.BASARILI:
+        raise typer.Exit(code=kod)
+
+
 def _limit_reddet(limit: int | None) -> None:
     """Tanzil adimlarinda kismi calisma kabul edilmez (G-BUT ve capa kumesi bozulur)."""
     if limit is not None:
@@ -348,7 +387,8 @@ def anchor_komutu(
     kok: KokSecenegi = None,
 ) -> None:
     """Capa, content_hash ve kuresel ayet sirasini uretir (q:{sure}:{ayet}). Cikis 0 ya da 2."""
-    from mutalaa_pipeline.adimlar import anchor_tanzil, anchor_ust_veri
+    from mutalaa_pipeline.adimlar import anchor_sure_adlari, anchor_tanzil, anchor_ust_veri
+    from mutalaa_pipeline.ingest.sure_adlari import KAYNAK as SURE_ADLARI_KAYNAGI
     from mutalaa_pipeline.ingest.tanzil_ust_veri import KAYNAK as UST_VERI_KAYNAGI
 
     try:
@@ -357,6 +397,10 @@ def anchor_komutu(
         raise _hata(hata) from hata
     if source == UST_VERI_KAYNAGI:  # isaret ve sayfa satirlari (A11.4, A11.5)
         kod = anchor_ust_veri.komut_anchor_ust_veri(
+            dry_run=dry_run, force=force, config=config, kok=kok
+        )
+    elif source == SURE_ADLARI_KAYNAGI:  # sure adi adaylari (A11.3)
+        kod = anchor_sure_adlari.komut_anchor_sure_adlari(
             dry_run=dry_run, force=force, config=config, kok=kok
         )
     else:
