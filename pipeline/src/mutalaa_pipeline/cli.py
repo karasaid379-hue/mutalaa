@@ -59,6 +59,7 @@ class Bicim(StrEnum):
 class TanzilVaryanti(StrEnum):
     UTHMANI = "uthmani"
     SIMPLE_CLEAN = "simple-clean"
+    UST_VERI = "ust-veri"
 
 
 def _hata(hata: GirdiHatasi) -> typer.Exit:
@@ -220,13 +221,18 @@ def export_pg_komutu(
 def ingest_tanzil(
     variant: Annotated[
         TanzilVaryanti,
-        typer.Option("--variant", help="Tanzil varyanti: uthmani ya da simple-clean."),
+        typer.Option(
+            "--variant", help="Tanzil varyanti: uthmani, simple-clean ya da ust-veri (XML)."
+        ),
     ],
     gelen_tarih: Annotated[
         str | None,
         typer.Option(
             "--gelen-tarih",
-            help="data/gelen/tanzil altindaki tarih klasoru, YYYY-AA-GG; verilmezse en yenisi.",
+            help=(
+                "data/gelen/tanzil (ust-veri icin data/gelen/tanzil-ust-veri) altindaki tarih"
+                " klasoru, YYYY-AA-GG; verilmezse en yenisi."
+            ),
         ),
     ] = None,
     kilit_oner: Annotated[
@@ -252,7 +258,7 @@ def ingest_tanzil(
     """Gelen Tanzil dosyasini kilitle karsilastirir, raw'a alir, staged uretir. Cikis 0 ya da 2."""
     # Ice aktarma: psycopg ve yapilandirma yalniz bu komutta yuklenir.
     from mutalaa_pipeline.config import ayarlar_yukle
-    from mutalaa_pipeline.ingest import tanzil
+    from mutalaa_pipeline.ingest import tanzil, tanzil_ust_veri
 
     try:
         if limit is not None:
@@ -262,19 +268,28 @@ def ingest_tanzil(
                 raise GirdiHatasi("--kilit-oner ile --dry-run ve --force verilmez")
             depo = kok_coz(kok)
             ayarlar = ayarlar_yukle(config)
-            metin = tanzil.kilit_oner_metni(depo, ayarlar.veri_kok, variant.value, gelen_tarih)
+            if variant is TanzilVaryanti.UST_VERI:
+                url = tanzil.ust_veri_kilidi_yukle().url
+                metin = tanzil_ust_veri.kilit_oner_metni(ayarlar.veri_kok, gelen_tarih, url)
+            else:
+                metin = tanzil.kilit_oner_metni(depo, ayarlar.veri_kok, variant.value, gelen_tarih)
             typer.echo(metin, nl=False)
             return
     except GirdiHatasi as hata:
         raise _hata(hata) from hata
-    kod = tanzil.komut_ingest_tanzil(
-        varyant=variant.value,
-        gelen_tarih=gelen_tarih,
-        dry_run=dry_run,
-        force=force,
-        config=config,
-        kok=kok,
-    )
+    if variant is TanzilVaryanti.UST_VERI:
+        kod = tanzil_ust_veri.komut_ingest_ust_veri(
+            gelen_tarih=gelen_tarih, dry_run=dry_run, force=force, config=config, kok=kok
+        )
+    else:
+        kod = tanzil.komut_ingest_tanzil(
+            varyant=variant.value,
+            gelen_tarih=gelen_tarih,
+            dry_run=dry_run,
+            force=force,
+            config=config,
+            kok=kok,
+        )
     if kod != cikis.BASARILI:
         raise typer.Exit(code=kod)
 
@@ -333,15 +348,21 @@ def anchor_komutu(
     kok: KokSecenegi = None,
 ) -> None:
     """Capa, content_hash ve kuresel ayet sirasini uretir (q:{sure}:{ayet}). Cikis 0 ya da 2."""
-    from mutalaa_pipeline.adimlar import anchor_tanzil
+    from mutalaa_pipeline.adimlar import anchor_tanzil, anchor_ust_veri
+    from mutalaa_pipeline.ingest.tanzil_ust_veri import KAYNAK as UST_VERI_KAYNAGI
 
     try:
         _limit_reddet(limit)
     except GirdiHatasi as hata:
         raise _hata(hata) from hata
-    kod = anchor_tanzil.komut_anchor(
-        source=source, dry_run=dry_run, force=force, config=config, kok=kok
-    )
+    if source == UST_VERI_KAYNAGI:  # isaret ve sayfa satirlari (A11.4, A11.5)
+        kod = anchor_ust_veri.komut_anchor_ust_veri(
+            dry_run=dry_run, force=force, config=config, kok=kok
+        )
+    else:
+        kod = anchor_tanzil.komut_anchor(
+            source=source, dry_run=dry_run, force=force, config=config, kok=kok
+        )
     if kod != cikis.BASARILI:
         raise typer.Exit(code=kod)
 

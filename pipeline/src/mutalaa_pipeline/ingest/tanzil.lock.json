@@ -32,5 +32,12 @@
       "metin_sha256": "834762a34ad2c4459347514acec6ac893408f1ac96968829c59756c841dfc1fd",
       "bildirim_sha256": "19f0d8a50e08ac0b7dd9bc5f2a6f4906f295117acc682a6ee2b16a8611f4a203"
     }
+  },
+  "ust_veri": {
+    "url": "https://tanzil.net/res/text/metadata/quran-data.xml",
+    "surum": "1.0",
+    "alinma_tarihi": "2026-11-08",
+    "boyut": 77234,
+    "sha256": "8867c1d88191472adec9db694b3cd9f135b1a2ef580574d32cf888dcb22c5c7a"
   }
 }

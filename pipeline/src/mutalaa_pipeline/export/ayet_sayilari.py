@@ -92,8 +92,12 @@ def _bildirim_yedek_denetimi(veri: bytes) -> None:
         ayristirici.Parse(veri, True)
 
 
-def ayristir(veri: bytes) -> UstVeri:
-    """Tanzil `quran-data.xml` baytlarini denetleyerek ayristirir."""
+def guvenli_kok(veri: bytes) -> ET.Element:
+    """Guvenilmeyen XML baytlarini sertlestirilmis bicimde ayristirir ve kok ogeyi dondurur.
+
+    Yalniz UTF-8 kabul edilir (NUL yok), DOCTYPE ve ENTITY bildirimi reddedilir; ayristirma
+    hatasi `GirdiHatasi`. A04 (`ayristir`) ve A11 (ust veri alimi) ortak kullanir.
+    """
     # Yalniz UTF-8 XML kabul edilir: BOM'suz UTF-16 bayt alt dizgisi aramasini atlatir.
     try:
         veri.decode("utf-8")
@@ -110,7 +114,12 @@ def ayristir(veri: bytes) -> UstVeri:
     except ET.ParseError as hata:
         satir, sutun = hata.position
         raise GirdiHatasi(f"XML ayristirilamadi (satir {satir}, sutun {sutun})") from hata
+    return kok
 
+
+def ayristir(veri: bytes) -> UstVeri:
+    """Tanzil `quran-data.xml` baytlarini denetleyerek ayristirir."""
+    kok = guvenli_kok(veri)
     if kok.get("type") != "metadata":
         raise GirdiHatasi("kok ogenin 'type' ozniteligi 'metadata' degil")
     surum = _oznitelik(kok, "version", "kok oge")

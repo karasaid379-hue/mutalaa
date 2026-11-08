@@ -67,7 +67,12 @@ ILK_N_CAPA: Final = 5
 TARIH_DESENI: Final = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 
 # `--source` ile birlikte yuklenen birimsiz kaynaklar (K-39 madde 1).
-EK_KAYNAKLAR: Final[Mapping[str, tuple[str, ...]]] = {"tanzil-uthmani": ("tanzil-simple-clean",)}
+EK_KAYNAKLAR: Final[Mapping[str, tuple[str, ...]]] = {
+    "tanzil-uthmani": ("tanzil-simple-clean",),
+    "tanzil-ust-veri": (),  # yapi verisi: quran_marker ve page_map (export/pg_yapi.py)
+}
+# Birim degil yapi satiri yukleyen kaynaklar (K-43 madde 3): units.jsonl yerine markers/pages.
+YAPI_KAYNAKLARI: Final = frozenset({"tanzil-ust-veri"})
 
 # `words.jsonl` zorunlu olan kaynaklar: anchor calismasi kelime dosyasini listelemelidir.
 KELIME_KAYNAKLARI: Final = frozenset({"tanzil-uthmani"})
@@ -166,6 +171,29 @@ class KelimeSatiri:
 
 
 @dataclass(frozen=True)
+class IsaretSatiri:
+    """`markers.jsonl` satiri (`quran_marker`)."""
+
+    kind: str
+    no: int
+    anchor: str
+    secde_turu: str | None
+    source_id: str
+    data_version: str
+
+
+@dataclass(frozen=True)
+class SayfaSatiri:
+    """`pages.jsonl` satiri (`page_map`; volume, line ... NULL, centered false)."""
+
+    page: int
+    start_anchor: str
+    end_anchor: str
+    source_id: str
+    data_version: str
+
+
+@dataclass(frozen=True)
 class ZincirRun:
     run_id: str
     adim: str
@@ -195,6 +223,9 @@ class Hazirlik:
     kelimeler: list[KelimeSatiri] = field(default_factory=list)
     kelimeler_yol: str | None = None
     kelimeler_sha256: str | None = None
+    yapi: bool = False  # True: isaretler ve sayfalar yuklenir (units/quran_word yok)
+    isaretler: list[IsaretSatiri] = field(default_factory=list)
+    sayfalar: list[SayfaSatiri] = field(default_factory=list)
 
 
 # --- yardimcilar -------------------------------------------------------------------------
@@ -324,14 +355,20 @@ def _zincir_denetle(
 # --- QA raporu ---------------------------------------------------------------------------
 
 
-def _qa_denetle(ctx: RunContext, source_id: str, anchor_run_id: str, units_sha: str) -> str:
+def _qa_denetle(
+    ctx: RunContext,
+    source_id: str,
+    anchor_run_id: str,
+    units_sha: str,
+    ek_ozetler: Mapping[str, str] | None = None,
+) -> str:
     """Ayni anchor calismasi ve ayni `units_sha256` icin dort kapida `gecti` diyen rapor ister.
 
     Karar o calismanin EN YENI kararlayici raporundadir (`qa/rapor.py`): kapisi kalan ya da
     tamamlanamayan sonraki bir kosu, daha eski bir `gecti` raporunu gecersiz kilar; basarili bir
     kismi (`--gate`) kosu karari degistirmez.
     """
-    return QaRaporlari(ctx.veri_kok).onayla(source_id, anchor_run_id, units_sha)
+    return QaRaporlari(ctx.veri_kok).onayla(source_id, anchor_run_id, units_sha, ek_ozetler)
 
 
 # --- satirlar ----------------------------------------------------------------------------
@@ -579,6 +616,10 @@ def hazirla(
     ctx: RunContext, source_id: str, run: str | None, ek_kaynaklar: Sequence[str]
 ) -> Hazirlik:
     """Veritabanina dokunmadan tum dosya onkosullarini denetler."""
+    if source_id in YAPI_KAYNAKLARI:
+        from mutalaa_pipeline.export import pg_yapi
+
+        return pg_yapi.hazirla(ctx, source_id, run, ek_kaynaklar)
     kaynak_idleri = (source_id, *ek_kaynaklar)
     # G-KAY: kayit gecerli ve atif_metni dolu; kayitsiz ya da gecersiz kayitta cikis 2.
     kaynaklar = ctx.require_sources(kaynak_idleri)
@@ -949,18 +990,23 @@ def _yukle(conn: psycopg.Connection, ctx: RunContext, h: Hazirlik) -> dict[str, 
     manifest = _manifest_kur(h)
     _pipeline_run_yaz(conn, ctx, h, "calisiyor", manifest)
     sayilar = _source_satirlari(conn, h)
-    _staging_yukle(conn, h.satirlar)
-    _denetimler(conn, h.source_id)
-    eklenen = conn.execute(INSERT_UNIT, (ctx.run_id,)).rowcount
-    guncellenen = conn.execute(UPDATE_UNIT, (ctx.run_id,)).rowcount
-    sayilar.update(
-        staging=len(h.satirlar),
-        eklenen=eklenen,
-        guncellenen=guncellenen,
-        degismeyen=len(h.satirlar) - eklenen - guncellenen,
-    )
-    if h.kelimeler_sha256 is not None:
-        sayilar.update(_kelimeleri_yukle(conn, h))
+    if h.yapi:
+        from mutalaa_pipeline.export import pg_yapi
+
+        sayilar.update(pg_yapi.yukle(conn, h))
+    else:
+        _staging_yukle(conn, h.satirlar)
+        _denetimler(conn, h.source_id)
+        eklenen = conn.execute(INSERT_UNIT, (ctx.run_id,)).rowcount
+        guncellenen = conn.execute(UPDATE_UNIT, (ctx.run_id,)).rowcount
+        sayilar.update(
+            staging=len(h.satirlar),
+            eklenen=eklenen,
+            guncellenen=guncellenen,
+            degismeyen=len(h.satirlar) - eklenen - guncellenen,
+        )
+        if h.kelimeler_sha256 is not None:
+            sayilar.update(_kelimeleri_yukle(conn, h))
     conn.execute(
         "UPDATE icerik.pipeline_run SET durum = 'basarili', bitis = %s, manifest = %s"
         " WHERE run_id = %s::uuid",
