@@ -1,10 +1,11 @@
-# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3
+# A06 (2026-10-26) · A11.0 (2026-11-08) · kaynak: docs/04-icerik/01-kaynaklar.md §3.1
 slug = "medine-604-duzen"
 tur = "mushaf_duzeni"
 baslik = "Mushaf A sayfa düzeni ve kelime-glif eşlemesi"
-provider = "quran_foundation"
-kaynak_url = "https://api-docs.quran.foundation/docs/tutorials/content-sync/getting-started/"
+surum = "421e9eaa991897ecd50d7abb79160651a45976d3"
+provider = "zonetecde"
+kaynak_url = "https://github.com/zonetecde/mushaf-layout"
 atif_metni = "Mushaf sayfa düzeni verisi: Quran Foundation."
 notlar = '''
-Açık soru: kaynak seçimi (QF Content Sync ya da QUL).
-Aşamalar: A24, A26.'''
+GitHub zonetecde/mushaf-layout, dal v2, klasör mushaf/QPC1 (604 sayfa dosyası). A11 yalnız her sayfanın ilk ve son kelimesini okur ve Tanzil sayfa başlangıçlarını bununla doğrular.
+Mushaf A (A26) QPC V1 ya da V2 seçimini ve atıf metnini A26.0'da günceller. Aşamalar: A11, A24, A26.'''

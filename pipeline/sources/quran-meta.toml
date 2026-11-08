@@ -1,0 +1,12 @@
+# A11.0 (2026-11-08) · kaynak: docs/04-icerik/01-kaynaklar.md §3.1
+slug = "quran-meta"
+tur = "mushaf_duzeni"
+baslik = "quran-meta 7.0.0 (cüz, hizb çeyreği, sayfa listeleri ve Türkçe sure adları)"
+surum = "7.0.0"
+provider = "quran-center"
+kaynak_url = "https://registry.npmjs.org/quran-meta/-/quran-meta-7.0.0.tgz"
+atif_metni = "Doğrulama verisi: quran-meta (quran-center)."
+atif_url = "https://github.com/quran-center/quran-meta"
+notlar = '''
+Yedek ve doğrulayıcı kaynak: Tanzil üst verisinin cüz, hizb çeyreği, menzil, rükû, sayfa ve secde listeleri ile Türkçe sure adı adayları (surah.tr) bu kaynakla karşılaştırılır.
+Tarball yalnız okunur; içindeki betik çalıştırılmaz. Aşama: A11.'''
