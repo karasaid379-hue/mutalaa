@@ -471,6 +471,51 @@ public class ConstraintTests(EditorialDatabase<ConstraintTests> fixture) : IClas
         Assert.Equal(6L, await session.ScalarAsync<long>("SELECT count(*) FROM icerik.page_map WHERE source_id = @s", ct, ("s", source.Slug)));
     }
 
+    // --- K-43: quran_marker birincil anahtari ve kaynak yabanci anahtari ---
+
+    private const string InsertMarker =
+        "INSERT INTO icerik.quran_marker (kind, no, anchor, secde_turu, source_id, data_version) VALUES ('cuz', 1, 'q:1:1', NULL, @s, 'test')";
+
+    [Fact]
+    public async Task Quran_marker_primary_key_rejects_a_duplicate_kind_and_no()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+        Source source = await AddSourceAsync(session.Context, ct);
+        await session.ExecuteAsync(InsertMarker, ct, ("s", source.Slug));
+
+        PostgresException exception = await Assert.ThrowsAsync<PostgresException>(
+            () => session.ExecuteAsync(InsertMarker, ct, ("s", source.Slug)));
+
+        Assert.Equal(Unique, exception.SqlState);
+        Assert.Equal("quran_marker_pkey", exception.ConstraintName);
+    }
+
+    [Fact]
+    public async Task Quran_marker_primary_key_accepts_the_same_no_under_another_kind()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+        Source source = await AddSourceAsync(session.Context, ct);
+        await session.ExecuteAsync(InsertMarker, ct, ("s", source.Slug));
+        await session.ExecuteAsync(InsertMarker.Replace("'cuz'", "'hizb'", StringComparison.Ordinal), ct, ("s", source.Slug));
+
+        Assert.Equal(2L, await session.ScalarAsync<long>("SELECT count(*) FROM icerik.quran_marker WHERE source_id = @s", ct, ("s", source.Slug)));
+    }
+
+    [Fact]
+    public async Task Quran_marker_source_foreign_key_rejects_an_unknown_source()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+
+        PostgresException exception = await Assert.ThrowsAsync<PostgresException>(
+            () => session.ExecuteAsync(InsertMarker, ct, ("s", TestData.UniqueSlug())));
+
+        Assert.Equal("23503", exception.SqlState);
+        Assert.Equal("quran_marker_source_id_fkey", exception.ConstraintName);
+    }
+
     /// <summary>Ham INSERT sablonu: &lt;v&gt; yer tutucusu ihlal eden (bad) ya da gecerli (good) degerle degisir.</summary>
     public static TheoryData<string, string, string, string> RemainingChecks => new()
     {
@@ -493,6 +538,10 @@ public class ConstraintTests(EditorialDatabase<ConstraintTests> fixture) : IClas
         { "ayah_box_check", "INSERT INTO icerik.ayah_box (source_id, page, anchor, seq, x, y, w, h, data_version) VALUES (@s, 1, 'q:1:1', 1, 0, 0, 5, <v>, 'test')", "0", "1" },
         { "audio_timing_check", "INSERT INTO icerik.audio_timing (source_id, anchor, file, file_sha256, start_ms, end_ms, timing_source, data_version) VALUES (@s, 'q:1:1', '001.mp3', repeat('a', 64), 10, <v>, 'editor', 'test')", "10", "11" },
         { "audio_timing_check", "INSERT INTO icerik.audio_timing (source_id, anchor, file, file_sha256, start_ms, end_ms, timing_source, data_version) VALUES (@s, 'q:1:1', '001.mp3', repeat('a', 64), 10, <v>, 'editor', 'test')", "9", "11" },
+        { "quran_marker_kind_check", "INSERT INTO icerik.quran_marker (kind, no, anchor, secde_turu, source_id, data_version) VALUES ('<v>', 1, 'q:2:142', NULL, @s, 'test')", "yok", "rub" },
+        { "quran_marker_secde_turu_check", "INSERT INTO icerik.quran_marker (kind, no, anchor, secde_turu, source_id, data_version) VALUES ('secde', 1, 'q:7:206', '<v>', @s, 'test')", "yok", "obligatory" },
+        { "quran_marker_check", "INSERT INTO icerik.quran_marker (kind, no, anchor, secde_turu, source_id, data_version) VALUES ('cuz', 1, 'q:1:1', <v>, @s, 'test')", "'recommended'", "NULL" },
+        { "quran_marker_check", "INSERT INTO icerik.quran_marker (kind, no, anchor, secde_turu, source_id, data_version) VALUES ('secde', 1, 'q:7:206', <v>, @s, 'test')", "NULL", "'recommended'" },
     };
 
     [Theory]

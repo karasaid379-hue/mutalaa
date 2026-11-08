@@ -623,6 +623,58 @@ namespace Mutalaa.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Mutalaa.Domain.Content.QuranMarker", b =>
+                {
+                    b.Property<string>("Kind")
+                        .HasColumnType("text")
+                        .HasColumnName("kind");
+
+                    b.Property<short>("No")
+                        .HasColumnType("smallint")
+                        .HasColumnName("no");
+
+                    b.Property<string>("Anchor")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("anchor")
+                        .UseCollation("C");
+
+                    b.Property<string>("DataVersion")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("data_version");
+
+                    b.Property<string>("SecdeTuru")
+                        .HasColumnType("text")
+                        .HasColumnName("secde_turu");
+
+                    b.Property<string>("SourceId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("source_id");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Kind", "No")
+                        .HasName("quran_marker_pkey");
+
+                    b.HasIndex("Anchor")
+                        .HasDatabaseName("quran_marker_anchor");
+
+                    b.ToTable("quran_marker", "icerik", t =>
+                        {
+                            t.HasCheckConstraint("quran_marker_check", "(kind = 'secde') = (secde_turu IS NOT NULL)");
+
+                            t.HasCheckConstraint("quran_marker_kind_check", "kind IN ('cuz','hizb','rub','secde')");
+
+                            t.HasCheckConstraint("quran_marker_secde_turu_check", "secde_turu IN ('recommended','obligatory')");
+                        });
+                });
+
             modelBuilder.Entity("Mutalaa.Domain.Content.QuranWord", b =>
                 {
                     b.Property<string>("Anchor")
@@ -1798,6 +1850,16 @@ namespace Mutalaa.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("page_map_source_id_fkey");
+                });
+
+            modelBuilder.Entity("Mutalaa.Domain.Content.QuranMarker", b =>
+                {
+                    b.HasOne("Mutalaa.Domain.Content.Source", null)
+                        .WithMany()
+                        .HasForeignKey("SourceId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("quran_marker_source_id_fkey");
                 });
 
             modelBuilder.Entity("Mutalaa.Domain.Content.QuranWord", b =>

@@ -42,6 +42,8 @@ public sealed class IcerikDbContext(DbContextOptions<IcerikDbContext> options)
 
     public DbSet<SurahAlias> SurahAliases => Set<SurahAlias>();
 
+    public DbSet<QuranMarker> QuranMarkers => Set<QuranMarker>();
+
     public DbSet<Xref> Xrefs => Set<Xref>();
 
     public DbSet<Review> Reviews => Set<Review>();
