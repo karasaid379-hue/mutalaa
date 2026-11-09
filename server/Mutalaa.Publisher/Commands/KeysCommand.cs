@@ -69,6 +69,13 @@ public sealed class KeysCommand(PublisherContext context)
         int n = NextNumber(label, year, existingKid);
         SigningKey key = SigningKeys.Generate(label, year, n);
 
+        // Var olan anahtar ic ice bicimdeyse once o bicim temizlenir; yoksa ayni anahtar hem ic ice hem duz bulunur (yapilandirma yukleme hatasi) ve
+        // eski tohum dosyada kalirdi.
+        foreach (string name in new[] { privateKeyName, kidName, publicKeyName })
+        {
+            RemoveNested(secrets, name);
+        }
+
         secrets[privateKeyName] = key.SeedBase64();
         secrets[kidName] = key.Kid;
         string publicKey = Base64Strict.Encode(key.GetPublicKey());
@@ -155,7 +162,10 @@ public sealed class KeysCommand(PublisherContext context)
         }
     }
 
-    // Gecici dosyaya yaz, sonra tasi: yarim yazilmis secrets.json olusmaz. Unix'te yalniz sahibi okur/yazar.
+    // Gecici dosyaya yaz, sonra tasi: yarim yazilmis secrets.json olusmaz. Tohum iceren gecici dosya, olusturuldugu anda kisitlidir:
+    // Unix'te yalniz sahibi okur/yazar (UnixCreateMode; olusturmadan sonra chmod penceresi yok). Windows'ta dosya, kullanici sirlari klasorunun
+    // (%APPDATA%\Microsoft\UserSecrets, yalniz kullanici/SYSTEM/Administrators) erisim listesini miras alir; ek izin verilmez. Tasima basarisiz
+    // olursa (ya da yazma yarida kesilirse) gecici dosya silinir: tohum arkada kalmaz.
     private static async Task WriteSecretsAsync(string path, JsonObject secrets, CancellationToken cancellationToken)
     {
         string? directory = Path.GetDirectoryName(path);
@@ -165,12 +175,70 @@ public sealed class KeysCommand(PublisherContext context)
         }
 
         string temp = path + ".tmp";
-        await File.WriteAllTextAsync(temp, secrets.ToJsonString(WriteOptions), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), cancellationToken);
-        if (!OperatingSystem.IsWindows())
+        File.Delete(temp);
+        bool moved = false;
+        try
         {
-            File.SetUnixFileMode(temp, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            FileStreamOptions options = new()
+            {
+                Mode = FileMode.CreateNew,
+                Access = FileAccess.Write,
+                Share = FileShare.None,
+                Options = FileOptions.Asynchronous,
+            };
+            if (!OperatingSystem.IsWindows())
+            {
+                options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+            }
+
+            await using (FileStream stream = new(temp, options))
+            {
+                await stream.WriteAsync(new UTF8Encoding(encoderShouldEmitUTF8Identifier: false).GetBytes(secrets.ToJsonString(WriteOptions)), cancellationToken);
+            }
+
+            File.Move(temp, path, overwrite: true);
+            moved = true;
+        }
+        finally
+        {
+            if (!moved)
+            {
+                File.Delete(temp);
+            }
+        }
+    }
+
+    // Anahtarin ic ice bicimini (elle yazilmis {"Signing": {"dev": {"PrivateKey": ...}}}) siler ve bosalan ust nesneleri temizler. Duz ve ic ice bicim ayni
+    // dosyada bulunursa yapilandirma saglayicisi ayni anahtari iki kez gordugu icin acilista hata verir.
+    private static void RemoveNested(JsonObject secrets, string flatKey)
+    {
+        string[] parts = flatKey.Split(':');
+        List<JsonObject> chain = [secrets];
+        JsonObject current = secrets;
+        for (int i = 0; i < parts.Length - 1; i++)
+        {
+            if (!current.TryGetPropertyValue(parts[i], out JsonNode? child) || child is not JsonObject next)
+            {
+                return;
+            }
+
+            chain.Add(next);
+            current = next;
         }
 
-        File.Move(temp, path, overwrite: true);
+        if (!current.Remove(parts[^1]))
+        {
+            return;
+        }
+
+        for (int i = chain.Count - 1; i > 0; i--)
+        {
+            if (chain[i].Count > 0)
+            {
+                break;
+            }
+
+            chain[i - 1].Remove(parts[i - 1]);
+        }
     }
 }

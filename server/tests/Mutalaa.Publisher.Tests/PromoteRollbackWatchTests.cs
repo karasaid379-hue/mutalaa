@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 using Mutalaa.Api.Tests.Support;
 using Mutalaa.Domain.Releases;
 using Mutalaa.Infrastructure.Manifests;
@@ -266,6 +267,180 @@ public class PromoteRollbackWatchTests(PostgresFixture postgres)
         Assert.Equal(1, code);
         Assert.Equal(ReleaseStatus.Basarisiz, (await harness.Releases.GetAsync(bad.Id, ct))!.Durum);
         Assert.Equal(ReleaseStatus.Yayinlandi, (await harness.Releases.GetAsync(good.Id, ct))!.Durum);
+    }
+
+    [Fact]
+    public async Task Watch_once_fails_a_row_with_an_unknown_pack_id_and_still_processes_the_valid_request_behind_it()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        Release bad = await harness.Releases.CreateAsync(
+            new NewRelease(BuildFlavor.Dev, null, ReleaseRequests.Yayin, "2026.11.09-api", "editor", Paketler: ["yok-boyle-paket"]),
+            ct);
+        Release good = await harness.Releases.CreateAsync(new NewRelease(BuildFlavor.Dev, null, ReleaseRequests.Yayin, "2026.11.09-api", "editor"), ct);
+
+        int code = await new WatchCommand(harness.Context).RunAsync(1, once: true, ct);
+
+        Assert.Equal(1, code);
+        Release failed = (await harness.Releases.GetAsync(bad.Id, ct))!;
+        Assert.Equal(ReleaseStatus.Basarisiz, failed.Durum);
+        Assert.Contains("yok-boyle-paket", failed.KapiRaporu, StringComparison.Ordinal);
+        Assert.Equal(ReleaseStatus.Yayinlandi, (await harness.Releases.GetAsync(good.Id, ct))!.Durum);
+    }
+
+    [Fact]
+    public async Task Watch_once_fails_a_request_whose_previous_release_has_no_manifest_or_that_selects_no_pack_that_can_enter()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        await PublishAsync(harness);
+        await harness.Database.ExecuteAsync("UPDATE icerik.release SET manifest = NULL", ct);
+        Release noManifest = await harness.Releases.CreateAsync(new NewRelease(BuildFlavor.Dev, null, ReleaseRequests.Yayin, "2026.11.09-api", "editor"), ct);
+        Release noPack = await harness.Releases.CreateAsync(
+            new NewRelease(BuildFlavor.Public, null, ReleaseRequests.Yayin, "2026.11.09-api", "editor", Paketler: [KucukPack]),
+            ct);
+
+        int code = await new WatchCommand(harness.Context).RunAsync(1, once: true, ct);
+
+        Assert.Equal(1, code);
+        Release first = (await harness.Releases.GetAsync(noManifest.Id, ct))!;
+        Assert.Equal(ReleaseStatus.Basarisiz, first.Durum);
+        Assert.Contains("Onceki yayinin manifesti yok", first.KapiRaporu, StringComparison.Ordinal);
+        Release second = (await harness.Releases.GetAsync(noPack.Id, ct))!;
+        Assert.Equal(ReleaseStatus.Basarisiz, second.Durum);
+        Assert.Contains("Manifestte hic paket yok", second.KapiRaporu, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Watch_once_leaves_a_request_preparing_when_the_failure_is_a_configuration_error()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        Release request = await harness.Releases.CreateAsync(new NewRelease(BuildFlavor.Dev, null, ReleaseRequests.Yayin, "2026.11.09-api", "editor"), ct);
+        Dictionary<string, string?> values = new(StringComparer.Ordinal)
+        {
+            ["ConnectionStrings:Editorial"] = harness.Database.ConnectionString,
+            ["Storage:PublicBaseUrl"] = PublisherHarness.PublicBaseUrl,
+        };
+        IConfiguration configuration =
+            new ConfigurationBuilder().AddInMemoryCollection(values).Build();
+        await using PublisherContext context = new(configuration, harness.Releases, harness.Host);
+
+        int code = await new WatchCommand(context).RunAsync(1, once: true, ct);
+
+        Assert.Equal(1, code);
+        Assert.Equal(ReleaseStatus.Hazirlaniyor, (await harness.Releases.GetAsync(request.Id, ct))!.Durum);
+        Assert.Contains("Signing:dev:PrivateKey", harness.Error.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Watch_once_survives_an_unexpected_exception_from_one_row_and_keeps_that_row_open()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        Release broken = await harness.Releases.CreateAsync(new NewRelease(BuildFlavor.Dev, null, ReleaseRequests.Yayin, "2026.11.09-api", "editor"), ct);
+        Release good = await harness.Releases.CreateAsync(new NewRelease(BuildFlavor.Internal, null, ReleaseRequests.Yayin, "2026.11.09-api", "editor"), ct);
+        harness.Store.Fault = (operation, key) =>
+            operation == "put-pack" && key.StartsWith("packs/dev/", StringComparison.Ordinal) ? new IOException("disk hatasi (sentetik)") : null;
+
+        int code = await new WatchCommand(harness.Context).RunAsync(1, once: true, ct);
+
+        Assert.Equal(1, code);
+        // Gecici hata satiri basarisiz yapmaz: dogrulandi kalir (upload ile surer).
+        Assert.Equal(ReleaseStatus.Dogrulandi, (await harness.Releases.GetAsync(broken.Id, ct))!.Durum);
+        Assert.Equal(ReleaseStatus.Yayinlandi, (await harness.Releases.GetAsync(good.Id, ct))!.Durum);
+        Assert.Contains("IOException", harness.Error.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Watch_once_fails_a_promotion_row_whose_version_differs_from_its_internal_source()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        ReleaseResult internalRelease = await PublishAsync(harness, BuildFlavor.Internal);
+        Release source = (await harness.Releases.FindAsync(BuildFlavor.Internal, internalRelease.Surum!, ct))!;
+        Release promotion = await harness.Releases.CreateAsync(
+            new NewRelease(BuildFlavor.Public, "2026.11.5", ReleaseRequests.Terfi, "2026.11.09-api", "editor", source.Id),
+            ct);
+
+        int code = await new WatchCommand(harness.Context).RunAsync(1, once: true, ct);
+
+        Assert.Equal(1, code);
+        Release row = (await harness.Releases.GetAsync(promotion.Id, ct))!;
+        Assert.Equal(ReleaseStatus.Basarisiz, row.Durum);
+        Assert.Contains("terfi-surumu-uyumsuz", row.KapiRaporu, StringComparison.Ordinal);
+        Assert.False(harness.Store.Contains(PublisherHarness.ManifestKey("public")));
+    }
+
+    [Fact]
+    public async Task Watch_once_rejects_a_release_version_that_is_not_calver_before_any_file_path_is_built()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        // surum sutununda CalVer kisiti yok (yalniz CreateAsync denetler); bozuk satir dosya yoluna girmeden once reddedilir.
+        Release request = await harness.Releases.CreateAsync(new NewRelease(BuildFlavor.Dev, null, ReleaseRequests.Yayin, "2026.11.09-api", "editor"), ct);
+        await harness.Database.ExecuteAsync("UPDATE icerik.release SET surum = '../kacis' WHERE id = @id", ct, ("id", request.Id));
+
+        int code = await new WatchCommand(harness.Context).RunAsync(1, once: true, ct);
+
+        Assert.Equal(1, code);
+        Assert.Equal(ReleaseStatus.Basarisiz, (await harness.Releases.GetAsync(request.Id, ct))!.Durum);
+        Assert.False(Directory.Exists(Path.Combine(harness.Directory.Path, "kacis")));
+        Assert.False(Directory.Exists(harness.OutDir));
+    }
+
+    // ---------------------------------------------------------------- rollback: acik satir
+
+    [Fact]
+    public async Task Cli_rollback_resumes_an_open_rollback_row_for_the_same_target_instead_of_opening_a_second_one()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        ReleaseResult first = await PublishAsync(harness);
+        await harness.ChangeUnitAsync(PublisherHarness.SyntheticAnchor, "Deneme paragrafi 2 duzeltildi", ct);
+        await PublishAsync(harness);
+        Release target = (await harness.Releases.FindAsync(BuildFlavor.Dev, first.Surum!, ct))!;
+        Release open = await harness.Releases.CreateAsync(
+            new NewRelease(BuildFlavor.Dev, null, ReleaseRequests.GeriAlma, "2026.11.09-api", "editor", target.Id),
+            ct);
+        int rows = await harness.CountReleasesAsync(ct);
+
+        ReleaseResult rolled = await harness.Pipeline.RollbackAsync(new RollbackRequest(BuildFlavor.Dev, first.Surum!), ct);
+
+        Assert.Equal((ExitCodes.Success, open.Surum), (rolled.ExitCode, rolled.Surum));
+        Assert.Equal(rows, await harness.CountReleasesAsync(ct));
+        Assert.Equal(ReleaseStatus.Yayinlandi, (await harness.Releases.GetAsync(open.Id, ct))!.Durum);
+        Assert.Equal(open.Surum, harness.ReadStoredManifest("dev").Release);
+
+        // Sonra watch calissa acik satir kalmadigindan hicbir sey yurutulmez.
+        Assert.Equal(0, await new WatchCommand(harness.Context).RunAsync(1, once: true, ct));
+        Assert.Equal(open.Surum, harness.ReadStoredManifest("dev").Release);
+    }
+
+    [Fact]
+    public async Task Cli_rollback_fails_a_stale_open_rollback_row_for_another_target_so_watch_cannot_run_it_later()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        ReleaseResult first = await PublishAsync(harness);
+        await harness.ChangeUnitAsync(PublisherHarness.SyntheticAnchor, "Deneme paragrafi 2 duzeltildi", ct);
+        ReleaseResult second = await PublishAsync(harness);
+        await harness.ChangeUnitAsync(PublisherHarness.SyntheticAnchor, "Deneme paragrafi 2 yine duzeltildi", ct);
+        await PublishAsync(harness);
+        Release firstRow = (await harness.Releases.FindAsync(BuildFlavor.Dev, first.Surum!, ct))!;
+        Release stale = await harness.Releases.CreateAsync(
+            new NewRelease(BuildFlavor.Dev, null, ReleaseRequests.GeriAlma, "2026.11.09-api", "editor", firstRow.Id),
+            ct);
+
+        ReleaseResult rolled = await harness.Pipeline.RollbackAsync(new RollbackRequest(BuildFlavor.Dev, second.Surum!), ct);
+
+        Assert.Equal(ExitCodes.Success, rolled.ExitCode);
+        Assert.Equal(ReleaseStatus.Basarisiz, (await harness.Releases.GetAsync(stale.Id, ct))!.Durum);
+        string manifestRelease = harness.ReadStoredManifest("dev").Release;
+        Assert.Equal(rolled.Surum, manifestRelease);
+
+        Assert.Equal(0, await new WatchCommand(harness.Context).RunAsync(1, once: true, ct));
+        Assert.Equal(manifestRelease, harness.ReadStoredManifest("dev").Release);
     }
 
     [Fact]

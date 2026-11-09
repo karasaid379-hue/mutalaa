@@ -74,6 +74,7 @@ public sealed partial class ReleasePipeline
         CancellationToken cancellationToken)
     {
         string label = row.Derleme.ToLabel();
+        RequireVersion(row.Surum);
         switch (row.Durum)
         {
             case ReleaseStatus.Yayinlandi:
@@ -151,7 +152,7 @@ public sealed partial class ReleasePipeline
         if (snapshot.PreviousRelease is { } previous)
         {
             previousManifest = previous.Manifest is null
-                ? throw new PublisherException(ExitCodes.Other, $"Onceki yayinin manifesti yok: {label} {previous.Surum}.")
+                ? throw new PublisherException(ExitCodes.Other, $"Onceki yayinin manifesti yok: {label} {previous.Surum}.", isPermanent: true)
                 : ParseManifest(Encoding.UTF8.GetBytes(previous.Manifest), $"onceki yayin {previous.Surum}");
             previousDigests = ReleaseDigests.Parse(previous.Ozetler);
         }
@@ -274,7 +275,7 @@ public sealed partial class ReleasePipeline
 
         if (inputs.Count == 0)
         {
-            throw new PublisherException(ExitCodes.Other, "Manifestte hic paket yok (kapidan giren paket bulunamadi).");
+            throw new PublisherException(ExitCodes.Other, "Manifestte hic paket yok (kapidan giren paket bulunamadi).", isPermanent: true);
         }
 
         Manifest manifest = ManifestBuilder.Build(label, spec.Surum!, Context.Clock.GetUtcNow(), Context.PublicBaseUrl, inputs);

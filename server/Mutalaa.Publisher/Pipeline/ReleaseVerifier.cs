@@ -111,6 +111,35 @@ public sealed class ReleaseVerifier(PublisherContext context)
             findings.Add(new VerifyFinding("flavor-uyumsuz", $"Manifest flavor degeri '{manifest.Flavor}', beklenen '{label}'."));
         }
 
+        // Anahtar parcalari (release, pack_id, version) depo anahtarina girmeden once desenle denetlenir: egik cizgi ya da '..' iceren deger
+        // ArgumentException yerine bulgu uretir ve depoya hic gidilmez.
+        bool keyPartsValid = true;
+        if (!IsValidVersion(manifest.Release))
+        {
+            findings.Add(new VerifyFinding("manifest-anahtar-gecersiz", "Manifest release degeri gecerli bir CalVer (YYYY.M.N) degil."));
+            keyPartsValid = false;
+        }
+
+        foreach (ManifestPack pack in manifest.Packs)
+        {
+            if (!IsValidPackId(pack.PackId))
+            {
+                findings.Add(new VerifyFinding("manifest-anahtar-gecersiz", "Manifestte gecersiz bir pack_id var (kucuk harfle baslayan kucuk harf, rakam ve tire bekleniyor)."));
+                keyPartsValid = false;
+            }
+
+            if (!IsValidVersion(pack.Version))
+            {
+                findings.Add(new VerifyFinding("manifest-anahtar-gecersiz", "Manifestte gecersiz bir paket surumu var (CalVer YYYY.M.N bekleniyor)."));
+                keyPartsValid = false;
+            }
+        }
+
+        if (!keyPartsValid)
+        {
+            return findings;
+        }
+
         if (await store.HeadAsync(StorageKeys.ManifestHistory(label, manifest.Release), cancellationToken) is null)
         {
             findings.Add(new VerifyFinding("manifest-gecmisi-yok", $"Manifest gecmisi nesnesi yok: {StorageKeys.ManifestHistory(label, manifest.Release)}"));

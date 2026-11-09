@@ -68,6 +68,21 @@ public sealed partial class ReleasePipeline(PublisherContext context)
             return ReleaseResult.Fail(ExitCodes.Other, $"Yayin yuklenemez, durum: {row.Durum.ToLabel()} ({row.Surum}).", row.Surum, row.Durum);
         }
 
+        // Yayinlanmis satir yalniz derleme turunun en son yayinlanan satiriysa yeniden yuklenebilir; eski bir yayini yuklemek manifest.json'u
+        // geriye alirdi (sessiz geri alma). Geri alma yalniz 'rollback' ile yapilir.
+        if (row.Durum == ReleaseStatus.Yayinlandi)
+        {
+            Release? latest = await Context.Releases.LatestPublishedAsync(row.Derleme, cancellationToken);
+            if (latest is null || latest.Id != row.Id)
+            {
+                return ReleaseResult.Fail(
+                    ExitCodes.Other,
+                    $"Eski yayin yeniden yuklenemez ({row.Derleme.ToLabel()} {row.Surum}); geri donmek icin 'rollback' kullanin.",
+                    row.Surum,
+                    row.Durum);
+            }
+        }
+
         return await UploadRowAsync(row, outRoot, cancellationToken);
     }
 
@@ -104,6 +119,18 @@ public sealed partial class ReleasePipeline(PublisherContext context)
                 ExitCodes.Other,
                 "terfi-kaynagi-yok",
                 "Terfi edilecek 'yayinlandi' durumunda bir internal yayin yok.",
+                cancellationToken);
+        }
+
+        // Terfi ayni surumle yapilir (K-46 madde 8, P-14): watch satirinin surumu kaynak internal yayinin surumuyle ayni olmali; yoksa public
+        // manifest, test edilen internal yayindan farkli bir surum numarasi tasirdi.
+        if (existing is not null && !string.Equals(existing.Surum, source.Surum, StringComparison.Ordinal))
+        {
+            return await PreconditionFailedAsync(
+                existing,
+                ExitCodes.Other,
+                "terfi-surumu-uyumsuz",
+                $"Terfi satirinin surumu ({existing.Surum}) kaynak internal yayinin surumuyle ({source.Surum}) ayni olmali.",
                 cancellationToken);
         }
 
@@ -211,6 +238,21 @@ public sealed partial class ReleasePipeline(PublisherContext context)
         }
 
         Release? targetRow = await Context.Releases.FindAsync(request.Flavor, request.To, cancellationToken);
+
+        // CLI geri alma acik (hazirlaniyor ya da dogrulandi) bir geri alma satirini gormezden gelmez: ayni hedefse onu surdurur; baska hedefse
+        // o talep yeni komutla gecersiz kalmistir, basarisiz yapilir (yoksa sonraki watch turu manifest.json'u beklenmedik bicimde geri alirdi).
+        while (existing is null && await Context.Releases.FindOpenAsync(request.Flavor, ReleaseRequests.GeriAlma, cancellationToken) is { } open)
+        {
+            if (targetRow is not null && open.KaynakReleaseId == targetRow.Id)
+            {
+                existing = open;
+            }
+            else
+            {
+                await FailRowAsync(open.Id, null, "yeni-geri-alma-talebi", $"Acik geri alma talebi yeni bir 'rollback --to {request.To}' komutuyla gecersiz kaldi.", cancellationToken);
+            }
+        }
+
         Release row = existing ?? await Context.Releases.CreateAsync(
             new NewRelease(
                 request.Flavor,
@@ -252,6 +294,21 @@ public sealed partial class ReleasePipeline(PublisherContext context)
     {
         ArgumentNullException.ThrowIfNull(row);
 
+        try
+        {
+            return await DispatchRequestAsync(row, cancellationToken);
+        }
+        catch (PublisherException ex) when (ex.IsPermanent)
+        {
+            // Kalici girdi hatasi (bilinmeyen paket, onceki manifest yok, bozuk surum...): yeniden denemek sonucu degistirmez, satir basarisiz olur.
+            // Yapilandirma hatalari (sir, anahtar, baglanti dizesi yok) kalici degildir; bunlar yayilir ve satir hazirlaniyor kalir.
+            Release current = await Context.Releases.GetAsync(row.Id, cancellationToken) ?? row;
+            return await PreconditionFailedAsync(current, ex.ExitCode, "girdi-hatasi", ex.Message, cancellationToken);
+        }
+    }
+
+    private async Task<ReleaseResult> DispatchRequestAsync(Release row, CancellationToken cancellationToken)
+    {
         switch (row.Talep)
         {
             case ReleaseRequests.Yayin:
@@ -326,7 +383,7 @@ public sealed partial class ReleasePipeline(PublisherContext context)
         {
             if (!Context.Catalog.TryGet(id, out _))
             {
-                throw new PublisherException(ExitCodes.Other, $"Bilinmeyen paket kimligi: {id}");
+                throw new PublisherException(ExitCodes.Other, $"Bilinmeyen paket kimligi: {id}", isPermanent: true);
             }
         }
     }

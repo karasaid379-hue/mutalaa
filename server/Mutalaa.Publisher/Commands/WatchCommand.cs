@@ -77,6 +77,15 @@ public sealed class WatchCommand(PublisherContext context)
             {
                 result = ReleaseResult.Fail(ExitCodes.Storage, string.Create(CultureInfo.InvariantCulture, $"Depo hatasi ({ex.Failure}): {ex.Message}"), row.Surum);
             }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // Beklenmeyen hata (IOException, veritabani, ...): raporlanir ve tur sonraki satirla surer. Satir oldugu gibi kalir (attempted'ta
+                // bu turda yeniden denenmez); gecici hata satiri basarisiz yapmaz, sonraki turda ya da upload ile surer.
+                result = ReleaseResult.Fail(
+                    ExitCodes.Other,
+                    context.Redact(string.Create(CultureInfo.InvariantCulture, $"Beklenmeyen hata (id {row.Id}): {ex.GetType().Name}: {ex.Message}")),
+                    row.Surum);
+            }
 
             CommandSupport.Report(context, result);
             if (!result.Success)

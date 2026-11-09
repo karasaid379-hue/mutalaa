@@ -118,6 +118,79 @@ public class KeysGenerateTests : IDisposable
     }
 
     [Fact]
+    public async Task Force_replaces_a_nested_key_instead_of_writing_a_second_flat_copy_next_to_it()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(SecretsPath)!);
+        const string Nested =
+            """{"Signing":{"dev":{"PrivateKey":"elle-yazilmis-tohum","Kid":"dev-2026-4","Extra":"kalir"},"internal":{"PrivateKey":"ic-tohum"}}}""";
+        await File.WriteAllTextAsync(SecretsPath, Nested, TestContext.Current.CancellationToken);
+
+        (int code, _, _) = await RunAsync("keys", "generate", "--flavor", "dev", "--force");
+
+        Assert.Equal(0, code);
+        JsonElement secrets = ReadSecrets();
+        // Ic ice dev anahtarlari gitti (eski tohum dosyada kalmadi); duz bicim tek kopya; kid numarasi ic ice kid'den devam eder.
+        Assert.Equal("dev-2026-5", secrets.GetProperty("Signing:dev:Kid").GetString());
+        Assert.NotEqual("elle-yazilmis-tohum", secrets.GetProperty("Signing:dev:PrivateKey").GetString());
+        Assert.DoesNotContain("elle-yazilmis-tohum", File.ReadAllText(SecretsPath), StringComparison.Ordinal);
+        Assert.Equal("kalir", secrets.GetProperty("Signing").GetProperty("dev").GetProperty("Extra").GetString());
+        Assert.False(secrets.GetProperty("Signing").GetProperty("dev").TryGetProperty("PrivateKey", out _));
+        Assert.Equal("ic-tohum", secrets.GetProperty("Signing").GetProperty("internal").GetProperty("PrivateKey").GetString());
+    }
+
+    [Fact]
+    public async Task Force_prunes_the_parents_that_the_nested_key_leaves_empty()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(SecretsPath)!);
+        await File.WriteAllTextAsync(SecretsPath, """{"Signing":{"dev":{"PrivateKey":"elle-yazilmis-tohum"}},"Baska":"deger"}""", TestContext.Current.CancellationToken);
+
+        (int code, _, _) = await RunAsync("keys", "generate", "--flavor", "dev", "--force");
+
+        Assert.Equal(0, code);
+        JsonElement secrets = ReadSecrets();
+        Assert.False(secrets.TryGetProperty("Signing", out _));
+        Assert.Equal("deger", secrets.GetProperty("Baska").GetString());
+        Assert.Equal("dev-2026-1", secrets.GetProperty("Signing:dev:Kid").GetString());
+    }
+
+    [Fact]
+    public async Task A_failed_move_deletes_the_temp_file_so_no_seed_is_left_behind()
+    {
+        // secrets.json yolu bir klasor: okuma "dosya yok" der, ama tasima basarisiz olur.
+        Directory.CreateDirectory(SecretsPath);
+
+        (int code, _, _) = await RunAsync("keys", "generate", "--flavor", "dev");
+
+        Assert.Equal(1, code);
+        Assert.False(File.Exists(SecretsPath + ".tmp"));
+        Assert.True(Directory.Exists(SecretsPath));
+    }
+
+    [Fact]
+    public async Task A_stale_temp_file_from_an_earlier_crash_is_replaced_and_not_left_behind()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(SecretsPath)!);
+        await File.WriteAllTextAsync(SecretsPath + ".tmp", "eski-artik-tohum", TestContext.Current.CancellationToken);
+
+        (int code, _, _) = await RunAsync("keys", "generate", "--flavor", "dev");
+
+        Assert.Equal(0, code);
+        Assert.False(File.Exists(SecretsPath + ".tmp"));
+        Assert.DoesNotContain("eski-artik-tohum", File.ReadAllText(SecretsPath), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    [System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
+    public async Task The_secrets_file_is_readable_and_writable_by_its_owner_only_on_unix()
+    {
+        Assert.SkipWhen(OperatingSystem.IsWindows(), "Unix dosya kipi yalniz Unix'te anlamli; Windows'ta dosya klasorun erisim listesini miras alir.");
+
+        await RunAsync("keys", "generate", "--flavor", "dev");
+
+        Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(SecretsPath));
+    }
+
+    [Fact]
     public async Task Leaves_an_invalid_secrets_file_untouched()
     {
         Directory.CreateDirectory(Path.GetDirectoryName(SecretsPath)!);

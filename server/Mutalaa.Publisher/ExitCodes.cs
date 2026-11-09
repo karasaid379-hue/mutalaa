@@ -12,20 +12,26 @@ public static class ExitCodes
 
 /// <summary>
 /// Beklenen, kullaniciya anlatilabilir hata: iletide gizli deger bulunmaz. Komut katmani iletiyi yazar ve <see cref="ExitCode"/> ile biter.
+/// <see cref="IsPermanent"/>: girdi hatasi (bilinmeyen paket, eksik onceki manifest...) talebin kendisinden gelir ve yeniden denemeyle duzelmez;
+/// watch bu durumda satiri basarisiz yapar. Yapilandirma hatalari (sir, anahtar, baglanti dizesi yok) kalici degildir: satir hazirlaniyor kalir.
 /// </summary>
 public sealed class PublisherException : Exception
 {
-    public PublisherException(int exitCode, string message)
+    public PublisherException(int exitCode, string message, bool isPermanent = false)
         : base(message)
     {
         ExitCode = exitCode;
+        IsPermanent = isPermanent;
     }
 
-    public PublisherException(int exitCode, string message, Exception innerException)
+    public PublisherException(int exitCode, string message, Exception innerException, bool isPermanent = false)
         : base(message, innerException)
     {
         ExitCode = exitCode;
+        IsPermanent = isPermanent;
     }
 
     public int ExitCode { get; }
+
+    public bool IsPermanent { get; }
 }

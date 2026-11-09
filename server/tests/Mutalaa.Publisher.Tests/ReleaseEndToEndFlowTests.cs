@@ -178,6 +178,75 @@ public class ReleaseEndToEndFlowTests(PostgresFixture postgres, SeaweedFixture s
     }
 
     [Fact]
+    public async Task Verify_embedded_core_accepts_the_published_core_and_its_history_and_rejects_changed_bytes_or_a_missing_file()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using EndToEndHarness harness = await NewHarnessAsync();
+        Assert.Equal(0, (await harness.RunCliAsync("publish", "--flavor", "dev")).Code);
+
+        async Task<string> WriteCoreAsync(string name, Func<byte[], byte[]>? change = null)
+        {
+            Manifest manifest = await harness.ReadManifestAsync(BuildFlavor.Dev, ct);
+            ManifestPack core = manifest.Packs.Single(p => p.PackId == "core");
+            byte[] bytes = await harness.Reader.GetAsync(StorageKeys.Pack("dev", core.PackId, core.Version), ct) ?? throw new InvalidOperationException("core yok");
+            string path = Path.Combine(harness.Directory.Path, name);
+            await File.WriteAllBytesAsync(path, change is null ? bytes : change(bytes), ct);
+            return path;
+        }
+
+        // Olumlu yol: yayinlanan core.db ile bulgu yok, cikis 0.
+        string embedded = await WriteCoreAsync("core-ilk.db");
+        CliResult ok = await harness.RunCliAsync("verify", "--flavor", "dev", "--embedded-core", embedded);
+        Assert.Equal(0, ok.Code);
+        Assert.DoesNotContain("BULGU", ok.Out, StringComparison.Ordinal);
+
+        // Baytlari degisik dosya reddedilir.
+        string tampered = await WriteCoreAsync("core-bozuk.db", bytes => [.. bytes[..^1], (byte)(bytes[^1] ^ 0xFF)]);
+        CliResult bad = await harness.RunCliAsync("verify", "--flavor", "dev", "--embedded-core", tampered);
+        Assert.Equal(3, bad.Code);
+        Assert.Contains("BULGU [gomulu-core-uyusmuyor]", bad.Out, StringComparison.Ordinal);
+        CliResult missing = await harness.RunCliAsync("verify", "--flavor", "dev", "--embedded-core", Path.Combine(harness.Directory.Path, "yok.db"));
+        Assert.Equal(3, missing.Code);
+        Assert.Contains("BULGU [gomulu-core-yok]", missing.Out, StringComparison.Ordinal);
+
+        // core degisip yeniden yayinlaninca: yeni surumun baytlari kabul, eski surumun baytlari (manifest gecmisi) de kabul, bozuk hala red.
+        await harness.Database.ExecuteAsync("UPDATE icerik.page_map SET page = 2", ct);
+        Assert.Equal(0, (await harness.RunCliAsync("publish", "--flavor", "dev")).Code);
+        Manifest next = await harness.ReadManifestAsync(BuildFlavor.Dev, ct);
+        Assert.Equal("2026.11.1", next.Packs.Single(p => p.PackId == "core").Version);
+        string current = await WriteCoreAsync("core-yeni.db");
+
+        Assert.Equal(0, (await harness.RunCliAsync("verify", "--flavor", "dev", "--embedded-core", current)).Code);
+        Assert.Equal(0, (await harness.RunCliAsync("verify", "--flavor", "dev", "--embedded-core", embedded)).Code);
+        Assert.Equal(3, (await harness.RunCliAsync("verify", "--flavor", "dev", "--embedded-core", tampered)).Code);
+        Assert.NotEqual(await File.ReadAllBytesAsync(embedded, ct), await File.ReadAllBytesAsync(current, ct));
+    }
+
+    [Fact]
+    public async Task P11_a_changed_unit_text_with_the_hash_left_alone_or_a_changed_word_text_rejects_the_release_with_exit_2()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using EndToEndHarness harness = await NewHarnessAsync();
+        string original = harness.Content.Uthmani.Verses[1].Text;
+
+        // 1) Metin degisti, content_hash ayni kaldi: yalniz hash'i denetlemek bunu kacirirdi; pakete degisen metin yazilacakti.
+        await harness.Database.ExecuteAsync("UPDATE icerik.unit SET metin = metin || 'x' WHERE anchor = 'q:1:2'", ct);
+        CliResult textRun = await harness.RunCliAsync("publish", "--flavor", "dev");
+        Assert.Equal(2, textRun.Code);
+        IReadOnlyList<(string? Rule, string Subject, string Reason)> textViolations = EndToEndHarness.Violations((await harness.Releases.GetAsync(1, ct))!);
+        Assert.Contains(textViolations, v => v is { Rule: "P-11", Subject: "q:1:2", Reason: "metin-uyusmuyor" });
+        Assert.Contains(textViolations, v => v is { Rule: "P-11", Subject: "q:1:2", Reason: "hash-metinle-uyusmuyor" });
+        await harness.Database.ExecuteAsync("UPDATE icerik.unit SET metin = @m WHERE anchor = 'q:1:2'", ct, ("m", original));
+
+        // 2) quran_word.text_uthmani ayet metninin diliminden farkli.
+        await harness.Database.ExecuteAsync("UPDATE icerik.quran_word SET text_uthmani = text_uthmani || 'x' WHERE anchor = 'q:1:2:1'", ct);
+        CliResult wordRun = await harness.RunCliAsync("publish", "--flavor", "dev");
+        Assert.Equal(2, wordRun.Code);
+        Assert.Contains(EndToEndHarness.Violations((await harness.Releases.GetAsync(2, ct))!), v => v is { Rule: "P-11", Subject: "q:1:2:1", Reason: "kelime-metni-uyusmuyor" });
+        Assert.Empty(await harness.AllKeysAsync(ct));
+    }
+
+    [Fact]
     public async Task P11_a_changed_unit_hash_or_notice_rejects_the_release_with_exit_2_and_a_corrected_retry_succeeds()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;

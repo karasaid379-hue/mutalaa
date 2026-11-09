@@ -96,6 +96,43 @@ public class ReleaseVerifierTests(PostgresFixture postgres)
     }
 
     [Theory]
+    [InlineData("release", "../x")]
+    [InlineData("release", "2026.13.0")]
+    [InlineData("pack_id", "a/b")]
+    [InlineData("pack_id", "..")]
+    [InlineData("version", "..\\x")]
+    [InlineData("version", "2026.11.00")]
+    public async Task A_manifest_key_part_that_is_not_a_valid_calver_or_pack_id_is_a_finding_with_exit_3_not_an_exception(string field, string value)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublishedAsync(postgres);
+        ReplaceManifest(harness, "dev", node =>
+        {
+            node.Remove("signature");
+            if (field == "release")
+            {
+                node["release"] = value;
+            }
+            else
+            {
+                node["packs"]![0]![field] = value;
+            }
+
+            return node;
+        });
+
+        IReadOnlyList<VerifyFinding> findings = await VerifyAsync(harness);
+        int code = await new VerifyCommand(harness.Context).RunAsync(new VerifyRequest(BuildFlavor.Dev), ct);
+
+        Assert.Contains(findings, f => f.Code == "manifest-anahtar-gecersiz");
+        // Toplanan bulgular (imza yok) da yazilir; depoya anahtar uretilmeden donulur.
+        Assert.Contains(findings, f => f.Code == ManifestErrorCodes.SignatureMissing);
+        Assert.Equal(3, code);
+        Assert.Contains("BULGU [manifest-anahtar-gecersiz]", harness.Out.ToString(), StringComparison.Ordinal);
+        Assert.DoesNotContain(value, string.Join('\n', findings.Where(f => f.Code == "manifest-anahtar-gecersiz").Select(f => f.Message)), StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData("alg", "rsa")]
     [InlineData("kid", "baska-2026-9")]
     public async Task A_wrong_algorithm_or_unexpected_kid_is_a_finding(string field, string value)

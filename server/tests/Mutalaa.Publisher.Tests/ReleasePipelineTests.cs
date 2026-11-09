@@ -304,6 +304,69 @@ public class ReleasePipelineTests(PostgresFixture postgres)
     }
 
     [Fact]
+    public async Task Upload_of_a_published_row_that_is_not_the_latest_is_refused_and_leaves_manifest_json_untouched()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        await PublishAsync(harness);
+        await PublishAsync(harness);
+        Assert.Equal("2026.11.1", harness.ReadStoredManifest("dev").Release);
+        byte[] manifestBefore = harness.Store.Peek(PublisherHarness.ManifestKey("dev"))!;
+        harness.Store.Writes.Clear();
+
+        ReleaseResult old = await harness.Pipeline.UploadAsync(new UploadRequest(BuildFlavor.Dev, "2026.11.0"), ct);
+
+        Assert.Equal(ExitCodes.Other, old.ExitCode);
+        Assert.Contains("rollback", old.Message, StringComparison.Ordinal);
+        Assert.Empty(harness.Store.Writes);
+        Assert.Equal(manifestBefore, harness.Store.Peek(PublisherHarness.ManifestKey("dev")));
+        Assert.Equal("2026.11.1", harness.ReadStoredManifest("dev").Release);
+
+        // En son yayinlanan satir yeniden yuklenebilir (ayni sha256 atlanir, manifest yeniden yazilir).
+        ReleaseResult latest = await harness.Pipeline.UploadAsync(new UploadRequest(BuildFlavor.Dev, "2026.11.1"), ct);
+        Assert.Equal(ExitCodes.Success, latest.ExitCode);
+    }
+
+    [Fact]
+    public async Task Upload_falls_back_to_the_database_jsonb_manifest_when_manifest_json_is_gone_and_the_signature_still_verifies()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        await PublishAsync(harness, stop: true);
+        string file = Path.Combine(harness.OutDir, "dev", "2026.11.0", "manifest.json");
+        byte[] original = await File.ReadAllBytesAsync(file, ct);
+        File.Delete(file);
+        Release row = (await harness.Releases.FindAsync(BuildFlavor.Dev, "2026.11.0", ct))!;
+        Assert.False(string.IsNullOrWhiteSpace(row.Manifest));
+
+        ReleaseResult uploaded = await harness.Pipeline.UploadAsync(new UploadRequest(BuildFlavor.Dev, "2026.11.0"), ct);
+
+        Assert.Equal((ExitCodes.Success, ReleaseStatus.Yayinlandi), (uploaded.ExitCode, uploaded.Status));
+        byte[] stored = harness.Store.Peek(PublisherHarness.ManifestKey("dev"))!;
+        // jsonb anahtar sirasini ve bosluklari degistirir: baytlar farkli olabilir; imza kanonik JSON (JCS) uzerinden oldugu icin gecerli kalir.
+        Assert.True(ManifestVerifier.Verify(stored, harness.Keys[BuildFlavor.Dev].GetPublicKey()).IsValid);
+        Assert.Equal(ManifestJson.Read(original).Packs.Select(p => (p.PackId, p.Version, p.Sha256)), ManifestJson.Read(stored).Packs.Select(p => (p.PackId, p.Version, p.Sha256)));
+        Assert.Equal(stored, harness.Store.Peek(PublisherHarness.HistoryKey("dev", "2026.11.0")));
+        Assert.Empty(await new ReleaseVerifier(harness.Context).RunAsync(new VerifyRequest(BuildFlavor.Dev), ct));
+    }
+
+    [Fact]
+    public async Task Upload_without_manifest_json_and_without_a_database_manifest_fails_with_exit_1()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        await PublishAsync(harness, stop: true);
+        File.Delete(Path.Combine(harness.OutDir, "dev", "2026.11.0", "manifest.json"));
+        await harness.Database.ExecuteAsync("UPDATE icerik.release SET manifest = NULL", ct);
+
+        PublisherException ex = await Assert.ThrowsAsync<PublisherException>(() => harness.Pipeline.UploadAsync(new UploadRequest(BuildFlavor.Dev, "2026.11.0"), ct));
+
+        Assert.Equal(ExitCodes.Other, ex.ExitCode);
+        Assert.Contains("manifesti yok", ex.Message, StringComparison.Ordinal);
+        Assert.Empty(harness.Store.Keys);
+    }
+
+    [Fact]
     public async Task Publish_resumes_a_verified_row_by_uploading_instead_of_rebuilding()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
