@@ -128,52 +128,52 @@ internal static class ReviewDecider
         switch (target.Table)
         {
             case ReviewTargets.Unit:
-            {
-                Unit unit = await db.Units.SingleOrDefaultAsync(u => u.Anchor == target.Anchor, cancellationToken)
-                    ?? throw Missing();
-                SourceKind kind = await db.Sources.AsNoTracking()
-                    .Where(s => s.Slug == unit.SourceId)
-                    .Select(s => s.Tur)
-                    .SingleAsync(cancellationToken);
-                return (unit, ReviewTargetState.ForUnit(new UnitReviewState(unit.Kind, kind, unit.MetinDurumu, unit.Metin, unit.ContentHash, unit.Rev)));
-            }
+                {
+                    Unit unit = await db.Units.SingleOrDefaultAsync(u => u.Anchor == target.Anchor, cancellationToken)
+                        ?? throw Missing();
+                    SourceKind kind = await db.Sources.AsNoTracking()
+                        .Where(s => s.Slug == unit.SourceId)
+                        .Select(s => s.Tur)
+                        .SingleAsync(cancellationToken);
+                    return (unit, ReviewTargetState.ForUnit(new UnitReviewState(unit.Kind, kind, unit.MetinDurumu, unit.Metin, unit.ContentHash, unit.Rev)));
+                }
 
             case ReviewTargets.SurahAlias:
-            {
-                short surahNo = (short)target.SurahNo!.Value;
-                string alias = target.Alias!;
-                SurahAlias row = await db.SurahAliases.SingleOrDefaultAsync(s => s.SurahNo == surahNo && s.Alias == alias, cancellationToken)
-                    ?? throw Missing();
-                return (row, ReviewTargetState.ForStatus(row.Status));
-            }
+                {
+                    short surahNo = (short)target.SurahNo!.Value;
+                    string alias = target.Alias!;
+                    SurahAlias row = await db.SurahAliases.SingleOrDefaultAsync(s => s.SurahNo == surahNo && s.Alias == alias, cancellationToken)
+                        ?? throw Missing();
+                    return (row, ReviewTargetState.ForStatus(row.Status));
+                }
 
             case ReviewTargets.Xref:
-            {
-                Guid id = target.Id!.Value;
-                Xref row = await db.Xrefs.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ?? throw Missing();
-                return (row, ReviewTargetState.ForStatus(row.Status));
-            }
+                {
+                    Guid id = target.Id!.Value;
+                    Xref row = await db.Xrefs.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ?? throw Missing();
+                    return (row, ReviewTargetState.ForStatus(row.Status));
+                }
 
             case ReviewTargets.QuranWordFix:
-            {
-                Guid id = target.Id!.Value;
-                QuranWordFix row = await db.QuranWordFixes.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ?? throw Missing();
-                return (row, ReviewTargetState.ForStatus(row.Status));
-            }
+                {
+                    Guid id = target.Id!.Value;
+                    QuranWordFix row = await db.QuranWordFixes.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ?? throw Missing();
+                    return (row, ReviewTargetState.ForStatus(row.Status));
+                }
 
             case ReviewTargets.Lemma:
-            {
-                int id = target.LemmaId!.Value;
-                Lemma row = await db.Lemmas.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ?? throw Missing();
-                return (row, ReviewTargetState.ForStatus(row.Status));
-            }
+                {
+                    int id = target.LemmaId!.Value;
+                    Lemma row = await db.Lemmas.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ?? throw Missing();
+                    return (row, ReviewTargetState.ForStatus(row.Status));
+                }
 
             case ReviewTargets.LemmaGloss:
-            {
-                int id = target.LemmaId!.Value;
-                LemmaGloss row = await db.LemmaGlosses.SingleOrDefaultAsync(x => x.LemmaId == id, cancellationToken) ?? throw Missing();
-                return (row, ReviewTargetState.ForStatus(row.Status));
-            }
+                {
+                    int id = target.LemmaId!.Value;
+                    LemmaGloss row = await db.LemmaGlosses.SingleOrDefaultAsync(x => x.LemmaId == id, cancellationToken) ?? throw Missing();
+                    return (row, ReviewTargetState.ForStatus(row.Status));
+                }
 
             default:
                 throw new DomainException(DomainErrorCodes.IncelemeDesteklenmiyor, $"'{target.Table}' icin inceleme desteklenmiyor.");

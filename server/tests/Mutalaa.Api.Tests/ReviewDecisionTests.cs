@@ -265,13 +265,23 @@ public class ReviewDecisionTests(EditorialDatabase<ReviewDecisionTests> fixture)
 
         Review approveReview = await SaveReviewAsync(new Review
         {
-            HedefTablo = ReviewTargets.Xref, HedefAnahtar = approveXref.Id.ToString("D", CultureInfo.InvariantCulture), XrefId = approveXref.Id,
-            Alan = ReviewFields.Status, Eylem = ReviewActions.Oner, Koken = XrefOrigin.Hat, Oneren = "hat",
+            HedefTablo = ReviewTargets.Xref,
+            HedefAnahtar = approveXref.Id.ToString("D", CultureInfo.InvariantCulture),
+            XrefId = approveXref.Id,
+            Alan = ReviewFields.Status,
+            Eylem = ReviewActions.Oner,
+            Koken = XrefOrigin.Hat,
+            Oneren = "hat",
         });
         Review rejectReview = await SaveReviewAsync(new Review
         {
-            HedefTablo = ReviewTargets.Xref, HedefAnahtar = rejectXref.Id.ToString("D", CultureInfo.InvariantCulture), XrefId = rejectXref.Id,
-            Alan = ReviewFields.Status, Eylem = ReviewActions.Oner, Koken = XrefOrigin.Hat, Oneren = "hat",
+            HedefTablo = ReviewTargets.Xref,
+            HedefAnahtar = rejectXref.Id.ToString("D", CultureInfo.InvariantCulture),
+            XrefId = rejectXref.Id,
+            Alan = ReviewFields.Status,
+            Eylem = ReviewActions.Oner,
+            Koken = XrefOrigin.Hat,
+            Oneren = "hat",
         });
         using HttpClient client = await ClientAsync();
 

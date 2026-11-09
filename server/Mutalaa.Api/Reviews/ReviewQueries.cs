@@ -278,146 +278,146 @@ internal static class ReviewQueries
         switch (target.Table)
         {
             case ReviewTargets.Unit:
-            {
-                var unit = await db.Units.AsNoTracking()
-                    .Where(u => u.Anchor == target.Anchor)
-                    .Select(u => new { u.Anchor, u.Kind, u.SourceId, u.Metin, u.ContentHash, u.MetinDurumu, u.Status, u.Rev })
-                    .SingleOrDefaultAsync(cancellationToken);
-                return unit is null
-                    ? TargetView.Empty
-                    : new TargetView(
-                        new ReviewTargetSnapshot
-                        {
-                            Tablo = target.Table,
-                            Anchor = unit.Anchor.ToString(),
-                            Kind = unit.Kind.ToLabel(),
-                            Source = unit.SourceId,
-                            Metin = unit.Metin,
-                            ContentHash = unit.ContentHash,
-                            MetinDurumu = unit.MetinDurumu.ToLabel(),
-                            Status = unit.Status.ToLabel(),
-                            Rev = unit.Rev,
-                        },
-                        null,
-                        unit.MetinDurumu,
-                        unit.Kind);
-            }
+                {
+                    var unit = await db.Units.AsNoTracking()
+                        .Where(u => u.Anchor == target.Anchor)
+                        .Select(u => new { u.Anchor, u.Kind, u.SourceId, u.Metin, u.ContentHash, u.MetinDurumu, u.Status, u.Rev })
+                        .SingleOrDefaultAsync(cancellationToken);
+                    return unit is null
+                        ? TargetView.Empty
+                        : new TargetView(
+                            new ReviewTargetSnapshot
+                            {
+                                Tablo = target.Table,
+                                Anchor = unit.Anchor.ToString(),
+                                Kind = unit.Kind.ToLabel(),
+                                Source = unit.SourceId,
+                                Metin = unit.Metin,
+                                ContentHash = unit.ContentHash,
+                                MetinDurumu = unit.MetinDurumu.ToLabel(),
+                                Status = unit.Status.ToLabel(),
+                                Rev = unit.Rev,
+                            },
+                            null,
+                            unit.MetinDurumu,
+                            unit.Kind);
+                }
 
             case ReviewTargets.SurahAlias:
-            {
-                short surahNo = (short)target.SurahNo!.Value;
-                string alias = target.Alias!;
-                SurahAlias? row = await db.SurahAliases.AsNoTracking()
-                    .SingleOrDefaultAsync(s => s.SurahNo == surahNo && s.Alias == alias, cancellationToken);
-                return row is null
-                    ? TargetView.Empty
-                    : new TargetView(
-                        new ReviewTargetSnapshot
-                        {
-                            Tablo = target.Table,
-                            SurahNo = row.SurahNo,
-                            Alias = row.Alias,
-                            Kind = row.Kind,
-                            Risky = row.Risky,
-                            Status = row.Status.ToLabel(),
-                        },
-                        row.Status,
-                        null,
-                        null);
-            }
+                {
+                    short surahNo = (short)target.SurahNo!.Value;
+                    string alias = target.Alias!;
+                    SurahAlias? row = await db.SurahAliases.AsNoTracking()
+                        .SingleOrDefaultAsync(s => s.SurahNo == surahNo && s.Alias == alias, cancellationToken);
+                    return row is null
+                        ? TargetView.Empty
+                        : new TargetView(
+                            new ReviewTargetSnapshot
+                            {
+                                Tablo = target.Table,
+                                SurahNo = row.SurahNo,
+                                Alias = row.Alias,
+                                Kind = row.Kind,
+                                Risky = row.Risky,
+                                Status = row.Status.ToLabel(),
+                            },
+                            row.Status,
+                            null,
+                            null);
+                }
 
             case ReviewTargets.Xref:
-            {
-                Guid id = target.Id!.Value;
-                var row = await db.Xrefs.AsNoTracking()
-                    .Where(x => x.Id == id)
-                    .Select(x => new { x.Id, x.SrcAnchor, x.DstAnchor, x.Status })
-                    .SingleOrDefaultAsync(cancellationToken);
-                return row is null
-                    ? TargetView.Empty
-                    : new TargetView(
-                        new ReviewTargetSnapshot
-                        {
-                            Tablo = target.Table,
-                            Id = row.Id,
-                            SrcAnchor = row.SrcAnchor.ToString(),
-                            DstAnchor = row.DstAnchor.ToString(),
-                            Status = row.Status.ToLabel(),
-                        },
-                        row.Status,
-                        null,
-                        null);
-            }
+                {
+                    Guid id = target.Id!.Value;
+                    var row = await db.Xrefs.AsNoTracking()
+                        .Where(x => x.Id == id)
+                        .Select(x => new { x.Id, x.SrcAnchor, x.DstAnchor, x.Status })
+                        .SingleOrDefaultAsync(cancellationToken);
+                    return row is null
+                        ? TargetView.Empty
+                        : new TargetView(
+                            new ReviewTargetSnapshot
+                            {
+                                Tablo = target.Table,
+                                Id = row.Id,
+                                SrcAnchor = row.SrcAnchor.ToString(),
+                                DstAnchor = row.DstAnchor.ToString(),
+                                Status = row.Status.ToLabel(),
+                            },
+                            row.Status,
+                            null,
+                            null);
+                }
 
             case ReviewTargets.QuranWordFix:
-            {
-                Guid id = target.Id!.Value;
-                var row = await db.QuranWordFixes.AsNoTracking()
-                    .Where(x => x.Id == id)
-                    .Select(x => new { x.Id, x.Anchor, x.Field, x.QacValue, x.NewValue, x.Status })
-                    .SingleOrDefaultAsync(cancellationToken);
-                return row is null
-                    ? TargetView.Empty
-                    : new TargetView(
-                        new ReviewTargetSnapshot
-                        {
-                            Tablo = target.Table,
-                            Id = row.Id,
-                            Anchor = row.Anchor.ToString(),
-                            Field = row.Field,
-                            QacValue = row.QacValue,
-                            NewValue = row.NewValue,
-                            Status = row.Status.ToLabel(),
-                        },
-                        row.Status,
-                        null,
-                        null);
-            }
+                {
+                    Guid id = target.Id!.Value;
+                    var row = await db.QuranWordFixes.AsNoTracking()
+                        .Where(x => x.Id == id)
+                        .Select(x => new { x.Id, x.Anchor, x.Field, x.QacValue, x.NewValue, x.Status })
+                        .SingleOrDefaultAsync(cancellationToken);
+                    return row is null
+                        ? TargetView.Empty
+                        : new TargetView(
+                            new ReviewTargetSnapshot
+                            {
+                                Tablo = target.Table,
+                                Id = row.Id,
+                                Anchor = row.Anchor.ToString(),
+                                Field = row.Field,
+                                QacValue = row.QacValue,
+                                NewValue = row.NewValue,
+                                Status = row.Status.ToLabel(),
+                            },
+                            row.Status,
+                            null,
+                            null);
+                }
 
             case ReviewTargets.Lemma:
-            {
-                int id = target.LemmaId!.Value;
-                var row = await db.Lemmas.AsNoTracking()
-                    .Where(x => x.Id == id)
-                    .Select(x => new { x.Id, x.Lang, x.Text, x.Status })
-                    .SingleOrDefaultAsync(cancellationToken);
-                return row is null
-                    ? TargetView.Empty
-                    : new TargetView(
-                        new ReviewTargetSnapshot
-                        {
-                            Tablo = target.Table,
-                            LemmaId = row.Id,
-                            Lang = row.Lang,
-                            Text = row.Text,
-                            Status = row.Status.ToLabel(),
-                        },
-                        row.Status,
-                        null,
-                        null);
-            }
+                {
+                    int id = target.LemmaId!.Value;
+                    var row = await db.Lemmas.AsNoTracking()
+                        .Where(x => x.Id == id)
+                        .Select(x => new { x.Id, x.Lang, x.Text, x.Status })
+                        .SingleOrDefaultAsync(cancellationToken);
+                    return row is null
+                        ? TargetView.Empty
+                        : new TargetView(
+                            new ReviewTargetSnapshot
+                            {
+                                Tablo = target.Table,
+                                LemmaId = row.Id,
+                                Lang = row.Lang,
+                                Text = row.Text,
+                                Status = row.Status.ToLabel(),
+                            },
+                            row.Status,
+                            null,
+                            null);
+                }
 
             case ReviewTargets.LemmaGloss:
-            {
-                int id = target.LemmaId!.Value;
-                var row = await db.LemmaGlosses.AsNoTracking()
-                    .Where(x => x.LemmaId == id)
-                    .Select(x => new { x.LemmaId, x.AnlamKisa, x.Status })
-                    .SingleOrDefaultAsync(cancellationToken);
-                return row is null
-                    ? TargetView.Empty
-                    : new TargetView(
-                        new ReviewTargetSnapshot
-                        {
-                            Tablo = target.Table,
-                            LemmaId = row.LemmaId,
-                            AnlamKisa = row.AnlamKisa,
-                            Status = row.Status.ToLabel(),
-                        },
-                        row.Status,
-                        null,
-                        null);
-            }
+                {
+                    int id = target.LemmaId!.Value;
+                    var row = await db.LemmaGlosses.AsNoTracking()
+                        .Where(x => x.LemmaId == id)
+                        .Select(x => new { x.LemmaId, x.AnlamKisa, x.Status })
+                        .SingleOrDefaultAsync(cancellationToken);
+                    return row is null
+                        ? TargetView.Empty
+                        : new TargetView(
+                            new ReviewTargetSnapshot
+                            {
+                                Tablo = target.Table,
+                                LemmaId = row.LemmaId,
+                                AnlamKisa = row.AnlamKisa,
+                                Status = row.Status.ToLabel(),
+                            },
+                            row.Status,
+                            null,
+                            null);
+                }
 
             default:
                 return TargetView.Empty;
