@@ -19,7 +19,7 @@ public static class EditorEndpoints
 
         editor.MapAuthEndpoints();
         editor.MapUserEndpoints();
-        editor.MapSourceEndpoints();
+        editor.MapSourceEndpoints(); editor.MapUnitEndpoints();
 
         return editor;
     }
