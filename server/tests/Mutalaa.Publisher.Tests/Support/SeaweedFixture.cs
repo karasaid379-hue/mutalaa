@@ -92,12 +92,15 @@ public sealed class SeaweedFixture : IAsyncLifetime
             },
         });
 
-        // Parametresiz kurucu [Obsolete]; imaj adi verilir. Komut compose ile ayni.
+        // Parametresiz kurucu [Obsolete]; imaj adi verilir. Komut compose ile ayni, bir fark: -volume.max acik verilir. Imajin giris betigi
+        // -volume.max=0 ekler (birim sayisi = bos disk / 1 GB) ve her yeni kova 7 birim acar; her test ayri kova actigi icin dar diskli
+        // CI runner'inda birkac kovadan sonra PUT InternalError doner. Acik deger bu hesabi kapatir (512 birim ~ 70 kova).
         IContainer container = new ContainerBuilder(Image)
-            .WithCommand("server", "-dir=/data", "-s3", $"-s3.port={S3Port}", $"-s3.config={ConfigPath}")
+            .WithCommand("server", "-dir=/data", "-volume.max=512", "-s3", $"-s3.port={S3Port}", $"-s3.config={ConfigPath}")
             .WithResourceMapping(config, ConfigPath)
             .WithPortBinding(S3Port, assignRandomHostPort: true)
             .WithCreateParameterModifier(BindPortsToLoopback)
+            .WithCreateParameterModifier(LimitDataDisk)
             .WithWaitStrategy(Wait.ForUnixContainer().UntilHttpRequestIsSucceeded(request => request
                 .ForPort(S3Port)
                 .ForPath("/")
@@ -143,6 +146,13 @@ public sealed class SeaweedFixture : IAsyncLifetime
         }
 
         throw new InvalidOperationException("SeaweedFS kovasi olusturulamadi.", last);
+    }
+
+    /// <summary>/data 4 GB'lik bellek ustu diske baglanir: CI runner'inin dar diski her makinede ayni olusur.</summary>
+    private static void LimitDataDisk(CreateContainerParameters parameters)
+    {
+        parameters.HostConfig ??= new HostConfig();
+        parameters.HostConfig.Tmpfs = new Dictionary<string, string> { ["/data"] = "rw,size=4g" };
     }
 
     /// <summary>Testcontainers'in urettigi butun port yayinlarini (rastgele ana makine portu korunur) 127.0.0.1'e baglar.</summary>
