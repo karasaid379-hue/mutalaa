@@ -98,15 +98,15 @@ public static partial class UnitEndpoints
         string? prefix,
         string? q,
         string? cursor,
-        string? limit,
+        int? limit,
         IcerikDbContext db,
         CancellationToken cancellationToken)
     {
         Dictionary<string, string[]> errors = new(StringComparer.Ordinal);
 
-        int take = DefaultLimit;
-        if (!string.IsNullOrEmpty(limit)
-            && (!int.TryParse(limit, NumberStyles.None, CultureInfo.InvariantCulture, out take) || take is < 1 or > MaxLimit))
+        // Sayi olmayan deger baglama asamasinda 400 dogrulama olur; aralik burada denetlenir.
+        int take = limit ?? DefaultLimit;
+        if (take is < 1 or > MaxLimit)
         {
             errors["limit"] = [$"limit 1 ile {MaxLimit.ToString(CultureInfo.InvariantCulture)} arasında bir tamsayı olmalı."];
         }

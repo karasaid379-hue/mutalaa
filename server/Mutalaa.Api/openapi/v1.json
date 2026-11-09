@@ -47,7 +47,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -201,7 +201,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -281,7 +281,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -434,7 +434,10 @@
             "name": "limit",
             "in": "query",
             "schema": {
-              "type": "string"
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -464,7 +467,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -525,7 +528,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -596,7 +599,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -678,7 +681,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -735,11 +738,9 @@
             "name": "limit",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -770,7 +771,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -923,7 +924,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -1023,7 +1024,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -1096,11 +1097,9 @@
             "name": "limit",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -1131,7 +1130,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -1189,7 +1188,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -1311,7 +1310,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -1419,7 +1418,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -1517,7 +1516,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
                 }
               }
             }
@@ -1846,40 +1845,70 @@
         "type": "object",
         "properties": {
           "type": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "title": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "status": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "null",
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "detail": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
           },
           "instance": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string"
+          },
+          "kod": {
+            "type": "string",
+            "description": "Makine tarafindan okunur hata kodu (type son parcasiyla ayni): dogrulama, capa-gecersiz, degistirilemez-metin, oturum-acilamadi, yetki-yok, bulunamadi, yontem-desteklenmiyor, durum-gecisi-gecersiz, cakisma, surum-uyusmazligi, surum-gerekli, inceleme-desteklenmiyor, yayin-suruyor, kalite-kapisi, onceki-yayin-bozuk, depo-erisilemiyor, hata, sunucu-hatasi."
+          },
+          "traceId": {
+            "type": "string",
+            "description": "Istek izleme kimligi (gunluk iliskilendirme)."
+          },
+          "kapi_raporu": {
+            "type": "object",
+            "additionalProperties": { },
+            "description": "kalite-kapisi (422): kapi raporu (GateReport JSON'u)."
+          },
+          "yayin": {
+            "type": "object",
+            "additionalProperties": { },
+            "description": "yayin-suruyor (409): derleme turunde acik olan yayin satiri {id, surum, derleme, durum, talep}."
+          },
+          "kimlikler": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Toplu karar: bulunamayan (404) ya da surumu tutmayan (412) inceleme kayitlarinin tam listesi."
+          },
+          "kimlik": {
+            "type": "integer",
+            "description": "Toplu karar: hataya yol acan inceleme kaydi (400, 409, 422).",
+            "format": "int64"
+          },
+          "hatalar": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kod": {
+                  "type": "string"
+                },
+                "aciklama": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Kullanici olusturma (400): Identity hata kodlari ve aciklamalari."
           }
         },
-        "additionalProperties": false
+        "additionalProperties": { },
+        "description": "RFC 9457 hata govdesi. type her zaman 'urn:mutalaa:problem:{kod}'; kod ve traceId her yanitta bulunur. Ucun tipli uzantilari yalniz ilgili yanitta gelir; tanimsiz ek alanlar da olabilir."
       },
       "ReleaseAccepted": {
         "required": [
@@ -3162,6 +3191,26 @@
           }
         },
         "additionalProperties": false
+      },
+      "ValidationProblemDetails": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ProblemDetails"
+          }
+        ],
+        "properties": {
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Alan adi -> iletiler."
+          }
+        },
+        "description": "400 dogrulama yaniti. errors yalniz alan dogrulamasinda dolu olur (alan adi snake_case; ic ice alan 'duzenlenen.metin' ve liste ogesi 'kararlar[0].gerekce' gibi yazilir); basliklar ve bozuk JSON gibi alansiz 400'lerde yoktur."
       }
     }
   },
