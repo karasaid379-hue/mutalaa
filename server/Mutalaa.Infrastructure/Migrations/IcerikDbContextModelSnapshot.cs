@@ -1589,6 +1589,10 @@ namespace Mutalaa.Infrastructure.Migrations
                         .HasDefaultValue(ReviewStatus.Acik)
                         .HasColumnName("durum");
 
+                    b.Property<string>("Duzenlenen")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("duzenlenen");
+
                     b.Property<string>("Eylem")
                         .IsRequired()
                         .HasColumnType("text")
@@ -1611,6 +1615,14 @@ namespace Mutalaa.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("hedef_tablo");
+
+                    b.Property<string>("IkinciGerekce")
+                        .HasColumnType("text")
+                        .HasColumnName("ikinci_gerekce");
+
+                    b.Property<DateTime?>("IkinciIncelendiAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ikinci_incelendi_at");
 
                     b.Property<string>("IkinciInceleyen")
                         .HasColumnType("text")
