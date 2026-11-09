@@ -31,6 +31,16 @@ public static class ReviewVerification
             : reviewDurum == ReviewStatus.Onaylandi;
     }
 
+    /// <summary>
+    /// <c>dogrulanmamis</c> rozeti (K-25): <c>yz_modeli</c> dolu bir kayit, review <c>onaylandi</c> VE hedef onayli olana kadar dogrulanmamistir.
+    /// Liste ve ayrinti ayni kurali bu tek islevle kullanir.
+    /// </summary>
+    /// <param name="yzModeli">review.yz_modeli (null: insan ya da otomatik, yapay zeka degil).</param>
+    /// <param name="reviewDurum">review.durum.</param>
+    /// <param name="targetVerified"><see cref="IsVerified"/> sonucu.</param>
+    public static bool IsUnverified(string? yzModeli, ReviewStatus reviewDurum, bool targetVerified) =>
+        yzModeli is not null && !(reviewDurum == ReviewStatus.Onaylandi && targetVerified);
+
     /// <summary>Meal ya da tefsir metni, ilk onay verilmis (Inceleyen dolu), ikinci onay yok ve kayit acik.</summary>
     public static bool IsSecondApprovalPending(Review review, UnitKind kind)
     {

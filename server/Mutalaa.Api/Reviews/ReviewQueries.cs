@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Mutalaa.Domain;
 using Mutalaa.Domain.Anchors;
@@ -96,7 +97,8 @@ internal static class ReviewQueries
         }
 
         Dictionary<string, UnitKind> kinds = await UnitKindsForPendingAsync(db, rows, cancellationToken);
-        List<ReviewItemDto> items = [.. rows.Select(r => ToItem(r, kinds))];
+        HashSet<long> verifiedTargets = await VerifiedTargetsOfApprovedAiRowsAsync(db, rows, cancellationToken);
+        List<ReviewItemDto> items = [.. rows.Select(r => ToItem(r, kinds, verifiedTargets.Contains(r.Id)))];
         return new ReviewListResponse(items, next);
     }
 
@@ -152,7 +154,7 @@ internal static class ReviewQueries
             CreatedAt = r.CreatedAt,
             IncelendiAt = r.IncelendiAt,
             Xmin = row.Xmin,
-            Dogrulanmamis = r.YzModeli is not null && !verified,
+            Dogrulanmamis = ReviewVerification.IsUnverified(r.YzModeli, r.Durum, verified),
             IkinciOnayBekliyor = pending,
             Onceki = ReviewJson.Parse(r.Onceki),
             Onerilen = ReviewJson.Parse(r.Onerilen),
@@ -166,7 +168,7 @@ internal static class ReviewQueries
         return (detail, row.Xmin);
     }
 
-    private static ReviewItemDto ToItem(Row r, Dictionary<string, UnitKind> kinds)
+    private static ReviewItemDto ToItem(Row r, Dictionary<string, UnitKind> kinds, bool targetVerified)
     {
         bool pending = false;
         if (kinds.TryGetValue(r.HedefAnahtar, out UnitKind kind))
@@ -207,8 +209,8 @@ internal static class ReviewQueries
             IncelendiAt = r.IncelendiAt,
             Xmin = r.Xmin,
 
-            // Listede pahali hedef sorgusu yok: dogrulanmamis, yz_modeli doluluguna ve kaydin onaylanmamis olmasina bakar.
-            Dogrulanmamis = r.YzModeli is not null && r.Durum != ReviewStatus.Onaylandi,
+            // Ayrintiyla ayni tek kural (ReviewVerification.IsUnverified); hedef onayi yalniz onayli yapay zeka satirlari icin okunur.
+            Dogrulanmamis = ReviewVerification.IsUnverified(r.YzModeli, r.Durum, targetVerified),
             IkinciOnayBekliyor = pending,
         };
     }
@@ -255,6 +257,152 @@ internal static class ReviewQueries
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// <c>dogrulanmamis</c> kurali hedef onayina yalniz <c>yz_modeli</c> dolu ve review'u <c>onaylandi</c> olan satirlarda bakar
+    /// (aksi hâlde sonuc hedefe bagli degildir). Bu satirlarin hedef durumlari hedef tablosu basina tek sorguyla okunur (N+1 yok).
+    /// Donen kume, hedefi <see cref="ReviewVerification.IsVerified"/> ile onayli olan review kimliklerini icerir.
+    /// </summary>
+    private static async Task<HashSet<long>> VerifiedTargetsOfApprovedAiRowsAsync(IcerikDbContext db, List<Row> rows, CancellationToken cancellationToken)
+    {
+        HashSet<long> verified = [];
+        List<(Row Row, ReviewTarget Target)> targets = [];
+        foreach (Row r in rows)
+        {
+            if (r.YzModeli is null || r.Durum != ReviewStatus.Onaylandi || !ReviewTargets.IsKnown(r.HedefTablo))
+            {
+                continue;
+            }
+
+            if (!ReviewTargets.HasStatusColumn(r.HedefTablo))
+            {
+                if (ReviewVerification.IsVerified(r.HedefTablo, null, null, r.Durum))
+                {
+                    verified.Add(r.Id);
+                }
+
+                continue;
+            }
+
+            try
+            {
+                targets.Add((r, ReviewTargets.Parse(r.HedefTablo, r.HedefAnahtar)));
+            }
+            catch (DomainException)
+            {
+                // Bozuk anahtar: hedef okunamaz, onayli sayilmaz (ayrintida da anlik gorunum yoktur).
+            }
+        }
+
+        foreach (IGrouping<string, (Row Row, ReviewTarget Target)> group in targets.GroupBy(t => t.Target.Table, StringComparer.Ordinal))
+        {
+            switch (group.Key)
+            {
+                case ReviewTargets.Unit:
+                    {
+                        List<AnchorRef> wanted = [.. group.Select(t => t.Target.Anchor!)];
+                        var found = await db.Units.AsNoTracking()
+                            .Where(u => wanted.Contains(u.Anchor))
+                            .Select(u => new { u.Anchor, u.MetinDurumu })
+                            .ToListAsync(cancellationToken);
+                        Dictionary<string, TextStatus> byAnchor = found.ToDictionary(f => f.Anchor.ToString(), f => f.MetinDurumu, StringComparer.Ordinal);
+                        foreach ((Row row, ReviewTarget target) in group)
+                        {
+                            if (byAnchor.TryGetValue(target.Anchor!.ToString(), out TextStatus status)
+                                && ReviewVerification.IsVerified(group.Key, null, status, row.Durum))
+                            {
+                                verified.Add(row.Id);
+                            }
+                        }
+
+                        break;
+                    }
+
+                case ReviewTargets.SurahAlias:
+                    {
+                        List<short> numbers = [.. group.Select(t => (short)t.Target.SurahNo!.Value)];
+                        var found = await db.SurahAliases.AsNoTracking()
+                            .Where(s => numbers.Contains(s.SurahNo))
+                            .Select(s => new { s.SurahNo, s.Alias, s.Status })
+                            .ToListAsync(cancellationToken);
+                        MarkVerified(
+                            verified,
+                            group,
+                            found.ToDictionary(f => Key(f.SurahNo) + ":" + f.Alias, f => f.Status, StringComparer.Ordinal),
+                            t => Key(t.Target.SurahNo!.Value) + ":" + t.Target.Alias);
+                        break;
+                    }
+
+                case ReviewTargets.Xref:
+                    {
+                        List<Guid> ids = [.. group.Select(t => t.Target.Id!.Value)];
+                        var found = await db.Xrefs.AsNoTracking()
+                            .Where(x => ids.Contains(x.Id))
+                            .Select(x => new { x.Id, x.Status })
+                            .ToListAsync(cancellationToken);
+                        MarkVerified(verified, group, found.ToDictionary(f => Key(f.Id), f => f.Status, StringComparer.Ordinal), t => Key(t.Target.Id!.Value));
+                        break;
+                    }
+
+                case ReviewTargets.QuranWordFix:
+                    {
+                        List<Guid> ids = [.. group.Select(t => t.Target.Id!.Value)];
+                        var found = await db.QuranWordFixes.AsNoTracking()
+                            .Where(x => ids.Contains(x.Id))
+                            .Select(x => new { x.Id, x.Status })
+                            .ToListAsync(cancellationToken);
+                        MarkVerified(verified, group, found.ToDictionary(f => Key(f.Id), f => f.Status, StringComparer.Ordinal), t => Key(t.Target.Id!.Value));
+                        break;
+                    }
+
+                case ReviewTargets.Lemma:
+                    {
+                        List<int> ids = [.. group.Select(t => t.Target.LemmaId!.Value)];
+                        var found = await db.Lemmas.AsNoTracking()
+                            .Where(x => ids.Contains(x.Id))
+                            .Select(x => new { x.Id, x.Status })
+                            .ToListAsync(cancellationToken);
+                        MarkVerified(verified, group, found.ToDictionary(f => Key(f.Id), f => f.Status, StringComparer.Ordinal), t => Key(t.Target.LemmaId!.Value));
+                        break;
+                    }
+
+                case ReviewTargets.LemmaGloss:
+                    {
+                        List<int> ids = [.. group.Select(t => t.Target.LemmaId!.Value)];
+                        var found = await db.LemmaGlosses.AsNoTracking()
+                            .Where(x => ids.Contains(x.LemmaId))
+                            .Select(x => new { x.LemmaId, x.Status })
+                            .ToListAsync(cancellationToken);
+                        MarkVerified(verified, group, found.ToDictionary(f => Key(f.LemmaId), f => f.Status, StringComparer.Ordinal), t => Key(t.Target.LemmaId!.Value));
+                        break;
+                    }
+            }
+        }
+
+        return verified;
+    }
+
+    private static string Key(int value) => value.ToString(CultureInfo.InvariantCulture);
+
+    private static string Key(short value) => value.ToString(CultureInfo.InvariantCulture);
+
+    private static string Key(Guid value) => value.ToString("D", CultureInfo.InvariantCulture);
+
+    private static void MarkVerified(
+        HashSet<long> verified,
+        IGrouping<string, (Row Row, ReviewTarget Target)> group,
+        Dictionary<string, XrefStatus> statuses,
+        Func<(Row Row, ReviewTarget Target), string> keyOf)
+    {
+        foreach ((Row Row, ReviewTarget Target) item in group)
+        {
+            if (statuses.TryGetValue(keyOf(item), out XrefStatus status)
+                && ReviewVerification.IsVerified(group.Key, status, null, item.Row.Durum))
+            {
+                verified.Add(item.Row.Id);
+            }
+        }
     }
 
     private sealed record TargetView(ReviewTargetSnapshot? Snapshot, XrefStatus? Status, TextStatus? MetinDurumu, UnitKind? Kind)

@@ -48,6 +48,21 @@ public class ReviewVerificationTests
         Assert.False(ReviewVerification.IsVerified(table, null, null, ReviewStatus.GeriAlindi));
     }
 
+    [Theory]
+    [InlineData(null, ReviewStatus.Acik, false, false)]
+    [InlineData(null, ReviewStatus.Onaylandi, true, false)]
+    [InlineData("deneme-model-1", ReviewStatus.Acik, false, true)]
+    [InlineData("deneme-model-1", ReviewStatus.Acik, true, true)]
+    [InlineData("deneme-model-1", ReviewStatus.Reddedildi, true, true)]
+    [InlineData("deneme-model-1", ReviewStatus.GeriAlindi, true, true)]
+    [InlineData("deneme-model-1", ReviewStatus.Onaylandi, false, true)]
+    [InlineData("deneme-model-1", ReviewStatus.Onaylandi, true, false)]
+    public void An_ai_review_is_unverified_until_the_review_is_approved_and_the_target_is_verified(
+        string? yzModeli, ReviewStatus durum, bool targetVerified, bool expected) => CultureScope.For(true, () =>
+    {
+        Assert.Equal(expected, ReviewVerification.IsUnverified(yzModeli, durum, targetVerified));
+    });
+
     [Fact]
     public void An_unknown_target_table_is_a_validation_error()
     {

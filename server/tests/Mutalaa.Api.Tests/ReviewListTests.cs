@@ -254,11 +254,12 @@ public class ReviewListTests(EditorialDatabase<ReviewListTests> fixture)
     }
 
     [Fact]
-    public async Task The_detail_of_an_approved_unit_is_verified_and_an_ai_review_on_it_is_no_longer_unverified()
+    public async Task The_detail_of_an_approved_unit_is_verified_and_an_approved_ai_review_on_it_is_no_longer_unverified()
     {
+        // Tek kural (liste ve ayrinti): yz_modeli dolu ve not (review onaylandi ve hedef onayli); acik review rozetli kalir.
         string source = await SeedSourceAsync();
         Unit approved = await SeedUnitAsync(source, UnitKind.Risale, TestData.UnitAnchor(), durum: TextStatus.Onayli);
-        Review ai = await SeedUnitReviewAsync(approved, yzModeli: "deneme-model-1");
+        Review ai = await SeedUnitReviewAsync(approved, durum: ReviewStatus.Onaylandi, yzModeli: "deneme-model-1");
         using HttpClient client = await ClientAsync();
 
         JsonElement body = await ApiFactory.ReadJsonAsync(await client.GetAsync($"/api/v1/reviews/{ai.Id}", Ct), Ct);
