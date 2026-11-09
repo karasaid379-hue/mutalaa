@@ -8,7 +8,11 @@ internal sealed class AudioTimingConfiguration : IEntityTypeConfiguration<AudioT
 {
     public void Configure(EntityTypeBuilder<AudioTiming> b)
     {
-        b.ToTable("audio_timing", t => t.HasCheckConstraint("audio_timing_check", "start_ms < end_ms"));
+        b.ToTable("audio_timing", t =>
+        {
+            t.HasCheckConstraint("audio_timing_check", "start_ms < end_ms");
+            t.HasCheckConstraint("audio_timing_file_sha256_check", "file_sha256 ~ '^[0-9a-f]{64}$'");
+        });
         b.HasKey(x => new { x.SourceId, x.Anchor });
         b.Property(x => x.FileSha256).HasColumnType("char(64)");
         b.Property(x => x.Words).HasColumnType("jsonb");

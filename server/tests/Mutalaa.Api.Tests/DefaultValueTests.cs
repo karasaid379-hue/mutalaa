@@ -199,6 +199,8 @@ public class DefaultValueTests(EditorialDatabase<DefaultValueTests> fixture) : I
         Assert.Equal("hat", await Db.ScalarAsync<string>("SELECT koken::text FROM icerik.review WHERE id = @id", ct, ("id", review.Id)));
         Assert.Equal("hazirlaniyor", await Db.ScalarAsync<string>("SELECT durum::text FROM icerik.release WHERE id = @id", ct, ("id", release.Id)));
         Assert.Equal("dev", await Db.ScalarAsync<string>("SELECT derleme::text FROM icerik.release WHERE id = @id", ct, ("id", release.Id)));
+        Assert.Equal("yayin", await Db.ScalarAsync<string>("SELECT talep FROM icerik.release WHERE id = @id", ct, ("id", release.Id)));
+        Assert.Equal(ReleaseRequests.Yayin, release.Talep);
     }
 
     [Fact]

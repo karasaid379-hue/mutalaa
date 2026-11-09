@@ -31,4 +31,16 @@ public sealed class Release
 
     /// <summary>UTC.</summary>
     public DateTime? YayinlandiAt { get; set; }
+
+    /// <summary>text + CHECK (<see cref="ReleaseRequests"/>): watch'in yurutecegi is (K-46 madde 2).</summary>
+    public string Talep { get; set; } = ReleaseRequests.Yayin;
+
+    /// <summary>Terfide ve geri almada kaynak yayin (FK release.id).</summary>
+    public int? KaynakReleaseId { get; set; }
+
+    /// <summary>text[]: --pack listesi; bossa butun paketler.</summary>
+    public string[]? Paketler { get; set; }
+
+    /// <summary>Serbest aciklama ('not' PostgreSQL'de ayrilmis sozcuk).</summary>
+    public string? Notlar { get; set; }
 }

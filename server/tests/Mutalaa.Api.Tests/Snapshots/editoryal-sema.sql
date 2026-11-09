@@ -193,7 +193,8 @@ CREATE TABLE icerik.audio_timing (
     words jsonb,
     timing_source text NOT NULL,
     data_version text NOT NULL,
-    CONSTRAINT audio_timing_check CHECK ((start_ms < end_ms))
+    CONSTRAINT audio_timing_check CHECK ((start_ms < end_ms)),
+    CONSTRAINT audio_timing_file_sha256_check CHECK ((file_sha256 ~ '^[0-9a-f]{64}$'::text))
 );
 
 
@@ -279,7 +280,8 @@ CREATE TABLE icerik.lemma_gloss (
     origin text NOT NULL,
     version text NOT NULL,
     content_hash character(64) NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT lemma_gloss_content_hash_check CHECK ((content_hash ~ '^[0-9a-f]{64}$'::text))
 );
 
 
@@ -411,7 +413,12 @@ CREATE TABLE icerik.release (
     data_version text NOT NULL,
     olusturan text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    yayinlandi_at timestamp with time zone
+    yayinlandi_at timestamp with time zone,
+    kaynak_release_id integer,
+    notlar text,
+    paketler text[],
+    talep text DEFAULT 'yayin'::text NOT NULL,
+    CONSTRAINT release_talep_check CHECK ((talep = ANY (ARRAY['yayin'::text, 'terfi'::text, 'geri_alma'::text])))
 );
 
 
@@ -510,7 +517,8 @@ CREATE TABLE icerik.source (
     notice_text text,
     notlar text,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT source_dosya_sha256_check CHECK ((dosya_sha256 ~ '^[0-9a-f]{64}$'::text))
 );
 
 
@@ -1048,7 +1056,7 @@ CREATE UNIQUE INDEX quran_word_surah_ayah_word_key ON icerik.quran_word USING bt
 -- Name: release_surum_derleme_key; Type: INDEX; Schema: icerik; Owner: -
 --
 
-CREATE UNIQUE INDEX release_surum_derleme_key ON icerik.release USING btree (surum, derleme);
+CREATE UNIQUE INDEX release_surum_derleme_key ON icerik.release USING btree (surum, derleme) WHERE (durum <> 'basarisiz'::icerik.surum_durumu);
 
 
 --
@@ -1292,6 +1300,14 @@ ALTER TABLE ONLY icerik.quran_word
 
 ALTER TABLE ONLY icerik.quran_word
     ADD CONSTRAINT quran_word_source_id_fkey FOREIGN KEY (source_id) REFERENCES icerik.source(slug);
+
+
+--
+-- Name: release release_kaynak_release_id_fkey; Type: FK CONSTRAINT; Schema: icerik; Owner: -
+--
+
+ALTER TABLE ONLY icerik.release
+    ADD CONSTRAINT release_kaynak_release_id_fkey FOREIGN KEY (kaynak_release_id) REFERENCES icerik.release(id);
 
 
 --
