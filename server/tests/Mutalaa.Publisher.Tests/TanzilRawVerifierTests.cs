@@ -291,17 +291,95 @@ public class TanzilRawVerifierTests
         Assert.Null(TanzilRawVerifier.ExpectedFileName("tanzil-ust-veri"));
     }
 
+    // Birimler ham dosyanin kendi metninden: metin satirdaki gibi, content_hash metinden.
+    private static UnitRow[] UnitsOf(byte[] data) =>
+    [
+        .. TanzilRawFile.Parse(data).Verses.Select((v, i) =>
+            PackTestData.Unit(string.Create(CultureInfo.InvariantCulture, $"q:{v.Sure}:{v.Ayet}"), "tanzil-uthmani", "ayet", ord: i)
+            with { Metin = v.Text, ContentHash = ContentHash.Compute(v.Text) }),
+    ];
+
+    [Fact]
+    public void VerifyAll_reports_a_unit_text_that_differs_from_the_raw_line_even_when_the_hash_is_left_unchanged()
+    {
+        byte[] uthmani = Fixture("uthmani-parca.txt");
+        (_, string notice, _) = Split(uthmani);
+        using RawLayout layout = new();
+        SourceRow source = layout.Place("tanzil-uthmani", "quran-uthmani.txt", uthmani, notice);
+        UnitRow[] units = UnitsOf(uthmani);
+        units[5] = units[5] with { Metin = units[5].Metin + "x" };
+        EditorialSnapshot snapshot = new() { Sources = [source], Units = units };
+
+        IReadOnlyList<GateViolation> violations = new TanzilRawVerifier(layout.RawDir).VerifyAll(snapshot, ["tanzil-uthmani"]);
+
+        Assert.All(violations, v => Assert.Equal(GateRule.P11, v.Rule));
+        Assert.Contains(violations, v => v.Subject == units[5].Anchor && v.Reason == "metin-uyusmuyor");
+        Assert.Contains(violations, v => v.Subject == units[5].Anchor && v.Reason == "hash-metinle-uyusmuyor");
+        Assert.DoesNotContain(violations, v => v.Reason == "hash-uyusmuyor");
+        Assert.Equal(2, violations.Count);
+    }
+
+    [Fact]
+    public void VerifyAll_reports_a_unit_whose_text_and_hash_both_changed_consistently_as_a_hash_mismatch_with_the_raw_file()
+    {
+        byte[] uthmani = Fixture("uthmani-parca.txt");
+        (_, string notice, _) = Split(uthmani);
+        using RawLayout layout = new();
+        SourceRow source = layout.Place("tanzil-uthmani", "quran-uthmani.txt", uthmani, notice);
+        UnitRow[] units = UnitsOf(uthmani);
+        string changed = units[2].Metin + "x";
+        units[2] = units[2] with { Metin = changed, ContentHash = ContentHash.Compute(changed) };
+        EditorialSnapshot snapshot = new() { Sources = [source], Units = units };
+
+        IReadOnlyList<GateViolation> violations = new TanzilRawVerifier(layout.RawDir).VerifyAll(snapshot, ["tanzil-uthmani"]);
+
+        Assert.Contains(violations, v => v.Subject == units[2].Anchor && v.Reason == "hash-uyusmuyor");
+        Assert.Contains(violations, v => v.Subject == units[2].Anchor && v.Reason == "metin-uyusmuyor");
+        Assert.DoesNotContain(violations, v => v.Reason == "hash-metinle-uyusmuyor");
+    }
+
+    [Fact]
+    public void VerifyAll_checks_that_a_word_is_the_code_point_slice_of_its_ayah_text()
+    {
+        byte[] uthmani = Fixture("uthmani-parca.txt");
+        (_, string notice, _) = Split(uthmani);
+        using RawLayout layout = new();
+        SourceRow source = layout.Place("tanzil-uthmani", "quran-uthmani.txt", uthmani, notice);
+        UnitRow[] units = UnitsOf(uthmani);
+        UnitRow ayah = units[1];
+        int firstSpace = ayah.Metin.IndexOf(' ', StringComparison.Ordinal);
+        string firstWord = ayah.Metin[..firstSpace];
+        int length = CodePointOffsets.CodePointCount(firstWord);
+        QuranWordRow good = new(ayah.Anchor + ":1", 1, 2, 1, 2, firstWord, firstWord, 0, length, "tanzil-uthmani");
+        EditorialSnapshot ok = new() { Sources = [source], Units = units, QuranWords = [good] };
+        TanzilRawVerifier verifier = new(layout.RawDir);
+
+        Assert.Empty(verifier.VerifyAll(ok, ["tanzil-uthmani"]));
+
+        GateViolation wrongText = Assert.Single(verifier.VerifyAll(
+            new EditorialSnapshot { Sources = ok.Sources, Units = units, QuranWords = [good with { TextUthmani = firstWord + "x" }] }, ["tanzil-uthmani"]));
+        Assert.Equal((GateRule.P11, good.Anchor, "kelime-metni-uyusmuyor"), (wrongText.Rule, wrongText.Subject, wrongText.Reason));
+
+        GateViolation outOfRange = Assert.Single(verifier.VerifyAll(
+            new EditorialSnapshot { Sources = ok.Sources, Units = units, QuranWords = [good with { CharEnd = CodePointOffsets.CodePointCount(ayah.Metin) + 1 }] }, ["tanzil-uthmani"]));
+        Assert.Equal("kelime-metni-uyusmuyor", outOfRange.Reason);
+
+        GateViolation noAyah = Assert.Single(verifier.VerifyAll(
+            new EditorialSnapshot { Sources = ok.Sources, Units = units, QuranWords = [good with { Anchor = "q:114:6:1", Surah = 114, Ayah = 6 }] }, ["tanzil-uthmani"]));
+        Assert.Equal(("q:114:6:1", "kelime-ayeti-yok"), (noAyah.Subject, noAyah.Reason));
+    }
+
     [Fact]
     public void VerifyAll_checks_included_tanzil_sources_against_the_snapshot()
     {
         byte[] uthmani = Fixture("uthmani-parca.txt");
         byte[] simple = Fixture("simple-clean-parca.txt");
-        (Dictionary<string, string> hashes, string uthmaniNotice, _) = Split(uthmani);
+        (_, string uthmaniNotice, _) = Split(uthmani);
         (_, string simpleNotice, _) = Split(simple);
         using RawLayout layout = new();
         SourceRow uthmaniSource = layout.Place("tanzil-uthmani", "quran-uthmani.txt", uthmani, uthmaniNotice);
         SourceRow simpleSource = layout.Place("tanzil-simple-clean", "quran-simple-clean.txt", simple, simpleNotice);
-        UnitRow[] units = [.. hashes.Select((p, i) => PackTestData.Unit(p.Key, "tanzil-uthmani", "ayet", ord: i) with { ContentHash = p.Value })];
+        UnitRow[] units = UnitsOf(uthmani);
         EditorialSnapshot snapshot = new() { Sources = [uthmaniSource, simpleSource, PackTestData.Source("tanzil-ust-veri")], Units = units };
         TanzilRawVerifier verifier = new(layout.RawDir);
 
@@ -311,8 +389,10 @@ public class TanzilRawVerifierTests
         UnitRow[] broken = [.. units];
         broken[3] = broken[3] with { ContentHash = new string('f', 64) };
         EditorialSnapshot brokenSnapshot = new() { Sources = snapshot.Sources, Units = broken };
-        GateViolation violation = Assert.Single(verifier.VerifyAll(brokenSnapshot, ["tanzil-uthmani", "tanzil-simple-clean"]));
-        Assert.Equal(("hash-uyusmuyor", broken[3].Anchor), (violation.Reason, violation.Subject));
+        // Bozulan hash iki ihlal verir: ham dosyadakiyle farkli, ve birimin kendi metninden hesaplananla farkli.
+        IReadOnlyList<GateViolation> brokenViolations = verifier.VerifyAll(brokenSnapshot, ["tanzil-uthmani", "tanzil-simple-clean"]);
+        Assert.Equal(["hash-metinle-uyusmuyor", "hash-uyusmuyor"], brokenViolations.Select(v => v.Reason).Order(StringComparer.Ordinal).ToArray());
+        Assert.All(brokenViolations, v => Assert.Equal(broken[3].Anchor, v.Subject));
 
         // Kapidan girmeyen kaynak denetlenmez.
         Assert.Empty(verifier.VerifyAll(brokenSnapshot, ["tanzil-simple-clean"]));
@@ -323,10 +403,10 @@ public class TanzilRawVerifierTests
     public void VerifyAll_ignores_deprecated_units_when_comparing_counts_and_hashes()
     {
         byte[] uthmani = Fixture("uthmani-parca.txt");
-        (Dictionary<string, string> hashes, string notice, _) = Split(uthmani);
+        (_, string notice, _) = Split(uthmani);
         using RawLayout layout = new();
         SourceRow source = layout.Place("tanzil-uthmani", "quran-uthmani.txt", uthmani, notice);
-        List<UnitRow> units = [.. hashes.Select((p, i) => PackTestData.Unit(p.Key, "tanzil-uthmani", "ayet", ord: i) with { ContentHash = p.Value })];
+        List<UnitRow> units = [.. UnitsOf(uthmani)];
         units.Add(PackTestData.Unit("q:9:9", "tanzil-uthmani", "ayet", status: "kullanim_disi", successors: "[]"));
         EditorialSnapshot snapshot = new() { Sources = [source], Units = units };
 

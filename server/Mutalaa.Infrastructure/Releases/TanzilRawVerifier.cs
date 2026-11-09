@@ -244,9 +244,15 @@ public sealed class TanzilRawVerifier
 
     /// <summary>
     /// Tek kaynagi dogrular. unitHashes: capa -> content_hash (null ise birim hash karsilastirmasi yapilmaz; ar_norm kaynagi tanzil-simple-clean'in birimi yoktur).
-    /// expectedLineCount: ham dosyadaki ayet satiri sayisi (null ise denetlenmez).
+    /// expectedLineCount: ham dosyadaki ayet satiri sayisi (null ise denetlenmez). unitTexts: capa -> pakete yazilacak birim metni (null ise metin karsilastirmasi
+    /// yapilmaz); her metin ham dosyadaki satir metniyle bayt bayt (Ordinal) ayni olmali. Yalniz hash'i denetlemek, metni degistirip hash'i sabit birakan
+    /// bir kaydi kacirirdi (K-26).
     /// </summary>
-    public IReadOnlyList<GateViolation> Verify(SourceRow source, IReadOnlyDictionary<string, string>? unitHashes, int? expectedLineCount)
+    public IReadOnlyList<GateViolation> Verify(
+        SourceRow source,
+        IReadOnlyDictionary<string, string>? unitHashes,
+        int? expectedLineCount,
+        IReadOnlyDictionary<string, string>? unitTexts = null)
     {
         ArgumentNullException.ThrowIfNull(source);
 
@@ -295,6 +301,18 @@ public sealed class TanzilRawVerifier
             violations.AddRange(GateEvaluator.VerifyP11ContentHashes(raw, unitHashes));
         }
 
+        if (unitTexts is not null)
+        {
+            foreach (TanzilVerse verse in file.Verses)
+            {
+                string anchor = string.Create(CultureInfo.InvariantCulture, $"q:{verse.Sure}:{verse.Ayet}");
+                if (unitTexts.TryGetValue(anchor, out string? text) && !string.Equals(text, verse.Text, StringComparison.Ordinal))
+                {
+                    violations.Add(new GateViolation(GateRule.P11, anchor, "metin-uyusmuyor"));
+                }
+            }
+        }
+
         violations.AddRange(GateEvaluator.VerifyP11Notice(slug, source.NoticeText, file.Notice));
 
         if (expectedLineCount is int expected && file.Verses.Count != expected)
@@ -306,8 +324,10 @@ public sealed class TanzilRawVerifier
     }
 
     /// <summary>
-    /// Kapidan giren Tanzil kaynaklarini anlik goruntuye karsi dogrular: tanzil-uthmani etkin birimlerinin hash'leri ve sayisi; tanzil-simple-clean bildirim ve
-    /// satir sayisi (tanzil-uthmani etkin birim sayisi). Kaynak satiri ya da girmeyen kaynak atlanir (P-01 ve suzme kurallari ayridir).
+    /// Kapidan giren Tanzil kaynaklarini anlik goruntuye karsi dogrular: tanzil-uthmani etkin birimlerinin hash'leri, METINLERI (ham satirla bayt bayt) ve sayisi;
+    /// her birimin content_hash degerinin kendi metninden yeniden hesaplananla ayni olmasi; quran_word.text_uthmani degerinin ayet metninin
+    /// [char_start, char_end) kod noktasi dilimi olmasi (hattin kendi degismezi, pipeline export/pg.py); tanzil-simple-clean bildirim ve satir sayisi
+    /// (tanzil-uthmani etkin birim sayisi). Kaynak satiri ya da girmeyen kaynak atlanir (P-01 ve suzme kurallari ayridir).
     /// </summary>
     public IReadOnlyList<GateViolation> VerifyAll(EditorialSnapshot snapshot, IReadOnlyCollection<string> includedSourceSlugs)
     {
@@ -315,11 +335,25 @@ public sealed class TanzilRawVerifier
         ArgumentNullException.ThrowIfNull(includedSourceSlugs);
 
         Dictionary<string, string> uthmaniHashes = new(StringComparer.Ordinal);
+        Dictionary<string, string> uthmaniTexts = new(StringComparer.Ordinal);
+        Dictionary<string, string> allUthmaniTexts = new(StringComparer.Ordinal);
+        List<GateViolation> consistency = [];
         foreach (UnitRow unit in snapshot.Units)
         {
-            if (string.Equals(unit.SourceId, UthmaniSlug, StringComparison.Ordinal) && string.Equals(unit.Status, "etkin", StringComparison.Ordinal))
+            if (!string.Equals(unit.SourceId, UthmaniSlug, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            allUthmaniTexts[unit.Anchor] = unit.Metin;
+            if (string.Equals(unit.Status, "etkin", StringComparison.Ordinal))
             {
                 uthmaniHashes[unit.Anchor] = unit.ContentHash;
+                uthmaniTexts[unit.Anchor] = unit.Metin;
+                if (!string.Equals(ContentHash.Compute(unit.Metin), unit.ContentHash, StringComparison.Ordinal))
+                {
+                    consistency.Add(new GateViolation(GateRule.P11, unit.Anchor, "hash-metinle-uyusmuyor"));
+                }
             }
         }
 
@@ -333,7 +367,9 @@ public sealed class TanzilRawVerifier
 
             if (string.Equals(source.Slug, UthmaniSlug, StringComparison.Ordinal))
             {
-                violations.AddRange(Verify(source, uthmaniHashes, uthmaniHashes.Count));
+                violations.AddRange(Verify(source, uthmaniHashes, uthmaniHashes.Count, uthmaniTexts));
+                violations.AddRange(consistency.OrderBy(v => v.Subject, StringComparer.Ordinal));
+                violations.AddRange(VerifyWords(snapshot.QuranWords, allUthmaniTexts));
             }
             else if (string.Equals(source.Slug, SimpleCleanSlug, StringComparison.Ordinal))
             {
@@ -342,6 +378,41 @@ public sealed class TanzilRawVerifier
         }
 
         return violations;
+    }
+
+    // quran_word.text_uthmani = ayet metninin [char_start, char_end) KOD NOKTASI dilimi (anchor_tanzil.py; export/pg.py ayni degismezi denetler).
+    // Kelime bolme kurali burada yeniden uretilmez: yalniz sonucun ayet metniyle tutarliligi denetlenir.
+    private static List<GateViolation> VerifyWords(IReadOnlyList<QuranWordRow> words, Dictionary<string, string> ayahTexts)
+    {
+        List<GateViolation> violations = [];
+        foreach (QuranWordRow word in words.Where(w => string.Equals(w.SourceId, UthmaniSlug, StringComparison.Ordinal)).OrderBy(w => w.Anchor, StringComparer.Ordinal))
+        {
+            string ayah = string.Create(CultureInfo.InvariantCulture, $"q:{word.Surah}:{word.Ayah}");
+            if (!ayahTexts.TryGetValue(ayah, out string? text))
+            {
+                violations.Add(new GateViolation(GateRule.P11, word.Anchor, "kelime-ayeti-yok"));
+                continue;
+            }
+
+            if (!WordMatches(text, word))
+            {
+                violations.Add(new GateViolation(GateRule.P11, word.Anchor, "kelime-metni-uyusmuyor"));
+            }
+        }
+
+        return violations;
+    }
+
+    private static bool WordMatches(string ayahText, QuranWordRow word)
+    {
+        if (word.CharStart < 0 || word.CharEnd <= word.CharStart || word.CharEnd > CodePointOffsets.CodePointCount(ayahText))
+        {
+            return false;
+        }
+
+        int start = CodePointOffsets.CpToUtf16(ayahText, word.CharStart);
+        int end = CodePointOffsets.CpToUtf16(ayahText, word.CharEnd);
+        return string.Equals(ayahText[start..end], word.TextUthmani, StringComparison.Ordinal);
     }
 
     // Beklenen ad once; sonra klasordeki dosyalar Ordinal sirayla. Karar SHA-256'dir.
