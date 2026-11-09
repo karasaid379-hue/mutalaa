@@ -14,6 +14,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Uretilen OpenAPI belgesi depoda durur; cikti ve yayin klasorune kopyalanmaz. -->
+    <Content Remove="openapi\**" />
+    <None Include="openapi\**" CopyToOutputDirectory="Never" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- dotnet ef tasarim zamani araci; Api ciktisinda yer alir. -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
