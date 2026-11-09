@@ -187,6 +187,51 @@ const BEKLENEN_SUTUNLAR: Record<string, string[]> = {
   ozel_bolut: ['sure', 'tur', 'start_ms', 'end_ms'],
 };
 
+/**
+ * Primary-key columns (in key order) of the tables whose key the documents fix:
+ * Icerik paketleri 3.1-3.5. `rowid` is the integer primary key alias of unit and unit_ref.
+ */
+const BEKLENEN_PK: Record<string, string[]> = {
+  pack_meta: ['key'],
+  pack_source: ['source_id'],
+  attribution: ['source_id'],
+  quran_marker: ['kind', 'no'],
+  quran_word: ['anchor'],
+  tr_root_index: ['anchor', 'span_start'],
+  word_morph: ['anchor'],
+  tr_form: ['key_narrow', 'tr_lemma_id'],
+  unit: ['rowid'],
+  unit_ref: ['rowid'],
+};
+
+/** WITHOUT ROWID tables that Icerik paketleri 3.1-3.5 declares as such. */
+const BELGELI_ROWIDSIZ = [
+  'pack_meta',
+  'pack_source',
+  'quran_word',
+  'quran_marker',
+  'tr_root_index',
+  'word_morph',
+  'tr_form',
+];
+
+/**
+ * WITHOUT ROWID tables of the mushaf and audio packs. The documents give no table options for
+ * them (Mobil mimari 11 marks its page_line / glyph_word draft as a proposal, without the
+ * option); the DDL files declare them WITHOUT ROWID and this list pins that.
+ */
+const DDL_ROWIDSIZ = [
+  'page_line',
+  'glyph_word',
+  'ayah_box',
+  'okuyucu',
+  'kayit',
+  'kayit_sure',
+  'ayet_zaman',
+  'kelime_zaman',
+  'ozel_bolut',
+];
+
 /** Example pack_id values per pack type. */
 const ORNEK_PACK_ID: Record<string, string[]> = {
   core: ['core'],
@@ -230,6 +275,38 @@ function tablolar(db: DatabaseSync): string[] {
 function sutunlar(db: DatabaseSync, tablo: string): string[] {
   const satirlar = db.prepare(`PRAGMA table_info(${tablo})`).all() as { name: string }[];
   return satirlar.map((s) => s.name);
+}
+
+/** Primary-key column names of a table, in key order (PRAGMA table_info pk field). */
+function pkSutunlari(db: DatabaseSync, tablo: string): string[] {
+  const satirlar = db.prepare(`PRAGMA table_info(${tablo})`).all() as {
+    name: string;
+    pk: number;
+  }[];
+  return satirlar
+    .filter((s) => s.pk > 0)
+    .sort((a, b) => a.pk - b.pk)
+    .map((s) => s.name);
+}
+
+/** Real tables (FTS5 shadow tables excluded) whose CREATE statement carries WITHOUT ROWID. */
+function rowidsizTablolar(db: DatabaseSync): string[] {
+  const satirlar = db.prepare("SELECT name, sql FROM sqlite_master WHERE type = 'table'").all() as {
+    name: string;
+    sql: string | null;
+  }[];
+  const gercek = new Set(tablolar(db));
+  return satirlar
+    .filter((s) => gercek.has(s.name) && /\bWITHOUT\s+ROWID\b/iu.test(s.sql ?? ''))
+    .map((s) => s.name)
+    .sort();
+}
+
+/** CREATE statement of a table, whitespace collapsed to single spaces. */
+function olusturmaSql(db: DatabaseSync, ad: string): string {
+  const satir = db.prepare('SELECT sql FROM sqlite_master WHERE name = ?').get(ad) as
+    { sql: string } | undefined;
+  return (satir?.sql ?? '').replace(/\s+/gu, ' ');
 }
 
 describe('paketler.json', () => {
@@ -326,6 +403,21 @@ describe('DDL', () => {
         }
       });
 
+      it('has the documented primary keys', () => {
+        const db = yeniVeritabani(tur);
+        for (const tablo of tablolar(db)) {
+          const beklenen = BEKLENEN_PK[tablo];
+          if (beklenen !== undefined) expect(pkSutunlari(db, tablo), tablo).toEqual(beklenen);
+        }
+      });
+
+      it('declares WITHOUT ROWID on exactly the expected tables', () => {
+        const db = yeniVeritabani(tur);
+        const rowidsiz = new Set([...BELGELI_ROWIDSIZ, ...DDL_ROWIDSIZ]);
+        const beklenen = tablolar(db).filter((t) => rowidsiz.has(t));
+        expect(rowidsizTablolar(db)).toEqual(beklenen);
+      });
+
       it('has no tr_stem_lex table (K-44 item 1)', () => {
         const db = yeniVeritabani(tur);
         const adlar = (
@@ -346,6 +438,37 @@ describe('DDL', () => {
   it('lists every documented table name in the expected-column map', () => {
     const kullanilan = new Set(Object.values(BEKLENEN_TABLOLAR).flat());
     expect([...kullanilan].sort()).toEqual(Object.keys(BEKLENEN_SUTUNLAR).sort());
+  });
+
+  it('pins the primary key of every table named in the key map across the pack types', () => {
+    const gorulen = new Set<string>();
+    for (const tur of TURLER) {
+      for (const tablo of tablolar(yeniVeritabani(tur))) {
+        if (tablo in BEKLENEN_PK) gorulen.add(tablo);
+      }
+    }
+    expect([...gorulen].sort()).toEqual(Object.keys(BEKLENEN_PK).sort());
+  });
+
+  it('declares the documented WITHOUT ROWID set (Icerik paketleri 3.1-3.5)', () => {
+    const bulunan = new Set<string>();
+    for (const tur of TURLER) {
+      for (const tablo of rowidsizTablolar(yeniVeritabani(tur))) bulunan.add(tablo);
+    }
+    const belgeli = [...bulunan].filter((t) => BELGELI_ROWIDSIZ.includes(t)).sort();
+    expect(belgeli).toEqual([...BELGELI_ROWIDSIZ].sort());
+    expect([...bulunan].filter((t) => !BELGELI_ROWIDSIZ.includes(t)).sort()).toEqual(
+      [...DDL_ROWIDSIZ].sort(),
+    );
+  });
+
+  it('keeps attribution, unit, unit_ref, sure, xref_idx and unit_search as rowid tables', () => {
+    for (const tur of TURLER) {
+      const rowidsiz = rowidsizTablolar(yeniVeritabani(tur));
+      for (const tablo of ['attribution', 'unit', 'unit_ref', 'sure', 'xref_idx', 'unit_search']) {
+        expect(rowidsiz, `${tur}/${tablo}`).not.toContain(tablo);
+      }
+    }
   });
 
   it('keeps tr_root_index out of core (K-44 item 3)', () => {
@@ -388,6 +511,46 @@ describe('enums', () => {
     for (const deger of belgedeki) {
       expect(enumsJson.enums['unit_kind'], deger).toContain(deger);
     }
+  });
+});
+
+describe('FTS5 table options (Arama 2)', () => {
+  for (const tur of ['core', 'metin']) {
+    it(`${tur}: unit_fts is external-content with unicode61 (no diacritic removal) and prefix 2 3 4`, () => {
+      const sql = olusturmaSql(yeniVeritabani(tur), 'unit_fts');
+      expect(sql).toMatch(/^CREATE VIRTUAL TABLE unit_fts USING fts5\(/u);
+      expect(sql).toContain("content='unit_search'");
+      expect(sql).toContain("content_rowid='rowid'");
+      expect(sql).toContain("tokenize='unicode61 remove_diacritics 0'");
+      expect(sql).toContain("prefix='2 3 4'");
+    });
+
+    it(`${tur}: unit_tri is external-content with the trigram tokenizer`, () => {
+      const sql = olusturmaSql(yeniVeritabani(tur), 'unit_tri');
+      expect(sql).toMatch(/^CREATE VIRTUAL TABLE unit_tri USING fts5\(/u);
+      expect(sql).toContain("content='unit_search'");
+      expect(sql).toContain("content_rowid='rowid'");
+      expect(sql).toContain("tokenize='trigram'");
+    });
+
+    it(`${tur}: unit_fts_config shadow table exists and holds the FTS5 version`, () => {
+      const db = yeniVeritabani(tur);
+      const surum = db.prepare("SELECT v FROM unit_fts_config WHERE k = 'version'").get() as
+        { v: number | bigint } | undefined;
+      expect(surum).toBeDefined();
+    });
+  }
+
+  it('risale-dizin: both tables are contentless with the same tokenizers and prefixes', () => {
+    const db = yeniVeritabani('risale-dizin');
+    const fts = olusturmaSql(db, 'unit_fts');
+    expect(fts).toContain("content=''");
+    expect(fts).toContain("tokenize='unicode61 remove_diacritics 0'");
+    expect(fts).toContain("prefix='2 3 4'");
+    expect(fts).not.toContain('content_rowid');
+    const tri = olusturmaSql(db, 'unit_tri');
+    expect(tri).toContain("content=''");
+    expect(tri).toContain("tokenize='trigram'");
   });
 });
 

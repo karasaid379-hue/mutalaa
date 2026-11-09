@@ -45,3 +45,6 @@
 {"id":"tg-0045","input":"   ","expected":"","note":"yalnız boşluk"}
 {"id":"tg-0046","input":"... --- !!!","expected":"","note":"yalnız noktalama: sözcük yok"}
 {"id":"tg-0047","input":"'","expected":"","note":"yalnız kesme: sözcük yok"}
+{"id":"tg-0048","input":"ları","expected":"lari","note":"ham Snowball boş döner; boş gövde geniş biçime düşer (K-36 madde 6)"}
+{"id":"tg-0049","input":"leri","expected":"leri","note":"ham Snowball boş döner; boş gövde geniş biçime düşer"}
+{"id":"tg-0050","input":"Ları ler","expected":"lari ler","note":"çok sözcüklü: boş gövdeli sözcük geniş biçime düşer, sözcük sayısı korunur"}

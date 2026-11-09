@@ -152,19 +152,32 @@ describe('buildFtsQuery: escape (rule 9)', () => {
       'بتث',
       'â',
     ];
+    // 32-bit LCG (Math.imul keeps the product exact); the high bits are used because the low bits
+    // of a power-of-two modulus have a short period.
     let seed = 12345;
-    const next = (): number => {
-      seed = (seed * 1103515245 + 12345) % 2147483648;
-      return seed;
+    const next = (bound: number): number => {
+      seed = (Math.imul(seed, 1103515245) + 12345) >>> 0;
+      return (seed >>> 16) % bound;
     };
+    const usedElements = new Set<number>();
+    const usedLengths = new Set<number>();
     for (let run = 0; run < 400; run += 1) {
       let query = '';
-      const length = 1 + (next() % 12);
-      for (let i = 0; i < length; i += 1) query += alphabet[next() % alphabet.length] as string;
+      const length = 1 + next(12);
+      usedLengths.add(length);
+      for (let i = 0; i < length; i += 1) {
+        const index = next(alphabet.length);
+        usedElements.add(index);
+        query += alphabet[index] as string;
+      }
       const result = buildFtsQuery(query, { stem: (w) => `${w}1`, implicitPrefix: run % 2 === 0 });
       if (result.match !== null) expect(isSafeExpression(result.match), query).toBe(true);
       if (result.tri !== null) expect(isSafeExpression(result.tri), query).toBe(true);
     }
+    // The generator really reaches every alphabet element (space and a-circumflex included) and
+    // every length 1..12.
+    expect(usedElements.size).toBe(alphabet.length);
+    expect(usedLengths.size).toBe(12);
   });
 });
 
@@ -280,6 +293,30 @@ describe('buildFtsQuery: length limit (K-44 item 6)', () => {
     const a = buildFtsQuery('a'.repeat(1025));
     a.ignored.push('x');
     expect(buildFtsQuery('a'.repeat(1025)).ignored).toEqual([]);
+  });
+});
+
+describe('buildFtsQuery: phrase has no stem branch (Arama 3 item 5)', () => {
+  test('a quoted phrase is exactly the wide phrase, however stems are offered', () => {
+    const asked: string[] = [];
+    const result = buildFtsQuery('"nur ışığı"', {
+      stem: (narrow) => {
+        asked.push(narrow);
+        return { nur: 'G3', ışığı: 'G4', 'nur ışığı': 'G5' }[narrow];
+      },
+    });
+    expect(result.match).toBe('tr_wide : "nur isigi"');
+    expect(result.match).not.toContain('tr_stem');
+    expect(asked).toEqual([]);
+  });
+
+  test('the same words outside quotes do get the stem branch', () => {
+    const result = buildFtsQuery('nur ışığı', {
+      stem: (narrow) => ({ nur: 'G3', ışığı: 'G4' })[narrow as 'nur' | 'ışığı'],
+    });
+    expect(result.match).toBe(
+      '(tr_wide : "nur" OR tr_stem : "G3") AND (tr_wide : "isigi" OR tr_stem : "G4")',
+    );
   });
 });
 
