@@ -65,7 +65,13 @@ public class S3PackStoreTests(SeaweedFixture seaweed)
 
             await store.PutPackAsync($"{StorageTestKit.NewPrefix()}/{PackKeyTail}", file.Path, StorageTestKit.Sha256Hex(bytes), ct);
 
-            // Windows acik dosyayi silmez: akis kapanmadiysa Dispose IOException verir.
+            // Akis kapanmadiysa dosya baska bir akisla ozel (FileShare.None) acilamaz: .NET paylasim kipini Windows'ta isletim sistemiyle,
+            // Unix'te danisma kilidiyle (flock) uygular. Yalniz silmeyi denemek Linux'ta kanit vermezdi (acik dosya orada silinebilir).
+            using (FileStream exclusive = new(file.Path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            {
+                Assert.Equal(bytes.Length, exclusive.Length);
+            }
+
             file.Dispose();
             Assert.False(File.Exists(file.Path));
         });
@@ -409,6 +415,14 @@ public class S3PackStoreTests(SeaweedFixture seaweed)
         string headAfterPut = await Outcome(async () => Describe(await store.HeadAsync("a/manifest.json", ct)));
 
         Note($"Measure: never-created bucket HEAD -> {head}; GET -> {get}; LIST -> {list}; PUT -> {put}; HEAD after PUT -> {headAfterPut}");
+
+        // Olculen davranis SeaweedFS 4.48 icin sabitlenir (surum yukseltmesinde degisirse test haber verir): okumalar kova yoksa NotFound (HEAD null),
+        // PUT kovayi kendiliginden olusturur ve ardindan nesne gorunur.
+        Assert.Equal("ok, null", head);
+        Assert.Equal("StorageException(NotFound)", get);
+        Assert.Equal("StorageException(NotFound)", list);
+        Assert.Equal("ok", put);
+        Assert.Equal("ok, found", headAfterPut);
     }
 
     private static string Describe(object? result) => result is null ? "ok, null" : "ok, found";
@@ -535,6 +549,12 @@ public class S3PackStoreTests(SeaweedFixture seaweed)
             {
                 string result = await TryPutAsync(client, endpoint, $"{prefix}/{mode}/{kind}", bytes, kind, ct);
                 Note($"Measure: {mode} PutObject {kind} -> {result}");
+
+                // Urunun kullandigi mod (WHEN_REQUIRED) ve gercekten kullandigi govde turleri (aranabilir akis, ContentBody) saglama toplami sorunu cikarmamali.
+                if (mode == RequestChecksumCalculation.WHEN_REQUIRED && kind != "non-seekable-stream")
+                {
+                    Assert.StartsWith("OK (HTTP 200, readback matches)", result, StringComparison.Ordinal);
+                }
             }
         }
 

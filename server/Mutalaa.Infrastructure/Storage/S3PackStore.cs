@@ -82,18 +82,24 @@ public sealed class S3PackStore : IPackStore, IDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
         RequireSha256(sha256);
 
+        long size = new FileInfo(filePath).Length;
+
         StoredObject? existing = await HeadAsync(key, cancellationToken);
         if (existing is not null)
         {
             if (existing.Sha256 is not null && string.Equals(existing.Sha256, sha256, StringComparison.OrdinalIgnoreCase))
             {
+                // Ust veri tek basina yetmez: onceki bozuk bir yukleme (Integrity) sha256 ust verisini dogru, boyutu yanlis birakmis olabilir; o nesne "ayni" sayilmaz.
+                if (existing.Size != size)
+                {
+                    throw new StorageException(StorageFailure.Integrity, $"Depodaki {key} ayni sha256 ust verisini tasiyor ama boyutu uyusmuyor (beklenen: {size}, depoda: {existing.Size}).");
+                }
+
                 return PutResult.SkippedSame;
             }
 
             throw new ObjectConflictException(key, existing.Sha256, sha256);
         }
-
-        long size = new FileInfo(filePath).Length;
 
         // Akis acik kalinca Windows dosyayi kilitler; using ile PUT biter bitmez kapanir.
         FileStream stream = new(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 81920, FileOptions.Asynchronous | FileOptions.SequentialScan);
