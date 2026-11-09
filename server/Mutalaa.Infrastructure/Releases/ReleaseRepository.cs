@@ -1,3 +1,4 @@
+using System.Data;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -29,12 +30,42 @@ public sealed class ReleaseConflictException : Exception
 }
 
 /// <summary>
+/// <see cref="ReleaseRepository.CreateAsync(NewRelease, bool, CancellationToken)"/> <c>requireNoOpen</c> ile cagrildi ve derleme turunde acik
+/// (hazirlaniyor ya da dogrulandi) bir satir var; yeni satir acilmadi. <see cref="OpenRelease"/> mevcut acik satirdir (API 409 ile bildirir).
+/// </summary>
+public sealed class ReleaseInProgressException : Exception
+{
+    public ReleaseInProgressException(Release openRelease)
+        : base(FormatMessage(openRelease))
+    {
+        OpenRelease = openRelease;
+    }
+
+    /// <summary>Derleme turunde halen acik olan satir.</summary>
+    public Release OpenRelease { get; }
+
+    private static string FormatMessage(Release? row)
+    {
+        ArgumentNullException.ThrowIfNull(row);
+        return string.Create(
+            CultureInfo.InvariantCulture,
+            $"Derleme turunde acik yayin var: {row.Derleme.ToLabel()} {row.Surum} (durum: {row.Durum.ToLabel()}, id: {row.Id}).");
+    }
+}
+
+/// <summary>
 /// icerik.release satiri erisimi (Backend API 10.6; Yayinlayici ve A14). Her yontem kisa omurlu kendi baglamini (DI kapsami) acar: uzun
 /// derleme sirasinda acik islem ya da baglam tutulmaz. Durum gecisleri <see cref="ReleaseTransitions"/> kuralina baglidir; gecersiz gecis
 /// InvalidOperationException atar. Donen satirlar izlenmez (kopya); degisiklik icin ilgili Mark yontemi cagrilir.
 /// </summary>
 public sealed class ReleaseRepository(IServiceScopeFactory scopes, TimeProvider? clock = null)
 {
+    /// <summary>
+    /// <see cref="CreateAsync(NewRelease, bool, CancellationToken)"/> danisma kilidi anahtari: "MUTALAA2" (ASCII) 64 bit tam sayi olarak.
+    /// Yayinlayici kilidinden ("MUTALAA1", 0x4D5554414C414131) ayridir: o oturum boyunca tutulur, bu yalniz satir acma islemi boyunca.
+    /// </summary>
+    public const long CreateLockKey = 0x4D5554414C414132L;
+
     private const int MaxAssignAttempts = 3;
 
     private readonly TimeProvider _clock = clock ?? TimeProvider.System;
@@ -93,10 +124,20 @@ public sealed class ReleaseRepository(IServiceScopeFactory scopes, TimeProvider?
     }
 
     /// <summary>
+    /// Satiri <c>hazirlaniyor</c> olarak acar (<see cref="CreateAsync(NewRelease, bool, CancellationToken)"/>, <c>requireNoOpen = false</c>).
+    /// </summary>
+    public Task<Release> CreateAsync(NewRelease request, CancellationToken cancellationToken) =>
+        CreateAsync(request, requireNoOpen: false, cancellationToken);
+
+    /// <summary>
     /// Satiri <c>hazirlaniyor</c> olarak acar. Surum verilmisse ve o (surum, derleme) icin basarisiz olmayan satir varsa
     /// <see cref="ReleaseConflictException"/>; verilmemisse atama yarisinda (tekil dizin ihlali) birkac kez yeniden dener.
+    /// Her deneme kendi <c>ReadCommitted</c> isleminde <c>pg_advisory_xact_lock</c> alir (<see cref="CreateLockKey"/>; Yayinlayici kilidinden
+    /// "MUTALAA1" Yayinlayici kilidinden farkli): satir acan cagrilar sirayla calisir. <paramref name="requireNoOpen"/> true ise ayni
+    /// islemde derleme turunde acik (hazirlaniyor ya da dogrulandi) satir aranir; varsa <see cref="ReleaseInProgressException"/> atilir ve satir
+    /// acilmaz.
     /// </summary>
-    public async Task<Release> CreateAsync(NewRelease request, CancellationToken cancellationToken)
+    public async Task<Release> CreateAsync(NewRelease request, bool requireNoOpen, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         if (!ReleaseRequests.IsValid(request.Talep))
@@ -113,6 +154,20 @@ public sealed class ReleaseRepository(IServiceScopeFactory scopes, TimeProvider?
         {
             await using AsyncServiceScope scope = scopes.CreateAsyncScope();
             IcerikDbContext db = scope.ServiceProvider.GetRequiredService<IcerikDbContext>();
+            await using IDbContextTransaction transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+            await AcquireCreateLockAsync(db, transaction, cancellationToken);
+
+            if (requireNoOpen)
+            {
+                Release? open = await db.Releases.AsNoTracking()
+                    .Where(r => r.Derleme == request.Flavor && (r.Durum == ReleaseStatus.Hazirlaniyor || r.Durum == ReleaseStatus.Dogrulandi))
+                    .OrderByDescending(r => r.Id)
+                    .FirstOrDefaultAsync(cancellationToken);
+                if (open is not null)
+                {
+                    throw new ReleaseInProgressException(open);
+                }
+            }
 
             string surum = request.Surum ?? (await NextVersionAsync(db, cancellationToken)).ToString();
             Release row = new()
@@ -130,10 +185,12 @@ public sealed class ReleaseRepository(IServiceScopeFactory scopes, TimeProvider?
             try
             {
                 await db.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
                 return row;
             }
             catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
             {
+                // Islem geri alinir (using); yeniden denemede yeni islem ve yeni kapsam acilir.
                 if (request.Surum is not null)
                 {
                     throw new ReleaseConflictException($"Surum {request.Surum} ({request.Flavor.ToLabel()}) icin basarisiz olmayan bir yayin zaten var.");
@@ -197,6 +254,15 @@ public sealed class ReleaseRepository(IServiceScopeFactory scopes, TimeProvider?
         Release? row = id is null ? null : await db.Releases.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id.Value, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return row;
+    }
+
+    private static async Task AcquireCreateLockAsync(IcerikDbContext db, IDbContextTransaction transaction, CancellationToken cancellationToken)
+    {
+        await using NpgsqlCommand command = (NpgsqlCommand)db.Database.GetDbConnection().CreateCommand();
+        command.Transaction = (NpgsqlTransaction)transaction.GetDbTransaction();
+        command.CommandText = "SELECT pg_advisory_xact_lock(@key)";
+        command.Parameters.AddWithValue("key", CreateLockKey);
+        await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
     private async Task UpdateAsync(int id, ReleaseStatus target, Action<Release> mutate, CancellationToken cancellationToken)
