@@ -1,6 +1,6 @@
 # A10 · Tanzil alımı ve değişmezlik testleri
 
-> **Sürüm:** 1.3 · **Tarih:** 7 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-39](../../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
+> **Sürüm:** 1.4 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-17](../../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-39](../../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A05](./A05-arama-normalizasyonu.md) · [A06](./A06-kaynak-kayitlari-ve-enumlar.md) · [A07](./A07-editoryal-veritabani.md) · **İnsan adımı:** —
 > **Ajanlar:** `hat-gelistirici` · `metin-denetcisi` · `arastirmaci` · `test-yazari` · `inceleyici` · **Beceriler:** `icerik-hatti` · `metin-butunlugu` · `capa-gramer` · `windows-sorun` · **Tahmini oturum:** 2–3
 > **Başlat:** `/asama A10`
@@ -227,7 +227,7 @@ Son tur `inceleyici` ve `metin-denetcisi` ile yapıldı; kritik bulgu yok.
 - **Kullanıcı:** `pipeline/.env` içindeki `MUTALAA_DB_URL` parolası yerel konteynerinkiyle uyuşmuyor (psycopg `28P01`). Düzeltme `windows-sorun` becerisindeki `ALTER USER` adımıdır; ardından `scripts/nightly.ps1 -ExportPg` yerel veritabanına yükler. Ölçütler 4, 5 ve 11 o zamana dek geçici konteynerde kanıtlıdır.
 - **A11:** Tanzil örneği beş kutulu kopyaydı (1.409.970 bayt, 82.459 belirteç); seçilen dosya 1.396.087 bayt, 82.260 belirteç ve `rub` işaretsizdir, A11 sayılarını bu dosyayla yeniden doğrular. 95. ve 97. surede Uthmani'nin ilk dört belirteci 1:1'dekinden farklı yazılmıştır, A11 inceler.
 - **A12:** Simple Clean'in pakette tutulup tutulmayacağı (K-39 madde 1).
-- **A13:** `core` paketinde Tanzil bildirimi ve `bildirim_sha256` eşitliği (test 6), terfide içerik özeti eşitliği (test 8, P-14); QA günlüğünde kapı adı (`qa_kapi` olayı yalnız sayı taşır); rapor ve manifest yazımında `os.replace` için yeniden deneme (OneDrive `EPERM`).
+- **A13:** `core` paketinde Tanzil bildirimi ve `bildirim_sha256` eşitliği (test 6), terfide içerik özeti eşitliği (test 8, P-14). Çözüldü (2026-11-09, A13): QA günlüğünde kapı adı (`qa_kapi` olayı artık `kapi` alanını taşır: `Gunluk.yaz(..., kapi=...)`; [İçerik hattı](../../04-icerik/02-icerik-hatti.md) §7); rapor ve manifest yazımında `os.replace` için yeniden deneme (OneDrive `EPERM`: `lineage.atomik_degistir`, en çok 3 deneme; İçerik hattı §7). Test 6 ve test 8 A13'te kalır.
 - **A24:** okuyucunun metin seçicisi testi (test 5) ve QA raporundaki besmele gözlemi.
 - **Bilinçli Tanzil sürüm geçişi:** kilit `/karar` ile güncellenip `content_hash` değişirse yalnız `anchor`'ı yeniden koşmak G-CAP'i geçirmez ([İçerik hattı](../../04-icerik/02-icerik-hatti.md) §13 madde 6); gerektiğinde `/karar` ile tasarlanır.
 
