@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Mutalaa.Api.Problems;
+using Mutalaa.Api.Validation;
 using Mutalaa.Infrastructure.Identity;
 
 namespace Mutalaa.Api.Endpoints;
@@ -56,12 +57,18 @@ public static class AuthEndpoints
         SignInManager<EditorUser> signIn,
         ILoggerFactory loggerFactory)
     {
+        // NUL PostgreSQL sorgu parametresi olamaz (500 yerine 400).
+        Dictionary<string, string[]> errors = new(StringComparer.Ordinal);
+        if (!WritableText.Check(errors, "email", request.Email))
+        {
+            return ApiProblem.Validation(errors);
+        }
+
         ILogger logger = loggerFactory.CreateLogger(LogCategory);
         EditorUser? user = await users.FindByEmailAsync(request.Email.Trim());
         if (user is null)
         {
-            (PasswordHasher<EditorUser> hasher, EditorUser dummyUser, string hash) = Dummy.Value;
-            hasher.VerifyHashedPassword(dummyUser, hash, request.Parola);
+            VerifyDummyPassword(request.Parola);
             logger.LogInformation("Oturum acma reddedildi ({Reason}).", "kullanici-yok");
             return Rejected();
         }
@@ -70,12 +77,25 @@ public static class AuthEndpoints
         SignInResult result = await signIn.CheckPasswordSignInAsync(user, request.Parola, lockoutOnFailure: true);
         if (!result.Succeeded)
         {
+            if (result.IsLockedOut)
+            {
+                // Kilitli hesapta Identity parolayi dogrulamadan doner; kullanici yok yoluyla ayni maliyet icin sahte dogrulama yapilir.
+                VerifyDummyPassword(request.Parola);
+            }
+
             logger.LogInformation("Oturum acma reddedildi ({Reason}).", result.IsLockedOut ? "kilitli" : "parola");
             return Rejected();
         }
 
         await signIn.SignInAsync(user, isPersistent: false);
         return TypedResults.Ok(await SessionAsync(users, user));
+    }
+
+    /// <summary>Kullanici yok ya da hesap kilitli: yanlis parola yoluyla ayni maliyetli dogrulama (zamanlama farkindan durum sizmasin).</summary>
+    private static void VerifyDummyPassword(string parola)
+    {
+        (PasswordHasher<EditorUser> hasher, EditorUser dummyUser, string hash) = Dummy.Value;
+        hasher.VerifyHashedPassword(dummyUser, hash, parola);
     }
 
     private static async Task<IResult> LogoutAsync(SignInManager<EditorUser> signIn)

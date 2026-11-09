@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Mutalaa.Api.Auth;
 using Mutalaa.Api.Problems;
+using Mutalaa.Api.Validation;
 using Mutalaa.Infrastructure.Identity;
 using Mutalaa.Infrastructure.Persistence;
 
@@ -88,6 +89,13 @@ public static class UserEndpoints
         if (RoleError(request.Roller) is { } invalid)
         {
             return invalid;
+        }
+
+        // NUL PostgreSQL sorgu parametresi olamaz (500 yerine 400).
+        Dictionary<string, string[]> emailErrors = new(StringComparer.Ordinal);
+        if (!WritableText.Check(emailErrors, "email", request.Email))
+        {
+            return ApiProblem.Validation(emailErrors);
         }
 
         await EnsureRolesAsync(roles);
@@ -196,6 +204,13 @@ public static class UserEndpoints
 
     private static IResult? RoleError(string[] roles)
     {
+        // Rolsuz kullanici Editor politikasi yuzunden logout ve me ucunu bile kullanamaz; en az bir rol gerekir.
+        if (roles.Length == 0)
+        {
+            return ApiProblem.Validation(
+                new Dictionary<string, string[]> { ["roller"] = [$"roller en az bir rol içermeli. İzin verilenler: {string.Join(", ", AllowedRoles)}."] });
+        }
+
         string[] unknown = [.. roles.Where(r => !AllowedRoles.Contains(r, StringComparer.Ordinal)).Distinct(StringComparer.Ordinal)];
         return unknown.Length == 0
             ? null
