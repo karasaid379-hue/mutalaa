@@ -2,7 +2,22 @@
 
   <PropertyGroup>
     <UserSecretsId>2176b5d4-595d-413a-9814-642015656abf</UserSecretsId>
+    <!-- dotnet run/watch calisma dizini depo koku: goreli data/... yollari kokten cozulur. -->
+    <RunWorkingDirectory>$(MSBuildProjectDirectory)/../..</RunWorkingDirectory>
+    <!-- OpenAPI belgesi (Microsoft.Extensions.ApiDescription.Server): server/Mutalaa.Api/openapi/v1.json. Yalniz Release derlemesinde uretilir. -->
+    <OpenApiDocumentsDirectory>openapi</OpenApiDocumentsDirectory>
+    <OpenApiGenerateDocumentsOptions>--file-name v1 --openapi-version OpenApi3_1</OpenApiGenerateDocumentsOptions>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' != 'Release'">
+    <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Uretilen OpenAPI belgesi depoda durur; cikti ve yayin klasorune kopyalanmaz. -->
+    <Content Remove="openapi\**" />
+    <None Include="openapi\**" CopyToOutputDirectory="Never" />
+  </ItemGroup>
 
   <ItemGroup>
     <!-- dotnet ef tasarim zamani araci; Api ciktisinda yer alir. -->
@@ -10,6 +25,14 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Scalar.AspNetCore" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
   </ItemGroup>
 
   <ItemGroup>

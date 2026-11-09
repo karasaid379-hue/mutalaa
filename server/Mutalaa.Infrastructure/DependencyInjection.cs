@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,12 +34,12 @@ public static class DependencyInjection
         return services;
     }
 
-    /// <summary>Editor kimligi (yalniz Api): parola en az 12 karakter, 5 hatali denemede 15 dakika kilit (K-37).</summary>
-    public static IServiceCollection AddEditorIdentity(this IServiceCollection services)
+    /// <summary>Editor kimligi (yalniz Api): parola en az 12 karakter, 5 hatali denemede 15 dakika kilit (K-37). Api SignInManager ve cerezi IdentityBuilder uzerinden ekler.</summary>
+    public static IdentityBuilder AddEditorIdentity(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services
+        return services
             .AddIdentityCore<EditorUser>(o =>
             {
                 o.User.RequireUniqueEmail = true;
@@ -52,8 +53,7 @@ public static class DependencyInjection
                 o.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
                 o.Lockout.AllowedForNewUsers = true;
             })
-            .AddRoles<Microsoft.AspNetCore.Identity.IdentityRole>()
+            .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<IcerikDbContext>();
-        return services;
     }
 }
