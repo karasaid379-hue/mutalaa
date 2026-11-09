@@ -182,13 +182,28 @@ public static class ReviewEndpoints
 
         RowVersion.Expect(entry, expected);
 
-        PreparedDecision prepared = await ReviewDecider.ApplyAsync(
-            db,
-            review,
-            new DecisionInput(approve, body.Duzenlenen, body.Gerekce),
-            Actor(user),
-            Now(http),
-            cancellationToken);
+        PreparedDecision prepared;
+        try
+        {
+            prepared = await ReviewDecider.ApplyAsync(
+                db,
+                review,
+                new DecisionInput(approve, body.Duzenlenen, body.Gerekce),
+                Actor(user),
+                Now(http),
+                cancellationToken);
+        }
+        catch (DomainException)
+        {
+            // Inceleme satiri okunduktan sonra baska bir karar commit edildi (hedef artik onceki karari yansitiyor): kaybeden istek
+            // bayat ETag ile gelmistir, Domain kuralinin 409/422'si degil 412 doner.
+            if ((await ReviewChangedSinceAsync(db, [(review.Id, expected)], cancellationToken)).Length > 0)
+            {
+                return Stale();
+            }
+
+            throw;
+        }
 
         try
         {
@@ -306,8 +321,21 @@ public static class ReviewEndpoints
                     now,
                     cancellationToken)));
             }
-            catch (DomainException e) when (DomainExceptionHandler.TryGetStatus(e.Code, out int status))
+            catch (DomainException e)
             {
+                // Baska bir karar araya girdiyse (surum degisti) kaybeden toplu istek 412 alir; yoksa Domain hatasi kodu ile doner.
+                (long Id, uint Xmin)[] sent = [.. items.Select(i => (i.Id, i.Xmin))];
+                long[] changed = await ReviewChangedSinceAsync(db, sent, cancellationToken);
+                if (changed.Length > 0)
+                {
+                    return Stale(changed);
+                }
+
+                if (!DomainExceptionHandler.TryGetStatus(e.Code, out int status))
+                {
+                    throw;
+                }
+
                 // Hicbir sey kaydedilmedi; baglam atilir. Hata kodu Domain'in kodudur, hangi kayit oldugu uzantida.
                 return ApiProblem.Create(
                     status,
@@ -344,6 +372,24 @@ public static class ReviewEndpoints
             p.Prepared.Review.Eylem,
             RowVersion.Get(db.Entry(p.Prepared.Review))))];
         return TypedResults.Ok(new BulkDecisionResult(results));
+    }
+
+    /// <summary>
+    /// Istemcinin okudugu surumden beri veritabaninda degisen inceleme satirlari (kimlik listesi). Yeni, izlenmeyen bir okuma yapar:
+    /// hedefi sonradan okuyan istek, baska karar commit edildikten sonra Domain hatasi alirsa 412'yi dogru kapatmak icin kullanilir.
+    /// </summary>
+    private static async Task<long[]> ReviewChangedSinceAsync(
+        IcerikDbContext db,
+        IReadOnlyCollection<(long Id, uint Xmin)> expected,
+        CancellationToken cancellationToken)
+    {
+        long[] ids = [.. expected.Select(e => e.Id)];
+        var rows = await db.Reviews.AsNoTracking()
+            .Where(r => ids.Contains(r.Id))
+            .Select(r => new { r.Id, Xmin = EF.Property<uint>(r, RowVersion.Name) })
+            .ToListAsync(cancellationToken);
+        Dictionary<long, uint> current = rows.ToDictionary(r => r.Id, r => r.Xmin);
+        return [.. expected.Where(e => !current.TryGetValue(e.Id, out uint now) || now != e.Xmin).Select(e => e.Id).Order()];
     }
 
     private static int IndexOfNull(IReadOnlyList<BulkDecisionItem> items)
