@@ -9,7 +9,7 @@ internal sealed class LemmaGlossConfiguration : IEntityTypeConfiguration<LemmaGl
 {
     public void Configure(EntityTypeBuilder<LemmaGloss> b)
     {
-        b.ToTable("lemma_gloss");
+        b.ToTable("lemma_gloss", t => t.HasCheckConstraint("lemma_gloss_content_hash_check", "content_hash ~ '^[0-9a-f]{64}$'"));
         b.HasKey(x => x.LemmaId);
         b.Property(x => x.LemmaId).ValueGeneratedNever();
         b.Property(x => x.KuranAnlamlari).HasColumnType("jsonb").HasAlwaysWrittenDefault("[]");

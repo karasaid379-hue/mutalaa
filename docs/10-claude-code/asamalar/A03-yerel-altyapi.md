@@ -1,6 +1,6 @@
 # A03 · Yerel altyapı: Docker Compose, PostgreSQL 18, SeaweedFS
 
-> **Sürüm:** 1.2 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-11](../../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-20](../../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
+> **Sürüm:** 1.3 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-11](../../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-20](../../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
 > **Faz:** 0 · Hazırlık · **Önkoşul:** [A02](./A02-tek-depo-iskeleti.md) · **İnsan adımı:** [İ-01](../06-insan-adimlari.md) (Docker Desktop)
 > **Ajanlar:** `sunucu-gelistirici` · `arastirmaci` · `inceleyici` · **Beceriler:** `windows-sorun` · **Tahmini oturum:** 1–2
 > **Başlat:** `/asama A03`
@@ -22,7 +22,7 @@ Yerel altyapı tek komutla kalkar: `postgres:18` ve SeaweedFS'in S3 arayüzü (K
 - PostgreSQL ve SeaweedFS doğrulamaları; yedek gidiş-dönüş denemesi.
 
 **Yapılmaz**
-- API, Yayınlayıcı ve editör Dockerfile'ları (A14, A13, A15). `app` profili bu dosyalar gelene kadar başlatılmaz; yalnız yapılandırması denetlenir.
+- API, Yayınlayıcı ve editör Dockerfile'ları (API ve Yayınlayıcı A14, editör A15; Yayınlayıcı Dockerfile'ı A13'ten A14'e devredildi, 9 Kasım 2026). `app` profili bu dosyalar gelene kadar başlatılmaz; yalnız yapılandırması denetlenir.
 - Göçler ve `seed` (A07). `apps/mobile/.env.example` (A21). Paket yayını ve manifest (A13).
 - Günlük yedek görevinin Windows Görev Zamanlayıcı'ya kaydı: sistem ayarıdır, kullanıcı yapar (§9); aşama yalnız betiği hazırlar.
 

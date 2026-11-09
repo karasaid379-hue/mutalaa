@@ -1,4 +1,4 @@
--- Metin paketleri: core, tefsir-elmalili, hadis-*, risale-{kitap} (İçerik paketleri §3.2).
+-- Metin paketleri: core, tefsir-elmalili, hadis-*, test-* fikstürleri, risale-{kitap} (İçerik paketleri §3.2).
 CREATE TABLE unit (
   rowid         INTEGER PRIMARY KEY,         -- yalnız bu paket sürümünde geçerli
   anchor        TEXT NOT NULL UNIQUE,        -- kalıcı adres; kullanıcı verisi buna bağlanır
@@ -12,6 +12,7 @@ CREATE TABLE unit (
   marks TEXT, sentences TEXT, attrs TEXT,    -- JSON
   content_hash  TEXT NOT NULL,
   status        TEXT NOT NULL DEFAULT 'etkin',
+  approved      INTEGER NOT NULL DEFAULT 1,  -- 1: metin_durumu = onayli; 0: "doğrulanmamış" rozeti (K-46 madde 5)
   successors    TEXT                         -- JSON yönlendirme
 );
 CREATE INDEX unit_ord    ON unit(ord);

@@ -1,7 +1,7 @@
 # Teknoloji yığını
 
-> **Sürüm:** 1.9 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-34](../00-ozet/02-karar-defteri.md#k-34--typescript-tek-sürüm-60x) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
+> **Sürüm:** 1.11 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json) · [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-34](../00-ozet/02-karar-defteri.md#k-34--typescript-tek-sürüm-60x) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu dosya her katmanın teknolojisini, sürümünü, seçilme nedenini ve reddedilen seçenekleri listeler. Sürüm ve fiyatlar 16 Ekim 2026 araştırmasından gelir ([araştırma raporu](../09-kaynakca.md), araştırma notu 05). Kaynağı olmayan sürüm numaraları "Doğrulanacak" diye işaretlidir ve kurulum günü kilit dosyasına yazılır.
 
@@ -54,7 +54,8 @@ Bu bölüm her uygulamanın dış bağımlılıklarını listeler. Kesin sürüm
 | `zustand`, `@tanstack/react-query`, `react-native-mmkv` | Durum | — |
 | `@sentry/react-native` | Hata izleme | — |
 | `zod` | Manifest şema doğrulaması (öneri) | Şema `packages/content-schema` içinde |
-| `@noble/ed25519` | Manifest imzasını doğrulama (öneri) | İmzasız manifest reddedilir; kitaplık seçimi Doğrulanacak ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) IP-7) |
+| `@noble/ed25519` | Manifest imzasını doğrulama (A23) | 3.2.0. İmzasız manifest reddedilir; Ed25519 ve RFC 8785 kararı [K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json) (IP-7 çözüldü) |
+| `canonicalize` | Manifestin RFC 8785 (JCS) baytları (A23) | 5.1.0; .NET tarafıyla aynı baytları üretir ([K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json)) |
 | `jest-expo`, `@testing-library/react-native` | Test | — |
 
 ### 2.2 API ve altyapı (`server/Mutalaa.Api`, `server/Mutalaa.Infrastructure`)
@@ -82,13 +83,19 @@ Test çalıştırıcısı ([K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-
 
 ### 2.3 Yayınlayıcı (`server/Mutalaa.Publisher`)
 
-| Paket | Görev | Not |
+Sürümler `server/Directory.Packages.props` içinde sabittir. Sürümler NuGet kayıtlarından okundu (9 Kasım 2026); JCS, NSec ve SQLite ölçümleri A13.0'da yapıldı (.NET 10.0, Windows).
+
+| Paket | Görev | Sürüm ve durum |
 |---|---|---|
-| `Microsoft.Data.Sqlite` (SQLitePCLRaw e_sqlite3 ile) | Paket yazımı | FTS5 derleme seçeneği açılışta `PRAGMA compile_options` ile denetlenir |
-| `AWSSDK.S3` | S3 uyumlu depoya yükleme | S3 uyumlu depolarda bütünlük sağlaması ayarı Doğrulanacak |
-| `System.CommandLine` | Komut satırı | Kararlı sürüm durumu Doğrulanacak |
-| `NSec.Cryptography` ya da BouncyCastle | Manifest imzası (Ed25519) | Algoritma ve kitaplık Doğrulanacak |
-| `JsonSchema.Net` | Testte manifest şema doğrulaması | Doğrulanacak |
+| `Microsoft.Data.Sqlite` (SQLitePCLRaw e_sqlite3 ile) | Paket yazımı | 10.0.14. `ENABLE_FTS5` derleme seçeneği ölçüldü ve var; yine de açılışta `PRAGMA compile_options` ile denetlenir |
+| `AWSSDK.S3` | S3 uyumlu depoya yükleme | 4.0.104.11 (`AWSSDK.Core` [4.0.102.19, 5.0.0) ile gelir). Çözüldü (9 Kasım 2026): SeaweedFS 4.48 ile varsayılan (`WHEN_SUPPORTED`) ve `WHEN_REQUIRED` bütünlük sağlaması ikisi de HTTP'de çalıştı; ürün `WHEN_REQUIRED` kullanır (https, gerçek S3 ve büyük gövde sınanmadı). Ayrıntı: [A13](../10-claude-code/asamalar/A13-yayinlayici-ve-kalite-kapisi.md) Tedarik › SeaweedFS ölçüm sonuçları |
+| `System.CommandLine` | Komut satırı | 2.0.14 (kararlı hat; [K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json) madde 6) |
+| `Microsoft.Extensions.Hosting` | .NET genel ana bilgisayarı (`Host.CreateApplicationBuilder`; yapılandırma, kullanıcı sırları, günlük) | 10.0.14 |
+| `NSec.Cryptography` | Manifest imzası (Ed25519) | 26.4.0. Ölçüm: RFC 8032 §7.1 TEST 1 açık anahtarını ve imzasını bayt bayt üretti; BouncyCastle ile aynı imzayı verdi. Yedek: `BouncyCastle.Cryptography` 2.7.0 ([K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json)) |
+| `MackySoft.Json.Canonicalization` | Manifestin RFC 8785 (JCS) baytları | 0.1.0. Ölçüm: `cyberphone/json-canonicalization` @32a4819 altı girdi/çıktı çifti bayt bayt aynı. Yedek: `Jcs.Net` 0.1.1, aynı altı çiftte aynı çıktı ([K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json)) |
+| `JsonSchema.Net` | Manifest şema doğrulaması (`verify` komutu ve testler) | 9.6.0 |
+
+NSec yerel `libsodium` kitaplığını yükler; Linux CI'da yüklenmesi ilk koşuda görülür, yüklenmezse yedek BouncyCastle'dır.
 
 ### 2.4 İçerik hattı (`pipeline/`)
 

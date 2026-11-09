@@ -257,6 +257,8 @@ namespace Mutalaa.Infrastructure.Migrations
                     b.ToTable("audio_timing", "icerik", t =>
                         {
                             t.HasCheckConstraint("audio_timing_check", "start_ms < end_ms");
+
+                            t.HasCheckConstraint("audio_timing_file_sha256_check", "file_sha256 ~ '^[0-9a-f]{64}$'");
                         });
                 });
 
@@ -532,7 +534,10 @@ namespace Mutalaa.Infrastructure.Migrations
                     b.HasKey("LemmaId")
                         .HasName("lemma_gloss_pkey");
 
-                    b.ToTable("lemma_gloss", "icerik");
+                    b.ToTable("lemma_gloss", "icerik", t =>
+                        {
+                            t.HasCheckConstraint("lemma_gloss_content_hash_check", "content_hash ~ '^[0-9a-f]{64}$'");
+                        });
                 });
 
             modelBuilder.Entity("Mutalaa.Domain.Content.PageMap", b =>
@@ -983,7 +988,10 @@ namespace Mutalaa.Infrastructure.Migrations
                     b.HasKey("Slug")
                         .HasName("source_pkey");
 
-                    b.ToTable("source", "icerik");
+                    b.ToTable("source", "icerik", t =>
+                        {
+                            t.HasCheckConstraint("source_dosya_sha256_check", "dosya_sha256 ~ '^[0-9a-f]{64}$'");
+                        });
                 });
 
             modelBuilder.Entity("Mutalaa.Domain.Content.SurahAlias", b =>
@@ -1494,9 +1502,17 @@ namespace Mutalaa.Infrastructure.Migrations
                         .HasDefaultValue("{}")
                         .HasColumnName("kapi_raporu");
 
+                    b.Property<int?>("KaynakReleaseId")
+                        .HasColumnType("integer")
+                        .HasColumnName("kaynak_release_id");
+
                     b.Property<string>("Manifest")
                         .HasColumnType("jsonb")
                         .HasColumnName("manifest");
+
+                    b.Property<string>("Notlar")
+                        .HasColumnType("text")
+                        .HasColumnName("notlar");
 
                     b.Property<string>("Olusturan")
                         .IsRequired()
@@ -1509,10 +1525,20 @@ namespace Mutalaa.Infrastructure.Migrations
                         .HasDefaultValue("{}")
                         .HasColumnName("ozetler");
 
+                    b.PrimitiveCollection<string[]>("Paketler")
+                        .HasColumnType("text[]")
+                        .HasColumnName("paketler");
+
                     b.Property<string>("Surum")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("surum");
+
+                    b.Property<string>("Talep")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasDefaultValue("yayin")
+                        .HasColumnName("talep");
 
                     b.Property<DateTime?>("YayinlandiAt")
                         .HasColumnType("timestamp with time zone")
@@ -1529,9 +1555,13 @@ namespace Mutalaa.Infrastructure.Migrations
 
                     b.HasIndex("Surum", "Derleme")
                         .IsUnique()
-                        .HasDatabaseName("release_surum_derleme_key");
+                        .HasDatabaseName("release_surum_derleme_key")
+                        .HasFilter("durum <> 'basarisiz'::icerik.surum_durumu");
 
-                    b.ToTable("release", "icerik");
+                    b.ToTable("release", "icerik", t =>
+                        {
+                            t.HasCheckConstraint("release_talep_check", "talep IN ('yayin','terfi','geri_alma')");
+                        });
                 });
 
             modelBuilder.Entity("Mutalaa.Domain.Reviews.Review", b =>
@@ -1941,6 +1971,15 @@ namespace Mutalaa.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("unit_source_id_fkey");
+                });
+
+            modelBuilder.Entity("Mutalaa.Domain.Releases.Release", b =>
+                {
+                    b.HasOne("Mutalaa.Domain.Releases.Release", null)
+                        .WithMany()
+                        .HasForeignKey("KaynakReleaseId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("release_kaynak_release_id_fkey");
                 });
 
             modelBuilder.Entity("Mutalaa.Domain.Reviews.Review", b =>

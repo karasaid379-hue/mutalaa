@@ -169,6 +169,7 @@ public partial class ModelNamingTests
             "review_hedef_tablo_check", "page_map_line_type_check", "pipeline_run_durum_check",
             "unit_check", "quran_word_check", "tr_root_index_check", "ayah_box_check", "audio_timing_check",
             "review_yz_kaydi_check", "quran_marker_kind_check", "quran_marker_secde_turu_check", "quran_marker_check",
+            "release_talep_check", "source_dosya_sha256_check", "audio_timing_file_sha256_check", "lemma_gloss_content_hash_check",
         ];
 
         OnAllModels(model =>
@@ -222,6 +223,8 @@ public partial class ModelNamingTests
             Assert.Equal("durum = 'acik'", Find("review_queue").GetFilter());
             Assert.Equal("xref_id IS NOT NULL", Find("review_xref").GetFilter());
             Assert.Equal(false, Find("page_map_source_id_volume_page_line_key").GetAreNullsDistinct());
+            Assert.Equal("durum <> 'basarisiz'::icerik.surum_durumu", Find("release_surum_derleme_key").GetFilter());
+            Assert.True(Find("release_surum_derleme_key").IsUnique);
         });
     }
 

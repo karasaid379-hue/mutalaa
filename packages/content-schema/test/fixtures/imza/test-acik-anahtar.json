@@ -1,0 +1,7 @@
+{
+  "kid": "test-2026-1",
+  "alg": "ed25519",
+  "public_key_base64": "11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=",
+  "public_key_hex": "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
+  "kaynak": "RFC 8032 section 7.1 TEST 1 (herkese acik test vektoru)"
+}

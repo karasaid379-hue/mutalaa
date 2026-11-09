@@ -1,0 +1,38 @@
+{
+  "manifest_version": 1,
+  "flavor": "dev",
+  "release": "2026.11.0",
+  "generated_at": "2026-11-09T12:00:00Z",
+  "packs": [
+    {
+      "pack_id": "core",
+      "version": "2026.11.0",
+      "sha256": "f1056610f9bc2985b4d6b0ba550ca13d8e5237ecf09e5a687ddf1ce42cb87375",
+      "size_bytes": 37,
+      "min_app_version": "1.0.0",
+      "depends_on": [],
+      "url": "http://192.168.1.50:8333/mutalaa/packs/dev/core/2026.11.0/core-2026.11.0.db",
+      "schema_version": 1,
+      "title": "Çekirdek (sentetik)",
+      "bundled": true
+    },
+    {
+      "pack_id": "test-kucuk",
+      "version": "2026.11.0",
+      "sha256": "b4faf29f15c5e1f32428100c8bf6c82f1c38fcacbd4fc9875979e9eec8dd6b9f",
+      "size_bytes": 43,
+      "min_app_version": "1.0.0",
+      "depends_on": [
+        "core"
+      ],
+      "url": "http://192.168.1.50:8333/mutalaa/packs/dev/test-kucuk/2026.11.0/test-kucuk-2026.11.0.db",
+      "schema_version": 1,
+      "title": "Küçük deneme paketi"
+    }
+  ],
+  "signature": {
+    "alg": "ed25519",
+    "kid": "test-2026-1",
+    "value": "m/eY298529G8x+dJMHf9u7ivKE7yu1lxVouB4v2ln+D1HjdE6O9J1pr0W4MDoAEBMib/1zizC/ZtCrlIvZ7MCw=="
+  }
+}

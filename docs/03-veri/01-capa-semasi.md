@@ -1,7 +1,7 @@
 # Çapa Şeması
 
-> **Sürüm:** 1.4 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
+> **Sürüm:** 1.5 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-47](../00-ozet/02-karar-defteri.md#k-47--yayın-kapsamı-tutarlılığı-sarkan-bağlantı-ve-çapa-sürekliliği) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
 
 Her metin birimi tek bir gramere göre kalıcı bir adres (çapa) alır. Vurgular, notlar, yer imleri, `xref` bağlantıları, sayfa eşlemeleri, derin bağlantılar ve arama sonuçları bu adresle çalışır. Eski plan aynı içerik için en az beş uyumsuz biçim kullanıyordu (`2:255`, `quran:2:255`, `sozler:32:612`, `risale:sozler:13:para:42`). Bu dosya hepsinin yerini alır (`quran-app-docs/03-veri-modeli/03-polymorphic-content-ref.md`, `quran-app-docs/03-veri-modeli/02-tam-sql-ddl.md`).
 
@@ -147,7 +147,7 @@ k    ^k:(?<yol>SEG(?::SEG)*):p(?<p>SAYI)ARA$
 1. Bir çapa bir kez verilir ve hep aynı birimi gösterir. Hiçbir sürüm çapaları yeniden numaralamaz; kullanılmış numara ya da ad başka birime verilmez.
 2. `p{n}` bir kimliktir. Okuma sırası `unit.ord` sütunundadır ve her sürümde yeniden hesaplanabilir. Okuyucunun gösterdiği paragraf numarası (¶) `ord` sırasından türetilir.
 3. Çapa silinmez. Kullanım dışı kalır (`status = 'kullanim_disi'`) ve `successors` alanında yönlendirme taşır.
-4. Her yayında yayınlayıcı, önceki yayının bütün çapalarının etkin ya da yönlendirmeli olduğunu doğrular. Bu denetim Yayınlayıcı kalite kapısının adımlarından biridir ([Yayın süreci](../07-yayin/01-yayin-sureci.md) §4).
+4. Her yayında yayınlayıcı, önceki yayının bütün çapalarının o derlemenin kapsamına girmiş bir birim olduğunu ya da açık geri çekilme kaydı taşıdığını (`status = 'kullanim_disi'` ve dolu `successors`) doğrular ([K-47](../00-ozet/02-karar-defteri.md#k-47--yayın-kapsamı-tutarlılığı-sarkan-bağlantı-ve-çapa-sürekliliği) madde 2). Yalnız `etkin` durum yetmez: taslağa dönmüş ya da süzülmüş birim `public` pakette yoktur ve geri çekilme kaydı da taşımıyorsa yayın reddedilir (çıkış 2, gerekçe `capa-kayboldu`). Bu denetim Yayınlayıcı kalite kapısının adımlarından biridir ([Yayın süreci](../07-yayin/01-yayin-sureci.md) §4). Geri çekilme kaydının istemciye paketle taşınması henüz tanımlı değildir (BÇ-51).
 
 | Olay | Çapa | Yönlendirme |
 |---|---|---|

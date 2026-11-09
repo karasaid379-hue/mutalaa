@@ -758,7 +758,12 @@ def test_hedef_sutunlar_sunucu_sema_goruntusuyle_ayni() -> None:
     sema = yol.read_bytes().decode("utf-8")
     blok = re.search(r"^CREATE TABLE icerik\.source \((.*?)^\);", sema, re.DOTALL | re.MULTILINE)
     assert blok is not None
-    sutunlar = tuple(satir.split()[0] for satir in blok.group(1).splitlines() if satir.strip())
+    # CONSTRAINT satirlari sutun degildir (EF modeli CHECK kisitlari ekleyebilir).
+    sutunlar = tuple(
+        satir.split()[0]
+        for satir in blok.group(1).splitlines()
+        if satir.strip() and not satir.strip().startswith("CONSTRAINT")
+    )
     assert sutunlar == HEDEF_SUTUNLAR
 
 

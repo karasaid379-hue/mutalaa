@@ -2,10 +2,21 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <UserSecretsId>b9c85dd9-0999-4c39-b3ca-577f95147849</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Mutalaa.Infrastructure\Mutalaa.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <!-- Gizli olmayan varsayilanlar; gizli degerler (baglanti dizesi, SecretKey, imza) dotnet user-secrets ile verilir. -->
+  <ItemGroup>
+    <Content Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

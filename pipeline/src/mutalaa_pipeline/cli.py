@@ -352,6 +352,49 @@ def ingest_sure_adlari(
         raise typer.Exit(code=kod)
 
 
+@ingest_app.command("fikstur")
+def ingest_fikstur(
+    source: Annotated[
+        str,
+        typer.Option(
+            "--source",
+            help="Fikstur kaynagi: test-kucuk ya da test-tefsir-ornek (test-ses birim uretmez).",
+        ),
+    ],
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="staged ve manifest yazmaz; her sey yine denetlenir.")
+    ] = False,
+    force: Annotated[
+        bool, typer.Option("--force", help="Parmak izi ayni olsa da calistirir.")
+    ] = False,
+    limit: Annotated[
+        int | None, typer.Option("--limit", help="Fikstur uretimi icin reddedilir.")
+    ] = None,
+    config: Annotated[Path | None, typer.Option("--config", help="Baska bir mutalaa.toml.")] = None,
+    kok: KokSecenegi = None,
+) -> None:
+    """Belirlenimci sentetik fikstur birimlerini uretir (data/gelen ve data/raw kullanilmaz)."""
+    from mutalaa_pipeline.ingest import fikstur
+
+    try:
+        if limit is not None:
+            raise GirdiHatasi("--limit fikstur uretimi icin desteklenmez")
+    except GirdiHatasi as hata:
+        raise _hata(hata) from hata
+    kod = fikstur.komut_ingest_fikstur(
+        source=source, dry_run=dry_run, force=force, config=config, kok=kok
+    )
+    if kod != cikis.BASARILI:
+        raise typer.Exit(code=kod)
+
+
+def _fikstur_mu(source: str) -> bool:
+    """Sentetik fikstur kaynagi mi (A13.6); ice aktarma: komut modulleri tembel yuklenir."""
+    from mutalaa_pipeline.ingest.fikstur import KAYNAKLAR
+
+    return source in KAYNAKLAR
+
+
 def _limit_reddet(limit: int | None) -> None:
     """Tanzil adimlarinda kismi calisma kabul edilmez (G-BUT ve capa kumesi bozulur)."""
     if limit is not None:
@@ -382,9 +425,16 @@ def normalize_komutu(
         _limit_reddet(limit)
     except GirdiHatasi as hata:
         raise _hata(hata) from hata
-    kod = normalize_tanzil.komut_normalize(
-        source=source, dry_run=dry_run, force=force, config=config, kok=kok
-    )
+    if _fikstur_mu(source):  # sentetik fikstur: Turkce arama anahtarlari (A13.6)
+        from mutalaa_pipeline.adimlar import fikstur as fikstur_adimlari
+
+        kod = fikstur_adimlari.komut_normalize(
+            source=source, dry_run=dry_run, force=force, config=config, kok=kok
+        )
+    else:
+        kod = normalize_tanzil.komut_normalize(
+            source=source, dry_run=dry_run, force=force, config=config, kok=kok
+        )
     if kod != cikis.BASARILI:
         raise typer.Exit(code=kod)
 
@@ -421,6 +471,12 @@ def anchor_komutu(
     elif source == SURE_ADLARI_KAYNAGI:  # sure adi adaylari (A11.3)
         kod = anchor_sure_adlari.komut_anchor_sure_adlari(
             dry_run=dry_run, force=force, config=config, kok=kok
+        )
+    elif _fikstur_mu(source):  # sentetik fikstur capalari (A13.6)
+        from mutalaa_pipeline.adimlar import fikstur as fikstur_adimlari
+
+        kod = fikstur_adimlari.komut_anchor(
+            source=source, dry_run=dry_run, force=force, config=config, kok=kok
         )
     else:
         kod = anchor_tanzil.komut_anchor(

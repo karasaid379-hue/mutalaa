@@ -203,6 +203,7 @@ public class EntityDocumentTests
             "timestamptz" => typeof(DateTime),
             "int4range" => typeof(AnchorSpan),
             "int4range[]" => typeof(AnchorSpan[]),
+            "text[]" => typeof(string[]),
             _ when column.Type.StartsWith("char(", StringComparison.Ordinal) => typeof(string),
             _ => throw new InvalidDataException($"{table}.{column.Name}: eslenmemis DDL turu '{column.Type}'"),
         };

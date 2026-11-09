@@ -36,6 +36,8 @@ public class PackDdlSmokeTests
         ("tefsir-elmalili", "metin"),
         ("hadis-tecrid", "metin"),
         ("hadis-kutub-i-sitte", "metin"),
+        ("test-kucuk", "metin"),
+        ("tefsir-test-ornek", "metin"),
         ("risale-sozler", "risale-kitap"),
         ("risale-dizin", "risale-dizin"),
         ("kelime-kok", "kelime-kok"),
@@ -58,6 +60,9 @@ public class PackDdlSmokeTests
         "Core",
         "core-x",
         "tefsir-",
+        "test-",
+        "Test-kucuk",
+        "test_kucuk",
         "hadis_tecrid",
         "ses-zaman",
         "risale-",
@@ -320,6 +325,25 @@ public class PackDdlSmokeTests
             }
 
             Assert.Equal([1L], rows);
+        });
+    }
+
+    [Theory]
+    [InlineData("core")]
+    [InlineData("metin")]
+    [InlineData("risale-kitap")]
+    public void Unit_approved_is_integer_not_null_default_1(string tur)
+    {
+        WithPack(tur, applyAfter: false, conn =>
+        {
+            using SqliteCommand cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT type, \"notnull\", dflt_value FROM pragma_table_info('unit') WHERE name = 'approved'";
+            using SqliteDataReader reader = cmd.ExecuteReader();
+
+            Assert.True(reader.Read());
+            Assert.Equal("INTEGER", reader.GetString(0));
+            Assert.Equal(1, reader.GetInt32(1));
+            Assert.Equal("1", reader.GetString(2));
         });
     }
 

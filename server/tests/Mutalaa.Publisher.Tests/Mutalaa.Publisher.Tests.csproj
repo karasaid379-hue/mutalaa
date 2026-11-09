@@ -13,10 +13,29 @@
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="JsonSchema.Net" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Mutalaa.Publisher\Mutalaa.Publisher.csproj" />
+  </ItemGroup>
+
+  <!-- Api.Tests destek dosyalari baglantili eklenir (kopya yok; Api projesine bagimlilik yok): kap fiksturu, veritabani, model, depo yollari, sentetik veri. -->
+  <ItemGroup>
+    <Compile Include="..\Mutalaa.Api.Tests\Support\PostgresFixture.cs" Link="Support\PostgresFixture.cs" />
+    <Compile Include="..\Mutalaa.Api.Tests\Support\TestDatabase.cs" Link="Support\TestDatabase.cs" />
+    <Compile Include="..\Mutalaa.Api.Tests\Support\EditorialDatabase.cs" Link="Support\EditorialDatabase.cs" />
+    <Compile Include="..\Mutalaa.Api.Tests\Support\ModelFactory.cs" Link="Support\ModelFactory.cs" />
+    <Compile Include="..\Mutalaa.Api.Tests\Support\RepoFiles.cs" Link="Support\RepoFiles.cs" />
+    <Compile Include="..\Mutalaa.Api.Tests\Support\TestData.cs" Link="Support\TestData.cs" />
+    <Compile Include="..\Mutalaa.Api.Tests\Support\AsyncCultureScope.cs" Link="Support\AsyncCultureScope.cs" />
+  </ItemGroup>
+
+  <!-- Domain.Tests destek dosyalari baglantili eklenir: kultur kapsami, enum JSON ve DDL okuyucusu. -->
+  <ItemGroup>
+    <Compile Include="..\Mutalaa.Domain.Tests\Support\CultureScope.cs" Link="Support\CultureScope.cs" />
+    <Compile Include="..\Mutalaa.Domain.Tests\Support\EditorialDoc.cs" Link="Support\EditorialDoc.cs" />
+    <Compile Include="..\Mutalaa.Domain.Tests\Support\EnumsJson.cs" Link="Support\EnumsJson.cs" />
   </ItemGroup>
 
   <!-- Manifest semasi, ornek manifest ve ortak enum listesi cikti klasorune kopyalanir (data\). -->
@@ -26,6 +45,18 @@
     <None Include="..\..\..\packages\content-schema\enums.json" Link="data\enums.json" CopyToOutputDirectory="PreserveNewest" />
     <!-- Paket DDL dosyalari ve paketler.json (K-44; PackDdlSmokeTests) data\sql\ altina kopyalanir. -->
     <None Include="..\..\..\packages\content-schema\sql\**" Link="data\sql\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Tanzil fiksturu parcalari (P-11; TanzilRawVerifierTests): .gitattributes "-text" der; baytlar degismeden cikti klasorune kopyalanir (data\tanzil\). -->
+  <ItemGroup>
+    <None Include="..\..\..\pipeline\tests\fixtures\tanzil\*-parca.txt" Link="data\tanzil\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- A13.4: imzali fikstur manifestleri (data\imza\) ve RFC 8785 test baytlari (data\jcs\input, data\jcs\output) cikti klasorune kopyalanir. -->
+  <ItemGroup>
+    <None Include="..\..\..\packages\content-schema\test\fixtures\imza\*.json" Link="data\imza\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\packages\content-schema\test\fixtures\jcs\input\*.json" Link="data\jcs\input\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\packages\content-schema\test\fixtures\jcs\output\*.json" Link="data\jcs\output\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

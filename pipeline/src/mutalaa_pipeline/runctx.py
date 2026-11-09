@@ -317,7 +317,7 @@ class RunContext:
             dosya.write(veri)
             dosya.flush()
             os.fsync(dosya.fileno())
-        os.replace(gecici, hedef)
+        lineage.atomik_degistir(gecici, hedef)
         return hedef
 
 

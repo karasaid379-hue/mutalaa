@@ -1,0 +1,10 @@
+# A13.6 (2026-11-09) · kaynak: docs/04-icerik/01-kaynaklar.md §3.8
+slug = "test-tefsir-ornek"
+tur = "tefsir"
+baslik = "Sentetik tefsir örneği (test fikstürü)"
+surum = "1"
+atif_metni = "Sentetik test verisi (Mütâlaa)."
+notlar = '''
+Sentetik fikstür, A13. Dışarıdan alınmaz; belirlenimci üreteçle üretilir (mutalaa ingest fikstur --source test-tefsir-ornek).
+Metin açıkça sentetiktir ("Deneme paragrafı 1 ..."); hiçbir tefsir metnine benzetilmez. Çapa: tf:test-ornek:{sure}-{ilk}-{son}:p{n}.
+Yalnız dev derlemesindedir.'''

@@ -1,0 +1,8 @@
+# A13.6 (2026-11-09) · kaynak: docs/04-icerik/01-kaynaklar.md §3.8
+slug = "test-ses"
+tur = "ses"
+baslik = "Sentetik ses örneği (test fikstürü)"
+surum = "1"
+atif_metni = "Sentetik test verisi (Mütâlaa)."
+notlar = '''
+Sentetik fikstür, A13. Bu aşamada birim üretmez; yalnız kaynak satırı yüklenir (export pg). Üretilmiş tonlar ve sahte zamanlama A27.2 işidir.'''

@@ -119,7 +119,9 @@ class Gunluk:
         *,
         source_id: str | None = None,
         sayilar: Mapping[str, Deger] | None = None,
+        kapi: str | None = None,
     ) -> None:
+        """Bir satir ekler; `kapi` (G-KAY, G-BUT, G-CAP, G-NOR) yalniz verilirse alan olur."""
         if duzey not in SEVIYELER:
             raise ValueError("bilinmeyen gunluk duzeyi")
         if SEVIYELER[duzey] < self._esik:
@@ -133,6 +135,8 @@ class Gunluk:
             "olay": guvenli_deger(olay, self._gizliler),
             "sayilar": guvenli_deger(dict(sayilar or {}), self._gizliler),
         }
+        if kapi is not None:  # alan yoksa onceki kayit bicimi aynen korunur
+            kayit["kapi"] = guvenli_deger(kapi, self._gizliler)
         satir = json.dumps(kayit, ensure_ascii=True, sort_keys=True, separators=(",", ":")) + "\n"
         with self._kilit:
             self.yol.parent.mkdir(parents=True, exist_ok=True)

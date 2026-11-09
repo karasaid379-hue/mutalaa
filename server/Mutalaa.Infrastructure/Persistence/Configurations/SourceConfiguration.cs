@@ -8,7 +8,7 @@ internal sealed class SourceConfiguration : IEntityTypeConfiguration<Source>
 {
     public void Configure(EntityTypeBuilder<Source> b)
     {
-        b.ToTable("source");
+        b.ToTable("source", t => t.HasCheckConstraint("source_dosya_sha256_check", "dosya_sha256 ~ '^[0-9a-f]{64}$'"));
 
         b.HasKey(x => x.Slug);
         b.Property(x => x.Slug).UseCollation(ConfigurationExtensions.CCollation);

@@ -99,6 +99,7 @@ const BEKLENEN_SUTUNLAR: Record<string, string[]> = {
     'attrs',
     'content_hash',
     'status',
+    'approved',
     'successors',
   ],
   xref_idx: [
@@ -235,7 +236,13 @@ const DDL_ROWIDSIZ = [
 /** Example pack_id values per pack type. */
 const ORNEK_PACK_ID: Record<string, string[]> = {
   core: ['core'],
-  metin: ['tefsir-elmalili', 'hadis-tecrid', 'hadis-kutub-i-sitte'],
+  metin: [
+    'tefsir-elmalili',
+    'hadis-tecrid',
+    'hadis-kutub-i-sitte',
+    'test-kucuk',
+    'tefsir-test-ornek',
+  ],
   'risale-kitap': ['risale-sozler', 'risale-mektubat', 'risale-dizin2'],
   'risale-dizin': ['risale-dizin'],
   'kelime-kok': ['kelime-kok'],
@@ -372,7 +379,17 @@ describe('paketler.json', () => {
       expect(cuz.test(kotu), kotu).toBe(false);
     }
 
-    const hicbiri = ['Core', 'core-x', 'tefsir-', 'hadis_tecrid', 'ses-zaman-', 'kelime-kok-2'];
+    const hicbiri = [
+      'Core',
+      'core-x',
+      'tefsir-',
+      'test-',
+      'Test-kucuk',
+      'test_kucuk',
+      'hadis_tecrid',
+      'ses-zaman-',
+      'kelime-kok-2',
+    ];
     for (const kotu of hicbiri) {
       const eslesen = TURLER.filter((t) =>
         new RegExp(PAKETLER.turler[t]?.desen ?? '^$').test(kotu),
@@ -504,6 +521,22 @@ describe('enums', () => {
     const varsayilan = (sutun?.dflt_value ?? '').replace(/^'|'$/g, '');
     expect(varsayilan).toBe('etkin');
     expect(enumsJson.enums['unit_status']).toContain(varsayilan);
+  });
+
+  it('declares unit.approved as INTEGER NOT NULL DEFAULT 1 in the unit table of every unit pack (K-46 item 5)', () => {
+    for (const tur of ['core', 'metin', 'risale-kitap']) {
+      const sutun = (
+        yeniVeritabani(tur).prepare('PRAGMA table_info(unit)').all() as {
+          name: string;
+          type: string;
+          notnull: number;
+          dflt_value: string | null;
+        }[]
+      ).find((s) => s.name === 'approved');
+      expect(sutun?.type, tur).toBe('INTEGER');
+      expect(sutun?.notnull, tur).toBe(1);
+      expect(sutun?.dflt_value, tur).toBe('1');
+    }
   });
 
   it('keeps the documented unit.kind values in the unit_kind enum', () => {

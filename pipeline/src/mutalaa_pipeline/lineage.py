@@ -11,7 +11,8 @@ import os
 import platform
 import re
 import subprocess
-from collections.abc import Mapping, Sequence
+import time
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from importlib import metadata
 from pathlib import Path
@@ -206,6 +207,38 @@ def manifest_baytlari(manifest: Mapping[str, object]) -> bytes:
     return (json.dumps(manifest, ensure_ascii=True, indent=2) + "\n").encode("utf-8")
 
 
+YENIDEN_DEGISTIRME_DENEMESI: Final = 3
+YENIDEN_DEGISTIRME_BEKLEME_SN: Final = 0.2
+
+
+def atomik_degistir(
+    gecici: Path,
+    hedef: Path,
+    *,
+    degistir: Callable[[Path, Path], None] | None = None,
+    uyku: Callable[[float], None] = time.sleep,
+    deneme: int = YENIDEN_DEGISTIRME_DENEMESI,
+    bekleme_sn: float = YENIDEN_DEGISTIRME_BEKLEME_SN,
+) -> None:
+    """`os.replace` ile gecici dosyayi hedefin yerine koyar; gecici `PermissionError`da dener.
+
+    OneDrive esitlemesi ya da bir tarayici, hedefi kisa sure tutabilir ve Windows'ta `os.replace`
+    `PermissionError` (EPERM, WinError 5/32) verir. En fazla `deneme` kez denenir (arada
+    `bekleme_sn * deneme_no` saniye beklenir); son denemede hata aynen yukari firlatilir. Baska
+    hata turleri yeniden denenmez. Manifest ve rapor yazimi bu tek yardimciyi kullanir.
+    """
+    islem = degistir if degistir is not None else os.replace  # cagri aninda cozulur
+    for no in range(1, deneme + 1):
+        try:
+            islem(gecici, hedef)
+        except PermissionError:
+            if no == deneme:
+                raise
+            uyku(bekleme_sn * no)
+        else:
+            return
+
+
 def manifest_yaz(klasor: Path, manifest: Mapping[str, object]) -> Path:
     """Manifesti en son ve atomik yazar: gecici dosya, fsync, yeniden adlandirma."""
     klasor.mkdir(parents=True, exist_ok=True)
@@ -215,7 +248,7 @@ def manifest_yaz(klasor: Path, manifest: Mapping[str, object]) -> Path:
         dosya.write(manifest_baytlari(manifest))
         dosya.flush()
         os.fsync(dosya.fileno())
-    os.replace(gecici, hedef)
+    atomik_degistir(gecici, hedef)
     return hedef
 
 

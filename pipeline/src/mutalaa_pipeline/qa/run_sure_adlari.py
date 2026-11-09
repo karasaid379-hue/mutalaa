@@ -166,6 +166,7 @@ def run_qa(
             "qa_kapi",
             source_id=KAYNAK,
             sayilar={"bulgu": len(sonuc.bulgular)},
+            kapi=kapi,
         )
     ctx.sayi("aday", len(girdi.adaylar))
     capraz = olcum["capraz_sure_anahtar"]
