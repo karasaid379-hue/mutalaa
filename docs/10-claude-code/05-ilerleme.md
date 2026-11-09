@@ -8,7 +8,7 @@ Bu dosya aşamaların durumunu tutar. Aşağıdaki durum bloğu her oturumun ba�
 <!-- durum:baslangic -->
 - Aktif aşama: A12 · Arama indeksi ve paket şeması (2026-11-09)
 - Son tamamlanan: A10 · Tanzil alımı ve değişmezlik testleri (2026-11-07; PR #10 birleştirildi)
-- Sıradaki: A13 (A11 onay/dışa aktarma kalanı İ-23 ve A14 sonrası `/asama A11`)
+- Sıradaki: A13 (A11 onay/dışa aktarma kalanı İ-23 ve A14 sonrası /asama A11)
 - Bekleyen insan adımları: İ-10 ve İ-17 (A09 için); İ-16 (kalan: EXPO_TOKEN, İ-15 Expo hesabına bağlı; A21/A34); İ-23 (sure adlarının editör denetimi, A11.3)
 - Son güncelleme: 2026-11-09
 <!-- durum:bitis -->
