@@ -202,6 +202,13 @@ importers:
       '@mutalaa/anchors':
         specifier: workspace:*
         version: link:../anchors
+    devDependencies:
+      '@mutalaa/search':
+        specifier: workspace:*
+        version: link:../search
+      '@mutalaa/test-vectors':
+        specifier: workspace:*
+        version: link:../../shared/test-vectors
 
   packages/player:
     dependencies:
@@ -222,6 +229,10 @@ importers:
         version: link:../search
 
   packages/search:
+    dependencies:
+      snowball-stemmers-js:
+        specifier: 3.1.2
+        version: 3.1.2
     devDependencies:
       '@mutalaa/test-vectors':
         specifier: workspace:*
@@ -896,6 +907,10 @@ packages:
   shebang-regex@3.0.0:
     resolution: {integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==}
     engines: {node: '>=8'}
+
+  snowball-stemmers-js@3.1.2:
+    resolution: {integrity: sha512-No5a6Aro4NTYPsnzms8OH5piBvgFoNPLAbvfRPzHRbhNC0NdViX/5j36Cqeht8yjkyOBrYmUJKgV+y2si9MSDg==}
+    engines: {node: '>=14'}
 
   source-map-js@1.2.2:
     resolution: {integrity: sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==}
@@ -1643,6 +1658,8 @@ snapshots:
       shebang-regex: 3.0.0
 
   shebang-regex@3.0.0: {}
+
+  snowball-stemmers-js@3.1.2: {}
 
   source-map-js@1.2.2: {}
 

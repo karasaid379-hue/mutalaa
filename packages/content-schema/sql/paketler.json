@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "turler": {
+    "core": {
+      "desen": "^core$",
+      "ddl": [
+        "00-ortak.sql",
+        "10-metin.sql",
+        "11-xref.sql",
+        "20-arama.sql",
+        "30-core.sql",
+        "31-page-map.sql"
+      ],
+      "sonra": ["29-arama-sonrasi.sql"]
+    },
+    "metin": {
+      "desen": "^(tefsir|hadis)-[a-z0-9-]+$",
+      "ddl": [
+        "00-ortak.sql",
+        "10-metin.sql",
+        "11-xref.sql",
+        "12-tr-root.sql",
+        "20-arama.sql",
+        "31-page-map.sql"
+      ],
+      "sonra": ["29-arama-sonrasi.sql"]
+    },
+    "risale-kitap": {
+      "desen": "^risale-(?!dizin$)[a-z0-9-]+$",
+      "ddl": ["00-ortak.sql", "10-metin.sql"],
+      "sonra": []
+    },
+    "risale-dizin": {
+      "desen": "^risale-dizin$",
+      "ddl": [
+        "00-ortak.sql",
+        "50-risale-dizin.sql",
+        "11-xref.sql",
+        "12-tr-root.sql",
+        "21-arama-iceriksiz.sql",
+        "31-page-map.sql"
+      ],
+      "sonra": ["29-arama-sonrasi-iceriksiz.sql"]
+    },
+    "kelime-kok": {
+      "desen": "^kelime-kok$",
+      "ddl": ["00-ortak.sql", "40-kelime-kok.sql", "12-tr-root.sql"],
+      "sonra": []
+    },
+    "mushaf-a-cuz": {
+      "desen": "^mushaf-a-cuz-(0[1-9]|[12][0-9]|30)$",
+      "ddl": ["00-ortak.sql", "60-mushaf-a.sql"],
+      "sonra": []
+    },
+    "mushaf-b": {
+      "desen": "^mushaf-b$",
+      "ddl": ["00-ortak.sql", "61-mushaf-b.sql", "31-page-map.sql"],
+      "sonra": []
+    },
+    "ses-katalog": {
+      "desen": "^ses-katalog$",
+      "ddl": ["00-ortak.sql", "70-ses-katalog.sql"],
+      "sonra": []
+    },
+    "ses-zaman": {
+      "desen": "^ses-zaman-[a-z0-9-]+$",
+      "ddl": ["00-ortak.sql", "71-ses-zaman.sql"],
+      "sonra": []
+    }
+  }
+}
