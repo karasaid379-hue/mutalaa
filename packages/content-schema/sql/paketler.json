@@ -14,7 +14,7 @@
       "sonra": ["29-arama-sonrasi.sql"]
     },
     "metin": {
-      "desen": "^(tefsir|hadis)-[a-z0-9-]+$",
+      "desen": "^(tefsir|hadis|test)-[a-z0-9-]+$",
       "ddl": [
         "00-ortak.sql",
         "10-metin.sql",
