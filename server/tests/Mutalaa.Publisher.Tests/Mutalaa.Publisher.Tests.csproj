@@ -28,6 +28,7 @@
     <Compile Include="..\Mutalaa.Api.Tests\Support\ModelFactory.cs" Link="Support\ModelFactory.cs" />
     <Compile Include="..\Mutalaa.Api.Tests\Support\RepoFiles.cs" Link="Support\RepoFiles.cs" />
     <Compile Include="..\Mutalaa.Api.Tests\Support\TestData.cs" Link="Support\TestData.cs" />
+    <Compile Include="..\Mutalaa.Api.Tests\Support\AsyncCultureScope.cs" Link="Support\AsyncCultureScope.cs" />
   </ItemGroup>
 
   <!-- Domain.Tests destek dosyalari baglantili eklenir: kultur kapsami, enum JSON ve DDL okuyucusu. -->
@@ -44,6 +45,11 @@
     <None Include="..\..\..\packages\content-schema\enums.json" Link="data\enums.json" CopyToOutputDirectory="PreserveNewest" />
     <!-- Paket DDL dosyalari ve paketler.json (K-44; PackDdlSmokeTests) data\sql\ altina kopyalanir. -->
     <None Include="..\..\..\packages\content-schema\sql\**" Link="data\sql\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Tanzil fiksturu parcalari (P-11; TanzilRawVerifierTests): .gitattributes "-text" der; baytlar degismeden cikti klasorune kopyalanir (data\tanzil\). -->
+  <ItemGroup>
+    <None Include="..\..\..\pipeline\tests\fixtures\tanzil\*-parca.txt" Link="data\tanzil\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
