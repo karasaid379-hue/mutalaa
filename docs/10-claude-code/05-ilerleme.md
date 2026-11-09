@@ -9,7 +9,7 @@ Bu dosya aşamaların durumunu tutar. Aşağıdaki durum bloğu her oturumun ba�
 - Aktif aşama: A13 · Yayınlayıcı ve kalite kapısı (2026-11-09; dal feat/a13-yayinlayici, feat/a12-arama-indeksi üstünde; kod ve testler tamam, canlı dev yayını kullanıcının Publisher sırlarını girmesini bekliyor)
 - Son tamamlanan: A12 · Arama indeksi ve paket şeması (2026-11-09; dal feat/a12-arama-indeksi, PR bekleniyor)
 - Sıradaki: A14 (A11 onay/dışa aktarma kalanı İ-23 ve A14 sonrası /asama A11)
-- Bekleyen insan adımları: Publisher kullanıcı sırları (A13.6; üç `dotnet user-secrets set` komutu); İ-10 ve İ-17 (A09 için); İ-16 (kalan: EXPO_TOKEN, İ-15 Expo hesabına bağlı; A21/A34); İ-23 (sure adlarının editör denetimi, A11.3)
+- Bekleyen insan adımları: Publisher kullanıcı sırları (A13.6; üç user-secrets komutu); İ-10 ve İ-17 (A09 için); İ-16 (kalan: EXPO_TOKEN, İ-15 Expo hesabına bağlı; A21/A34); İ-23 (sure adlarının editör denetimi, A11.3)
 - Son güncelleme: 2026-11-09
 <!-- durum:bitis -->
 
