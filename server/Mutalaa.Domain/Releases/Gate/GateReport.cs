@@ -44,6 +44,16 @@ public sealed class GateReport
     /// <summary>Butunluk ihlali varsa true: yayin reddedilir (Yayinlayici cikis kodu 2).</summary>
     public bool Rejected => Violations.Count > 0;
 
+    /// <summary>
+    /// Ek butunluk ihlalleriyle (ornegin Infrastructure'daki P-11 ham dosya denetimi ve P-14 terfi denetimi) yeni bir rapor dondurur;
+    /// satirlar aynen kalir, ihlaller kararli siraya yeniden dizilir. Bu rapor degismez.
+    /// </summary>
+    public GateReport WithViolations(IEnumerable<GateViolation> additional)
+    {
+        ArgumentNullException.ThrowIfNull(additional);
+        return Create(Flavor, Rows, Violations.Concat(additional));
+    }
+
     /// <summary>Girdiyi (sira bagimsiz) kararli siraya dizerek rapor olusturur.</summary>
     public static GateReport Create(BuildFlavor flavor, IEnumerable<GateReportRow> rows, IEnumerable<GateViolation> violations)
     {
