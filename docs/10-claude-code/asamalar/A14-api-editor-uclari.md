@@ -1,6 +1,6 @@
 # A14 · API editör uçları
 
-> **Sürüm:** 1.3 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-46](../../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Sürüm:** 1.4 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-46](../../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A07](./A07-editoryal-veritabani.md) · **İnsan adımı:** —
 > **Ajanlar:** `sunucu-gelistirici` · `test-yazari` · `arastirmaci` · `inceleyici` · **Beceriler:** `ef-goc` · `paket-yayini` · `windows-sorun` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A14`
@@ -23,6 +23,7 @@ Editör kipindeki ASP.NET Core 10 Minimal API kurulur: ASP.NET Core Identity ile
 - [Backend API](../../02-mimari/05-backend-api.md) §4 tablosundaki bütün v1 uçları, §4.1 kuyrukları ve ikinci onay, §4.2 uç kuralları, §6 hata kodları.
 - Derlemede üretilip depoya giren `server/Mutalaa.Api/openapi/v1.json`; sağlık uçları; Serilog.
 - Uç başına yetki matrisi testleri.
+- A13'ten devredildi: `server/Mutalaa.Publisher/Dockerfile` ve `docker-compose.yml` içindeki `publisher` servisinin (`app` profili, `command: ["watch"]`) imaja bağlanması; `Signing__dev__PrivateKey` değerini kullanıcı `.env` içine yazar (Claude Code `.env` okumaz). API Dockerfile'ıyla aynı adımda yazılır ve `app` profili birlikte sınanır.
 
 **Yapılmaz**
 - v1.x genel kip uçları: hesap, senkron, bağlantı oyu (A35, A36).

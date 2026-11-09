@@ -1,6 +1,6 @@
 # İçerik Paketleri
 
-> **Sürüm:** 1.7 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
+> **Sürüm:** 1.8 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json) · K-21 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-44](../00-ozet/02-karar-defteri.md#k-44--arama-indeksi-ve-paket-şeması-cihaz-gövdeleyicisi-simple-clean-paket-tabloları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
 
 İçerik cihaza sürümlü SQLite paketleri olarak iner. Yerelde SeaweedFS'in S3 API'si ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)), canlıda S3 uyumlu bir depo kullanılır; öneri Cloudflare R2'dir (depolama 0,015 $/GB-ay, veri çıkışı ücretsiz; [R2 fiyatlandırma](https://developers.cloudflare.com/r2/pricing)). Yayınlayıcı (`Mutalaa.Publisher`) editoryal veritabanından her derleme türü için ayrı paketler ve ayrı, imzalı bir manifest üretir ([Editoryal veritabanı](./02-editoryal-veritabani.md); [Yayın süreci](../07-yayin/01-yayin-sureci.md)).
@@ -117,6 +117,7 @@ CREATE INDEX tr_root_index_root ON tr_root_index(root_id);
 ```
 
 - `approved`, birimin editoryal `metin_durumu` değerinden gelir (`onayli` ise 1, değilse 0). Onaysız birim yalnız `dev` ve `internal` paketlerinde bulunur (P-08, P-10) ve arayüz "doğrulanmamış" rozetini bu sütundan okur; ayrı bir `attrs` ayrıştırması gerekmez. Sütun `xref_idx.approved` ile aynı adı taşır. `user_version` 1 kalır, çünkü henüz yayımlanmış paket yoktur (K-46 madde 5).
+- `sentences`, editoryal `unit.sentences` (`int4range[]`, kod noktası aralıkları) değerinin pakette JSON metin hâlidir: `[[bas, son], ...]` (her çift yarı açık `[bas, son)` aralığıdır; aralık yoksa `NULL`). Yayınlayıcı bunu PostgreSQL'den `jsonb` metni olarak okur ve olduğu gibi yazar (A13 uygulaması, `EditorialSnapshotReader`). **Doğrulanacak:** çift sırası ve uçların yarı açıklığı (`[bas, son)`) A20'de Risale cümle ayırıcısı gerçek veri ürettiğinde ve `s{n}` çapası bu aralıklardan türetilirken doğrulanır; o zamana kadar tanım bu biçimdir.
 - Kalıcı başvuru her zaman `anchor` ile yapılır; `rowid` paket sürümü değişince değişebilir.
 - `kind` değerleri editoryal `unit.kind` ile aynıdır ([Editoryal veritabanı](./02-editoryal-veritabani.md)); `kitap`, `k:` çapalı kitap paragrafıdır (Çapa şemasında "sonra" fazı; enum değeri baştan vardır).
 - `label` sonuç listesinde ve kullanıcı kayıtlarında okunabilir adrestir. Kayıt oluşturulurken kopyalanır; paket silinse de kayıt okunur kalır.
