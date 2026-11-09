@@ -22,8 +22,11 @@ public sealed class Review
     /// <summary>jsonb.</summary>
     public string? Onceki { get; set; }
 
-    /// <summary>jsonb.</summary>
+    /// <summary>jsonb; ozgun oneri, onayda degismez.</summary>
     public string? Onerilen { get; set; }
+
+    /// <summary>jsonb (K-48): editorun duzenleyip uyguladigi deger; bossa onay Onerilen'i uygular.</summary>
+    public string? Duzenlenen { get; set; }
 
     public ReviewStatus Durum { get; set; } = ReviewStatus.Acik;
 
@@ -42,6 +45,12 @@ public sealed class Review
     public string? Inceleyen { get; set; }
 
     public string? IkinciInceleyen { get; set; }
+
+    /// <summary>UTC (K-48): ikinci onayin ya da ikinci asama retinin zamani.</summary>
+    public DateTime? IkinciIncelendiAt { get; set; }
+
+    /// <summary>K-48: ikinci onay gerekcesi.</summary>
+    public string? IkinciGerekce { get; set; }
 
     public int? SureMs { get; set; }
 

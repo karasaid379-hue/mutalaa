@@ -461,6 +461,9 @@ CREATE TABLE icerik.review (
     gerekce text,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     incelendi_at timestamp with time zone,
+    duzenlenen jsonb,
+    ikinci_gerekce text,
+    ikinci_incelendi_at timestamp with time zone,
     CONSTRAINT review_hedef_tablo_check CHECK ((hedef_tablo = ANY (ARRAY['source'::text, 'unit'::text, 'quran_word_fix'::text, 'lemma'::text, 'lemma_gloss'::text, 'root'::text, 'tr_root_index'::text, 'tr_form'::text, 'surah_alias'::text, 'xref'::text, 'page_map'::text, 'ayah_box'::text, 'audio_timing'::text]))),
     CONSTRAINT review_yz_kaydi_check CHECK ((((yz_modeli IS NULL) AND (yz_kaydi IS NULL)) OR ((yz_modeli IS NOT NULL) AND (yz_kaydi IS NOT NULL) AND (jsonb_typeof(yz_kaydi) = 'object'::text) AND (yz_kaydi ?& ARRAY['prompt_id'::text, 'prompt_sha256'::text, 'input_sha256'::text]) AND (COALESCE((yz_kaydi ->> 'prompt_sha256'::text), ''::text) ~ '^[0-9a-f]{64}$'::text) AND (COALESCE((yz_kaydi ->> 'input_sha256'::text), ''::text) ~ '^[0-9a-f]{64}$'::text))))
 );

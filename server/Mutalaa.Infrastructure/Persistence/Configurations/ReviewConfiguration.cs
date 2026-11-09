@@ -28,6 +28,7 @@ internal sealed class ReviewConfiguration : IEntityTypeConfiguration<Review>
         b.Property(x => x.Id).UseIdentityAlwaysColumn();
         b.Property(x => x.Onceki).HasColumnType("jsonb");
         b.Property(x => x.Onerilen).HasColumnType("jsonb");
+        b.Property(x => x.Duzenlenen).HasColumnType("jsonb");
         b.Property(x => x.Durum).HasAlwaysWrittenDefault(ReviewStatus.Acik);
         b.Property(x => x.YzKaydi).HasColumnType("jsonb");
         b.Property(x => x.CreatedAt).HasDefaultValueSql("now()");
