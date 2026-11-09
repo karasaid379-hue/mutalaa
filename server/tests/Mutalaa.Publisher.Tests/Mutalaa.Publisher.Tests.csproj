@@ -52,4 +52,11 @@
     <None Include="..\..\..\pipeline\tests\fixtures\tanzil\*-parca.txt" Link="data\tanzil\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <!-- A13.4: imzali fikstur manifestleri (data\imza\) ve RFC 8785 test baytlari (data\jcs\input, data\jcs\output) cikti klasorune kopyalanir. -->
+  <ItemGroup>
+    <None Include="..\..\..\packages\content-schema\test\fixtures\imza\*.json" Link="data\imza\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\packages\content-schema\test\fixtures\jcs\input\*.json" Link="data\jcs\input\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\packages\content-schema\test\fixtures\jcs\output\*.json" Link="data\jcs\output\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
