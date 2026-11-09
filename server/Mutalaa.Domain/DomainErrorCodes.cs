@@ -15,7 +15,7 @@ public static class DomainErrorCodes
     /// <summary>422: hedef tablo ya da alan icin inceleme akisi desteklenmiyor.</summary>
     public const string IncelemeDesteklenmiyor = "inceleme-desteklenmiyor";
 
-    /// <summary>409: iyimser eszamanlilik (xmin) uyusmazligi.</summary>
+    /// <summary>412: iyimser eszamanlilik (xmin) uyusmazligi (If-Match tutmuyor; K-48).</summary>
     public const string SurumUyusmazligi = "surum-uyusmazligi";
 
     /// <summary>404: kayit yok.</summary>

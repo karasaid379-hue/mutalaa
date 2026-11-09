@@ -6,7 +6,7 @@ namespace Mutalaa.Infrastructure.Persistence;
 /// Iyimser eszamanlilik belirteci yardimcisi: <c>xmin</c> sistem sutunu golge ozelliktir (Domain'e alan eklenmez).
 /// Okuma yolu satirin <see cref="Get"/> degerini istemciye verir; yazma yolu istemcinin gonderdigi degeri
 /// <see cref="Expect"/> ile beklenen deger yapar ve SaveChanges uyusmazlikta DbUpdateConcurrencyException atar
-/// (Api bunu 409 <c>surum-uyusmazligi</c> yapar).
+/// (Api bunu 412 <c>surum-uyusmazligi</c> yapar, K-48).
 /// </summary>
 public static class RowVersion
 {
