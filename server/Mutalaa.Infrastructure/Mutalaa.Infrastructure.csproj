@@ -6,6 +6,11 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="EFCore.NamingConventions" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <PackageReference Include="NSec.Cryptography" />
+    <PackageReference Include="MackySoft.Json.Canonicalization" />
+    <PackageReference Include="AWSSDK.S3" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="JsonSchema.Net" />
   </ItemGroup>
 
   <ItemGroup>

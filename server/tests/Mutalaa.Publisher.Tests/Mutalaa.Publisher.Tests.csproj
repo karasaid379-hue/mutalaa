@@ -13,10 +13,28 @@
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="JsonSchema.Net" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Mutalaa.Publisher\Mutalaa.Publisher.csproj" />
+  </ItemGroup>
+
+  <!-- Api.Tests destek dosyalari baglantili eklenir (kopya yok; Api projesine bagimlilik yok): kap fiksturu, veritabani, model, depo yollari, sentetik veri. -->
+  <ItemGroup>
+    <Compile Include="..\Mutalaa.Api.Tests\Support\PostgresFixture.cs" Link="Support\PostgresFixture.cs" />
+    <Compile Include="..\Mutalaa.Api.Tests\Support\TestDatabase.cs" Link="Support\TestDatabase.cs" />
+    <Compile Include="..\Mutalaa.Api.Tests\Support\EditorialDatabase.cs" Link="Support\EditorialDatabase.cs" />
+    <Compile Include="..\Mutalaa.Api.Tests\Support\ModelFactory.cs" Link="Support\ModelFactory.cs" />
+    <Compile Include="..\Mutalaa.Api.Tests\Support\RepoFiles.cs" Link="Support\RepoFiles.cs" />
+    <Compile Include="..\Mutalaa.Api.Tests\Support\TestData.cs" Link="Support\TestData.cs" />
+  </ItemGroup>
+
+  <!-- Domain.Tests destek dosyalari baglantili eklenir: kultur kapsami, enum JSON ve DDL okuyucusu. -->
+  <ItemGroup>
+    <Compile Include="..\Mutalaa.Domain.Tests\Support\CultureScope.cs" Link="Support\CultureScope.cs" />
+    <Compile Include="..\Mutalaa.Domain.Tests\Support\EditorialDoc.cs" Link="Support\EditorialDoc.cs" />
+    <Compile Include="..\Mutalaa.Domain.Tests\Support\EnumsJson.cs" Link="Support\EnumsJson.cs" />
   </ItemGroup>
 
   <!-- Manifest semasi, ornek manifest ve ortak enum listesi cikti klasorune kopyalanir (data\). -->
