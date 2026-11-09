@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using Microsoft.EntityFrameworkCore;
 using Mutalaa.Api.Problems;
 using Mutalaa.Api.Validation;
+using Mutalaa.Domain;
 using Mutalaa.Domain.Anchors;
 using Mutalaa.Domain.Content;
 using Mutalaa.Domain.Links;
@@ -73,7 +74,7 @@ public static partial class UnitEndpoints
             from u in db.Units.AsNoTracking()
             join s in db.Sources.AsNoTracking() on u.SourceId equals s.Slug
             where u.Anchor == anchorRef
-            select new { u.Kind, u.Metin, u.ContentHash, SourceKind = s.Tur })
+            select new { u.Kind, u.Metin, u.ContentHash, u.Marks, u.Sentences, SourceKind = s.Tur })
             .FirstOrDefaultAsync(cancellationToken);
         if (target is null)
         {
@@ -111,6 +112,16 @@ public static partial class UnitEndpoints
         if (string.Equals(canonical, target.Metin, StringComparison.Ordinal))
         {
             return ApiProblem.Validation(new Dictionary<string, string[]> { ["metin"] = ["Değişiklik yok: metin mevcut metinle aynı."] });
+        }
+
+        // Ofsetli turev alanlar (marks, sentences) metin degisimini A16'ya kadar tasimaz: oneri acilip uygulama aninda reddedilmesin,
+        // kullanici simdi 422 ile bilgilensin (karar ucu da ayni kosulda ayni kodu verir).
+        if (ReviewDecisions.HasOffsetData(target.Marks, target.Sentences?.Length ?? 0))
+        {
+            return ApiProblem.Create(
+                StatusCodes.Status422UnprocessableEntity,
+                DomainErrorCodes.IncelemeDesteklenmiyor,
+                "Bu birimin ofsetli alanları (marks, sentences) var; metin değişimi bu alanlar A16'da hesaplanana kadar desteklenmiyor.");
         }
 
         string? proposer = user.Identity?.Name ?? user.FindFirstValue(ClaimTypes.Email);

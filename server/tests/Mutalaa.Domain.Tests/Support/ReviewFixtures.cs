@@ -26,8 +26,9 @@ internal static class ReviewFixtures
         TextStatus durum = TextStatus.Taslak,
         string metin = CurrentText,
         SourceKind sourceKind = SourceKind.Meal,
-        int rev = 1) =>
-        new(kind, sourceKind, durum, metin, ContentHash.Compute(metin), rev);
+        int rev = 1,
+        bool hasOffsetData = false) =>
+        new(kind, sourceKind, durum, metin, ContentHash.Compute(metin), rev, hasOffsetData);
 
     /// <summary>Birim metni incelemesi: onceki mevcut metin, onerilen yeni metin.</summary>
     public static Review UnitReview(

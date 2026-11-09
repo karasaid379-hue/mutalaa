@@ -149,7 +149,14 @@ internal static class ReviewDecider
                         .Where(s => s.Slug == unit.SourceId)
                         .Select(s => s.Tur)
                         .SingleAsync(cancellationToken);
-                    return (unit, ReviewTargetState.ForUnit(new UnitReviewState(unit.Kind, kind, unit.MetinDurumu, unit.Metin, unit.ContentHash, unit.Rev)));
+                    return (unit, ReviewTargetState.ForUnit(new UnitReviewState(
+                        unit.Kind,
+                        kind,
+                        unit.MetinDurumu,
+                        unit.Metin,
+                        unit.ContentHash,
+                        unit.Rev,
+                        ReviewDecisions.HasOffsetData(unit.Marks, unit.Sentences?.Length ?? 0))));
                 }
 
             case ReviewTargets.SurahAlias:

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Mutalaa.Domain.Content;
 using Mutalaa.Domain.Links;
 using Mutalaa.Domain.Text;
@@ -42,14 +43,18 @@ public readonly record struct ReviewDecisionRequest
     public required DateTime Now { get; init; }
 }
 
-/// <summary>Birim hedefinin karar anindaki durumu (unit satirindan okunur).</summary>
+/// <summary>
+/// Birim hedefinin karar anindaki durumu (unit satirindan okunur). <paramref name="HasOffsetData"/>: birimin metne bagli ofsetli
+/// turev alani var (bos olmayan <c>marks</c> ya da en az bir <c>sentences</c> araligi; <see cref="ReviewDecisions.HasOffsetData"/>).
+/// </summary>
 public readonly record struct UnitReviewState(
     UnitKind Kind,
     SourceKind SourceKind,
     TextStatus MetinDurumu,
     string Metin,
     string ContentHash,
-    int Rev);
+    int Rev,
+    bool HasOffsetData = false);
 
 /// <summary>Hedefin karar anindaki durumu: durum sutunlu hedeflerde Status, birimde Unit.</summary>
 public readonly record struct ReviewTargetState
@@ -191,12 +196,20 @@ public static class ReviewDecisions
     /// (2) uygulanacak metin duzenlenen, yoksa onerilen; ikisi de bossa (yalniz durum onayi) metin degismez, null doner;
     /// (3) metin degisiyorsa Canonicalize, ContentHash, rev + 1 ve arama anahtarlari (tr_stem NULL). Ozet degismiyorsa null doner.
     /// Degistirilemez metin (ayet, kuran_metni) 422 <c>degistirilemez-metin</c>.
+    /// Ofsetli turev alanlar (marks, sentences) metin degisimiyle kayar ve yeniden hesaplanmasi A16'ya kalmistir:
+    /// metin GERCEKTEN degisiyorsa ve birimde ofsetli alan varsa 422 <c>inceleme-desteklenmiyor</c> (K-48 degismez; kisitlama A16'da kalkar).
+    /// Durum onayi (metin degismez) ve ret serbesttir.
     /// </summary>
     public static UnitTextUpdate? ApplyUnitText(UnitReviewState unit, string? onceki, string? onerilen, string? duzenlenen)
     {
         RequireMutable(unit);
         RequireFresh(unit, onceki);
+        return ResolveTextChange(unit, onerilen, duzenlenen);
+    }
 
+    /// <summary>Uygulanacak degerden yeni metni hesaplar (ApplyUnitText 2 ve 3); metin degismiyorsa null. Ofsetli alan denetimi burada.</summary>
+    private static UnitTextUpdate? ResolveTextChange(UnitReviewState unit, string? onerilen, string? duzenlenen)
+    {
         string? text = ReviewPayload.ReadMetin(duzenlenen, "duzenlenen") ?? ReviewPayload.ReadMetin(onerilen, "onerilen");
         if (text is null)
         {
@@ -225,8 +238,52 @@ public static class ReviewDecisions
             return null;
         }
 
+        RequireNoOffsetData(unit);
+
         SearchKeys keys = SearchNormalizer.Keys(canonical);
         return new UnitTextUpdate(canonical, hash, unit.Rev + 1, keys.TrNarrow, keys.TrWide, keys.ArNorm);
+    }
+
+    /// <summary>
+    /// Birimde metne bagli ofsetli turev alan var mi: <c>marks</c> bos dizi (ya da bos/null) degilse ya da <c>sentences</c> araligi varsa.
+    /// Anlasilamayan <c>marks</c> degeri (bozuk JSON, dizi olmayan) ihtiyatla "var" sayilir.
+    /// </summary>
+    public static bool HasOffsetData(string? marksJson, int sentenceCount)
+    {
+        if (sentenceCount > 0)
+        {
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(marksJson))
+        {
+            return false;
+        }
+
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(marksJson);
+            return document.RootElement.ValueKind switch
+            {
+                JsonValueKind.Null or JsonValueKind.Undefined => false,
+                JsonValueKind.Array => document.RootElement.GetArrayLength() > 0,
+                _ => true,
+            };
+        }
+        catch (JsonException)
+        {
+            return true;
+        }
+    }
+
+    private static void RequireNoOffsetData(UnitReviewState unit)
+    {
+        if (unit.HasOffsetData)
+        {
+            throw new DomainException(
+                DomainErrorCodes.IncelemeDesteklenmiyor,
+                "Ofsetli alanlar (marks, sentences) metin degisimini A16'da hesaplanana kadar desteklenmiyor; metni degistiren onay yapilamaz.");
+        }
     }
 
     private static ReviewOutcome ApproveStatus(Review review, ReviewDecisionRequest request, ReviewTargetState target, string actor, string gerekce)
@@ -285,6 +342,12 @@ public static class ReviewDecisions
         {
             // Ilk onay: metin uygulanmaz, kayit acik kalir. Taslak birim incelemede olur; onayli birim eski metnini ve durumunu korur.
             RequireFresh(unit, review.Onceki);
+            if (unit.HasOffsetData)
+            {
+                // Metin ikinci onayda uygulanir; uygulanamayacak degisikligi kullanici ilk onayda ogrensin.
+                _ = ResolveTextChange(unit, review.Onerilen, stored);
+            }
+
             return new ReviewOutcome
             {
                 Durum = ReviewStatus.Acik,
