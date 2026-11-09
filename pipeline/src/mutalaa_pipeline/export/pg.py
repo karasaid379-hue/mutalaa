@@ -21,6 +21,10 @@ degismisse ya da veritabaninda olup staged'de olmayan bir `source_id` kelimesi v
 alinir (cikis 1). QAC sutunlarina (`root_id`, `lemma_id`, `pos`, `features`, `morph_source`)
 INSERT'te bile yazilmaz; onlar A17'nindir.
 
+Sentetik fiksturler (A13.6, `export/pg_fikstur.py`): `test-kucuk` ve `test-tefsir-ornek` birimleri
+`metin_durumu = 'taslak'` girer (kanonik basvuru degil, K-38 madde 4) ve `tr_narrow`, `tr_wide`,
+`tr_stem` ile birlikte yuklenir; `test-ses` birim tasimaz, yalniz `source` satiri yuklenir.
+
 Cikis kodlari: 0 basarili, 1 QA kapisi/ozet farki/eksik capa, 2 girdi ve yapilandirma (kayitsiz
 ya da gecersiz kaynak kaydi dahil). Iletilere satir icerigi ve baglanti dizesi yazilmaz; yalniz
 capa, sayi, ozet ve alan adi.
@@ -47,6 +51,7 @@ from mutalaa_pipeline.config import Ayarlar
 from mutalaa_pipeline.db import VeritabaniHatasi, baglan
 from mutalaa_pipeline.enums import SourceKind
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kati_json
+from mutalaa_pipeline.ingest import fikstur as fikstur_uretec
 from mutalaa_pipeline.lineage import (
     KELIMELER_ADI,
     NOTICE_ADI,
@@ -71,11 +76,18 @@ EK_KAYNAKLAR: Final[Mapping[str, tuple[str, ...]]] = {
     "tanzil-uthmani": ("tanzil-simple-clean",),
     "tanzil-ust-veri": (),  # yapi verisi: quran_marker ve page_map (export/pg_yapi.py)
     "sure-adlari-vikipedi": (),  # sure adi adaylari: surah_alias ve review (pg_sure_adlari.py)
+    "test-kucuk": (),  # sentetik kitap fiksturu (A13.6; pg_fikstur.py)
+    "test-tefsir-ornek": (),  # sentetik tefsir fiksturu (A13.6; pg_fikstur.py)
+    "test-ses": (),  # sentetik ses fiksturu: yalniz source satiri (A13.6)
 }
 # Birim degil yapi satiri yukleyen kaynaklar (K-43 madde 3): units.jsonl yerine markers/pages.
 YAPI_KAYNAKLARI: Final = frozenset({"tanzil-ust-veri"})
 # Sure adi aday satiri yukleyen kaynaklar (K-43 madde 4-5): surah_alias + review, units yok.
 SURE_ADI_KAYNAKLARI: Final = frozenset({"sure-adlari-vikipedi"})
+# Sentetik fikstur birimleri: `taslak` girer, tr_* arama sutunlariyla (A13.6, pg_fikstur.py).
+FIKSTUR_KAYNAKLARI: Final = frozenset(fikstur_uretec.KAYNAKLAR)
+# Birimsiz kaynaklar: zincir ve QA raporu aranmaz, yalniz `source` satiri yuklenir (A13.6).
+YALNIZ_KAYNAK_KAYNAKLARI: Final = frozenset(fikstur_uretec.YALNIZ_KAYNAK)
 
 # `words.jsonl` zorunlu olan kaynaklar: anchor calismasi kelime dosyasini listelemelidir.
 KELIME_KAYNAKLARI: Final = frozenset({"tanzil-uthmani"})
@@ -209,6 +221,30 @@ class AdaySatiri:
 
 
 @dataclass(frozen=True)
+class FiksturSatiri:
+    """Fikstur `units.jsonl` satiri; `ayah_lo`/`ayah_hi` kitapta None. Metin iletilere girmez."""
+
+    anchor: str
+    kind: str
+    role: str
+    parent_path: str | None
+    ord: int
+    ayah_lo: int | None
+    ayah_hi: int | None
+    metin: str
+    content_hash: str
+    metin_durumu: str
+    attrs: dict[str, object]
+    tr_narrow: str
+    tr_wide: str
+    tr_stem: str
+    ar_norm: str | None
+    data_version: str
+    provenance: dict[str, object]
+    source_id: str
+
+
+@dataclass(frozen=True)
 class ZincirRun:
     run_id: str
     adim: str
@@ -243,6 +279,9 @@ class Hazirlik:
     sayfalar: list[SayfaSatiri] = field(default_factory=list)
     sure_adi: bool = False  # True: adaylar yuklenir (surah_alias + review; units yok)
     adaylar: list[AdaySatiri] = field(default_factory=list)
+    fikstur: bool = False  # True: fikstur birimleri yuklenir (taslak + tr_*; pg_fikstur.py)
+    fikstur_satirlari: list[FiksturSatiri] = field(default_factory=list)
+    yalniz_kaynak: bool = False  # True: yalniz source satiri yuklenir (zincir ve birim yok)
 
 
 # --- yardimcilar -------------------------------------------------------------------------
@@ -641,6 +680,12 @@ def hazirla(
         from mutalaa_pipeline.export import pg_sure_adlari
 
         return pg_sure_adlari.hazirla(ctx, source_id, run, ek_kaynaklar)
+    if source_id in FIKSTUR_KAYNAKLARI or source_id in YALNIZ_KAYNAK_KAYNAKLARI:
+        from mutalaa_pipeline.export import pg_fikstur
+
+        if source_id in YALNIZ_KAYNAK_KAYNAKLARI:
+            return pg_fikstur.hazirla_yalniz_kaynak(ctx, source_id, run, ek_kaynaklar)
+        return pg_fikstur.hazirla(ctx, source_id, run, ek_kaynaklar)
     kaynak_idleri = (source_id, *ek_kaynaklar)
     # G-KAY: kayit gecerli ve atif_metni dolu; kayitsiz ya da gecersiz kayitta cikis 2.
     kaynaklar = ctx.require_sources(kaynak_idleri)
@@ -690,6 +735,8 @@ def hazirla(
 
 
 def _manifest_kur(h: Hazirlik) -> dict[str, object]:
+    if h.yalniz_kaynak:  # zincir, QA raporu ve ham dosya yok
+        return {"source_id": h.source_id, "kaynaklar": list(h.kaynak_idleri), "yalniz_kaynak": True}
     kelime: dict[str, object] = (
         {"words_sha256": h.kelimeler_sha256} if h.kelimeler_sha256 is not None else {}
     )
@@ -1019,6 +1066,12 @@ def _yukle(conn: psycopg.Connection, ctx: RunContext, h: Hazirlik) -> dict[str, 
         from mutalaa_pipeline.export import pg_sure_adlari
 
         sayilar.update(pg_sure_adlari.yukle(conn, h))
+    elif h.fikstur:
+        from mutalaa_pipeline.export import pg_fikstur
+
+        sayilar.update(pg_fikstur.yukle(conn, ctx, h))
+    elif h.yalniz_kaynak:
+        pass  # yalniz `source` satiri (yukarida yazildi): unit, review ve xref yok
     else:
         _staging_yukle(conn, h.satirlar)
         _denetimler(conn, h.source_id)

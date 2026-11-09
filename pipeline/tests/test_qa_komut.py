@@ -678,3 +678,13 @@ def test_pg_komut_qa_kalinca_veritabanina_baglanmadan_cikis_1(z: Zincir) -> None
     kod = pg.komut_export_pg(ayarlar_kur(z.tmp), depo_kok=z.kok, source=KAYNAK, baglanti=bag)
     assert kod == 1
     assert bag.sayi == 0
+
+
+def test_qa_kapi_olaylari_kapi_adini_tasir(z: Zincir) -> None:
+    assert qa(z).exit_code == 0
+    rapor = son_qa_raporu(z)
+    gunluk = (z.veri_kok / "logs" / f"{rapor['run_id']}.jsonl").read_bytes().decode("utf-8")
+    olaylar = [json.loads(s) for s in gunluk.splitlines()]
+    kapilar = [o for o in olaylar if o["olay"] == "qa_kapi"]
+    assert [o["kapi"] for o in kapilar] == list(KAPILAR)
+    assert all(o["source_id"] == KAYNAK and o["sayilar"] == {"bulgu": 0} for o in kapilar)

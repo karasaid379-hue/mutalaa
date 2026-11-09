@@ -27,7 +27,7 @@ from mutalaa_pipeline.adimlar.anchor_tanzil import capa_ozetleri
 from mutalaa_pipeline.adimlar.normalize_tanzil import EK_KAYNAK, KAYNAK
 from mutalaa_pipeline.anchor.ayet_sayilari import AYET_SAYILARI
 from mutalaa_pipeline.export.ortak import GirdiHatasi
-from mutalaa_pipeline.ingest import tanzil, tanzil_bicim
+from mutalaa_pipeline.ingest import fikstur, tanzil, tanzil_bicim
 from mutalaa_pipeline.komut_ortak import komutu_yurut
 from mutalaa_pipeline.lineage import NOTICE_ADI
 from mutalaa_pipeline.qa import (
@@ -241,6 +241,7 @@ def run_qa(
             "qa_kapi",
             source_id=KAYNAK,
             sayilar={"bulgu": len(sonuc.bulgular)},
+            kapi=kapi,
         )
     ctx.sayi("birim", len(girdi.anchor_satirlari))
     if olcum["ar8_gorulen"]:
@@ -278,6 +279,10 @@ def komut_qa_run(
         from mutalaa_pipeline.qa.run_sure_adlari import komut_qa_run_sure_adlari
 
         return komut_qa_run_sure_adlari(run=run, gate=gate, config=config, kok=kok)
+    if source in fikstur.KAYNAKLAR:  # sentetik fikstur: dort kapi (A13.6)
+        from mutalaa_pipeline.qa.run_fikstur import komut_qa_run_fikstur
+
+        return komut_qa_run_fikstur(source=source, run=run, gate=gate, config=config, kok=kok)
     desteklenen = source == KAYNAK
 
     def govde(ctx: RunContext) -> int:

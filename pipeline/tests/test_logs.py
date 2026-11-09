@@ -87,3 +87,13 @@ def test_maskele_ve_ileti_temizle() -> None:
     gizli = ileti_temizle("Deneme ç")
     assert gizli.startswith("[ileti gizlendi:")
     assert len(ileti_temizle("a" * 1000)) == 300
+
+
+def test_kapi_alani_yalniz_verilirse_yazilir(tmp_path: Path) -> None:
+    g = gunluk_kur(tmp_path)
+    g.yaz("INFO", "qa_kapi", source_id="test-kaynak", sayilar={"bulgu": 0}, kapi="G-BUT")
+    g.yaz("INFO", "qa_basla", source_id="test-kaynak")
+    ilk, ikinci = (json.loads(s) for s in g.yol.read_bytes().decode("utf-8").splitlines())
+    assert ilk["kapi"] == "G-BUT"
+    assert ilk["olay"] == "qa_kapi"
+    assert "kapi" not in ikinci  # onceki kayit bicimi korunur

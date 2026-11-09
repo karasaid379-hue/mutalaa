@@ -1,6 +1,6 @@
 namespace Mutalaa.Domain.Releases;
 
-/// <summary>release.talep degerleri (BC-04): text + CHECK, PostgreSQL enum degil. Release varligina ozellik eslemesi goc adiminda eklenir.</summary>
+/// <summary>release.talep degerleri (BC-04): text + CHECK, PostgreSQL enum degil.</summary>
 public static class ReleaseRequests
 {
     public const string Yayin = "yayin";

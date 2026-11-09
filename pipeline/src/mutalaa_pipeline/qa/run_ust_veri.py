@@ -149,6 +149,7 @@ def run_qa(
             "qa_kapi",
             source_id=KAYNAK,
             sayilar={"bulgu": len(sonuc.bulgular)},
+            kapi=kapi,
         )
     ctx.sayi("isaret", len(girdi.isaret_satirlari))
     ctx.sayi("sayfa", len(girdi.sayfa_satirlari))

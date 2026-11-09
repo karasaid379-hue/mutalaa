@@ -349,3 +349,24 @@ def test_rapor_yeniden_adlandirmadan_once_diske_esitlenir(
     ctx = ctx_kur(tmp_path, depo_kur(tmp_path))
     ctx.rapor_yaz("tamam", 0)
     assert olaylar == ["fsync", "replace"]
+
+
+def test_rapor_gecici_izin_hatasinda_yeniden_denenir(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """OneDrive hedefi kisa sure tutarsa `os.replace` PermissionError verir: rapor yine yazilir."""
+    gercek, cagri = runctx.os.replace, []
+
+    def replace(kaynak: object, hedef: object) -> None:
+        cagri.append(1)
+        if len(cagri) < 3:
+            raise PermissionError(13, "erisim engellendi")
+        gercek(kaynak, hedef)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(runctx.os, "replace", replace)
+    monkeypatch.setattr(runctx.lineage.time, "sleep", lambda _s: None)
+    ctx = ctx_kur(tmp_path, depo_kur(tmp_path))
+    yol = ctx.rapor_yaz("tamam", 0)
+    assert len(cagri) == 3
+    assert yol.is_file()
+    assert not yol.with_name(yol.name + ".tmp").exists()

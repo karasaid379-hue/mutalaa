@@ -1,0 +1,10 @@
+# A13.6 (2026-11-09) · kaynak: docs/04-icerik/01-kaynaklar.md §3.8
+slug = "test-kucuk"
+tur = "kitap"
+baslik = "Sentetik küçük kitap (test fikstürü)"
+surum = "1"
+atif_metni = "Sentetik test verisi (Mütâlaa)."
+notlar = '''
+Sentetik fikstür, A13. Dışarıdan alınmaz; belirlenimci üreteçle üretilir (mutalaa ingest fikstur --source test-kucuk).
+Metin açıkça sentetiktir ("Deneme paragrafı 1 ..."); hiçbir dini metne benzetilmez. Çapa: k:test-kucuk:bolum-1:p{n}.
+Maestro arama akışı için "Işık" sözcüğünü içeren bir paragraf taşır.'''

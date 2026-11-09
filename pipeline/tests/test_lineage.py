@@ -371,3 +371,81 @@ def test_arac_surumleri() -> None:
     assert araclar["normalizer_version"] == "1.0"
     assert araclar["snowballstemmer"] == "3.1.1"
     assert araclar["psycopg"] is not None
+
+
+# --- atomik_degistir: OneDrive/antivirus kaynakli gecici PermissionError (A13.6) ---------
+
+
+class GeciciIzinHatasi:
+    """Ilk `n` cagriyi `PermissionError` ile bitiren, sonra gercek `os.replace` yapan sahte."""
+
+    def __init__(self, n: int) -> None:
+        self.kalan = n
+        self.cagri = 0
+
+    def __call__(self, gecici: Path, hedef: Path) -> None:
+        self.cagri += 1
+        if self.kalan > 0:
+            self.kalan -= 1
+            raise PermissionError(13, "erisim engellendi (WinError 5)")
+        os.replace(gecici, hedef)
+
+
+def _gecici_dosya(tmp_path: Path) -> tuple[Path, Path]:
+    gecici, hedef = tmp_path / "a.tmp", tmp_path / "a"
+    gecici.write_bytes(b"yeni")
+    return gecici, hedef
+
+
+def test_atomik_degistir_gecici_izin_hatasinda_yeniden_dener(tmp_path: Path) -> None:
+    gecici, hedef = _gecici_dosya(tmp_path)
+    sahte, beklemeler = GeciciIzinHatasi(2), []
+    lineage.atomik_degistir(gecici, hedef, degistir=sahte, uyku=beklemeler.append)
+    assert sahte.cagri == 3
+    assert beklemeler == [0.2, 0.4]  # kisa, artan bekleme
+    assert hedef.read_bytes() == b"yeni"
+    assert not gecici.exists()
+
+
+def test_atomik_degistir_uc_denemeden_sonra_hatayi_firlatir(tmp_path: Path) -> None:
+    gecici, hedef = _gecici_dosya(tmp_path)
+    sahte, beklemeler = GeciciIzinHatasi(99), []
+    with pytest.raises(PermissionError):
+        lineage.atomik_degistir(gecici, hedef, degistir=sahte, uyku=beklemeler.append)
+    assert sahte.cagri == lineage.YENIDEN_DEGISTIRME_DENEMESI == 3
+    assert len(beklemeler) == 2  # son denemeden sonra beklenmez
+    assert gecici.exists()
+    assert not hedef.exists()
+
+
+def test_atomik_degistir_baska_hatayi_yeniden_denemez(tmp_path: Path) -> None:
+    gecici, hedef = _gecici_dosya(tmp_path)
+    cagri = []
+
+    def bozuk(_a: Path, _b: Path) -> None:
+        cagri.append(1)
+        raise OSError("baska hata")
+
+    with pytest.raises(OSError, match="baska hata"):
+        lineage.atomik_degistir(gecici, hedef, degistir=bozuk, uyku=lambda _s: None)
+    assert len(cagri) == 1
+
+
+def test_manifest_yazimi_gecici_izin_hatasindan_kurtulur(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    gercek, cagri = os.replace, []
+
+    def replace(a: object, b: object) -> None:
+        cagri.append(1)
+        if len(cagri) < 3:
+            raise PermissionError(13, "erisim engellendi")
+        gercek(a, b)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(os, "replace", replace)
+    monkeypatch.setattr(lineage.time, "sleep", lambda _s: None)
+    klasor = tmp_path / "run"
+    lineage.manifest_yaz(klasor, manifest_kur())
+    assert len(cagri) == 3
+    assert lineage.manifest_oku(klasor) is not None
+    assert not (klasor / "manifest.json.tmp").exists()
