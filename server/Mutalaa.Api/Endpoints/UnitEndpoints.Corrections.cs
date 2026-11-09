@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.Json.Nodes;
 using Microsoft.EntityFrameworkCore;
 using Mutalaa.Api.Problems;
+using Mutalaa.Api.Validation;
 using Mutalaa.Domain.Anchors;
 using Mutalaa.Domain.Content;
 using Mutalaa.Domain.Links;
@@ -31,13 +32,17 @@ public static partial class UnitEndpoints
         IcerikDbContext db,
         CancellationToken cancellationToken)
     {
-        // Girdi: gerekce bos olamaz ve en cok 2000 kod noktasi; metin bos olamaz.
+        // Girdi: gerekce bos olamaz, en cok 2000 kod noktasi; metin bos olamaz. Ikisi de NUL ve eslesmemis vekil icermez (PostgreSQL yazamaz).
         Dictionary<string, string[]> errors = new(StringComparer.Ordinal);
         if (string.IsNullOrWhiteSpace(request.Gerekce))
         {
             errors["gerekce"] = ["gerekce boş olamaz."];
         }
-        else if (CountCodePoints(request.Gerekce) > ReviewDecisions.MaxGerekceLength)
+        else if (!WritableText.TryCountCodePoints(request.Gerekce, out int gerekceLength))
+        {
+            errors["gerekce"] = [WritableText.Message("gerekce")];
+        }
+        else if (gerekceLength > ReviewDecisions.MaxGerekceLength)
         {
             errors["gerekce"] = ["gerekce en çok 2000 karakter olabilir."];
         }
@@ -45,6 +50,10 @@ public static partial class UnitEndpoints
         if (string.IsNullOrWhiteSpace(request.Metin))
         {
             errors["metin"] = ["metin boş olamaz."];
+        }
+        else
+        {
+            WritableText.Check(errors, "metin", request.Metin);
         }
 
         if (errors.Count > 0)

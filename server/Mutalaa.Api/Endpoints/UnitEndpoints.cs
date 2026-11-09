@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Mutalaa.Api.Paging;
 using Mutalaa.Api.Problems;
+using Mutalaa.Api.Validation;
 using Mutalaa.Domain.Anchors;
 using Mutalaa.Domain.Content;
 using Mutalaa.Domain.Text;
@@ -111,10 +111,21 @@ public static partial class UnitEndpoints
             errors["limit"] = [$"limit 1 ile {MaxLimit.ToString(CultureInfo.InvariantCulture)} arasında bir tamsayı olmalı."];
         }
 
-        if (!string.IsNullOrEmpty(q) && CountCodePoints(q) > MaxQueryLength)
+        // Metin sorgu parametreleri NUL ve eslesmemis vekil icermez (PostgreSQL parametresi olamaz).
+        if (!string.IsNullOrEmpty(q))
         {
-            errors["q"] = [$"q en çok {MaxQueryLength.ToString(CultureInfo.InvariantCulture)} karakter olabilir."];
+            if (!WritableText.TryCountCodePoints(q, out int queryLength))
+            {
+                errors["q"] = [WritableText.Message("q")];
+            }
+            else if (queryLength > MaxQueryLength)
+            {
+                errors["q"] = [$"q en çok {MaxQueryLength.ToString(CultureInfo.InvariantCulture)} karakter olabilir."];
+            }
         }
+
+        WritableText.Check(errors, "prefix", prefix);
+        WritableText.Check(errors, "source", source);
 
         UnitCursor? after = null;
         if (!string.IsNullOrEmpty(cursor))
@@ -321,17 +332,6 @@ public static partial class UnitEndpoints
             .Replace("\\", "\\\\", StringComparison.Ordinal)
             .Replace("%", "\\%", StringComparison.Ordinal)
             .Replace("_", "\\_", StringComparison.Ordinal);
-
-    private static int CountCodePoints(string text)
-    {
-        int count = 0;
-        foreach (Rune unused in text.EnumerateRunes())
-        {
-            count++;
-        }
-
-        return count;
-    }
 
     private sealed record UnitCursor(string SourceId, long Ord, long Id);
 

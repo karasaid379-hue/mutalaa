@@ -1,11 +1,12 @@
 using System.Buffers.Text;
 using System.Text;
+using Mutalaa.Api.Validation;
 
 namespace Mutalaa.Api.Paging;
 
 /// <summary>
 /// Opak sayfalama imleci: UTF-8 yukun base64url (dolgusuz) gosterimi. Istemci icerigini yorumlamaz.
-/// Cozme kati ve kanoniktir: base64url olmayan, gecersiz UTF-8 iceren ya da yeniden kodlandiginda ayni cikmayan dizgi gecersizdir.
+/// Cozme kati ve kanoniktir: base64url olmayan, gecersiz UTF-8 ya da NUL iceren ya da yeniden kodlandiginda ayni cikmayan dizgi gecersizdir.
 /// </summary>
 internal static class Cursor
 {
@@ -37,6 +38,7 @@ internal static class Cursor
             return false;
         }
 
-        return string.Equals(Encode(payload), cursor, StringComparison.Ordinal);
+        // NUL PostgreSQL parametresine giremez; imlec yuku sorguya girer.
+        return WritableText.IsWritable(payload) && string.Equals(Encode(payload), cursor, StringComparison.Ordinal);
     }
 }

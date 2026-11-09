@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Mutalaa.Api.Validation;
 using Mutalaa.Domain;
 using Mutalaa.Domain.Content;
 using Mutalaa.Domain.Links;
@@ -36,6 +37,19 @@ internal static class ReviewDecider
                 return true;
             default:
                 return false;
+        }
+    }
+
+    /// <summary>
+    /// Karar metinleri (<c>gerekce</c> ve <c>duzenlenen.metin</c>) PostgreSQL'e yazilabilir mi (NUL ve eslesmemis vekil yok).
+    /// Hata alan adi <paramref name="prefix"/> + alan (ornegin <c>kararlar[0].gerekce</c>).
+    /// </summary>
+    public static void CheckText(IDictionary<string, string[]> errors, string prefix, string? gerekce, DecisionEdit? edit)
+    {
+        WritableText.Check(errors, prefix + "gerekce", gerekce);
+        if (edit is not null)
+        {
+            WritableText.Check(errors, prefix + "duzenlenen.metin", edit.Metin);
         }
     }
 

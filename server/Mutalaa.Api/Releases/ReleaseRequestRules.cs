@@ -1,6 +1,5 @@
-using System.Buffers;
 using System.Globalization;
-using System.Text;
+using Mutalaa.Api.Validation;
 using Mutalaa.Domain.Releases;
 using Mutalaa.Infrastructure.Packs;
 
@@ -103,19 +102,10 @@ public static class ReleaseRequestRules
             return null;
         }
 
-        int count = 0;
-        ReadOnlySpan<char> rest = notlar;
-        while (!rest.IsEmpty)
+        if (!WritableText.TryCountCodePoints(notlar, out int count))
         {
-            OperationStatus status = Rune.DecodeFromUtf16(rest, out Rune rune, out int consumed);
-            if (status != OperationStatus.Done || rune.Value == 0)
-            {
-                errors["notlar"] = ["notlar alanı geçersiz karakter içeriyor (NUL ya da eşleşmemiş vekil karakter)."];
-                return null;
-            }
-
-            count++;
-            rest = rest[consumed..];
+            errors["notlar"] = [WritableText.Message("notlar")];
+            return null;
         }
 
         if (count > MaxNotesCodePoints)

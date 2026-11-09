@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -5,6 +6,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.OpenApi;
 using Mutalaa.Api.Problems;
 using Mutalaa.Api.Reviews;
+using Mutalaa.Api.Validation;
 using Mutalaa.Domain;
 using Mutalaa.Domain.Reviews;
 using Mutalaa.Infrastructure.Persistence;
@@ -97,6 +99,8 @@ public static class ReviewEndpoints
             errors["durum"] = ["Geçersiz durum. İzin verilenler: acik, onaylandi, reddedildi, geri_alindi."];
         }
 
+        WritableText.Check(errors, "alan", alan);
+
         int take = limit ?? ReviewQueries.DefaultLimit;
         if (take is < 1 or > ReviewQueries.MaxLimit)
         {
@@ -150,6 +154,13 @@ public static class ReviewEndpoints
         if (!ReviewDecider.TryParseKarar(body.Karar, out bool approve))
         {
             return KararError("karar");
+        }
+
+        Dictionary<string, string[]> textErrors = new(StringComparer.Ordinal);
+        ReviewDecider.CheckText(textErrors, string.Empty, body.Gerekce, body.Duzenlenen);
+        if (textErrors.Count > 0)
+        {
+            return ApiProblem.Validation(textErrors);
         }
 
         Review? review = await db.Reviews.SingleOrDefaultAsync(r => r.Id == id, cancellationToken);
@@ -213,9 +224,29 @@ public static class ReviewEndpoints
             return ApiProblem.Validation(new Dictionary<string, string[]> { ["kararlar"] = [$"kararlar 1 ile {MaxBulk} arasında öğe içermeli."] });
         }
 
+        int nullIndex = IndexOfNull(items);
+        if (nullIndex >= 0)
+        {
+            return ApiProblem.Validation(new Dictionary<string, string[]>
+            {
+                [string.Create(CultureInfo.InvariantCulture, $"kararlar[{nullIndex}]")] = ["kararlar öğesi null olamaz."],
+            });
+        }
+
         if (items.Any(i => !ReviewDecider.TryParseKarar(i.Karar, out _)))
         {
             return KararError("kararlar");
+        }
+
+        Dictionary<string, string[]> textErrors = new(StringComparer.Ordinal);
+        for (int i = 0; i < items.Count; i++)
+        {
+            ReviewDecider.CheckText(textErrors, string.Create(CultureInfo.InvariantCulture, $"kararlar[{i}]."), items[i].Gerekce, items[i].Duzenlenen);
+        }
+
+        if (textErrors.Count > 0)
+        {
+            return ApiProblem.Validation(textErrors);
         }
 
         long[] ids = [.. items.Select(i => i.Id)];
@@ -313,6 +344,19 @@ public static class ReviewEndpoints
             p.Prepared.Review.Eylem,
             RowVersion.Get(db.Entry(p.Prepared.Review))))];
         return TypedResults.Ok(new BulkDecisionResult(results));
+    }
+
+    private static int IndexOfNull(IReadOnlyList<BulkDecisionItem> items)
+    {
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i] is null)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     private static string Actor(ClaimsPrincipal user) => user.Identity?.Name ?? string.Empty;
