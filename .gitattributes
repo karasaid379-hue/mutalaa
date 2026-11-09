@@ -11,3 +11,7 @@
 
 # Tanzil parcalari: bayt bayt korunur, git donusturmez
 pipeline/tests/fixtures/tanzil/** -text
+
+# RFC 8785 test verisi (cyberphone/json-canonicalization @32a4819): bayt bayt korunur
+packages/content-schema/test/fixtures/jcs/** -text
+packages/content-schema/test/fixtures/imza/** -text
