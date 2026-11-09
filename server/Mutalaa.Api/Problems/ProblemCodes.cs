@@ -25,6 +25,12 @@ public static class ProblemCodes
     public const string Hata = "hata";
     public const string SunucuHatasi = "sunucu-hatasi";
 
+    // Yayin uclari (K-48 madde 7 ve 9).
+    public const string YayinSuruyor = "yayin-suruyor";
+    public const string KaliteKapisi = "kalite-kapisi";
+    public const string OncekiYayinBozuk = "onceki-yayin-bozuk";
+    public const string DepoErisilemiyor = "depo-erisilemiyor";
+
     /// <summary>HTTP durumundan varsayilan kod; tabloda olmayan 4xx "dogrulama", 5xx "sunucu-hatasi" olur.</summary>
     public static string ForStatus(int status) => status switch
     {
@@ -54,6 +60,7 @@ public static class ProblemCodes
         StatusCodes.Status422UnprocessableEntity => "İşlenemeyen içerik",
         StatusCodes.Status428PreconditionRequired => "Sürüm gerekli",
         StatusCodes.Status500InternalServerError => "Sunucu hatası",
+        StatusCodes.Status503ServiceUnavailable => "Hizmet kullanılamıyor",
         _ => null,
     };
 

@@ -36,6 +36,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow;
 });
 
+builder.Services.AddReleaseServices();
 builder.Services.AddValidation();
 builder.Services.AddApiProblemDetails();
 builder.Services.AddExceptionHandler<DomainExceptionHandler>();
