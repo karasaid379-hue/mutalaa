@@ -1,7 +1,7 @@
 # Editoryal Veritabanı
 
-> **Sürüm:** 1.9 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) · K-12 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
+> **Sürüm:** 1.10 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) · K-12 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
 
 Editoryal veritabanı içeriğin tek doğruluk kaynağıdır. Python içerik hattı yazar, editör paneli onaylar, .NET yayınlayıcı okuyup SQLite paketlerini üretir. Mobil uygulama bu veritabanına bağlanmaz. Seçim PostgreSQL 18'dir; Türkçe ve Arapça tam metin yapılandırmaları hazırdır, anlamsal katman için pgvector eklenir (K-11). Geliştirme yerel Docker Compose'ta `postgres:18` ile çalışır ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)). Bu dosya diğer belgelerin önerdiği tabloları da kesin DDL olarak toplar (bölüm 11).
 
@@ -63,7 +63,7 @@ CREATE TABLE source (
   provider            text,                             -- 'tanzil', 'qac', 'quran_foundation', 'tarteel', …
   kaynak_url          text,
   alinma_tarihi       date,                             -- dosyanın indirildiği gün
-  dosya_sha256        char(64),                         -- indirilen dosyanın özeti
+  dosya_sha256        char(64) CHECK (dosya_sha256 ~ '^[0-9a-f]{64}$'),  -- indirilen dosyanın özeti; NULL serbest (K-46 madde 4)
   baski_bilgisi       jsonb,                            -- baskılar: yayınevi, yıl, cilt takımı, ISBN, boy, yazı, metin esası
   atif_metni          text NOT NULL,                    -- Ayarlar › Kaynaklar ekranındaki atıf satırı
   atif_url            text,                             -- atıfla gösterilen bağlantı; boşsa kaynak_url
@@ -189,7 +189,7 @@ CREATE TABLE lemma_gloss (                         -- K-19 Türkçe anlamları; 
   status             xref_status NOT NULL DEFAULT 'aday',
   origin             text NOT NULL,                 -- 'yz:{model}' | 'editor'
   version            text NOT NULL,
-  content_hash       char(64) NOT NULL,
+  content_hash       char(64) NOT NULL CHECK (content_hash ~ '^[0-9a-f]{64}$'),
   updated_at         timestamptz NOT NULL DEFAULT now()
 );
 
@@ -419,7 +419,7 @@ CREATE TABLE audio_timing (
   source_id      text NOT NULL REFERENCES source(slug), -- zamanlama kaynağı (A07 şeması; A27.2 notuna bakın)
   anchor         text COLLATE "C" NOT NULL,           -- 'q:{sure}:{ayet}'
   file           text NOT NULL,                       -- paket içi yol: '002/255.mp3' ya da '002.mp3'
-  file_sha256    char(64) NOT NULL,                   -- zamanlamanın bağlı olduğu bayt dizisi
+  file_sha256    char(64) NOT NULL CHECK (file_sha256 ~ '^[0-9a-f]{64}$'),  -- zamanlamanın bağlı olduğu bayt dizisi
   start_ms       integer NOT NULL,
   end_ms         integer NOT NULL,
   words          jsonb,                               -- [[kelime, start_ms, end_ms], …]
@@ -464,13 +464,17 @@ CREATE TABLE release (
   durum            surum_durumu NOT NULL DEFAULT 'hazirlaniyor',
   manifest         jsonb,                          -- imzalı manifest.json
   kapi_raporu      jsonb NOT NULL DEFAULT '{}',    -- paket başına dahil/hariç ve gerekçe
-  ozetler          jsonb NOT NULL DEFAULT '{}',    -- kaynak ve paket içerik özetleri
+  ozetler          jsonb NOT NULL DEFAULT '{}',    -- {"kaynaklar": {...}, "paketler": {...}}: kaynak ve paket içerik özetleri
   data_version     text NOT NULL,
   olusturan        text NOT NULL,
   created_at       timestamptz NOT NULL DEFAULT now(),
   yayinlandi_at    timestamptz,
-  UNIQUE (surum, derleme)
+  talep            text NOT NULL DEFAULT 'yayin' CHECK (talep IN ('yayin','terfi','geri_alma')),  -- watch'ın yürüteceği iş (K-46 madde 2)
+  kaynak_release_id integer REFERENCES release(id),  -- terfide ve geri almada kaynak yayın
+  paketler         text[],                         -- --pack listesi; boşsa bütün paketler
+  notlar           text                            -- 'not' PostgreSQL'de ayrılmış sözcük
 );
+CREATE UNIQUE INDEX release_surum_derleme_key ON release (surum, derleme) WHERE durum <> 'basarisiz';
 
 CREATE TABLE pipeline_run (
   run_id      uuid PRIMARY KEY,                     -- hattın ürettiği UUIDv7
@@ -488,9 +492,10 @@ ALTER TABLE unit ADD FOREIGN KEY (run_id) REFERENCES pipeline_run (run_id);
 - `data_version` hat çalıştırmalarında `{yyyy.mm.dd}-{hat_git_kısa_sha}`, hazır veri setlerinde `{source_id}@{sürüm}` biçimindedir; Tanzil için `tanzil-uthmani@{surum}` (sürüm kaynak kaydındaki `surum` alanından gelir, çözülemezse hat çıkış `2` verir). Tanzil `provenance` değeri `{"file":"<dosya adı>","sha256":"…","line":1,"bayt":[0,0],"steps":[]}` biçimindedir (bayt aralığı ham dosyada yarı açıktır, tarihli yol girmez; sayılar yer tutucudur). `ar_norm` Simple Clean'i de kaynak aldığı için satır ayrıca `provenance.ar_norm = {"kaynak":"tanzil-simple-clean","sha256":"…","line":1,"normalizer_version":"…","ar4":true}` taşır ([K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) madde 1 ve 5; `kaynak` değerinin yazımı kod yazılırken kesinleşir, Doğrulanacak). `unit.provenance` satırın kökenini yazar: `{"file":"cilt1.txt","line":1204,"ocr_page":"c1-s45","steps":["nfc","bosluk"]}`. HTML, EPUB ya da PDF'ten çıkarılan metinde `provenance` ayrıca ham dosyanın özetini (SHA-256), dosya içi konumu ve çıkarıcı sürümünü taşır ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme), madde 3).
 - Hattın yüklediği her `unit` satırı `run_id` taşır; `pipeline_run` sütunları [İçerik hattı](../04-icerik/02-icerik-hatti.md) önerisiyle aynıdır. `xref` satırının çalıştırması `evidence.run_id` içinde durur; bağlantı modelinin sütun listesi değişmez.
 - Hat veriyi `staging_unit` gibi geçici tablolara psycopg 3 `COPY` ile yükler, sonra tek işlemde çapaya göre upsert yapar (Tanzil'de upsert yerine iki ifade: ekleme ve türetilmiş sütunları güncelleme, K-39) ([İçerik hattı](../04-icerik/02-icerik-hatti.md) §6). İşlem kapanmadan şu denetimler koşar: önceki çalışmadaki her çapa hâlâ var; kullanım dışı her çapanın `successors` alanı dolu; özetler biçimce geçerli.
-- İçerik özetleri tek sıralama kuralı kullanır: çapaların bayt sırası (`COLLATE "C"`); ses ve font dosyalarında yolun bayt sırası. Satır biçimi ve hesap [İçerik paketleri](./03-icerik-paketleri.md) bölüm 6'dadır. Özetler `release.ozetler` sütununda durur; terfide kaynakların içerik özetleri iç kanalda test edilen yayındakiyle aynı olmalıdır (Backend API P-14).
-- Kapıdan ya da doğrulamadan geçemeyen yayın `durum = 'basarisiz'` olur ve `kapi_raporu` gerekçeyi taşır; manifest yayımlanmaz. [Backend API](../02-mimari/05-backend-api.md#106-durumlar-idempotentlik-terfi-ve-geri-alma) §10.6 de aynı değeri kullanır; talep yeni bir `release` satırıyla yeniden denenir.
-- Yayımlanmış sürüm değişmez. Geri çekme `durum = 'geri_cekildi'` ve önceki sürümü gösteren yeni manifestle yapılır ([İçerik paketleri](./03-icerik-paketleri.md)).
+- İçerik özetleri tek sıralama kuralı kullanır: çapaların bayt sırası (`COLLATE "C"`); ses ve font dosyalarında yolun bayt sırası. İki özet vardır ([K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) madde 1) ve ikisi de `release.ozetler` içinde durur: `ozetler.kaynaklar` (kaynak başına, derleme türünden bağımsız) ve `ozetler.paketler` (paket başına, `pack_meta.content_digest` ile aynı değer). Satır biçimi ve hesap [İçerik paketleri](./03-icerik-paketleri.md) bölüm 6'dadır. Terfide kaynak özetleri iç kanalda test edilen yayındakiyle aynı olmalıdır (Backend API P-14).
+- Kapıdan ya da doğrulamadan geçemeyen yayın `durum = 'basarisiz'` olur ve `kapi_raporu` gerekçeyi taşır; manifest yayımlanmaz. [Backend API](../02-mimari/05-backend-api.md#106-durumlar-idempotentlik-terfi-ve-geri-alma) §10.6 de aynı değeri kullanır. `(surum, derleme)` tekilliği `durum <> 'basarisiz'` koşullu kısmi tekil dizindir (`release_surum_derleme_key`): başarısız deneme sürüm numarasını yakmaz ve aynı talep aynı sürümle yeniden denenir (K-46 madde 3).
+- `talep` yayının hangi işle üretildiğini yazar: `yayin` (`publish`), `terfi` (`promote`; `kaynak_release_id` terfi eden `internal` yayındır) ya da `geri_alma` (`rollback`; `kaynak_release_id` hedef yayındır). `paketler` `--pack` listesini, `notlar` serbest açıklamayı taşır; `watch` API'nin açtığı `hazirlaniyor` satırı bu alanlara göre yürütür. `talep` yeni bir PostgreSQL enum'u değil, metin ve CHECK'tir (ileride değer eklemek `ALTER TYPE` gerektirmez).
+- Yayımlanmış sürüm değişmez. Geri alma yeni bir `release` satırıdır (`talep = geri_alma`, yeni sürüm, eski yayının paketleri yeniden imzalanır); önceki güncel yayın `durum = 'geri_cekildi'` olur ([İçerik paketleri](./03-icerik-paketleri.md)).
 
 ## 11. Diğer belgelerin önerileriyle eşleşme
 
@@ -541,13 +546,13 @@ Bu bölüm A07 koduyla doğrulandı (27 Ekim 2026; [K-37](../00-ozet/02-karar-de
 - Şemanın tek sahibi EF Core göçleridir (`server/Mutalaa.Infrastructure/Migrations`). Python hattı şema değiştirmez. Göçler `dotnet ef migrations bundle` ile uygulanır; API açılışında otomatik göç yoktur.
 - **Ham SQL.** Bugünkü göçte ham SQL yalnız `xref_natural_key`'dir (gerçek `UNIQUE NULLS NOT DISTINCT` kısıtı). Hat bu kısıtı `ON CONFLICT ON CONSTRAINT xref_natural_key` ile hedefler. `page_map` üzerindeki `NULLS NOT DISTINCT` EF'de `AreNullsDistinct(false)` ile adlı tekil dizin olarak tanımlanır. İleride `ALTER TYPE … ADD VALUE` ve HNSW (v1.x) göçleri ham SQL içerir.
 - **DDL'den kasıtlı sapmalar (K-37).** Göçün ürettiği şema, bu belgedeki DDL'den şu farklarla ayrılır. Anlık görüntü [Test stratejisi](../07-yayin/03-test-stratejisi.md) §6'daki yoldadır.
-  - Belgede `UNIQUE` yazılanlar adlı tekil dizindir: `unit_anchor_key`, `root_letters_key`, `quran_word_surah_ayah_word_key`, `quran_word_fix_anchor_field_key`, `release_surum_derleme_key`, `page_map_source_id_volume_page_line_key`. Yalnız `xref_natural_key` gerçek kısıttır. Bu yüzden hat `ON CONFLICT`'i sütun listesiyle yazar (`ON CONFLICT (anchor)` gibi); kısıt adıyla hedef yalnız `xref` içindir.
+  - Belgede `UNIQUE` yazılanlar adlı tekil dizindir: `unit_anchor_key`, `root_letters_key`, `quran_word_surah_ayah_word_key`, `quran_word_fix_anchor_field_key`, `page_map_source_id_volume_page_line_key`. Yalnız `xref_natural_key` gerçek kısıttır. `release_surum_derleme_key` kısmi tekil dizindir (`WHERE durum <> 'basarisiz'`; EF ve PostgreSQL filtreyi `durum <> 'basarisiz'::icerik.surum_durumu` diye yazar); göç, model anlık görüntüsü ve şema dökümü aynı filtreyi taşır (K-46 madde 3). Bu yüzden hat `ON CONFLICT`'i sütun listesiyle yazar (`ON CONFLICT (anchor)` gibi); kısıt adıyla hedef yalnız `xref` içindir.
   - EF birincil anahtar sütunlarını önce yazar ve üretilen sütunları (`tsv_*`) sona koyar; sütun sırası bu belgedeki DDL'den farklıdır. Yüklemeler (`COPY`, `INSERT`) her zaman sütun listesiyle yapılır.
   - `CREATE TYPE` sırası tür adına göre alfabetiktir. Etiket sırası ise `pg_enum.enumsortorder` içinde JSON sırasıdır.
   - `icerik."__EFMigrationsHistory"` ek tablodur ve 19 tabloya dahil değildir. Birincil anahtarı `pk___ef_migrations_history` adını taşır; ad politikasının `pk_` önekli tek `icerik` istisnasıdır.
   - Kimlik şeması (`kimlik`) 7 tablodur: `users`, `roles`, `user_roles`, `user_claims`, `user_logins`, `user_tokens`, `role_claims`. Passkey tablosu yoktur. Bu şemada EF adları (`pk_`, `ix_`) kalır.
   - `review_yz_kaydi_check` birden çok sütuna baktığı hâlde açık adlıdır (`review_check` olmaz).
-- **Biçim denetimi olmayan sütunlar.** Özet sütunlarından yalnız `unit.content_hash` biçimce denetlenir (`unit_content_hash_check`). `source.dosya_sha256`, `audio_timing.file_sha256` ve `lemma_gloss.content_hash` `char(64)` taşır ama biçim CHECK'i yoktur; ileride eklenmesi değerlendirilebilir (Açık soru; [belge çelişkileri](../10-claude-code/07-belge-celiskileri.md) BÇ-41).
+- **Biçim denetimi (BÇ-41, çözüldü 9 Kasım 2026).** Özet sütunlarının dördü biçimce denetlenir: `unit.content_hash` (`unit_content_hash_check`), `source.dosya_sha256` (`source_dosya_sha256_check`), `audio_timing.file_sha256` (`audio_timing_file_sha256_check`) ve `lemma_gloss.content_hash` (`lemma_gloss_content_hash_check`); hepsi `^[0-9a-f]{64}$`. `NULL` serbesttir (`source.dosya_sha256`). Karar: [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) madde 4; kayıt: [belge çelişkileri](../10-claude-code/07-belge-celiskileri.md) BÇ-41. v1.x tablosu `embedding.content_hash` eklenirken aynı CHECK ile gelir.
 - Yıkıcı değişiklik tek adımda yapılmaz: sütun eklenir, doldurulur, okuyucular geçirilir, eski sütun sonraki göçte kalkar. Enum'a eklenen değer geri alınamaz.
 - CI `postgres:18` konteyneri açar, göç paketini uygular, hat ve yayınlayıcı testlerini aynı veritabanında koşar ([Test stratejisi](../07-yayin/03-test-stratejisi.md)).
 

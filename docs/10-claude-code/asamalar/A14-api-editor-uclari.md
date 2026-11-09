@@ -1,6 +1,6 @@
 # A14 · API editör uçları
 
-> **Sürüm:** 1.2 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Sürüm:** 1.3 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-46](../../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A07](./A07-editoryal-veritabani.md) · **İnsan adımı:** —
 > **Ajanlar:** `sunucu-gelistirici` · `test-yazari` · `arastirmaci` · `inceleyici` · **Beceriler:** `ef-goc` · `paket-yayini` · `windows-sorun` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A14`
@@ -95,10 +95,10 @@ Kendimiz yapacağımız işler: inceleme kuyrukları ve ikinci onay kuralları (
 - **Bitti sayılır:** karar, toplu karar ve ikinci onay testleri yeşil.
 
 ### A14.5 · Yayın uçları
-- `POST /api/v1/releases` (admin): `{derleme, paketler?, not}` → 202, `Location`, `durum: hazirlaniyor`. Aynı derleme türünde `hazirlaniyor` kayıt varken 409 `yayin-suruyor`.
+- `POST /api/v1/releases` (admin): `{derleme, paketler?, notlar}` → 202, `Location`, `durum: hazirlaniyor` (`not` PostgreSQL'de ayrılmış sözcük olduğu için alan `notlar`dır; [K-46](../../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) madde 2). Kayıt `talep = yayin`, `paketler` ve `notlar` ile açılır. Sürüm istekte yoktur: `ReleaseVersion.Next` (Domain, A13) atar. Aynı derleme türünde `hazirlaniyor` kayıt varken 409 `yayin-suruyor`.
 - `GET /releases?derleme=`, `/releases/{id}`: durum, kapı raporu, manifest.
 - `POST /releases/preview` (admin): paket üretmeden kapı raporu; A13'te yazılan kalite kapısını (`Mutalaa.Domain/Releases`; P-01, P-07…P-14) çağırır. Kapıya takılan derleme 422 `kalite-kapisi` ve kapı raporuyla döner. A13 bitmediyse bu uç A13'ten sonraya kalır ve ilerleme dosyasına yazılır.
-- `POST /releases/{id}/promote`, `/rollback` (admin): işi Yayınlayıcı `watch` yapar; `public` terfisi yalnız kullanıcı kararıyla çalışır (Backend API §10.6). Talebin `release` kaydında nasıl taşınacağı dokümanda yoktur; öneri planda sunulur ve `/karar` ile yazılır.
+- `POST /releases/{id}/promote`, `/rollback` (admin): işi Yayınlayıcı `watch` yapar; `public` terfisi yalnız kullanıcı kararıyla çalışır (Backend API §10.6). Talep `release` kaydında taşınır ([K-46](../../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) madde 2): yeni satır `talep = terfi` ya da `geri_alma` ve `kaynak_release_id` (terfide `yayinlandi` durumundaki `internal` yayın, geri almada hedef yayın) taşır; `watch` talebe göre `promote` ya da `rollback` yürütür. Alanlar A13'te eklenir (EF göçü); A14 yalnız satırı açar.
 - **Bitti sayılır:** 202, 409 ve yetki testleri yeşil.
 
 ### A14.6 · Hata modeli, OpenAPI ve testler
@@ -119,7 +119,7 @@ Kendimiz yapacağımız işler: inceleme kuyrukları ve ikinci onay kuralları (
 - [ ] Yerelde `/health/ready` başarılı; oturumsuz `GET /api/v1/sources` ve oturumsuz görsel isteği 401 ProblemDetails dönüyor (yönlendirme değil).
 - [ ] `seed` (A07'de teslim edildi) idempotent; `DevAutoLogin` yalnız `Development` ve geri döngüde çalışıyor.
 - [ ] Giriş ucunda yanlış parola `CheckPasswordSignInAsync(..., lockoutOnFailure: true)` üzerinden gidiyor; beşinci hatalı denemeden sonra doğru parola da reddediliyor (uç testi).
-- [ ] Görsel ucu ve terfi/geri alma talebi kararları karar defterinde ya da açık soru olarak ilerleme notunda.
+- [ ] Görsel ucu kararı karar defterinde ya da açık soru olarak ilerleme notunda; terfi/geri alma talebi K-46'da karara bağlandı (uygulama A14'te).
 
 ## Doğrulama
 ```bash
@@ -154,7 +154,7 @@ Son iki komut API ayrı bir terminalde `dotnet watch --project server/Mutalaa.Ap
 - `server/Directory.Packages.props` içinde sabitlenmiş A14 paket sürümleri (Tedarik tablosuyla aynı)
 - İnceleme ve ikinci onay kuralları (`Mutalaa.Domain/Reviews`); Identity (`server/Mutalaa.Infrastructure/Identity/*`) A07'den gelir
 - Api test projesinde yetki matrisi ve akış testleri
-- Karar defterinde doğrulama sonuçları, görsel ucu ve terfi/geri alma talebi kayıtları
+- Karar defterinde doğrulama sonuçları ve görsel ucu kayıtları (terfi/geri alma talebi K-46'dadır)
 
 ## Elle başlatma istemi
 ```text

@@ -1,7 +1,7 @@
 # Bağlantı Modeli
 
-> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Sürüm:** 1.4 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 
 Bu dosya bağlantıların veri modelini, puanlamasını, yayın kuralını, seçim çözümleme akışlarını, **Bağlantılar** panelinin sözleşmesini ve geri dönüş yığınını tanımlar. Ayrıntılar: [iktibas tespiti](./02-iktibas-tespiti.md), [kök ve lemma](./03-kok-ve-lemma.md), [anlamsal katman](./04-anlamsal-katman.md).
 
@@ -131,7 +131,7 @@ Rapor iktibası kapsama × uzunlukla puanlar ve kalıp ifadeye indirim uygular. 
 | Makine önerisi | `type = 'anlamsal'` | her zaman katlı |
 | Aday | onay isteyen türde `aday`; yalnız iç derleme | açık, rozetli |
 
-`status = 'red'` ya da `confidence < 0,50` gösterilmez. Tablodaki adlar sınıf adıdır; ekranda yazılan etiket ve rozet görünümü [Okuma deneyimi §8](../01-urun/02-okuma-deneyimi.md#8-bağlantılar-paneli)'dedir (Onaylı "kesin", Yüksek güven "yüksek", Orta güven "orta", Düşük güven "düşük").
+`status = 'red'` ya da onaysız ve `confidence < 0,50` gösterilmez (onaylı bağlantı güven puanından bağımsız her derlemeye girer; §8). Tablodaki adlar sınıf adıdır; ekranda yazılan etiket ve rozet görünümü [Okuma deneyimi §8](../01-urun/02-okuma-deneyimi.md#8-bağlantılar-paneli)'dedir (Onaylı "kesin", Yüksek güven "yüksek", Orta güven "orta", Düşük güven "düşük").
 
 ## 7. "Önerilen" listesi
 
@@ -143,24 +143,31 @@ Liste v1.x'te gelir; v1 panelinde yalnız esere göre gruplar vardır ([Okuma de
 
 ## 8. Yayın kuralı ve insan onayı
 
-| Tür | Mağaza (`public`) koşulu |
-|---|---|
-| `atif`, `iktibas`, `ima`, `konu` | İnsan onayı: `status = 'onayli'` |
-| `kok`, `lemma` | `confidence ≥ 0,50` ve Türkçe taraftaki sözlük girdisi onaylı |
-| `benzer_ayet` | `confidence ≥ 0,50` |
-| `anlamsal` | v1.x derlemesi, `confidence ≥ 0,50`, "Makine önerisi" rozeti |
+Kural, Yayınlayıcı'nın P-07 kontrolüdür ([Yayın süreci](../07-yayin/01-yayin-sureci.md#4-yayınlayıcı-kalite-kapısı-kuralları) §4; karar: [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) madde 6). Derleme türüne göre doğruluk tablosu:
 
-Her türde ek koşul [P-07](../07-yayin/01-yayin-sureci.md#4-yayınlayıcı-kalite-kapısı-kuralları)'dir: kaynak ucun eseri o derlemede görünür; hedef ucun eseri görünür ya da bağlantı kaynak kaydı olan ayrı bir dizine (`risale-atif-dizini`) aittir. `red` hiç girmez. İç derlemeler (`dev`, `internal`) `red` dışındaki her satırı görür; onay isteyen türdeki `aday` satır orada "Aday" rozetiyle durur ve `public`'e girmez ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5).
+| Tür | `onayli` | `aday` | `red` |
+|---|---|---|---|
+| `atif`, `iktibas`, `ima`, `konu` (insan onayı ister) | her derlemeye girer | yalnız `dev` ve `internal` (orada "Aday" rozetiyle, `approved = 0`) | hiçbirine |
+| `kok`, `lemma`, `benzer_ayet` (otomatik) | her derlemeye girer | `confidence ≥ 0,50` ise her derlemeye, değilse hiçbirine (§6: "gösterilmez") | hiçbirine |
+| `anlamsal` (otomatik) | `public` dışında her derlemeye; `public` v1'de hiçbir satırı almaz | `public` dışında otomatik tür kuralı; `public` v1'de hiçbir satırı almaz | hiçbirine |
+
+Her türde ek koşullar:
+
+- Kaynak ucun eseri o derlemede görünür olmalıdır; hedef ucun eseri de görünür olmalıdır. Hedef kaynak kaydı olan ayrı bir dizindeyse (`risale-atif-dizini`) hedefin görünürlüğü aranmaz.
+- `public` için ayrıca: bağlantıda açık `review` yoktur; `kok` ve `lemma` için `evidence.lexicon_status` onaylıdır (alan yoksa onaylı sayılır, çünkü Türkçe taraftaki sözlük girdisi onaylıdır); `anlamsal` v1'de yoktur, v1.x derlemesinde `confidence ≥ 0,50` ile ve "Makine önerisi" rozetiyle gelir.
+- İç derlemeler (`dev`, `internal`) `red` dışındaki satırı, yukarıdaki tabloya göre görür; onay isteyen türdeki `aday` satır orada "Aday" rozetiyle durur ve `public`'e girmez ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5).
+
+Pakete yazılan `xref_idx` satırı görünüm kuralını önceden taşır: `approved` = (`status = 'onayli'`); `folded` = `type = 'anlamsal'` ya da (otomatik tür, `approved = 0` ve `confidence < 0,70`). Bu iki sütun §6'daki etiket tablosunun cihazdaki karşılığıdır.
 
 ```sql
-SELECT x.* FROM xref x                                     -- Mutalaa.Publisher
+SELECT x.* FROM xref x                                     -- Mutalaa.Publisher, public derlemesi
 WHERE x.status <> 'red'
-  AND NOT EXISTS (SELECT 1 FROM review r WHERE r.xref_id = x.id AND r.state = 'acik')
+  AND NOT EXISTS (SELECT 1 FROM review r WHERE r.xref_id = x.id AND r.durum = 'acik')
   AND CASE WHEN x.type IN ('atif','iktibas','ima','konu') THEN x.status = 'onayli'
-           WHEN x.type IN ('kok','lemma') THEN x.confidence >= 0.5
+           WHEN x.type IN ('kok','lemma') THEN (x.status = 'onayli' OR x.confidence >= 0.5)
                 AND coalesce(x.evidence->>'lexicon_status','onayli') = 'onayli'
-           WHEN x.type = 'benzer_ayet' THEN x.confidence >= 0.5
-           WHEN x.type = 'anlamsal' THEN x.confidence >= 0.5 AND $1   -- $1: v1.x derlemesi
+           WHEN x.type = 'benzer_ayet' THEN x.status = 'onayli' OR x.confidence >= 0.5
+           WHEN x.type = 'anlamsal' THEN (x.status = 'onayli' OR x.confidence >= 0.5) AND $1   -- $1: v1.x derlemesi; v1'de false
       END;
 ```
 

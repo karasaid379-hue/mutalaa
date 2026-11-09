@@ -1,7 +1,7 @@
 # Genel mimari
 
-> **Sürüm:** 1.2 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
+> **Sürüm:** 1.3 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
 
 Bu dosya sistemin bileşenlerini, veri akışını, ortamları, derleme türlerini ve hata durumlarında kurtarmayı tanımlar. Sürümler [Teknoloji yığını](./02-teknoloji-yigini.md), klasörler [Proje yapısı](./03-proje-yapisi.md), uygulamanın iç yapısı [Mobil mimari](../06-mobil/01-mobil-mimari.md) dosyasındadır.
 
@@ -225,7 +225,7 @@ Kurallar:
 - Süzme kaynak ve birim düzeyinde yapılır; aynı paket kimliği derleme türüne göre farklı içerik taşıyabilir. Onaysız birim ve onaysız yapay zekâ taslağı `public`'e girmez; insan onayı isteyen türün aday bağlantısı yalnız `dev` ve `internal`'dadır (otomatik türler güven eşiğiyle girer); `red` bağlantı hiçbir derlemeye girmez. `test-` önekli kaynak `public`'e girmez, `internal`'a yalnız uçtan uca fikstürler girer ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5).
 - Kalite kapısı iki katmanlıdır. Yayınlayıcı manifesti derleme türü başına süzer; uygulama `isPackVisible` ile yeniden denetler.
 - QAC kaynaklı kök ve lemma verisi `core` içinde durmaz; boyutu yüzünden ayrı ve isteğe bağlı `kelime-kok` paketindedir ve bütün derlemelerde yer alır ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) §1).
-- Manifest her derleme türünde imzalıdır. Yayınlayıcı onu derleme türüne özgü anahtarla imzalar. Uygulama imzasız ya da imzası tutmayan manifesti reddeder; `public` derlemede bu kural gevşetilmez ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) §5). Algoritma ve anahtar yönetimi Doğrulanacak.
+- Manifest her derleme türünde imzalıdır. Yayınlayıcı onu derleme türüne özgü anahtarla imzalar. Uygulama imzasız ya da imzası tutmayan manifesti reddeder; `public` derlemede bu kural gevşetilmez ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) §5). Algoritma Ed25519, kanonikleştirme RFC 8785 JCS'dir; her derleme türünün ayrı anahtarı vardır ([K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json)).
 - Her derleme türünün dosyaları kendi önekindedir (`{flavor}/manifest.json`, `packs/{flavor}/…`). `public` öneki başka türün dosyasını içermez.
 - `public` derlemeye gömülen `core`, `public` manifestindeki sha256 ile aynı olmalıdır; derleme betiği bunu doğrulamadan durur ([Proje yapısı](./03-proje-yapisi.md)).
 
@@ -279,7 +279,7 @@ stateDiagram-v2
 1. ~~K-21 yerelde MinIO der.~~ Çözüldü: K-21 güncellendi, yerel depo SeaweedFS.
 2. İç test kanalı nerede barındırılacak (A, B ya da C)?
 3. v1.x'te kullanıcı veritabanı editoryal veritabanından ayrı mı tutulacak? Öneri: ayrı; editoryal veritabanı onaysız taslakları ve editör kararlarını taşıdığı için dışarıya açılmaz.
-4. İmza algoritması, JSON kanonikleştirme ve anahtar yönetimi Doğrulanacak ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) IP-7).
+4. ~~İmza algoritması, JSON kanonikleştirme ve anahtar yönetimi.~~ Çözüldü (9 Kasım 2026): Ed25519, RFC 8785 JCS, derleme türü başına anahtar ([K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json); [İçerik paketleri](../03-veri/03-icerik-paketleri.md) IP-7).
 
 ## İlgili dosyalar
 

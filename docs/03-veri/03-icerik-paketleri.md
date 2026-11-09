@@ -1,7 +1,7 @@
 # İçerik Paketleri
 
-> **Sürüm:** 1.6 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** K-21 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-44](../00-ozet/02-karar-defteri.md#k-44--arama-indeksi-ve-paket-şeması-cihaz-gövdeleyicisi-simple-clean-paket-tabloları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
+> **Sürüm:** 1.7 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json) · K-21 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-44](../00-ozet/02-karar-defteri.md#k-44--arama-indeksi-ve-paket-şeması-cihaz-gövdeleyicisi-simple-clean-paket-tabloları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
 
 İçerik cihaza sürümlü SQLite paketleri olarak iner. Yerelde SeaweedFS'in S3 API'si ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)), canlıda S3 uyumlu bir depo kullanılır; öneri Cloudflare R2'dir (depolama 0,015 $/GB-ay, veri çıkışı ücretsiz; [R2 fiyatlandırma](https://developers.cloudflare.com/r2/pricing)). Yayınlayıcı (`Mutalaa.Publisher`) editoryal veritabanından her derleme türü için ayrı paketler ve ayrı, imzalı bir manifest üretir ([Editoryal veritabanı](./02-editoryal-veritabani.md); [Yayın süreci](../07-yayin/01-yayin-sureci.md)).
 
@@ -65,7 +65,7 @@ CREATE TABLE attribution (
 |---|---|---|
 | `pack_id`, `version`, `flavor` | `core`, `2026.11.0`, `public` | Manifestle ve uygulamanın derleme türüyle karşılaştırma |
 | `schema_version` | `1` | Desteklenen aralıkla karşılaştırma |
-| `content_digest` | 64 onaltılık | İçerik değişmediyse yeni sürüm üretilmez; hesap kuralı bölüm 6 |
+| `content_digest` | 64 onaltılık | Paket özeti: içerik değişmediyse yeni sürüm üretilmez; hesap kuralı bölüm 6 (K-46 madde 1) |
 | `normalizer_version` | `1.0` | Arama normalleştiricisiyle eşleşme ([Arama](./05-arama-fts5.md)) |
 | `anchors_version`, `data_version`, `built_at`, `unit_count` | | Tanılama ve duman testi |
 
@@ -73,7 +73,7 @@ Brifteki `meta` tablosu bu dosyada ve mobil mimaride `pack_meta` adını taşır
 
 ### 3.2 Metin paketleri
 
-`core`, `tefsir-elmalili`, `hadis-*` ve `risale-{kitap}` `unit` tablosunu taşır. `xref_idx` `risale-{kitap}` paketlerinde yoktur; Risale uçlu bağlantılar `risale-dizin` içindedir (bölüm 4 madde 2). `tr_root_index` yalnız `kelime-kok`, `tefsir-elmalili`, `hadis-*` ve `risale-dizin` paketlerinde bulunur; `core`'da yoktur (K-44 madde 3). Tablolar şöyledir:
+`core`, `tefsir-elmalili`, `hadis-*` ve `risale-{kitap}` `unit` tablosunu taşır. `test-` önekli sentetik fikstür paketleri (`test-kucuk`, `tefsir-test-ornek`) de metin paketidir ve aynı tabloları taşır: `paketler.json` `metin` deseni `^(tefsir|hadis|test)-[a-z0-9-]+$` olur (K-46 madde 5; `test-kucuk` önceden hiçbir türe uymuyordu). `xref_idx` `risale-{kitap}` paketlerinde yoktur; Risale uçlu bağlantılar `risale-dizin` içindedir (bölüm 4 madde 2). `tr_root_index` yalnız `kelime-kok`, `tefsir-elmalili`, `hadis-*` ve `risale-dizin` paketlerinde bulunur; `core`'da yoktur (K-44 madde 3). Tablolar şöyledir:
 
 ```sql
 CREATE TABLE unit (
@@ -89,6 +89,7 @@ CREATE TABLE unit (
   marks TEXT, sentences TEXT, attrs TEXT,    -- JSON
   content_hash  TEXT NOT NULL,
   status        TEXT NOT NULL DEFAULT 'etkin',
+  approved      INTEGER NOT NULL DEFAULT 1,  -- 1: metin_durumu = onayli; 0: "doğrulanmamış" rozeti (K-46 madde 5)
   successors    TEXT                         -- JSON yönlendirme
 );
 CREATE INDEX unit_ord    ON unit(ord);
@@ -115,6 +116,7 @@ CREATE TABLE tr_root_index (                 -- kelime-kok, tefsir-elmalili, had
 CREATE INDEX tr_root_index_root ON tr_root_index(root_id);
 ```
 
+- `approved`, birimin editoryal `metin_durumu` değerinden gelir (`onayli` ise 1, değilse 0). Onaysız birim yalnız `dev` ve `internal` paketlerinde bulunur (P-08, P-10) ve arayüz "doğrulanmamış" rozetini bu sütundan okur; ayrı bir `attrs` ayrıştırması gerekmez. Sütun `xref_idx.approved` ile aynı adı taşır. `user_version` 1 kalır, çünkü henüz yayımlanmış paket yoktur (K-46 madde 5).
 - Kalıcı başvuru her zaman `anchor` ile yapılır; `rowid` paket sürümü değişince değişebilir.
 - `kind` değerleri editoryal `unit.kind` ile aynıdır ([Editoryal veritabanı](./02-editoryal-veritabani.md)); `kitap`, `k:` çapalı kitap paragrafıdır (Çapa şemasında "sonra" fazı; enum değeri baştan vardır).
 - `label` sonuç listesinde ve kullanıcı kayıtlarında okunabilir adrestir. Kayıt oluşturulurken kopyalanır; paket silinse de kayıt okunur kalır.
@@ -199,9 +201,9 @@ CREATE TABLE unit_ref (rowid INTEGER PRIMARY KEY, anchor TEXT NOT NULL UNIQUE,
 
 ## 5. `manifest.json`
 
-Her paket satırı şu alanları taşır: `pack_id, version, sha256, size_bytes, min_app_version, depends_on, url`. Önerilen ek alanlar: `schema_version`, `title`, `bundled`. Manifest düzeyinde `signature` her derleme türünde zorunludur ([K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı), [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
+Her paket satırı şu alanları taşır: `pack_id, version, sha256, size_bytes, min_app_version, depends_on, url`. Önerilen ek alanlar: `schema_version`, `title`, `bundled`. Manifest düzeyinde `signature` her derleme türünde zorunludur ([K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı), [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük), [K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json)).
 
-Aşağıdaki örnek `dev` derlemenin manifestidir; `dev` manifesti yerel SeaweedFS S3 deposundan `MANIFEST_URL` ile okunur ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)). `internal` ve `public` manifestler aynı yapıdadır; paket içeriği bölüm 7'deki kurala göre süzülür. Depoda manifest `{flavor}/manifest.json`, paket `packs/{flavor}/{pack_id}/{version}/{pack_id}-{version}.db` anahtarındadır; `url` bu anahtarın `Storage:PublicBaseUrl` ile birleşmiş mutlak hâlidir ([Backend API](../02-mimari/05-backend-api.md) §10.5). Özet ve imza değerleri örnektir.
+Aşağıdaki örnek `dev` derlemenin manifestidir; `dev` manifesti yerel SeaweedFS S3 deposundan `MANIFEST_URL` ile okunur ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)). `internal` ve `public` manifestler aynı yapıdadır; paket içeriği bölüm 7'deki kurala göre süzülür. Depoda manifest `{flavor}/manifest.json`, paket `packs/{flavor}/{pack_id}/{version}/{pack_id}-{version}.db` anahtarındadır; `url` bu anahtarın `Storage:PublicBaseUrl` ile birleşmiş mutlak hâlidir ([Backend API](../02-mimari/05-backend-api.md) §10.5). Özet ve imza değerleri örnektir; gerçek imza biçimi aşağıdaki tablodadır.
 
 ```json
 {
@@ -273,11 +275,11 @@ Aşağıdaki örnek `dev` derlemenin manifestidir; `dev` manifesti yerel Seaweed
 
 | Alan | Kural |
 |---|---|
-| `version` | CalVer `YYYY.M.N`. `content_digest` değişmedikçe yeni sürüm üretilmez. |
+| `version` | CalVer `YYYY.M.N`. Paket özeti (`content_digest`) değişmedikçe yeni sürüm üretilmez. |
 | `sha256`, `size_bytes` | `url` adresindeki baytların özeti ve boyutu |
 | `min_app_version` | Uygulamanın yerel sürümüyle karşılaştırılır; EAS Update yalnız JavaScript taşır |
 | `depends_on` | Önce kurulması gereken paketler |
-| `signature` | Her derleme türünde zorunludur (K-21, K-42); imzasız manifest yayımlanmaz ve uygulama tarafından okunmaz. İmza girdisi, `signature` alanı çıkarılmış manifestin kanonik JSON biçimidir. Açık anahtarlar derleme türüne göre uygulamaya gömülür; `kid` anahtar değişimine izin verir. Algoritma ve kanonikleştirme yöntemi Doğrulanacak; örnekteki Ed25519 bir öneridir. |
+| `signature` | Her derleme türünde zorunludur (K-21, K-42); imzasız ya da imzası tutmayan manifest yayımlanmaz, `verify` onu reddeder (çıkış 3) ve uygulama okumaz. Biçim `{alg: "ed25519", kid: "{derleme}-{YYYY}-{n}", value: base64(64 bayt)}`. İmza girdisi, `signature` alanı çıkarılmış manifestin RFC 8785 (JCS) baytlarıdır. Algoritma Ed25519'dur (NSec 26.4.0); açık anahtar 32 bayt, imza 64 bayttır. Her derleme türünün ayrı anahtarı vardır; açık anahtarlar uygulamaya gömülür ve `kid` anahtar değişimine izin verir. Depodaki örnek manifestler RFC 8032 §7.1 TEST 1 anahtarıyla imzalanır (`kid` `test-` ile başlar; anahtar herkese açık bir test vektörüdür) (K-45). |
 
 İmza doğrulanmazsa uygulama manifesti yok sayar, kurulu paketlerle çalışır ve kişisel veri içermeyen bir hata kaydı gönderir. Paket özetleri imzalı manifestten geldiği için güvenilir sayılır; özet ile imza birlikte paketin hem bütünlüğünü hem kaynağını doğrular.
 
@@ -285,7 +287,9 @@ Aşağıdaki örnek `dev` derlemenin manifestidir; `dev` manifesti yerel Seaweed
 
 - Yayımlanmış bir `(pack_id, version, flavor)` dosyası değişmez; düzeltme yeni sürümle gelir.
 - `schema_version` paket şemasının tamsayı sürümüdür. Uygulama `[PACK_SCHEMA_MIN, PACK_SCHEMA_MAX]` aralığını destekler.
-- **İçerik özeti.** Tek sıralama kuralı vardır: çapaların bayt sırası (`COLLATE "C"`). Her etkin birim için `anchor + "\t" + content_hash + "\n"` satırı, ses ve font dosyaları için yolun bayt sırasıyla `yol + "\t" + sha256 + "\n"` satırı yazılır; özet bu dizginin SHA-256'sıdır. `pack_meta.content_digest` paketin bütün içeriğinden aynı kuralla hesaplanır. `promote` ile `public`'e geçen yayında içerik özetleri iç kanalda test edilen yayınla aynıdır (P-14; [Yayın süreci](../07-yayin/01-yayin-sureci.md) §4).
+- **İçerik özetleri** ([K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) madde 1). Tek sıralama kuralı vardır: çapaların bayt sırası (`COLLATE "C"`). İki özet hesaplanır:
+  - **Kaynak özeti.** Kaynağın her etkin birimi için `anchor + "\t" + content_hash + "\n"` satırı (ses ve font dosyaları için yolun bayt sırasıyla `yol + "\t" + sha256 + "\n"`) yazılır; özet bu dizginin SHA-256'sıdır. Birimi olmayan kaynakta (`tanzil-ust-veri`) yapı satırları kanonik JSON satırı olarak yazılır. Derleme türünden bağımsızdır ve `release.ozetler.kaynaklar` içinde durur. `promote` ile `public`'e geçen yayında kaynak özetleri iç kanalda test edilen yayınla aynıdır (P-14; [Yayın süreci](../07-yayin/01-yayin-sureci.md) §4).
+  - **Paket özeti** (`pack_meta.content_digest`, `release.ozetler.paketler`). `schema_version`, `normalizer_version` ve `flavor` başlık satırları ile pakete yazılan her satırın RFC 8785 JSON dizisi (`[tablo, değerler…]`) dizilir; tablolar sabit sırada (`pack_source`, `attribution`, `unit`, `unit_search`, `xref_idx`, `quran_word`, `quran_marker`, `page_map`, `sure`, `tr_root_index`), satırlar anahtar bayt sırasındadır. `version`, `built_at`, `data_version` ve `content_digest` girmez. Gerçek sayılar (`score`, `confidence`) `float` değerinin kısa onlu gösterimiyle yazılır. Özet güncel yayının paketinkiyle aynıysa paket yeni sürüm almaz (SQLite dosyasının sha256 değeri bu karşılaştırmada kullanılmaz).
 - `normalizer_version` (`major.minor`) uygulamadaki normalleştiriciyle aynı olmalıdır. Arama kuralı değişirse bütün metin paketleri yeniden üretilir ([Arama](./05-arama-fts5.md)).
 - Geri çekme: yayınlayıcı önceki sürümü gösteren yeni bir manifest yayımlar ve uygulama ona iner. Kullanıcı kayıtları çapa ve `content_hash` ile yeniden çapalanır ([Çapa şeması](./01-capa-semasi.md)).
 - Gömülü `core` EAS Update ile değişmez; yeni içerik yeni ikiliyle ya da manifestle gelir.
@@ -364,7 +368,7 @@ Değerlerin tamamı tahmindir ve gerçek veriyle ölçülecektir.
 
 | No | Konu | Durum |
 |---|---|---|
-| IP-7 | İmza algoritması, JSON kanonikleştirme ve anahtar yönetimi (imza zorunlu) | Doğrulanacak |
+| IP-7 | İmza algoritması, JSON kanonikleştirme ve anahtar yönetimi (imza zorunlu) | Çözüldü (9 Kasım 2026): Ed25519 (NSec), RFC 8785 JCS, derleme türü başına anahtar; [K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json). Anahtar değişimi: uygulama geçerli ve sıradaki iki anahtarı taşır ([Yayın süreci](../07-yayin/01-yayin-sureci.md) §4.2, öneri) |
 | IP-8 | `SQLITE_MAX_ATTACHED` değeri, sıkıştırmalı aktarım, akışlı SHA-256 | Doğrulanacak |
 | IP-9 | İç derleme paketlerine erişim yöntemi | Açık soru |
 | IP-10 | Hadis paketlerinin boyutu; Mod B görsel biçimi (MM-7); Risale lügat verisinin paketi | Açık soru |
