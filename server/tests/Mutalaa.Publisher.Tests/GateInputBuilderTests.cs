@@ -175,6 +175,122 @@ public class GateInputBuilderTests
         Assert.Equal("test-kucuk", mappedRetired.SourceSlug);
     }
 
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("", false)]
+    [InlineData("  ", false)]
+    [InlineData("[]", false)]
+    [InlineData(" [ ] ", false)]
+    [InlineData("null", false)]
+    [InlineData("[{\"anchor\":\"k:test-kucuk:bolum-1:p1\"}]", true)]
+    [InlineData("[{\"anchor\":\"k:test-kucuk:bolum-1:p1\",\"from\":0,\"to\":10,\"delta\":0},{\"anchor\":\"k:test-kucuk:bolum-1:p2\"}]", true)]
+    public void Only_a_non_empty_successors_array_counts_as_a_redirect(string? successors, bool expected)
+    {
+        EditorialSnapshot snapshot = PackTestData.Snapshot();
+        UnitRow retired = PackTestData.Unit("k:test-kucuk:bolum-1:p3", "test-kucuk", status: "kullanim_disi", successors: successors);
+        EditorialSnapshot changed = With(snapshot, units: [.. snapshot.Units, retired]);
+
+        Assert.Equal(expected, Build(changed).Units.Single(u => u.Anchor == "k:test-kucuk:bolum-1:p3").HasSuccessors);
+    }
+
+    [Theory]
+    [InlineData("{\"anchor\":\"x\"}")]
+    [InlineData("\"metin\"")]
+    [InlineData("{bozuk")]
+    public void Successors_that_is_not_a_json_array_is_a_data_error(string successors)
+    {
+        EditorialSnapshot snapshot = PackTestData.Snapshot();
+        UnitRow bad = PackTestData.Unit("k:test-kucuk:bolum-1:p3", "test-kucuk", status: "kullanim_disi", successors: successors);
+
+        Assert.Throws<InvalidDataException>(() => Build(With(snapshot, units: [.. snapshot.Units, bad])));
+    }
+
+    [Theory]
+    [InlineData("[]", false)]
+    [InlineData("null", false)]
+    [InlineData("[{\"anchor\":\"k:test-kucuk:bolum-1:p1\"}]", true)]
+    public void K47_a_retired_previous_anchor_keeps_continuity_only_with_a_non_empty_successors(string successors, bool continuityKept)
+    {
+        EditorialSnapshot snapshot = PackTestData.Snapshot();
+        UnitRow retired = PackTestData.Unit("k:test-kucuk:bolum-1:p3", "test-kucuk", status: "kullanim_disi", successors: successors);
+        GateInput input = Build(With(snapshot, units: [.. snapshot.Units, retired]), previous: ["k:test-kucuk:bolum-1:p3"]);
+
+        GateResult result = GateEvaluator.Evaluate(BuildFlavor.Dev, input);
+
+        Assert.Equal(!continuityKept, result.Rejected);
+        if (!continuityKept)
+        {
+            GateViolation violation = Assert.Single(result.Report.Violations);
+            Assert.Equal(("k:test-kucuk:bolum-1:p3", GateReasons.CapaKayboldu + ":" + GateReasons.CapaYonlendirmesiz), (violation.Subject, violation.Reason));
+        }
+    }
+
+    [Fact]
+    public void K47_a_link_to_an_end_without_a_unit_row_gets_an_empty_source_and_is_dropped_by_the_end_source_rule_not_by_the_end_unit_filter()
+    {
+        // Gercek akis (GateInputBuilder.Build): birim satiri olmayan uc (konu:) kaynaksiz ("") sayilir; EvaluateXref onu "hedef-eser-gorunmez" ile eler
+        // ve uc-birim-suzmesine (CheckXrefEndUnits) hic ulasilmaz. K-47 madde 1 "bu suzmeden etkilenmez" der; sonuc yine de girmemedir (onceki kural).
+        EditorialSnapshot snapshot = PackTestData.Snapshot();
+        XrefRow topic = PackTestData.Xref("q:1:2", "konu:tevhid", "konu", "onayli");
+        GateInput input = Build(With(snapshot, xrefs: [topic]));
+
+        GateXref mapped = Assert.Single(input.Xrefs);
+        Assert.Equal(("tanzil-uthmani", string.Empty, false), (mapped.SrcSourceSlug, mapped.DstSourceSlug, mapped.DstIsSeparateIndex));
+
+        foreach (BuildFlavor flavor in Enum.GetValues<BuildFlavor>())
+        {
+            GateResult result = GateEvaluator.Evaluate(flavor, input);
+            XrefVerdict verdict = result.XrefVerdicts[topic.Id];
+
+            Assert.False(verdict.Included, flavor.ToLabel());
+            Assert.Equal(GateReasons.HedefEserGorunmez, verdict.Reason);
+            Assert.Equal(string.Empty, verdict.Detail);
+            Assert.DoesNotContain(result.Report.Rows, r => r.Reason.StartsWith(GateReasons.UcBirimGirmedi, StringComparison.Ordinal));
+        }
+    }
+
+    [Fact]
+    public void K47_a_link_to_a_draft_unit_of_a_visible_source_is_dropped_by_the_end_unit_filter_in_public_only()
+    {
+        EditorialSnapshot snapshot = PackTestData.Snapshot();
+        XrefRow toDraft = PackTestData.Xref("q:1:2", "q:1:3", "atif", "onayli");
+        GateInput input = Build(With(snapshot, xrefs: [toDraft]));
+
+        GateResult publicResult = GateEvaluator.Evaluate(BuildFlavor.Public, input);
+        XrefVerdict verdict = publicResult.XrefVerdicts[toDraft.Id];
+
+        Assert.False(verdict.Included);
+        Assert.Equal((GateRule.P07, GateReasons.UcBirimGirmedi, "hedef=P-10:onaysiz-birim"), (verdict.Rule, verdict.Reason, verdict.Detail));
+        Assert.Contains(publicResult.Report.Rows, r => r.Kind == GateSubjectKind.Baglanti && r.Reason == "uc-birim-girmedi:hedef=P-10:onaysiz-birim");
+        Assert.True(GateEvaluator.Evaluate(BuildFlavor.Dev, input).XrefVerdicts[toDraft.Id].Included);
+    }
+
+    [Fact]
+    public void K47_a_link_into_a_separate_index_is_not_checked_against_the_destination_unit_even_when_that_unit_is_a_draft()
+    {
+        // DstIsSeparateIndex (kaynak turu baglanti_verisi) Build tarafindan kurulur; hedef birim taslak olsa da baglanti uc-birim suzmesinden gecer.
+        EditorialSnapshot snapshot = PackTestData.Snapshot();
+        XrefRow toIndex = PackTestData.Xref("q:1:2", "rn:atif:p1", "atif", "onayli");
+        EditorialSnapshot changed = With(
+            snapshot,
+            sources: [.. snapshot.Sources, PackTestData.Source("risale-atif-dizini", "baglanti_verisi")],
+            units: [.. snapshot.Units, PackTestData.Unit("rn:atif:p1", "risale-atif-dizini", "risale", durum: "taslak")],
+            xrefs: [toIndex]);
+        GateInput input = Build(changed);
+
+        Assert.True(Assert.Single(input.Xrefs).DstIsSeparateIndex);
+
+        GateResult result = GateEvaluator.Evaluate(BuildFlavor.Public, input);
+
+        Assert.True(result.XrefVerdicts[toIndex.Id].Included, result.Report.ToJson());
+        Assert.DoesNotContain(result.Report.Rows, r => r.Reason.StartsWith(GateReasons.UcBirimGirmedi, StringComparison.Ordinal));
+
+        // Kaynak uc ayni kosulda yine suzulur: ayri dizin yalniz hedef ucu muaf tutar.
+        XrefRow fromDraft = PackTestData.Xref("q:1:3", "rn:atif:p1", "atif", "onayli");
+        GateResult dropped = GateEvaluator.Evaluate(BuildFlavor.Public, Build(With(changed, xrefs: [fromDraft])));
+        Assert.Equal("kaynak=P-10:onaysiz-birim", dropped.XrefVerdicts[fromDraft.Id].Detail);
+    }
+
     [Fact]
     public void An_ai_draft_is_reported_as_p08_and_a_plain_draft_as_p10_in_public()
     {
@@ -275,7 +391,7 @@ public class GateInputBuilderTests
 
         Assert.True(result.Rejected);
         GateViolation violation = Assert.Single(result.Report.Violations);
-        Assert.Equal(("q:9:9", GateReasons.CapaKayip), (violation.Subject, violation.Reason));
+        Assert.Equal(("q:9:9", GateReasons.CapaKayboldu + ":" + GateReasons.CapaSatirYok), (violation.Subject, violation.Reason));
         Assert.Null(violation.Rule);
     }
 

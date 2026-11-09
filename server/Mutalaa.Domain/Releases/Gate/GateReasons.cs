@@ -26,6 +26,11 @@ public static class GateReasons
     public const string SozlukOnaysiz = "sozluk-onaysiz";
     public const string OnaysizSatir = "onaysiz-satir";
     public const string LemmaOnaysiz = "lemma-onaysiz";
-    public const string CapaKayip = "capa-sureklilik-kayip";
-    public const string CapaYonlendirmesiz = "capa-sureklilik-yonlendirmesiz";
+    public const string UcBirimGirmedi = "uc-birim-girmedi";
+
+    /// <summary>Capa sureklilik ihlalinin gerekcesi (K-47 madde 2). Rapordaki dizgi "capa-kayboldu:{alt-neden}" bicimindedir.</summary>
+    public const string CapaKayboldu = "capa-kayboldu";
+    public const string CapaSatirYok = "satir-yok";
+    public const string CapaYonlendirmesiz = "yonlendirmesiz";
+    public const string CapaKapsamDisi = "kapsam-disi";
 }

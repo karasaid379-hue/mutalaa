@@ -336,10 +336,10 @@ public sealed partial class ReleasePipeline
             Say(Inv($"  {row.Kind.ToLabel()} {row.Id}: {row.Decision.ToLabel()} [{rule}] {row.Reason} x{row.Count}"));
         }
 
-        foreach (GateViolation violation in report.Violations)
+        // Her (kural, gerekce) grubunda ilk GateReport.MaxViolationsShown ihlal yazilir; ihlal= toplam sayiyi korur.
+        foreach (string line in report.ViolationLines())
         {
-            string rule = violation.Rule is null ? "-" : violation.Rule.Value.ToCode();
-            Say(Inv($"  IHLAL [{rule}] {violation.Subject}: {violation.Reason}"));
+            Say(line);
         }
     }
 

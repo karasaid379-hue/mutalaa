@@ -696,8 +696,8 @@ public class GateRuleTests
         Assert.True(result.Rejected);
         Assert.Equal(
             [
-                new GateViolation(null, "q:1:3", GateReasons.CapaYonlendirmesiz),
-                new GateViolation(null, "q:1:4", GateReasons.CapaKayip),
+                new GateViolation(null, "q:1:3", GateReasons.CapaKayboldu + ":" + GateReasons.CapaYonlendirmesiz),
+                new GateViolation(null, "q:1:4", GateReasons.CapaKayboldu + ":" + GateReasons.CapaSatirYok),
             ],
             result.Report.Violations);
     });

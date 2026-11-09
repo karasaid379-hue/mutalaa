@@ -1,3 +1,4 @@
+using Mutalaa.Domain.Anchors;
 using Mutalaa.Domain.Content;
 using Mutalaa.Domain.Links;
 
@@ -8,11 +9,15 @@ namespace Mutalaa.Domain.Releases.Gate;
 /// Suzme kurallari (P-07, P-08, P-09, P-10, P-12) icerigi pakete almaz ve rapora "girmedi" yazar, durdurmaz.
 /// Butunluk kurallari (P-01, P-11, P-13, P-14) ihlal uretir ve yayini reddeder (GateReport.Rejected).
 /// Degerlendirme sirasi: kaynak (P-12, sonra P-01) -> birim (kaynak, kullanim disi, P-08, P-10) -> paket -> P-13 -> baglanti (P-07)
-/// -> sozluk (P-09) -> capa sureklilik. P-11 ve P-14 dosya/kanal verisi gerektirdiginden ayri islevlerdir (GateEvaluator.Integrity).
+/// -> sozluk (P-09) -> capa sureklilik. Baglanti (P-07) ayrica uc birimlerin bu derlemenin kapsamina girmesini ister (K-47 madde 1: "uc-birim-girmedi");
+/// capa sureklilik onceki yayinin her capasinin bu derlemede bulunmasini ya da acik geri cekilme kaydi (kullanim_disi + successors) tasimasini ister
+/// (K-47 madde 2: "capa-kayboldu"). P-11 ve P-14 dosya/kanal verisi gerektirdiginden ayri islevlerdir (GateEvaluator.Integrity).
 /// </summary>
 public static partial class GateEvaluator
 {
     private readonly record struct SourceVerdict(GateDecision Decision, GateRule? Rule, string Reason);
+
+    private readonly record struct UnitExclusion(GateRule? Rule, string Reason);
 
     private readonly record struct RowKey(GateSubjectKind Kind, string Id, GateDecision Decision, GateRule? Rule, string Reason);
 
@@ -40,6 +45,7 @@ public static partial class GateEvaluator
 
         // Birimler (kaynak kurali -> kullanim disi -> P-08 -> P-10).
         HashSet<string> includedUnits = new(StringComparer.Ordinal);
+        Dictionary<string, UnitExclusion> excludedUnits = new(StringComparer.Ordinal);
         Dictionary<string, int> unitsBySource = new(StringComparer.Ordinal);
         Dictionary<string, int> includedBySource = new(StringComparer.Ordinal);
         foreach (GateUnit unit in input.Units)
@@ -52,6 +58,10 @@ public static partial class GateEvaluator
             {
                 includedUnits.Add(unit.Anchor);
                 includedBySource[unit.SourceSlug] = includedBySource.GetValueOrDefault(unit.SourceSlug) + 1;
+            }
+            else
+            {
+                excludedUnits.TryAdd(unit.Anchor, new UnitExclusion(rule, reason));
             }
         }
 
@@ -103,6 +113,11 @@ public static partial class GateEvaluator
                 xref,
                 IsVisible(sources, xref.SrcSourceSlug),
                 IsVisible(sources, xref.DstSourceSlug));
+            if (verdict.Included)
+            {
+                verdict = CheckXrefEndUnits(xref, verdict, includedUnits, excludedUnits);
+            }
+
             if (!verdicts.TryAdd(xref.Id, verdict))
             {
                 throw new ArgumentException($"Yinelenen baglanti kimligi: {xref.Id}", nameof(input));
@@ -115,7 +130,8 @@ public static partial class GateEvaluator
             }
             else
             {
-                Count(groups, GateSubjectKind.Baglanti, typeLabel, GateDecision.Girmedi, verdict.Rule, verdict.Reason);
+                string reason = verdict.Detail.Length == 0 ? verdict.Reason : verdict.Reason + ":" + verdict.Detail;
+                Count(groups, GateSubjectKind.Baglanti, typeLabel, GateDecision.Girmedi, verdict.Rule, reason);
             }
         }
 
@@ -136,7 +152,7 @@ public static partial class GateEvaluator
             }
         }
 
-        violations.AddRange(CheckAnchorContinuity(input));
+        violations.AddRange(CheckAnchorContinuity(input, includedUnits, excludedUnits));
 
         foreach ((RowKey key, int count) in groups)
         {
@@ -359,7 +375,84 @@ public static partial class GateEvaluator
         }
     }
 
-    private static List<GateViolation> CheckAnchorContinuity(GateInput input)
+    /// <summary>
+    /// K-47 madde 1: baglanti yalniz iki ucunun birimi de derlemenin kapsamina girmisse pakete yazilir. Ucun birim satiri girdide varsa ve kapsam disindaysa
+    /// (P-08, P-10, kullanim disi ya da kaynak kurali) baglanti "girmedi" olur (P-07, "uc-birim-girmedi"); neden Detail alaninda "kaynak=..." ve "hedef=..." olarak
+    /// yazilir. Girdide birim satiri olmayan uclar (konu:, ayri dizin) etkilenmez; ayri kayitli dizindeki hedef de aranmaz (eser gorunurlugu kuraliyla ayni).
+    /// </summary>
+    private static XrefVerdict CheckXrefEndUnits(
+        GateXref xref,
+        XrefVerdict verdict,
+        HashSet<string> includedUnits,
+        Dictionary<string, UnitExclusion> excludedUnits)
+    {
+        UnitExclusion? src = FindEndExclusion(xref.SrcAnchor, includedUnits, excludedUnits);
+        UnitExclusion? dst = xref.DstIsSeparateIndex ? null : FindEndExclusion(xref.DstAnchor, includedUnits, excludedUnits);
+        if (src is null && dst is null)
+        {
+            return verdict;
+        }
+
+        List<string> parts = [];
+        if (src is { } s)
+        {
+            parts.Add("kaynak=" + Describe(s));
+        }
+
+        if (dst is { } d)
+        {
+            parts.Add("hedef=" + Describe(d));
+        }
+
+        return verdict with
+        {
+            Included = false,
+            Rule = GateRule.P07,
+            Reason = GateReasons.UcBirimGirmedi,
+            Detail = string.Join(',', parts),
+        };
+
+        static string Describe(UnitExclusion e) => e.Rule is { } rule ? rule.ToCode() + ":" + e.Reason : e.Reason;
+    }
+
+    private static UnitExclusion? FindEndExclusion(string anchor, HashSet<string> includedUnits, Dictionary<string, UnitExclusion> excludedUnits)
+    {
+        // Once uc capasinin kendisi aranir (birim satiri olan capa kendi birimidir; coklu baglanti kumelerinde ayristirma yapilmaz).
+        if (includedUnits.Contains(anchor))
+        {
+            return null;
+        }
+
+        if (excludedUnits.TryGetValue(anchor, out UnitExclusion found))
+        {
+            return found;
+        }
+
+        // Iskada: kelime araligi (":3-7") ve kesin aralik ("@bas-bit") soneki atilir, baglanti ucu birim duzeyindedir (K-35 madde 5, unitOf).
+        if (!AnchorRef.TryParse(anchor, out AnchorRef? parsed))
+        {
+            return null;
+        }
+
+        string unit = parsed.UnitOf().ToString();
+        if (string.Equals(unit, anchor, StringComparison.Ordinal) || includedUnits.Contains(unit))
+        {
+            return null;
+        }
+
+        return excludedUnits.TryGetValue(unit, out found) ? found : null;
+    }
+
+    /// <summary>
+    /// K-47 madde 2: onceki yayinin her capasi (a) bu derlemenin kapsamina girmis bir birim, ya da (b) acik geri cekilme kaydi tasiyan birim
+    /// (status kullanim_disi ve successors dolu) olmalidir; aksi halde yayin reddedilir (kural kodu yok, gerekce "capa-kayboldu:{alt-neden}").
+    /// Alt neden: "satir-yok" (girdide birim yok), "yonlendirmesiz" (kullanim_disi, successors bos), ya da kapsam disi birimin suzme gerekcesi
+    /// (taslaga donmus: "onaysiz-birim", "yapay-zeka-taslagi-onaysiz"; suzulmus kaynak: "test-oneki" vb.). Onaysiz birimler dev ve internal'da kapsamdadir.
+    /// </summary>
+    private static List<GateViolation> CheckAnchorContinuity(
+        GateInput input,
+        HashSet<string> includedUnits,
+        Dictionary<string, UnitExclusion> excludedUnits)
     {
         List<GateViolation> violations = [];
         if (input.PreviousAnchors.Count == 0)
@@ -375,13 +468,31 @@ public static partial class GateEvaluator
 
         foreach (string anchor in input.PreviousAnchors.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal))
         {
+            if (includedUnits.Contains(anchor))
+            {
+                continue;
+            }
+
+            string? cause = null;
             if (!byAnchor.TryGetValue(anchor, out GateUnit? unit))
             {
-                violations.Add(new GateViolation(null, anchor, GateReasons.CapaKayip));
+                cause = GateReasons.CapaSatirYok;
             }
-            else if (unit.Status != UnitStatus.Etkin && !unit.HasSuccessors)
+            else if (unit.Status != UnitStatus.Etkin)
             {
-                violations.Add(new GateViolation(null, anchor, GateReasons.CapaYonlendirmesiz));
+                if (!unit.HasSuccessors)
+                {
+                    cause = GateReasons.CapaYonlendirmesiz;
+                }
+            }
+            else
+            {
+                cause = excludedUnits.TryGetValue(anchor, out UnitExclusion exclusion) ? exclusion.Reason : GateReasons.CapaKapsamDisi;
+            }
+
+            if (cause is not null)
+            {
+                violations.Add(new GateViolation(null, anchor, GateReasons.CapaKayboldu + ":" + cause));
             }
         }
 

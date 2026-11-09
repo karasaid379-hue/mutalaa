@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Mutalaa.Domain.Content;
 using Mutalaa.Domain.Links;
 using Mutalaa.Domain.Releases.Gate;
@@ -13,7 +14,7 @@ namespace Mutalaa.Infrastructure.Releases;
 /// Kapiya giren kaynaklar: butun source satirlari + icerigi olan paketlerin zorunlu kaynaklari (satiri yoksa kayitsiz, P-01).</item>
 /// <item>Paket: icerigi (birim ya da yapi satiri) yoksa HasContent = false ("icerik-yok"; kaynaklari kapiya sokulmaz). Zorunlu olmayan kaynak yalniz
 /// satiri varsa pakete bagli sayilir.</item>
-/// <item>Birim: IsAiDraft = onaysiz birimin yz_modeli dolu review satiri var; HasSuccessors = successors dolu.</item>
+/// <item>Birim: IsAiDraft = onaysiz birimin yz_modeli dolu review satiri var; HasSuccessors = successors en az bir ogeli dizi ('[]' ve JSON null bos sayilir).</item>
 /// <item>Baglanti: uclarin kaynagi uc capanin birim satirindan; bulunamayan uc kaynaksiz ("") sayilir (gorunmez). DstIsSeparateIndex: hedef birimin
 /// kaynaginin turu <c>baglanti_verisi</c> (risale-atif-dizini). LexiconApproved: evidence.lexicon_status yok ya da <c>onayli</c>.</item>
 /// <item>PreviousAnchors ve CarriedPackIds cagiran tarafindan verilir (onceki yayinin paket dosyalarindan ve manifestinden gelir).</item>
@@ -154,7 +155,31 @@ public static class GateInputBuilder
             throw new InvalidDataException($"Bilinmeyen birim durumu ({unit.Anchor}): {unit.Status}");
         }
 
-        return new GateUnit(unit.Anchor, unit.SourceId, textStatus, unit.IsAiDraft, status, !string.IsNullOrEmpty(unit.Successors));
+        return new GateUnit(unit.Anchor, unit.SourceId, textStatus, unit.IsAiDraft, status, HasSuccessors(unit));
+    }
+
+    // K-47 madde 2: yonlendirme "dolu" successors'tir. jsonb sutunda '[]' (bos dizi) ve JSON 'null' bos sayilir; yalniz en az bir ogeli dizi doludur.
+    private static bool HasSuccessors(UnitRow unit)
+    {
+        if (string.IsNullOrWhiteSpace(unit.Successors))
+        {
+            return false;
+        }
+
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(unit.Successors);
+            return document.RootElement.ValueKind switch
+            {
+                JsonValueKind.Array => document.RootElement.GetArrayLength() > 0,
+                JsonValueKind.Null => false,
+                _ => throw new InvalidDataException($"Birim successors degeri bir dizi degil ({unit.Anchor})."),
+            };
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidDataException($"Birim successors degeri gecerli JSON degil ({unit.Anchor}).", ex);
+        }
     }
 
     private static GateXref ToGateXref(

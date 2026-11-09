@@ -540,12 +540,13 @@ public class ReleaseEndToEndFlowTests(PostgresFixture postgres, SeaweedFixture s
         Assert.True(File.Exists(Path.Combine(outDirectory, "self-check.json")));
         Assert.True(File.Exists(Path.Combine(outDirectory, "hadis-sentetik-2026.11.1.db")));
 
-        // Ayni anahtara FARKLI sha256: yukleme reddedilir (4), satir basarisiz olur, manifest.json eski yayinda kalir, mevcut nesneye dokunulmaz.
-        string conflictKey = StorageKeys.Pack("dev", "hadis-sentetik", "2026.11.1");
+        // Daha eski surumlu (tasinan) paketin anahtarina FARKLI sha256: yukleme reddedilir (4), satir basarisiz olur, manifest.json eski yayinda kalir, mevcut nesneye
+        // dokunulmaz. (Satirin kendi surumunun nesnesi degistirilebilir; o yol ayri testlerde.) Nesne bozuk hale degistirme izniyle getirilir.
+        string conflictKey = StorageKeys.Pack("dev", "core", "2026.11.0");
         byte[] planted = Encoding.UTF8.GetBytes("baska icerik");
         string plantedFile = Path.Combine(harness.Directory.Path, "planted.db");
         await File.WriteAllBytesAsync(plantedFile, planted, ct);
-        Assert.Equal(PutResult.Uploaded, await harness.Reader.PutPackAsync(conflictKey, plantedFile, new string('c', 64), ct));
+        Assert.Equal(PutResult.Replaced, await harness.Reader.PutPackAsync(conflictKey, plantedFile, new string('c', 64), replaceExisting: true, ct));
 
         CliResult conflict = await harness.RunCliAsync("upload", "--flavor", "dev");
 
@@ -553,8 +554,197 @@ public class ReleaseEndToEndFlowTests(PostgresFixture postgres, SeaweedFixture s
         Assert.Equal(ReleaseStatus.Basarisiz, (await harness.Releases.GetAsync(pending.Id, ct))!.Durum);
         Assert.Equal("2026.11.0", (await harness.ReadManifestAsync(BuildFlavor.Dev, ct)).Release);
         Assert.Equal(planted, await harness.Reader.GetAsync(conflictKey, ct));
-        // Depodaki yetim nesne dogrulamada yakalanir (3).
+        // Depodaki bozuk nesne dogrulamada yakalanir (3).
         Assert.Equal(3, (await harness.RunCliAsync("verify", "--flavor", "dev")).Code);
+    }
+
+    // ---------------------------------------------------------------- yeniden deneme: yayimlanmamis surumun nesnesi ve publish --restart (K-46 madde 3, BC-46)
+
+    [Fact]
+    public async Task After_a_database_restore_the_same_version_publishes_again_over_half_uploaded_orphan_packs_when_no_manifest_of_it_exists()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using EndToEndHarness harness = await NewHarnessAsync();
+        ReleaseResult built = await harness.PublishAsync(BuildFlavor.Dev, stop: true);
+        Assert.Equal((ExitCodes.Success, "2026.11.0"), (built.ExitCode, built.Surum));
+        string releaseDir = Path.Combine(harness.OutDir, "dev", "2026.11.0");
+        Manifest first = ManifestJson.Read(await File.ReadAllBytesAsync(Path.Combine(releaseDir, "manifest.json"), ct));
+
+        // Yarim kalmis yukleme: yalniz paket nesneleri depoda (manifests/2026.11.0.json ve manifest.json yok); veritabani yedekten geri yuklendi, satirlar yok.
+        foreach (ManifestPack pack in first.Packs)
+        {
+            string local = Path.Combine(releaseDir, pack.PackId + "-" + pack.Version + ".db");
+            Assert.Equal(PutResult.Uploaded, await harness.Reader.PutPackAsync(StorageKeys.Pack("dev", pack.PackId, pack.Version), local, pack.Sha256, ct));
+        }
+
+        Assert.Null(await harness.Reader.HeadAsync(StorageKeys.ManifestHistory("dev", "2026.11.0"), ct));
+        Assert.Null(await harness.Reader.HeadAsync(StorageKeys.Manifest("dev"), ct));
+        List<string> keysBefore = [.. (await harness.AllKeysAsync(ct)).Order(StringComparer.Ordinal)];
+        await harness.Database.ExecuteAsync("DELETE FROM icerik.release", ct);
+        harness.Clock.Advance(TimeSpan.FromHours(3));
+
+        // Saat ilerledi (pack_meta.built_at degisir): ayni veri farkli dosya baytlari, yani farkli sha256. Yayimlanmamis surumun nesnesi degistirilir.
+        CliResult again = await harness.RunCliAsync("publish", "--flavor", "dev");
+
+        Assert.Equal(0, again.Code);
+        Assert.Contains("degistirildi", again.Out, StringComparison.Ordinal);
+        Release row = await harness.GetReleaseAsync(BuildFlavor.Dev, "2026.11.0", ct);
+        Assert.Equal(1, await harness.CountReleasesAsync(ct));
+        Assert.Equal((ReleaseStatus.Yayinlandi, "2026.11.0"), (row.Durum, row.Surum));
+        Manifest second = await harness.ReadManifestAsync(BuildFlavor.Dev, ct);
+        Assert.Equal("2026.11.0", second.Release);
+        Assert.Equal(PackIds(first), PackIds(second));
+        foreach (ManifestPack pack in second.Packs)
+        {
+            ManifestPack old = first.Packs.Single(p => p.PackId == pack.PackId);
+            Assert.NotEqual(old.Sha256, pack.Sha256);
+            StoredObject head = (await harness.Reader.HeadAsync(StorageKeys.Pack("dev", pack.PackId, pack.Version), ct))!;
+            Assert.Equal((pack.SizeBytes, pack.Sha256), (head.Size, head.Sha256));
+        }
+
+        // Yetim nesne yok: anahtarlar surume gore sabittir; yeniden deneme ayni anahtarlari degistirir ve yalniz iki manifest nesnesi eklenir.
+        List<string> expectedKeys = [.. keysBefore.Concat([StorageKeys.Manifest("dev"), StorageKeys.ManifestHistory("dev", "2026.11.0")]).Order(StringComparer.Ordinal)];
+        List<string> actualKeys = [.. (await harness.AllKeysAsync(ct)).Order(StringComparer.Ordinal)];
+        Assert.Equal(expectedKeys, actualKeys);
+        CliResult verified = await harness.RunCliAsync("verify", "--flavor", "dev");
+        Assert.Equal(0, verified.Code);
+        Assert.DoesNotContain("nesne-manifestte-yok", verified.Out, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task After_a_database_restore_a_version_that_was_fully_published_before_is_immutable_and_a_different_rebuild_exits_with_4()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using EndToEndHarness harness = await NewHarnessAsync();
+        Assert.Equal(0, (await harness.RunCliAsync("publish", "--flavor", "dev")).Code);
+        byte[] manifestBefore = await harness.ManifestBytesAsync(BuildFlavor.Dev, ct);
+        List<string> keysBefore = await harness.AllKeysAsync(ct);
+        Dictionary<string, StoredObject> headsBefore = [];
+        foreach (string key in keysBefore)
+        {
+            headsBefore[key] = (await harness.Reader.HeadAsync(key, ct))!;
+        }
+
+        // Veritabani yedekten geri yuklendi ve satirlar yok; ama surum 2026.11.0 depoda TAM yayimlanmis (manifest.json ve manifests/2026.11.0.json var).
+        await harness.Database.ExecuteAsync("DELETE FROM icerik.release", ct);
+        harness.Clock.Advance(TimeSpan.FromHours(3));
+        CliResult again = await harness.RunCliAsync("publish", "--flavor", "dev");
+
+        Assert.Equal(4, again.Code);
+        Assert.Contains("yayimlanmis gorunuyor", again.Out + again.Error, StringComparison.Ordinal);
+        Assert.Equal(ReleaseStatus.Basarisiz, (await harness.Releases.GetAsync(2, ct))!.Durum);
+        Assert.Equal(1, await harness.CountReleasesAsync(ct));
+        Assert.Equal(manifestBefore, await harness.ManifestBytesAsync(BuildFlavor.Dev, ct));
+        Assert.Equal(keysBefore, await harness.AllKeysAsync(ct));
+        foreach (string key in keysBefore)
+        {
+            Assert.Equal(headsBefore[key], await harness.Reader.HeadAsync(key, ct));
+        }
+
+        Assert.Equal(0, (await harness.RunCliAsync("verify", "--flavor", "dev")).Code);
+    }
+
+    [Fact]
+    public async Task Publish_restart_rebuilds_a_stuck_verified_row_whose_local_output_is_gone_and_whose_packs_are_not_in_the_store()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using EndToEndHarness harness = await NewHarnessAsync();
+        ReleaseResult built = await harness.PublishAsync(BuildFlavor.Dev, stop: true);
+        Assert.Equal((ExitCodes.Success, ReleaseStatus.Dogrulandi), (built.ExitCode, built.Status));
+        Directory.Delete(harness.OutDir, recursive: true);
+
+        // --restart yok: surdurme davranisi degismez; paketler ne yerelde ne depoda, yukleme 4 verir ve satir dogrulandi kalir.
+        CliResult stuck = await harness.RunCliAsync("publish", "--flavor", "dev");
+        Assert.Equal(4, stuck.Code);
+        Assert.Equal(ReleaseStatus.Dogrulandi, (await harness.Releases.GetAsync(1, ct))!.Durum);
+        Assert.Empty(await harness.AllKeysAsync(ct));
+
+        harness.Clock.Advance(TimeSpan.FromHours(1));
+        CliResult restarted = await harness.RunCliAsync("publish", "--flavor", "dev", "--restart");
+
+        Assert.Equal(0, restarted.Code);
+        Assert.Contains("yeniden baslatma", restarted.Out, StringComparison.Ordinal);
+        Release old = (await harness.Releases.GetAsync(1, ct))!;
+        Assert.Equal(ReleaseStatus.Basarisiz, old.Durum);
+        Assert.Contains("yeniden-baslatildi", old.KapiRaporu, StringComparison.Ordinal);
+        Release fresh = (await harness.Releases.GetAsync(2, ct))!;
+        Assert.Equal((ReleaseStatus.Yayinlandi, "2026.11.0"), (fresh.Durum, fresh.Surum));
+        Assert.Equal(2, await harness.CountReleasesAsync(ct));
+        Assert.Equal("2026.11.0", (await harness.ReadManifestAsync(BuildFlavor.Dev, ct)).Release);
+        Assert.Equal(0, (await harness.RunCliAsync("verify", "--flavor", "dev")).Code);
+    }
+
+    [Fact]
+    public async Task Publish_restart_does_not_change_a_published_row_and_an_older_version_object_stays_immutable()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using EndToEndHarness harness = await NewHarnessAsync();
+        Assert.Equal(0, (await harness.RunCliAsync("publish", "--flavor", "dev")).Code);
+        byte[] manifestBefore = await harness.ManifestBytesAsync(BuildFlavor.Dev, ct);
+        List<string> keysBefore = [.. (await harness.AllKeysAsync(ct)).Order(StringComparer.Ordinal)];
+
+        CliResult restart = await harness.RunCliAsync("publish", "--flavor", "dev", "--version", "2026.11.0", "--restart");
+
+        Assert.Equal(1, restart.Code);
+        Assert.Equal(1, await harness.CountReleasesAsync(ct));
+        Assert.Equal(ReleaseStatus.Yayinlandi, (await harness.Releases.GetAsync(1, ct))!.Durum);
+        Assert.Equal(manifestBefore, await harness.ManifestBytesAsync(BuildFlavor.Dev, ct));
+        Assert.Equal(keysBefore, [.. (await harness.AllKeysAsync(ct)).Order(StringComparer.Ordinal)]);
+
+        // Daha eski surumlu (tasinan) paketin nesnesi degismez: yeni yayin onu 2026.11.0'dan tasir; baska icerikle ustune yazilmaya calisilirsa 4.
+        ManifestPack core = (await harness.ReadManifestAsync(BuildFlavor.Dev, ct)).Packs.Single(p => p.PackId == "core");
+        string coreKey = StorageKeys.Pack("dev", "core", core.Version);
+        byte[] original = (await harness.Reader.GetAsync(coreKey, ct))!;
+        string foreignPath = Path.Combine(harness.Directory.Path, "yabanci.db");
+        byte[] foreign = [.. original, 0x42];
+        await File.WriteAllBytesAsync(foreignPath, foreign, ct);
+        string foreignSha = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(foreign));
+
+        await Assert.ThrowsAsync<ObjectConflictException>(() => harness.Reader.PutPackAsync(coreKey, foreignPath, foreignSha, ct));
+        Assert.Equal(original, await harness.Reader.GetAsync(coreKey, ct));
+        Assert.Equal(0, (await harness.RunCliAsync("verify", "--flavor", "dev")).Code);
+    }
+
+    // ---------------------------------------------------------------- K-47: kapsam tutarliligi
+
+    [Fact]
+    public async Task K47_a_unit_back_to_draft_after_a_public_release_rejects_the_next_public_release_with_exit_2_and_a_dev_release_passes()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using EndToEndHarness harness = await NewHarnessAsync();
+        Assert.Equal(0, (await harness.RunCliAsync("publish", "--flavor", "public")).Code);
+        Assert.Equal(0, (await harness.RunCliAsync("publish", "--flavor", "dev")).Code);
+        byte[] publicManifest = await harness.ManifestBytesAsync(BuildFlavor.Public, ct);
+
+        // Onayli birim taslaga doner: etkin kalir ama public pakete girmez (P-10).
+        await harness.Database.ExecuteAsync("UPDATE icerik.unit SET metin_durumu = 'taslak'::icerik.metin_durumu WHERE anchor = @a", ct, ("a", EndToEndData.SentetikApproved));
+
+        CliResult rejected = await harness.RunCliAsync("publish", "--flavor", "public");
+
+        Assert.Equal(2, rejected.Code);
+        Release failed = (await harness.Releases.GetAsync(3, ct))!;
+        Assert.Equal((BuildFlavor.Public, ReleaseStatus.Basarisiz), (failed.Derleme, failed.Durum));
+        Assert.Contains(EndToEndHarness.Violations(failed), v => v is { Rule: null, Subject: EndToEndData.SentetikApproved, Reason: "capa-kayboldu:onaysiz-birim" });
+        Assert.Contains("IHLAL [-] " + EndToEndData.SentetikApproved + ": capa-kayboldu:onaysiz-birim", rejected.Out, StringComparison.Ordinal);
+
+        // Ayni gerekce sarkan baglantiyi da raporlar: onayli atif baglantisinin hedef birimi kapsam disinda (K-47 madde 1).
+        Assert.Contains(
+            EndToEndHarness.GateRows(failed),
+            r => r is { Kind: "baglanti", Id: "atif", Decision: "girmedi", Rule: "P-07" } && r.Reason == "uc-birim-girmedi:hedef=P-10:onaysiz-birim");
+        Assert.Equal(publicManifest, await harness.ManifestBytesAsync(BuildFlavor.Public, ct));
+
+        // Ayni durumda dev yayini gecer: onaysiz birim dev'de kapsamdadir ve baglanti pakette kalir.
+        CliResult dev = await harness.RunCliAsync("publish", "--flavor", "dev");
+        Assert.Equal(0, dev.Code);
+        Release devRow = (await harness.Releases.GetAsync(4, ct))!;
+        Assert.Equal(ReleaseStatus.Yayinlandi, devRow.Durum);
+        Assert.DoesNotContain(EndToEndHarness.GateRows(devRow), r => r.Reason.StartsWith("uc-birim-girmedi", StringComparison.Ordinal));
+        Assert.Empty(EndToEndHarness.Violations(devRow));
+
+        // Birim yeniden onaylaninca public yayini yine gecer.
+        await harness.Database.ExecuteAsync("UPDATE icerik.unit SET metin_durumu = 'onayli'::icerik.metin_durumu WHERE anchor = @a", ct, ("a", EndToEndData.SentetikApproved));
+        Assert.Equal(0, (await harness.RunCliAsync("publish", "--flavor", "public")).Code);
+        Assert.Equal(0, (await harness.RunCliAsync("verify", "--flavor", "public")).Code);
     }
 
     // ---------------------------------------------------------------- gizli degerler

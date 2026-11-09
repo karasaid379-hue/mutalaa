@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -24,7 +25,16 @@ public sealed record GateReportRow(
 public sealed record GateViolation(GateRule? Rule, string Subject, string Reason);
 
 /// <summary>
+/// Raporda (JSON ve konsol) gosterilmeyen ihlallerin gerekce basina sayisi: bir (kural, gerekce) grubunda
+/// <see cref="GateReport.MaxViolationsShown"/> ihlalden fazlasi varsa fazlasi buraya sayilir.
+/// </summary>
+public sealed record GateViolationOmission(GateRule? Rule, string Reason, int Count);
+
+/// <summary>
 /// Kapi raporu (release.kapi_raporu). Satirlar ve ihlaller kararli sirada tutulur; ToJson ayni girdiyle ayni baytlari verir.
+/// <see cref="Violations"/> tam listedir (Rejected ve toplam sayi buradan); JSON ve konsol ciktisi her (kural, gerekce) grubunda ilk
+/// <see cref="MaxViolationsShown"/> ihlali gosterir (bir kaynagin tamami taslaga donunce binlerce capa olabilir); gosterilmeyenlerin sayisi
+/// <see cref="OmittedViolations"/> ile "violations_omitted" alaninda ve konsolda "ve N tane daha" satirinda yer alir.
 /// </summary>
 public sealed class GateReport
 {
@@ -39,7 +49,16 @@ public sealed class GateReport
 
     public IReadOnlyList<GateReportRow> Rows { get; }
 
+    /// <summary>Gerekce (kural + gerekce) basina rapora yazilan en cok ihlal sayisi.</summary>
+    public const int MaxViolationsShown = 50;
+
     public IReadOnlyList<GateViolation> Violations { get; }
+
+    /// <summary>Her (kural, gerekce) grubunda ilk <see cref="MaxViolationsShown"/> ihlal (kararli sirada); JSON ve konsol bunu yazar.</summary>
+    public IReadOnlyList<GateViolation> ShownViolations => Limit().Shown;
+
+    /// <summary>Gosterilmeyen ihlallerin grup basina sayisi (kural numarasi, sonra gerekce sirasiyla); sinir asilmadiysa bos.</summary>
+    public IReadOnlyList<GateViolationOmission> OmittedViolations => Limit().Omitted;
 
     /// <summary>Butunluk ihlali varsa true: yayin reddedilir (Yayinlayici cikis kodu 2).</summary>
     public bool Rejected => Violations.Count > 0;
@@ -102,7 +121,8 @@ public sealed class GateReport
             writer.WriteEndArray();
 
             writer.WriteStartArray("violations");
-            foreach (GateViolation violation in Violations)
+            (GateViolation[] shown, GateViolationOmission[] omitted) = Limit();
+            foreach (GateViolation violation in shown)
             {
                 writer.WriteStartObject();
                 WriteRule(writer, violation.Rule);
@@ -112,10 +132,78 @@ public sealed class GateReport
             }
 
             writer.WriteEndArray();
+
+            // Yalniz sinir asildiysa yazilir (sinirin altindaki raporlarin bicimi degismez): shown + omitted = toplam ihlal.
+            if (omitted.Length > 0)
+            {
+                writer.WriteStartArray("violations_omitted");
+                foreach (GateViolationOmission omission in omitted)
+                {
+                    writer.WriteStartObject();
+                    WriteRule(writer, omission.Rule);
+                    writer.WriteString("reason", omission.Reason);
+                    writer.WriteNumber("count", omission.Count);
+                    writer.WriteEndObject();
+                }
+
+                writer.WriteEndArray();
+            }
+
             writer.WriteEndObject();
         }
 
         return Encoding.UTF8.GetString(stream.ToArray());
+    }
+
+    /// <summary>
+    /// Konsol ihlal satirlari: gosterilen her ihlal icin "IHLAL [kural] konu: gerekce", sinir asilan her grup icin "ve N tane daha [kural] gerekce".
+    /// Sayi ve kural kodu kulturden bagimsizdir.
+    /// </summary>
+    public IReadOnlyList<string> ViolationLines()
+    {
+        (GateViolation[] shown, GateViolationOmission[] omitted) = Limit();
+        List<string> lines = [];
+        foreach (GateViolation violation in shown)
+        {
+            lines.Add($"  IHLAL [{RuleCode(violation.Rule)}] {violation.Subject}: {violation.Reason}");
+        }
+
+        foreach (GateViolationOmission omission in omitted)
+        {
+            lines.Add(string.Create(CultureInfo.InvariantCulture, $"  ve {omission.Count} tane daha [{RuleCode(omission.Rule)}] {omission.Reason}"));
+        }
+
+        return lines;
+    }
+
+    private static string RuleCode(GateRule? rule) => rule is null ? "-" : rule.Value.ToCode();
+
+    // Violations kararli sirada (kural, konu, gerekce); her (kural, gerekce) grubunun ilk MaxViolationsShown ihlali gosterilir.
+    private (GateViolation[] Shown, GateViolationOmission[] Omitted) Limit()
+    {
+        Dictionary<(int Rule, string Reason), int> counts = [];
+        List<GateViolation> shown = [];
+        foreach (GateViolation violation in Violations)
+        {
+            (int, string) key = (RuleNumber(violation.Rule), violation.Reason);
+            int seen = counts.GetValueOrDefault(key) + 1;
+            counts[key] = seen;
+            if (seen <= MaxViolationsShown)
+            {
+                shown.Add(violation);
+            }
+        }
+
+        List<GateViolationOmission> omitted = [];
+        foreach (((int rule, string reason), int total) in counts.OrderBy(c => c.Key.Rule).ThenBy(c => c.Key.Reason, StringComparer.Ordinal))
+        {
+            if (total > MaxViolationsShown)
+            {
+                omitted.Add(new GateViolationOmission(rule == 0 ? null : (GateRule)rule, reason, total - MaxViolationsShown));
+            }
+        }
+
+        return ([.. shown], [.. omitted]);
     }
 
     private static void WriteRule(Utf8JsonWriter writer, GateRule? rule)
