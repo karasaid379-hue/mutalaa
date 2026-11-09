@@ -40,14 +40,18 @@ public static partial class GateEvaluator
 
         // Birimler (kaynak kurali -> kullanim disi -> P-08 -> P-10).
         HashSet<string> includedUnits = new(StringComparer.Ordinal);
+        Dictionary<string, int> unitsBySource = new(StringComparer.Ordinal);
+        Dictionary<string, int> includedBySource = new(StringComparer.Ordinal);
         foreach (GateUnit unit in input.Units)
         {
             SourceVerdict sv = EnsureSource(f, sources, unit.SourceSlug);
             (GateDecision decision, GateRule? rule, string reason) = DecideUnit(f, unit, sv);
             Count(groups, GateSubjectKind.Birim, unit.SourceSlug, decision, rule, reason);
+            unitsBySource[unit.SourceSlug] = unitsBySource.GetValueOrDefault(unit.SourceSlug) + 1;
             if (decision == GateDecision.Girdi)
             {
                 includedUnits.Add(unit.Anchor);
+                includedBySource[unit.SourceSlug] = includedBySource.GetValueOrDefault(unit.SourceSlug) + 1;
             }
         }
 
@@ -61,7 +65,7 @@ public static partial class GateEvaluator
                 throw new ArgumentException($"Yinelenen paket kimligi: {pack.PackId}", nameof(input));
             }
 
-            (GateDecision decision, GateRule? rule, string reason) = DecidePack(f, pack, sources, violations);
+            (GateDecision decision, GateRule? rule, string reason) = DecidePack(f, pack, sources, unitsBySource, includedBySource, violations);
             rows.Add(new GateReportRow(GateSubjectKind.Paket, pack.PackId, decision, rule, reason));
             if (decision == GateDecision.Girdi)
             {
@@ -291,6 +295,8 @@ public static partial class GateEvaluator
         BuildFlavor flavor,
         GatePack pack,
         Dictionary<string, SourceVerdict> sources,
+        Dictionary<string, int> unitsBySource,
+        Dictionary<string, int> includedBySource,
         List<GateViolation> violations)
     {
         if (!pack.HasContent)
@@ -306,6 +312,8 @@ public static partial class GateEvaluator
         }
 
         bool anyEntered = false;
+        bool anyUnits = false;
+        bool anyIncluded = false;
         (GateRule? Rule, string Slug)? firstExcluded = null;
         foreach (string slug in slugs)
         {
@@ -313,6 +321,8 @@ public static partial class GateEvaluator
             if (sv.Decision == GateDecision.Girdi)
             {
                 anyEntered = true;
+                anyUnits |= unitsBySource.GetValueOrDefault(slug) > 0;
+                anyIncluded |= includedBySource.GetValueOrDefault(slug) > 0;
             }
             else
             {
@@ -320,10 +330,15 @@ public static partial class GateEvaluator
             }
         }
 
-        // Suzme kaynak duzeyindedir: paket, en az bir kaynagi girdiyse (o kaynaklarin icerigiyle) girer.
+        // Suzme kaynak duzeyindedir: paket, en az bir kaynagi girdiyse (o kaynaklarin icerigiyle) girer. Ama kaynagi girip birimlerinin hepsi bu derlemede
+        // suzulduyse (ornegin public'te butun birimler taslak: P-08/P-10) icerigi kalmamistir: "girmedi · icerik-yok", kural kodu yok, kapi reddetmez.
+        // Yapi satiri tasiyan paket (core) suzmeden etkilenmez. Girilen kaynaklarin girdide hic birimi yoksa birim kaniti yoktur (sentetik girdi, yapi ya da
+        // ses kaynagi); o zaman paketin HasContent bilgisi (GateInputBuilder: birim ya da yapi satiri) gecerli kalir.
         if (anyEntered)
         {
-            return (GateDecision.Girdi, null, GateReasons.Uygun);
+            return pack.HasStructure || anyIncluded || !anyUnits
+                ? (GateDecision.Girdi, null, GateReasons.Uygun)
+                : (GateDecision.Girmedi, null, GateReasons.IcerikYok);
         }
 
         return (GateDecision.Girmedi, firstExcluded!.Value.Rule, GateReasons.KaynakGirmedi + firstExcluded.Value.Slug);

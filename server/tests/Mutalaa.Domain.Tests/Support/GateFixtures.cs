@@ -38,8 +38,8 @@ internal static class GateFixtures
         int id = 1) =>
         new(Id(id), "q:1:1", "q:1:2", type, status, confidence, openReview, lexiconApproved, src, dst, separateIndex);
 
-    public static GatePack Pack(string id, string[] sources, string[]? dependsOn = null, bool hasContent = true) =>
-        new(id, dependsOn ?? [], sources, hasContent);
+    public static GatePack Pack(string id, string[] sources, string[]? dependsOn = null, bool hasContent = true, bool hasStructure = false) =>
+        new(id, dependsOn ?? [], sources, hasContent, hasStructure);
 
     public static GateInput WithRegularSource(
         IReadOnlyList<GateUnit>? units = null,

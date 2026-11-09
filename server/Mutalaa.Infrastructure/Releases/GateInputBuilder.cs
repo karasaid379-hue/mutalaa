@@ -78,7 +78,7 @@ public static class GateInputBuilder
                 }
             }
 
-            packs.Add(new GatePack(pack.PackId, pack.DependsOn, slugs, hasContent));
+            packs.Add(new GatePack(pack.PackId, pack.DependsOn, slugs, hasContent, HasStructure(pack, snapshot)));
         }
 
         // Kaynaklar: butun satirlar + icerigi olan paketlerin zorunlu kaynaklari (satirsiz olanlar kayitsiz).
@@ -132,6 +132,9 @@ public static class GateInputBuilder
         return fileExists(Path.Combine(sourcesDir, slug + ".toml"));
     }
 
+    private static bool HasStructure(PackDefinition pack, EditorialSnapshot snapshot) =>
+        pack.CarriesQuranStructure && (snapshot.QuranWords.Count > 0 || snapshot.QuranMarkers.Count > 0 || snapshot.PageMaps.Count > 0);
+
     private static bool HasContent(PackDefinition pack, EditorialSnapshot snapshot, Dictionary<string, int> unitCounts)
     {
         if (pack.ContentSources.Any(b => unitCounts.GetValueOrDefault(b.Slug) > 0))
@@ -140,8 +143,7 @@ public static class GateInputBuilder
         }
 
         // Kur'an yapisi (kelime, isaret, sayfa) birimsiz de paket icerigidir.
-        return pack.CarriesQuranStructure
-            && (snapshot.QuranWords.Count > 0 || snapshot.QuranMarkers.Count > 0 || snapshot.PageMaps.Count > 0);
+        return HasStructure(pack, snapshot);
     }
 
     private static GateUnit ToGateUnit(UnitRow unit)

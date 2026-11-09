@@ -36,12 +36,16 @@ public sealed record GateXref(
     string DstSourceSlug,
     bool DstIsSeparateIndex);
 
-/// <summary>Paket adayi. HasContent: pakete yazilacak veri var (yoksa "girmedi · icerik-yok", kural kodu yok).</summary>
+/// <summary>
+/// Paket adayi. HasContent: pakete yazilacak veri var (yoksa "girmedi · icerik-yok", kural kodu yok). HasStructure: paket yapi satiri (kelime, isaret,
+/// sayfa; core) tasiyor ve bu satirlar var; yapi satirlari birim suzmesinden (P-08/P-10) etkilenmeden paket icerigi sayilir. Geriye uyumlu: varsayilan false.
+/// </summary>
 public sealed record GatePack(
     string PackId,
     IReadOnlyList<string> DependsOn,
     IReadOnlyList<string> SourceSlugs,
-    bool HasContent);
+    bool HasContent,
+    bool HasStructure = false);
 
 /// <summary>P-09 kapsamindaki sozluk ve duzeltme tablolari.</summary>
 public enum LexicalKind

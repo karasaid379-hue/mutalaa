@@ -732,6 +732,87 @@ public class GateRuleTests
         Assert.Empty(undefined.IncludedUnits);
         Assert.Equal(publicResult.Report.ToJson(), undefined.Report.ToJson());
     });
+    // ---- Paket icerigi: birim suzmesinden sonra ----
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void A_pack_whose_units_are_all_filtered_in_public_does_not_enter_with_icerik_yok_and_no_rule_code(bool turkish) => CultureScope.For(turkish, () =>
+    {
+        GateInput input = new()
+        {
+            Sources = [Src(Regular)],
+            Units = [Unit("k:" + Regular + ":bolum-1:p1", status: TextStatus.Taslak), Unit("k:" + Regular + ":bolum-1:p2", status: TextStatus.Incelemede)],
+            Packs = [Pack("hadis-sentetik", [Regular])],
+        };
+
+        GateResult publicResult = GateEvaluator.Evaluate(BuildFlavor.Public, input);
+        GateResult devResult = GateEvaluator.Evaluate(BuildFlavor.Dev, input);
+
+        GateReportRow row = Row(publicResult, GateSubjectKind.Paket, "hadis-sentetik");
+        Assert.Equal((GateDecision.Girmedi, (GateRule?)null, GateReasons.IcerikYok), (row.Decision, row.Rule, row.Reason));
+        Assert.DoesNotContain("hadis-sentetik", publicResult.IncludedPacks);
+        Assert.False(publicResult.Report.Rejected);
+        Assert.Empty(publicResult.Report.Violations);
+        // Kaynak girdi (suzme birim duzeyinde); paket yalniz icerigi kalmadigi icin girmedi. Iç derlemede taslak birimler girer, paket de girer.
+        Assert.Equal(GateDecision.Girdi, Row(publicResult, GateSubjectKind.Kaynak, Regular).Decision);
+        Assert.Contains("hadis-sentetik", devResult.IncludedPacks);
+        Assert.Equal(GateDecision.Girdi, Row(devResult, GateSubjectKind.Paket, "hadis-sentetik").Decision);
+    });
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void A_pack_with_at_least_one_included_unit_enters_and_a_deprecated_only_source_does_not(bool turkish) => CultureScope.For(turkish, () =>
+    {
+        GateInput mixed = new()
+        {
+            Sources = [Src(Regular)],
+            Units = [Unit("k:" + Regular + ":bolum-1:p1", status: TextStatus.Taslak), Unit("k:" + Regular + ":bolum-1:p2")],
+            Packs = [Pack("hadis-sentetik", [Regular])],
+        };
+        GateInput deprecated = new()
+        {
+            Sources = [Src(Regular)],
+            Units = [Unit("k:" + Regular + ":bolum-1:p1", unitStatus: UnitStatus.KullanimDisi, hasSuccessors: true)],
+            Packs = [Pack("hadis-sentetik", [Regular])],
+        };
+
+        Assert.Contains("hadis-sentetik", GateEvaluator.Evaluate(BuildFlavor.Public, mixed).IncludedPacks);
+        Assert.DoesNotContain("hadis-sentetik", GateEvaluator.Evaluate(BuildFlavor.Dev, deprecated).IncludedPacks);
+    });
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void A_pack_that_carries_structure_rows_enters_every_flavor_even_when_all_its_units_are_filtered(bool turkish) => CultureScope.For(turkish, () =>
+    {
+        GateInput input = new()
+        {
+            Sources = [Src(Regular)],
+            Units = [Unit("q:1:1", status: TextStatus.Taslak), Unit("q:1:2", status: TextStatus.Taslak)],
+            Packs = [Pack("core", [Regular], hasStructure: true), Pack("hadis-sentetik", [Regular])],
+        };
+
+        foreach (BuildFlavor flavor in Enum.GetValues<BuildFlavor>())
+        {
+            GateResult result = GateEvaluator.Evaluate(flavor, input);
+
+            Assert.Equal(GateDecision.Girdi, Row(result, GateSubjectKind.Paket, "core").Decision);
+            Assert.Equal(
+                flavor == BuildFlavor.Public ? GateDecision.Girmedi : GateDecision.Girdi,
+                Row(result, GateSubjectKind.Paket, "hadis-sentetik").Decision);
+        }
+    });
+
+    [Fact]
+    public void Without_any_unit_evidence_in_the_input_the_pack_content_flag_stays_authoritative()
+    {
+        GateInput input = new() { Sources = [Src(Regular)], Packs = [Pack("hadis-sentetik", [Regular])] };
+
+        Assert.Contains("hadis-sentetik", GateEvaluator.Evaluate(BuildFlavor.Public, input).IncludedPacks);
+    }
+
 
     [Theory]
     [InlineData(false)]

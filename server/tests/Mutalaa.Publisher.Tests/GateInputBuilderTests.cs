@@ -65,6 +65,31 @@ public class GateInputBuilderTests
     }
 
     [Fact]
+    public void Only_a_pack_that_carries_the_quran_structure_and_has_structure_rows_is_marked_as_structure()
+    {
+        GateInput input = Build();
+        EditorialSnapshot noStructure = new() { Sources = PackTestData.Snapshot().Sources, Units = PackTestData.Snapshot().Units };
+
+        Assert.Equal(["core"], input.Packs.Where(p => p.HasStructure).Select(p => p.PackId));
+        Assert.DoesNotContain(Build(noStructure).Packs, p => p.HasStructure);
+    }
+
+    [Fact]
+    public void Core_stays_in_public_through_its_structure_rows_while_a_text_pack_with_only_draft_units_does_not_enter()
+    {
+        EditorialSnapshot snapshot = PackTestData.Snapshot();
+        EditorialSnapshot allDrafts = With(snapshot, units: [.. snapshot.Units.Select(u => u with { MetinDurumu = "taslak" })]);
+
+        GateResult result = PackTestData.Evaluate(BuildFlavor.Public, allDrafts);
+
+        Assert.False(result.Rejected, result.Report.ToJson());
+        Assert.Contains("core", result.IncludedPacks);
+        Assert.Empty(result.IncludedUnits);
+        // test- onekli kaynaklar public'e girmez (P-12); tefsir-test-ornek paketi bu yuzden kapida kalir, icerik-yok degil kaynak nedeniyle.
+        Assert.DoesNotContain("test-kucuk", result.IncludedPacks);
+    }
+
+    [Fact]
     public void Core_with_data_enters_the_gate_with_its_fixtures_in_dev()
     {
         GateResult result = PackTestData.Evaluate(BuildFlavor.Dev, PackTestData.Snapshot());
