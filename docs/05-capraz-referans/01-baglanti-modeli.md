@@ -1,7 +1,7 @@
 # Bağlantı Modeli
 
-> **Sürüm:** 1.4 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Sürüm:** 1.5 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-47](../00-ozet/02-karar-defteri.md#k-47--yayın-kapsamı-tutarlılığı-sarkan-bağlantı-ve-çapa-sürekliliği) · [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 
 Bu dosya bağlantıların veri modelini, puanlamasını, yayın kuralını, seçim çözümleme akışlarını, **Bağlantılar** panelinin sözleşmesini ve geri dönüş yığınını tanımlar. Ayrıntılar: [iktibas tespiti](./02-iktibas-tespiti.md), [kök ve lemma](./03-kok-ve-lemma.md), [anlamsal katman](./04-anlamsal-katman.md).
 
@@ -154,6 +154,7 @@ Kural, Yayınlayıcı'nın P-07 kontrolüdür ([Yayın süreci](../07-yayin/01-y
 Her türde ek koşullar:
 
 - Kaynak ucun eseri o derlemede görünür olmalıdır; hedef ucun eseri de görünür olmalıdır. Hedef kaynak kaydı olan ayrı bir dizindeyse (`risale-atif-dizini`) hedefin görünürlüğü aranmaz.
+- **Uç birimler derlemenin kapsamında olmalıdır** ([K-47](../00-ozet/02-karar-defteri.md#k-47--yayın-kapsamı-tutarlılığı-sarkan-bağlantı-ve-çapa-sürekliliği) madde 1). İki ucun çapası birime indirilir (`:3-7` ve `@0-5` sonekleri atılır); birim satırı varsa ve P-08, P-10 ya da kullanım dışı olduğu için derlemeye girmiyorsa bağlantı da girmez (P-07, gerekçe `uc-birim-girmedi`; rapor hangi ucun hangi nedenle dışarıda kaldığını yazar). Böylece pakette hedefsiz bağlantı kalmaz. Onaysız birim `dev` ve `internal`'da kapsamdadır; orada bağlantı düşmez. Birim satırı olmayan uçlar (ör. `konu:`) etkilenmez.
 - `public` için ayrıca: bağlantıda açık `review` yoktur; `kok` ve `lemma` için `evidence.lexicon_status` onaylıdır (alan yoksa onaylı sayılır, çünkü Türkçe taraftaki sözlük girdisi onaylıdır); `anlamsal` v1'de yoktur, v1.x derlemesinde `confidence ≥ 0,50` ile ve "Makine önerisi" rozetiyle gelir.
 - İç derlemeler (`dev`, `internal`) `red` dışındaki satırı, yukarıdaki tabloya göre görür; onay isteyen türdeki `aday` satır orada "Aday" rozetiyle durur ve `public`'e girmez ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5).
 

@@ -35,7 +35,7 @@ Manifest her derleme türünde imzalıdır (Manifest bölümü).
 | Kod | Kural | Derleme |
 |---|---|---|
 | P-01 | Kaynak kaydı olmayan içerik hiçbir pakete girmez | Hepsi |
-| P-07 | Bağlantı: kaynak eser görünür; hedef eser görünür ya da ayrı kayıtlı bir dizine ait; `red` hiç girmez; insan onayı isteyen türün (`atif`, `iktibas`, `ima`, `konu`) `aday` satırı yalnız `dev` ve `internal`'a girer, otomatik türler (`kok`, `lemma`, `benzer_ayet`, `anlamsal`) `confidence ≥ 0,50` ile her derlemeye girer | Hepsi |
+| P-07 | Bağlantı: kaynak eser görünür; hedef eser görünür ya da ayrı kayıtlı bir dizine ait; `red` hiç girmez; insan onayı isteyen türün (`atif`, `iktibas`, `ima`, `konu`) `aday` satırı yalnız `dev` ve `internal`'a girer, otomatik türler (`kok`, `lemma`, `benzer_ayet`, `anlamsal`) `confidence ≥ 0,50` ile her derlemeye girer; uç birimler derlemenin kapsamında olmalı (`uc-birim-girmedi`, K-47) | Hepsi |
 | P-08 | Onaysız yapay zekâ taslağı `public`'e girmez; iç derlemelere "doğrulanmamış" işaretiyle girer | public |
 | P-09 | `quran_word_fix`, `tr_root_index` ve `tr_form` satırlarından yalnız onaylılar uygulanır | Hepsi |
 | P-10 | Yalnız `metin_durumu = onayli` birimler `public`'e girer | public |
@@ -44,7 +44,7 @@ Manifest her derleme türünde imzalıdır (Manifest bölümü).
 | P-13 | `depends_on` döngüsüz; her bağımlılık aynı manifestte | Hepsi |
 | P-14 | Terfide içerik özetleri iç kanalda test edilen yayınla aynı | public |
 
-P-02…P-06 yoktur; numaralar yeniden verilmez. Kapı raporu her paket ve kaynak için "girdi" ya da "girmedi" kararını kural koduyla yazar. `public` kuru çalıştırması (`publish --flavor public --dry-run`) 0 ile biter.
+P-02…P-06 yoktur; numaralar yeniden verilmez. Kapı raporu her paket ve kaynak için "girdi" ya da "girmedi" kararını kural koduyla yazar. Çapa sürekliliği (kural kodu yok): önceki yayının her çapası bu derlemenin kapsamında olmalı ya da geri çekilme kaydı taşımalı (`kullanim_disi` ve dolu `successors`); aksi hâlde yayın reddedilir (`capa-kayboldu`, çıkış 2; K-47). `public` kuru çalıştırması (`publish --flavor public --dry-run`) 0 ile biter.
 
 ## Yayınlayıcı komutları
 
@@ -55,7 +55,7 @@ dotnet run --project server/Mutalaa.Publisher -- <komut>
 | Komut | İş |
 |---|---|
 | `keys generate --flavor <dev\|internal\|public>` | Ed25519 anahtar çifti; özel anahtar kullanıcı sırlarına, açık anahtar ekrana (kullanıcı onayı gerekir) |
-| `publish --flavor <f> [--pack <id>]… [--dry-run]` | Derleme, imza ve yükleme; `--dry-run` yalnız kapı raporu |
+| `publish --flavor <f> [--pack <id>]… [--dry-run] [--version <s>] [--restart]` | Derleme, imza ve yükleme; `--dry-run` yalnız kapı raporu; `--restart` tıkanmış `dogrulandi` satırı aynı sürümle yeniden derler (sürüm depoda görünüyorsa reddedilir) |
 | `build --flavor <f> [--out <klasör>]` | Kapı, paket, sha256, imzalı manifest; varsayılan çıktı `data/packs/{flavor}/{surum}/` |
 | `upload --flavor <f> --surum <s>` | Üretilmiş yayını yükler |
 | `verify --flavor <f> [--manifest <yol>] [--embedded-core <yol>]` | İmza, şema, adres, boyut, sha256 ve kapı kurallarını yeniden denetler |
@@ -77,7 +77,7 @@ Her paket satırı: `pack_id, version, sha256, size_bytes, min_app_version, depe
 | Manifest | `{flavor}/manifest.json` |
 | Manifest geçmişi | `{flavor}/manifests/{surum}.json` |
 
-Sürüm CalVer `YYYY.M.N`. İçeriği değişmeyen paket önceki sürümünü korur. Var olan anahtara farklı sha256 ile yazılmaz.
+Sürüm CalVer `YYYY.M.N`. İçeriği değişmeyen paket önceki sürümünü korur. Var olan anahtara farklı sha256 ile yazılmaz; tek istisna, depoda (canlı manifest ya da `manifests/{surum}.json`) görünmeyen yayımlanmamış sürümün kendi paket nesneleridir (K-46 madde 3).
 
 ## Yerel `dev` döngüsü
 
