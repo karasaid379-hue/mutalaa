@@ -23,5 +23,8 @@
   },
   "devDependencies": {
     "@mutalaa/test-vectors": "workspace:*"
+  },
+  "dependencies": {
+    "snowball-stemmers-js": "3.1.2"
   }
 }

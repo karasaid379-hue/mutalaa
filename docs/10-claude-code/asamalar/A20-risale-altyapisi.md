@@ -108,8 +108,8 @@ Seçilmeyenler (kalite ve erişim): eRisale blok içerikleri (şifreli biçim, m
 - **Bitti sayılır:** BÇ-07 kararı karar defterinde ve Editoryal veritabanı belgesinde; `risale-baski-envar` kaydı dolu; bölüm başı `page_map` satırları kitap başına yüklendi ve eşleşen/eşleşmeyen düğüm sayıları raporlandı; doğrulayıcı ve (varsa) göç testleri yeşil.
 
 ### A20.4 · Paket tanımları (Yayınlayıcı)
-- `risale-{kitap}`: `unit` (paragraf, başlık, haşiye ve dipnot rolleri; `sentences`, `marks`); arama tabloları ve `tr_root_index` taşımaz (İçerik paketleri §3.2).
-- `risale-dizin`: `unit_ref` (`rowid`, `anchor`, `pack_id`, `ord`, `label`), içeriksiz `unit_fts`, `unit_tri`, `tr_stem_lex`, `xref_idx`, `tr_root_index`, `page_map` (A12 DDL'i). `unit_ref.rowid` FTS satır kimliğidir; kitap paketinin `rowid` değeri ayrıdır; kalıcı başvuru her zaman çapadır.
+- `risale-{kitap}`: `unit` (paragraf, başlık, haşiye ve dipnot rolleri; `sentences`, `marks`); arama tabloları, `xref_idx` ve `tr_root_index` taşımaz (İçerik paketleri §3.2; K-44 madde 3).
+- `risale-dizin`: `unit_ref` (`rowid`, `anchor`, `pack_id`, `ord`, `label`), içeriksiz `unit_fts`, `unit_tri` (satırlar doğrudan yazılır, `rebuild` yok; K-44 madde 4), `xref_idx`, `tr_root_index`, `page_map` (A12 DDL'i). `unit_ref.rowid` FTS satır kimliğidir; kitap paketinin `rowid` değeri ayrıdır; kalıcı başvuru her zaman çapadır.
 - Bir ucu Risale olan bağlantı `risale-dizin` paketine yazılır (İçerik paketleri §4 kural 2). Dizindeki arama indeksi metnin durumuyla süzülür (§7); bağlantılar ve sayfa eşlemeleri ayrı dizin kaynağının (`risale-atif-dizini`) kaydıyla ve P-07 ile süzülür.
 - `label` birim başlıklarından üretilir ("Sözler › 10. Söz › 3. Hakikat ¶4" biçimi); slug'dan türetilmez.
 - Paketler gerçek metinle üretilir (kitap başına `risale-{kitap}`); paket boyutları ölçülür ve İçerik paketleri §9 tahminiyle karşılaştırılır.

@@ -1,6 +1,6 @@
 # Backend API
 
-> **Sürüm:** 1.6 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
+> **Sürüm:** 1.7 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu dosya ASP.NET Core 10 çözümünü, uçları, kimlik doğrulamayı, hata modelini, EF Core kurallarını ve Yayınlayıcı konsolunu tanımlar. Tablolar [Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md), paket ve manifest biçimi [İçerik paketleri](../03-veri/03-icerik-paketleri.md), kalite kapısı kuralları [Yayın süreci](../07-yayin/01-yayin-sureci.md) dosyasındadır.
@@ -272,10 +272,10 @@ P-10 ile K-38 uyumludur. Hazır ve çıkarılmış metinler `taslak` girer (`ona
 ### 10.4 Paket yazımı
 
 1. `{pack_id}-{version}.db.tmp` açılır; derleme süresince `PRAGMA page_size=4096; journal_mode=OFF; synchronous=OFF`.
-2. DDL `packages/content-schema/sql/` altından çalışır; `PRAGMA user_version` şema sürümüdür.
-3. Satırlar çapa sırasıyla tek işlemde, hazırlanmış komutlarla yazılır. FTS5 tabloları doldurulur; `'rebuild'` ve `'optimize'` çalışır ([Arama](../03-veri/05-arama-fts5.md)).
+2. DDL `packages/content-schema/sql/` altından çalışır; `PRAGMA user_version` şema sürümüdür. Hangi paket türünün hangi DDL dosyalarını çalıştırdığı `packages/content-schema/sql/paketler.json` dosyasındadır: tür deseni (`desen`), paket yazımından önce çalışan `ddl` listesi ve satırlar yazıldıktan sonra çalışan `sonra` dosyaları. Yayınlayıcı bu dosyayı okur; tür→dosya listesi başka yerde tekrarlanmaz.
+3. Satırlar çapa sırasıyla tek işlemde, hazırlanmış komutlarla yazılır. İçerikli FTS5 tablolarında `'rebuild'`, `rank` ve `'optimize'` çalışır. İçeriksiz tablolarda (`content=''`; `risale-dizin`) `'rebuild'` yoktur: satırlar doğrudan yazılır ve yalnız `rank` ile `'optimize'` çalışır (K-44 madde 4; [Arama](../03-veri/05-arama-fts5.md)).
 4. `pack_meta` anahtarları [İçerik paketleri](../03-veri/03-icerik-paketleri.md) §3'teki listeyle yazılır (`content_digest`, `normalizer_version` dahil). Ardından `ANALYZE`, `VACUUM`, `PRAGMA journal_mode=DELETE`.
-5. Öz denetim: `PRAGMA integrity_check` sonucu `ok`; beklenen tablolar var; `q:2:255` ve bir FTS sorgusu sonuç döner.
+5. Öz denetim: `PRAGMA integrity_check` sonucu `ok`; beklenen tablolar var; `unit` ve `unit_fts` taşıyan türlerde `q:2:255` (yalnız `core`) ve bir FTS sorgusu sonuç döner (İçerik paketleri §8 madde 5: denetimler tür koşulludur).
 6. Bağlantı kapanır (`Pooling=False`; Windows açık dosyayı taşıtmaz), dosya `.db` adına taşınır, sha256 ve boyut hesaplanır (`SHA256.HashDataAsync`, `Convert.ToHexStringLower`).
 
 Açılışta `PRAGMA compile_options` içinde `ENABLE_FTS5` aranır; yoksa Yayınlayıcı durur. Paket yalnız cihazdaki SQLite'ın desteklediği özellikleri kullanır; cihaz SQLite sürümü Doğrulanacak.

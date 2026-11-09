@@ -1,7 +1,7 @@
 # Arama (SQLite FTS5)
 
-> **Sürüm:** 1.5 · **Tarih:** 7 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · K-21 ([karar defteri](../00-ozet/02-karar-defteri.md))
+> **Sürüm:** 1.6 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-44](../00-ozet/02-karar-defteri.md#k-44--arama-indeksi-ve-paket-şeması-cihaz-gövdeleyicisi-simple-clean-paket-tabloları) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · K-21 ([karar defteri](../00-ozet/02-karar-defteri.md))
 
 Arama cihazda SQLite FTS5 ile yapılır. Arama metni içerik hattında normalize edilir ve kanonik metinden ayrı sütunlarda durur; kanonik metin değişmez (K-26). Diğer belgelerdeki `search_text` adı bu sütunların (`tr_narrow`, `tr_wide`, `tr_stem`, `ar_norm`) ortak adıdır. Önek indeksi, Arapça için trigram tablosu ve bm25 sıralaması kullanılır; hedef orta seviye Android'de 50 ms altıdır (K-17). Normalleştirme kuralları yalnız bu dosyada tanımlıdır; Python, TypeScript ve C# uygulamaları `shared/test-vectors/` ile birbirine kilitlenir.
 
@@ -11,8 +11,8 @@ FTS5'in varsayılan `unicode61` belirteçleyicisi büyük-küçük harfi Unicode
 flowchart LR
   A["Kanonik metin"] --> B["Hat: normalize ve gövde"]
   B --> C["unit_search sütunları"]
-  C --> D["Yayınlayıcı: unit_fts, unit_tri, tr_stem_lex"]
-  Q["Kullanıcı sorgusu"] --> N["packages/search: aynı normalleştirici"]
+  C --> D["Yayınlayıcı: unit_fts, unit_tri"]
+  Q["Kullanıcı sorgusu"] --> N["packages/search: aynı normalleştirici ve stemTr"]
   N --> M["FTS5 MATCH ifadesi"]
   D --> M
   M --> R["bm25, gruplama, RRF"]
@@ -42,7 +42,7 @@ Sürüm `normalizer_version = 1.0`. Bu bölümün açık bıraktığı ayrıntı
 4. **Noktalama.** Tire, noktalama ve sözcük karakteri olmayan her kod noktası (« » dahil) ayırıcıdır, boşluk dizileri teke iner: "rahmet-i İlâhiye" → "rahmet i ilâhiye".
 5. Sonuç **dar anahtardır** (`tr_narrow`, `key_narrow`). Düzeltme işaretleri ve Türkçe harfler korunur.
 6. **Geniş anahtar** (`tr_wide`, `key_wide`): her sözcüğe ayrı olarak `ı → i` yapılır, NFD uygulanır, yalnız U+0300–U+036F silinir (başka birleşen işaretler, ör. U+20DD, kalır; `tr-0062`), NFC'ye dönülür. Böylece `â î û` ve `ç ğ ö ş ü` katlanır. Sözcük sayısı ve sırası dar anahtarla aynıdır. Rapor bu iki anahtarı ister: düzeltme işaretsiz geniş anahtar ve âlem/alem, hâlâ/hala gibi çiftleri ayıran dar anahtar (rapor). [Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md) dosyasındaki `keys()` örneği yalnız düzeltme işaretlerini katlıyor; tek tanım bu dosyadır.
-7. **Gövde** (`tr_stem`, yalnız Python; K-36 madde 6): hat, dar anahtarın her sözcüğünde yalnız `â → a`, `î → i`, `û → u` katlar (ç ğ ı ö ş ü korunur), Snowball Türkçe gövdesini alır ve geniş katlamadan geçirir; sonuç boşsa ya da harf/rakam taşımıyorsa sözcüğün geniş biçimi kullanılır. Ön katlamanın sebebi: Snowball Türkçe algoritmasının sesli harf tanımı yalnız `a e ı i o ö u ü`'dür, `â î û` sesli sayılmaz. Gövdeleyici `snowballstemmer` 3.1.1'dir (saf Python), tam sürümle sabitlenir ve `snowballstemmer.turkish_stemmer.TurkishStemmer` doğrudan içe aktarılır. PostgreSQL'in `turkish_stem` sözlüğü de Snowball'dur ([PostgreSQL docs](https://www.postgresql.org/docs/19/textsearch-psql.html)). **Çözüldü (25 Ekim 2026):** paket ve sürüm kaynakları [PyPI snowballstemmer](https://pypi.org/pypi/snowballstemmer/json) ve [Snowball Türkçe algoritması](https://snowballstem.org/algorithms/turkish/stemmer.html); `arastirmaci` okuması 25 Ekim 2026 ([K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) gerekçe bölümü). Snowball bazı sözcükleri agresif keser (`kuran` → `kura`, `mümin` → `mum`, `iman` → `ima`); `tr_stem` sütunu bm25'te düşük ağırlıklıdır (bölüm 4) ve bu gövdelerin etkisi A12'de arama ölçümüyle gözden geçirilir. zeyrek (0.1.3, alfa) lemma için ayrıca kullanılır ([PyPI zeyrek](https://pypi.org/project/zeyrek)). Değişmez kural: `tr_wide` ve `tr_stem` aynı sayıda sözcük taşır ve sıraları aynıdır; pytest bunu sınar.
+7. **Gövde** (`tr_stem`; K-36 madde 6, cihaz yarısı K-44 madde 1): hat, dar anahtarın her sözcüğünde yalnız `â → a`, `î → i`, `û → u` katlar (ç ğ ı ö ş ü korunur), Snowball Türkçe gövdesini alır ve geniş katlamadan geçirir; sonuç boşsa ya da harf/rakam taşımıyorsa sözcüğün geniş biçimi kullanılır. Ön katlamanın sebebi: Snowball Türkçe algoritmasının sesli harf tanımı yalnız `a e ı i o ö u ü`'dür, `â î û` sesli sayılmaz. Gövdeleyici `snowballstemmer` 3.1.1'dir (saf Python), tam sürümle sabitlenir ve `snowballstemmer.turkish_stemmer.TurkishStemmer` doğrudan içe aktarılır. PostgreSQL'in `turkish_stem` sözlüğü de Snowball'dur ([PostgreSQL docs](https://www.postgresql.org/docs/19/textsearch-psql.html)). **Çözüldü (25 Ekim 2026):** paket ve sürüm kaynakları [PyPI snowballstemmer](https://pypi.org/pypi/snowballstemmer/json) ve [Snowball Türkçe algoritması](https://snowballstem.org/algorithms/turkish/stemmer.html); `arastirmaci` okuması 25 Ekim 2026 ([K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) gerekçe bölümü). **Cihaz yarısı (K-44 madde 1, çözüldü 9 Kasım 2026):** `packages/search` içindeki `stemTr` aynı hesabı `snowball-stemmers-js` 3.1.2 ile yapar; yalnız `lib/turkish-stemmer.js` içe aktarılır, `index.js` aktarılmaz. Paket ESM sözdizimindedir ve `package.json` içinde `type` alanı yoktur; Node 24 bunu `MODULE_TYPELESS_PACKAGE_JSON` uyarısıyla ES modül olarak yükler, Vitest 5.0.5 altında yüklenir. 13.044 sentetik sözcükte Python çıktısıyla fark 0'dır (A12.0 ölçümü). İki uygulama `shared/test-vectors/normalize/tr-govde.jsonl` ile kilitlenir (TypeScript ve Python koşar, C# gövdeleme yapmaz). Snowball bazı sözcükleri agresif keser (`kuran` → `kura`, `mümin` → `müm`, `iman` → `ima`; A12.0 ölçümü, Python ve JavaScript aynı; geniş katlamadan sonra `tr_stem` sütununda `mümin` → `mum`, `tg-0006`); `tr_stem` sütunu bm25'te düşük ağırlıklıdır (bölüm 4) ve bu gövdelerin etkisi A12'de arama ölçümüyle gözden geçirilir. zeyrek (0.1.3, alfa) lemma için ayrıca kullanılır ([PyPI zeyrek](https://pypi.org/project/zeyrek)). Değişmez kural: `tr_wide` ve `tr_stem` aynı sayıda sözcük taşır ve sıraları aynıdır; pytest ve G-NOR kapısı bunu sınar (vektör girdilerinde `tr_narrow`, `tr_wide`, `tr_stem` sözcük sayısı ve sırası; sayaç `vektor_hizasiz`, [İçerik hattı](../04-icerik/02-icerik-hatti.md)).
 
 ### 1.3 Arapça
 
@@ -71,7 +71,8 @@ Rapor, arama için türetilmiş bir sütun yerine Tanzil'in kendi yayımladığ�
 ```text
 shared/test-vectors/normalize/tr.jsonl      Türkçe: girdi → dar ve geniş anahtar
 shared/test-vectors/normalize/ar.jsonl      Arapça: girdi → ar_norm
-shared/test-vectors/fts-query/query.jsonl   sorgu → FTS5 MATCH ifadesi ve son süzgeç (bölüm 3)
+shared/test-vectors/normalize/tr-govde.jsonl  Türkçe gövde (tg- öneki; TypeScript ve Python koşar, C# atlar; K-44)
+shared/test-vectors/fts-query/query.jsonl   sorgu → FTS5 MATCH ifadesi ve son süzgeç (bölüm 3; fq- öneki)
 shared/test-vectors/arama/olcum.jsonl       ölçüm sorguları ve beklenen ilk sonuçlar (bölüm 6)
 ```
 
@@ -136,7 +137,7 @@ CREATE VIRTUAL TABLE unit_tri USING fts5(
   content='unit_search', content_rowid='rowid',
   tokenize='trigram'
 );
-CREATE TABLE tr_stem_lex (form TEXT PRIMARY KEY, stem TEXT NOT NULL) WITHOUT ROWID;   -- geniş biçim → gövde
+-- tr_stem_lex tablosu yoktur: gövdeyi cihazda stemTr üretir (K-44 madde 1)
 
 -- Yayınlayıcı, satırları yazdıktan sonra:
 INSERT INTO unit_fts(unit_fts) VALUES('rebuild');
@@ -149,6 +150,8 @@ INSERT INTO unit_tri(unit_tri) VALUES('optimize');
 CREATE VIRTUAL TABLE unit_fts USING fts5(tr_wide, tr_stem, ar_norm, content='',
   tokenize='unicode61 remove_diacritics 0', prefix='2 3 4');
 CREATE VIRTUAL TABLE unit_tri USING fts5(ar_norm, content='', tokenize='trigram');
+-- İçeriksiz tabloda 'rebuild' yoktur (SQLite 3.53.4: "'rebuild' may not be used with a contentless
+-- fts5 table"). Satırlar doğrudan yazılır; paket yazımından sonra yalnız 'rank' ve 'optimize' çalışır.
 ```
 
 - **`remove_diacritics 0`.** Varsayılan değer Latin aksanlarını siler. Normalleştirme katlamayı zaten yapar; belirteçleyici yalnız boşluktan böler.
@@ -156,7 +159,8 @@ CREATE VIRTUAL TABLE unit_tri USING fts5(ar_norm, content='', tokenize='trigram'
 - **Önek indeksi.** `prefix='2 3 4'` 2–4 karakterlik önek sorgularını hızlandırır. Türkçe ekler için gövde sütunu da vardır.
 - **Trigram.** 3 karakterden kısa alt dizeler hiçbir satırı eşlemez. `remove_diacritics` açık değilse LIKE ve GLOB indeksle hızlanır ([SQLite FTS5](https://sqlite.org/fts5.html)). İçeriksiz tabloda trigram araması `MATCH` ile yapılır. Arapça bitişik ekler (و ف ب ل ال) bu tabloyla bulunur: `الصابرين` araması `والصابرين` geçen âyeti de getirir.
 - **`detail=full`.** Varsayılandır ve ifade sorgusu için gereklidir. `detail=none` bir denemede indeksi 743 MiB'den 134 MiB'ye indirdi ama ifade sorgusunu kapatır ([SQLite FTS5](https://sqlite.org/fts5.html)). İçeriksiz tablo arama metnini ikinci kez saklamaz; büyük paketlerde boyuta göre seçilir.
-- **`tr_stem_lex`.** Yayınlayıcı, her paketin geniş biçimlerini gövdeleriyle eşler. Kaynak `tr_wide` ve `tr_stem` sütunlarının sözcük sözcük hizasıdır; eki atılmadan önceki birleşik biçimler de eklenir ("kuranin" → `kuran` gövdesi). Uygulama böylece cihazda gövdeleyici çalıştırmaz. TypeScript'te bir Snowball Türkçe uygulaması bulunursa tablo gereksizleşir (Doğrulanacak).
+- **Gövde (`tr_stem_lex` yok).** Pakette gövde tablosu yoktur ve Yayınlayıcı onu doldurmaz. Cihazda `stemTr` (`packages/search`, `snowball-stemmers-js` 3.1.2) sorgu terimlerinin gövdesini üretir; külliyatta geçmeyen ekli biçimler de böylece gövdeyle bulunur. Gövdeleyici Hermes'te yüklenmezse (A28 denemesi) tabloya dönüş için yeni bir `/karar` gerekir ([K-44](../00-ozet/02-karar-defteri.md#k-44--arama-indeksi-ve-paket-şeması-cihaz-gövdeleyicisi-simple-clean-paket-tabloları) madde 1). **Çözüldü (9 Kasım 2026):** önceki "TypeScript'te Snowball Türkçe uygulaması" Doğrulanacak maddesi K-44 ile kapandı.
+- **İçeriksiz tablo.** `content=''` tablolarda (`risale-dizin`) `'rebuild'` çalışmaz; yalnız `rank` ve `optimize` çalışır. İçerikli tablolar `rebuild`, `rank` ve `optimize` alır (K-44 madde 4).
 - **`snippet()` kullanılmaz.** Arama sütunları katlanmış metin taşır; `snippet()` ve `highlight()` katlanmış metni döndürür. Sonuç parçası `packages/reader-core` içinde kanonik metinden üretilir (bölüm 4).
 
 ## 3. Sorgu ayrıştırma
@@ -171,7 +175,7 @@ terim   ::= sozcuk "*"?
 
 1. **Adres.** Önce sorgunun bir adres olup olmadığına bakılır: "Bakara 255", "2:255", "Âl-i İmrân 7". Sure adları `core` paketindeki `sure` tablosundan gelir ([Çapa şeması](./01-capa-semasi.md) bölüm 12). Eşleşirse "Git: Bakara 255" sonucu en üstte çıkar.
 2. **Yazı sistemi.** Arapça harfli terim `ar_norm` sütununa, Latin harfli terim `tr_*` sütunlarına gider.
-3. **Türkçe terim.** Geniş anahtarı `tr_wide` sütununda aranır. `tr_stem_lex` terimin gövdesini verirse `tr_stem` sütunu da `OR` ile eklenir. Terim `â`, `î` ya da `û` içeriyorsa sonuçlar dar anahtarla süzülür (bölüm 4); hiç sonuç kalmazsa geniş sonuçlar "Düzeltme işaretsiz yazımlar da gösteriliyor" notuyla döner. Arayüzdeki "Tam yazımla ara" anahtarı süzgeci bütün terimlere uygular.
+3. **Türkçe terim.** Geniş anahtarı `tr_wide` sütununda aranır. Gövdeleyici (`stemTr`) terimin gövdesini terimin dar sözcüğünden üretir (`stemTr(dar sözcük)`; dizin de dar sözcüğü gövdeler, çünkü ünlü uyumu geniş sözcükte kaybolur: `ağaçları` → `agac`, ama geniş `agaclari` gövdelenmez) ve `tr_stem` sütunu `OR` ile eklenir. Terim `â`, `î` ya da `û` içeriyorsa sonuçlar dar anahtarla süzülür (bölüm 4); hiç sonuç kalmazsa geniş sonuçlar "Düzeltme işaretsiz yazımlar da gösteriliyor" notuyla döner. Arayüzdeki "Tam yazımla ara" anahtarı süzgeci bütün terimlere uygular.
 4. **Önek.** Açık `*` ya da yazarken son terim için örtük önek kullanılır. Önek en az 2 karakterdir; tek karakterli terim yok sayılır. Önekte gövde sütunu kullanılmaz.
 5. **İfade.** Tırnak içi metin `tr_wide` ya da `ar_norm` sütununda ifade sorgusudur; gövde kullanılmaz.
 6. **Arapça terim.** `ar_norm` sütununda sözcük olarak aranır. Sonuç azsa ve terim en az 3 karakterse `unit_tri` ile alt dize araması yapılır; bu sonuçlar "otomatik eşleşme" çipiyle katlı gelir ([Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md)).
@@ -181,8 +185,8 @@ terim   ::= sozcuk "*"?
 
 | Sorgu | MATCH ifadesi |
 |---|---|
-| `sabır` | `tr_wide : "sabir" OR tr_stem : "{G}"` (`{G}` = `tr_stem_lex('sabir')`) |
-| `ışığın nuru` | `(tr_wide : "isigin" OR tr_stem : "{G1}") AND (tr_wide : "nuru" OR tr_stem : "{G2}")` |
+| `sabır` | `tr_wide : "sabir" OR tr_stem : "{G}"` (`{G}` = `stemTr(dar sözcük)` = `stemTr('sabır')`) |
+| `ışığın nuru` | `(tr_wide : "isigin" OR tr_stem : "{G1}") AND (tr_wide : "nuru" OR tr_stem : "{G2}")` (`{G1}` = `stemTr('ışığın')`, `{G2}` = `stemTr('nuru')`; gövde dar sözcükten alınır) |
 | `kur*` | `tr_wide : "kur"*` |
 | `"rahmet-i ilâhiye"` | `tr_wide : "rahmet i ilahiye"` ve dar süzgeç |
 | `âlem` | `tr_wide : "alem"` ve dar süzgeç `âlem` |
@@ -204,7 +208,7 @@ SELECT occurrences FROM p_kelime_kok.root WHERE id = ?1;   -- "Bu kök Kur'an'da
 - **"Tümü" listesi.** Farklı FTS tablolarının bm25 değerleri karşılaştırılamaz, çünkü her tablonun kendi külliyat istatistiği vardır. Birleşik liste ağırlıklı RRF ile kurulur: `Σ w / (60 + sıra)`; k ≈ 60 önerisi Azure AI Search belgesinden gelir ([MS Learn RRF](https://learn.microsoft.com/en-us/azure/search/hybrid-search-ranking)). Başlangıç ağırlıkları: Âyet 1,2 · Meal 1,0 · Tefsir 0,9 · Risale 0,9 · Hadis 0,8.
 - **Ek puan.** Başlık rolündeki birim ×1,5, tam ifade eşleşmesi ×1,3, dar anahtar eşleşmesi ×1,2. Değerler ölçümle ayarlanır.
 - **Kısa önek.** 2 karakterlik önekte bm25 hesaplanmaz; sonuçlar okuma sırasıyla (`ord`) gelir. Böylece çok satır eşleşse de maliyet sınırlı kalır.
-- **Sonuç parçası.** `reader-core` sonucun kanonik metnini sözcüklere böler, her sözcüğün geniş ve dar anahtarını hesaplar, sorgu terimine, önekine ya da gövdesine (`tr_stem_lex` toplu sorgusu) uyanları işaretler. En yoğun eşleşmenin çevresinden ±12 sözcüklük pencere alır. Arapça sözcükler ayrı `Text` parçası olarak sağdan sola çizilir; dil ve yön özellikleri [Mobil mimari](../06-mobil/01-mobil-mimari.md#13-erişilebilirlik-uygulaması) §13'tedir (iOS `accessibilityLanguage="ar"`, Android karşılığı Doğrulanacak).
+- **Sonuç parçası.** `reader-core` sonucun kanonik metnini sözcüklere böler, her sözcüğün geniş ve dar anahtarını hesaplar, sorgu terimine, önekine ya da gövdesine (`stemTr` çıktısı) uyanları işaretler. En yoğun eşleşmenin çevresinden ±12 sözcüklük pencere alır. Arapça sözcükler ayrı `Text` parçası olarak sağdan sola çizilir; dil ve yön özellikleri [Mobil mimari](../06-mobil/01-mobil-mimari.md#13-erişilebilirlik-uygulaması) §13'tedir (iOS `accessibilityLanguage="ar"`, Android karşılığı Doğrulanacak).
 
 ## 5. Paketler arasında arama (ATTACH)
 
@@ -224,7 +228,7 @@ SELECT * FROM (SELECT r.pack_id, r.anchor, 'risale', r.ord, r.label, bm25(unit_f
                WHERE unit_fts MATCH ?1 ORDER BY 6 LIMIT 20);
 ```
 
-- Şema nitelemeli FTS5 tablolarında `MATCH` sözdizimi prototipte sınanır (Doğrulanacak).
+- Şema nitelemeli FTS5 tablolarında `MATCH` sözdizimi Node `node:sqlite` (SQLite 3.53.4) üzerinde ölçüldü (9 Kasım 2026, A12.5). Çalışan biçim: `FROM`'da şema nitelemeli ad (`p_x.unit_fts`), `WHERE`/`bm25()`'te takma adsız tablo adı (`unit_fts MATCH ?1`, `bm25(unit_fts, …)`); `f.unit_fts MATCH` biçimi de çalışır. `WHERE p_x.unit_fts MATCH` ve takma adlı `bm25(f)` / `f MATCH` "no such column" ile çöker. Yukarıdaki deyim bu biçimdedir; `UNION ALL` ve `ORDER BY s` / `ORDER BY 6` çalışır. Bağlı veritabanı sınırı `main` hariç 10'dur: on birinci `ATTACH` "too many attached databases - max 10" verir (`compile_options`: `MAX_ATTACHED=10`). expo-sqlite tarafı A23.1 ve A28'de ölçülür (Doğrulanacak).
 - Risale sonucunun metni kitap paketinden okunur; kitap kurulu değilse liste yalnız etiketi gösterir ve indirme önerir. Görünen sonuçların kitapları istek anında bağlanır (en çok 3).
 - "Daha fazla" grup başına `LIMIT 20 OFFSET n` ile yüklenir.
 - expo-sqlite web derlemesi FTS içermez ([Expo SQLite](https://docs.expo.dev/versions/v58.0.0/sdk/sqlite.md)). Web geldiğinde (Faz 5) arama sunucuda, editoryal veritabanındaki `turkish` ve `arabic` yapılandırmalı `tsvector` sütunlarıyla yapılır ([PostgreSQL](https://docs.w3cub.com/postgresql~18/textsearch-psql)); çevrimdışı web için Arapça ve Türkçe gövdeleyicisi olan Orama değerlendirilir ([Orama](https://docs.orama.com/open-source/supported-languages)). Sorgu normalleştirmesi aynı TypeScript paketinden gelir. Açık soru: editoryal veritabanı dışarı açılmadığı için ([Genel mimari](../02-mimari/01-genel-mimari.md#10-güvenlik-ve-gizlilik-sınırları) §10, §11 madde 3) web aramasının bu sütunlara mı, yayımlanmış paketlerden üretilen ayrı bir indekse mi dayanacağı A38'de `/karar` ile seçilir.
@@ -235,7 +239,7 @@ SELECT * FROM (SELECT r.pack_id, r.anchor, 'risale', r.ord, r.label, bm25(unit_f
 - **Referans cihaz.** Adıyla [Test stratejisi](../07-yayin/03-test-stratejisi.md) dosyasında belirlenir (Açık soru, mobil mimari MM-12).
 - **Sorgu kümesi.** `shared/test-vectors/arama/olcum.jsonl` yaklaşık 200 sorgu taşır: sık ve seyrek sözcükler, 2–4 karakterlik önekler, ifadeler, düzeltme işaretli terimler, Arapça sözcükler, trigram aramaları, kök ve adres sorguları. Her sorgu beklenen ilk sonuçları da taşır; böylece küme hem hızı hem doğruluğu sınar. Satır alanları `id`, `kategori`, `sorgu`, `beklenen`dir (ilk sonuç çapaları). Bu dosya ortak test vektörü değildir; Python, TypeScript ve C# vektör koşucuları `arama/` klasörünü okumaz.
 - **Ölçüm aracı.** `internal` ve `dev` derlemesindeki gizli "Arama ölçümü" ekranı kümeyi üç kez koşar, her sorguyu `performance.now()` ile ölçer, kategori başına p50, p95 ve en yüksek değeri cihaz modeli ve paket sürümleriyle JSON olarak dışa verir. Ölçüm her sürüm adayında ve normalleştirici ya da paket şeması değiştiğinde yapılır.
-- **Yöntemler.** Hazırlanmış deyimler yeniden kullanılır; ATTACH açılışta bir kez yapılır; her dal `LIMIT` taşır; paket üretiminde `optimize` çalışır; kısa önek bm25'siz sıralanır; `tr_stem_lex` sorguları toplu yapılır. JSI geçişlerinin maliyeti nedeniyle paket başına ayrı sorgu yerine tek `UNION ALL` deyimi tercih edilir (ölçümle doğrulanacak). Bir PowerSync karşılaştırması işlem ve WAL kullanımının kitaplık seçiminden daha çok fark yarattığını gösterir ([PowerSync](https://powersync.com/blog/react-native-database-performance-comparison)).
+- **Yöntemler.** Hazırlanmış deyimler yeniden kullanılır; ATTACH açılışta bir kez yapılır; her dal `LIMIT` taşır; paket üretiminde `optimize` çalışır; kısa önek bm25'siz sıralanır; sorgu terimlerinin gövdeleri tek geçişte hesaplanır (`stemTr`). JSI geçişlerinin maliyeti nedeniyle paket başına ayrı sorgu yerine tek `UNION ALL` deyimi tercih edilir (ölçümle doğrulanacak). Bir PowerSync karşılaştırması işlem ve WAL kullanımının kitaplık seçiminden daha çok fark yarattığını gösterir ([PowerSync](https://powersync.com/blog/react-native-database-performance-comparison)).
 - **Bütçe aşılırsa.** Sırasıyla: içeriksiz tabloya geçmek, önek boyutlarını azaltmak, büyük paketleri bölmek, sık sorguların sonuçlarını önbelleğe almak.
 
 ## 7. Açık sorular
@@ -243,10 +247,10 @@ SELECT * FROM (SELECT r.pack_id, r.anchor, 'risale', r.ord, r.label, bm25(unit_f
 | No | Konu | Durum |
 |---|---|---|
 | AR-1 | İç kesme listesinin derlenmesi ve editör onayı | Öneri (A05'te 7 girdilik başlangıç listesi var) |
-| AR-2 | TypeScript Snowball Türkçe gövdeleyicisi; Python Snowball uygulaması | Python yarısı çözüldü (25 Ekim 2026, `snowballstemmer` 3.1.1, [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) madde 6); TypeScript yarısı Doğrulanacak (A12) |
+| AR-2 | TypeScript Snowball Türkçe gövdeleyicisi; Python Snowball uygulaması | Çözüldü (9 Kasım 2026, [K-44](../00-ozet/02-karar-defteri.md#k-44--arama-indeksi-ve-paket-şeması-cihaz-gövdeleyicisi-simple-clean-paket-tabloları)): Python yarısı 25 Ekim 2026'da çözülmüştü (`snowballstemmer` 3.1.1, [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) madde 6); TypeScript yarısı `snowball-stemmers-js` 3.1.2, `tr_stem_lex` tablosu yok. Hermes yüklemesi A28'de denenir |
 | AR-4 | Uthmani biçimlerinin Kur'an `ar_norm` sütununa eklenmesi | Çözüldü (28 Ekim 2026): A10'da uygulanır, kural bölüm 1.4'te ([K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) madde 5) |
 | AR-5 | bm25 sütun ağırlıkları, RRF kaynak ağırlıkları ve ek puanlar | Ölçülecek |
-| AR-6 | expo-sqlite'ta `SQLITE_MAX_ATTACHED` ve şema nitelemeli `MATCH` | Doğrulanacak |
+| AR-6 | expo-sqlite'ta `SQLITE_MAX_ATTACHED` ve şema nitelemeli `MATCH` | Doğrulanacak: Node tarafı ölçüldü (9 Kasım 2026, A12.5; bölüm 5); expo-sqlite tarafı A23.1/A28'de |
 | AR-7 | Referans orta seviye Android cihaz | Açık soru |
 | AR-8 | Farsça `ی` ve `ک` ile Arapça-Hint rakamlarının kaynaklarda görülmesi (1.0'da değişmez, bölüm 1.3 madde 4) | Doğrulanacak: A10'da ölçülür; sonuç aşama kaydında |
 

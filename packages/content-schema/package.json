@@ -14,7 +14,9 @@
   },
   "files": [
     "dist",
-    "enums.json"
+    "enums.json",
+    "sql",
+    "manifest.schema.json"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -24,5 +26,9 @@
   },
   "dependencies": {
     "@mutalaa/anchors": "workspace:*"
+  },
+  "devDependencies": {
+    "@mutalaa/search": "workspace:*",
+    "@mutalaa/test-vectors": "workspace:*"
   }
 }

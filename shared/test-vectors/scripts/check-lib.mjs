@@ -4,7 +4,7 @@
 // no lone surrogates.
 // Field rules (A04 vector specification 1-2, A05.2 for normalize/) apply to the recognized files
 // only, which are named by their path relative to the package root (VECTOR_KINDS). Other files
-// (fts-query/, arama/olcum.jsonl ...) get the basic rules only.
+// (arama/olcum.jsonl ...) get the basic rules only.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 
@@ -310,6 +310,36 @@ function object(fields, { open = false, nullable = false } = {}) {
   };
 }
 
+/**
+ * Object with arbitrary string keys; every value must pass the rule.
+ * @param {Rule} item
+ * @returns {Rule}
+ */
+function recordOf(item) {
+  return (value, path, out) => {
+    if (!isRecord(value)) {
+      out.push(at(path, `must be an object, got ${describe(value)}`));
+      return;
+    }
+    for (const [key, element] of Object.entries(value)) {
+      item(element, child(path, key), out);
+    }
+  };
+}
+
+/**
+ * The value is null or passes the rule.
+ * @param {Rule} rule
+ * @returns {Rule}
+ */
+function orNull(rule) {
+  return (value, path, out) => {
+    if (value !== null) {
+      rule(value, path, out);
+    }
+  };
+}
+
 const stringPair = tuple([string, string], '2 strings');
 const countPair = tuple([count, count], '2 non-negative integers');
 
@@ -472,6 +502,39 @@ function normalizeTrRule(line, out) {
   }
 }
 
+/** Source groups of the `kaynak:` filter (Arama 3 item 8). */
+export const FTS_SOURCES = Object.freeze(['kuran', 'meal', 'tefsir', 'hadis', 'risale']);
+
+/**
+ * fts-query: a too long query produces nothing (K-44 item 6): every other field is empty.
+ * @param {Record<string, unknown>} line
+ * @param {string[]} out
+ */
+function ftsQueryRule(line, out) {
+  const expected = line['expected'];
+  if (!isRecord(expected) || expected['tooLong'] !== true) {
+    return;
+  }
+  const empty = {
+    address: null,
+    match: null,
+    tri: null,
+    kok: null,
+    kaynak: null,
+  };
+  for (const [key, want] of Object.entries(empty)) {
+    if (Object.hasOwn(expected, key) && expected[key] !== want) {
+      out.push(`expected.${key}: must be null when tooLong is true`);
+    }
+  }
+  for (const key of ['narrow', 'ignored']) {
+    const list = expected[key];
+    if (Array.isArray(list) && list.length > 0) {
+      out.push(`expected.${key}: must be empty when tooLong is true`);
+    }
+  }
+}
+
 /**
  * normalize/ar: the key has no leading, trailing or doubled U+0020.
  * @param {Record<string, unknown>} line
@@ -557,6 +620,35 @@ const KINDS = new Map([
   [
     'normalize/ar.jsonl',
     { input: string, expected: string, extra: normalizeArRule, escapes: true },
+  ],
+  // Turkish stem key (K-44 item 1): the whole stem key of the input; TypeScript and Python run it.
+  [
+    'normalize/tr-govde.jsonl',
+    { input: string, expected: string, extra: normalizeArRule, escapes: true },
+  ],
+  // FTS5 query builder (Arama 3). stems and sures are the fixed lookups the test injects.
+  [
+    'fts-query/query.jsonl',
+    {
+      input: object({
+        query: req(string),
+        stems: opt(recordOf(string)),
+        sures: opt(recordOf(positive)),
+        implicitPrefix: opt(boolean),
+        exact: opt(boolean),
+      }),
+      expected: object({
+        address: req(object({ sure: req(positive), ayet: req(positive) }, { nullable: true })),
+        match: req(stringOrNull),
+        tri: req(stringOrNull),
+        narrow: req(arrayOf(string)),
+        kok: req(stringOrNull),
+        kaynak: req(orNull(oneOf(FTS_SOURCES))),
+        ignored: req(arrayOf(string)),
+        tooLong: req(boolean),
+      }),
+      extra: ftsQueryRule,
+    },
   ],
 ]);
 
@@ -774,7 +866,7 @@ export function listJsonl(path, skip = new Set()) {
  * Lists the vector files under a scan root with their package-relative path (key) and the
  * package root they belong to (base). The package root is found without path.relative(), which
  * lower-cases Windows paths and breaks on the U+0130 in the project folder name:
- * - a folder named like a vector folder (anchors, offsets, content-hash) is inside the package
+ * - a folder named like a vector folder (anchors, offsets, content-hash, normalize, fts-query) is inside the package
  *   root, so its files are keyed "<folder>/<path>";
  * - any other folder is taken as the package root;
  * - a file is keyed "<parent folder>/<file name>".

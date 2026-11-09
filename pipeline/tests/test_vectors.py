@@ -10,10 +10,10 @@ import hashlib
 import itertools
 import json
 from collections.abc import Mapping
-from pathlib import Path
 from typing import Any
 
 import pytest
+import vektor_dosyalari as vd
 
 from mutalaa_pipeline.anchor import (
     AnchorError,
@@ -42,22 +42,9 @@ from mutalaa_pipeline.anchor import (
     unit_of,
 )
 
-KOK_ISARETI = "pnpm-workspace.yaml"
-
-
-def _depo_koku() -> Path:
-    yol = Path(__file__).resolve()
-    for aday in yol.parents:
-        if (aday / KOK_ISARETI).is_file():
-            return aday
-    raise RuntimeError(f"depo koku bulunamadi ({KOK_ISARETI} yok)")
-
-
-VEKTOR_KOKU = _depo_koku() / "shared" / "test-vectors"
-
 
 def _yukle(goreli: str) -> list[dict[str, Any]]:
-    yol = VEKTOR_KOKU / goreli
+    yol = vd.VEKTOR_KOKU / goreli
     if not yol.is_file():
         raise RuntimeError(f"vektor dosyasi yok: {goreli}")
     metin = yol.read_bytes().decode("utf-8")
@@ -77,13 +64,13 @@ def _yukle(goreli: str) -> list[dict[str, Any]]:
     return sonuc
 
 
-VALID = _yukle("anchors/valid.jsonl")
-INVALID = _yukle("anchors/invalid.jsonl")
-COMPARE = _yukle("anchors/compare.jsonl")
-CONTAINS = _yukle("anchors/contains.jsonl")
-ROUTE = _yukle("anchors/route.jsonl")
-OFFSETS = _yukle("offsets/offsets.jsonl")
-HASH = _yukle("content-hash/hash.jsonl")
+VALID = _yukle(vd.VALID)
+INVALID = _yukle(vd.INVALID)
+COMPARE = _yukle(vd.COMPARE)
+CONTAINS = _yukle(vd.CONTAINS)
+ROUTE = _yukle(vd.ROUTE)
+OFFSETS = _yukle(vd.OFFSETS)
+HASH = _yukle(vd.HASH)
 
 
 def kimlik(vektorler: list[dict[str, Any]]) -> list[str]:

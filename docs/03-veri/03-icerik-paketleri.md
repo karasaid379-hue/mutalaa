@@ -1,7 +1,7 @@
 # İçerik Paketleri
 
-> **Sürüm:** 1.5 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** K-21 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
+> **Sürüm:** 1.6 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** K-21 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-44](../00-ozet/02-karar-defteri.md#k-44--arama-indeksi-ve-paket-şeması-cihaz-gövdeleyicisi-simple-clean-paket-tabloları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
 
 İçerik cihaza sürümlü SQLite paketleri olarak iner. Yerelde SeaweedFS'in S3 API'si ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)), canlıda S3 uyumlu bir depo kullanılır; öneri Cloudflare R2'dir (depolama 0,015 $/GB-ay, veri çıkışı ücretsiz; [R2 fiyatlandırma](https://developers.cloudflare.com/r2/pricing)). Yayınlayıcı (`Mutalaa.Publisher`) editoryal veritabanından her derleme türü için ayrı paketler ve ayrı, imzalı bir manifest üretir ([Editoryal veritabanı](./02-editoryal-veritabani.md); [Yayın süreci](../07-yayin/01-yayin-sureci.md)).
 
@@ -73,13 +73,13 @@ Brifteki `meta` tablosu bu dosyada ve mobil mimaride `pack_meta` adını taşır
 
 ### 3.2 Metin paketleri
 
-`core`, `tefsir-elmalili`, `hadis-*` ve `risale-{kitap}` şu tabloları taşır:
+`core`, `tefsir-elmalili`, `hadis-*` ve `risale-{kitap}` `unit` tablosunu taşır. `xref_idx` `risale-{kitap}` paketlerinde yoktur; Risale uçlu bağlantılar `risale-dizin` içindedir (bölüm 4 madde 2). `tr_root_index` yalnız `kelime-kok`, `tefsir-elmalili`, `hadis-*` ve `risale-dizin` paketlerinde bulunur; `core`'da yoktur (K-44 madde 3). Tablolar şöyledir:
 
 ```sql
 CREATE TABLE unit (
   rowid         INTEGER PRIMARY KEY,         -- yalnız bu paket sürümünde geçerli
   anchor        TEXT NOT NULL UNIQUE,        -- kalıcı adres; kullanıcı verisi buna bağlanır
-  kind          TEXT NOT NULL,               -- ayet | meal | tefsir | risale | hadis | hadis_ceviri
+  kind          TEXT NOT NULL,               -- ayet | meal | tefsir | risale | hadis | hadis_ceviri | kitap
   role          TEXT NOT NULL DEFAULT 'govde',
   parent_path   TEXT,
   ord           INTEGER NOT NULL,            -- okuma sırası
@@ -95,7 +95,7 @@ CREATE INDEX unit_ord    ON unit(ord);
 CREATE INDEX unit_parent ON unit(parent_path, ord);
 CREATE INDEX unit_ayah   ON unit(ayah_first, ayah_last);
 
-CREATE TABLE xref_idx (                      -- sütunlar Bağlantı modeli §13 ile aynı
+CREATE TABLE xref_idx (                      -- core, tefsir-elmalili, hadis-*, risale-dizin; risale-{kitap}'ta yok. Sütunlar Bağlantı modeli §13 ile aynı
   id TEXT PRIMARY KEY,                       -- editoryal xref.id
   src_anchor TEXT NOT NULL, src_start INTEGER, src_end INTEGER,
   dst_anchor TEXT NOT NULL, dst_start INTEGER, dst_end INTEGER,
@@ -106,7 +106,8 @@ CREATE TABLE xref_idx (                      -- sütunlar Bağlantı modeli §13
 CREATE INDEX xref_idx_src ON xref_idx(src_anchor, type);
 CREATE INDEX xref_idx_dst ON xref_idx(dst_anchor, type);
 
-CREATE TABLE tr_root_index (                 -- QAC'ye bağlı; yalnız onaylı satırlar uygulanır (P-09)
+CREATE TABLE tr_root_index (                 -- kelime-kok, tefsir-elmalili, hadis-* ve risale-dizin paketlerinde; core'da yok.
+                                             -- QAC'ye bağlı; yalnız onaylı satırlar uygulanır (P-09)
   anchor TEXT NOT NULL, span_start INTEGER NOT NULL, span_end INTEGER NOT NULL,
   root_id INTEGER NOT NULL, tr_lemma_id INTEGER NOT NULL, etymological_only INTEGER NOT NULL,
   PRIMARY KEY (anchor, span_start)
@@ -115,10 +116,12 @@ CREATE INDEX tr_root_index_root ON tr_root_index(root_id);
 ```
 
 - Kalıcı başvuru her zaman `anchor` ile yapılır; `rowid` paket sürümü değişince değişebilir.
+- `kind` değerleri editoryal `unit.kind` ile aynıdır ([Editoryal veritabanı](./02-editoryal-veritabani.md)); `kitap`, `k:` çapalı kitap paragrafıdır (Çapa şemasında "sonra" fazı; enum değeri baştan vardır).
 - `label` sonuç listesinde ve kullanıcı kayıtlarında okunabilir adrestir. Kayıt oluşturulurken kopyalanır; paket silinse de kayıt okunur kalır.
 - Âyete bağlı birimlerde âyet sorgusu küresel sırayla yazılır. Bağlantı modeli §3'teki sorgu `262 BETWEEN ayah_first AND ayah_last` olur (2:255).
 - Kur'an birimlerinde çapa ve gösterim Uthmani metindir (`unit.text`). Simple Clean pakette ayrı birim ya da sütun olarak durmaz; Simple Clean âyet metninin normalize hâli `unit_search.ar_norm` sütunundadır ve yalnız aramada kullanılır ([Arama](./05-arama-fts5.md) §1.4).
-- Arama tabloları (`unit_search`, `unit_fts`, `unit_tri`, `tr_stem_lex`) [Arama](./05-arama-fts5.md) dosyasında tanımlıdır. `risale-{kitap}` paketleri bunları ve `tr_root_index` tablosunu taşımaz; ikisi de `risale-dizin` içindedir.
+- Arama tabloları (`unit_search`, `unit_fts`, `unit_tri`) [Arama](./05-arama-fts5.md) dosyasında tanımlıdır. Pakette Türkçe gövde tablosu yoktur; gövdeyi cihazdaki gövdeleyici üretir (K-44 madde 1). `risale-{kitap}` paketleri arama tablolarını, `xref_idx` ve `tr_root_index` tablolarını taşımaz; üçü de `risale-dizin` içindedir.
+- `core` paketinin `pack_source` ve `attribution` satırları Simple Clean'i (`ar_norm` kaynağı) kaynak olarak listeler (K-44 madde 2).
 
 `core` ayrıca şunları taşır:
 
@@ -142,6 +145,7 @@ CREATE TABLE sure (no INTEGER PRIMARY KEY, name TEXT NOT NULL, name_ar TEXT NOT 
                    ayah_count INTEGER NOT NULL, variants TEXT NOT NULL);
 ```
 
+- `page_map` yalnız `core` içinde değildir: aynı tablo ve dizinler `tefsir-elmalili`, `hadis-*` (metin paketlerinde; hadis için satır olmayabilir, tablo boş kalabilir), `risale-dizin` (bölüm 3.4) ve `mushaf-b` (bölüm 3.5) paketlerinde de bulunur. `risale-{kitap}`, `kelime-kok`, `mushaf-a-cuz-*` ve `ses-*` paketlerinde yoktur (`paketler.json`).
 - `quran_marker.kind`: `cuz` (30), `hizb` (60; her dördüncü çeyrek), `rub` (240 çeyrek), `secde` (15). `anchor` başlangıç âyetinin çapasıdır (`q:{s}:{a}`; `secde` için secde âyeti); `secde_turu` yalnız `secde` satırında dolu olur (`recommended` ya da `obligatory`, Tanzil'in etiketi; fıkhî hüküm olarak gösterilmez). Menzil ve rükû v1'de paketlenmez. Editoryal tablo `source_id` ve `data_version` sütunlarını da taşır; pakette yoktur ([Editoryal veritabanı](./02-editoryal-veritabani.md) §5). Değerler yalnız Tanzil üst veri dosyasından gelir.
 
 ### 3.3 `kelime-kok`
@@ -159,7 +163,7 @@ CREATE TABLE lemma_gloss (lemma_id INTEGER PRIMARY KEY, anlam_kisa TEXT NOT NULL
 CREATE TABLE tr_form (key_wide TEXT NOT NULL, key_narrow TEXT NOT NULL, tr_lemma_id INTEGER NOT NULL,
                       freq INTEGER NOT NULL, PRIMARY KEY (key_narrow, tr_lemma_id)) WITHOUT ROWID;
 CREATE INDEX tr_form_wide ON tr_form(key_wide);
--- tr_root_index: 3.2 ile aynı; core'daki meal birimleri için
+-- tr_root_index: 3.2 ile aynı; core'daki meal birimlerinin Türkçe → kök indeksi burada durur (core'da değil)
 ```
 
 `word_morph` yayınlayıcının QAC tabanına onaylı `quran_word_fix` düzeltmelerini uygulamış hâlidir. `public` derlemede yalnız `status = 'onayli'` anlamlar bulunur; diğer derlemelerde taslaklar "doğrulanmamış" rozetiyle görünür ([K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler); [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md)). `root.id` ve `lemma.id` editoryal kimliklerdir ve paket sürümleri arasında değişmez.
@@ -169,7 +173,7 @@ CREATE INDEX tr_form_wide ON tr_form(key_wide);
 ```sql
 CREATE TABLE unit_ref (rowid INTEGER PRIMARY KEY, anchor TEXT NOT NULL UNIQUE,
                        pack_id TEXT NOT NULL, ord INTEGER NOT NULL, label TEXT NOT NULL);
--- içeriksiz unit_fts, unit_tri ve tr_stem_lex: Arama dosyasında
+-- içeriksiz unit_fts ve unit_tri: Arama dosyasında
 -- xref_idx, tr_root_index ve page_map: 3.2 ile aynı
 ```
 
@@ -303,7 +307,7 @@ Derleme türleri EAS profillerine şöyle bağlanır: `dev` → `development`, `
 - Kaynak kaydı olmayan içerik hiçbir pakete girmez (P-01). Kayıtlar `pipeline/sources/` altındadır ([Kaynaklar](../04-icerik/01-kaynaklar.md)).
 - `xref_idx` satırları bağlantı modelinin yayın kuralıyla süzülür (P-07; [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) §8): `red` satır hiçbir pakete girmez; insan onayı isteyen türün (`atif`, `iktibas`, `ima`, `konu`) `aday` satırı yalnız `dev` ve `internal` derlemeye `approved = 0` ile girer; otomatik türler (`kok`, `lemma`, `benzer_ayet`, `anlamsal`) `confidence ≥ 0,50` ile her derlemeye girer.
 - Yalnız `metin_durumu = onayli` birimler `public`'e girer (P-10). Onaysız yapay zekâ taslağı `public`'e girmez, iç derlemelere "doğrulanmamış" işaretiyle girer (P-08). `quran_word_fix`, `tr_root_index` ve `tr_form` satırlarından yalnız onaylılar uygulanır (P-09).
-- QAC kaynaklı satırlar (`kelime-kok` paketi ve metin paketlerindeki `tr_root_index`) bütün derlemelerde yer alır; `kelime-kok` boyutu yüzünden ayrı ve isteğe bağlı pakettir. `public` derlemede yalnız onaylı kelime anlamları bulunur (bölüm 3.3).
+- QAC kaynaklı satırlar (`kelime-kok` paketi ile `tefsir-elmalili`, `hadis-*` ve `risale-dizin` paketlerindeki `tr_root_index`) bütün derlemelerde yer alır; `kelime-kok` boyutu yüzünden ayrı ve isteğe bağlı pakettir. `public` derlemede yalnız onaylı kelime anlamları bulunur (bölüm 3.3).
 - `core` sayfa eşlemesi: Medine 604 sayfa başlangıçları Tanzil üst veri dosyasındadır (`quran-data.xml` `pages` grubu, kaynak kimliği `tanzil-ust-veri`); A11 bunları `page_map` satırı olarak yükler (sayfa başına tek satır, `line` boş, başlangıç ve bitiş kelime çapasıdır). QPC1 düzeni (`medine-604-duzen`) yalnız doğrulayıcıdır ve `source` satırı yazılmaz; QPC1 ile 604 sayfanın başlangıç âyeti aynıdır. Yayınlayıcı `source_id = 'tanzil-ust-veri'` satırları pakette `layout = 'medine-604'` olarak yazar (K-43 madde 3). Satır düzeni ve glifler Mod A'ya aittir (`medine-604-duzen` QPC1, A26). *Çözüldü (2026-11-09):* hangi kaynağın `core`'a gireceği sorusu bu kararla kapandı ([Kaynaklar](../04-icerik/01-kaynaklar.md) §3.1). Mod C ve 604 sayfalık hatim bu eşlemeye bağlıdır.
 - `risale-{kitap}` ve `risale-dizin` paketleri her derlemede bulunur ve onaysız birimler `public`'e girmez (P-10). `risale-dizin` içindeki arama indeksi kitap metninden türer; bağlantılar ve sayfa eşlemeleri kitap metninden ayrı, kaynak kaydı olan bir dizin verisidir (`risale-atif-dizini`; P-01, P-07).
 - `dev` ve `internal` paketleri herkese açık bir adresten indirilemez. `dev` paketleri yerel SeaweedFS deposundadır; `internal` için özel depo ve süreli imzalı URL kullanılır (yöntem Açık soru).
@@ -333,7 +337,7 @@ flowchart TD
 2. **Güncelleme denetimi.** Uygulama öne geldiğinde en fazla 6 saatte bir, Ayarlar › Depolama açılınca ve "Güncellemeleri denetle" ile yapılır ([Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md) §8). Manifest `ETag` ile istenir; değişiklik yoksa sunucu 304 döner.
 3. **Görünürlük.** Uygulama kalite kapısının ikinci kontrolünü uygular ([Yayın süreci](../07-yayin/01-yayin-sureci.md) §4.3): manifest imzasını doğrular; paketin derleme türü (`pack_meta.flavor`) ve kaynakları (`pack_source`) uygulamanın derleme türüne uygun olmalıdır. `public` derlemede `test-` önekli kaynak taşıyan paket, `internal` derlemede `test-kucuk` ve `test-ses` dışında `test-` önekli kaynak taşıyan paket açılmaz ve listelenmez. Süzmenin kendisi paket üretilirken yapılır (bölüm 7).
 4. **İndirme.** Kuyruk `download_job` tablosundadır; duraklatılabilir ve varsayılan olarak yalnız Wi-Fi ile çalışır (K-18). Büyük dosyada akışlı SHA-256 için kitaplık seçimi Doğrulanacak.
-5. **Doğrulama.** Dosya salt okunur açılır: `PRAGMA user_version` desteklenen aralıkta; `pack_meta` içindeki `pack_id`, `version`, `flavor` ve `normalizer_version` beklenen değerlerde; `pack_source` derleme türüne uygun; `PRAGMA quick_check` geçer; `SELECT count(*) FROM unit` sonucu `pack_meta.unit_count` ile eşleşir; bir FTS sorgusu hatasız döner.
+5. **Doğrulama.** Dosya salt okunur açılır: `PRAGMA user_version` desteklenen aralıkta; `pack_meta` içindeki `pack_id`, `version`, `flavor` ve `normalizer_version` beklenen değerlerde; `pack_source` derleme türüne uygun; `PRAGMA quick_check` geçer. Son iki denetim paket türüne göre koşulludur ve yalnız ilgili tabloyu taşıyan türlerde yapılır: `unit` taşıyan türlerde (`core`, `tefsir-elmalili`, `hadis-*`, `risale-{kitap}`) `SELECT count(*) FROM unit` sonucu `pack_meta.unit_count` ile eşleşir; `unit_fts` taşıyan türlerde (`core`, `tefsir-elmalili`, `hadis-*`, `risale-dizin`) bir FTS sorgusu hatasız döner. `risale-{kitap}` paketinde FTS sorgusu, `risale-dizin`, `kelime-kok`, `mushaf-*` ve `ses-*` paketlerinde `unit` sayımı yapılmaz; bu türlerde yalnız öteki denetimler uygulanır. Hangi türün hangi tabloları taşıdığı `packages/content-schema/sql/paketler.json` dosyasındadır (Backend API §10.4).
 6. **Kurulum.** Dosya kendi sürüm klasörüne taşınır ve `installed_pack` satırı tek işlemde güncellenir. Taşımanın atomikliği belgede yazmadığı için kurulum sürüm klasörü, tek işlem ve açılış uzlaştırmasıyla çökmeye dayanıklı kurulur (depolama yöneticisi).
 7. **Bağlama ve geri dönüş.** İçerik bağlantısı süren sorgular bitince eski şemayı ayırır, yenisini bağlar. 5–7. adımlardan biri başarısız olursa yeni dosya silinir, önceki sürüm etkin kalır ve kişisel veri içermeyen bir hata kaydı gönderilir.
 8. **Uyumsuz şema.** Paket şeması uygulamanın üst sınırından büyükse paket "Uygulamayı güncelleyin" notuyla listelenir ve indirilmez; normalde `min_app_version` bunu baştan önler.

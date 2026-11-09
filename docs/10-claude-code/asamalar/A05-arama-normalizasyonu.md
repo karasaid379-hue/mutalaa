@@ -23,7 +23,7 @@ Arama metninin normalizasyonu ([Arama](../../03-veri/05-arama-fts5.md) §1, `nor
 - Python'da `tr_stem` (`snowballstemmer` 3.1.1, K-36 madde 6) ve mypy taslakları `pipeline/stubs/`.
 
 **Yapılmaz**
-- FTS5 tabloları, `tr_stem_lex`, sorgu ayrıştırma ve `fts-query/query.jsonl` (A12). Ölçüm sorgu kümesi (A12, A28). TypeScript gövdeleyicisi (A12).
+- FTS5 tabloları, `tr_stem_lex`, sorgu ayrıştırma ve `fts-query/query.jsonl` (A12). Ölçüm sorgu kümesi (A12, A28). TypeScript gövdeleyicisi (A12; `tr_stem_lex` kararı K-44 ile çözüldü: tablo yok, gövdeyi cihazda `stemTr` üretir).
 - Hat komutu `uv run mutalaa normalize --source …` ve G-NOR kapısının `qa run` içine bağlanması (A10).
 - Arama §1.3 madde 4'teki kurallar (Farsça harfler, Arapça-Hint rakamlar, U+0610–U+061A ve U+08D3–U+08FF işaretleri; AR-8): 1.0'da değişmezler; kaynakta görülünce A10'da yeni küçük sürümle ele alınır.
 - Arama §1.5 Arapça tablosundaki girdilerin Tanzil baytlarıyla vektör satırları (A10.7).
@@ -41,7 +41,7 @@ Arama metninin normalizasyonu ([Arama](../../03-veri/05-arama-fts5.md) §1, `nor
 ### A05.1 · Doğrulanacaklar
 - `arastirmaci` resmî kaynaktan bağlantısıyla raporlar (Arama §1.2 madde 7, AR-2):
   - Python için Türkçe Snowball gövdeleyicisi: paket adı, son sürümü, Python 3.13 uyumu; PostgreSQL `turkish_stem` ile aynı Snowball algoritmasını kullanıp kullanmadığı.
-  - TypeScript'te Türkçe Snowball uygulaması var mı (yalnız bilgi; `tr_stem_lex` kararı A12'de).
+  - TypeScript'te Türkçe Snowball uygulaması var mı (yalnız bilgi; `tr_stem_lex` kararı A12'de verildi: K-44 ile çözüldü, `snowball-stemmers-js` 3.1.2).
 - Python kitaplığı seçilirse `/karar` ile yazılır; bağımlılık `uv add` ile eklenir.
 - **Çözüldü (25 Ekim 2026):** Python gövdeleyicisi `snowballstemmer` 3.1.1 (saf Python) seçildi ve [K-36](../../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) madde 6'ya yazıldı; kaynaklar [PyPI](https://pypi.org/pypi/snowballstemmer/json) ve [Snowball Türkçe algoritması](https://snowballstem.org/algorithms/turkish/stemmer.html). TypeScript Snowball uygulaması kararı A12'dedir.
 - **Bitti sayılır:** iki cevap kaynaklı aşama kaydında; seçim yapıldıysa karar defterinde.
@@ -168,14 +168,14 @@ Plan kararları (2026-10-25): D1 Arama §1'in açık bıraktığı ayrıntılar 
 
 ### Açık kalanlar ve devreden işler
 
-- **A12.** Snowball bazı sözcükleri agresif keser (`kuran` → `kura`, `mümin` → `mum`, `iman` → `ima`); `tr_stem` etkisi arama ölçümüyle gözden geçirilir. TypeScript gövdeleyicisi ve `tr_stem_lex` kararı da A12'dedir (AR-2).
+- **A12.** Snowball bazı sözcükleri agresif keser (`kuran` → `kura`, `mümin` → `müm`, `iman` → `ima`; A12.0 ölçümünde gerçek çıktı `müm` olarak doğrulandı); `tr_stem` etkisi arama ölçümüyle gözden geçirilir. TypeScript gövdeleyicisi ve `tr_stem_lex` kararı da A12'dedir (AR-2); K-44 ile çözüldü.
 - **A08 ve A21.** Python Unicode 15.1 ile Node ve .NET'in daha yeni harfleri (U+A7CB–U+A7CD, U+A7DA–U+A7DC, U+1C89 …) paket üretimi ile cihaz sorgusu arasında ayrışabilir; Linux CI (A08) ve Hermes (A21) gözler. Hermes `normalize` ve `\p{…}` desteği A21 öz testindedir.
 - **Eşsiz vekil.** JSONL'de yazılamaz; üç dilin birim testleriyle kilitlidir.
 - **AR-1.** En uzun iç kesme eşleşmesi birim testlerindedir; liste büyüyünce vektöre taşınır. Liste külliyattan genişletilir, editör onayı sonraki hatlardadır.
 - **A21.** `snapSpan` ve `Mn` kararı (cihaz tablosu).
 - **A10.** AR-8 (Farsça harfler, Arapça-Hint rakamlar, silme aralığı dışındaki işaretler); `normalize` hat komutu ve G-NOR.
 - **A10.7.** Arama §1.5 Arapça tablosunun Tanzil baytlarıyla vektör satırları.
-- **A12 ve A14.** Normalleştiriciler girdi uzunluğunu sınırlamaz (6 MB'lık girdi TypeScript'te yaklaşık 3,7 sn, doğrusal maliyet). Sorgu girişi kabul eden uç nokta ve arama ekranı uzunluğu sınırlar (öneri 1–4 KB) ve bunu bir testle kilitler.
+- **A12 ve A14.** Normalleştiriciler girdi uzunluğunu sınırlamaz (6 MB'lık girdi TypeScript'te yaklaşık 3,7 sn, doğrusal maliyet). Sorgu girişi kabul eden uç nokta ve arama ekranı uzunluğu sınırlar (öneri 1–4 KB) ve bunu bir testle kilitler. FTS5 sorgu kurucusu için sınır K-44 madde 6 ile çözüldü: 1.024 kod noktası, aşımda `tooLong`.
 - **A08.** Linux CI'da .NET'in ICU/NLS durumu ve U+FFFE gibi değişmez karakterlerin davranışı yeniden doğrulanır; dağıtım imajında ICU bulunmalı (`InvariantGlobalization` bilerek kapalı). `Environment_is_recorded` testi .NET'in iç `GlobalizationMode` tipine yansımayla bakar; bir çalışma zamanı sürümünde yanlış kırmızı verirse tanı çıktısına indirilir.
 - **Küçük işler (öneri, engelleyici değil).** Python `govde_sozcuk` önbelleği uzun sözcükleri de tutar (65536 giriş; > 64 karakterlik sözcük önbelleğe alınmayabilir); `ic_kesme_coz` ile `export/ic_kesme.py` aynı liste kuralının iki ayrı uygulamasıdır (biri BOM, yineleme ve sıra denetler, öbürü yalnız CR ve desen), `--check` ile korunur; `turkish.py` kök bulucusunun `FileNotFoundError` dalı testsizdir.
 - **A34.** `THIRD_PARTY_NOTICES` girdisi (Ayarlar › Kaynaklar ekranının açık kaynak bölümü) mağaza öncesi hazırlanır; `snowballstemmer` hat bağımlılığıdır ve CI bağımlılık listesinde görünür.

@@ -47,7 +47,7 @@ const FORMAT_CHAR = /^\p{Cf}$/u;
 const WIDE_MARKS = /[\u0300-\u036f]/gu;
 const DOTLESS_I = /\u0131/g;
 
-function isArabicBlock(cp: number): boolean {
+export function isArabicBlock(cp: number): boolean {
   for (const [first, last] of ARABIC_BLOCKS) {
     if (cp >= first && cp <= last) return true;
   }
@@ -102,7 +102,7 @@ function lowerCodePoint(ch: string): string {
 }
 
 /** Wide folding of one word: dotless i -> i, NFD, remove U+0300-U+036F, NFC. */
-function foldWide(word: string): string {
+export function foldWide(word: string): string {
   return word.replace(DOTLESS_I, 'i').normalize('NFD').replace(WIDE_MARKS, '').normalize('NFC');
 }
 
@@ -258,6 +258,16 @@ function arabicKey(ar: string): string {
 /** Arabic key (K-36 item 4): marks removed, letters merged, words split on non-word characters. */
 export function normalizeAr(text: string): string {
   return arabicKey(splitScripts(text).ar);
+}
+
+/** Narrow Turkish words of a text (the words of {@link normalizeTr} with key `dar`). */
+export function narrowWords(text: string): string[] {
+  return turkishWords(splitScripts(text).tr, IC_KESME);
+}
+
+/** True when the text holds a letter or a number (Lu Ll Lt Lm Lo Nd Nl No). */
+export function hasLetterOrNumber(text: string): boolean {
+  return HAS_LETTER_OR_NUMBER.test(text);
 }
 
 /** All three search keys of a text; the shared preparation step runs once. */

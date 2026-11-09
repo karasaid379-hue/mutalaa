@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Mütâlaa paket manifesti (manifest.json)",
+  "description": "İçerik paketleri manifesti (docs/03-veri/03-icerik-paketleri.md §5). Üst düzeyde ve paket satırında bilinmeyen alan ileri uyum için izinlidir; signature içinde yasaktır. packs içindeki pack_id değerlerinin benzersizliği şemayla ifade edilemez; Yayınlayıcı ve istemci ayrıca denetler.",
+  "type": "object",
+  "required": ["manifest_version", "flavor", "release", "generated_at", "packs", "signature"],
+  "properties": {
+    "manifest_version": {
+      "description": "Manifest biçiminin sürümü; bu şema yalnız 1'i tanır.",
+      "type": "integer",
+      "const": 1
+    },
+    "flavor": {
+      "description": "Derleme türü (enums.json derleme_turu ile aynı liste ve sıra).",
+      "type": "string",
+      "enum": ["dev", "internal", "public"]
+    },
+    "release": {
+      "description": "Yayın sürümü, CalVer YYYY.M.N (ay 1..12, N ondalıksız tamsayı).",
+      "type": "string",
+      "pattern": "^[0-9]{4}\\.(?:[1-9]|1[0-2])\\.(?:0|[1-9][0-9]*)(?![\\s\\S])"
+    },
+    "generated_at": {
+      "description": "Manifestin üretildiği an, UTC (RFC 3339 date-time, Z sonekli).",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?Z(?![\\s\\S])"
+    },
+    "packs": {
+      "description": "Paket satırları; en az bir paket. pack_id değerleri benzersiz olmalıdır (şemada ifade edilemez, kod denetler).",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/pack"
+      }
+    },
+    "signature": {
+      "description": "Manifest imzası; her derleme türünde zorunludur (K-21, K-42). Girdi, signature alanı çıkarılmış manifestin kanonik JSON biçimidir.",
+      "type": "object",
+      "required": ["alg", "kid", "value"],
+      "properties": {
+        "alg": {
+          "description": "İmza algoritması (ör. ed25519).",
+          "type": "string",
+          "minLength": 1
+        },
+        "kid": {
+          "description": "Anahtar kimliği; anahtar değişimine izin verir.",
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "description": "İmza değeri (Base64).",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "packId": {
+      "description": "Paket kimliği: küçük harfle başlar; küçük harf, rakam ve tire.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*(?![\\s\\S])"
+    },
+    "calver": {
+      "description": "CalVer YYYY.M.N (ay 1..12, N ondalıksız tamsayı).",
+      "type": "string",
+      "pattern": "^[0-9]{4}\\.(?:[1-9]|1[0-2])\\.(?:0|[1-9][0-9]*)(?![\\s\\S])"
+    },
+    "pack": {
+      "description": "Tek paket satırı.",
+      "type": "object",
+      "required": [
+        "pack_id",
+        "version",
+        "sha256",
+        "size_bytes",
+        "min_app_version",
+        "depends_on",
+        "url"
+      ],
+      "properties": {
+        "pack_id": {
+          "description": "Paket kimliği.",
+          "$ref": "#/$defs/packId"
+        },
+        "version": {
+          "description": "Paket sürümü, CalVer YYYY.M.N.",
+          "$ref": "#/$defs/calver"
+        },
+        "sha256": {
+          "description": "url adresindeki baytların SHA-256 özeti; 64 küçük harfli onaltılık hane.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}(?![\\s\\S])"
+        },
+        "size_bytes": {
+          "description": "url adresindeki baytların boyutu.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "min_app_version": {
+          "description": "Paketi okuyabilen en düşük uygulama sürümü (major.minor.patch).",
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?![\\s\\S])"
+        },
+        "depends_on": {
+          "description": "Önce kurulması gereken paketlerin kimlikleri.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/packId"
+          },
+          "uniqueItems": true
+        },
+        "url": {
+          "description": "Paket dosyasının mutlak adresi (http ya da https).",
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^https?://[^\\s]+(?![\\s\\S])"
+        },
+        "schema_version": {
+          "description": "Paket şemasının tamsayı sürümü.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "title": {
+          "description": "Kullanıcıya gösterilen paket başlığı.",
+          "type": "string"
+        },
+        "bundled": {
+          "description": "Paket uygulamayla birlikte gömülü mü.",
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

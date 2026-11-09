@@ -29,9 +29,10 @@ from mutalaa_pipeline.adimlar.normalize_tanzil import EK_KAYNAK, KAYNAK
 from mutalaa_pipeline.anchor.ayet_sayilari import AYET_SAYILARI
 from mutalaa_pipeline.anchor.quran import BIRLESTIRME
 from mutalaa_pipeline.export.ortak import GirdiHatasi, depo_koku
-from mutalaa_pipeline.normalize import NORMALIZER_VERSION
+from mutalaa_pipeline.normalize import NORMALIZER_VERSION, SearchKeys, search_keys
 from mutalaa_pipeline.qa import GECTI, KALDI, KAPILAR, QA_KOMUTU
 from mutalaa_pipeline.qa import rapor as qa_rapor
+from mutalaa_pipeline.qa import vektorler as qa_vektorler
 from mutalaa_pipeline.qa.checks.tanzil import (
     KAPI_ISLEVLERI,
     Onceki,
@@ -517,6 +518,39 @@ def test_g_nor_tr_vektoru_kalirsa_kalir(tmp_path: Path, temel: QaGirdisi) -> Non
     yol.write_bytes("\n".join(satirlar).encode("utf-8"))
     sonuc = g_nor(dataclasses.replace(temel, depo_kok=kok))
     assert bulgu_var(sonuc, f"1/{vektor_sayisi()} kaldi: tr-0001")
+
+
+def bozuk_stem_search_keys(girdi: str) -> SearchKeys:
+    """Gercek anahtarlar; `tr_stem` bir sozcuk fazla (hizayi bozar)."""
+    gercek = search_keys(girdi)
+    return gercek._replace(tr_stem=f"{gercek.tr_stem} fazla".strip())
+
+
+def test_g_nor_wide_stem_hizasi_gecen_kosulda_sifir(temel: QaGirdisi) -> None:
+    sonuc = g_nor(temel)
+    assert sonuc.sayilar["vektor_hizasiz"] == 0
+    assert not bulgu_var(sonuc, "tr_wide/tr_stem sozcuk hizasi")
+
+
+def test_g_nor_wide_stem_sozcuk_sayisi_farkliysa_kalir(
+    monkeypatch: pytest.MonkeyPatch, temel: QaGirdisi
+) -> None:
+    """Arama §1.2 madde 7: `tr_wide` ve `tr_stem` ayni sayida sozcuk tasir; bozulursa kapi kalir."""
+    monkeypatch.setattr(qa_vektorler, "search_keys", bozuk_stem_search_keys)
+    sonuc = g_nor(temel)
+    assert sonuc.sayilar["vektor_hizasiz"] > 0
+    assert bulgu_var(sonuc, "tr_wide/tr_stem sozcuk hizasi: ")
+    assert bulgu_var(sonuc, "tr-0001")
+
+
+def test_sozcuk_hizali_sayi_ve_bos_sozcuk() -> None:
+    hizali = SearchKeys(tr_narrow="a b", tr_wide="a b", tr_stem="a b", ar_norm="")
+    assert qa_vektorler.sozcuk_hizali(hizali)
+    assert qa_vektorler.sozcuk_hizali(SearchKeys("", "", "", ""))
+    assert not qa_vektorler.sozcuk_hizali(hizali._replace(tr_stem="a"))
+    assert not qa_vektorler.sozcuk_hizali(hizali._replace(tr_wide="a b c"))
+    assert not qa_vektorler.sozcuk_hizali(hizali._replace(tr_stem="a  b"))  # bos sozcuk
+    assert not qa_vektorler.sozcuk_hizali(hizali._replace(tr_stem=""))
 
 
 def test_g_nor_vektor_dosyasi_yoksa_ya_bozuksa_girdi_hatasi(

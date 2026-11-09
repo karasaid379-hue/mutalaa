@@ -23,7 +23,8 @@ Kapilar:
   onceki anchor calismasindaki her capa durur ve ozeti degismemistir. Kelime capalari
   (`q:{sure}:{ayet}:{kelime}`) gramere uyar, kanoniktir, tekildir, okuma sirasindadir ve
   `surah`, `ayah`, `word`, `ayah_index` capayla ve ayet satiriyla tutarlidir.
-* G-NOR: normalizasyon vektorleri Python'da gecer; her satirin `ar_norm` degeri ham
+* G-NOR: normalizasyon vektorleri Python'da gecer ve her Turkce vektor girdisinde `tr_wide` ile
+  `tr_stem` ayni sayida sozcuk tasir (Arama §1.2 madde 7); her satirin `ar_norm` degeri ham
   dosyalardan yeniden uretilince (AR-4) tutar ve `provenance.ar_norm` dogrudur. Her kelimenin
   `norm` degeri `normalize_ar(text_uthmani)` ile ayni ve bos degildir.
 
@@ -649,6 +650,11 @@ def g_nor(g: QaGirdisi) -> KapiSonucu:
             f"normalizasyon vektoru: {len(vektor.kalan)}/{vektor.toplam} kaldi:"
             f" {_capalar(vektor.kalan)}"
         )
+    if vektor.hizasiz:
+        bulgular.append(
+            f"tr_wide/tr_stem sozcuk hizasi: {len(vektor.hizasiz)} vektor:"
+            f" {_capalar(vektor.hizasiz)}"
+        )
     cifter = g.normalize_cifti
     simple_satir = {ay.capa: ay for ay in g.simple.ayrisma.ayetler}
     farkli: list[str] = []
@@ -694,6 +700,7 @@ def g_nor(g: QaGirdisi) -> KapiSonucu:
     sayilar = {
         "vektor": vektor.toplam,
         "vektor_kalan": len(vektor.kalan),
+        "vektor_hizasiz": len(vektor.hizasiz),
         "ar_norm_farki": len(farkli),
     }
     return KapiSonucu("G-NOR", tuple(bulgular), sayilar)
