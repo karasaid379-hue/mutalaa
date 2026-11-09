@@ -1,0 +1,65 @@
+{
+  "manifest_version": 1,
+  "flavor": "dev",
+  "release": "2026.11.0",
+  "generated_at": "2026-11-20T09:00:00Z",
+  "packs": [
+    {
+      "pack_id": "core",
+      "version": "2026.11.0",
+      "sha256": "4f6c1d0e9b2a73c5e8d1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9",
+      "size_bytes": 20971520,
+      "min_app_version": "1.0.0",
+      "depends_on": [],
+      "url": "http://192.168.1.50:8333/mutalaa/packs/dev/core/2026.11.0/core-2026.11.0.db",
+      "schema_version": 1,
+      "title": "Kur'an ve Elmalılı meali",
+      "bundled": true
+    },
+    {
+      "pack_id": "kelime-kok",
+      "version": "2026.11.0",
+      "sha256": "7d2e9f0a1b3c4d5e6f708192a3b4c5d67d2e9f0a1b3c4d5e6f708192a3b4c5d6",
+      "size_bytes": 9437184,
+      "min_app_version": "1.0.0",
+      "depends_on": ["core"],
+      "url": "http://192.168.1.50:8333/mutalaa/packs/dev/kelime-kok/2026.11.0/kelime-kok-2026.11.0.db",
+      "schema_version": 1,
+      "title": "Kelime kökleri ve anlamları"
+    },
+    {
+      "pack_id": "tefsir-elmalili",
+      "version": "2026.11.0",
+      "sha256": "9a8b7c6d5e4f30211203f4e5d6c7b8a99a8b7c6d5e4f30211203f4e5d6c7b8a9",
+      "size_bytes": 41943040,
+      "min_app_version": "1.0.0",
+      "depends_on": ["core"],
+      "url": "http://192.168.1.50:8333/mutalaa/packs/dev/tefsir-elmalili/2026.11.0/tefsir-elmalili-2026.11.0.db",
+      "schema_version": 1,
+      "title": "Elmalılı · Hak Dini Kur'an Dili"
+    },
+    {
+      "pack_id": "hadis-tecrid",
+      "version": "2026.11.0",
+      "sha256": "0b1c2d3e4f5a69788796a5b4c3d2e1f00b1c2d3e4f5a69788796a5b4c3d2e1f0",
+      "size_bytes": 12582912,
+      "min_app_version": "1.0.0",
+      "depends_on": ["core"],
+      "url": "http://192.168.1.50:8333/mutalaa/packs/dev/hadis-tecrid/2026.11.0/hadis-tecrid-2026.11.0.db",
+      "schema_version": 1,
+      "title": "Tecrîd-i Sarîh (Arapça, Ahmed Naim ve Kâmil Miras)"
+    },
+    {
+      "pack_id": "ses-katalog",
+      "version": "2026.11.0",
+      "sha256": "e5f60718293a4b5c6d7e8f9a0b1c2d3ee5f60718293a4b5c6d7e8f9a0b1c2d3e",
+      "size_bytes": 1048576,
+      "min_app_version": "1.0.0",
+      "depends_on": ["core"],
+      "url": "http://192.168.1.50:8333/mutalaa/packs/dev/ses-katalog/2026.11.0/ses-katalog-2026.11.0.db",
+      "schema_version": 1,
+      "title": "Ses kataloğu"
+    }
+  ],
+  "signature": { "alg": "ed25519", "kid": "dev-2026-1", "value": "BASE64-ORNEK-IMZA" }
+}
