@@ -30,6 +30,11 @@ const ANCHOR_VALID_LINE =
 // Lines that pass the field rules of normalize/tr.jsonl and normalize/ar.jsonl.
 const TR_LINE = '{"id":"tr-0001","input":"x","expected":{"dar":"x","genis":"x"}}\n';
 const AR_LINE = '{"id":"ar-0001","input":"x","expected":""}\n';
+// Lines that pass the field rules of normalize/tr-govde.jsonl and fts-query/query.jsonl.
+const TG_LINE = '{"id":"tg-0001","input":"x","expected":"x"}\n';
+const FQ_LINE =
+  '{"id":"fq-0001","input":{"query":"x"},"expected":{"address":null,"match":null,"tri":null,' +
+  '"narrow":[],"kok":null,"kaynak":null,"ignored":[],"tooLong":false}}\n';
 
 /**
  * Wraps raw bytes in an otherwise valid JSONL line.
@@ -305,11 +310,12 @@ describe('test-vectors default scan (no argument)', () => {
     const root = fakePackage('clean-tree', {
       'normalize/tr.jsonl': TR_LINE,
       'normalize/ar.jsonl': AR_LINE,
-      'fts-query/query.jsonl': GOOD,
+      'normalize/tr-govde.jsonl': TG_LINE,
+      'fts-query/query.jsonl': FQ_LINE,
     });
     const result = runDefault(root);
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /3 file\(s\) OK/);
+    assert.match(result.stdout, /4 file\(s\) OK/);
   });
 
   it('skips test, scripts, node_modules, dist and dot folders even when they hold broken files', () => {
@@ -363,6 +369,8 @@ const OF = 'offsets/offsets.jsonl';
 const CH = 'content-hash/hash.jsonl';
 const NT = 'normalize/tr.jsonl';
 const NA = 'normalize/ar.jsonl';
+const NG = 'normalize/tr-govde.jsonl';
+const FQ = 'fts-query/query.jsonl';
 
 /**
  * @param {string} text
@@ -593,7 +601,8 @@ const fieldAccepted = [
     'arama/olcum.jsonl',
     '{"id":"o-2","kategori":"k","sorgu":"s","beklenen":["q:1:1"]}\n{"id":"o-1","kategori":"k","sorgu":"t","beklenen":[]}\n',
   ],
-  ['unknown-fts-query-file', 'fts-query/query.jsonl', GOOD],
+  ['unknown-fts-query-file', 'fts-query/query-old.jsonl', GOOD],
+  ['unknown-normalize-stem-file', 'normalize/tr-govde-old.jsonl', GOOD],
   ['unknown-nested-anchor-file', 'anchors/deep/valid.jsonl', GOOD],
   ['unknown-anchor-file-name', 'anchors/valid-old.jsonl', GOOD],
 ];
@@ -1624,8 +1633,256 @@ const normalizeRejected = [
   ],
 ];
 
-fieldAccepted.push(...normalizeAccepted);
-fieldRejected.push(...normalizeRejected);
+// ---------------------------------------------------------------------------------------------
+// normalize/tr-govde.jsonl (K-44 item 1): the stem key of the input as a plain string.
+// fts-query/query.jsonl (Arama 3): query options in, the eight result fields out.
+// ---------------------------------------------------------------------------------------------
+
+/** @type {Row} */
+const tgRow = { id: 'tg-0001', input: 'kitaplar', expected: 'kitap', note: 'çoğul eki' };
+
+/** @type {Row} */
+const fqRow = {
+  id: 'fq-0001',
+  input: { query: 'sabır', stems: { sabir: 'G1' }, sures: { bakara: 2 } },
+  expected: {
+    address: null,
+    match: 'tr_wide : "sabir" OR tr_stem : "G1"',
+    tri: null,
+    narrow: [],
+    kok: null,
+    kaynak: null,
+    ignored: [],
+    tooLong: false,
+  },
+  note: 'Arama 3 tablosu',
+};
+
+/** @type {Row} */
+const fqTooLong = {
+  id: 'fq-0002',
+  input: { query: 'a'.repeat(1025) },
+  expected: { ...fqRow.expected, match: null, tooLong: true },
+};
+
+/** @type {[string, string, string][]} */
+const stemQueryAccepted = [
+  ['stem-tr-minimal', NG, jsonl(tgRow)],
+  ['stem-tr-empty-input-and-key', NG, jsonl(patch(patch(tgRow, 'input', ''), 'expected', ''))],
+  [
+    'stem-tr-escaped-combining-mark',
+    NG,
+    String.raw`{"id":"tg-0001","input":"a\u0302lem","expected":"ale"}` + '\n',
+  ],
+  ['stem-tr-multiple-words', NG, jsonl(patch(tgRow, 'expected', 'kitap ev'))],
+  ['fts-query-minimal', FQ, jsonl(fqRow)],
+  [
+    'fts-query-query-only-input',
+    FQ,
+    jsonl(patch(patch(fqRow, 'input.stems', undefined), 'input.sures', undefined)),
+  ],
+  [
+    'fts-query-options',
+    FQ,
+    jsonl(patch(patch(fqRow, 'input.exact', true), 'input.implicitPrefix', false)),
+  ],
+  ['fts-query-address', FQ, jsonl(patch(fqRow, 'expected.address', { sure: 2, ayet: 300 }))],
+  ['fts-query-kaynak', FQ, jsonl(patch(fqRow, 'expected.kaynak', 'risale'))],
+  [
+    'fts-query-narrow-and-ignored',
+    FQ,
+    jsonl(patch(patch(fqRow, 'expected.narrow', ['âlem']), 'expected.ignored', ['a'])),
+  ],
+  ['fts-query-too-long', FQ, jsonl(fqTooLong)],
+  [
+    'fts-query-ids-in-order-with-arabic-last',
+    FQ,
+    jsonl(fqRow, patch(fqRow, 'id', 'fq-0002'), patch(fqRow, 'id', 'fq-ar-0001')),
+  ],
+];
+
+/** @type {[string, string, string, Expect[]][]} */
+const stemQueryRejected = [
+  [
+    'stem-tr-expected-object',
+    NG,
+    jsonl(patch(tgRow, 'expected', { dar: 'x' })),
+    [[/^expected: must be a string, got an object$/, 1]],
+  ],
+  [
+    'stem-tr-input-array',
+    NG,
+    jsonl(patch(tgRow, 'input', ['x'])),
+    [[/^input: must be a string, got an array$/, 1]],
+  ],
+  [
+    'stem-tr-expected-leading-space',
+    NG,
+    jsonl(patch(tgRow, 'expected', ' a')),
+    [[/^expected: must not start or end with U\+0020$/, 1]],
+  ],
+  [
+    'stem-tr-expected-double-space',
+    NG,
+    jsonl(patch(tgRow, 'expected', 'a  b')),
+    [[/^expected: must not contain two U\+0020 in a row$/, 1]],
+  ],
+  [
+    'stem-tr-raw-mark',
+    NG,
+    jsonl(patch(tgRow, 'input', 'a\u0302lem')),
+    [[/^raw U\+0302 \(Mn\) must be written as \\u0302$/, 1]],
+  ],
+  ['stem-tr-unknown-key', NG, jsonl(patch(tgRow, 'extra', 1)), [[/^unknown key "extra"$/, 1]]],
+  [
+    'stem-tr-missing-expected',
+    NG,
+    jsonl(patch(tgRow, 'expected', undefined)),
+    [[/^missing key "expected"$/, 1]],
+  ],
+  [
+    'fts-query-input-string',
+    FQ,
+    jsonl(patch(fqRow, 'input', 'sabır')),
+    [[/^input: must be an object, got "sabır"$/, 1]],
+  ],
+  [
+    'fts-query-missing-query',
+    FQ,
+    jsonl(patch(fqRow, 'input.query', undefined)),
+    [[/^input: missing key "query"$/, 1]],
+  ],
+  [
+    'fts-query-unknown-input-key',
+    FQ,
+    jsonl(patch(fqRow, 'input.prefix', true)),
+    [[/^input: unknown key "prefix"$/, 1]],
+  ],
+  [
+    'fts-query-exact-not-boolean',
+    FQ,
+    jsonl(patch(fqRow, 'input.exact', 'evet')),
+    [[/^input\.exact: must be a boolean, got "evet"$/, 1]],
+  ],
+  [
+    'fts-query-stems-value-not-string',
+    FQ,
+    jsonl(patch(fqRow, 'input.stems.sabir', 1)),
+    [[/^input\.stems\.sabir: must be a string, got 1$/, 1]],
+  ],
+  [
+    'fts-query-stems-array',
+    FQ,
+    jsonl(patch(fqRow, 'input.stems', ['G1'])),
+    [[/^input\.stems: must be an object, got an array$/, 1]],
+  ],
+  [
+    'fts-query-sures-zero',
+    FQ,
+    jsonl(patch(fqRow, 'input.sures.bakara', 0)),
+    [[/^input\.sures\.bakara: must be a positive integer, got 0$/, 1]],
+  ],
+  [
+    'fts-query-sures-float',
+    FQ,
+    `{"id":"fq-0001","input":{"query":"x","sures":{"bakara":2.0}},"expected":${JSON.stringify(fqRow.expected)}}\n`,
+    [[/^number 2\.0 is not a plain integer/, 1]],
+  ],
+  [
+    'fts-query-expected-missing-match',
+    FQ,
+    jsonl(patch(fqRow, 'expected.match', undefined)),
+    [[/^expected: missing key "match"$/, 1]],
+  ],
+  [
+    'fts-query-expected-missing-too-long',
+    FQ,
+    jsonl(patch(fqRow, 'expected.tooLong', undefined)),
+    [[/^expected: missing key "tooLong"$/, 1]],
+  ],
+  [
+    'fts-query-expected-unknown-key',
+    FQ,
+    jsonl(patch(fqRow, 'expected.score', 1)),
+    [[/^expected: unknown key "score"$/, 1]],
+  ],
+  [
+    'fts-query-address-string',
+    FQ,
+    jsonl(patch(fqRow, 'expected.address', '2:255')),
+    [[/^expected\.address: must be an object or null, got "2:255"$/, 1]],
+  ],
+  [
+    'fts-query-address-zero-ayet',
+    FQ,
+    jsonl(patch(fqRow, 'expected.address', { sure: 2, ayet: 0 })),
+    [[/^expected\.address\.ayet: must be a positive integer, got 0$/, 1]],
+  ],
+  [
+    'fts-query-address-missing-sure',
+    FQ,
+    jsonl(patch(fqRow, 'expected.address', { ayet: 2 })),
+    [[/^expected\.address: missing key "sure"$/, 1]],
+  ],
+  [
+    'fts-query-match-number',
+    FQ,
+    jsonl(patch(fqRow, 'expected.match', 1)),
+    [[/^expected\.match: must be a string or null, got 1$/, 1]],
+  ],
+  [
+    'fts-query-narrow-string',
+    FQ,
+    jsonl(patch(fqRow, 'expected.narrow', 'âlem')),
+    [[/^expected\.narrow: must be an array, got "âlem"$/, 1]],
+  ],
+  [
+    'fts-query-ignored-item-number',
+    FQ,
+    jsonl(patch(fqRow, 'expected.ignored', ['a', 1])),
+    [[/^expected\.ignored\[1\]: must be a string, got 1$/, 1]],
+  ],
+  [
+    'fts-query-kaynak-unknown',
+    FQ,
+    jsonl(patch(fqRow, 'expected.kaynak', 'kitap')),
+    [[/^expected\.kaynak: must be one of /, 1]],
+  ],
+  [
+    'fts-query-too-long-string',
+    FQ,
+    jsonl(patch(fqRow, 'expected.tooLong', 'false')),
+    [[/^expected\.tooLong: must be a boolean, got "false"$/, 1]],
+  ],
+  [
+    'fts-query-too-long-with-match',
+    FQ,
+    jsonl(patch(fqTooLong, 'expected.match', 'tr_wide : "a"')),
+    [[/^expected\.match: must be null when tooLong is true$/, 1]],
+  ],
+  [
+    'fts-query-too-long-with-narrow',
+    FQ,
+    jsonl(patch(fqTooLong, 'expected.narrow', ['âlem'])),
+    [[/^expected\.narrow: must be empty when tooLong is true$/, 1]],
+  ],
+  [
+    'fts-query-too-long-with-address',
+    FQ,
+    jsonl(patch(fqTooLong, 'expected.address', { sure: 2, ayet: 1 })),
+    [[/^expected\.address: must be null when tooLong is true$/, 1]],
+  ],
+  [
+    'fts-query-ids-out-of-order',
+    FQ,
+    jsonl(patch(fqRow, 'id', 'fq-ar-0001'), fqRow),
+    [[/^id "fq-0001" is out of order/, 2]],
+  ],
+  ['fts-query-duplicate-id', FQ, jsonl(fqRow, fqRow), [[/^duplicate id "fq-0001"/, 2]]],
+];
+
+fieldAccepted.push(...normalizeAccepted, ...stemQueryAccepted);
+fieldRejected.push(...normalizeRejected, ...stemQueryRejected);
 
 describe('test-vectors field checks (recognized files)', () => {
   const fieldScratch = fileURLToPath(new URL('../../../.tmp/vektor-test-alan/', import.meta.url));
@@ -1677,8 +1934,8 @@ describe('test-vectors field checks (recognized files)', () => {
     rmSync(fieldScratch, { recursive: true, force: true });
   });
 
-  it('recognizes exactly the nine files of the specification', () => {
-    assert.deepEqual([...VECTOR_KINDS].sort(), [CM, CT, I, RO, V, CH, OF, NT, NA].sort());
+  it('recognizes exactly the eleven files of the specification', () => {
+    assert.deepEqual([...VECTOR_KINDS].sort(), [CM, CT, I, RO, V, CH, OF, NT, NA, NG, FQ].sort());
   });
 
   for (const [name] of fieldAccepted) {

@@ -1,0 +1,47 @@
+{"id":"tg-0001","input":"kitap","expected":"kitap","note":"ek yok: gövde sözcüğün kendisi"}
+{"id":"tg-0002","input":"kitaplar","expected":"kitap","note":"çoğul eki"}
+{"id":"tg-0003","input":"kitabın","expected":"kitap","note":"yumuşama + iyelik"}
+{"id":"tg-0004","input":"evlerinde","expected":"ev","note":"çoklu ek"}
+{"id":"tg-0005","input":"kuran","expected":"kura","note":"agresif: kuran -> kura"}
+{"id":"tg-0006","input":"mümin","expected":"mum","note":"agresif: mümin -> müm, geniş katlamayla mum"}
+{"id":"tg-0007","input":"iman","expected":"ima","note":"agresif: iman -> ima"}
+{"id":"tg-0008","input":"sabır","expected":"sabir","note":"gövde sabır, geniş katlamayla sabir"}
+{"id":"tg-0009","input":"Işık","expected":"isik","note":"I -> ı, sonra gövde"}
+{"id":"tg-0010","input":"IŞIK","expected":"isik","note":"büyük harf I"}
+{"id":"tg-0011","input":"İMAN","expected":"ima","note":"büyük harf İ"}
+{"id":"tg-0012","input":"ışığın","expected":"isik","note":"ı ve ğ korunumu, ek"}
+{"id":"tg-0013","input":"çağrı","expected":"cagri","note":"ç ğ ı"}
+{"id":"tg-0014","input":"göğüs","expected":"gogus","note":"ö ğ ü"}
+{"id":"tg-0015","input":"öğrenciler","expected":"ogrenci","note":"ö ğ ş"}
+{"id":"tg-0016","input":"şükür","expected":"sukur","note":"ş ü"}
+{"id":"tg-0017","input":"yürüyüş","expected":"yuruyus","note":"ü ş"}
+{"id":"tg-0018","input":"çocuklarımız","expected":"cocuk","note":"ç, çoklu ek"}
+{"id":"tg-0019","input":"güzellik","expected":"guzellik","note":"ü, türetme eki"}
+{"id":"tg-0020","input":"âlem","expected":"ale","note":"â ön katlaması"}
+{"id":"tg-0021","input":"alem","expected":"ale","note":"â'sız eşi"}
+{"id":"tg-0022","input":"âlemler","expected":"alem","note":"â + ek"}
+{"id":"tg-0023","input":"hâlâ","expected":"hal","note":"iki â"}
+{"id":"tg-0024","input":"hala","expected":"hal","note":"â'sız eşi"}
+{"id":"tg-0025","input":"hakîkat","expected":"hakikat","note":"î ön katlaması"}
+{"id":"tg-0026","input":"hakikat","expected":"hakikat","note":"î'siz eşi"}
+{"id":"tg-0027","input":"sükûnet","expected":"sukunet","note":"û ön katlaması"}
+{"id":"tg-0028","input":"mânâ","expected":"ma","note":"â ve â"}
+{"id":"tg-0029","input":"Kur'ân'ın","expected":"kura","note":"iç kesme listesi + ek + â"}
+{"id":"tg-0030","input":"Kur’an’dan","expected":"kura","note":"tipografik kesme"}
+{"id":"tg-0031","input":"mü'min","expected":"mum","note":"iç kesme listesi"}
+{"id":"tg-0032","input":"Sözler'de","expected":"soz","note":"kesmeli ek atılır"}
+{"id":"tg-0033","input":"ali'nin","expected":"ali","note":"kesmeli özel ad biçimi"}
+{"id":"tg-0034","input":"rahmet-i İlâhiye","expected":"rahmet i ilahi","note":"tire sözcük ayırır; ilâhiye -> ilahi"}
+{"id":"tg-0035","input":"Âl-i İmrân","expected":"al i imra","note":"tire, büyük harf, â; imrân -> imra"}
+{"id":"tg-0036","input":"Işık ve nur","expected":"isik ve nur","note":"çok sözcüklü: sözcük sayısı ve sırası korunur"}
+{"id":"tg-0037","input":"kitaplar evlerinde sabır","expected":"kitap ev sabir","note":"çok sözcüklü, üç sözcük"}
+{"id":"tg-0038","input":"a\u0302lem","expected":"ale","note":"NFC olmayan girdi (a + U+0302)"}
+{"id":"tg-0039","input":"kitap \u0628 nur","expected":"kitap nur","note":"Arapça blok karakteri Türkçe parçada boşluk olur"}
+{"id":"tg-0040","input":"kitap \ud835\udc00 ev","expected":"kitap \ud835\udc00 ev","note":"BMP dışı harf (U+1D400) sözcük olur"}
+{"id":"tg-0041","input":"123","expected":"123","note":"yalnız rakam"}
+{"id":"tg-0042","input":"sure2 ayet255","expected":"sure2 ayet255","note":"harf + rakam"}
+{"id":"tg-0043","input":"a","expected":"a","note":"tek harf"}
+{"id":"tg-0044","input":"","expected":"","note":"boş girdi"}
+{"id":"tg-0045","input":"   ","expected":"","note":"yalnız boşluk"}
+{"id":"tg-0046","input":"... --- !!!","expected":"","note":"yalnız noktalama: sözcük yok"}
+{"id":"tg-0047","input":"'","expected":"","note":"yalnız kesme: sözcük yok"}
