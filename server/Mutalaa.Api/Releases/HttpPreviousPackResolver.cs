@@ -29,6 +29,9 @@ public sealed partial class HttpPreviousPackResolver(
 
     private const int BufferSize = 81920;
 
+    /// <summary>Bir paketin indirilmesi icin toplam sure (varsayilan <see cref="DownloadTimeout"/>; testler kisaltir).</summary>
+    public TimeSpan Timeout { get; init; } = DownloadTimeout;
+
     [GeneratedRegex("^[0-9a-f]{64}$", RegexOptions.CultureInvariant)]
     private static partial Regex Sha256Pattern();
 
@@ -118,7 +121,7 @@ public sealed partial class HttpPreviousPackResolver(
     private async Task DownloadToFileAsync(Uri uri, ManifestPack pack, string name, string temp, CancellationToken cancellationToken)
     {
         using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(DownloadTimeout);
+        timeout.CancelAfter(Timeout);
 
         string sha256;
         long total = 0;
