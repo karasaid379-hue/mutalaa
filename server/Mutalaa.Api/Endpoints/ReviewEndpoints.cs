@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.OpenApi;
 using Mutalaa.Api.Problems;
 using Mutalaa.Api.Reviews;
 using Mutalaa.Domain;
@@ -40,6 +41,20 @@ public static class ReviewEndpoints
 
         reviews.MapPost("/{id:long}/decision", DecideAsync)
             .WithName("decideReview")
+            .AddOpenApiOperationTransformer((operation, _, _) =>
+            {
+                // If-Match gövdeye değil başlığa bağlanır (ayrıştırma ReviewEtag'dedir); istemci üreticisi görsün diye belgelenir.
+                operation.Parameters ??= [];
+                operation.Parameters.Add(new OpenApiParameter
+                {
+                    Name = "If-Match",
+                    In = ParameterLocation.Header,
+                    Required = true,
+                    Description = "Kaydın ETag değeri: \"{xmin}\" (yalnız güçlü ve tek etiket).",
+                    Schema = new OpenApiSchema { Type = JsonSchemaType.String },
+                });
+                return Task.CompletedTask;
+            })
             .Produces<ReviewDecisionResult>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
