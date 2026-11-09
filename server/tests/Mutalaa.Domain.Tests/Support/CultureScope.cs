@@ -20,6 +20,19 @@ internal static class CultureScope
         });
     }
 
+    /// <summary>Kulturu bayrakla secer (false: Invariant, true: tr-TR); Theory'de InlineData(false), InlineData(true) ciftiyle kullanilir.</summary>
+    public static void For(bool turkish, Action action)
+    {
+        if (turkish)
+        {
+            Turkish(action);
+        }
+        else
+        {
+            Invariant(action);
+        }
+    }
+
     private static void Run(CultureInfo culture, Action action)
     {
         CultureInfo previous = CultureInfo.CurrentCulture;
