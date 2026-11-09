@@ -1,6 +1,6 @@
 # Yayın süreci
 
-> **Sürüm:** 1.7 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
+> **Sürüm:** 1.8 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
 
 Bu dosya `Mutalaa.Publisher` içindeki kalite kapısını, derleme türlerini ve görünürlük kurallarını, **Kaynaklar** ekranını ve yayın adımlarını (iç test, `promote`, mağaza formları, geri alma) tanımlar. Görünürlük editoryal kaliteye bağlıdır: onaylı içerik her derlemeye girer, onaysız birim ve yapay zekâ taslağı yalnız iç derlemelere "doğrulanmamış" işaretiyle girer ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5).
@@ -57,7 +57,7 @@ Görünürlük editoryal kaliteye bağlıdır ([K-42](../00-ozet/02-karar-defter
 | P-08 | Onaysız yapay zekâ taslağı `public`'e girmez; iç derlemelere "doğrulanmamış" işaretiyle girer | public |
 | P-09 | `quran_word_fix`, `tr_root_index` ve `tr_form` satırlarından yalnız onaylılar uygulanır | Hepsi |
 | P-10 | Yalnız `metin_durumu = onayli` birimler `public`'e girer | public |
-| P-11 | Tanzil birimlerinin `content_hash` değeri ham dosyadan yeniden hesaplananla aynı; her kaynağın `atif_metni` ve `atif_url` değeri pakete aynen yazılır | Hepsi |
+| P-11 | Tanzil birimlerinin `content_hash` değeri ham dosyadan yeniden hesaplananla aynı; birim metni ham satırla bayt bayt aynı; `quran_word` metni ayet metninin dilimi; her kaynağın `atif_metni` ve `atif_url` değeri pakete aynen yazılır | Hepsi |
 | P-12 | Slug'ı `test-` ile başlayan kaynak `public`'e girmez; `internal`'a yalnız uçtan uca fikstürler (`test-kucuk`, `test-ses`) girer | public, internal |
 | P-13 | `depends_on` döngüsüz; her bağımlılık aynı manifestte | Hepsi |
 | P-14 | Terfide içerik özetleri iç kanalda test edilen yayınla aynı | public |
@@ -73,9 +73,10 @@ Kural kodları sabittir; yeniden numaralanmaz. Kapı raporu her paket ve kaynak 
 
 - P-08, P-10'dan önce gelir: yapay zekâ taslağı P-08 koduyla girmez.
 - P-09 yalnız durum sütunu olan tablolara uygulanır (`quran_word_fix`, `lemma_gloss`: yalnız `onayli` satır). Durum sütunu olmayan `tr_root_index` ve `tr_form` yalnız onaylı veri taşır; bağlı Türkçe lemma onaylıysa girer.
-- P-01 kaynak kayıt dosyasının (`pipeline/sources/{slug}.toml`), `source` satırının ve dolu `atif_metni` değerinin varlığına bakar. P-11 Tanzil `content_hash` değerini ham dosyadan yeniden hesaplar, `notice_text` değerini ham bildirim bloğuyla bayt bayt karşılaştırır ve pakete yazılan `attribution` satırının `source` satırıyla aynı olduğunu paketten geri okuyarak doğrular. P-13 önceki sürümden taşınan paketleri de sayar.
+- P-01 kaynak kayıt dosyasının (`pipeline/sources/{slug}.toml`), `source` satırının ve dolu `atif_metni` değerinin varlığına bakar. P-11 Tanzil `content_hash` değerini ham dosyadan yeniden hesaplar; birim metnini ham satırla bayt bayt (`Ordinal`) karşılaştırır (`metin-uyusmuyor`), hash'in kendi metninden yeniden hesaplananla aynı olduğunu (`hash-metinle-uyusmuyor`) ve `quran_word.text_uthmani` değerinin ayet metninin `[char_start, char_end)` kod noktası dilimi olduğunu (`kelime-metni-uyusmuyor`, `kelime-ayeti-yok`) denetler; `notice_text` değerini ham bildirim bloğuyla bayt bayt karşılaştırır ve pakete yazılan `attribution` satırının `source` satırıyla aynı olduğunu paketten geri okuyarak doğrular. P-13 önceki sürümden taşınan paketleri de sayar.
 - Paketin kaynakları zorunlu ya da isteğe bağlıdır (`PackSourceBinding.Required`): `core` için `tanzil-uthmani`, `tanzil-simple-clean` ve `tanzil-ust-veri` zorunludur (kaydı yoksa P-01 yayını reddeder); `hadis-tecrid` içinde `tecrid-ar` zorunlu, `tecrid-naim` ve `tecrid-miras` isteğe bağlıdır ve yalnız editoryal veritabanında satırı varsa pakete girer ([Backend API](../02-mimari/05-backend-api.md) §10.4).
-- Verisi hiç olmayan paket (`kelime-kok`, QAC gelene kadar) aday sayılmaz; rapora kural kodu olmadan "girmedi · icerik-yok" yazılır ve kapı reddetmez.
+- Verisi hiç olmayan paket (`kelime-kok`, QAC gelene kadar) aday sayılmaz; rapora kural kodu olmadan "girmedi · icerik-yok" yazılır ve kapı reddetmez. Aynısı süzme sonrası boş kalan pakete uygulanır: kaynağı girdiği hâlde bu derleme türünde (P-08/P-10 sonrası) hiç birimi kalmayan paket "girmedi · icerik-yok" olur. Yapı satırı taşıyan paket (`core`) birim süzmesinden etkilenmez ve her derlemede girer.
+- **Doğrulanacak (BÇ-50, [belge çelişkileri](../10-claude-code/07-belge-celiskileri.md)).** (a) Bağlantının uç birimlerinden biri P-08/P-10 ile süzülse de onaylı bağlantı kural gereği (eser düzeyi, §2.3) pakete girer; sarkan bağlantı riski. (b) Çapa sürekliliği, önceki yayında bulunup sonradan taslağa dönen birimi `public` derlemede "etkin" sayar ve denetimi geçer; birim yeni pakette yoktur. İkisi de karar bekler; kapı şimdilik yukarıdaki kurallara göre çalışır.
 - `BuildFlavor` ayrıştırılamazsa kapı `public` gibi davranır. Kapı bir yayını reddederse Yayınlayıcı `2` çıkış koduyla biter ve manifest yayımlanmaz ([Backend API](../02-mimari/05-backend-api.md) §10.1, §10.3).
 
 ### 4.1 Manifest girişi
@@ -152,7 +153,7 @@ flowchart LR
 1. **Sürüm adayı.** Yayınlayıcı bir `release` kaydı açar (sürüm verilmezse `YYYY.M.N` olarak atanır; [Backend API](../02-mimari/05-backend-api.md) §10.5) ve paketleri tek bir tutarlı anlık görüntüden üretir. `public` içeriği yalnız onaylı birimlerden oluşur (P-10).
 2. **İç test.** `dev` ve `internal` yayınlanır (`publish --flavor dev`, `publish --flavor internal`); `internal` EAS iç dağıtımla davetli test kullanıcılarına gider. Maestro akışları, performans ve erişilebilirlik ölçümleri bu derlemede koşar ([Test stratejisi](./03-test-stratejisi.md) §9–§11).
 3. **Kuru çalıştırma.** `publish --flavor public --dry-run` 0 ile bitmelidir. Kapı reddederse kapı raporu nedeni kural koduyla yazar; düzeltme hattan ya da editör panelinden geçer ve iç test yinelenir. Elle düzeltme yapılmaz; içerik hattından geçer, testler çalışır, yeni içerik özeti üretilir.
-4. **Terfi.** `promote --surum <s> --to public` `yayinlandi` durumundaki `internal` yayını `public` için üretir ve yükler (`release.talep = terfi`, `kaynak_release_id`); yalnız kullanıcı kararıyla çalışır. P-14 kaynak özetlerini karşılaştırır. Ardından `verify --flavor public --embedded-core <yol>` her public sürümde zorunludur; yapıt taraması (§5) yeşil olmalıdır.
+4. **Terfi.** `promote --surum <s> --to public` `yayinlandi` durumundaki `internal` yayını `public` için üretir ve yükler (`release.talep = terfi`, `kaynak_release_id`); yalnız kullanıcı kararıyla çalışır. P-14 kaynak özetlerini karşılaştırır. `public` yayın aynı sürüm numarasını taşır; `watch` ile gelen terfi satırının sürümü kaynak `internal` sürümüyle aynı değilse satır `basarisiz` olur (`terfi-surumu-uyumsuz`). Ardından `verify --flavor public --embedded-core <yol>` her public sürümde zorunludur; yapıt taraması (§5) yeşil olmalıdır.
 5. **Mağaza hazırlığı.** Uygulama mağazaya gömülü `core` paketiyle çıkar (EAS derlemesi); içerik güncellemeleri `public` manifestle gelir. Formlar, gizlilik sayfası ve mağaza metni §7.2'ye göre hazırlanır.
 
 `public` derleme bütün ülkelerde ve vitrinlerde aynı kapıdan geçer; ülkeye göre ayrı paket ya da manifest yoktur.
@@ -175,7 +176,7 @@ Mağazaların teknik yayın şartları şunlardır: App Privacy ve Veri güvenli
 ### 7.4 Geri alma
 
 - JavaScript hatası: EAS Update ile önceki sürüme dönülür.
-- İçerik hatası: `rollback --flavor <f> --to <surum>` yeni bir `release` satırı açar (`talep = geri_alma`), önceki yayının paketlerini yeni sürümle imzalı bir manifestte yayımlar ve uygulama ona iner ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) §6). Düzeltme hattan geçer ve yeni sürümle yayımlanır.
+- İçerik hatası: `rollback --flavor <f> --to <surum>` yeni bir `release` satırı açar (`talep = geri_alma`), önceki yayının paketlerini yeni sürümle imzalı bir manifestte yayımlar ve uygulama ona iner ([İçerik paketleri](../03-veri/03-icerik-paketleri.md) §6). Düzeltme hattan geçer ve yeni sürümle yayımlanır. Aynı derleme türünde açık bir geri alma talebi varsa: aynı hedefe işaret ediyorsa sürdürülür, farklı hedefliyse eski talep `yeni-geri-alma-talebi` ile `basarisiz` yapılır. `upload` eski bir yayını yeniden yüklemez; geri dönüş yalnız `rollback` iledir.
 - Gömülü `core` hatası: yeni uygulama sürümü.
 
 ## İlgili dosyalar
