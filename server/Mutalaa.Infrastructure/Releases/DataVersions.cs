@@ -1,16 +1,35 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace Mutalaa.Publisher;
+namespace Mutalaa.Infrastructure.Releases;
 
-/// <summary>data_version = {YYYY.MM.DD}-{git kisa sha}; git yoksa ya da depo degilse "nogit" (plan: Etiket ve ust veri).</summary>
-public static partial class GitInfo
+/// <summary>
+/// data_version = {YYYY.MM.DD}-{git kisa sha}; git yoksa ya da calisma dizini depo degilse "nogit" (Yayin sureci: Etiket ve ust veri).
+/// Saat <see cref="TimeProvider"/> ile verilir; git kisa sha'si enjekte edilebilir (testler).
+/// </summary>
+public static partial class DataVersions
 {
     public const string NoGit = "nogit";
 
     [GeneratedRegex("^[0-9a-f]{4,40}$", RegexOptions.CultureInvariant)]
     private static partial Regex ShaPattern();
+
+    /// <summary>Bugunun (UTC) tarihi ve git kisa sha'siyla data_version; <paramref name="shortSha"/> null ise <see cref="ShortShaAsync"/>.</summary>
+    public static async Task<string> CurrentAsync(
+        TimeProvider clock,
+        Func<CancellationToken, Task<string>>? shortSha,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(clock);
+
+        string sha = shortSha is null ? await ShortShaAsync(cancellationToken) : await shortSha(cancellationToken);
+        return Format(clock.GetUtcNow(), sha);
+    }
+
+    public static string Format(DateTimeOffset now, string shortSha) =>
+        string.Create(CultureInfo.InvariantCulture, $"{now.UtcDateTime:yyyy.MM.dd}-{shortSha}");
 
     public static async Task<string> ShortShaAsync(CancellationToken cancellationToken)
     {
