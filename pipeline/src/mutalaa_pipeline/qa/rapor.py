@@ -17,7 +17,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
-from mutalaa_pipeline.qa import GECTI, KALDI, KAPILAR, QA_KOMUTU
+from mutalaa_pipeline.qa import GECTI, KALDI, QA_KOMUTU, kaynak_kapilari
+from mutalaa_pipeline.qa import KAPILAR as KAPILAR
 from mutalaa_pipeline.runctx import RAPOR_KLASORU, QaKaldi
 
 
@@ -35,10 +36,15 @@ class QaRaporu:
         return deger if isinstance(deger, dict) else None
 
     @property
+    def gerekli_kapilar(self) -> tuple[str, ...]:
+        """Raporun kaynaginin gecmesi gereken kapilar (ust veri kaynaginda G-NOR yoktur)."""
+        return kaynak_kapilari(self.veri.get("kaynak"))
+
+    @property
     def tam(self) -> bool:
-        """Dort kapiyi da degerlendirmis mi (`--gate` ile kosulan kismi rapor degil)."""
+        """Gerekli butun kapilari degerlendirmis mi (`--gate` ile kosulan kismi rapor degil)."""
         kapilar = self.kapilar
-        return kapilar is not None and all(kapi in kapilar for kapi in KAPILAR)
+        return kapilar is not None and all(kapi in kapilar for kapi in self.gerekli_kapilar)
 
     @property
     def cikis_kodu(self) -> int | None:
@@ -60,8 +66,8 @@ class QaRaporu:
         """`gecti` olmayan kapilar. `hepsi=False` iken yalniz acikca `kaldi` diyenler."""
         kapilar = self.kapilar or {}
         if hepsi:
-            return [kapi for kapi in KAPILAR if kapilar.get(kapi) != GECTI]
-        return [kapi for kapi in KAPILAR if kapilar.get(kapi) == KALDI]
+            return [kapi for kapi in self.gerekli_kapilar if kapilar.get(kapi) != GECTI]
+        return [kapi for kapi in self.gerekli_kapilar if kapilar.get(kapi) == KALDI]
 
 
 def _oku(veri_kok: Path) -> list[QaRaporu]:
@@ -85,19 +91,37 @@ class QaRaporlari:
     def __init__(self, veri_kok: Path) -> None:
         self._raporlar = _oku(veri_kok)
 
-    def eslesenler(self, source_id: str, anchor_run_id: str, units_sha: str) -> list[QaRaporu]:
-        """Ayni kaynak, anchor calismasi ve `units_sha256` icin raporlar (eskiden yeniye)."""
+    def eslesenler(
+        self,
+        source_id: str,
+        anchor_run_id: str,
+        units_sha: str,
+        ek_ozetler: Mapping[str, str] | None = None,
+    ) -> list[QaRaporu]:
+        """Ayni kaynak, anchor calismasi ve `units_sha256` icin raporlar (eskiden yeniye).
+
+        `ek_ozetler` (ornegin ust veri adiminda `sayfalar_sha256`) rapordaki alanlarla da
+        tutmalidir.
+        """
+        ek = dict(ek_ozetler or {})
         return [
             rapor
             for rapor in self._raporlar
             if rapor.veri.get("kaynak") == source_id
             and rapor.veri.get("anchor_run_id") == anchor_run_id
             and rapor.veri.get("units_sha256") == units_sha
+            and all(rapor.veri.get(ad) == deger for ad, deger in ek.items())
         ]
 
-    def onayla(self, source_id: str, anchor_run_id: str, units_sha: str) -> str:
+    def onayla(
+        self,
+        source_id: str,
+        anchor_run_id: str,
+        units_sha: str,
+        ek_ozetler: Mapping[str, str] | None = None,
+    ) -> str:
         """Kabul eden raporun kimligi; kabul yoksa `QaKaldi` (cikis 1) ve nedeni."""
-        adaylar = self.eslesenler(source_id, anchor_run_id, units_sha)
+        adaylar = self.eslesenler(source_id, anchor_run_id, units_sha, ek_ozetler)
         if not adaylar:
             raise QaKaldi("bu anchor calistirmasi ve ozeti icin QA raporu yok (once qa run)")
         for rapor in reversed(adaylar):  # en yeni rapor once
@@ -109,7 +133,9 @@ class QaRaporlari:
             if rapor.tam:
                 return rapor.rapor_id
             # basarili kismi (--gate) kosu ya da kapi iddia etmeyen rapor: daha eski rapora bakilir
-        raise QaKaldi(f"QA raporu dort kapiyi da icermiyor ({', '.join(KAPILAR)})")
+        gerekli = kaynak_kapilari(source_id)
+        sayi = {2: "iki", 3: "uc", 4: "dort"}[len(gerekli)]
+        raise QaKaldi(f"QA raporu {sayi} kapiyi da icermiyor ({', '.join(gerekli)})")
 
     def onayli_mi(self, source_id: str, anchor_run_id: str, units_sha: str) -> bool:
         try:

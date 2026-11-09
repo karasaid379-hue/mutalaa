@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Final
 from mutalaa_pipeline import lineage
 from mutalaa_pipeline.anchor import AnchorError, parse, sort_key
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kati_json
-from mutalaa_pipeline.lineage import UNITS_ADI
+from mutalaa_pipeline.lineage import KELIMELER_ADI, UNITS_ADI
 
 if TYPE_CHECKING:
     from mutalaa_pipeline.runctx import RunContext
@@ -113,8 +113,26 @@ def units_yaz(
     ctx: "RunContext", source_id: str, satirlar: Iterable[Mapping[str, object]]
 ) -> lineage.Cikti:
     """`staged/{kaynak}/{run_id}/units.jsonl` dosyasini yazar (`--dry-run`'da yazmaz)."""
+    return satirlari_yaz(ctx, source_id, UNITS_ADI, satirlar)
+
+
+def kelimeler_yaz(
+    ctx: "RunContext", source_id: str, satirlar: Iterable[Mapping[str, object]]
+) -> lineage.Cikti:
+    """`staged/{kaynak}/{run_id}/words.jsonl` dosyasini yazar (`--dry-run`'da yazmaz).
+
+    Satir bicimi ve siralama `units.jsonl` ile aynidir; her satirin `anchor` degeri tekil bir
+    kelime capasidir (`q:{sure}:{ayet}:{kelime}`), sira `sort_key`.
+    """
+    return satirlari_yaz(ctx, source_id, KELIMELER_ADI, satirlar)
+
+
+def satirlari_yaz(
+    ctx: "RunContext", source_id: str, ad: str, satirlar: Iterable[Mapping[str, object]]
+) -> lineage.Cikti:
+    """`staged/{kaynak}/{run_id}/{ad}` dosyasini kanonik satirlarla yazar."""
     veri, sayi = units_baytlari(satirlar)
-    hedef = ctx.staged_dizin(source_id) / UNITS_ADI
+    hedef = ctx.staged_dizin(source_id) / ad
     if not ctx.dry_run:
         hedef.parent.mkdir(parents=True, exist_ok=True)
         hedef.write_bytes(veri)
@@ -122,4 +140,49 @@ def units_yaz(
         yol=lineage.goreli_yol(ctx.veri_kok, hedef),
         sha256=lineage.sha256_bayt(veri),
         satir=sayi,
+    )
+
+
+def yapi_baytlari(
+    satirlar: Iterable[Mapping[str, object]], anahtar: tuple[str, ...] = ("no",)
+) -> tuple[bytes, int]:
+    """Capasi tekil olmak zorunda olmayan yapi satirlarini `anahtar` alanlarina gore siralar.
+
+    Yapi satirlari (sure, cuz, rub ... ve isaret/sayfa satirlari) bir dosyada `anahtar` alanlari
+    (varsayilan `no`) ile ayirt edilir; her satirda bu alanlar bulunmali (tam sayi ya da metin)
+    ve anahtar tekil olmalidir (`GirdiHatasi`).
+    """
+    sirali: list[tuple[tuple[int | str, ...], Mapping[str, object]]] = []
+    gorulen: set[tuple[int | str, ...]] = set()
+    for sira, satir in enumerate(satirlar, start=1):
+        deger: list[int | str] = []
+        for alan in anahtar:
+            parca = satir.get(alan)
+            if isinstance(parca, bool) or not isinstance(parca, int | str):
+                raise GirdiHatasi(f"satir {sira}: {alan} tam sayi ya da metin degil, ya da yok")
+            deger.append(parca)
+        anahtar_degeri = tuple(deger)
+        if anahtar_degeri in gorulen:
+            raise GirdiHatasi(f"yinelenen anahtar ({'/'.join(anahtar)}): satir {sira}")
+        gorulen.add(anahtar_degeri)
+        sirali.append((anahtar_degeri, satir))
+    sirali.sort(key=lambda cift: cift[0])
+    return b"".join(satir_baytlari(satir) for _, satir in sirali), len(sirali)
+
+
+def dosya_yaz(
+    ctx: "RunContext",
+    source_id: str,
+    ad: str,
+    satirlar: Iterable[Mapping[str, object]],
+    anahtar: tuple[str, ...] = ("no",),
+) -> lineage.Cikti:
+    """`staged/{kaynak}/{run_id}/{ad}` yapi dosyasini yazar (`--dry-run`'da yazmaz)."""
+    veri, sayi = yapi_baytlari(satirlar, anahtar)
+    hedef = ctx.staged_dizin(source_id) / ad
+    if not ctx.dry_run:
+        hedef.parent.mkdir(parents=True, exist_ok=True)
+        hedef.write_bytes(veri)
+    return lineage.Cikti(
+        yol=lineage.goreli_yol(ctx.veri_kok, hedef), sha256=lineage.sha256_bayt(veri), satir=sayi
     )

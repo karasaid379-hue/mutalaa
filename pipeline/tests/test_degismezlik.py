@@ -21,9 +21,11 @@ sayi, kisaltilmis ozet ve goreli yol tasir; metin yazilmaz.
 """
 
 import hashlib
+import json
 import os
 from collections.abc import Iterator
 from dataclasses import dataclass
+from itertools import pairwise
 from pathlib import Path
 from typing import Any
 
@@ -41,10 +43,13 @@ from zincir_yardimci import Zincir, zincir_hazirla
 from mutalaa_pipeline import lineage, staged
 from mutalaa_pipeline.adimlar.normalize_tanzil import EK_KAYNAK, KAYNAK
 from mutalaa_pipeline.anchor.ayet_sayilari import AYET_SAYILARI
+from mutalaa_pipeline.anchor.sayfa import SayfaHatasi, SayfaTablosu, sayfa_araligi, sayfa_bul
 from mutalaa_pipeline.config import Ayarlar
 from mutalaa_pipeline.db import baglan
+from mutalaa_pipeline.export import ayet_sayilari
 from mutalaa_pipeline.export.ortak import GirdiHatasi, depo_koku
-from mutalaa_pipeline.ingest import tanzil, tanzil_bicim
+from mutalaa_pipeline.ingest import tanzil, tanzil_bicim, tanzil_ust_veri
+from mutalaa_pipeline.qa.dogrulama import qpc1_oku
 from mutalaa_pipeline.sources import kayit
 
 pytestmark = pytest.mark.degismezlik
@@ -370,3 +375,156 @@ def test_gercek_postgresql_content_hash_metnin_sha256sidir(
         if _sha(metin.encode("utf-8")) != ozet
     ]
     assert uyusmayan == []
+
+
+# --- Test 7 (A11.5): Medine 604 sayfa esleme ----------------------------------------------------
+# Sayfa tablosu Tanzil `pages` grubundan uretilir; QPC1 duzeni yalniz dogrulayicidir. Hicbir
+# sayi teste yazilmaz: sayfa sayisi kaynak XML'den, ayet ve kelime sayilari `ayet-sayilari.json`
+# ile kelime dosyasindan gelir. Veri yoksa atlanir (ZORUNLU ise basarisiz).
+
+UST_VERI_KAYNAGI = "tanzil-ust-veri"
+
+
+@dataclass(frozen=True)
+class SayfaVerisi:
+    tablo: SayfaTablosu
+    satirlar: list[dict[str, Any]]
+    kelime_sayisi: dict[tuple[int, int], int]  # (sure, ayet) -> kelime sayisi (words.jsonl)
+    xml_sayfa_sayisi: int
+
+
+def _staged_json(klasor: Path, ad: str) -> list[dict[str, Any]]:
+    return [json.loads(s) for s in (klasor / ad).read_bytes().splitlines()]
+
+
+@pytest.fixture(scope="module")
+def sayfa_verisi(gercek: GercekVeri) -> SayfaVerisi:
+    ust = lineage.son_basarili(gercek.veri_kok / "staged" / UST_VERI_KAYNAGI, "anchor")
+    kelime = lineage.son_basarili(gercek.veri_kok / "staged" / KAYNAK, "anchor")
+    if ust is None or kelime is None:
+        _yok("staged tanzil-ust-veri ya da tanzil-uthmani anchor calismasi yok (hat calismamis)")
+        raise AssertionError
+    satirlar = _staged_json(ust[1], "pages.jsonl")
+    sayilar: dict[tuple[int, int], int] = {}
+    for k in _staged_json(kelime[1], "words.jsonl"):
+        anahtar = (k["surah"], k["ayah"])
+        sayilar[anahtar] = max(sayilar.get(anahtar, 0), k["word"])
+    xml = gercek.veri_kok / "gelen" / "tanzil-ust-veri"
+    tarihler = sorted(p for p in xml.iterdir() if p.is_dir()) if xml.is_dir() else []
+    if not tarihler:
+        _yok("data/gelen/tanzil-ust-veri yok")
+        raise AssertionError
+    yapi = tanzil_ust_veri.yapi_ayristir((tarihler[-1] / "quran-data.xml").read_bytes())
+    tablo = SayfaTablosu.kur((s["page"], s["start_anchor"], s["end_anchor"]) for s in satirlar)
+    return SayfaVerisi(tablo, satirlar, sayilar, len(yapi["sayfa"]))
+
+
+def _kelime_sirasi(v: SayfaVerisi, capa: str) -> int:
+    """Kelimenin kitap icindeki 1 tabanli sirasi (kelime dosyasindaki ayet sirasina gore)."""
+    sure, ayet, kelime = (int(x) for x in capa.split(":")[1:])
+    onceki = sum(adet for (s, a), adet in v.kelime_sayisi.items() if (s, a) < (sure, ayet))
+    return onceki + kelime
+
+
+def test_sayfa_1_ilk_surenin_butun_ayetlerini_kapsar(sayfa_verisi: SayfaVerisi) -> None:
+    """Test 7: 1. sayfa ilk surenin ilk ayetinden son ayetine kadardir (sure uzunlugu JSON'dan)."""
+    v = sayfa_verisi
+    ayet_sayisi = ayet_sayilari.json_oku(depo_koku()).sayilar[0]
+    ilk, son = sayfa_araligi(v.tablo, 1)
+    assert ilk == "q:1:1:1"
+    assert son == f"q:1:{ayet_sayisi}:{v.kelime_sayisi[(1, ayet_sayisi)]}"
+    assert all(sayfa_bul(v.tablo, f"q:1:{a}") == 1 for a in range(1, ayet_sayisi + 1))
+
+
+def test_son_sayfa_son_surenin_son_ayetinin_son_kelimesiyle_biter(
+    sayfa_verisi: SayfaVerisi,
+) -> None:
+    v = sayfa_verisi
+    sayilar = ayet_sayilari.json_oku(depo_koku()).sayilar
+    sure, ayet = len(sayilar), sayilar[-1]
+    son_kelime = f"q:{sure}:{ayet}:{v.kelime_sayisi[(sure, ayet)]}"
+    assert sayfa_araligi(v.tablo, len(v.tablo))[1] == son_kelime
+    assert sayfa_bul(v.tablo, son_kelime) == len(v.tablo)
+
+
+def test_sayfa_0_ve_son_sayfadan_sonrasi_gecersiz(sayfa_verisi: SayfaVerisi) -> None:
+    tablo = sayfa_verisi.tablo
+    for sayfa in (0, -1, len(tablo) + 1):
+        with pytest.raises(SayfaHatasi):
+            sayfa_araligi(tablo, sayfa)
+    assert sayfa_araligi(tablo, len(tablo))
+
+
+def test_sayfalar_1den_kesintisiz_kaynak_xml_ile_ayni_sayida(sayfa_verisi: SayfaVerisi) -> None:
+    v = sayfa_verisi
+    assert [s["page"] for s in v.satirlar] == list(range(1, len(v.satirlar) + 1))
+    assert len(v.tablo) == len(v.satirlar) == v.xml_sayfa_sayisi
+
+
+def test_sayfalar_arasinda_bosluk_ve_ortusme_yok(sayfa_verisi: SayfaVerisi) -> None:
+    v = sayfa_verisi
+    siralar = [
+        (_kelime_sirasi(v, s["start_anchor"]), _kelime_sirasi(v, s["end_anchor"]))
+        for s in v.satirlar
+    ]
+    assert siralar[0][0] == 1
+    assert siralar[-1][1] == sum(v.kelime_sayisi.values())
+    for (_, onceki_son), (sonraki_bas, _) in pairwise(siralar):
+        assert sonraki_bas == onceki_son + 1
+    assert all(bas <= son for bas, son in siralar)
+
+
+def _ayet_sayfada(v: SayfaVerisi, sure: int, ayet: int) -> bool:
+    try:
+        sayfa_bul(v.tablo, f"q:{sure}:{ayet}")
+        sayfa_bul(v.tablo, f"q:{sure}:{ayet}:{v.kelime_sayisi[(sure, ayet)]}")
+    except SayfaHatasi:
+        return False
+    return True
+
+
+def test_her_ayet_en_az_bir_sayfada(sayfa_verisi: SayfaVerisi) -> None:
+    sayilar = ayet_sayilari.json_oku(depo_koku()).sayilar
+    kapsanmayan = [
+        f"q:{s}:{a}"
+        for s, adet in enumerate(sayilar, start=1)
+        for a in range(1, adet + 1)
+        if not _ayet_sayfada(sayfa_verisi, s, a)
+    ]
+    assert kapsanmayan == []
+
+
+def test_sayfa_baslangiclari_qpc1_duzeniyle_ayni(
+    gercek: GercekVeri, sayfa_verisi: SayfaVerisi
+) -> None:
+    """Test 7: Tanzil `pages` ile QPC1 her sayfada ayni baslangic ve bitis kelimesini verir;
+    hicbir sayfa ayet ortasinda baslamaz ya da bitmez (AS-10)."""
+    qpc1 = qpc1_oku(gercek.veri_kok)
+    if qpc1 is None:
+        _yok("data/gelen/medine-604-duzen/<tarih>/mushaf/QPC1 yok (QPC1 duzeni indirilmemis)")
+        raise AssertionError
+    v = sayfa_verisi
+    assert qpc1.sayfa_sayisi == len(v.tablo)
+    for sayfa in range(1, len(v.tablo) + 1):
+        ilk, son = sayfa_araligi(v.tablo, sayfa)
+        assert qpc1.ilk[sayfa] == ilk.removeprefix("q:"), f"sayfa {sayfa}: baslangic"
+        assert qpc1.son[sayfa] == son.removeprefix("q:"), f"sayfa {sayfa}: bitis"
+        assert ilk.endswith(":1")  # sayfa ayet basinda baslar
+        sure, ayet, kelime = (int(x) for x in son.split(":")[1:])
+        assert kelime == v.kelime_sayisi[(sure, ayet)]  # ve ayet sonunda biter
+
+
+def test_gercek_postgresql_page_map_staged_sayfalarla_ayni(
+    sayfa_verisi: SayfaVerisi, pg_baglanti: psycopg.Connection
+) -> None:
+    """Test 7 (PostgreSQL): page_map sayfa satirlari staged tabloyla ayni, 1..N kesintisiz."""
+    satirlar = pg_baglanti.execute(
+        "SELECT page, start_anchor, end_anchor FROM icerik.page_map"
+        " WHERE source_id = %s AND line IS NULL ORDER BY page",
+        (UST_VERI_KAYNAGI,),
+    ).fetchall()
+    if not satirlar:
+        _yok("icerik.page_map icinde tanzil-ust-veri satiri yok (export pg calistirilmamis)")
+    beklenen = [(s["page"], s["start_anchor"], s["end_anchor"]) for s in sayfa_verisi.satirlar]
+    assert satirlar == beklenen
+    assert [s[0] for s in satirlar] == list(range(1, len(satirlar) + 1))

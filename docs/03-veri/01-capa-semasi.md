@@ -1,7 +1,7 @@
 # Çapa Şeması
 
-> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
+> **Sürüm:** 1.4 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
 
 Her metin birimi tek bir gramere göre kalıcı bir adres (çapa) alır. Vurgular, notlar, yer imleri, `xref` bağlantıları, sayfa eşlemeleri, derin bağlantılar ve arama sonuçları bu adresle çalışır. Eski plan aynı içerik için en az beş uyumsuz biçim kullanıyordu (`2:255`, `quran:2:255`, `sozler:32:612`, `risale:sozler:13:para:42`). Bu dosya hepsinin yerini alır (`quran-app-docs/03-veri-modeli/03-polymorphic-content-ref.md`, `quran-app-docs/03-veri-modeli/02-tam-sql-ddl.md`).
 
@@ -161,7 +161,16 @@ k    ^k:(?<yol>SEG(?::SEG)*):p(?<p>SAYI)ARA$
 [{ "anchor": "rn:sozler:soz-10:hakikat-3:p27", "from": 312, "to": 640, "delta": -312 }]
 ```
 
-Kur'an âyet çapaları sabittir. Kelime numaraları QAC konumuna sabitlenir. Kelime sayısı kaynağa göre değişiyor: QAC 77.429, Vikipedi 77.430, QUL 77.432 ([QAC SSS](https://corpus.quran.com/faq.jsp); [Wikipedia](https://en.wikipedia.org/wiki/Quranic_Arabic_Corpus); [QUL kaynaklar](https://qul.tarteel.ai/resources)). Hat, QUL kelime konumlarını QAC'ye karşı denetler ve fark varsa eşleme tablosu tutar (Açık soru).
+Kur'an âyet çapaları sabittir. Kelime numaraları QAC konumuna sabitlenir. Kelime sayısı kaynağa göre değişiyor: QAC 77.429, Vikipedi 77.430, QUL 77.432 ([QAC SSS](https://corpus.quran.com/faq.jsp); [Wikipedia](https://en.wikipedia.org/wiki/Quranic_Arabic_Corpus); [QUL kaynaklar](https://qul.tarteel.ai/resources)).
+
+**Kelime numarası ([K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları) madde 1).** `q:{s}:{a}:{k}` içindeki `k` QAC ve QPC1 konumudur. Eşleme tablosu yoktur: Tanzil Uthmani metni bu konuma kurala göre bölünür (`pipeline/src/mutalaa_pipeline/anchor/quran.py`, `kelimelere_bol`). Kural:
+
+1. Belirteçler yalnız boşlukla (U+0020) ayrılır; boş belirteç sayılmaz.
+2. Yalnız U+06D6–U+06ED karakterlerinden oluşan belirteç (durak ve secde işaretleri) kelime değildir ve numara almaz.
+3. Sure 2–114'ün (9 hariç) 1. âyetinde ilk dört belirteç besmeledir ve numara almaz. Sure 1'in 1. âyeti besmeledir; kelimeleri sayılır.
+4. Tanzil'de bitişik iki belirtecin QAC ve QPC1'de tek kelime olduğu dört âyet kodda sabit `BIRLESTIRME` listesiyle birleştirilir: 2:181 (3. belirteç), 8:6 (4.), 13:37 (8.), 37:130 (3.). Sıra, 1–3. kuralların uygulanmasından sonraki 1 tabanlı kelime-belirteci sırasıdır; birleşen kelimenin aralığı iki belirteci ve aradaki boşluğu kapsar. Listedeki her değişiklik `/karar` ister.
+
+Bölme yalnız aralık hesaplar: metni kopyalamaz, normalize etmez (K-26). Kelime metni `ayet_metni[char_start:char_end]` dilimidir. A11 bölmeyi QPC1 düzeniyle, A17 QAC ile sınar; fark çıkarsa G-BUT kırmızı olur ve bölme düzeltilir. QUL ve QUD kelime numaraları bu karardan bağımsızdır ve açık kalır (ÇŞ-1, A27'de ses kaynağı seçilince ele alınır).
 
 ## 7. Kanonik metin ve `content_hash`
 
@@ -238,13 +247,13 @@ flowchart TD
 
 | Düzen ya da baskı | Eşleme birimi | Kaynak |
 |---|---|---|
-| Mod A · Medine 604 sayfa, 15 satır | Satır başına ilk ve son kelime çapası | QPC/QUL düzen verisi |
-| Mod C · akan Unicode | Sayfa başına ilk ve son kelime (A ile aynı sayfa sınırları) | A'nın verisinden türetilir |
+| Mod A · Medine 604 sayfa, 15 satır | Satır başına ilk ve son kelime çapası | QPC/QUL düzen verisi (satırlar A26'da) |
+| Mod C · akan Unicode | Sayfa başına ilk ve son kelime (A ile aynı sayfa sınırları) | Sayfa sınırları Tanzil üst verisinin `pages` grubundan (A11); QPC1 düzeniyle doğrulanır |
 | Mod B · Türk hattı | Sayfa başına âyet aralığı ve `ayah_box` koordinatları | Türk hattı sayfa görselleri; kaynak A40'ta araştırmayla bulunur (K-07) |
 | Risale baskıları | Sayfa başlangıcı `(çapa, ofset)` | Baskı eşlemesi |
 | Elmalılı 1935–39 | Cilt ve sayfa başlangıcı `(çapa, ofset)` | Özgün baskı |
 
-- Medine düzenleri 604 sayfa ve 15 satırdır; listelenen düzenlerin hiçbiri Türk düzeni değildir ([QUL düzenleri](https://qul.tarteel.ai/mushaf_layouts)). Türk "âyet berkenar" düzeninde her sayfa tam bir âyetle başlar ve biter ([Küre Ansiklopedi](https://kureansiklopedi.com/tr/detay/ayet-berkenar-a2f19)). Medine düzeninde bu güvence yazılı değildir; A ve C eşlemesi bu yüzden kelime düzeyindedir (veriyle Doğrulanacak).
+- Medine düzenleri 604 sayfa ve 15 satırdır; listelenen düzenlerin hiçbiri Türk düzeni değildir ([QUL düzenleri](https://qul.tarteel.ai/mushaf_layouts)). Türk "âyet berkenar" düzeninde her sayfa tam bir âyetle başlar ve biter ([Küre Ansiklopedi](https://kureansiklopedi.com/tr/detay/ayet-berkenar-a2f19)). Medine düzeninde bu güvence yazılı değildir; A ve C eşlemesi bu yüzden kelime düzeyindedir. *Çözüldü (2026-11-09):* Tanzil `pages` ve QPC1 düzeninde 604 sayfanın hepsi bir âyetin ilk kelimesiyle başlar ve bir âyetin son kelimesiyle biter; her sayfanın ilk âyeti iki kaynakta aynıdır ([Kaynaklar](../04-icerik/01-kaynaklar.md) §3.1). A11 `page_map` satırlarını (`layout = 'medine-604'`, sayfa başına tek satır, `line` boş) Tanzil `pages` grubundan yazar; QPC1 doğrulayıcıdır. QPC2 düzeni 25 sayfada ayrılır ve `medine-604` değildir.
 - Biçim örneği: `medine-604 · sayfa 1 → q:1:1:1 … q:1:7:{son}`.
 - Risale'de ders halkalarında farklı baskıların sayfa numaraları kullanılır. 14 ciltlik büyük boy bir baskı 7.550 sayfadır ([kitapyurdu](https://www.kitapyurdu.com/kitap/risalei-nur-kulliyati-buyuk-boy-14-cilt-takim/429602.html)). Eşleme `page_map(baskı, çapa, sayfa)` biçimindedir (rapor).
 - Hatim ilerlemesi çapayla tutulmaz; `(düzen, sayfa)` ile tutulur ([Kullanıcı verisi ve senkron](./04-kullanici-verisi-ve-senkron.md)).
@@ -357,7 +366,8 @@ CI üç test koşucusunu aynı dosyalarla çalıştırır. TypeScript vektörler
   "varyantlar": ["bakara", "el bakara", "sure i bakara", "bakara suresi"] }
 ```
 
-- Üretilen kopyalar: `packages/anchors/src/generated/sure-adlari.ts`, hattın Python modülü, C# gömülü kaynağı ve `core` paketindeki `sure` tablosu (arama kutusunda "Bakara 255" yazımı için).
+- `alias_key` A05 geniş anahtarıdır: Türkçe yazımlarda `normalize_tr(…, "genis")`. Arapça adlarda bu işlev boş döner (Arapça harfler tanınmaz); Arapça adaylarda `alias_key` A05'in `normalize_ar` işleviyle hesaplanır (114 `ad_ar` benzersiz anahtar verir). Hat boş `alias_key` üretmez, hata verir. Kesme işaretinin geniş anahtardaki davranışı ve etkisi Açık soru (ÇŞ-10).
+- Üretilen kopyalar: `packages/anchors/src/generated/sure-adlari.ts`, hattın Python modülü, C# kopyası (`server/Mutalaa.Domain/Anchors/SureAdlari.g.cs`; depodaki `AyetSayilari.g.cs` kalıbı, gömülü kaynak değil) ve `core` paketindeki `sure` tablosu (arama kutusunda "Bakara 255" yazımı için).
 - Metin içindeki açık atıflar ("(Bakara Sûresi, 255)", "Âl-i İmrân: 7") için rapor, İncil Pasaj Referans Ayrıştırıcısı'nı örnek alan küçük bir gramer ve bu tabloyu önerir. O ayrıştırıcı adları en uzun eşleşmeden başlayarak arar ve ham metinde yanlış pozitif verebileceğini yazar ([Bible Passage Reference Parser](https://github.com/openbibleinfo/Bible-Passage-Reference-Parser)). Ayrıntı [İktibas tespiti](../05-capraz-referans/02-iktibas-tespiti.md) dosyasında.
 - Notlarda bağlantı `[[q:2:255]]` biçimindedir. Not düzenleyicisi "Bakara 255" yazımını kayıtta kanonik çapaya çevirir. Eski plandaki `[[Q 2:255]]` ve `[[R Sözler.13.42]]` biçimleri içe aktarımda bu biçime dönüştürülür (`quran-app-docs/04-okuma/04-reading-symmetry.md`).
 
@@ -365,7 +375,7 @@ CI üç test koşucusunu aynı dosyalarla çalıştırır. TypeScript vektörler
 
 | No | Konu | Durum |
 |---|---|---|
-| ÇŞ-1 | QAC ve QUL kelime numaralandırması arasındaki farklar ve eşleme tablosu | Açık soru |
+| ÇŞ-1 | QUL ve QUD kelime numaralandırmasının QAC konumuyla farkları (QAC için eşleme tablosu yok: [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları) madde 1, [BÇ-32](../10-claude-code/07-belge-celiskileri.md) çözüldü) | Açık soru (A27, SK-5) |
 | ÇŞ-3 | Hadis numara sistemi ve alt numaralar (`2564a`); gramere harf soneki eklenmesi | Açık soru |
 | ÇŞ-4 | Haşiye ve tefsir sure girişi adlandırması (`hasiye-{n}`, `sure-{n}-giris`) | Öneri |
 | ÇŞ-5 | Yeniden çapalama eşiği (0,85) ve cihazda yaklaşık eşleşme algoritmasının kitaplık seçimi | Doğrulanacak |
@@ -373,6 +383,7 @@ CI üç test koşucusunu aynı dosyalarla çalıştırır. TypeScript vektörler
 | ÇŞ-7 | Web rotaları | Faz 5'te kesinleşir |
 | ÇŞ-8 | Konu düğümlerinin slug listesi ve tabloları (v1.x) | Açık soru |
 | ÇŞ-9 | Çapa API ayrıntıları (hata önceliği, sıralama, birim ve rota işlevleri, ilk kayıt sırası) | Çözüldü (2026-10-24, [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)) |
+| ÇŞ-10 | `alias_key` ve kesme işareti: A05 geniş anahtarı kesme işaretini ayırıcı sayar (`A'raf` → `a`, `Ra'd` → `ra`, `Ma'un` → `ma`); gerçek veride sure 7 (A'raf) ve 87 (A'lâ) aynı anahtarı verir. Hat bu yüzden sure 7'de apostrofsuz "Araf" yazımını `diger_ad` adayı olarak ayrı üretir. A18 ayrıştırıcısı bunu dikkate almalı ya da kesme kuralı `/karar` ile ele alınmalı. Arapça `alias_key` tanımı (§12) bu maddeyle birlikte kayıtlıdır | Açık soru ([BÇ-44](../10-claude-code/07-belge-celiskileri.md); A18 ya da A05 sonrası) |
 
 ## İlgili dosyalar
 

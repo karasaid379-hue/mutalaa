@@ -689,7 +689,9 @@ def test_gercek_kilit_yapisi_ve_sabit_degerleri() -> None:
     ham = tanzil.KILIT_YOLU.read_bytes()
     assert ham.isascii()
     assert ham.endswith(b"}\n")
-    assert tanzil.kilit_metni(kilit).encode("utf-8") == ham  # kanonik bicim
+    assert (
+        tanzil.kilit_metni(kilit, tanzil.ust_veri_kilidi_yukle()).encode("utf-8") == ham
+    )  # kanonik
 
 
 def test_gercek_kilit_kaynak_kayitlariyla_tutarli(varyant: str) -> None:
@@ -957,7 +959,7 @@ def test_komut_bayrak_hatalari_cikis_2(
 def test_komut_bilinmeyen_varyant_cikis_2(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     kok = cli_kur(tmp_path, monkeypatch)
     assert komut(kok, varyant="hafs").exit_code == 2
-    assert {v.value for v in cli.TanzilVaryanti} == set(VARYANTLAR)
+    assert {v.value for v in cli.TanzilVaryanti} == {*VARYANTLAR, tanzil.UST_VERI}
 
 
 def test_komut_dry_run_raw_ve_staged_yazmaz(

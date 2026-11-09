@@ -1,7 +1,8 @@
-"""Tanzil capa adimi (A10.4): `q:{sure}:{ayet}` capasi, `content_hash` ve kuresel ayet sirasi.
+"""Tanzil capa adimi (A10.4, A11.2): ayet capasi, `content_hash`, kuresel sira ve kelime bolmesi.
 
 `mutalaa anchor --source tanzil-uthmani`: son `normalize` calismasinin satirlarina `export pg`
-icin gereken alanlari ekler ve `staged/tanzil-uthmani/{run_id}/units.jsonl` olarak yazar:
+icin gereken alanlari ekler ve `staged/tanzil-uthmani/{run_id}/units.jsonl` olarak yazar
+(`q:{sure}:{ayet}` capasi):
 
     kind          "ayet"
     ord           kuresel ayet sirasi 1..6236 (2:255 icin 7 + 255 = 262)
@@ -11,6 +12,22 @@ icin gereken alanlari ekler ve `staged/tanzil-uthmani/{run_id}/units.jsonl` olar
     metin_durumu  "onayli" (kanonik kaynak, K-38 madde 4)
     data_version  "tanzil-uthmani@{surum}" (surum kaynak kaydindan)
 
+Ayni calisma `words.jsonl` dosyasini da yazar (A11.2, K-43 madde 1; bolme `anchor/quran.py`):
+her ayet metni kelimelere bolunur ve bir kelime bir satirdir. Bolme yalniz ARALIK hesaplar,
+kanonik metni kopyalayip donusturmez; `text_uthmani` ayet metninin `[char_start, char_end)`
+dilimidir (bayt bayt, kod noktasi ofseti):
+
+    anchor        `q:{sure}:{ayet}:{kelime}` (tekil kelime capasi; QAC ve QPC1 konumu)
+    surah, ayah, word, ayah_index (= ayetin kuresel sirasi `ord`)
+    text_uthmani  ayet metninin dilimi
+    norm          `normalize_ar(text_uthmani)` (bos olamaz)
+    char_start, char_end
+    source_id     "tanzil-uthmani"
+    data_version  units ile ayni
+
+QAC sutunlari (`root_id` ...) bu dosyada yoktur; onlar A17'nindir. Manifest her iki ciktiyi da
+listeler.
+
 Capa elle bicimlenmez: ayristirma ve bicimleme `mutalaa_pipeline.anchor` ile yapilir (kanonik
 degilse hata). Kanonik metin (`text`) oldugu gibi tasinir; `content_hash` normalize
 edilmemis metnin ozetidir (K-26). Onceki anchor calismasiyla karsilastirma bilgi icindir
@@ -19,7 +36,7 @@ degil, dort kapiyi da gecmis son anchor calismasidir (`qa/run.py`).
 """
 
 import sys
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from itertools import accumulate
 from pathlib import Path
@@ -27,13 +44,16 @@ from typing import Final
 
 from mutalaa_pipeline import cikis, lineage
 from mutalaa_pipeline.adimlar.normalize_tanzil import KAYNAK
-from mutalaa_pipeline.anchor import AnchorError, Q, content_hash, parse
+from mutalaa_pipeline.anchor import AnchorError, AnchorRef, Q, content_hash, parse
 from mutalaa_pipeline.anchor import format as anchor_format
 from mutalaa_pipeline.anchor.ayet_sayilari import AYET_SAYILARI
+from mutalaa_pipeline.anchor.quran import KelimeBolmeHatasi, kelimelere_bol
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.komut_ortak import komutu_yurut
+from mutalaa_pipeline.lineage import KELIMELER_ADI
+from mutalaa_pipeline.normalize import normalize_ar
 from mutalaa_pipeline.runctx import RunContext
-from mutalaa_pipeline.staged import Satir, units_yaz
+from mutalaa_pipeline.staged import Satir, kelimeler_yaz, units_yaz
 from mutalaa_pipeline.zincir import (
     ANCHOR_ADIMI,
     NORMALIZE_ADIMI,
@@ -63,6 +83,7 @@ class AnchorSonucu:
     birim_sayisi: int
     klasor: Path | None
     onceki_run_id: str | None = None
+    kelime_sayisi: int = 0
 
 
 @dataclass(frozen=True)
@@ -141,6 +162,50 @@ def anchor_satirlari(satirlar: Sequence[Satir], surum: str) -> list[dict[str, ob
     return sonuc
 
 
+def kelime_satirlari(
+    birimler: Iterable[Mapping[str, object]], surum: str
+) -> list[dict[str, object]]:
+    """Anchor satirlarindan (`anchor`, `text`, `ord`) `words.jsonl` satirlarini uretir (K-43).
+
+    Her ayet `anchor/quran.py` kuralina gore bolunur; `text_uthmani` ayet metninin
+    `[char_start, char_end)` dilimidir ve donusturulmez. `norm` bos cikarsa ya da bolme kurali
+    uygulanamazsa `GirdiHatasi` (iletide metin yok: yalniz capa).
+    """
+    sonuc: list[dict[str, object]] = []
+    for birim in birimler:
+        capa, metin, sira = birim.get("anchor"), birim.get("text"), birim.get("ord")
+        konum = ayet_coz(capa) if isinstance(capa, str) else None
+        if konum is None or not isinstance(metin, str) or not isinstance(sira, int):
+            raise GirdiHatasi("kelime bolme: anchor satirinda anchor, text ya da ord gecersiz")
+        sure, ayet = konum
+        try:
+            kelimeler = kelimelere_bol(metin, sure, ayet)
+        except KelimeBolmeHatasi as hata:
+            raise GirdiHatasi(f"kelime bolme: {capa}: {hata}") from None
+        for kelime in kelimeler:
+            dilim = metin[kelime.char_start : kelime.char_end]
+            norm = normalize_ar(dilim)
+            kapsam = anchor_format(AnchorRef(Q(sure, ayet, kelime.word)))
+            if norm == "":
+                raise GirdiHatasi(f"kelime bolme: {kapsam}: norm bos")
+            sonuc.append(
+                {
+                    "anchor": kapsam,
+                    "surah": sure,
+                    "ayah": ayet,
+                    "word": kelime.word,
+                    "ayah_index": sira,
+                    "text_uthmani": dilim,
+                    "norm": norm,
+                    "char_start": kelime.char_start,
+                    "char_end": kelime.char_end,
+                    "source_id": KAYNAK,
+                    "data_version": f"{KAYNAK}@{surum}",
+                }
+            )
+    return sonuc
+
+
 def capa_ozetleri(satirlar: Sequence[Satir]) -> dict[str, str]:
     """`anchor -> content_hash` (anchor calismasi satirlarindan)."""
     return {s.metin("anchor"): s.metin("content_hash") for s in satirlar}
@@ -178,6 +243,17 @@ def _onceki_ozetleri(ctx: RunContext, onceki: Calisma | None) -> dict[str, str] 
         return None
 
 
+def _kelime_ciktisi_var(manifest: Mapping[str, object] | None) -> bool:
+    """Manifestin `ciktilar` listesinde `words.jsonl` var mi (A11.2 oncesi calismalarda yok)."""
+    if manifest is None:
+        return False
+    ciktilar = manifest.get("ciktilar")
+    return isinstance(ciktilar, list) and any(
+        isinstance(k, dict) and str(k.get("yol", "")).endswith("/" + KELIMELER_ADI)
+        for k in ciktilar
+    )
+
+
 def run_anchor(ctx: RunContext) -> AnchorSonucu:
     """Kaynak kaydi, son normalize, parmak izi, capa alanlari, `staged`, manifest (en son)."""
     kayit = ctx.require_sources(KAYNAK)[KAYNAK]
@@ -192,12 +268,18 @@ def run_anchor(ctx: RunContext) -> AnchorSonucu:
     onceki = lineage.son_basarili(ctx.staged_kaynak_dizini(KAYNAK), ctx.adim)
     # Parmak izi run_id icermez: cikti ayrica en son ust calismalara bagli olmali, yoksa
     # ust adim yeniden kosulmus (ornegin --force) ve zincir eski bir calismada kalir.
-    if girdileri_ayni(onceki[2] if onceki else None, girdiler) and lineage.atlanabilir(
-        onceki=onceki[2] if onceki else None,
-        parmak=parmak,
-        git_kirli=ctx.git().kirli,
-        force=ctx.force,
-        veri_kok=ctx.veri_kok,
+    # Kelime dosyasi A11.2'de eklendi: onceki calisma onu listelemiyorsa (eski bicim) atlanmaz.
+    onceki_manifest = onceki[2] if onceki else None
+    if (
+        _kelime_ciktisi_var(onceki_manifest)
+        and girdileri_ayni(onceki_manifest, girdiler)
+        and lineage.atlanabilir(
+            onceki=onceki_manifest,
+            parmak=parmak,
+            git_kirli=ctx.git().kirli,
+            force=ctx.force,
+            veri_kok=ctx.veri_kok,
+        )
     ):
         ctx.gunluk.yaz("INFO", "anchor_atlandi", source_id=KAYNAK)
         ctx.sayi("atlandi", 1)
@@ -210,6 +292,7 @@ def run_anchor(ctx: RunContext) -> AnchorSonucu:
         )
 
     satirlar = anchor_satirlari(units_oku(normalize, "normalize units.jsonl"), kayit.surum)
+    kelimeler = kelime_satirlari(satirlar, kayit.surum)
     onceki_anchor = onceki_calisma(ctx, KAYNAK, ANCHOR_ADIMI)
     fark = onceki_ile_karsilastir(
         _onceki_ozetleri(ctx, onceki_anchor),
@@ -217,8 +300,11 @@ def run_anchor(ctx: RunContext) -> AnchorSonucu:
         onceki_anchor.run_id if onceki_anchor else None,
     )
     cikti = units_yaz(ctx, KAYNAK, satirlar)
+    kelime_cikti = kelimeler_yaz(ctx, KAYNAK, kelimeler)
     birim = cikti.satir or 0
+    kelime = kelime_cikti.satir or 0
     ctx.sayi("birim", birim)
+    ctx.sayi("kelime", kelime)
     ctx.sayi("onceki_ortak", fark.ortak)
     ctx.sayi("onceki_eklenen", fark.eklenen)
     ctx.sayi("onceki_kaldirilan", len(fark.kaldirilan))
@@ -229,28 +315,42 @@ def run_anchor(ctx: RunContext) -> AnchorSonucu:
         ctx.uyar(f"onceki anchor calistirmasindan {len(fark.kaldirilan)} capa kayip (kapi: G-CAP)")
     if fark.degisen:
         ctx.uyar(f"{len(fark.degisen)} capada content_hash degisti (kapi: G-CAP)")
-    sayilar = {"birim": birim, "onceki_ortak": fark.ortak, "onceki_eklenen": fark.eklenen}
+    sayilar = {
+        "birim": birim,
+        "kelime": kelime,
+        "onceki_ortak": fark.ortak,
+        "onceki_eklenen": fark.eklenen,
+    }
     if ctx.dry_run:
         ctx.gunluk.yaz("INFO", "anchor_dry_run", source_id=KAYNAK, sayilar=sayilar)
-        return AnchorSonucu(run_id=ctx.run_id, atlandi=False, birim_sayisi=birim, klasor=None)
+        return AnchorSonucu(
+            run_id=ctx.run_id, atlandi=False, birim_sayisi=birim, klasor=None, kelime_sayisi=kelime
+        )
 
     klasor = ctx.staged_dizin(KAYNAK)
     ctx.manifest_yaz(
         klasor,
         girdiler=girdiler,
-        ciktilar=[cikti],
+        ciktilar=[cikti, kelime_cikti],
         parmak=parmak,
         ayrintilar={
             "kaynak": KAYNAK,
             "normalize_run": normalize.run_id,
             "data_version": f"{KAYNAK}@{kayit.surum}",
             "birim": birim,
+            "kelime": kelime,
             "ord_araligi": _ord_araligi(satirlar),
             "onceki": fark.ayrinti(),
         },
     )
     ctx.gunluk.yaz("INFO", "anchor_bitti", source_id=KAYNAK, sayilar=sayilar)
-    return AnchorSonucu(run_id=ctx.run_id, atlandi=False, birim_sayisi=birim, klasor=klasor)
+    return AnchorSonucu(
+        run_id=ctx.run_id,
+        atlandi=False,
+        birim_sayisi=birim,
+        klasor=klasor,
+        kelime_sayisi=kelime,
+    )
 
 
 def komut_anchor(
@@ -266,9 +366,12 @@ def komut_anchor(
         if sonuc.atlandi:
             ozet = f"atlandi (parmak izi onceki calistirmayla ayni, run {sonuc.onceki_run_id})"
         elif ctx.dry_run:
-            ozet = f"{sonuc.birim_sayisi} birim (dry-run, hicbir sey yazilmadi)"
+            ozet = (
+                f"{sonuc.birim_sayisi} birim, {sonuc.kelime_sayisi} kelime"
+                " (dry-run, hicbir sey yazilmadi)"
+            )
         else:
-            ozet = f"{sonuc.birim_sayisi} birim, run {sonuc.run_id}"
+            ozet = f"{sonuc.birim_sayisi} birim, {sonuc.kelime_sayisi} kelime, run {sonuc.run_id}"
         sys.stdout.write(f"anchor {KAYNAK}: {ozet}\n")
         return cikis.BASARILI
 

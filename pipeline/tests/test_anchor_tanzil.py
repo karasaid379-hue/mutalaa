@@ -7,6 +7,7 @@ parcalariyla (dosyadan betikle kesilmis 40 ayet) sinanir. Kur'an metni hafizadan
 import hashlib
 import json
 import unicodedata
+from itertools import pairwise
 from pathlib import Path
 from typing import Any
 
@@ -21,16 +22,18 @@ from mutalaa_pipeline.adimlar.anchor_tanzil import (
     anchor_satirlari,
     ayet_coz,
     capa_ozetleri,
+    kelime_satirlari,
     kuresel_sira,
     onceki_ile_karsilastir,
     run_anchor,
 )
 from mutalaa_pipeline.adimlar.normalize_tanzil import EK_KAYNAK, KAYNAK
-from mutalaa_pipeline.anchor import AnchorRef, Q
+from mutalaa_pipeline.anchor import AnchorRef, Q, parse, sort_key
 from mutalaa_pipeline.anchor import format as anchor_format
 from mutalaa_pipeline.anchor.ayet_sayilari import AYET_SAYILARI
 from mutalaa_pipeline.export import ayet_sayilari, pg
 from mutalaa_pipeline.export.ortak import GirdiHatasi, depo_koku
+from mutalaa_pipeline.normalize import normalize_ar
 from mutalaa_pipeline.staged import Satir
 from mutalaa_pipeline.zincir import calismalar, ust_calismalar
 
@@ -234,7 +237,11 @@ def parca_zinciri(tmp_path: Path) -> Zincir:
 
 
 def satirlar(klasor: Path) -> list[dict[str, Any]]:
-    return [json.loads(s) for s in (klasor / "units.jsonl").read_bytes().splitlines()]
+    return satirlar_dosya(klasor, "units.jsonl")
+
+
+def satirlar_dosya(klasor: Path, ad: str) -> list[dict[str, Any]]:
+    return [json.loads(s) for s in (klasor / ad).read_bytes().splitlines()]
 
 
 def anchor_klasoru(z: Zincir, run_id: str) -> Path:
@@ -294,8 +301,14 @@ def test_manifest_zincir_halkasi(tmp_path: Path) -> None:
             "ust_run_id": normalize.run_id,
         }
     ]
-    assert [c["yol"] for c in manifest["ciktilar"]] == [f"staged/{KAYNAK}/{ctx.run_id}/units.jsonl"]
+    assert [c["yol"] for c in manifest["ciktilar"]] == [
+        f"staged/{KAYNAK}/{ctx.run_id}/units.jsonl",
+        f"staged/{KAYNAK}/{ctx.run_id}/words.jsonl",
+    ]
     assert manifest["ciktilar"][0]["satir"] == PARCA_AYET
+    kelime_sayisi = len(satirlar_dosya(klasor, "words.jsonl"))
+    assert manifest["ciktilar"][1]["satir"] == kelime_sayisi > PARCA_AYET
+    assert manifest["ayrintilar"]["kelime"] == kelime_sayisi
     ayrintilar = manifest["ayrintilar"]
     assert ayrintilar["normalize_run"] == normalize.run_id
     assert ayrintilar["data_version"] == "tanzil-uthmani@1.1"
@@ -448,7 +461,8 @@ def test_cli_anchor_basarili(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) ->
     once = staged_klasorleri(z)
     sonuc = cli_anchor(z, monkeypatch, "--source", KAYNAK)
     assert sonuc.exit_code == 0, sonuc.stderr
-    assert sonuc.stdout.startswith(f"anchor {KAYNAK}: {PARCA_AYET} birim, run ")
+    assert sonuc.stdout.startswith(f"anchor {KAYNAK}: {PARCA_AYET} birim, ")
+    assert " kelime, run " in sonuc.stdout
     (yeni,) = set(staged_klasorleri(z)) - set(once)
     manifest = json.loads((z.veri_kok / "staged" / KAYNAK / yeni / "manifest.json").read_bytes())
     assert (manifest["adim"], manifest["komut"]) == ("anchor", f"anchor --source {KAYNAK}")
@@ -487,3 +501,154 @@ def test_cli_hatali_cagrilar_cikis_2(
     assert sonuc.exit_code == 2
     assert parca in sonuc.stderr
     assert staged_klasorleri(z) == once
+
+
+# --- kelime bolmesi: words.jsonl (A11.2, K-43) -----------------------------------------------
+
+DURAK = chr(0x06D6)
+
+
+def test_kelime_satirlari_alanlari_ve_dilim_esitligi(tmp_path: Path) -> None:
+    z = parca_zinciri(tmp_path)
+    ctx = z.anchor()
+    klasor = anchor_klasoru(z, ctx.run_id)
+    ayetler = {s["anchor"]: s for s in satirlar(klasor)}
+    kelimeler = satirlar_dosya(klasor, "words.jsonl")
+    assert (klasor / "words.jsonl").read_bytes().isascii()  # ASCII kacisli (editor NFC yapmasin)
+    alanlar = {
+        "anchor",
+        "surah",
+        "ayah",
+        "word",
+        "ayah_index",
+        "text_uthmani",
+        "norm",
+        "char_start",
+        "char_end",
+        "source_id",
+        "data_version",
+    }
+    beklenen_sira = [sort_key(parse(k["anchor"])) for k in kelimeler]  # satirlar okuma sirasinda
+    assert beklenen_sira == sorted(beklenen_sira)
+    for k in kelimeler:
+        assert set(k) == alanlar
+        assert k["anchor"] == f"q:{k['surah']}:{k['ayah']}:{k['word']}"
+        ayet = ayetler[f"q:{k['surah']}:{k['ayah']}"]
+        assert k["ayah_index"] == ayet["ord"]
+        assert ayet["text"][k["char_start"] : k["char_end"]] == k["text_uthmani"]
+        assert k["norm"] == normalize_ar(k["text_uthmani"]) != ""
+        assert (k["source_id"], k["data_version"]) == (KAYNAK, ayet["data_version"])
+    assert {f"q:{k['surah']}:{k['ayah']}" for k in kelimeler} == set(ayetler)  # her ayette kelime
+
+
+def test_kelime_numaralari_ayet_icinde_1den_kesintisiz_araliklar_ortusmez(tmp_path: Path) -> None:
+    z = parca_zinciri(tmp_path)
+    klasor = anchor_klasoru(z, z.anchor().run_id)
+    gruplar: dict[str, list[dict[str, Any]]] = {}
+    for k in satirlar_dosya(klasor, "words.jsonl"):
+        gruplar.setdefault(f"q:{k['surah']}:{k['ayah']}", []).append(k)
+    for capa, grup in gruplar.items():
+        assert [k["word"] for k in grup] == list(range(1, len(grup) + 1)), capa
+        for onceki, sonraki in pairwise(grup):
+            assert onceki["char_end"] <= sonraki["char_start"], capa
+
+
+def test_gercek_parcada_besmele_oneki_atilir_sure_1_in_besmelesi_sayilir(tmp_path: Path) -> None:
+    """Parca gercek Tanzil metnidir: 2:1'in ilk dort belirteci kelime almaz, 1:1'inki alir."""
+    z = parca_zinciri(tmp_path)
+    klasor = anchor_klasoru(z, z.anchor().run_id)
+    ayetler = {s["anchor"]: s["text"] for s in satirlar(klasor)}
+    kelimeler = satirlar_dosya(klasor, "words.jsonl")
+
+    def ayet_kelimeleri(capa: str) -> list[dict[str, Any]]:
+        return [k for k in kelimeler if f"q:{k['surah']}:{k['ayah']}" == capa]
+
+    for capa, besmele_onekli in (("q:1:1", False), ("q:2:1", True), ("q:2:2", False)):
+        belirtecler = ayetler[capa].split(" ")
+        kelime_belirteci = [
+            b for b in belirtecler[4 if besmele_onekli else 0 :] if not durak_yalniz(b)
+        ]
+        grup = ayet_kelimeleri(capa)
+        assert [k["text_uthmani"] for k in grup] == kelime_belirteci, capa
+        if besmele_onekli:
+            assert grup[0]["char_start"] == len(" ".join(belirtecler[:4])) + 1
+        else:
+            assert grup[0]["char_start"] == 0 or durak_yalniz(belirtecler[0])
+
+
+def durak_yalniz(belirtec: str) -> bool:
+    return belirtec != "" and all(0x06D6 <= ord(h) <= 0x06ED for h in belirtec)
+
+
+def test_kelime_dosyasi_ikinci_calistirmada_ayni(tmp_path: Path) -> None:
+    z = parca_zinciri(tmp_path)
+    ilk = z.anchor(temiz_git=False)
+    ikinci = z.anchor(temiz_git=False)
+    assert (anchor_klasoru(z, ilk.run_id) / "words.jsonl").read_bytes() == (
+        anchor_klasoru(z, ikinci.run_id) / "words.jsonl"
+    ).read_bytes()
+    assert ikinci.sayilar["kelime"] == ilk.sayilar["kelime"] > PARCA_AYET
+
+
+def test_eski_bicim_anchor_calismasi_kelime_dosyasi_yoksa_atlanmaz(tmp_path: Path) -> None:
+    """A11.2 oncesi anchor calismasi `words.jsonl` listelemez: atlanmaz, yeniden uretilir."""
+    z = parca_zinciri(tmp_path)
+    ilk = z.anchor()
+    klasor = anchor_klasoru(z, ilk.run_id)
+    manifest = json.loads((klasor / "manifest.json").read_bytes())
+    manifest["ciktilar"] = [
+        c for c in manifest["ciktilar"] if not c["yol"].endswith("/words.jsonl")
+    ]
+    lineage.manifest_yaz(klasor, manifest)
+    sonuc = run_anchor(z.ctx("anchor", [KAYNAK], temiz_git=True))
+    assert sonuc.atlandi is False
+    assert sonuc.kelime_sayisi > 0
+
+
+def test_dry_run_kelime_dosyasi_yazmaz_ama_sayar(tmp_path: Path) -> None:
+    z = parca_zinciri(tmp_path)
+    once = sorted((z.veri_kok / "staged").rglob("*"))
+    sonuc = run_anchor(z.ctx("anchor", [KAYNAK], temiz_git=True, dry_run=True))
+    assert sonuc.kelime_sayisi > PARCA_AYET
+    assert sorted((z.veri_kok / "staged").rglob("*")) == once
+
+
+def anchor_birimi(capa: str, metin: str) -> dict[str, object]:
+    return {"anchor": capa, "text": metin, "ord": 8}
+
+
+def test_kelime_satirlari_besmele_icin_yetersiz_belirtec_girdi_hatasi() -> None:
+    with pytest.raises(GirdiHatasi) as hata:
+        kelime_satirlari([anchor_birimi("q:2:1", "Deneme bir iki")], "1.1")
+    assert "q:2:1" in str(hata.value)
+    assert "Deneme" not in str(hata.value)
+
+
+def test_kelime_satirlari_norm_bos_cikarsa_girdi_hatasi() -> None:
+    """Tatweel (U+0640) kelimedir (durak degil) ama normalize sonrasi bos kalir: hata."""
+    with pytest.raises(GirdiHatasi) as hata:
+        kelime_satirlari([anchor_birimi("q:3:2", BEH + " " + chr(0x0640))], "1.1")
+    assert "q:3:2:2" in str(hata.value)
+    assert "norm bos" in str(hata.value)
+
+
+def test_kelime_satirlari_gecersiz_anchor_satiri() -> None:
+    for birim in (
+        {"anchor": "q:2:255:3", "text": "a b", "ord": 1},  # ayet capasi degil
+        {"anchor": "q:3:2", "text": 5, "ord": 1},
+        {"anchor": "q:3:2", "text": "a b"},
+    ):
+        with pytest.raises(GirdiHatasi):
+            kelime_satirlari([birim], "1.1")
+
+
+def test_kelime_satirlari_durak_belirteci_atlanir_ve_metin_donusturulmez() -> None:
+    metin = f"{BEH}{FETHA}{SEDDE} {DURAK} {BEH}"
+    satir = kelime_satirlari([anchor_birimi("q:3:2", metin)], "1.1")
+    assert [(k["word"], k["text_uthmani"]) for k in satir] == [
+        (1, f"{BEH}{FETHA}{SEDDE}"),
+        (2, BEH),
+    ]
+    assert satir[0]["text_uthmani"] == metin[0:3]  # NFC degil dizi aynen
+    assert (satir[0]["char_start"], satir[0]["char_end"]) == (0, 3)
+    assert (satir[1]["char_start"], satir[1]["char_end"]) == (6, 7)

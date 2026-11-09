@@ -38,11 +38,11 @@ public class MigrationTests(EditorialDatabase<MigrationTests> fixture, PostgresF
     }
 
     [Fact]
-    public async Task The_icerik_schema_has_19_tables_and_the_kimlik_schema_7()
+    public async Task The_icerik_schema_has_20_tables_and_the_kimlik_schema_7()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
 
-        Assert.Equal(19L, await Db.ScalarAsync<long>(UserTables, ct, ("schema", "icerik")));
+        Assert.Equal(20L, await Db.ScalarAsync<long>(UserTables, ct, ("schema", "icerik")));
         Assert.Equal(7L, await Db.ScalarAsync<long>(UserTables, ct, ("schema", "kimlik")));
         Assert.Equal(1L, await Db.ScalarAsync<long>(
             "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'icerik' AND table_name = '__EFMigrationsHistory'", ct));
@@ -93,7 +93,7 @@ public class MigrationTests(EditorialDatabase<MigrationTests> fixture, PostgresF
             Assert.False(session.Context.Database.HasPendingModelChanges());
         }
 
-        Assert.Equal(19L, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "icerik")));
+        Assert.Equal(20L, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "icerik")));
         Assert.Equal(7L, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "kimlik")));
         Assert.Equal(await CatalogAsync(Db, ct), await CatalogAsync(fresh, ct));
     }
@@ -124,7 +124,7 @@ public class MigrationTests(EditorialDatabase<MigrationTests> fixture, PostgresF
             Assert.False(after.Context.Database.HasPendingModelChanges());
         }
 
-        Assert.Equal(19L, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "icerik")));
+        Assert.Equal(20L, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "icerik")));
         Assert.Equal(7L, await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "kimlik")));
         Assert.Equal(10L, await fresh.ScalarAsync<long>(EnumTypes, ct));
         Assert.Equal(await CatalogAsync(Db, ct), await CatalogAsync(fresh, ct));
@@ -139,7 +139,7 @@ public class MigrationTests(EditorialDatabase<MigrationTests> fixture, PostgresF
         string catalogBefore = await CatalogAsync(fresh, ct);
         long icerikTables = await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "icerik"));
         long kimlikTables = await fresh.ScalarAsync<long>(UserTables, ct, ("schema", "kimlik"));
-        Assert.Equal(19L, icerikTables);
+        Assert.Equal(20L, icerikTables);
         Assert.Equal(7L, kimlikTables);
 
         // Down: bos surume ("0") geri al.

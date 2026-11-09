@@ -19,6 +19,11 @@ Manifest ve parmak izi `run_ingest` tarafindandir: parmak izi (dosya adi ve ozet
 yapilandirma, git commit, arac surumleri) onceki basarili calistirmayla ayniysa adim atlanir;
 `--force` ve kirli calisma agaci atlamayi kapatir. Kilit denetimi atlansa da her kosuda yapilir.
 
+Ust veri (A11, K-39 guncellemesi 8 Kasim 2026): `tanzil.lock.json` `varyantlar` kumesinin
+yanina ayri bir `ust_veri` bolumu tasir (`url`, `surum`, `alinma_tarihi`, `boyut`, `sha256`);
+metin satiri ve bildirim blogu olmadigi icin `metin_sha256` ve `bildirim_sha256` yoktur. Alim
+`ingest/tanzil_ust_veri.py` icindedir (`--variant ust-veri`).
+
 Hata iletileri yalniz sayi, ozet (kisaltilmis), alan adi ve goreli yol tasir; dosya icerigi asla.
 """
 
@@ -54,6 +59,7 @@ SECENEKLER: Final = {
     "rub": False,
     "stanween": False,
 }
+UST_VERI: Final = "ust-veri"  # `--variant` degeri; metin varyanti degil, kilitte ayri bolum
 KILIT_YOLU: Final = Path(__file__).with_name("tanzil.lock.json")
 GELEN_KLASORU: Final = "gelen"
 GELEN_KAYNAK: Final = "tanzil"
@@ -76,6 +82,7 @@ KILIT_ALANLARI: Final = (
     "metin_sha256",
     "bildirim_sha256",
 )
+UST_VERI_KILIT_ALANLARI: Final = ("url", "surum", "alinma_tarihi", "boyut", "sha256")
 UYARI: Final = "Yeni Tanzil surumu kilit guncellenerek (/karar) alinir."
 
 
@@ -125,6 +132,27 @@ class KilitGirdisi:
             "sha256": self.sha256,
             "metin_sha256": self.metin_sha256,
             "bildirim_sha256": self.bildirim_sha256,
+        }
+
+
+@dataclass(frozen=True)
+class UstVeriKilidi:
+    """`tanzil.lock.json` icindeki `ust_veri` bolumu (K-39 guncellemesi, 8 Kasim 2026)."""
+
+    url: str  # dosyanin dogrudan adresi
+    surum: str  # XML kok ogesinin `version` degeri, or. "1.0"
+    alinma_tarihi: str  # YYYY-AA-GG
+    boyut: int
+    sha256: str  # butun dosya
+
+    def sozluk(self) -> dict[str, object]:
+        """Kilit dosyasindaki alan sirasiyla."""
+        return {
+            "url": self.url,
+            "surum": self.surum,
+            "alinma_tarihi": self.alinma_tarihi,
+            "boyut": self.boyut,
+            "sha256": self.sha256,
         }
 
 
@@ -182,8 +210,37 @@ def _kilit_girdisi(varyant: str, nesne: object) -> KilitGirdisi:
     )
 
 
-def kilit_coz(ham: bytes) -> dict[str, KilitGirdisi]:
-    """Kilit dosyasinin baytlarini kati bicimde cozer; bicim hatasi `GirdiHatasi`."""
+def _ust_veri_kilidi(nesne: object) -> UstVeriKilidi:
+    yer = "tanzil.lock.json ust_veri"
+    if not isinstance(nesne, dict):
+        raise GirdiHatasi(f"{yer}: nesne olmali")
+    eksik = [a for a in UST_VERI_KILIT_ALANLARI if a not in nesne]
+    if eksik:
+        raise GirdiHatasi(f"{yer}: alan eksik: {eksik[0]}")
+    fazla = sorted(str(a) for a in nesne if a not in UST_VERI_KILIT_ALANLARI)
+    if fazla:
+        raise GirdiHatasi(f"{yer}: bilinmeyen alan (sayi {len(fazla)})")
+    url, surum, tarih = nesne["url"], nesne["surum"], nesne["alinma_tarihi"]
+    boyut, ozet = nesne["boyut"], nesne["sha256"]
+    if not isinstance(url, str) or not url.startswith("https://"):
+        raise GirdiHatasi(f"{yer}: url https:// ile baslayan metin olmali")
+    if not isinstance(surum, str) or SURUM_DESENI.fullmatch(surum) is None:
+        raise GirdiHatasi(f"{yer}: surum sayilardan olusan metin olmali")
+    if not isinstance(tarih, str) or not tarih_gecerli(tarih):
+        raise GirdiHatasi(f"{yer}: alinma_tarihi YYYY-AA-GG olmali")
+    if type(boyut) is not int or boyut <= 0:
+        raise GirdiHatasi(f"{yer}: boyut pozitif tam sayi olmali")
+    if not isinstance(ozet, str) or OZET_DESENI.fullmatch(ozet) is None:
+        raise GirdiHatasi(f"{yer}: sha256 64 haneli kucuk harfli onaltilik olmali")
+    return UstVeriKilidi(url=url, surum=surum, alinma_tarihi=tarih, boyut=boyut, sha256=ozet)
+
+
+def kilit_coz_tam(ham: bytes) -> tuple[dict[str, KilitGirdisi], UstVeriKilidi | None]:
+    """Kilit dosyasinin baytlarini kati bicimde cozer: `(varyantlar, ust_veri)`.
+
+    Ust alanlar yalniz `varyantlar` (zorunlu) ve `ust_veri` (istege bagli) olabilir; baska ust
+    alan, BOM, CR, UTF-8 olmayan bayt ve yinelenen anahtar hatadir. Bicim hatasi `GirdiHatasi`.
+    """
     if ham.startswith(tanzil_bicim.BOM) or tanzil_bicim.CR in ham:
         raise GirdiHatasi("tanzil.lock.json: BOM ya da CR var (UTF-8 BOM'suz, LF olmali)")
     try:
@@ -194,12 +251,19 @@ def kilit_coz(ham: bytes) -> dict[str, KilitGirdisi]:
         veri = kati_json(metin)
     except GirdiHatasi as hata:
         raise GirdiHatasi(f"tanzil.lock.json: {hata}") from None
-    if not isinstance(veri, dict) or set(veri) != {"varyantlar"}:
-        raise GirdiHatasi("tanzil.lock.json: tek ust alan 'varyantlar' olmali")
+    if not isinstance(veri, dict) or set(veri) not in ({"varyantlar"}, {"varyantlar", "ust_veri"}):
+        raise GirdiHatasi("tanzil.lock.json: ust alanlar 'varyantlar' ve 'ust_veri' olmali")
     varyantlar = veri["varyantlar"]
     if not isinstance(varyantlar, dict) or set(varyantlar) != set(VARYANTLAR):
         raise GirdiHatasi(f"tanzil.lock.json: varyantlar {', '.join(VARYANTLAR)} olmali")
-    return {ad: _kilit_girdisi(ad, varyantlar[ad]) for ad in VARYANTLAR}
+    girdiler = {ad: _kilit_girdisi(ad, varyantlar[ad]) for ad in VARYANTLAR}
+    ust_veri = _ust_veri_kilidi(veri["ust_veri"]) if "ust_veri" in veri else None
+    return girdiler, ust_veri
+
+
+def kilit_coz(ham: bytes) -> dict[str, KilitGirdisi]:
+    """Metin varyantlarinin kilidi (`varyantlar`); `ust_veri` bolumu de kati denetlenir."""
+    return kilit_coz_tam(ham)[0]
 
 
 def kilit_yukle(yol: Path | None = None) -> dict[str, KilitGirdisi]:
@@ -212,9 +276,24 @@ def kilit_yukle(yol: Path | None = None) -> dict[str, KilitGirdisi]:
     return kilit_coz(ham)
 
 
-def kilit_metni(girdiler: dict[str, KilitGirdisi]) -> str:
-    """Kilit dosyasinin kanonik metni (iki varyant, alan sirasi sabit, ASCII, LF)."""
-    govde = {"varyantlar": {ad: girdiler[ad].sozluk() for ad in VARYANTLAR}}
+def ust_veri_kilidi_yukle(yol: Path | None = None) -> UstVeriKilidi:
+    """Kilit dosyasindaki `ust_veri` bolumu; bolum yoksa `GirdiHatasi`."""
+    hedef = yol if yol is not None else KILIT_YOLU
+    try:
+        ham = hedef.read_bytes()
+    except OSError:
+        raise GirdiHatasi("tanzil.lock.json okunamadi") from None
+    kilit = kilit_coz_tam(ham)[1]
+    if kilit is None:
+        raise GirdiHatasi("tanzil.lock.json: ust_veri bolumu yok")
+    return kilit
+
+
+def kilit_metni(girdiler: dict[str, KilitGirdisi], ust_veri: UstVeriKilidi | None = None) -> str:
+    """Kilit dosyasinin kanonik metni (varyantlar, varsa ust_veri; alan sirasi sabit, ASCII, LF)."""
+    govde: dict[str, object] = {"varyantlar": {ad: girdiler[ad].sozluk() for ad in VARYANTLAR}}
+    if ust_veri is not None:
+        govde["ust_veri"] = ust_veri.sozluk()
     return json.dumps(govde, ensure_ascii=True, indent=2) + "\n"
 
 

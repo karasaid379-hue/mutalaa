@@ -1,7 +1,7 @@
 # İçerik Paketleri
 
-> **Sürüm:** 1.4 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** K-21 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
+> **Sürüm:** 1.5 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** K-21 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
 
 İçerik cihaza sürümlü SQLite paketleri olarak iner. Yerelde SeaweedFS'in S3 API'si ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)), canlıda S3 uyumlu bir depo kullanılır; öneri Cloudflare R2'dir (depolama 0,015 $/GB-ay, veri çıkışı ücretsiz; [R2 fiyatlandırma](https://developers.cloudflare.com/r2/pricing)). Yayınlayıcı (`Mutalaa.Publisher`) editoryal veritabanından her derleme türü için ayrı paketler ve ayrı, imzalı bir manifest üretir ([Editoryal veritabanı](./02-editoryal-veritabani.md); [Yayın süreci](../07-yayin/01-yayin-sureci.md)).
 
@@ -134,9 +134,15 @@ CREATE TABLE page_map (
 );
 CREATE INDEX page_map_page  ON page_map(layout, volume, page, line);
 CREATE INDEX page_map_start ON page_map(start_anchor);
+CREATE TABLE quran_marker (                  -- cüz, hizb, çeyrek ve secde işaretleri (K-43 madde 2)
+  kind TEXT, no INTEGER, anchor TEXT, secde_turu TEXT,
+  PRIMARY KEY (kind, no)
+) WITHOUT ROWID;
 CREATE TABLE sure (no INTEGER PRIMARY KEY, name TEXT NOT NULL, name_ar TEXT NOT NULL,
                    ayah_count INTEGER NOT NULL, variants TEXT NOT NULL);
 ```
+
+- `quran_marker.kind`: `cuz` (30), `hizb` (60; her dördüncü çeyrek), `rub` (240 çeyrek), `secde` (15). `anchor` başlangıç âyetinin çapasıdır (`q:{s}:{a}`; `secde` için secde âyeti); `secde_turu` yalnız `secde` satırında dolu olur (`recommended` ya da `obligatory`, Tanzil'in etiketi; fıkhî hüküm olarak gösterilmez). Menzil ve rükû v1'de paketlenmez. Editoryal tablo `source_id` ve `data_version` sütunlarını da taşır; pakette yoktur ([Editoryal veritabanı](./02-editoryal-veritabani.md) §5). Değerler yalnız Tanzil üst veri dosyasından gelir.
 
 ### 3.3 `kelime-kok`
 
@@ -298,7 +304,7 @@ Derleme türleri EAS profillerine şöyle bağlanır: `dev` → `development`, `
 - `xref_idx` satırları bağlantı modelinin yayın kuralıyla süzülür (P-07; [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) §8): `red` satır hiçbir pakete girmez; insan onayı isteyen türün (`atif`, `iktibas`, `ima`, `konu`) `aday` satırı yalnız `dev` ve `internal` derlemeye `approved = 0` ile girer; otomatik türler (`kok`, `lemma`, `benzer_ayet`, `anlamsal`) `confidence ≥ 0,50` ile her derlemeye girer.
 - Yalnız `metin_durumu = onayli` birimler `public`'e girer (P-10). Onaysız yapay zekâ taslağı `public`'e girmez, iç derlemelere "doğrulanmamış" işaretiyle girer (P-08). `quran_word_fix`, `tr_root_index` ve `tr_form` satırlarından yalnız onaylılar uygulanır (P-09).
 - QAC kaynaklı satırlar (`kelime-kok` paketi ve metin paketlerindeki `tr_root_index`) bütün derlemelerde yer alır; `kelime-kok` boyutu yüzünden ayrı ve isteğe bağlı pakettir. `public` derlemede yalnız onaylı kelime anlamları bulunur (bölüm 3.3).
-- `core` sayfa eşlemesi: Medine 604 sayfa başlangıçları Tanzil üst veri dosyasında (`quran-data.xml`, A11), kelime düzeyindeki sayfa sınırları ve satır düzeni QPC/QUL düzen verisinde (`medine-604-duzen`, A26) bulunur. Hangi kaynağın `core`'a gireceği A11'de veriyle Doğrulanacak. Mod C ve 604 sayfalık hatim bu eşlemeye bağlıdır.
+- `core` sayfa eşlemesi: Medine 604 sayfa başlangıçları Tanzil üst veri dosyasındadır (`quran-data.xml` `pages` grubu, kaynak kimliği `tanzil-ust-veri`); A11 bunları `page_map` satırı olarak yükler (sayfa başına tek satır, `line` boş, başlangıç ve bitiş kelime çapasıdır). QPC1 düzeni (`medine-604-duzen`) yalnız doğrulayıcıdır ve `source` satırı yazılmaz; QPC1 ile 604 sayfanın başlangıç âyeti aynıdır. Yayınlayıcı `source_id = 'tanzil-ust-veri'` satırları pakette `layout = 'medine-604'` olarak yazar (K-43 madde 3). Satır düzeni ve glifler Mod A'ya aittir (`medine-604-duzen` QPC1, A26). *Çözüldü (2026-11-09):* hangi kaynağın `core`'a gireceği sorusu bu kararla kapandı ([Kaynaklar](../04-icerik/01-kaynaklar.md) §3.1). Mod C ve 604 sayfalık hatim bu eşlemeye bağlıdır.
 - `risale-{kitap}` ve `risale-dizin` paketleri her derlemede bulunur ve onaysız birimler `public`'e girmez (P-10). `risale-dizin` içindeki arama indeksi kitap metninden türer; bağlantılar ve sayfa eşlemeleri kitap metninden ayrı, kaynak kaydı olan bir dizin verisidir (`risale-atif-dizini`; P-01, P-07).
 - `dev` ve `internal` paketleri herkese açık bir adresten indirilemez. `dev` paketleri yerel SeaweedFS deposundadır; `internal` için özel depo ve süreli imzalı URL kullanılır (yöntem Açık soru).
 

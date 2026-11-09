@@ -2,9 +2,16 @@
 # Local nightly run on the REAL Tanzil data (the CI workflow .github/workflows/nightly.yml only
 # runs the fixture tests; data/ is not in git). Steps, in order, stopping at the first failure:
 #   sources check -> ingest (both variants) -> normalize -> anchor -> qa run
-#   -> [export pg --dry-run, export pg] -> export test-vectors --tanzil-ornekleri --check
+#   -> [export pg --dry-run, export pg]
+#   -> structure data (A11): ingest ust-veri -> anchor -> qa run -> [export pg --dry-run, export pg]
+#   -> surah name candidates (A11.3): ingest sure-adlari -> anchor -> qa run -> [export pg]
+#   -> export test-vectors --tanzil-ornekleri --check
 #   -> pytest -m degismezlik with MUTALAA_DEGISMEZLIK_ZORUNLU=1 (a missing file is a failure).
-# Requires the files under data/gelen/tanzil/<YYYY-AA-GG>/ (stage A10.0). Nothing is downloaded.
+# Requires the files under data/gelen/tanzil/<YYYY-AA-GG>/ (stage A10.0) and
+# data/gelen/tanzil-ust-veri/<YYYY-AA-GG>/ (stage A11.0). Nothing is downloaded.
+# The surah name chain also needs data/gelen/sure-adlari-vikipedi and data/gelen/quran-meta.
+# The structure chain also reads data/gelen/medine-604-duzen and data/gelen/quran-meta when
+# present (QA verification inputs; the measurements are reported as skipped when absent).
 # The exit code of the failing step is returned (0 ok, 1 QA gate or test failed, 2 input error).
 #
 # -ExportPg   also loads the units into PostgreSQL (the connection string comes from the
@@ -34,6 +41,18 @@ if (-not (Test-Path "data/gelen/tanzil" -PathType Container)) {
     exit 2
 }
 
+foreach ($gelen in @("sure-adlari-vikipedi", "quran-meta")) {
+    if (-not (Test-Path "data/gelen/$gelen" -PathType Container)) {
+        [Console]::Error.WriteLine("data/gelen/$gelen is missing: download it first (A11.0)")
+        exit 2
+    }
+}
+
+if (-not (Test-Path "data/gelen/tanzil-ust-veri" -PathType Container)) {
+    [Console]::Error.WriteLine("data/gelen/tanzil-ust-veri is missing: download quran-data.xml first (A11.0)")
+    exit 2
+}
+
 Invoke-Step "sources check" @("mutalaa", "sources", "check")
 Invoke-Step "ingest uthmani" @("mutalaa", "ingest", "tanzil", "--variant", "uthmani")
 Invoke-Step "ingest simple-clean" @("mutalaa", "ingest", "tanzil", "--variant", "simple-clean")
@@ -43,6 +62,20 @@ Invoke-Step "qa run" @("mutalaa", "qa", "run", "--source", "tanzil-uthmani")
 if ($ExportPg) {
     Invoke-Step "export pg (dry run)" @("mutalaa", "export", "pg", "--source", "tanzil-uthmani", "--dry-run")
     Invoke-Step "export pg" @("mutalaa", "export", "pg", "--source", "tanzil-uthmani")
+}
+Invoke-Step "ingest ust-veri" @("mutalaa", "ingest", "tanzil", "--variant", "ust-veri")
+Invoke-Step "anchor ust-veri" @("mutalaa", "anchor", "--source", "tanzil-ust-veri")
+Invoke-Step "qa run ust-veri" @("mutalaa", "qa", "run", "--source", "tanzil-ust-veri")
+if ($ExportPg) {
+    Invoke-Step "export pg ust-veri (dry run)" @("mutalaa", "export", "pg", "--source", "tanzil-ust-veri", "--dry-run")
+    Invoke-Step "export pg ust-veri" @("mutalaa", "export", "pg", "--source", "tanzil-ust-veri")
+}
+Invoke-Step "ingest sure-adlari" @("mutalaa", "ingest", "sure-adlari")
+Invoke-Step "anchor sure-adlari" @("mutalaa", "anchor", "--source", "sure-adlari-vikipedi")
+Invoke-Step "qa run sure-adlari" @("mutalaa", "qa", "run", "--source", "sure-adlari-vikipedi")
+if ($ExportPg) {
+    Invoke-Step "export pg sure-adlari (dry run)" @("mutalaa", "export", "pg", "--source", "sure-adlari-vikipedi", "--dry-run")
+    Invoke-Step "export pg sure-adlari" @("mutalaa", "export", "pg", "--source", "sure-adlari-vikipedi")
 }
 Invoke-Step "test vectors check" @("mutalaa", "export", "test-vectors", "--tanzil-ornekleri", "--check")
 

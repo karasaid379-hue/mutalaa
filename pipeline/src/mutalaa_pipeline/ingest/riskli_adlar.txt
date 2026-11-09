@@ -1,0 +1,25 @@
+# Riskli sure adlari (Iktibas tespiti 2): ortak kelime ya da ozel isim olan adlar.
+# Kaynak: docs/05-capraz-referans/02-iktibas-tespiti.md 2 'Riskli adlar'; belgeden aktarilmistir.
+# Her satir bir ad; ad alias_key ile bir sureye eslenir (testle dogrulanir).
+Nûr
+Fecr
+Asr
+Leyl
+Şems
+Kamer
+Hac
+Kalem
+Nahl
+Neml
+Fil
+Tîn
+Rûm
+Kadr
+Nasr
+Yûnus
+Hûd
+Yûsuf
+İbrâhîm
+Meryem
+Muhammed
+Nûh

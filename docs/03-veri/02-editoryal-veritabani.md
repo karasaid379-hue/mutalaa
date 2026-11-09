@@ -1,7 +1,7 @@
 # Editoryal Veritabanı
 
-> **Sürüm:** 1.7 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) · K-12 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
+> **Sürüm:** 1.9 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) · K-12 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
 
 Editoryal veritabanı içeriğin tek doğruluk kaynağıdır. Python içerik hattı yazar, editör paneli onaylar, .NET yayınlayıcı okuyup SQLite paketlerini üretir. Mobil uygulama bu veritabanına bağlanmaz. Seçim PostgreSQL 18'dir; Türkçe ve Arapça tam metin yapılandırmaları hazırdır, anlamsal katman için pgvector eklenir (K-11). Geliştirme yerel Docker Compose'ta `postgres:18` ile çalışır ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)). Bu dosya diğer belgelerin önerdiği tabloları da kesin DDL olarak toplar (bölüm 11).
 
@@ -227,8 +227,22 @@ CREATE TABLE quran_word_fix (
   created_at  timestamptz NOT NULL DEFAULT now(),
   UNIQUE (anchor, field)
 );
+
+CREATE TABLE quran_marker (                        -- cüz, hizb, çeyrek ve secde işaretleri (K-43)
+  kind          text NOT NULL CHECK (kind IN ('cuz','hizb','rub','secde')),
+  no            smallint NOT NULL,                 -- tür içinde 1'den kesintisiz sıra
+  anchor        text COLLATE "C" NOT NULL,         -- başlangıç âyeti 'q:2:142'; secde için secde âyeti
+  secde_turu    text CHECK (secde_turu IN ('recommended','obligatory')),  -- Tanzil etiketi; yalnız secde satırında dolu
+  source_id     text NOT NULL REFERENCES source(slug),  -- tanzil-ust-veri
+  data_version  text NOT NULL,
+  PRIMARY KEY (kind, no),
+  CHECK ((kind = 'secde') = (secde_turu IS NOT NULL))
+);
+CREATE INDEX quran_marker_anchor ON quran_marker (anchor);
 ```
 
+- `quran_marker` Tanzil üst veri dosyasındaki cüz (30), hizb çeyreği (240, `rub`), hizb (her dördüncü çeyrek, 60) ve secde (15) kayıtlarını taşır; menzil ve rükû yüklenmez. Değerler yalnız kaynak dosyadan gelir, `review` açılmaz ve hat satır silmez ([K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)). `core` paketinde aynı adlı tablo vardır ([İçerik paketleri](./03-icerik-paketleri.md) §3.2).
+- `quran_word.word` QAC ve QPC1 konumudur; Tanzil bölmesi bu konuma dört âyetlik birleştirme listesiyle eşitlenir, eşleme tablosu yoktur (K-43 madde 1). Hat `quran_word`'ün QAC sütunlarına (`root_id`, `lemma_id`, `pos`, `features`, `morph_source`) yazmaz; Tanzil sütunlarını upsert eder.
 - QAC 77.429 kelimeyi yaklaşık %99 doğrulukla etiketler ve veri hâlâ düzeltilmektedir ([QAC SSS](https://corpus.quran.com/faq.jsp)). Kelime bölme, metin ve ofsetler Tanzil'den türetilir (`source_id`); kök, lemma ve sözcük türü QAC'den gelir (`morph_source`). Bu ayrım paket bölünmesini taşır: QAC kaynaklı veri `core` paketine girmez, `kelime-kok` paketine girer ([İçerik paketleri](./03-icerik-paketleri.md) §1).
 - Yayınlayıcı QAC tabanını okur ve yalnız `status = 'onayli'` düzeltmeleri üstüne uygular; künye "QAC v0.4 + Mütâlaa düzeltmeleri (N adet)" yazar ([Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)).
 - Türkçe anlam alanları [Kelime anlamları](../04-icerik/06-kelime-anlamlari.md) kılavuzundaki adları aynen taşır: `anlam_kisa`, `kuran_anlamlari`, `turkce_es_kelime`, `yalnizca_etimolojik`, `editor_notu`; kökün temel anlamı `root.kok_anlami` sütunundadır. İş yükü farklı lemma sayısına bağlıdır (K-19).
@@ -262,7 +276,7 @@ CREATE INDEX tr_form_wide ON tr_form (key_wide);
 CREATE TABLE surah_alias (
   surah_no   smallint NOT NULL CHECK (surah_no BETWEEN 1 AND 114),
   alias      text NOT NULL,                        -- görüldüğü gibi: 'Âl-i İmrân'
-  alias_key  text NOT NULL,                        -- geniş anahtar: 'al i imran'
+  alias_key  text NOT NULL,                        -- Türkçe: A05 geniş anahtarı 'al i imran'; Arapça: A05 normalize_ar
   kind       text NOT NULL CHECK (kind IN ('kanonik','yazim','arapca','diger_ad')),
   risky      boolean NOT NULL DEFAULT false,       -- Nûr, Fecr gibi ortak kelime olan adlar
   status     xref_status NOT NULL DEFAULT 'aday',
@@ -321,7 +335,7 @@ CREATE TABLE review (
   hedef_anahtar    text NOT NULL,                  -- çapa, lemma id, kaynak id …
   xref_id          uuid REFERENCES xref(id),       -- bağlantı incelemesinde dolu
   alan             text NOT NULL,                  -- 'metin', 'anlam_kisa', 'status', …
-  eylem            text NOT NULL,                  -- 'onayla' | 'duzenle_onayla' | 'reddet' | 'uzmana_gonder' | 'etimolojik_isaretle'
+  eylem            text NOT NULL,                  -- 'oner' (hat adayı) | 'onayla' | 'duzenle_onayla' | 'reddet' | 'uzmana_gonder' | 'etimolojik_isaretle'
   onceki           jsonb,
   onerilen         jsonb,
   durum            inceleme_durumu NOT NULL DEFAULT 'acik',
@@ -358,6 +372,7 @@ stateDiagram-v2
 ```
 
 - Hat onaylı alanlara yazmaz. İstisna, kanonik kaynak Tanzil'dir ([K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit) madde 2): Tanzil birimleri `onayli` girer ve hat bu satırlarda yalnız türetilmiş sütunları günceller (`ar_norm`, `tr_*`, `provenance`, `data_version`, `ord`, `ayah_range`, `run_id`, `updated_at`). `metin`, `content_hash`, `metin_durumu`, `status`, `successors`, `rev`, `marks` ve `source_id` sütunlarına hiç yazılmaz; Tanzil satırı için `review` açılmaz. Adayları yazar (`xref.status = 'aday'`, `lemma_gloss.status = 'aday'`, `unit.metin_durumu = 'taslak'`) ve her aday için `review` satırı açar. Yeni çalışmada üretilmeyen `aday` bağlantı silinir; `onayli` bağlantı silinmez, yeniden doğrulama için kuyruğa düşer (bağlantı modeli).
+- Sure adı adayları (`surah_alias`, `status = 'aday'`) için hat satır başına bir `review` açar ([K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları) madde 4): `hedef_tablo = 'surah_alias'`, `hedef_anahtar = '{surah_no}:{alias}'` (ilk `:` ile bölünür), `alan = 'status'`, `eylem = 'oner'`, `koken = 'hat'`, `oneren = 'hat'`, `onceki` boş. `onerilen` jsonb alanı `kind`, `alias`, `risky`, `kaynaklar` (dosya ve satır), `anlam` (yalnız kanonik satırda), `tanzil_fark` (yalnız kanonik satırda ve yalnız Vikipedi listesinin âyet sayısı, iniş yeri ya da iniş sırası Tanzil'den farklıysa; editör kuyruğunda işaretlidir) ve aynı anahtarı veren öteki yazımları (`yazimlar`) taşır; `surah_alias` kaynak ya da anlam sütunu taşımaz. Hat `surah_alias` için yalnız ekler: `(surah_no, alias)` anahtarı varsa satıra (aday, onaylı ya da red) ve aynı hedef için var olan `review` satırına dokunmaz; hesaplanan `alias_key`, `kind` ya da `risky` var olan satırdan farklıysa satır değişmez, sayaçta uyarı olarak raporlanır (yeni öneri için editör eski adayı reddeder ya da siler). Hiçbir satırı silmez. `alias_key` Türkçe adaylarda A05 geniş anahtarı, Arapça adaylarda A05 `normalize_ar` işlevidir (geniş anahtar Arapça için boş döner); kesme işaretiyle ilgili açık nokta: [BÇ-44](../10-claude-code/07-belge-celiskileri.md). Tanzil üst veri dosyasından gelen yapı verisi (`quran_marker`, `page_map`, `quran_word` Tanzil sütunları) için `review` açılmaz.
 - Onay `onerilen` değerini hedefe aynı işlemde uygular; kendi `status` alanı olan tablolarda onay `onayli`, ret `red` yazar. Kelime anlamı incelemesi gerçek sütun adlarını kullanır: `hedef_tablo = 'lemma_gloss'`, `alan = 'anlam_kisa'` ([Backend API](../02-mimari/05-backend-api.md) §4.1 kuyruk tablosuyla aynı). Kur'an metni için metin incelemesi açılmaz.
 - İkinci onay gereken alanlar: meal ve tefsir metni ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) madde 4). İlk onay `inceleyen` alanını doldurur ve kayıt `acik` kalır; farklı bir editörün onayı değeri uygular ve `ikinci_inceleyen` alanını doldurur ([Backend API](../02-mimari/05-backend-api.md) §4.1).
 - Yapay zekâ taslakları `yz_modeli` ve `yz_kaydi` taşır ve onaylanana kadar "doğrulanmamış" rozetiyle görünür ([K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)). G-YZ kaydının ([İçerik hattı](../04-icerik/02-icerik-hatti.md) §9–§10) alanları şöyle eşlenir ([K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları)):
@@ -415,7 +430,7 @@ CREATE TABLE audio_timing (
 );
 ```
 
-- `page_map` satırının anlamı kaynağa göre değişir: Mod A'da satır, Mod B ve C'de sayfa, basılı baskıda sayfa başlangıcı. `sure_adi` ve `besmele` satırlarında çapa olarak surenin ilk âyeti yazılır. `glyphs` Mod A paketindeki `glyph_word` tablosunun kaynağıdır ([Mobil mimari](../06-mobil/01-mobil-mimari.md)). Düzen verisinin kaynağı A26.0 tedarik adımında sabitlenir (`medine-604-duzen`, ED-5).
+- `page_map` satırının anlamı kaynağa göre değişir: Mod A'da satır, Mod B ve C'de sayfa, basılı baskıda sayfa başlangıcı. `sure_adi` ve `besmele` satırlarında çapa olarak surenin ilk âyeti yazılır. `glyphs` Mod A paketindeki `glyph_word` tablosunun kaynağıdır ([Mobil mimari](../06-mobil/01-mobil-mimari.md)). Düzen verisinin kaynağı A26.0 tedarik adımında sabitlenir (`medine-604-duzen`, ED-5). Medine 604 sayfa düzeyi (A11) `source_id = 'tanzil-ust-veri'` ile yazılır: sayfa başına tek satır, `volume` ve `line` boş, `start_anchor` ve `end_anchor` kelime çapası, `centered = false`, `glyphs` boş; hat bu satırları upsert eder, `review` açmaz, silmez ve değişmiş ya da yetim satırda işlemi geri alır ([K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları) madde 3). Pakette `layout` sütunu vardır; Yayınlayıcı bu `source_id` için `layout = 'medine-604'` yazar.
 - Basılı baskıda `source_id` şöyle seçilir. Tek baskıdan kendi aktarımımızı yaptığımız kaynakta (Elmalılı, Tecrîd) `source_id` birimin kaynağıdır (`elmalili-meal`, `elmalili-tefsir`, `tecrid-naim` …); baskı kimliği (ör. `elmalili-1935`) o kaynağın `baski_bilgisi` alanındadır ve cilt `volume` sütunundadır. Birden çok baskısı eşlenen eserde (Risale) her baskı `tur = 'baski'` olan ayrı bir kaynaktır ve `source_id` odur (bölüm 3).
 - `ayah_box` koordinatları görsel piksel uzayındadır. Yaklaşım Quran for Android'den alınmıştır, onun veri biçimi doğrulanmadı.
 - **K-41 sonrası (A27.2 göçü).** Ses artık okuyucunun kaydına ait 114 sure dosyasıdır ([K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)). Aynı zamanlama kaynağı (QUD) birden çok kayda hizmet ettiği için `audio_timing` kayda bağlanır: kayıt kimliği sütunu eklenir ve birincil anahtar kayıt ile çapaya taşınır; `file` `'002.mp3'` biçimindedir, `file_sha256` aynadaki dosyanın özetidir, `words` QUD kelime satırlarıdır (`[kelime_no (1 tabanlı), start_ms, end_ms]`). Kayıtlar ve sure dosyaları (bayt, sha256, süre, `dosya_surumu`) için yeni tablolar eklenir. Tablo ve sütun adları, DDL ve EF göçü A27.2'de (`sunucu-gelistirici`, `ef-goc`) karara bağlanır ve bu bölüme yazılır; o zamana kadar yukarıdaki DDL A07 şemasıdır.

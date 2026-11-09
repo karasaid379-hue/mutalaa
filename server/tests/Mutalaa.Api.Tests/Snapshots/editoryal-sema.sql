@@ -337,6 +337,23 @@ CREATE TABLE icerik.pipeline_run (
 
 
 --
+-- Name: quran_marker; Type: TABLE; Schema: icerik; Owner: -
+--
+
+CREATE TABLE icerik.quran_marker (
+    kind text NOT NULL,
+    no smallint NOT NULL,
+    anchor text NOT NULL COLLATE pg_catalog."C",
+    secde_turu text,
+    source_id text NOT NULL,
+    data_version text NOT NULL,
+    CONSTRAINT quran_marker_check CHECK (((kind = 'secde'::text) = (secde_turu IS NOT NULL))),
+    CONSTRAINT quran_marker_kind_check CHECK ((kind = ANY (ARRAY['cuz'::text, 'hizb'::text, 'rub'::text, 'secde'::text]))),
+    CONSTRAINT quran_marker_secde_turu_check CHECK ((secde_turu = ANY (ARRAY['recommended'::text, 'obligatory'::text])))
+);
+
+
+--
 -- Name: quran_word; Type: TABLE; Schema: icerik; Owner: -
 --
 
@@ -812,6 +829,14 @@ ALTER TABLE ONLY icerik."__EFMigrationsHistory"
 
 
 --
+-- Name: quran_marker quran_marker_pkey; Type: CONSTRAINT; Schema: icerik; Owner: -
+--
+
+ALTER TABLE ONLY icerik.quran_marker
+    ADD CONSTRAINT quran_marker_pkey PRIMARY KEY (kind, no);
+
+
+--
 -- Name: quran_word_fix quran_word_fix_pkey; Type: CONSTRAINT; Schema: icerik; Owner: -
 --
 
@@ -975,6 +1000,13 @@ CREATE UNIQUE INDEX page_map_source_id_volume_page_line_key ON icerik.page_map U
 --
 
 CREATE INDEX page_map_start ON icerik.page_map USING btree (start_anchor);
+
+
+--
+-- Name: quran_marker_anchor; Type: INDEX; Schema: icerik; Owner: -
+--
+
+CREATE INDEX quran_marker_anchor ON icerik.quran_marker USING btree (anchor);
 
 
 --
@@ -1220,6 +1252,14 @@ ALTER TABLE ONLY icerik.lemma
 
 ALTER TABLE ONLY icerik.page_map
     ADD CONSTRAINT page_map_source_id_fkey FOREIGN KEY (source_id) REFERENCES icerik.source(slug);
+
+
+--
+-- Name: quran_marker quran_marker_source_id_fkey; Type: FK CONSTRAINT; Schema: icerik; Owner: -
+--
+
+ALTER TABLE ONLY icerik.quran_marker
+    ADD CONSTRAINT quran_marker_source_id_fkey FOREIGN KEY (source_id) REFERENCES icerik.source(slug);
 
 
 --

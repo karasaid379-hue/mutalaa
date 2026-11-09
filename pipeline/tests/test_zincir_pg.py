@@ -176,3 +176,192 @@ def test_dry_run_veritabanina_hicbir_sey_yazmaz(z: Zincir, conn: psycopg.Connect
         say(conn, "SELECT count(*) FROM icerik.source WHERE slug = ANY(%s)", [*TANZIL_KAYNAKLARI])
         == 0
     )
+
+
+# --- quran_word (A11.2, K-43 madde 3) ----------------------------------------------------------
+
+QAC_SUTUNLARI = ("root_id", "lemma_id", "pos", "features", "morph_source")
+TANZIL_SUTUNLARI = (
+    "surah",
+    "ayah",
+    "word",
+    "ayah_index",
+    "text_uthmani",
+    "norm",
+    "char_start",
+    "char_end",
+    "source_id",
+    "data_version",
+)
+
+
+def kelime_dosyasi(z: Zincir) -> list[dict[str, object]]:
+    """Son anchor calismasinin `words.jsonl` satirlari (staged'den okunur)."""
+    son = lineage.son_basarili(z.veri_kok / "staged" / KAYNAK, "anchor")
+    assert son is not None
+    satirlar = (son[1] / "words.jsonl").read_bytes().splitlines()
+    return [json.loads(s) for s in satirlar]
+
+
+def kelime_say(conn: psycopg.Connection) -> int:
+    return say(conn, "SELECT count(*) FROM icerik.quran_word WHERE source_id = %s", KAYNAK)
+
+
+def export_hatasi(z: Zincir) -> int:
+    """Baglanti acilmadan biten (dosya onkosulu) export pg cikis kodu."""
+
+    def baglanti() -> psycopg.Connection:
+        raise AssertionError("baglanti acilmamali")
+
+    return pg.komut_export_pg(ayarlar_kur(z.tmp), depo_kok=z.kok, source=KAYNAK, baglanti=baglanti)
+
+
+@pytest.mark.veritabani
+def test_kelimeler_ilk_yuklemede_yazilir_ikinci_kosu_sifir_degisiklik(
+    z: Zincir, conn: psycopg.Connection
+) -> None:
+    beklenen = kelime_dosyasi(z)
+    assert beklenen
+    assert yukle(z, conn) == 0
+    ilk = son_sayilar(z)
+    assert ilk["kelime_staging"] == ilk["kelime_eklenen"] == len(beklenen)
+    assert ilk["kelime_degismeyen"] == 0
+    assert kelime_say(conn) == len(beklenen)
+    # Her ayetin en az bir kelimesi var (6.236 ayet) ve QAC sutunlari bos.
+    assert say(conn, "SELECT count(DISTINCT ayah_index) FROM icerik.quran_word") == 6236
+    qac = " OR ".join(f"{s} IS NOT NULL" for s in QAC_SUTUNLARI)
+    assert say(conn, f"SELECT count(*) FROM icerik.quran_word WHERE {qac}") == 0  # type: ignore[arg-type]
+    assert say(conn, "SELECT count(root_id) FROM icerik.quran_word") == 0
+
+    once = conn.execute("SELECT * FROM icerik.quran_word ORDER BY anchor").fetchall()
+    assert yukle(z, conn) == 0  # ikinci kosu: hicbir satir degismez
+    ikinci = son_sayilar(z)
+    assert (ikinci["kelime_eklenen"], ikinci["kelime_degismeyen"]) == (0, len(beklenen))
+    assert conn.execute("SELECT * FROM icerik.quran_word ORDER BY anchor").fetchall() == once
+
+
+@pytest.mark.veritabani
+def test_yuklenen_kelime_satiri_staged_satirla_ve_ayet_metniyle_ayni(
+    z: Zincir, conn: psycopg.Connection
+) -> None:
+    assert yukle(z, conn) == 0
+    satirlar = kelime_dosyasi(z)
+    for k in satirlar[:: max(1, len(satirlar) // 200)]:  # seyrek orneklem: ~200 kelime
+        db = conn.execute(
+            "SELECT " + ", ".join(TANZIL_SUTUNLARI) + " FROM icerik.quran_word WHERE anchor = %s",  # type: ignore[arg-type]
+            (k["anchor"],),
+        ).fetchone()
+        assert db == tuple(k[a] for a in TANZIL_SUTUNLARI)
+    # text_uthmani birimin metninin dilimidir (bayt bayt; NFC olmayan sentetik metin dahil).
+    farkli = say(
+        conn,
+        "SELECT count(*) FROM icerik.quran_word w JOIN icerik.unit u ON u.ord = w.ayah_index"
+        " WHERE substr(u.metin, w.char_start + 1, w.char_end - w.char_start) <> w.text_uthmani",
+    )
+    assert farkli == 0
+    assert say(conn, "SELECT count(*) FROM icerik.quran_word WHERE norm = ''") == 0
+
+
+@pytest.mark.veritabani
+def test_degismis_kelime_satiri_cikis_1_ve_geri_alinir(z: Zincir, conn: psycopg.Connection) -> None:
+    assert yukle(z, conn) == 0
+    toplam = kelime_say(conn)
+    conn.execute("UPDATE icerik.quran_word SET norm = 'Deneme' WHERE anchor = 'q:2:255:1'")
+    conn.execute("DELETE FROM icerik.quran_word WHERE anchor = 'q:2:255:2'")
+    assert yukle(z, conn) == 1
+    # Eksik satir yeniden eklenmedi (islem geri alindi), degisen satir duzeltilmedi.
+    assert kelime_say(conn) == toplam - 1
+    norm = conn.execute("SELECT norm FROM icerik.quran_word WHERE anchor = 'q:2:255:1'")
+    assert norm.fetchone() == ("Deneme",)
+
+
+@pytest.mark.veritabani
+@pytest.mark.parametrize(
+    "degisim",
+    [
+        "surah = 3",
+        "ayah = ayah + 1000",
+        "ayah_index = 1",
+        "text_uthmani = 'Deneme'",
+        "char_start = char_start + 1",
+        "char_end = char_end + 1",
+        "data_version = 'tanzil-uthmani@0.9'",
+    ],
+)
+def test_her_tanzil_sutunu_degisince_cikis_1(
+    z: Zincir, conn: psycopg.Connection, degisim: str
+) -> None:
+    assert yukle(z, conn) == 0
+    conn.execute(f"UPDATE icerik.quran_word SET {degisim} WHERE anchor = 'q:2:255:1'")  # type: ignore[arg-type]
+    assert yukle(z, conn) == 1
+
+
+@pytest.mark.veritabani
+def test_veritabaninda_olup_staged_de_olmayan_kelime_cikis_1_ve_silinmez(
+    z: Zincir, conn: psycopg.Connection
+) -> None:
+    assert yukle(z, conn) == 0
+    toplam = kelime_say(conn)
+    conn.execute(
+        "INSERT INTO icerik.quran_word (anchor, surah, ayah, word, ayah_index, text_uthmani, norm,"
+        " char_start, char_end, source_id, data_version)"
+        " VALUES ('q:1:1:99', 1, 1, 99, 1, 'Deneme', 'deneme', 0, 6, %s, 'tanzil-uthmani@1.1')",
+        (KAYNAK,),
+    )
+    assert yukle(z, conn) == 1
+    assert kelime_say(conn) == toplam + 1  # fazladan satir silinmedi
+
+
+@pytest.mark.veritabani
+def test_qac_sutunlarina_dokunulmaz(z: Zincir, conn: psycopg.Connection) -> None:
+    assert yukle(z, conn) == 0
+    conn.execute(
+        "UPDATE icerik.quran_word SET pos = 'DENEME', features = '[1]'::jsonb"
+        " WHERE anchor = 'q:2:255:1'"
+    )
+    assert yukle(z, conn) == 0
+    kayit = conn.execute(
+        "SELECT pos, features::text FROM icerik.quran_word WHERE anchor = 'q:2:255:1'"
+    ).fetchone()
+    assert kayit == ("DENEME", "[1]")
+    assert say(conn, "SELECT count(pos) FROM icerik.quran_word") == 1
+
+
+@pytest.mark.veritabani
+def test_dry_run_kelime_yazmaz(z: Zincir, conn: psycopg.Connection) -> None:
+    assert yukle(z, conn, dry_run=True) == 0
+    rapor = son_sayilar(z)
+    assert rapor["kelime_eklenen"] == len(kelime_dosyasi(z))  # yazilsaydi
+    assert kelime_say(conn) == 0
+
+
+def test_yukleme_sozlesmesi_yalniz_tanzil_sutunlarini_adlandirir() -> None:
+    """INSERT QAC sutunlarini (root_id, lemma_id, pos, features, morph_source) hic anmaz."""
+    for sutun in QAC_SUTUNLARI:
+        assert sutun not in pg.INSERT_KELIME
+        assert sutun not in pg.FARKLI_KELIME
+    assert set(pg.KELIME_SUTUNLARI) == {"anchor", *TANZIL_SUTUNLARI}
+    assert "DELETE" not in pg.INSERT_KELIME.upper()
+    assert "UPDATE" not in pg.INSERT_KELIME.upper()
+
+
+def test_anchor_manifestinde_kelime_dosyasi_yoksa_cikis_2(
+    z: Zincir, capsys: pytest.CaptureFixture[str]
+) -> None:
+    son = lineage.son_basarili(z.veri_kok / "staged" / KAYNAK, "anchor")
+    assert son is not None
+    manifest = dict(son[2])
+    ciktilar = manifest["ciktilar"]
+    assert isinstance(ciktilar, list)
+    manifest["ciktilar"] = [c for c in ciktilar if not c["yol"].endswith("/words.jsonl")]
+    lineage.manifest_yaz(son[1], manifest)
+    assert export_hatasi(z) == 2
+    assert "words.jsonl" in capsys.readouterr().err
+
+
+def test_kelime_dosyasi_bozulmussa_cikis_2(z: Zincir, capsys: pytest.CaptureFixture[str]) -> None:
+    son = lineage.son_basarili(z.veri_kok / "staged" / KAYNAK, "anchor")
+    assert son is not None
+    (son[1] / "words.jsonl").write_bytes(b"{}\n")
+    assert export_hatasi(z) == 2  # cikti saglam degil: ozet manifestle tutmuyor
+    assert "words.jsonl" not in capsys.readouterr().out

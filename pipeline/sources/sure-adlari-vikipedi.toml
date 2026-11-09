@@ -1,0 +1,11 @@
+# A11.0 (2026-11-08) · kaynak: docs/04-icerik/01-kaynaklar.md §3.1
+slug = "sure-adlari-vikipedi"
+tur = "sozluk"
+baslik = "Vikipedi (Türkçe) Sureler listesi ve sure maddesi yönlendirmeleri"
+surum = "revizyon 37447386 (9 Temmuz 2026)"
+provider = "vikipedi"
+kaynak_url = "https://tr.wikipedia.org/wiki/Sureler_listesi"
+atif_metni = "Sure adı adayları: Vikipedi (tr.wikipedia.org), «Sureler listesi» maddesi ve yönlendirmeleri."
+atif_url = "https://tr.wikipedia.org/wiki/Sureler_listesi"
+notlar = '''
+Aday kaynağıdır, kanonik değildir: adlar editör onayına (İ-23) kadar aday kalır. Aşama: A11.3.'''

@@ -30,7 +30,14 @@ from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest import tanzil, tanzil_bicim
 from mutalaa_pipeline.komut_ortak import komutu_yurut
 from mutalaa_pipeline.lineage import NOTICE_ADI
-from mutalaa_pipeline.qa import GECTI, KALDI, KAPILAR, QA_KOMUTU
+from mutalaa_pipeline.qa import (
+    GECTI,
+    KALDI,
+    KAPILAR,
+    QA_KOMUTU,
+    SURE_ADI_KAYNAGI,
+    UST_VERI_KAYNAGI,
+)
 from mutalaa_pipeline.qa.checks.tanzil import (
     KAPI_ISLEVLERI,
     KapiSonucu,
@@ -49,6 +56,7 @@ from mutalaa_pipeline.zincir import (
     Calisma,
     calisma_bul,
     ham_dosya,
+    kelimeler_oku,
     onceki_calisma,
     saglam_olmali,
     son_calisma,
@@ -174,6 +182,7 @@ def yukle(
     kilitler = tanzil.kilit_yukle()
     girdi = QaGirdisi(
         anchor_satirlari=units_oku(anchor, "anchor units.jsonl"),
+        kelime_satirlari=kelimeler_oku(anchor, "anchor words.jsonl"),
         uthmani=_varyant(
             ctx, KAYNAK, ingestler[KAYNAK], kayitlar[KAYNAK], kilitler["uthmani"], sure_tablosu
         ),
@@ -261,6 +270,14 @@ def komut_qa_run(
     kok: Path | None,
 ) -> int:
     """`qa run` komutu; cikis kodunu dondurur (rapor `data/reports/{run_id}.json`)."""
+    if source == UST_VERI_KAYNAGI:  # isaret ve sayfa satirlari: G-KAY, G-BUT, G-CAP (A11.6)
+        from mutalaa_pipeline.qa.run_ust_veri import komut_qa_run_ust_veri
+
+        return komut_qa_run_ust_veri(run=run, gate=gate, config=config, kok=kok)
+    if source == SURE_ADI_KAYNAGI:  # sure adi adaylari: G-KAY, G-BUT (A11.3)
+        from mutalaa_pipeline.qa.run_sure_adlari import komut_qa_run_sure_adlari
+
+        return komut_qa_run_sure_adlari(run=run, gate=gate, config=config, kok=kok)
     desteklenen = source == KAYNAK
 
     def govde(ctx: RunContext) -> int:

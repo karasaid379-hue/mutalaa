@@ -150,6 +150,7 @@ public class AnchorConverterTests(EditorialDatabase<AnchorConverterTests> fixtur
     [InlineData("icerik.quran_word", "anchor")]
     [InlineData("icerik.quran_word_fix", "anchor")]
     [InlineData("icerik.page_map", "start_anchor")]
+    [InlineData("icerik.quran_marker", "anchor")]
     public async Task Anchor_and_slug_columns_use_the_c_collation(string table, string column)
     {
         CancellationToken ct = TestContext.Current.CancellationToken;

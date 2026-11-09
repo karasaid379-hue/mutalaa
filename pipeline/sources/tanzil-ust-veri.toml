@@ -1,0 +1,12 @@
+# A11.0 (2026-11-08) · kaynak: docs/04-icerik/01-kaynaklar.md §3.1
+slug = "tanzil-ust-veri"
+tur = "mushaf_duzeni"
+baslik = "Tanzil Kur'an üst verisi (quran-data.xml)"
+surum = "1.0"
+provider = "tanzil"
+kaynak_url = "https://tanzil.net/res/text/metadata/quran-data.xml"
+atif_metni = "Kur'an yapı verisi (sure, cüz, hizb, secde, sayfa): Tanzil Project, tanzil.net."
+atif_url = "https://tanzil.net/docs/quran_metadata"
+notlar = '''
+Kök type="metadata" version="1.0". 114 sure, 30 cüz, 240 hizb çeyreği, 7 menzil, 556 rükû, 604 sayfa, 15 secde.
+Sayfa ve hizb çeyreği girişleri âyet düzeyindedir (yalnız sura ve aya). Aşamalar: A04 (âyet sayıları), A11.'''

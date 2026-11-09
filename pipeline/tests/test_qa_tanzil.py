@@ -27,6 +27,7 @@ from zincir_yardimci import (
 
 from mutalaa_pipeline.adimlar.normalize_tanzil import EK_KAYNAK, KAYNAK
 from mutalaa_pipeline.anchor.ayet_sayilari import AYET_SAYILARI
+from mutalaa_pipeline.anchor.quran import BIRLESTIRME
 from mutalaa_pipeline.export.ortak import GirdiHatasi, depo_koku
 from mutalaa_pipeline.normalize import NORMALIZER_VERSION
 from mutalaa_pipeline.qa import GECTI, KALDI, KAPILAR, QA_KOMUTU
@@ -597,6 +598,7 @@ def test_olcumler_temel_girdi(temel: QaGirdisi) -> None:
         "ar4",
         "ayet_sayilari",
         "ayet_sayilari_json",
+        "kelime",
     }
     assert sonuc["ar8_gorulen"] is False
     assert sonuc["mn_kalan_gorulen"] is False
@@ -742,3 +744,152 @@ def test_varyant_kur_kilit_tablodan_uyumlu() -> None:
     v = varyant_kur("uthmani", ham, TABLO)
     assert v.kilit == kilit_tablodan("uthmani", ham, TABLO)
     assert v.ayrisma.bildirim == sentetik_bildirim("uthmani")
+
+
+# --- kelime satirlari (A11.2, K-43) --------------------------------------------------------
+
+
+def kelime_al(g: QaGirdisi, capa: str) -> Satir:
+    return next(s for s in g.kelime_satirlari if s.veri["anchor"] == capa)
+
+
+def kelime_degistir(g: QaGirdisi, capa: str, **alanlar: object) -> QaGirdisi:
+    yeni = [
+        Satir(s.etiket, s.no, {**s.veri, **alanlar}) if s.veri["anchor"] == capa else s
+        for s in g.kelime_satirlari
+    ]
+    return dataclasses.replace(g, kelime_satirlari=yeni)
+
+
+def kelime_cikar(g: QaGirdisi, *capalar: str) -> QaGirdisi:
+    return dataclasses.replace(
+        g, kelime_satirlari=[s for s in g.kelime_satirlari if s.veri["anchor"] not in capalar]
+    )
+
+
+def test_kelime_temel_girdi_uc_kapidan_gecer_ve_sayilar_dolu(temel: QaGirdisi) -> None:
+    assert temel.kelime_satirlari
+    but, cap, nor = g_but(temel), g_cap(temel), g_nor(temel)
+    assert (but.gecti, cap.gecti, nor.gecti) == (True, True, True)
+    assert but.sayilar["kelime"] == len(temel.kelime_satirlari) == cap.sayilar["kelime_capa"]
+    assert but.sayilar["kelime_ayet"] == len(CAPALAR)  # her ayetin kelimesi var
+
+
+def test_kelime_satirlari_yoksa_g_but_kalir(temel: QaGirdisi) -> None:
+    sonuc = g_but(dataclasses.replace(temel, kelime_satirlari=[]))
+    assert bulgu_var(sonuc, "kelime satirlari: words.jsonl bos")
+    assert sonuc.sayilar["kelime"] == 0
+
+
+def test_g_but_kelime_metni_ayet_diliminden_farkliysa_kalir(temel: QaGirdisi) -> None:
+    sonuc = g_but(kelime_degistir(temel, "q:1:2:1", text_uthmani="Deneme"))
+    assert bulgu_var(sonuc, "kelime dilim: 1 birim")
+    assert bulgu_var(sonuc, "q:1:2:1")
+
+
+def test_g_but_kelime_araligi_ayet_disina_tasarsa_kalir(temel: QaGirdisi) -> None:
+    uzunluk = len(satir_al(temel, "q:1:2").veri["text"])  # type: ignore[arg-type]
+    sonuc = g_but(kelime_degistir(temel, "q:1:2:1", char_end=uzunluk + 1))
+    assert bulgu_var(sonuc, "kelime dilim: 1 birim")
+
+
+def test_g_but_kelime_araliklari_ortusurse_kalir(temel: QaGirdisi) -> None:
+    onceki = kelime_al(temel, "q:1:2:1")
+    sonuc = g_but(kelime_degistir(temel, "q:1:2:2", char_start=int(onceki.veri["char_end"]) - 1))  # type: ignore[call-overload]
+    assert bulgu_var(sonuc, "kelime ortusme: 1 birim: aralik onceki kelimenin")
+
+
+def test_g_but_kelime_numarasi_kesintisiz_olmali(temel: QaGirdisi) -> None:
+    sonuc = g_but(kelime_degistir(temel, "q:1:2:2", word=7))
+    assert bulgu_var(sonuc, "kelime numarasi: 1 birim")
+    eksik = g_but(kelime_cikar(temel, "q:1:2:1"))  # kalan kelime 1. siraya dusmez
+    assert bulgu_var(eksik, "kelime numarasi")
+
+
+def test_g_but_ayetin_hic_kelimesi_yoksa_kalir(temel: QaGirdisi) -> None:
+    ayet_kelimeleri = [str(s.veri["anchor"]) for s in temel.kelime_satirlari if s.veri["ayah"] == 3]
+    assert ayet_kelimeleri
+    sonuc = g_but(kelime_cikar(temel, *[c for c in ayet_kelimeleri if c.startswith("q:1:")]))
+    assert bulgu_var(sonuc, "kelimesi olmayan ayet: 1 birim")
+    assert bulgu_var(sonuc, "q:1:3")
+
+
+def test_g_but_kelimenin_ayeti_anchor_satirlarinda_yoksa_kalir(temel: QaGirdisi) -> None:
+    sonuc = g_but(satiri_cikar(temel, "q:1:3"))
+    assert bulgu_var(sonuc, "kelime ayeti:")
+
+
+def test_g_but_kelime_satiri_bolme_kuralindan_uretilenle_ayni_olmali(temel: QaGirdisi) -> None:
+    farkli = g_but(kelime_degistir(temel, "q:1:2:1", ayah_index=99))
+    assert bulgu_var(farkli, "bolme kuralindan uretilenden farkli kelime satiri: 1 birim")
+    fazla = Satir("w", 1, {**kelime_al(temel, "q:1:2:1").veri, "anchor": "q:1:2:9"})
+    sonuc = g_but(dataclasses.replace(temel, kelime_satirlari=[*temel.kelime_satirlari, fazla]))
+    assert bulgu_var(sonuc, "words.jsonl'de olup kuralda olmayan kelime: 1 birim")
+    assert bulgu_var(g_but(kelime_cikar(temel, "q:1:2:2")), "kuralda olup words.jsonl'de olmayan")
+
+
+def test_g_but_ayet_metni_besmele_icin_kisaysa_kural_uygulanamaz(temel: QaGirdisi) -> None:
+    """Sure 2'nin 1. ayeti dort belirtecten kisa olursa bolme kurali uygulanamaz (GirdiHatasi)."""
+    kisa = satiri_degistir(temel, "q:2:1", text="Deneme bir iki")
+    assert bulgu_var(g_but(kisa), "kelime bolme kurali uygulanamadi")
+
+
+def test_g_cap_gecersiz_kelime_capasi(temel: QaGirdisi) -> None:
+    for gecersiz in ("q:1:2:0", "q:1:2:01", "q:1:2", "q:1:2:1-2", "meal:elmalili:1:2"):
+        sonuc = g_cap(kelime_degistir(temel, "q:1:2:1", anchor=gecersiz))
+        assert bulgu_var(sonuc, "gecersiz kelime capasi: 1 birim"), gecersiz
+
+
+def test_g_cap_yinelenen_kelime_capasi(temel: QaGirdisi) -> None:
+    ikinci = kelime_al(temel, "q:1:2:1")
+    g = dataclasses.replace(temel, kelime_satirlari=[*temel.kelime_satirlari, ikinci])
+    assert bulgu_var(g_cap(g), "yinelenen kelime capasi: 1 birim")
+    assert bulgu_var(g_cap(g), "q:1:2:1")
+
+
+def test_g_cap_kelime_okuma_sirasi(temel: QaGirdisi) -> None:
+    satirlar = list(temel.kelime_satirlari)
+    satirlar[0], satirlar[1] = satirlar[1], satirlar[0]
+    sonuc = g_cap(dataclasses.replace(temel, kelime_satirlari=satirlar))
+    assert bulgu_var(sonuc, "kelime okuma sirasi: 1 birim")
+
+
+@pytest.mark.parametrize(
+    "degisim",
+    [{"surah": 2}, {"ayah": 3}, {"word": 9}, {"ayah_index": 99}],
+)
+def test_g_cap_kelime_alanlari_capayla_tutmali(temel: QaGirdisi, degisim: dict[str, int]) -> None:
+    sonuc = g_cap(kelime_degistir(temel, "q:1:2:1", **degisim))
+    assert bulgu_var(sonuc, "kelime alanlari: 1 birim")
+
+
+@pytest.mark.parametrize("degisim", [{"source_id": EK_KAYNAK}, {"data_version": "x@1"}])
+def test_g_cap_kelime_sabit_alanlari(temel: QaGirdisi, degisim: dict[str, str]) -> None:
+    sonuc = g_cap(kelime_degistir(temel, "q:1:2:1", **degisim))
+    assert bulgu_var(sonuc, "kelime sabit alani: 1 birim")
+
+
+def test_g_nor_kelime_norm_yeniden_uretilenle_ayni_olmali(temel: QaGirdisi) -> None:
+    assert bulgu_var(
+        g_nor(kelime_degistir(temel, "q:1:2:1", norm="Deneme")), "kelime norm: 1 birim"
+    )
+    bos = g_nor(kelime_degistir(temel, "q:1:2:1", norm=""))
+    assert bulgu_var(bos, "bos kelime norm: 1 birim: q:1:2:1")
+
+
+def test_kelime_bulgulari_icerik_tasimaz(temel: QaGirdisi) -> None:
+    gizli = "GIZLI-DENEME-METNI"
+    g = kelime_degistir(temel, "q:1:2:1", text_uthmani=gizli, norm=gizli)
+    for islev in (g_but, g_cap, g_nor):
+        for bulgu in islev(g).bulgular:
+            assert gizli not in bulgu
+            assert bulgu.isascii()
+
+
+def test_olcumler_kelime_toplami_ve_birlestirme_listesi(temel: QaGirdisi) -> None:
+    kelime = olcumler(temel)["kelime"]
+    assert kelime["toplam"] == len(temel.kelime_satirlari)  # type: ignore[index]
+    assert kelime["ayet"] == len(CAPALAR)  # type: ignore[index]
+    assert kelime["birlestirme"] == sorted(  # type: ignore[index]
+        f"{s}:{a}:{i}" for (s, a), i in BIRLESTIRME.items()
+    )

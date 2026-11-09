@@ -16,6 +16,7 @@ from tanzil_yardimci import sentetik_bildirim
 from zincir_yardimci import zincir_hazirla
 
 from mutalaa_pipeline import lineage, staged
+from mutalaa_pipeline.adimlar import anchor_tanzil
 from mutalaa_pipeline.adimlar.normalize_tanzil import KAYNAK
 from mutalaa_pipeline.ingest import tanzil_bicim as bicim
 
@@ -61,8 +62,15 @@ def test_ayristir_ozel_bosluklari_aynen_korur_ve_yeniden_kurar() -> None:
     assert bicim.yeniden_kur(birimler, ayrisma.bildirim, ayrisma.duzen) == veri
 
 
-def test_zincir_ozel_bosluklari_ve_content_hash_ham_dilimdir(tmp_path: Path) -> None:
-    """ingest -> normalize -> anchor: `text` ham dilimdir, `content_hash` onun SHA-256'sidir."""
+def test_zincir_ozel_bosluklari_ve_content_hash_ham_dilimdir(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """ingest -> normalize -> anchor: `text` ham dilimdir, `content_hash` onun SHA-256'sidir.
+
+    Sentetik metin Latin harflidir: Arapca `norm` bos cikar ve kelime bolmesi (A11.2) reddeder.
+    Bu test yalniz birim metnini sinar; kelime dosyasi bos uretilir.
+    """
+    monkeypatch.setattr(anchor_tanzil, "kelime_satirlari", lambda birimler, surum: [])
     ham = _dosya("uthmani", OZEL)
     simple = _dosya("simple-clean", [f"Deneme {i}" for i in range(1, len(OZEL) + 1)])
     z = zincir_hazirla(tmp_path, {"uthmani": ham, "simple-clean": simple}, TABLO)
