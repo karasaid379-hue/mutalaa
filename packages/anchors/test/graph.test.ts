@@ -1,8 +1,9 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-// Allowed workspace dependency graph (Proje yapisi 2). The only @mutalaa/* dev dependency
-// allowed on top of this is @mutalaa/test-vectors, and only for anchors and search.
+// Allowed workspace dependency graph (Proje yapisi 2). The only @mutalaa/* dev dependencies
+// allowed on top of this are @mutalaa/test-vectors (anchors, search, content-schema) and, for
+// the node:sqlite test harness of the pack DDL (A12.5), @mutalaa/search in content-schema.
 const allowed: Record<string, string[]> = {
   anchors: [],
   search: [],
@@ -11,7 +12,9 @@ const allowed: Record<string, string[]> = {
   player: ['anchors'],
   'ui-tokens': [],
 };
-const withTestVectors = new Set(['anchors', 'search']);
+const withTestVectors = new Set(['anchors', 'search', 'content-schema']);
+// Test-only edges: must be devDependencies, never runtime ones.
+const devOnly: Record<string, string[]> = { 'content-schema': ['search'] };
 
 const packagesDir = new URL('../../', import.meta.url);
 
@@ -36,19 +39,31 @@ describe('workspace dependency graph', () => {
 
   for (const [folder, dependencies] of Object.entries(allowed)) {
     it(`${folder} depends on ${dependencies.join(', ') || 'no workspace package'}`, () => {
-      const expected = [...dependencies];
+      const expected = [...dependencies, ...(devOnly[folder] ?? [])];
       if (withTestVectors.has(folder)) expected.push('test-vectors');
       expect(workspaceDependencies(folder).sort()).toEqual(expected.sort());
     });
   }
 
-  it('test-vectors is a dev dependency of anchors and search, never a runtime one', () => {
+  it('test-vectors is a dev dependency of anchors, search and content-schema, never a runtime one', () => {
     for (const folder of withTestVectors) {
       const manifest = JSON.parse(
         readFileSync(new URL(`${folder}/package.json`, packagesDir), 'utf8'),
       ) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
       expect(manifest.devDependencies?.['@mutalaa/test-vectors']).toBe('workspace:*');
       expect(manifest.dependencies?.['@mutalaa/test-vectors']).toBeUndefined();
+    }
+  });
+
+  it('test-only edges are dev dependencies, never runtime ones', () => {
+    for (const [folder, names] of Object.entries(devOnly)) {
+      const manifest = JSON.parse(
+        readFileSync(new URL(`${folder}/package.json`, packagesDir), 'utf8'),
+      ) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
+      for (const name of names) {
+        expect(manifest.devDependencies?.[`@mutalaa/${name}`]).toBe('workspace:*');
+        expect(manifest.dependencies?.[`@mutalaa/${name}`]).toBeUndefined();
+      }
     }
   });
 });
