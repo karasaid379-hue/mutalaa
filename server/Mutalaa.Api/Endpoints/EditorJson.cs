@@ -9,10 +9,16 @@ namespace Mutalaa.Api.Endpoints;
 /// </summary>
 internal static class EditorJson
 {
+    /// <summary>
+    /// Tek kodlayici: hem bu sinifin secenekleri hem HTTP JSON secenekleri (Program.cs, ConfigureHttpJsonOptions) bunu kullanir;
+    /// boylece her uc ASCII disi metni ayni bicimde (kacissiz UTF-8) yazar.
+    /// </summary>
+    public static readonly JavaScriptEncoder Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+
     public static readonly JsonSerializerOptions Options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        Encoder = Encoder,
     };
 
     /// <summary>jsonb sutun degerini JSON ogesi yapar; deger yoksa null. Veritabani zaten gecerli JSON tutar.</summary>

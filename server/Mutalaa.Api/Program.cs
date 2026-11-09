@@ -29,10 +29,13 @@ builder.Services
     .Bind(builder.Configuration.GetSection(ApiOptions.SectionName))
     .PostConfigure(options => options.Normalize());
 
-// JSON alanlari veritabani sutunlariyla ayni (snake_case); taniminmayan alan 400.
+// JSON alanlari veritabani sutunlariyla ayni (snake_case); taniminmayan alan 400. ASCII disi metin (Arapca, Turkce) kacislanmaz:
+// ASP.NET Core varsayilani zaten UnsafeRelaxedJsonEscaping'dir; burada acikca ayni kodlayiciya (EditorJson.Encoder) baglanir ki
+// bir surum degisikligi ya da baska bir ayar inceleme uclarini sessizce kacisli yazmasin (ReviewJsonTextTests kilitler).
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+    options.SerializerOptions.Encoder = EditorJson.Encoder;
     options.SerializerOptions.UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow;
 });
 
