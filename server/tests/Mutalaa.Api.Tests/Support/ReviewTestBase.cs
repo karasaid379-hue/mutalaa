@@ -29,6 +29,7 @@ public abstract class ReviewTestBase<TTests>(EditorialDatabase<TTests> fixture) 
 
     private static int _mealCounter;
     private static int _tefsirCounter;
+    private static int _ayetCounter;
 
     protected static CancellationToken Ct => TestContext.Current.CancellationToken;
 
@@ -68,6 +69,13 @@ public abstract class ReviewTestBase<TTests>(EditorialDatabase<TTests> fixture) 
     {
         int n = Interlocked.Increment(ref _mealCounter) - 1;
         return $"meal:test:{(2 + (n / 100)).ToString(CultureInfo.InvariantCulture)}:{(1 + (n % 100)).ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    /// <summary>Benzersiz ayet capasi (q:3:{ayet}, ayet 1..200); metin sentetiktir, Tanzil metni degildir.</summary>
+    protected static string AyetAnchor()
+    {
+        int n = Interlocked.Increment(ref _ayetCounter);
+        return $"q:3:{n.ToString(CultureInfo.InvariantCulture)}";
     }
 
     protected static string TefsirAnchor()
