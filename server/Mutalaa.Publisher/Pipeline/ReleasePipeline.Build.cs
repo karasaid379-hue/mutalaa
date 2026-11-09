@@ -141,75 +141,38 @@ public sealed partial class ReleasePipeline
         BuildFlavor flavor = spec.Flavor;
         string label = flavor.ToLabel();
 
-        EditorialSnapshot snapshot;
-        await using (EditorialSnapshotReader reader = await EditorialSnapshotReader.OpenAsync(Context.ConnectionString, cancellationToken))
+        // Asama A (kapi plani) Infrastructure'dadir: GatePlanner dosya yazmaz; Yayinlayici yalniz onceki paket dosyalarini cozer.
+        GatePlan plan;
+        try
         {
-            snapshot = await reader.LoadAsync(flavor, cancellationToken);
+            plan = await GatePlanner.PlanAsync(
+                new GatePlanRequest(
+                    Context.ConnectionString,
+                    flavor,
+                    spec.Packs,
+                    Context.Catalog,
+                    Path.GetFullPath(Context.Options.SourcesDir),
+                    Path.GetFullPath(Context.Options.RawDir),
+                    spec.PromoteFrom,
+                    new PublisherPackResolver(Context, spec.OutRoot)),
+                cancellationToken);
+        }
+        catch (GatePlanException ex)
+        {
+            throw ToPublisherException(ex);
         }
 
-        Manifest? previousManifest = null;
-        ReleaseDigests previousDigests = ReleaseDigests.Empty;
-        if (snapshot.PreviousRelease is { } previous)
+        foreach (string warning in plan.Warnings)
         {
-            previousManifest = previous.Manifest is null
-                ? throw new PublisherException(ExitCodes.Other, $"Onceki yayinin manifesti yok: {label} {previous.Surum}.", isPermanent: true)
-                : ParseManifest(Encoding.UTF8.GetBytes(previous.Manifest), $"onceki yayin {previous.Surum}");
-            previousDigests = ReleaseDigests.Parse(previous.Ozetler);
+            Say(warning);
         }
 
-        HashSet<string> selected = new(spec.Packs, StringComparer.Ordinal);
-        List<ManifestPack> carriedVerbatim = previousManifest is null || selected.Count == 0
-            ? []
-            : [.. previousManifest.Packs.Where(p => !selected.Contains(p.PackId))];
-
-        HashSet<string> previousAnchors = previousManifest is null
-            ? []
-            : await LoadPreviousAnchorsAsync(label, previousManifest, spec.OutRoot, cancellationToken);
-
-        GateInput input = GateInputBuilder.Build(
-            snapshot,
-            Context.Catalog,
-            Path.GetFullPath(Context.Options.SourcesDir),
-            [.. carriedVerbatim.Select(p => p.PackId)],
-            previousAnchors);
-        GateResult gate = GateEvaluator.Evaluate(flavor, input);
-
-        List<GateViolation> extra = [.. new TanzilRawVerifier(Path.GetFullPath(Context.Options.RawDir)).VerifyAll(snapshot, gate.IncludedSources)];
-        IReadOnlyDictionary<string, string> sourceDigests = SourceDigests.Compute(snapshot, gate.IncludedSources);
-        if (spec.PromoteFrom is not null)
-        {
-            extra.AddRange(GateEvaluator.EvaluateP14(spec.PromoteFrom.Sources, sourceDigests));
-        }
-
-        // Asama A: paketleri topla ve ozetle (dosya yazilmaz); manifest kumesi icin P-13 gercek kumeyle yeniden denetlenir.
-        List<(PackDefinition Definition, PackContent Content, string Digest)> planned = [];
-        foreach (PackDefinition definition in Context.Catalog.All)
-        {
-            if (!gate.IncludedPacks.Contains(definition.PackId) || (selected.Count > 0 && !selected.Contains(definition.PackId)))
-            {
-                continue;
-            }
-
-            PackContent content = PackAssembler.Assemble(definition, flavor, snapshot, gate, Context.Catalog);
-            planned.Add((definition, content, PackDigest.Compute(content)));
-        }
-
-        foreach (string id in selected.Order(StringComparer.Ordinal))
-        {
-            if (!gate.IncludedPacks.Contains(id))
-            {
-                Say($"uyari: istenen paket kapidan girmedi: {id}");
-            }
-        }
-
-        List<GatePack> finalPacks =
-        [
-            .. planned.Select(p => new GatePack(p.Definition.PackId, p.Definition.DependsOn, [], true)),
-            .. carriedVerbatim.Select(p => new GatePack(p.PackId, p.DependsOn, [], true)),
-        ];
-        extra.AddRange(GateEvaluator.EvaluateP13(finalPacks, [.. finalPacks.Select(p => p.PackId)]));
-
-        GateReport report = gate.Report.WithViolations(extra);
+        EditorialSnapshot snapshot = plan.Snapshot;
+        Manifest? previousManifest = plan.PreviousManifest;
+        ReleaseDigests previousDigests = plan.PreviousDigests;
+        IReadOnlyList<ManifestPack> carriedVerbatim = plan.CarriedVerbatim;
+        IReadOnlyDictionary<string, string> sourceDigests = plan.SourceDigests;
+        GateReport report = plan.Report;
         if (report.Rejected)
         {
             return new BuildOutcome { Report = report, Digests = new ReleaseDigests(sourceDigests, new Dictionary<string, string>(StringComparer.Ordinal)) };
@@ -222,9 +185,12 @@ public sealed partial class ReleasePipeline
         List<PackSelfCheckReport> selfChecks = [];
         Dictionary<string, string> packDigests = new(StringComparer.Ordinal);
 
-        foreach ((PackDefinition definition, PackContent content, string digest) in planned)
+        foreach (PlannedPack item in plan.Planned)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            PackDefinition definition = item.Definition;
+            PackContent content = item.Content ?? throw new InvalidOperationException("Paket icerigi planlanmadi.");
+            string digest = item.Digest ?? throw new InvalidOperationException("Paket ozeti planlanmadi.");
             ManifestPack? prev = previousManifest?.Packs.FirstOrDefault(p => string.Equals(p.PackId, definition.PackId, StringComparison.Ordinal));
             bool same = prev is not null
                 && previousDigests.Packs.TryGetValue(definition.PackId, out string? previousDigest)
@@ -283,47 +249,16 @@ public sealed partial class ReleasePipeline
         return new BuildOutcome { Report = report, Digests = digests, ManifestBytes = signed, Packs = builds, SelfChecks = selfChecks };
     }
 
-    private async Task<HashSet<string>> LoadPreviousAnchorsAsync(string label, Manifest previous, string outRoot, CancellationToken cancellationToken)
-    {
-        HashSet<string> anchors = new(StringComparer.Ordinal);
-        foreach (ManifestPack pack in previous.Packs)
+    private static PublisherException ToPublisherException(GatePlanException ex) => new(
+        ex.Failure switch
         {
-            string path = await ResolvePackFileAsync(label, pack, outRoot, cancellationToken);
-            foreach (string anchor in PackInspector.ReadUnitAnchors(path))
-            {
-                anchors.Add(anchor);
-            }
-        }
-
-        return anchors;
-    }
-
-    // Once cikti klasoru, sonra gecici onbellek; ikisi de yoksa depodan indirilir ve manifestteki sha256 ile dogrulanir.
-    private async Task<string> ResolvePackFileAsync(string label, ManifestPack pack, string outRoot, CancellationToken cancellationToken)
-    {
-        string local = LocalPackPath(outRoot, label, pack.PackId, pack.Version);
-        if (File.Exists(local) && string.Equals(await Sha256Async(local, cancellationToken), pack.Sha256, StringComparison.Ordinal))
-        {
-            return local;
-        }
-
-        string cache = Path.Combine(Path.GetFullPath(Context.Options.TempDir), "previous", label, $"{pack.PackId}-{pack.Version}-{pack.Sha256[..12]}.db");
-        if (File.Exists(cache) && string.Equals(await Sha256Async(cache, cancellationToken), pack.Sha256, StringComparison.Ordinal))
-        {
-            return cache;
-        }
-
-        string key = StorageKeys.Pack(label, pack.PackId, pack.Version);
-        byte[]? bytes = await Context.GetStore().GetAsync(key, cancellationToken)
-            ?? throw new PublisherException(ExitCodes.Storage, $"Onceki yayinin paketi depoda yok: {key}");
-        if (!string.Equals(Sha256(bytes), pack.Sha256, StringComparison.Ordinal))
-        {
-            throw new PublisherException(ExitCodes.Verification, $"Onceki yayinin paketi manifestteki sha256 ile uyusmuyor: {key}");
-        }
-
-        await WriteBytesAsync(cache, bytes, cancellationToken);
-        return cache;
-    }
+            GatePlanFailure.PreviousPackMissing => ExitCodes.Storage,
+            GatePlanFailure.ManifestUnreadable or GatePlanFailure.PreviousPackMismatch => ExitCodes.Verification,
+            _ => ExitCodes.Other,
+        },
+        ex.Message,
+        ex,
+        ex.IsPermanent);
 
     private void PrintReport(GateReport report)
     {

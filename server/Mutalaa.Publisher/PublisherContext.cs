@@ -1,4 +1,3 @@
-using System.Globalization;
 using Microsoft.Extensions.Configuration;
 using Mutalaa.Domain.Releases;
 using Mutalaa.Infrastructure;
@@ -26,7 +25,7 @@ public sealed class PublisherHostOptions
 
     public TimeProvider? Clock { get; set; }
 
-    /// <summary>git kisa sha; verilmezse <see cref="GitInfo.ShortShaAsync"/>.</summary>
+    /// <summary>git kisa sha; verilmezse <see cref="DataVersions.ShortShaAsync"/>.</summary>
     public Func<CancellationToken, Task<string>>? GitShortSha { get; set; }
 
     /// <summary>keys generate'in yazacagi secrets.json yolu; verilmezse UserSecretsId'den cozulur.</summary>
@@ -171,11 +170,8 @@ public sealed class PublisherContext : IAsyncDisposable
     }
 
     /// <summary>YYYY.MM.DD-{git kisa sha} (data_version).</summary>
-    public async Task<string> DataVersionAsync(CancellationToken cancellationToken)
-    {
-        string sha = _host.GitShortSha is null ? await GitInfo.ShortShaAsync(cancellationToken) : await _host.GitShortSha(cancellationToken);
-        return string.Create(CultureInfo.InvariantCulture, $"{Clock.GetUtcNow().UtcDateTime:yyyy.MM.dd}-{sha}");
-    }
+    public Task<string> DataVersionAsync(CancellationToken cancellationToken) =>
+        DataVersions.CurrentAsync(Clock, _host.GitShortSha, cancellationToken);
 
     public string? SecretsPathOverride => _host.SecretsPath;
 
