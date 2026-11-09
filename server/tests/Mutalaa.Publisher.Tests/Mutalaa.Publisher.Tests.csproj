@@ -24,6 +24,8 @@
     <None Include="..\..\..\packages\content-schema\manifest.schema.json" Link="data\manifest.schema.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\..\packages\content-schema\test\fixtures\manifest-ornek.json" Link="data\manifest-ornek.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\..\packages\content-schema\enums.json" Link="data\enums.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Paket DDL dosyalari ve paketler.json (K-44; PackDdlSmokeTests) data\sql\ altina kopyalanir. -->
+    <None Include="..\..\..\packages\content-schema\sql\**" Link="data\sql\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
