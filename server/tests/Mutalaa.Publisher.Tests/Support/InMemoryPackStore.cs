@@ -4,7 +4,7 @@ using Mutalaa.Infrastructure.Storage;
 namespace Mutalaa.Publisher.Tests.Support;
 
 /// <summary>
-/// Bellek ici sahte depo (IPackStore sozlesmesi: ayni sha256 atlanir, farkli sha256 ObjectConflictException). Hata enjeksiyonu: <see cref="Fault"/>
+/// Bellek ici sahte depo (IPackStore sozlesmesi: ayni sha256 atlanir, farkli sha256 ObjectConflictException; replaceExisting ile degistirilir). Hata enjeksiyonu: <see cref="Fault"/>
 /// islem adi ("put-pack", "head", "put-manifest", "get", "list") ve anahtarla cagrilir; bir istisna donerse firlatilir. Her yazma <see cref="Writes"/> listesine eklenir.
 /// </summary>
 internal sealed class InMemoryPackStore : IPackStore
@@ -26,19 +26,38 @@ internal sealed class InMemoryPackStore : IPackStore
     /// <summary>Sozlesmeyi atlayarak nesne yazar (cakisma/kurcalama senaryolari).</summary>
     public void Seed(string key, byte[] bytes, string? sha256) => _objects[key] = (bytes, sha256);
 
-    public async Task<PutResult> PutPackAsync(string key, string filePath, string sha256, CancellationToken cancellationToken)
+    /// <summary>Degistirme izniyle (replaceExisting) yazilan anahtarlar (Writes listesine de girer).</summary>
+    public List<string> Replaced { get; } = [];
+
+    public async Task<PutResult> PutPackAsync(string key, string filePath, string sha256, bool replaceExisting, CancellationToken cancellationToken)
     {
         Throw("put-pack", key);
-        if (_objects.TryGetValue(key, out (byte[] Bytes, string? Sha256) existing))
+        bool exists = _objects.TryGetValue(key, out (byte[] Bytes, string? Sha256) existing);
+        long size = new FileInfo(filePath).Length;
+        bool sameSha = exists && string.Equals(existing.Sha256, sha256, StringComparison.OrdinalIgnoreCase);
+
+        // Gercek S3PackStore ile ayni sozlesme: ayni sha256 ve ayni boyut atlanir; ayni sha256 ama farkli boyut bozuk nesnedir (degistirme kapaliyken
+        // Integrity, acikken yeniden yazilir); farkli sha256 degistirme kapaliyken cakismadir.
+        if (sameSha && existing.Bytes.LongLength == size)
         {
-            return string.Equals(existing.Sha256, sha256, StringComparison.Ordinal)
-                ? PutResult.SkippedSame
-                : throw new ObjectConflictException(key, existing.Sha256, sha256);
+            return PutResult.SkippedSame;
+        }
+
+        if (exists && !replaceExisting)
+        {
+            throw sameSha
+                ? new StorageException(StorageFailure.Integrity, $"Depodaki {key} ayni sha256 ust verisini tasiyor ama boyutu uyusmuyor (beklenen: {size}, depoda: {existing.Bytes.LongLength}).")
+                : new ObjectConflictException(key, existing.Sha256, sha256);
         }
 
         _objects[key] = (await File.ReadAllBytesAsync(filePath, cancellationToken), sha256);
         Writes.Add(key);
-        return PutResult.Uploaded;
+        if (exists)
+        {
+            Replaced.Add(key);
+        }
+
+        return exists ? PutResult.Replaced : PutResult.Uploaded;
     }
 
     public Task<StoredObject?> HeadAsync(string key, CancellationToken cancellationToken)

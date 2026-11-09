@@ -17,7 +17,10 @@ public sealed record ReleaseResult(int ExitCode, string? Surum, ReleaseStatus? S
         new(exitCode, surum, status, message);
 }
 
-/// <summary>publish ve build istegi. ReleaseId verilirse (watch) o satir surdurulur.</summary>
+/// <summary>
+/// publish ve build istegi. ReleaseId verilirse (watch) o satir surdurulur. Restart (publish --restart, K-46 madde 3): ayni derleme turunde acik
+/// bir 'dogrulandi' yayin satiri varsa onu basarisiz yapar ve ayni surumle yeniden derleyip yukler; kuru calistirmayla birlikte verilemez.
+/// </summary>
 public sealed record PublishRequest(
     BuildFlavor Flavor,
     IReadOnlyList<string> Packs,
@@ -26,7 +29,8 @@ public sealed record PublishRequest(
     string? OutDir = null,
     bool StopAtVerified = false,
     int? ReleaseId = null,
-    string? Notes = null);
+    string? Notes = null,
+    bool Restart = false);
 
 public sealed record UploadRequest(BuildFlavor Flavor, string? Surum = null, string? OutDir = null);
 

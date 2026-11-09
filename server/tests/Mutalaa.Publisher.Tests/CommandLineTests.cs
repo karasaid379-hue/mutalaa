@@ -94,6 +94,27 @@ public class CommandLineTests
         Assert.Equal(1, code);
     }
 
+    [Theory]
+    [InlineData("publish", "--flavor", "dev", "--restart", "--dry-run")]
+    [InlineData("publish", "--dry-run", "--flavor", "public", "--restart")]
+    public async Task Restart_together_with_dry_run_is_a_parse_error_that_exits_with_1_before_any_setting_is_read(params string[] args)
+    {
+        (int code, _, string error) = await RunAsync(args);
+
+        Assert.Equal(1, code);
+        Assert.Contains("--restart", error, StringComparison.Ordinal);
+        Assert.DoesNotContain("ConnectionStrings:Editorial", error, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Restart_alone_is_accepted_by_the_parser_and_reaches_the_configuration_check()
+    {
+        (int code, _, string error) = await RunAsync(["publish", "--flavor", "dev", "--restart"]);
+
+        Assert.Equal(1, code);
+        Assert.Contains("ConnectionStrings:Editorial", error, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task A_valid_publish_without_a_connection_string_exits_with_1_and_names_the_setting_only()
     {

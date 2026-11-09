@@ -76,7 +76,7 @@ public sealed class S3PackStore : IPackStore, IDisposable
         }
     }
 
-    public async Task<PutResult> PutPackAsync(string key, string filePath, string sha256, CancellationToken cancellationToken)
+    public async Task<PutResult> PutPackAsync(string key, string filePath, string sha256, bool replaceExisting, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
@@ -87,18 +87,22 @@ public sealed class S3PackStore : IPackStore, IDisposable
         StoredObject? existing = await HeadAsync(key, cancellationToken);
         if (existing is not null)
         {
-            if (existing.Sha256 is not null && string.Equals(existing.Sha256, sha256, StringComparison.OrdinalIgnoreCase))
-            {
-                // Ust veri tek basina yetmez: onceki bozuk bir yukleme (Integrity) sha256 ust verisini dogru, boyutu yanlis birakmis olabilir; o nesne "ayni" sayilmaz.
-                if (existing.Size != size)
-                {
-                    throw new StorageException(StorageFailure.Integrity, $"Depodaki {key} ayni sha256 ust verisini tasiyor ama boyutu uyusmuyor (beklenen: {size}, depoda: {existing.Size}).");
-                }
+            bool sameSha = existing.Sha256 is not null && string.Equals(existing.Sha256, sha256, StringComparison.OrdinalIgnoreCase);
 
+            // Ust veri tek basina yetmez: onceki bozuk bir yukleme (Integrity) sha256 ust verisini dogru, boyutu yanlis birakmis olabilir; o nesne "ayni" sayilmaz.
+            if (sameSha && existing.Size == size)
+            {
                 return PutResult.SkippedSame;
             }
 
-            throw new ObjectConflictException(key, existing.Sha256, sha256);
+            // Degismez nesne (varsayilan): ayni ust veri ama yanlis boyut bozuk yukleme, farkli ust veri cakismadir; ikisinde de ustune yazilmaz.
+            // Yayimlanmamis surumun nesnesi (replaceExisting) ise asagida yeniden yazilir.
+            if (!replaceExisting)
+            {
+                throw sameSha
+                    ? new StorageException(StorageFailure.Integrity, $"Depodaki {key} ayni sha256 ust verisini tasiyor ama boyutu uyusmuyor (beklenen: {size}, depoda: {existing.Size}).")
+                    : new ObjectConflictException(key, existing.Sha256, sha256);
+            }
         }
 
         // Akis acik kalinca Windows dosyayi kilitler; using ile PUT biter bitmez kapanir.
@@ -135,7 +139,7 @@ public sealed class S3PackStore : IPackStore, IDisposable
             throw new StorageException(StorageFailure.Integrity, $"Yukleme sonrasi {key} sha256 ust verisi uyusmuyor (beklenen: {sha256}, depoda: {stored.Sha256 ?? "yok"}).");
         }
 
-        return PutResult.Uploaded;
+        return existing is null ? PutResult.Uploaded : PutResult.Replaced;
     }
 
     public async Task<StoredObject?> HeadAsync(string key, CancellationToken cancellationToken)

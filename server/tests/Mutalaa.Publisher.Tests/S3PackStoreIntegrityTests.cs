@@ -93,4 +93,80 @@ public class S3PackStoreIntegrityTests
         Assert.Equal(Key, conflict.Key);
         Assert.Equal(1, fake.PutCount);
     }
+
+    // ---------------------------------------------------------------- yayimlanmamis surumun nesnesi (K-46 madde 3, BC-46)
+
+    [Fact]
+    public async Task Without_replace_permission_a_different_sha256_still_conflicts_and_nothing_is_written()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        (S3PackStore store, FakeS3Client fake, TempFile file, string sha, _) = await NewAsync(ct);
+        using TempFile owned = file;
+        string other = new('b', 64);
+        fake.Objects[Key] = (123, other);
+
+        ObjectConflictException conflict = await Assert.ThrowsAsync<ObjectConflictException>(() => store.PutPackAsync(Key, owned.Path, sha, replaceExisting: false, ct));
+
+        Assert.Equal((Key, other, sha), (conflict.Key, conflict.ExistingSha256, conflict.NewSha256));
+        Assert.Equal(0, fake.PutCount);
+        Assert.Equal((123L, (string?)other), fake.Objects[Key]);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task With_replace_permission_a_different_or_missing_sha256_is_replaced_and_verified(bool metadataMissing)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        (S3PackStore store, FakeS3Client fake, TempFile file, string sha, int length) = await NewAsync(ct);
+        using TempFile owned = file;
+        fake.Objects[Key] = (123, metadataMissing ? null : new string('b', 64));
+
+        PutResult result = await store.PutPackAsync(Key, owned.Path, sha, replaceExisting: true, ct);
+
+        Assert.Equal(PutResult.Replaced, result);
+        Assert.Equal((long)length, fake.Objects[Key].Size);
+        Assert.Equal(sha, fake.Objects[Key].Sha256);
+        Assert.Equal(1, fake.PutCount);
+
+        // Ayni icerik ikinci kez: atlanir.
+        Assert.Equal(PutResult.SkippedSame, await store.PutPackAsync(Key, owned.Path, sha, replaceExisting: true, ct));
+        Assert.Equal(1, fake.PutCount);
+    }
+
+    [Fact]
+    public async Task With_replace_permission_an_object_with_the_right_sha256_but_a_bad_size_is_repaired()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        (S3PackStore store, FakeS3Client fake, TempFile file, string sha, int length) = await NewAsync(ct);
+        using TempFile owned = file;
+        fake.Objects[Key] = (length - 1, sha);
+
+        // Degismez yolda bu bir Integrity hatasidir (yukaridaki testler); degistirilebilir nesnede onarilir.
+        Assert.Equal(PutResult.Replaced, await store.PutPackAsync(Key, owned.Path, sha, replaceExisting: true, ct));
+        Assert.Equal(((long)length, (string?)sha), fake.Objects[Key]);
+    }
+
+    [Fact]
+    public async Task With_replace_permission_a_head_mismatch_after_the_put_is_still_an_integrity_failure()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        (S3PackStore store, FakeS3Client fake, TempFile file, string sha, _) = await NewAsync(ct);
+        using TempFile owned = file;
+        fake.Objects[Key] = (123, new string('b', 64));
+        fake.Persist = (_, size, hash) => (size - 1, hash);
+
+        StorageException size = await Assert.ThrowsAsync<StorageException>(() => store.PutPackAsync(Key, owned.Path, sha, replaceExisting: true, ct));
+
+        Assert.Equal(StorageFailure.Integrity, size.Failure);
+        Assert.Contains("boyutu", size.Message, StringComparison.Ordinal);
+
+        fake.Objects[Key] = (123, new string('b', 64));
+        fake.Persist = (_, length, _) => (length, new string('c', 64));
+
+        StorageException meta = await Assert.ThrowsAsync<StorageException>(() => store.PutPackAsync(Key, owned.Path, sha, replaceExisting: true, ct));
+
+        Assert.Equal(StorageFailure.Integrity, meta.Failure);
+        Assert.Contains("sha256", meta.Message, StringComparison.Ordinal);
+    }
 }

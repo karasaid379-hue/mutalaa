@@ -18,12 +18,20 @@ namespace Mutalaa.Publisher.Pipeline;
 /// </summary>
 public sealed partial class ReleasePipeline(PublisherContext context)
 {
+    /// <summary>Komut satiri dogrulamasi ve boru hatti ayni iletiyi kullanir.</summary>
+    public const string RestartWithDryRunMessage = "--restart ile --dry-run birlikte kullanilamaz (kuru calistirma satir ve depo yazmaz).";
+
     private PublisherContext Context { get; } = context;
 
     /// <summary>publish ve build: kapi, paketler, imzali manifest; build dogrulandi'da durur, publish yukler.</summary>
     public async Task<ReleaseResult> PublishAsync(PublishRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
+        if (request.Restart && request.DryRun)
+        {
+            throw new PublisherException(ExitCodes.Other, RestartWithDryRunMessage, isPermanent: true);
+        }
+
         ValidatePackIds(request.Packs);
         string outRoot = Path.GetFullPath(request.OutDir ?? Context.Options.OutDir);
 
@@ -349,10 +357,96 @@ public sealed partial class ReleasePipeline(PublisherContext context)
             : await Context.Releases.FindOpenAsync(request.Flavor, ReleaseRequests.Yayin, cancellationToken);
         if (existing is not null)
         {
-            return existing;
+            if (!request.Restart)
+            {
+                return existing;
+            }
+
+            // --restart yalniz acik 'dogrulandi' yayin satirini yeniden baslatir ('hazirlaniyor' satir zaten yeniden derlenir); 'yayinlandi' satira
+            // ve baska bir talep turunun (terfi, geri alma) satirina dokunulmaz. Etkisiz kalacaksa sessiz kalinmaz: acik hata (1), satir degismez.
+            if (existing.Talep == ReleaseRequests.Yayin && existing.Durum == ReleaseStatus.Dogrulandi)
+            {
+                return await RestartRowAsync(existing, request, cancellationToken);
+            }
+
+            if (existing.Talep == ReleaseRequests.Yayin && existing.Durum == ReleaseStatus.Hazirlaniyor)
+            {
+                return existing;
+            }
+
+            throw new PublisherException(
+                ExitCodes.Other,
+                $"--restart uygulanamadi: {existing.Derleme.ToLabel()} {existing.Surum} satiri 'dogrulandi' durumunda bir yayin talebi degil (talep: {existing.Talep}, durum: {existing.Durum.ToLabel()}); satira dokunulmadi.");
+        }
+
+        if (request.Restart && request.Version is not null
+            && await Context.Releases.FindOpenAsync(request.Flavor, ReleaseRequests.Yayin, cancellationToken) is { } open)
+        {
+            throw new PublisherException(
+                ExitCodes.Other,
+                $"--restart uygulanamadi: istenen surumde ({request.Version}) satir yok; acik yayin satiri baska surumde ({open.Surum}, durum: {open.Durum.ToLabel()}); satira dokunulmadi.");
         }
 
         return await CreateRowAsync(request, cancellationToken);
+    }
+
+    /// <summary>
+    /// Yerel ciktisi kaybolmus ya da depoyla tutarsiz kalmis 'dogrulandi' satiri basarisiz yapar (hata kodu yeniden-baslatildi) ve ayni surumle
+    /// yeni bir satir acar; sonraki adim derleme ve yuklemedir. Onceki denemeden depoda kalan paket nesneleri yayimlanmamis surumun nesnesi
+    /// oldugu icin yuklemede degistirilir.
+    /// </summary>
+    private async Task<Release> RestartRowAsync(Release stale, PublishRequest request, CancellationToken cancellationToken)
+    {
+        // Surum depoda yayin asamasina gelmisse (canli manifest.json bu surumu gosteriyor ya da manifests/{surum}.json var) satir basarisiz YAPILMAZ:
+        // ayni surum yeni baytlarla yeniden derlenirse depodaki degismez nesnelerle cakisirdi; dogru yol ayni baytlarla 'upload'. Depo erisimi
+        // (ayar ya da ag) yoksa kontrol yapilamaz ve mevcut davranis surer.
+        if (await TryIsVersionShownAsync(stale, cancellationToken))
+        {
+            throw new PublisherException(
+                ExitCodes.Other,
+                $"--restart uygulanamadi: yayin canli manifestte ({stale.Derleme.ToLabel()} {stale.Surum}); upload ile tamamlayin (satir 'dogrulandi' kaldi).");
+        }
+
+        Say(Inv($"yeniden baslatma: {stale.Derleme.ToLabel()} {stale.Surum} (dogrulandi satir basarisiz yapildi, ayni surumle yeniden derlenecek)"));
+        await FailRowAsync(
+            stale.Id,
+            null,
+            "yeniden-baslatildi",
+            "Dogrulandi satir 'publish --restart' ile basarisiz yapildi; ayni surumle yeniden derleniyor.",
+            cancellationToken);
+        return await CreateRowAsync(
+            request with
+            {
+                Version = stale.Surum,
+                Packs = request.Packs.Count > 0 ? request.Packs : stale.Paketler ?? [],
+                Notes = request.Notes ?? stale.Notlar,
+            },
+            cancellationToken);
+    }
+
+    private async Task<bool> TryIsVersionShownAsync(Release row, CancellationToken cancellationToken)
+    {
+        IPackStore store;
+        try
+        {
+            store = Context.GetStore();
+        }
+        catch (PublisherException)
+        {
+            return false;
+        }
+
+        try
+        {
+            return await IsVersionShownAsync(store, row.Derleme.ToLabel(), row.Surum, cancellationToken);
+        }
+        catch (StorageException ex)
+        {
+            // Depo ayarliyken kontrol yapilamadiysa surumun canli olmadigi kanitlanamaz: satira dokunulmaz, hata verilir.
+            throw new PublisherException(
+                ExitCodes.Storage,
+                StorageMessage(ex) + " --restart depo denetimi yapilamadi; satira dokunulmadi, depo donunce yeniden deneyin.");
+        }
     }
 
     private async Task<Release> CreateRowAsync(PublishRequest request, CancellationToken cancellationToken)

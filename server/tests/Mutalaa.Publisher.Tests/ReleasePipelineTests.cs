@@ -240,7 +240,7 @@ public class ReleasePipelineTests(PostgresFixture postgres)
     }
 
     [Fact]
-    public async Task A_different_sha256_at_an_existing_key_fails_the_release_and_exits_with_4()
+    public async Task A_leftover_object_of_the_unpublished_version_with_a_different_sha256_is_replaced_not_a_conflict()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
         await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
@@ -249,12 +249,266 @@ public class ReleasePipelineTests(PostgresFixture postgres)
 
         ReleaseResult result = await PublishAsync(harness);
 
+        Assert.Equal(ExitCodes.Success, result.ExitCode);
+        Assert.Equal(ReleaseStatus.Yayinlandi, (await harness.Releases.GetAsync(1, ct))!.Durum);
+        Assert.Equal([key], harness.Store.Replaced);
+        Manifest manifest = harness.ReadStoredManifest("dev");
+        ManifestPack pack = manifest.Packs.Single(p => p.PackId == KucukPack);
+        Assert.Equal((pack.SizeBytes, pack.Sha256), (harness.Store.Peek(key)!.LongLength, Files256(harness.Store.Peek(key)!)));
+        Assert.Contains("degistirildi", harness.Out.ToString(), StringComparison.Ordinal);
+        Assert.Empty(await new ReleaseVerifier(harness.Context).RunAsync(new VerifyRequest(BuildFlavor.Dev), ct));
+    }
+
+    [Fact]
+    public async Task A_different_sha256_at_an_object_of_an_older_version_still_fails_the_release_and_exits_with_4()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        await PublishAsync(harness);
+        string key = PublisherHarness.PackKey("dev", KucukPack, "2026.11.0");
+        byte[] tampered = [1, 2, 3];
+        harness.Store.Seed(key, tampered, new string('a', 64));
+        harness.Store.Replaced.Clear();
+
+        // Ikinci yayin test-kucuk paketini 2026.11.0 surumunden tasir; yerel dosya hala cikti klasorunde ve ozeti manifestle ayni.
+        ReleaseResult result = await PublishAsync(harness);
+
         Assert.Equal(ExitCodes.Storage, result.ExitCode);
+        Release row = (await harness.Releases.GetAsync(2, ct))!;
+        Assert.Equal((ReleaseStatus.Basarisiz, "2026.11.1"), (row.Durum, row.Surum));
+        Assert.Contains("depo-cakismasi", row.KapiRaporu, StringComparison.Ordinal);
+        Assert.Equal("2026.11.0", harness.ReadStoredManifest("dev").Release);
+        Assert.Equal(tampered, harness.Store.Peek(key));
+        Assert.Empty(harness.Store.Replaced);
+    }
+
+    [Fact]
+    public async Task A_published_row_never_replaces_an_object_even_for_its_own_version()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        await PublishAsync(harness);
+        string key = PublisherHarness.PackKey("dev", KucukPack, "2026.11.0");
+        harness.Store.Seed(key, [1, 2, 3], new string('a', 64));
+
+        // Yayinlanmis son satir yeniden yuklenir (upload): depodaki nesne baska sha256 tasiyorsa degistirilmez, cakisma 4 verir.
+        ReleaseResult result = await harness.Pipeline.UploadAsync(new UploadRequest(BuildFlavor.Dev, "2026.11.0"), ct);
+
+        Assert.Equal(ExitCodes.Storage, result.ExitCode);
+        Assert.Equal([1, 2, 3], harness.Store.Peek(key));
+        Assert.Empty(harness.Store.Replaced);
+        Assert.Equal(ReleaseStatus.Yayinlandi, (await harness.Releases.GetAsync(1, ct))!.Durum);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Restart_is_refused_while_the_store_shows_the_rows_version_and_upload_completes_with_the_same_bytes(bool liveManifest)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        await PublishAsync(harness, stop: true);
+        byte[] manifestBytes = await File.ReadAllBytesAsync(Path.Combine(harness.OutDir, "dev", "2026.11.0", "manifest.json"), ct);
+
+        // Onceki yukleme manifesti depoya yazdi ama satiri 'yayinlandi' yapamadan kesildi: ya canli manifest.json ya da manifests/{surum}.json gorunur.
+        harness.Store.Seed(liveManifest ? PublisherHarness.ManifestKey("dev") : PublisherHarness.HistoryKey("dev", "2026.11.0"), manifestBytes, null);
+        harness.Store.Writes.Clear();
+
+        PublisherException refused = await Assert.ThrowsAsync<PublisherException>(() =>
+            harness.Pipeline.PublishAsync(new PublishRequest(BuildFlavor.Dev, [], Restart: true), ct));
+
+        Assert.Equal(ExitCodes.Other, refused.ExitCode);
+        Assert.Contains("upload ile tamamlayin", refused.Message, StringComparison.Ordinal);
+        Assert.Equal(1, await harness.CountReleasesAsync(ct));
+        Assert.Equal(ReleaseStatus.Dogrulandi, (await harness.Releases.GetAsync(1, ct))!.Durum);
+        Assert.Empty(harness.Store.Writes);
+
+        // upload ayni baytlarla tamamlar.
+        ReleaseResult upload = await harness.Pipeline.UploadAsync(new UploadRequest(BuildFlavor.Dev, "2026.11.0"), ct);
+
+        Assert.Equal(ExitCodes.Success, upload.ExitCode);
+        Assert.Equal(ReleaseStatus.Yayinlandi, (await harness.Releases.GetAsync(1, ct))!.Durum);
+        Assert.Equal(manifestBytes, harness.Store.Peek(PublisherHarness.ManifestKey("dev")));
+        Assert.Equal(manifestBytes, harness.Store.Peek(PublisherHarness.HistoryKey("dev", "2026.11.0")));
+        Assert.Empty(harness.Store.Replaced);
+        Assert.Empty(await new ReleaseVerifier(harness.Context).RunAsync(new VerifyRequest(BuildFlavor.Dev), ct));
+    }
+
+    [Fact]
+    public async Task Restart_does_not_touch_the_row_when_the_store_cannot_be_checked()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        await PublishAsync(harness, stop: true);
+        harness.Store.Writes.Clear();
+
+        // Depo ayarli ama yanit vermiyor: surumun canli olmadigi kanitlanamaz; satir basarisiz yapilmaz, yeni satir acilmaz.
+        harness.Store.Fault = (operation, _) =>
+            operation is "head" or "get" ? new StorageException(StorageFailure.Unavailable, "baglanti reddedildi") : null;
+
+        PublisherException refused = await Assert.ThrowsAsync<PublisherException>(() =>
+            harness.Pipeline.PublishAsync(new PublishRequest(BuildFlavor.Dev, [], Restart: true), ct));
+
+        Assert.Equal(ExitCodes.Storage, refused.ExitCode);
+        Assert.Contains("satira dokunulmadi", refused.Message, StringComparison.Ordinal);
+        Assert.Equal(1, await harness.CountReleasesAsync(ct));
+        Assert.Equal(ReleaseStatus.Dogrulandi, (await harness.Releases.GetAsync(1, ct))!.Durum);
+        Assert.Empty(harness.Store.Writes);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task A_different_sha256_at_the_own_version_object_is_a_conflict_when_the_store_shows_that_version_as_published(bool liveManifest)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        await PublishAsync(harness, stop: true);
+        byte[] manifestBytes = await File.ReadAllBytesAsync(Path.Combine(harness.OutDir, "dev", "2026.11.0", "manifest.json"), ct);
+        string key = PublisherHarness.PackKey("dev", KucukPack, "2026.11.0");
+        byte[] foreign = [1, 2, 3];
+        harness.Store.Seed(key, foreign, new string('a', 64));
+        string visibleKey = liveManifest ? PublisherHarness.ManifestKey("dev") : PublisherHarness.HistoryKey("dev", "2026.11.0");
+        harness.Store.Seed(visibleKey, manifestBytes, null);
+        harness.Store.Writes.Clear();
+
+        ReleaseResult result = await harness.Pipeline.UploadAsync(new UploadRequest(BuildFlavor.Dev, "2026.11.0"), ct);
+
+        Assert.Equal(ExitCodes.Storage, result.ExitCode);
+        Assert.Contains("yayimlanmis gorunuyor", result.Message, StringComparison.Ordinal);
+        Assert.Contains("yeni --version", result.Message, StringComparison.Ordinal);
         Release row = (await harness.Releases.GetAsync(1, ct))!;
         Assert.Equal(ReleaseStatus.Basarisiz, row.Durum);
         Assert.Contains("depo-cakismasi", row.KapiRaporu, StringComparison.Ordinal);
-        Assert.False(harness.Store.Contains(PublisherHarness.ManifestKey("dev")));
-        Assert.Equal([1, 2, 3], harness.Store.Peek(key));
+        Assert.Equal(foreign, harness.Store.Peek(key));
+        Assert.Equal(manifestBytes, harness.Store.Peek(visibleKey));
+        Assert.Empty(harness.Store.Replaced);
+    }
+
+    [Fact]
+    public async Task A_live_manifest_of_another_version_does_not_block_replacing_the_unpublished_versions_leftover_object()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        await PublishAsync(harness);
+        Assert.Equal("2026.11.0", harness.ReadStoredManifest("dev").Release);
+
+        // 2026.11.1 yarim kalmis: paket nesnesi depoda, manifests/2026.11.1.json yok, canli manifest 2026.11.0'i gosteriyor.
+        await harness.ChangeUnitAsync(PublisherHarness.SyntheticAnchor, "Deneme paragrafi 2 duzeltildi", ct);
+        ReleaseResult built = await PublishAsync(harness, stop: true);
+        Assert.Equal((ExitCodes.Success, "2026.11.1"), (built.ExitCode, built.Surum));
+        string key = PublisherHarness.PackKey("dev", SyntheticPack, "2026.11.1");
+        harness.Store.Seed(key, [9, 9], new string('b', 64));
+        harness.Store.Replaced.Clear();
+
+        ReleaseResult result = await harness.Pipeline.UploadAsync(new UploadRequest(BuildFlavor.Dev, "2026.11.1"), ct);
+
+        Assert.Equal(ExitCodes.Success, result.ExitCode);
+        Assert.Equal([key], harness.Store.Replaced);
+        Assert.Equal("2026.11.1", harness.ReadStoredManifest("dev").Release);
+    }
+
+    [Fact]
+    public async Task Restart_is_not_silent_when_it_cannot_apply_to_the_found_row_and_leaves_the_row_alone()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        Release promote = await harness.Releases.CreateAsync(new NewRelease(BuildFlavor.Dev, "2026.11.7", ReleaseRequests.Terfi, "2026.11.09-abc1234", "test"), ct);
+
+        PublisherException wrongKind = await Assert.ThrowsAsync<PublisherException>(() =>
+            harness.Pipeline.PublishAsync(new PublishRequest(BuildFlavor.Dev, [], Version: "2026.11.7", Restart: true), ct));
+
+        Assert.Equal(ExitCodes.Other, wrongKind.ExitCode);
+        Assert.Contains("--restart", wrongKind.Message, StringComparison.Ordinal);
+        Assert.Equal((ReleaseStatus.Hazirlaniyor, ReleaseRequests.Terfi), ((await harness.Releases.GetAsync(promote.Id, ct))!.Durum, (await harness.Releases.GetAsync(promote.Id, ct))!.Talep));
+
+        // Acik 'dogrulandi' yayin satiri baska surumde: --version ile baska bir surum istenince restart ona uygulanmaz.
+        await harness.Releases.MarkFailedAsync(promote.Id, "{}", ct);
+        await PublishAsync(harness, stop: true);
+        List<string> keysBefore = [.. harness.Store.Keys];
+
+        PublisherException otherVersion = await Assert.ThrowsAsync<PublisherException>(() =>
+            harness.Pipeline.PublishAsync(new PublishRequest(BuildFlavor.Dev, [], Version: "2026.11.9", Restart: true), ct));
+
+        Assert.Equal(ExitCodes.Other, otherVersion.ExitCode);
+        Assert.Contains("--restart", otherVersion.Message, StringComparison.Ordinal);
+        Assert.Equal(ReleaseStatus.Dogrulandi, (await harness.Releases.FindAsync(BuildFlavor.Dev, "2026.11.0", ct))!.Durum);
+        Assert.Equal(keysBefore, harness.Store.Keys.ToList());
+    }
+
+    [Fact]
+    public async Task Restart_replaces_a_stuck_verified_row_with_a_new_row_of_the_same_version_and_publishes_it()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        await PublishAsync(harness, stop: true);
+        Directory.Delete(Path.Combine(harness.OutDir, "dev", "2026.11.0"), recursive: true);
+
+        // --restart yok: surdurme davranisi aynen kalir; yerel cikti yok ve depoda paket yok, yukleme 4 verir (Tasinan paket depoda yok), satir dogrulandi kalir.
+        ReleaseResult stuck = await PublishAsync(harness);
+        Assert.Equal(ExitCodes.Storage, stuck.ExitCode);
+        Assert.Equal(1, await harness.CountReleasesAsync(ct));
+        Assert.Equal(ReleaseStatus.Dogrulandi, (await harness.Releases.GetAsync(1, ct))!.Durum);
+
+        harness.Clock.Advance(TimeSpan.FromHours(2));
+        ReleaseResult result = await harness.Pipeline.PublishAsync(new PublishRequest(BuildFlavor.Dev, [], Restart: true), ct);
+
+        Assert.Equal((ExitCodes.Success, "2026.11.0"), (result.ExitCode, result.Surum));
+        Release old = (await harness.Releases.GetAsync(1, ct))!;
+        Assert.Equal(ReleaseStatus.Basarisiz, old.Durum);
+        Assert.Contains("yeniden-baslatildi", old.KapiRaporu, StringComparison.Ordinal);
+        Release fresh = (await harness.Releases.GetAsync(2, ct))!;
+        Assert.Equal((ReleaseStatus.Yayinlandi, "2026.11.0"), (fresh.Durum, fresh.Surum));
+        Assert.Equal(2, await harness.CountReleasesAsync(ct));
+        Assert.Empty(await new ReleaseVerifier(harness.Context).RunAsync(new VerifyRequest(BuildFlavor.Dev), ct));
+    }
+
+    [Fact]
+    public async Task Restart_rebuilds_a_preparing_row_without_opening_a_new_one()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        Release pending = await harness.Releases.CreateAsync(new NewRelease(BuildFlavor.Dev, null, ReleaseRequests.Yayin, "2026.11.09-eski", "test"), ct);
+
+        ReleaseResult result = await harness.Pipeline.PublishAsync(new PublishRequest(BuildFlavor.Dev, [], Restart: true), ct);
+
+        Assert.Equal((ExitCodes.Success, pending.Surum), (result.ExitCode, result.Surum));
+        Assert.Equal(1, await harness.CountReleasesAsync(ct));
+        Assert.Equal(ReleaseStatus.Yayinlandi, (await harness.Releases.GetAsync(pending.Id, ct))!.Durum);
+    }
+
+    [Fact]
+    public async Task Restart_never_touches_a_published_row()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+        await PublishAsync(harness);
+        byte[] manifest = harness.Store.Peek(PublisherHarness.ManifestKey("dev"))!;
+        harness.Store.Writes.Clear();
+
+        PublisherException refused = await Assert.ThrowsAsync<PublisherException>(() =>
+            harness.Pipeline.PublishAsync(new PublishRequest(BuildFlavor.Dev, [], Version: "2026.11.0", Restart: true), ct));
+
+        Assert.Equal(ExitCodes.Other, refused.ExitCode);
+        Assert.Contains("--restart", refused.Message, StringComparison.Ordinal);
+        Assert.Equal(1, await harness.CountReleasesAsync(ct));
+        Assert.Equal(ReleaseStatus.Yayinlandi, (await harness.Releases.GetAsync(1, ct))!.Durum);
+        Assert.Empty(harness.Store.Writes);
+        Assert.Equal(manifest, harness.Store.Peek(PublisherHarness.ManifestKey("dev")));
+    }
+
+    [Fact]
+    public async Task Restart_together_with_dry_run_is_rejected_with_exit_1_and_writes_nothing()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using PublisherHarness harness = await PublisherHarness.CreateAsync(postgres);
+
+        PublisherException exception = await Assert.ThrowsAsync<PublisherException>(() =>
+            harness.Pipeline.PublishAsync(new PublishRequest(BuildFlavor.Dev, [], DryRun: true, Restart: true), ct));
+
+        Assert.Equal(ExitCodes.Other, exception.ExitCode);
+        Assert.Equal(0, await harness.CountReleasesAsync(ct));
+        Assert.Empty(harness.Store.Keys);
     }
 
     [Fact]
