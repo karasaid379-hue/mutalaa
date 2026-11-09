@@ -15,7 +15,7 @@ internal static class ConfigurationExtensions
     /// </summary>
     public static void UseXmin<T>(this EntityTypeBuilder<T> builder)
         where T : class =>
-        builder.Property<uint>("xmin").HasColumnName("xmin").HasColumnType("xid").IsRowVersion();
+        builder.Property<uint>(RowVersion.Name).HasColumnName(RowVersion.Name).HasColumnType("xid").IsRowVersion();
 
     /// <summary>
     /// DDL'deki DEFAULT'u korur ama EF'in degeri her zaman kendisinin yazmasini saglar: EF bir alanin CLR varsayilanini
