@@ -119,6 +119,16 @@ def export_test_vectors(
             ),
         ),
     ] = False,
+    fts_ornekleri: Annotated[
+        bool,
+        typer.Option(
+            "--fts-ornekleri",
+            help=(
+                "Arama belgesi bolum 3 sorgu tablosunun iki Arapca sorgusunu (fq-ar-0001,"
+                " fq-ar-0002) belgeden alip fts-query/query.jsonl dosyasina yazar (A12.4)."
+            ),
+        ),
+    ] = False,
     config: Annotated[
         Path | None,
         typer.Option("--config", help="Baska bir mutalaa.toml (yalniz --tanzil-ornekleri ile)."),
@@ -142,6 +152,10 @@ def export_test_vectors(
                 typer.echo(f"tanzil: {eslesme.ozet()}")
         if check:
             farklar = test_vectors.denetle(depo, ek)
+            if fts_ornekleri:
+                from mutalaa_pipeline.export import fts_ornekleri as fts
+
+                farklar += fts.denetle(depo)
             if farklar:
                 for fark in farklar:
                     typer.echo(f"fark: {fark}")
@@ -149,6 +163,11 @@ def export_test_vectors(
             typer.echo("test-vectors: fark yok")
             return
         yazilanlar = test_vectors.uret(depo, ek)
+        if fts_ornekleri:
+            from mutalaa_pipeline.export import fts_ornekleri as fts
+
+            if fts.uret(depo):
+                yazilanlar.append(fts.VEKTOR_YOLU)
     except GirdiHatasi as hata:
         raise _hata(hata) from hata
     for yol in yazilanlar:

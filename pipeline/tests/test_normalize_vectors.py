@@ -1,4 +1,4 @@
-"""Normalizasyon vektorleri kosucusu (A05.5): `normalize/tr.jsonl` ve `normalize/ar.jsonl`.
+"""Normalizasyon vektorleri kosucusu (A05.5, A12.6): `normalize/{tr,ar,tr-govde}.jsonl`.
 
 Vektorler depo kokunden okunur (`pnpm-workspace.yaml` yukari aranir); dosya yoksa ya da
 bossa acik hata verilir. Dosyalar `\\n` ile satirlara bolunur (`str.splitlines` U+2028 gibi
@@ -7,10 +7,10 @@ ayiricilarla da boler). Kaynak yalniz ASCII'dir; ASCII disi karakterler `\\N{...
 """
 
 import json
-from pathlib import Path
 from typing import Any
 
 import pytest
+import vektor_dosyalari as vd
 
 from mutalaa_pipeline.normalize import (
     NORMALIZER_VERSION,
@@ -21,22 +21,9 @@ from mutalaa_pipeline.normalize import (
     tr_stem,
 )
 
-KOK_ISARETI = "pnpm-workspace.yaml"
-
-
-def _depo_koku() -> Path:
-    yol = Path(__file__).resolve()
-    for aday in yol.parents:
-        if (aday / KOK_ISARETI).is_file():
-            return aday
-    raise RuntimeError(f"depo koku bulunamadi ({KOK_ISARETI} yok)")
-
-
-VEKTOR_KOKU = _depo_koku() / "shared" / "test-vectors"
-
 
 def _yukle(goreli: str, onek: str) -> list[dict[str, Any]]:
-    yol = VEKTOR_KOKU / goreli
+    yol = vd.VEKTOR_KOKU / goreli
     if not yol.is_file():
         raise RuntimeError(f"vektor dosyasi yok: {goreli}")
     veri = yol.read_bytes()
@@ -59,13 +46,26 @@ def _yukle(goreli: str, onek: str) -> list[dict[str, Any]]:
     return sonuc
 
 
-TR = _yukle("normalize/tr.jsonl", "tr")
-AR = _yukle("normalize/ar.jsonl", "ar")
+TR = _yukle(vd.NORMALIZE_TR, "tr")
+AR = _yukle(vd.NORMALIZE_AR, "ar")
+TR_GOVDE = _yukle(vd.NORMALIZE_TR_GOVDE, "tg")
 
 
 def test_vektor_dosyalari_bos_degil() -> None:
     assert len(TR) > 0
     assert len(AR) > 0
+    assert len(TR_GOVDE) > 0
+
+
+@pytest.mark.parametrize("vektor", TR_GOVDE, ids=[v["id"] for v in TR_GOVDE])
+def test_tr_govde_vektoru(vektor: dict[str, Any]) -> None:
+    """`normalize/tr-govde.jsonl` (A12.6): `tr_stem(input) == expected`."""
+    girdi = vektor["input"]
+    beklenen = vektor["expected"]
+    assert isinstance(girdi, str)
+    assert isinstance(beklenen, str)
+    assert tr_stem(girdi) == beklenen
+    assert search_keys(girdi).tr_stem == beklenen
 
 
 @pytest.mark.parametrize("vektor", TR, ids=[v["id"] for v in TR])

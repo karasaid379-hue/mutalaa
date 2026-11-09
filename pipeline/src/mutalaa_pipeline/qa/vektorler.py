@@ -6,6 +6,11 @@ bir vektorun `expected` alani beklenen sekilde degilse `GirdiHatasi` (cikis 2): 
 degerlendirilemez. Bir vektor beklenen degeri vermezse (ya da normallestirici hata verirse)
 o vektor `kalan` listesine girer: kapi kalir (cikis 1). Iletilerde vektor icerigi yoktur,
 yalniz kimlik.
+
+Degismez kural (Arama §1.2 madde 7, A12.6): her Turkce vektor girdisinde `tr_narrow`, `tr_wide`
+ve `tr_stem` ayni sayida sozcuk tasir ve sozcuk sirasi aynidir (Yayinlayici sutunlari sozcuk
+sayisi bakimindan hizali varsayar). Kural bozulursa vektor `hizasiz` listesine girer ve kapi
+kalir; beklenen degerden bagimsiz bir ek denetimdir.
 """
 
 from dataclasses import dataclass
@@ -13,7 +18,7 @@ from pathlib import Path
 from typing import Final
 
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kati_json
-from mutalaa_pipeline.normalize import normalize_ar, normalize_tr, search_keys
+from mutalaa_pipeline.normalize import SearchKeys, normalize_ar, normalize_tr, search_keys
 
 VEKTOR_DIZINI: Final = "shared/test-vectors/normalize"
 DOSYALAR: Final = (("tr.jsonl", "tr"), ("ar.jsonl", "ar"))
@@ -26,6 +31,7 @@ TR_ANAHTARLARI: Final = frozenset({"dar", "genis"})
 class VektorSonucu:
     toplam: int
     kalan: tuple[str, ...]  # beklenen degeri vermeyen vektor kimlikleri
+    hizasiz: tuple[str, ...] = ()  # tr_wide ve tr_stem sozcuk hizasini bozan vektor kimlikleri
 
 
 def _oku(depo_kok: Path, ad: str, onek: str) -> list[dict[str, object]]:
@@ -84,6 +90,19 @@ def _tr_gecer(vektor: dict[str, object]) -> bool:
     )
 
 
+def sozcuk_hizali(anahtarlar: SearchKeys) -> bool:
+    """`tr_narrow`, `tr_wide`, `tr_stem` ayni sayida sozcuk tasir.
+
+    Anahtarlar tek U+0020 ile ayrilir; bos anahtar sifir sozcuktur, bos sozcuk (cift bosluk,
+    bastaki ya da sondaki bosluk) hizayi bozar. Sira, uc anahtarin da ayni dar sozcuk dizisinden
+    uretilmesiyle saglanir (`search_keys`).
+    """
+    dizilar = [a.split(" ") if a else [] for a in (anahtarlar.tr_narrow, anahtarlar.tr_wide)]
+    dizilar.append(anahtarlar.tr_stem.split(" ") if anahtarlar.tr_stem else [])
+    dar, genis, govde = dizilar
+    return len(dar) == len(genis) == len(govde) and "" not in (*dar, *genis, *govde)
+
+
 def _ar_gecer(vektor: dict[str, object]) -> bool:
     girdi, beklenen = str(vektor["input"]), vektor["expected"]
     if not isinstance(beklenen, str):
@@ -92,18 +111,21 @@ def _ar_gecer(vektor: dict[str, object]) -> bool:
 
 
 def vektorleri_calistir(depo_kok: Path) -> VektorSonucu:
-    """Iki vektor dosyasini kosar; `(toplam, beklenen degeri vermeyen kimlikler)`."""
+    """Iki vektor dosyasini kosar: toplam, beklenen degeri vermeyenler, hizasiz olanlar."""
     toplam = 0
     kalan: list[str] = []
+    hizasiz: list[str] = []
     for ad, onek in DOSYALAR:
         for vektor in _oku(depo_kok, ad, onek):
             toplam += 1
             try:
                 gecti = _tr_gecer(vektor) if onek == "tr" else _ar_gecer(vektor)
+                if onek == "tr" and not sozcuk_hizali(search_keys(str(vektor["input"]))):
+                    hizasiz.append(str(vektor["id"]))
             except GirdiHatasi:
                 raise
             except Exception:  # normallestirici hata verdiyse vektor kalmistir
                 gecti = False
             if not gecti:
                 kalan.append(str(vektor["id"]))
-    return VektorSonucu(toplam=toplam, kalan=tuple(kalan))
+    return VektorSonucu(toplam=toplam, kalan=tuple(kalan), hizasiz=tuple(hizasiz))
