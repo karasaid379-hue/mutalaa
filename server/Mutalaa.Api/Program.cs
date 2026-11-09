@@ -38,6 +38,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 builder.Services.AddValidation();
 builder.Services.AddApiProblemDetails();
+builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 builder.Services.AddApiOpenApi();
 builder.Services.AddHealthChecks().AddDbContextCheck<IcerikDbContext>("postgres", tags: ["ready"]);
