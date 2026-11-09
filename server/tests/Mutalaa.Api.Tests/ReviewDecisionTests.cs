@@ -241,6 +241,9 @@ public class ReviewDecisionTests(EditorialDatabase<ReviewDecisionTests> fixture)
     public async Task Approving_a_lemma_gloss_anlam_kisa_review_sets_the_gloss_status_and_advances_updated_at()
     {
         (int lemmaId, Review review) = await SeedGlossReviewAsync();
+
+        // updated_at bir saat geriye alinir: konteyner ile ana makine saati arasindaki farka bagli olmasin.
+        await Db.ExecuteAsync("UPDATE icerik.lemma_gloss SET updated_at = now() - interval '1 hour' WHERE lemma_id = @id", Ct, ("id", lemmaId));
         DateTime before = await Db.ScalarAsync<DateTime>("SELECT updated_at FROM icerik.lemma_gloss WHERE lemma_id = @id", Ct, ("id", lemmaId));
         using HttpClient client = await ClientAsync();
 
@@ -361,7 +364,8 @@ public class ReviewDecisionTests(EditorialDatabase<ReviewDecisionTests> fixture)
         string source = await SeedSourceAsync(SourceKind.Risale);
         string anchor = TestData.UnitAnchor();
         Unit unit = await SeedUnitAsync(source, UnitKind.Risale, anchor);
-        await Db.ExecuteAsync("UPDATE icerik.unit SET tr_stem = 'eski' WHERE anchor = @a", Ct, ("a", anchor));
+        // updated_at bir saat geriye alinir: konteyner ile ana makine saati arasindaki farka bagli olmasin.
+        await Db.ExecuteAsync("UPDATE icerik.unit SET tr_stem = 'eski', updated_at = now() - interval '1 hour' WHERE anchor = @a", Ct, ("a", anchor));
         (_, _, _, _, DateTime updatedBefore) = await UnitSearchAsync(anchor);
         Review review = await SeedUnitReviewAsync(unit);
         using HttpClient client = await ClientAsync();
