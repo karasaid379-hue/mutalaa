@@ -79,7 +79,7 @@ Brifteki `meta` tablosu bu dosyada ve mobil mimaride `pack_meta` adını taşır
 CREATE TABLE unit (
   rowid         INTEGER PRIMARY KEY,         -- yalnız bu paket sürümünde geçerli
   anchor        TEXT NOT NULL UNIQUE,        -- kalıcı adres; kullanıcı verisi buna bağlanır
-  kind          TEXT NOT NULL,               -- ayet | meal | tefsir | risale | hadis | hadis_ceviri
+  kind          TEXT NOT NULL,               -- ayet | meal | tefsir | risale | hadis | hadis_ceviri | kitap
   role          TEXT NOT NULL DEFAULT 'govde',
   parent_path   TEXT,
   ord           INTEGER NOT NULL,            -- okuma sırası
@@ -116,6 +116,7 @@ CREATE INDEX tr_root_index_root ON tr_root_index(root_id);
 ```
 
 - Kalıcı başvuru her zaman `anchor` ile yapılır; `rowid` paket sürümü değişince değişebilir.
+- `kind` değerleri editoryal `unit.kind` ile aynıdır ([Editoryal veritabanı](./02-editoryal-veritabani.md)); `kitap`, `k:` çapalı kitap paragrafıdır (Çapa şemasında "sonra" fazı; enum değeri baştan vardır).
 - `label` sonuç listesinde ve kullanıcı kayıtlarında okunabilir adrestir. Kayıt oluşturulurken kopyalanır; paket silinse de kayıt okunur kalır.
 - Âyete bağlı birimlerde âyet sorgusu küresel sırayla yazılır. Bağlantı modeli §3'teki sorgu `262 BETWEEN ayah_first AND ayah_last` olur (2:255).
 - Kur'an birimlerinde çapa ve gösterim Uthmani metindir (`unit.text`). Simple Clean pakette ayrı birim ya da sütun olarak durmaz; Simple Clean âyet metninin normalize hâli `unit_search.ar_norm` sütunundadır ve yalnız aramada kullanılır ([Arama](./05-arama-fts5.md) §1.4).
@@ -144,6 +145,7 @@ CREATE TABLE sure (no INTEGER PRIMARY KEY, name TEXT NOT NULL, name_ar TEXT NOT 
                    ayah_count INTEGER NOT NULL, variants TEXT NOT NULL);
 ```
 
+- `page_map` yalnız `core` içinde değildir: aynı tablo ve dizinler `tefsir-elmalili`, `hadis-*` (metin paketlerinde; hadis için satır olmayabilir, tablo boş kalabilir), `risale-dizin` (bölüm 3.4) ve `mushaf-b` (bölüm 3.5) paketlerinde de bulunur. `risale-{kitap}`, `kelime-kok`, `mushaf-a-cuz-*` ve `ses-*` paketlerinde yoktur (`paketler.json`).
 - `quran_marker.kind`: `cuz` (30), `hizb` (60; her dördüncü çeyrek), `rub` (240 çeyrek), `secde` (15). `anchor` başlangıç âyetinin çapasıdır (`q:{s}:{a}`; `secde` için secde âyeti); `secde_turu` yalnız `secde` satırında dolu olur (`recommended` ya da `obligatory`, Tanzil'in etiketi; fıkhî hüküm olarak gösterilmez). Menzil ve rükû v1'de paketlenmez. Editoryal tablo `source_id` ve `data_version` sütunlarını da taşır; pakette yoktur ([Editoryal veritabanı](./02-editoryal-veritabani.md) §5). Değerler yalnız Tanzil üst veri dosyasından gelir.
 
 ### 3.3 `kelime-kok`
@@ -335,7 +337,7 @@ flowchart TD
 2. **Güncelleme denetimi.** Uygulama öne geldiğinde en fazla 6 saatte bir, Ayarlar › Depolama açılınca ve "Güncellemeleri denetle" ile yapılır ([Depolama yöneticisi](../06-mobil/03-depolama-yoneticisi.md) §8). Manifest `ETag` ile istenir; değişiklik yoksa sunucu 304 döner.
 3. **Görünürlük.** Uygulama kalite kapısının ikinci kontrolünü uygular ([Yayın süreci](../07-yayin/01-yayin-sureci.md) §4.3): manifest imzasını doğrular; paketin derleme türü (`pack_meta.flavor`) ve kaynakları (`pack_source`) uygulamanın derleme türüne uygun olmalıdır. `public` derlemede `test-` önekli kaynak taşıyan paket, `internal` derlemede `test-kucuk` ve `test-ses` dışında `test-` önekli kaynak taşıyan paket açılmaz ve listelenmez. Süzmenin kendisi paket üretilirken yapılır (bölüm 7).
 4. **İndirme.** Kuyruk `download_job` tablosundadır; duraklatılabilir ve varsayılan olarak yalnız Wi-Fi ile çalışır (K-18). Büyük dosyada akışlı SHA-256 için kitaplık seçimi Doğrulanacak.
-5. **Doğrulama.** Dosya salt okunur açılır: `PRAGMA user_version` desteklenen aralıkta; `pack_meta` içindeki `pack_id`, `version`, `flavor` ve `normalizer_version` beklenen değerlerde; `pack_source` derleme türüne uygun; `PRAGMA quick_check` geçer; `SELECT count(*) FROM unit` sonucu `pack_meta.unit_count` ile eşleşir; bir FTS sorgusu hatasız döner.
+5. **Doğrulama.** Dosya salt okunur açılır: `PRAGMA user_version` desteklenen aralıkta; `pack_meta` içindeki `pack_id`, `version`, `flavor` ve `normalizer_version` beklenen değerlerde; `pack_source` derleme türüne uygun; `PRAGMA quick_check` geçer. Son iki denetim paket türüne göre koşulludur ve yalnız ilgili tabloyu taşıyan türlerde yapılır: `unit` taşıyan türlerde (`core`, `tefsir-elmalili`, `hadis-*`, `risale-{kitap}`) `SELECT count(*) FROM unit` sonucu `pack_meta.unit_count` ile eşleşir; `unit_fts` taşıyan türlerde (`core`, `tefsir-elmalili`, `hadis-*`, `risale-dizin`) bir FTS sorgusu hatasız döner. `risale-{kitap}` paketinde FTS sorgusu, `risale-dizin`, `kelime-kok`, `mushaf-*` ve `ses-*` paketlerinde `unit` sayımı yapılmaz; bu türlerde yalnız öteki denetimler uygulanır. Hangi türün hangi tabloları taşıdığı `packages/content-schema/sql/paketler.json` dosyasındadır (Backend API §10.4).
 6. **Kurulum.** Dosya kendi sürüm klasörüne taşınır ve `installed_pack` satırı tek işlemde güncellenir. Taşımanın atomikliği belgede yazmadığı için kurulum sürüm klasörü, tek işlem ve açılış uzlaştırmasıyla çökmeye dayanıklı kurulur (depolama yöneticisi).
 7. **Bağlama ve geri dönüş.** İçerik bağlantısı süren sorgular bitince eski şemayı ayırır, yenisini bağlar. 5–7. adımlardan biri başarısız olursa yeni dosya silinir, önceki sürüm etkin kalır ve kişisel veri içermeyen bir hata kaydı gönderilir.
 8. **Uyumsuz şema.** Paket şeması uygulamanın üst sınırından büyükse paket "Uygulamayı güncelleyin" notuyla listelenir ve indirilmez; normalde `min_app_version` bunu baştan önler.

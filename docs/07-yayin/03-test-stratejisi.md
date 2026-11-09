@@ -1,6 +1,6 @@
 # Test stratejisi
 
-> **Sürüm:** 1.11 · **Tarih:** 7 Kasım 2026 · **Durum:** Taslak
+> **Sürüm:** 1.12 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
 
 Bu dosya neyin, hangi araçla, ne zaman test edildiğini tanımlar. Eşik değerlerinin çoğu bu dosyanın önerisidir; ilk ölçümden sonra kalibre edilir ve öyle işaretlidir.
@@ -19,16 +19,17 @@ Bu dosya neyin, hangi araçla, ne zaman test edildiğini tanımlar. Eşik değer
 
 ## 2. Ortak test vektörleri
 
-Normalizasyon ve çapa kuralları tek yerde tanımlıdır ve Python, TypeScript ve C# uygulamaları aynı dosyalarla kilitlenir. Vektör dosyası şartnamedir: bir dosya değişirse üç uygulama aynı PR'da geçmek zorundadır.
+Normalizasyon ve çapa kuralları tek yerde tanımlıdır ve Python, TypeScript ve C# uygulamaları aynı dosyalarla kilitlenir. Vektör dosyası şartnamedir: bir dosya değişirse onu koşan uygulamalar aynı PR'da geçmek zorundadır. Çoğu dosyayı üç uygulama da koşar; iki istisna vardır ve koşucuda gerekçesiyle açıkça atlanır: `fts-query/query.jsonl` yalnız TypeScript'te koşar (sorgu kurucu `packages/search` içindedir), `normalize/tr-govde.jsonl` TypeScript ve Python'da koşar (C# gövdeleme yapmaz). Atlanan dosyalar `pipeline/tests/vektor_dosyalari.py` ve `server/tests/Mutalaa.Domain.Tests/VectorCoverageTests.cs` içindeki listede durur; listede olmayan yeni `.jsonl` dosyası pytest ve xUnit'i kırar. Yeni vektör dosyası eklerken önce bu listeler güncellenir.
 
 ```text
 shared/test-vectors/
   normalize/tr.jsonl        # Türkçe geniş ve dar anahtar
+  normalize/tr-govde.jsonl  # Türkçe gövdeleyici (stemTr, Snowball); TypeScript ve Python koşar, C# atlar (tg-)
   normalize/ar.jsonl        # Arapça hareke ve harf birleştirme
   anchors/valid.jsonl       # çapa ayrıştırma; ayrıca invalid, compare, contains, route
   offsets/offsets.jsonl     # kod noktası ofsetleri ve snapSpan
   content-hash/hash.jsonl   # kanonik metin özeti
-  fts-query/query.jsonl     # sorgu → FTS5 MATCH ifadesi (doğruluk; Arama §3)
+  fts-query/query.jsonl     # sorgu → FTS5 MATCH ifadesi (doğruluk; Arama §3); yalnız TypeScript koşar (fq-); Arapça fq-ar- satırları --fts-ornekleri ile üretilir
   arama/olcum.jsonl         # arama ölçüm kümesi (bölüm 10); vektör değildir, koşucular okumaz
 ```
 
@@ -36,7 +37,7 @@ Düzenin tamamı [Proje yapısı](../02-mimari/03-proje-yapisi.md) §1'dedir. He
 
 Çapa vektörleri [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)'teki ayrıntıları da kilitler: hata kodlarının önceliği, Kur'an'da okuma sırasına göre `compare`, `contains` ekleri, birim işlevleri (`unitOf`, `toUnitSpan`, `coveredAyahs`), rota kuralları, ofset işlevlerinin hataları ve kendi metnimizin ilk kayıt adım sırası ([Çapa şeması](../03-veri/01-capa-semasi.md) §2, §7, §11). Bir işlevi uygulayan her dil aynı vektörde aynı sonucu verir; `content-hash/` TypeScript'te koşmaz, çünkü cihaz özet hesaplamaz.
 
-Örnekler (çıktılar yerel Python denemesiyle doğrulandı; kesin kurallar [Arama](../03-veri/05-arama-fts5.md) ve [Çapa şeması](../03-veri/01-capa-semasi.md) dosyalarındadır). Satırlar farklı dosyalardandır: `tr-` ve `ar-` `normalize/`, `an-0001` ve `an-0004` `anchors/valid.jsonl`, `an-0002`, `an-0003`, `an-0005` ve `an-0006` `anchors/invalid.jsonl`, `of-` `offsets/offsets.jsonl`. Kimlik önekleri: `valid` ve `invalid` tek ortak `an-` dizisini paylaşır; `cm-` `compare`, `ct-` `contains`, `ro-` `route`, `of-` `offsets`, `ch-` `content-hash` dosyasındadır. Üretilen sınır satırları `an-s…` ve `an-u-…` kimliklidir; birden çok kuralı bozan öncelik satırları `invalid` içindedir (A04, K-35 madde 1). Aşağıdaki satırlar biçimi gösterir; gerçek vektörlerde `expected` ayrıca `unit`, `unit_span` ve `ayahs` taşır ve not alanı dayanak gösterir. `tr-` ve `ar-` satırları gerçek vektörlerden aynen alınmıştır (A05, [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)): `tr.jsonl` 86, `ar.jsonl` 69 satırdır; `expected` değerleri elle yazılır ve `uv run mutalaa export test-vectors` yalnız biçimi, kaçışı ve kimlik düzenini denetler. `ar-0001` … `ar-0062` satırları `\u` kaçışlı sentetik harf ve işaret dizileridir, Kur'an metni değildir. `ar-tz-0001` … `ar-tz-0007` satırlarının girdisi Arama §1.5'teki Kur'an kelimeli Arapça tablonun Tanzil Uthmani baytlarıdır (`note`: kaynak ve çapa, ör. `tanzil-uthmani q:1:1`); `expected` tablonun `ar` sütunudur ve bu satırları `uv run mutalaa export test-vectors --tanzil-ornekleri` baştan üretir (A10.7).
+Örnekler (çıktılar yerel Python denemesiyle doğrulandı; kesin kurallar [Arama](../03-veri/05-arama-fts5.md) ve [Çapa şeması](../03-veri/01-capa-semasi.md) dosyalarındadır). Satırlar farklı dosyalardandır: `tr-` ve `ar-` `normalize/`, `an-0001` ve `an-0004` `anchors/valid.jsonl`, `an-0002`, `an-0003`, `an-0005` ve `an-0006` `anchors/invalid.jsonl`, `of-` `offsets/offsets.jsonl`. Kimlik önekleri: `valid` ve `invalid` tek ortak `an-` dizisini paylaşır; `cm-` `compare`, `ct-` `contains`, `ro-` `route`, `of-` `offsets`, `ch-` `content-hash`, `tg-` `normalize/tr-govde`, `fq-` `fts-query` dosyasındadır. Üretilen sınır satırları `an-s…` ve `an-u-…` kimliklidir; birden çok kuralı bozan öncelik satırları `invalid` içindedir (A04, K-35 madde 1). Aşağıdaki satırlar biçimi gösterir; gerçek vektörlerde `expected` ayrıca `unit`, `unit_span` ve `ayahs` taşır ve not alanı dayanak gösterir. `tr-` ve `ar-` satırları gerçek vektörlerden aynen alınmıştır (A05, [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları)): `tr.jsonl` 86, `ar.jsonl` 69 satırdır; `expected` değerleri elle yazılır ve `uv run mutalaa export test-vectors` yalnız biçimi, kaçışı ve kimlik düzenini denetler. `ar-0001` … `ar-0062` satırları `\u` kaçışlı sentetik harf ve işaret dizileridir, Kur'an metni değildir. `ar-tz-0001` … `ar-tz-0007` satırlarının girdisi Arama §1.5'teki Kur'an kelimeli Arapça tablonun Tanzil Uthmani baytlarıdır (`note`: kaynak ve çapa, ör. `tanzil-uthmani q:1:1`); `expected` tablonun `ar` sütunudur ve bu satırları `uv run mutalaa export test-vectors --tanzil-ornekleri` baştan üretir (A10.7).
 
 ```jsonl
 {"id":"tr-0001","input":"Işık","expected":{"dar":"ışık","genis":"isik"},"note":"I → ı"}
@@ -220,7 +221,7 @@ Yığın `xunit.v3` kullanır ([Teknoloji yığını](../02-mimari/02-teknoloji-
 
 **Kullanıcı veritabanı (cihazda, expo-sqlite + Drizzle).** Yayımlanmış her şema sürümünden bir fikstür veritabanı saklanır. Göç dosyaları Node'da SQLite üzerinde çalıştırılır ve veri kaybı olmadığı doğrulanır. Her kullanıcı tablosunda `id`, `hlc`, `updated_at`, `deleted_at`, `base_version`, `device_id` sütunlarının bulunduğu test edilir ([K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte)). Bir Maestro akışı eski sürümden güncellemeyi cihazda sınar.
 
-**İçerik paketi.** `min_app_version` değeri uygulamadan yüksek olan paket açılmaz; eski paket yeni uygulamada açılır.
+**İçerik paketi.** `min_app_version` değeri uygulamadan yüksek olan paket açılmaz; eski paket yeni uygulamada açılır. Paket DDL'i (`packages/content-schema/sql/`, tür listesi `paketler.json`) iki ayrı duman testiyle sınanır: Node'da `node:sqlite` ile (`packages/content-schema/test/`; FTS5, ATTACH ve MATCH sözdizimi dahil) ve C#'ta `Microsoft.Data.Sqlite` ile (`server/tests/Mutalaa.Publisher.Tests/PackDdlSmokeTests.cs`). Manifest şeması `ManifestSchemaTests` içinde JsonSchema.Net ile sınanır.
 
 ## 7. Kalite kapısı testleri
 
