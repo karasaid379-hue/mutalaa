@@ -82,6 +82,41 @@ public class ManifestSchemaTests
         Assert.False(IsValid(manifest));
     }
 
+    // ---- Sondaki satir sonu: "$" .NET'te son LF'den once de eslesir; desenler "(?![\s\S])" ile biter ----
+
+    [Theory]
+    [InlineData("sha256")]
+    [InlineData("version")]
+    [InlineData("min_app_version")]
+    [InlineData("pack_id")]
+    [InlineData("url")]
+    public void A_trailing_line_feed_is_rejected_in_every_pack_pattern_field(string field)
+    {
+        JsonObject manifest = Example();
+        JsonObject pack = FirstPack(manifest);
+        pack[field] = pack[field]!.GetValue<string>() + "\n";
+
+        Assert.False(IsValid(manifest));
+    }
+
+    [Fact]
+    public void A_trailing_line_feed_is_rejected_in_release()
+    {
+        JsonObject manifest = Example();
+        manifest["release"] = manifest["release"]!.GetValue<string>() + "\n";
+
+        Assert.False(IsValid(manifest));
+    }
+
+    [Fact]
+    public void Whitespace_inside_the_url_is_rejected()
+    {
+        JsonObject manifest = Example();
+        FirstPack(manifest)["url"] = "http://192.168.1.50:8333/mutalaa/ packs/core.db";
+
+        Assert.False(IsValid(manifest));
+    }
+
     // ---- Ek denetimler ----
 
     [Fact]
