@@ -1,7 +1,6 @@
-import { PageHeading } from '@/components/page-heading';
-import { tr } from '@/i18n/tr';
+import { BaglantiQueue } from './baglanti/baglanti-queue';
 
-// Placeholder of A15.3: the link candidates queue screen is written in A15.4.
+/** Route `kuyruk/baglanti`: link candidates (`xref`); the bulk selection is closed (K-48, karar 5). */
 export function Component() {
-  return <PageHeading>{tr.nav.queueBaglanti}</PageHeading>;
+  return <BaglantiQueue />;
 }

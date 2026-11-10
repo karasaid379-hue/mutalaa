@@ -1,7 +1,6 @@
-import { PageHeading } from '@/components/page-heading';
-import { tr } from '@/i18n/tr';
+import { SureAdiQueue } from './sure-adi/sure-adi-queue';
 
-// Placeholder of A15.3: the surah name queue screen is written in A15.4.
+/** Route `kuyruk/sure-adi`: the surah name candidates (İ-23). */
 export function Component() {
-  return <PageHeading>{tr.nav.queueSureAdi}</PageHeading>;
+  return <SureAdiQueue />;
 }
