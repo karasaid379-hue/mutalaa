@@ -82,7 +82,21 @@ export function page(
 }
 
 /** The shell's two requests: a signed-in session and the queue counts. */
+/**
+ * Empty answers for the list request every screen makes on opening (queues, sources, units, releases).
+ * A test that wants real rows registers its own handler afterwards: the last registration wins.
+ * `/reviews/{id}` must come before `/reviews/stats`, which `signedIn` registers after this.
+ */
+export function emptyScreens(fake: FakeApi): void {
+  fake.get('/api/v1/reviews', ok(page([])));
+  fake.get('/api/v1/sources', ok([]));
+  fake.get('/api/v1/units', ok({ items: [], next_cursor: null }));
+  fake.get('/api/v1/releases', ok({ items: [], next_cursor: null }));
+}
+
+/** The shell's two requests: a signed-in session and the queue counts (plus empty screen lists). */
 export function signedIn(fake: FakeApi, roller: string[] = ['editor'], email = EDITOR_EMAIL): void {
+  emptyScreens(fake);
   fake.get('/api/v1/auth/me', ok(session(roller, email)));
   fake.get('/api/v1/reviews/stats', ok(stats()));
 }

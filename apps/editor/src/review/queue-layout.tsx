@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useApi } from '@/app/api-context';
 import { PageHeading } from '@/components/page-heading';
@@ -198,7 +198,9 @@ export function QueueLayout({
               <ProblemMessage error={detail.error} />
             </div>
           ) : (
-            renderDetail({ review: detail.data, onDecided })
+            <Fragment key={detail.data.id}>
+              {renderDetail({ review: detail.data, onDecided })}
+            </Fragment>
           )}
         </section>
       </div>

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { PROTECTED_PATHS, ROUTE_PATHS } from '@/app/routes';
 import { tr } from '@/i18n/tr';
 import { noContent, ok, problem, useFakeApi } from './fake-api';
-import { EDITOR_EMAIL, OTHER_EMAIL, session, signedIn, stats } from './fixtures';
+import { EDITOR_EMAIL, OTHER_EMAIL, emptyScreens, session, signedIn, stats } from './fixtures';
 import { renderApp } from './render-app';
 
 const TITLES: Record<string, string> = {
@@ -187,6 +187,7 @@ describe('login page', () => {
 
   it('sends e-mail and password, then returns to ?sonraki=', async () => {
     let signed = false;
+    emptyScreens(fake);
     fake.get('/api/v1/auth/me', () => (signed ? ok(session()) : problem(401, 'oturum-acilamadi')));
     fake.get('/api/v1/reviews/stats', ok(stats()));
     fake.post('/api/v1/auth/login', () => {
