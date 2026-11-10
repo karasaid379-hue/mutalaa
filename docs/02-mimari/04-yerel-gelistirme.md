@@ -1,7 +1,7 @@
 # Yerel geliştirme
 
-> **Sürüm:** 1.7 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)
+> **Sürüm:** 1.8 · **Tarih:** 10 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-48](../00-ozet/02-karar-defteri.md#k-48--editör-api-kuralları-inceleme-kararı-ikinci-onay-eşzamanlılık-yayın-talebi-ve-sayfa-görseli) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)
 
 Geliştirme ekibin kendi Windows bilgisayarında yapılır ([K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma)). PostgreSQL ve S3 deposu Docker'da çalışır. API, editör ve Yayınlayıcı isteğe bağlı olarak Docker'da ya da doğrudan ana makinede çalışır. Node, .NET ve Python araçları ana makinededir. Uygulama telefonda ya da Android emülatöründe geliştirme derlemesiyle açılır.
 
@@ -105,6 +105,14 @@ dotnet user-secrets --project server/Mutalaa.Publisher set "Storage:PublicBaseUr
 
 `Storage:PublicBaseUrl` manifestteki mutlak paket adreslerinin tabanıdır ([Backend API](./05-backend-api.md) §10.5). Bilgisayarın LAN IP adresi değişirse bu değer güncellenir ve `publish` yeniden çalıştırılır.
 
+**API'nin öteki kullanıcı sırları (A14).** `Mutalaa:Seed:AdminEmail` ve `Mutalaa:Seed:AdminPassword` bölüm 6 adım 3'tedir. `Mutalaa:Auth:DevAutoLogin` (varsayılan `false`) açılırsa geri döngü adresinden gelen ve Host başlığı `localhost`, `127.0.0.1` ya da `[::1]` olan oturumsuz istek seed yöneticisiyle oturum açar (DNS rebinding koruması, K-48 madde 10); yalnız `Development` ortamında kabul edilir, başka ortamda açılış hata verir. Yol ayarları `Mutalaa:Paths:RawDir`, `SourcesDir`, `PacksDir` ve `TempDir` `appsettings.json` içinde varsayılanlarıyla durur (`data/raw`, `pipeline/sources`, `data/packs`, `.tmp/api`); göreli değerler çalışma dizinine göre çözülür ve değiştirmek gerekirse aynı anahtarlar kullanıcı sırlarıyla ezilir.
+
+```powershell
+dotnet user-secrets --project server/Mutalaa.Api set "Mutalaa:Auth:DevAutoLogin" "true"
+```
+
+**Çalışma dizini.** `dotnet run` ve `dotnet watch` API projesinde çalışma dizinini depo köküne çeker (csproj `RunWorkingDirectory`; Yayınlayıcı projesinde böyle bir ayar yoktur, `dotnet run --project` komutunu depo kökünden verin); `data/raw`, `pipeline/sources` ve `data/packs` gibi göreli yollar böylece komutu hangi klasörden verdiğinizden bağımsız çözülür. İçerik kökü ise derleme klasörüdür, `appsettings*.json` oradan okunur ([Backend API](./05-backend-api.md) §3).
+
 **`.env` parolasını sonradan değiştirmek.** `.env` değişince çalışan kapsayıcı ve veritabanındaki parola güncellenmez: veritabanı ilk kurulumdaki parolayı saklar. Parolayı sonradan değiştirdiyseniz veritabanını `.env` ile eşitleyin, sonra kapsayıcıları yeniden başlatın ve kullanıcı sırlarındaki bağlantı dizesini de aynı değerle güncelleyin:
 
 ```powershell
@@ -116,7 +124,12 @@ docker compose up -d
 
 ## 4. `docker-compose.yml`
 
-Varsayılan komut (`docker compose up -d`) yalnız `postgres`, `s3` ve `s3-init` servislerini başlatır. API, editör ve Yayınlayıcı `app` profilindedir: `docker compose --profile app up -d --build`. Günlük geliştirmede bu üçü genellikle ana makinede çalışır (bölüm 7).
+Varsayılan komut (`docker compose up -d`) yalnız `postgres`, `s3` ve `s3-init` servislerini başlatır. API, editör ve Yayınlayıcı `app` profilindedir: `docker compose --profile app up -d --build`. Günlük geliştirmede bu üçü genellikle ana makinede çalışır (bölüm 7). API ve Yayınlayıcı imajları `docker compose --profile app build api publisher` ile derlenir; editör Dockerfile'ı A15'te gelir, `editor` servisi o zamana kadar derlenmez.
+
+**Konteynerdeki API ve Yayınlayıcı (A14).**
+- API konteyneri `Development` ortamında çalışır (`Properties/launchSettings.json` konteynerde kullanılmaz) ve 8080 numaralı bağlantı noktasını `127.0.0.1:${API_PORT:-5080}` adresine yayar. `DevAutoLogin` konteynerde çalışmaz: istek konteynere geri döngü adresinden gelmez. Konteynerde oturum, `seed` ile açılmış yöneticinin e-posta ve parolasıyla açılır.
+- Yayınlayıcı `watch` açıkken API'nin açtığı `hazirlaniyor` talepleri işler. İmza için üç değer gerekir: `PUBLISHER_DEV_SIGNING_KEY` gizlidir ve `.env` içine kullanıcı yazar (boşken `watch` açılır ve `verify` çalışır, ama dev talebi imzalanamaz: yapılandırma hatasıdır ve satır `hazirlaniyor` kalır); `PUBLISHER_DEV_SIGNING_KID` (varsayılan `dev-2026-1`) ve `PUBLISHER_DEV_PUBLIC_KEY` (varsayılan A13'te üretilen dev açık anahtarı) gizli değildir ve compose'ta varsayılanları vardır. Kid, ana makinedeki `Signing:dev:Kid` ile aynı olmalıdır; `keys generate --force` çalıştırılırsa üçü birlikte güncellenir. Açık anahtar `verify --public-key` bayrağını gereksiz kılar.
+- `Storage__PublicBaseUrl` `DEV_LAN_IP` değerinden kurulur; canlı manifestteki paket adresleriyle aynı olmalıdır, aksi halde `verify` `url-uyumsuz` bulgusu verir ([İnsan adımları](../10-claude-code/06-insan-adimlari.md) İ-29).
 
 ```yaml
 # docker-compose.yml
@@ -184,6 +197,11 @@ services:
       Mutalaa__Features__Public: "false"
       Mutalaa__Seed__AdminEmail: ${MUTALAA_ADMIN_EMAIL}
       Mutalaa__Seed__AdminPassword: ${MUTALAA_ADMIN_PASSWORD}
+    volumes:
+      # Onizleme ve sayfa gorseli goreli yollari /repo altinda cozer (WORKDIR /repo); hepsi salt okunur.
+      - ./data/raw:/repo/data/raw:ro
+      - ./pipeline/sources:/repo/pipeline/sources:ro
+      - ./data/packs:/repo/data/packs:ro
     ports:
       - "127.0.0.1:${API_PORT:-5080}:8080"
     depends_on:
@@ -208,8 +226,14 @@ services:
       Storage__Bucket: ${S3_BUCKET}
       Storage__PublicBaseUrl: http://${DEV_LAN_IP}:${S3_PORT:-8333}/${S3_BUCKET}
       Signing__dev__PrivateKey: ${PUBLISHER_DEV_SIGNING_KEY}
+      Signing__dev__Kid: ${PUBLISHER_DEV_SIGNING_KID:-dev-2026-1}
+      Signing__dev__PublicKey: ${PUBLISHER_DEV_PUBLIC_KEY:-wFLQA/pDvHvUg7LfHpOjWd0bpPCwvcoLnLjXhxwRytI=}
     volumes:
-      - ./data/packs:/work
+      # Goreli yollar /repo altinda cozulur (WORKDIR /repo).
+      - ./data/packs:/repo/data/packs
+      - ./data/reports:/repo/data/reports
+      - ./data/raw:/repo/data/raw:ro
+      - ./pipeline/sources:/repo/pipeline/sources:ro
     depends_on:
       postgres: { condition: service_healthy }
       s3-init: { condition: service_completed_successfully }
@@ -243,7 +267,7 @@ Notlar:
 - **Anonim okuma.** `{"name":"anonymous","actions":["Read"]}` içindeki çıplak `Read` bütün kovalara uygulanır. Bugün tek kova vardır. İkinci kova eklenirse eylem `Read:<kova>` biçiminde yazılır ([SeaweedFS #7134](https://github.com/seaweedfs/seaweedfs/issues/7134)). Kova kısıtının bazı sürümlerde filer yeniden başlayana kadar işlemediği bildirilmiştir; ikinci kova eklendiğinde anonim erişim yeniden sınanır.
 - **S3 güvenliği.** Şablondaki varsayılan örnek anahtarlar `Admin` yetkilidir ve S3 `0.0.0.0` üzerinde LAN'a açıktır. Yalnız "Özel" ağda ve güvenlik duvarı kuralıyla kullanılır (bölüm 2). Ortak bir ağda `S3_SECRET_KEY` değiştirilir; `infra/local/s3.json` ve `.env` içinde aynı değer olmalıdır.
 - **`s3-init` ilk denemesi.** İlk `head-bucket` çağrısı S3 henüz açılmadan başarısız olabilir; günlükte `Could not connect to the endpoint URL` görülür. Döngü yeniden dener ve `create-bucket` ile kova oluşur. Bu beklenen davranıştır. Kova yokken `head-bucket` 404 `NoSuchBucket` döner.
-- **Dockerfile'lar.** API ve Yayınlayıcı `mcr.microsoft.com/dotnet/sdk:10.0` ile derlenir (`global.json`, `.editorconfig` ve `server/` kopyalanır, `dotnet publish`); API `aspnet:10.0`, Yayınlayıcı `runtime:10.0` imajında çalışır ve `packages/content-schema/sql/` klasörünü de taşır. Editör `node:24-alpine` ile derlenir, `nginx:stable-alpine` ile sunulur; nginx `/api/` isteklerini `http://api:8080` adresine aktarır. API, editör ve Yayınlayıcı imajlarının derleme bağlamı depo köküdür (`context: .`). `.dockerignore` beş kalıbı dışarıda bırakır: `**/node_modules`, `**/bin`, `**/obj`, `data/`, `.git`. Gizli değerler derleme bağlamına ve imaj katmanına girmesin diye `.tmp/`, `**/.env`, `**/.env.*` (`!**/.env.example` hariç) ve `infra/local/s3.json` de eklenmiştir.
+- **Dockerfile'lar (A14'te yazıldı).** `server/Mutalaa.Api/Dockerfile` ve `server/Mutalaa.Publisher/Dockerfile` vardır; imajlar `docker compose --profile app build api publisher` ile derlenir. İkisi de `mcr.microsoft.com/dotnet/sdk:10.0` ile derlenir: önce `global.json`, `.editorconfig`, `server/Directory.*.props`, ilgili csproj ve kilit dosyaları kopyalanır ve `dotnet restore --locked-mode` çalışır, sonra kaynak kopyalanıp `dotnet publish -c Release --no-restore` yapılır (API imajı OpenAPI belgesi üretmez: `OpenApiGenerateDocumentsOnBuild=false`). API `aspnet:10.0`, Yayınlayıcı `runtime:10.0` imajında (Debian) çalışır; Yayınlayıcı `packages/content-schema/sql/` klasörünü ve `manifest.schema.json` dosyasını da taşır. **Uygulama ve çalışma dizini:** yayımlanan dosyalar `/app` altındadır (içerik kökü, `appsettings*.json` buradan okunur); `WORKDIR` `/repo`'dur, böylece göreli `data/...`, `pipeline/...` ve `.tmp/...` yolları `/repo` altında çözülür. Compose bu yolları bağlar: API `./data/raw`, `./pipeline/sources` ve `./data/packs` klasörlerini salt okunur alır; `.tmp/api` konteyner içinde yazılabilirdir (`/repo/.tmp` `app` kullanıcısına aittir). Yayınlayıcı `./data/packs` ve `./data/reports` klasörlerini yazılabilir, `./data/raw` ve `./pipeline/sources` klasörlerini salt okunur alır. Editör `node:24-alpine` ile derlenir, `nginx:stable-alpine` ile sunulur; nginx `/api/` isteklerini `http://api:8080` adresine aktarır. API, editör ve Yayınlayıcı imajlarının derleme bağlamı depo köküdür (`context: .`). `.dockerignore` beş kalıbı dışarıda bırakır: `**/node_modules`, `**/bin`, `**/obj`, `data/`, `.git`. Gizli değerler derleme bağlamına ve imaj katmanına girmesin diye `.tmp/`, `**/.env`, `**/.env.*` (`!**/.env.example` hariç) ve `infra/local/s3.json` de eklenmiştir.
 
 ## 5. Ortam dosyaları
 
@@ -272,6 +296,10 @@ MUTALAA_ADMIN_PASSWORD=yerel-yonetici-sifresi-degistir
 DEV_LAN_IP=192.168.1.50
 # Konteynerdeki Yayınlayıcı için dev imza anahtarı (keys generate çıktısı; depoya girmez)
 PUBLISHER_DEV_SIGNING_KEY=
+# Ana makinedeki Signing:dev:Kid ile ayni olmali; keys generate --force sonrasi ikisi birlikte guncellenir (gizli degil)
+PUBLISHER_DEV_SIGNING_KID=dev-2026-1
+# Dev acik anahtari (A13 ilk yayin; gizli degil); verify --public-key gerektirmez
+PUBLISHER_DEV_PUBLIC_KEY=wFLQA/pDvHvUg7LfHpOjWd0bpPCwvcoLnLjXhxwRytI=
 ```
 
 ```dotenv
@@ -298,7 +326,7 @@ PYTHONUTF8=1
    docker compose up -d
    docker compose ps -a       # postgres "healthy", s3-init "exited (0)" olmalı; -a çıkmış konteyneri de listeler
    ```
-2. **Göçleri uygulayın.**
+2. **Göçleri uygulayın.** Göç dolu bir yerel veritabanına uygulanmadan önce yedek alınır (`powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/backup-db.ps1`; bölüm 9). Yeni göç eklenince (ör. A14'ün `AddReviewAuditColumns` göçü) komut yeniden çalıştırılır; ardından adım 3'teki `seed` yeniden çalıştırılabilir (idempotenttir).
    ```powershell
    $env:ASPNETCORE_ENVIRONMENT = "Development"
    dotnet ef database update --project server/Mutalaa.Infrastructure --startup-project server/Mutalaa.Api
@@ -325,9 +353,10 @@ PYTHONUTF8=1
    `normalize` iki ingest çalıştırmasını da (Uthmani ve Simple Clean) okur; biri yoksa çıkış `2` verir. `qa run` dört kapıyı (G-KAY, G-BUT, G-CAP, G-NOR) çalıştırır; `export pg` yalnız geçen raporla yükler, kapı kalmışsa çıkış `1` verir.
 5. **API'yi ve editörü açın.**
    ```powershell
-   dotnet watch --project server/Mutalaa.Api        # http://localhost:5080/scalar/v1
+   dotnet watch --project server/Mutalaa.Api        # http://127.0.0.1:5080/scalar/v1 (API arayüzü; belge /openapi/v1.json)
    pnpm --filter @mutalaa/editor dev                 # http://localhost:5173 (ayrı terminal)
    ```
+   `launchSettings.json` `http` profili API'yi `http://127.0.0.1:5080` ve `Development` ortamıyla açar; `Development` dışında Scalar ve OpenAPI uçları eşlenmez. `Mutalaa:Auth:DevAutoLogin` açıksa (bölüm 3) `Development`'ta geri döngü adresinden gelen istekler seed yöneticisiyle oturum açar; sağlık denetimi: `curl.exe http://127.0.0.1:5080/health/ready`.
 6. **İmza anahtarı üretip paketleri yayımlayın.** Anahtar bir kez üretilir; özel anahtar kullanıcı sırlarına yazılır, açık anahtar `apps/mobile/src/packs/keys.ts` içindeki `dev` listesine eklenir (öneri; anahtar yönetimi Doğrulanacak).
    ```powershell
    dotnet run --project server/Mutalaa.Publisher -- keys generate --flavor dev

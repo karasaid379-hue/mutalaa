@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,9 +26,19 @@
     <Compile Include="..\Mutalaa.Domain.Tests\Support\EnumsJson.cs" Link="Support\EnumsJson.cs" />
   </ItemGroup>
 
+  <!-- Yayin onizleme testleri Publisher.Tests'in sentetik icerik tohumunu baglantili dosya olarak kullanir (Publisher'a bagimlilik yok). -->
+  <ItemGroup>
+    <Compile Include="..\Mutalaa.Publisher.Tests\Support\EndToEndData.cs" Link="Support\EndToEndData.cs" />
+  </ItemGroup>
+
   <!-- Ortak enum JSON'u cikti klasorune kopyalanir (data\enums.json). -->
   <ItemGroup>
     <None Include="..\..\..\packages\content-schema\enums.json" Link="data\enums.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Tanzil fiksturu parcalari (EndToEndData; ham baytlar degismeden): data\tanzil\. -->
+  <ItemGroup>
+    <None Include="..\..\..\pipeline\tests\fixtures\tanzil\*-parca.txt" Link="data\tanzil\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

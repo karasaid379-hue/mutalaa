@@ -1,6 +1,6 @@
 # Proje yapısı
 
-> **Sürüm:** 1.10 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
+> **Sürüm:** 1.11 · **Tarih:** 10 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
 
 Kod tek depoda durur: TypeScript uygulamaları ve paketleri pnpm + Turborepo ile, .NET projeleri `server/` altındaki çözümle, Python içerik hattı `pipeline/` altında uv ile yönetilir. Bu dosya klasörleri, bağımlılık kurallarını, araçları, kod biçimini, Git kurallarını ve CI iş akışlarını tanımlar.
@@ -39,10 +39,22 @@ mutalaa/
 │  └─ ui-tokens/                 renk, tip ölçeği, boşluk jetonları
 ├─ server/
 │  ├─ Mutalaa.slnx · Directory.Build.props · Directory.Packages.props
-│  ├─ Mutalaa.Domain/            varlıklar, çapa, derleme türü ve kalite kapısı kuralları (Releases), C# normalizasyon (Text/SearchNormalizer.cs; Text/IcKesme.g.cs üretilir)
-│  ├─ Mutalaa.Infrastructure/    EF Core, göçler, Identity, S3, SQLite paket yazıcı
-│  ├─ Mutalaa.Api/               Minimal API uçları, openapi/v1.json
-│  ├─ Mutalaa.Publisher/         yayın konsolu
+│  ├─ Mutalaa.Domain/            varlıklar, çapa, derleme türü ve kalite kapısı kuralları (Releases), inceleme ve ikinci onay kuralları (Reviews), değişmez metin kuralı (Content/TextMutability.cs), C# normalizasyon (Text/SearchNormalizer.cs; Text/IcKesme.g.cs üretilir)
+│  ├─ Mutalaa.Infrastructure/    EF Core, göçler, Identity, S3, SQLite paket yazıcı; Releases/ (GatePlanner, DataVersions, PackFiles: Yayınlayıcı ve API ortak kullanır)
+│  ├─ Mutalaa.Api/               Minimal API
+│  │  ├─ Program.cs · appsettings.json · Dockerfile
+│  │  ├─ Auth/                   çerez, politikalar (Editor, Admin), DevAutoLogin
+│  │  ├─ Endpoints/              auth, users, sources, units, reviews, scans, releases uçları
+│  │  ├─ Hosting/                Serilog, OpenAPI, yayın hizmetleri kaydı
+│  │  ├─ Paging/                 imleçli sayfalama
+│  │  ├─ Problems/               ProblemDetails, hata kodları, yakalayıcılar
+│  │  ├─ Releases/               önizleme, önceki paket çözücü, imleç, gizli değer maskeleme
+│  │  ├─ Reviews/                inceleme sorguları, karar uygulayıcı, ETag
+│  │  ├─ Settings/               ApiOptions, özellik bayrakları
+│  │  ├─ Validation/             WritableText (NUL ve eşleşmemiş vekil denetimi)
+│  │  ├─ Properties/             launchSettings.json
+│  │  └─ openapi/v1.json         derlemede üretilir, depoya girer
+│  ├─ Mutalaa.Publisher/         yayın konsolu (Commands/, Pipeline/, Dockerfile)
 │  └─ tests/                     Domain, Api ve Publisher test projeleri
 ├─ pipeline/                     içerik hattı (ayrıntı: 04-icerik/02-icerik-hatti.md)
 │  ├─ pyproject.toml · uv.lock · .python-version · mutalaa.toml

@@ -1,7 +1,7 @@
 # Teknoloji yığını
 
-> **Sürüm:** 1.11 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json) · [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-34](../00-ozet/02-karar-defteri.md#k-34--typescript-tek-sürüm-60x) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
+> **Sürüm:** 1.12 · **Tarih:** 10 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-48](../00-ozet/02-karar-defteri.md#k-48--editör-api-kuralları-inceleme-kararı-ikinci-onay-eşzamanlılık-yayın-talebi-ve-sayfa-görseli) · [K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json) · [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-34](../00-ozet/02-karar-defteri.md#k-34--typescript-tek-sürüm-60x) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu dosya her katmanın teknolojisini, sürümünü, seçilme nedenini ve reddedilen seçenekleri listeler. Sürüm ve fiyatlar 16 Ekim 2026 araştırmasından gelir ([araştırma raporu](../09-kaynakca.md), araştırma notu 05). Kaynağı olmayan sürüm numaraları "Doğrulanacak" diye işaretlidir ve kurulum günü kilit dosyasına yazılır.
 
@@ -69,13 +69,16 @@ Veri erişimi paketleri `Mutalaa.Infrastructure` projesindedir (`Microsoft.Entit
 | `Microsoft.AspNetCore.Identity.EntityFrameworkCore` (Infrastructure) | Editör ve (v1.x) okur kimliği | 10.0.14 |
 | `Npgsql.EntityFrameworkCore.PostgreSQL` (Infrastructure) | EF Core sağlayıcısı | 10.0.3 |
 | `EFCore.NamingConventions` (Infrastructure) | snake_case tablo ve sütun adları | 10.0.1 |
-| `Microsoft.AspNetCore.OpenApi` | Yerleşik OpenAPI belgesi (A14) | |
-| `Scalar.AspNetCore` | OpenAPI arayüzü (yalnız geliştirme; A14) | |
-| `Serilog.AspNetCore` | Yapılandırılmış günlük (A14) | |
-| `OpenTelemetry.Extensions.Hosting`, `OpenTelemetry.Instrumentation.AspNetCore`, `OpenTelemetry.Exporter.OpenTelemetryProtocol`, `Npgsql.OpenTelemetry` | İz ve ölçü (A14) | |
-| `xunit.v3` | Birim ve tümleşik test | 4.0.2 |
+| `Microsoft.AspNetCore.OpenApi` (Api) | Yerleşik OpenAPI belgesi (OpenAPI 3.1) | 10.0.14 (A14; `Microsoft.OpenApi` `[2.12.2, 3.0.0)` aralığıyla gelir, doğrudan başvuru yok) |
+| `Microsoft.Extensions.ApiDescription.Server` (Api, `PrivateAssets=all`) | Derlemede `openapi/v1.json` üretimi (yalnız `Release`) | 10.0.14 (A14) |
+| `Scalar.AspNetCore` (Api) | OpenAPI arayüzü (yalnız `Development`) | 2.19.0 (A14; NuGet kaydındaki son kararlı, 5 Kasım 2026) |
+| `Serilog.AspNetCore` (Api) | Yapılandırılmış günlük | 10.0.0 (A14) |
+| `Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore` (Api) | `/health/ready` (`AddDbContextCheck`) | 10.0.14 (A14) |
+| `Microsoft.Extensions.Validation` | Minimal API girdi doğrulaması (`AddValidation()`) | 10.0.14; Web SDK çatısıyla gelir, paket başvurusu yoktur |
+| `OpenTelemetry.Extensions.Hosting`, `OpenTelemetry.Instrumentation.AspNetCore`, `OpenTelemetry.Exporter.OpenTelemetryProtocol`, `Npgsql.OpenTelemetry` | İz ve ölçü | A14 dışında; canlı sunucuya geçişte eklenir ([K-48](../00-ozet/02-karar-defteri.md#k-48--editör-api-kuralları-inceleme-kararı-ikinci-onay-eşzamanlılık-yayın-talebi-ve-sayfa-görseli) madde 11); şimdilik paket yok |
+| `xunit.v3` | Birim ve tümleşik test | 4.0.2 (A07 sürümü korunur; kayıttaki 4.0.3 A14'te yükseltilmedi) |
 | `Testcontainers.PostgreSql` | Test kabı (`postgres:18.6-trixie`; yalnız test) | 4.16.0 |
-| `Microsoft.AspNetCore.Mvc.Testing` | Uç testleri (A14) | |
+| `Microsoft.AspNetCore.Mvc.Testing` (yalnız Api.Tests) | Uç, yetki matrisi ve akış testleri (`WebApplicationFactory`) | 10.0.14 (A14) |
 
 `Testcontainers.PostgreSql` geçişli bağımlılıkları (`Docker.DotNet.Enhanced`, `SSH.NET`, `BouncyCastle`, `SharpZipLib`) yalnız test projesine girer, dağıtılan ürüne girmez.
 

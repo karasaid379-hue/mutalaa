@@ -63,6 +63,11 @@ services:
       Mutalaa__Features__Public: "false"
       Mutalaa__Seed__AdminEmail: ${MUTALAA_ADMIN_EMAIL}
       Mutalaa__Seed__AdminPassword: ${MUTALAA_ADMIN_PASSWORD}
+    volumes:
+      # Onizleme ve sayfa gorseli goreli yollari /repo altinda cozer (WORKDIR /repo); hepsi salt okunur.
+      - ./data/raw:/repo/data/raw:ro
+      - ./pipeline/sources:/repo/pipeline/sources:ro
+      - ./data/packs:/repo/data/packs:ro
     ports:
       - "127.0.0.1:${API_PORT:-5080}:8080"
     depends_on:
@@ -87,8 +92,14 @@ services:
       Storage__Bucket: ${S3_BUCKET}
       Storage__PublicBaseUrl: http://${DEV_LAN_IP}:${S3_PORT:-8333}/${S3_BUCKET}
       Signing__dev__PrivateKey: ${PUBLISHER_DEV_SIGNING_KEY}
+      Signing__dev__Kid: ${PUBLISHER_DEV_SIGNING_KID:-dev-2026-1}
+      Signing__dev__PublicKey: ${PUBLISHER_DEV_PUBLIC_KEY:-wFLQA/pDvHvUg7LfHpOjWd0bpPCwvcoLnLjXhxwRytI=}
     volumes:
-      - ./data/packs:/work
+      # Goreli yollar /repo altinda cozulur (WORKDIR /repo).
+      - ./data/packs:/repo/data/packs
+      - ./data/reports:/repo/data/reports
+      - ./data/raw:/repo/data/raw:ro
+      - ./pipeline/sources:/repo/pipeline/sources:ro
     depends_on:
       postgres: { condition: service_healthy }
       s3-init: { condition: service_completed_successfully }
