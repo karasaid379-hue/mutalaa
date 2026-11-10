@@ -1,9 +1,11 @@
-# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3 · A15.0 (2026-11-10): commit'e sabitlendi, indirildi
 slug = "amiri-quran-font"
 tur = "font"
 baslik = "Amiri Quran"
-kaynak_url = "https://github.com/google/fonts/tree/main/ofl/amiriquran"
+surum = "6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec"
+kaynak_url = "https://raw.githubusercontent.com/google/fonts/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/amiriquran/AmiriQuran-Regular.ttf"
 atif_metni = "Yazı tipi: Amiri Quran."
 notlar = '''
-Test edilen 65 Kur'an kod noktasının 53'ünü içeriyor; Türkçe Latin harfi yok.
-Kullanım: Mushaf C fontu.'''
+Dosya: AmiriQuran-Regular.ttf (136.920 bayt); lisans metni aynı klasörde OFL.txt. İndirme: data/gelen/amiri-quran-font/2026-11-10/ (SHA-256 SHA256SUMS dosyasında).
+Tanzil Uthmani'deki 68 boşluk dışı ayırt edici kod noktasının 68'i fontta var (A15.0'da data/gelen/tanzil/2026-11-02/quran-uthmani.txt ile ölçüldü); Türkçe Latin harfi yok.
+Kullanım: editör panelinde kanonik metnin gösterimi (A15), Mushaf C fontu.'''
