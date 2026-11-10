@@ -106,6 +106,43 @@ public class ReviewInputFixTests(EditorialDatabase<ReviewInputFixTests> fixture)
     }
 
     [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task A_quoted_id_or_xmin_in_a_bulk_decision_is_a_400_validation_problem_and_changes_nothing(bool quoteId, bool quoteXmin)
+    {
+        // Tirnakli sayi artik JSON sayisi degildir (NumberHandling.Strict): govde okunamaz, errors alani olmadan 400 dogrulama.
+        (Review review, HttpClient client) = await OpenReviewAsync();
+        using (client)
+        {
+            string id = review.Id.ToString(CultureInfo.InvariantCulture);
+            string xmin = (await XminAsync(review.Id)).ToString(CultureInfo.InvariantCulture);
+            string json = "{\"kararlar\":[{\"id\":" + (quoteId ? "\"" + id + "\"" : id) + ",\"xmin\":" + (quoteXmin ? "\"" + xmin + "\"" : xmin)
+                + ",\"karar\":\"onaylandi\",\"gerekce\":\"Gerekce\"}]}";
+
+            using HttpResponseMessage response = await BulkRawAsync(client, json);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal("urn:mutalaa:problem:dogrulama", (await ApiFactory.ReadJsonAsync(response, Ct)).GetProperty("type").GetString());
+            await AssertUntouchedAsync(review);
+        }
+    }
+
+    [Fact]
+    public async Task The_same_bulk_decision_with_unquoted_numbers_is_accepted()
+    {
+        (Review review, HttpClient client) = await OpenReviewAsync();
+        using (client)
+        {
+            string xmin = (await XminAsync(review.Id)).ToString(CultureInfo.InvariantCulture);
+            string json = "{\"kararlar\":[{\"id\":" + review.Id.ToString(CultureInfo.InvariantCulture) + ",\"xmin\":" + xmin + ",\"karar\":\"onaylandi\",\"gerekce\":\"Gerekce\"}]}";
+
+            using HttpResponseMessage response = await BulkRawAsync(client, json);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+    }
+
+    [Theory]
     [InlineData("{\"kararlar\":[null]}")]
     [InlineData("{\"kararlar\":[null,null]}")]
     public async Task A_null_item_in_the_bulk_decisions_is_a_400_validation_problem(string json)

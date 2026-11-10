@@ -138,7 +138,7 @@ public abstract class ReviewTestBase<TTests>(EditorialDatabase<TTests> fixture) 
         return review;
     }
 
-    protected async Task<(SurahAlias Alias, Review Review)> SeedAliasReviewAsync(string alias = "Deneme-sure", XrefOrigin koken = XrefOrigin.Hat, string oneren = "hat")
+    protected async Task<(SurahAlias Alias, Review Review)> SeedAliasReviewAsync(string alias = "Deneme-sure", XrefOrigin koken = XrefOrigin.Hat, string oneren = "hat", string? onerilen = null)
     {
         SurahAlias row = new() { SurahNo = 1, Alias = alias + "-" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)[..6], AliasKey = "deneme", Kind = "yazim" };
         Review review = new()
@@ -149,6 +149,7 @@ public abstract class ReviewTestBase<TTests>(EditorialDatabase<TTests> fixture) 
             Eylem = ReviewActions.Oner,
             Koken = koken,
             Oneren = oneren,
+            Onerilen = onerilen,
         };
         await using DbSession session = Db.OpenSession();
         session.Context.Add(row);

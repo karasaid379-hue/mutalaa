@@ -15,7 +15,7 @@ internal static class ReviewQueries
     public const int DefaultLimit = 50;
     public const int MaxLimit = 200;
 
-    /// <summary>Listede gereken alanlar; buyuk jsonb sutunlari (onceki, onerilen, duzenlenen) listede okunmaz.</summary>
+    /// <summary>Listede gereken alanlar; jsonb degerler (onceki, onerilen, duzenlenen) listede de doner (Backend API §4, BÇ-55).</summary>
     private sealed record Row(
         long Id,
         string HedefTablo,
@@ -27,6 +27,9 @@ internal static class ReviewQueries
         XrefOrigin Koken,
         string? YzModeli,
         string? YzKaydi,
+        string? Onceki,
+        string? Onerilen,
+        string? Duzenlenen,
         float? Guven,
         string Oneren,
         string? Inceleyen,
@@ -78,6 +81,9 @@ internal static class ReviewQueries
                 r.Koken,
                 r.YzModeli,
                 r.YzKaydi,
+                r.Onceki,
+                r.Onerilen,
+                r.Duzenlenen,
                 r.Guven,
                 r.Oneren,
                 r.Inceleyen,
@@ -200,6 +206,9 @@ internal static class ReviewQueries
             Koken = r.Koken.ToLabel(),
             YzModeli = r.YzModeli,
             YzKaydi = ReviewJson.Parse(r.YzKaydi),
+            Onceki = ReviewJson.Parse(r.Onceki),
+            Onerilen = ReviewJson.Parse(r.Onerilen),
+            Duzenlenen = ReviewJson.Parse(r.Duzenlenen),
             Guven = r.Guven,
             Oneren = r.Oneren,
             Inceleyen = r.Inceleyen,

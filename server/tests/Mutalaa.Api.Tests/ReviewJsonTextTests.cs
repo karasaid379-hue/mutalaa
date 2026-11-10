@@ -52,6 +52,28 @@ public class ReviewJsonTextTests(EditorialDatabase<ReviewJsonTextTests> fixture)
     }
 
     [Fact]
+    public async Task The_review_list_writes_the_payload_texts_unescaped_and_byte_equal()
+    {
+        await ResetReviewsAsync();
+        string source = await SeedSourceAsync(SourceKind.Risale);
+        Unit unit = await SeedUnitAsync(source, UnitKind.Risale, TestData.UnitAnchor(), CurrentText);
+        await SeedUnitReviewAsync(unit, proposed: ProposedText);
+        using HttpClient client = await ClientAsync();
+
+        using HttpResponseMessage response = await client.GetAsync("/api/v1/reviews", Ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        (string raw, byte[] bytes) = await RawAsync(response);
+        Assert.DoesNotContain("\\u", raw, StringComparison.Ordinal);
+        Assert.Contains(CurrentText, raw, StringComparison.Ordinal);
+        Assert.Contains(ProposedText, raw, StringComparison.Ordinal);
+        using JsonDocument document = JsonDocument.Parse(bytes);
+        JsonElement item = document.RootElement.GetProperty("items").EnumerateArray().Single();
+        AssertSameBytes(CurrentText, item.GetProperty("onceki").GetProperty("metin").GetString()!);
+        AssertSameBytes(ProposedText, item.GetProperty("onerilen").GetProperty("metin").GetString()!);
+    }
+
+    [Fact]
     public async Task A_decision_with_an_edited_text_answers_unescaped_and_the_detail_then_shows_the_edit_byte_equal()
     {
         string source = await SeedSourceAsync(SourceKind.Risale);
