@@ -9,7 +9,7 @@ Bu dosya aşamaların durumunu tutar. Aşağıdaki durum bloğu her oturumun ba�
 - Aktif aşama: yok
 - Son tamamlanan: A14 · API editör uçları (2026-11-10; dal feat/a14-api-editor-uclari, PR bekleniyor)
 - Sıradaki: A15 (A11 onay/dışa aktarma kalanı İ-23 ve A14 sonrası /asama A11)
-- Bekleyen insan adımları: İ-10 ve İ-17 (A09 için); İ-16 (kalan: EXPO_TOKEN, İ-15 Expo hesabına bağlı; A21/A34); İ-23 (sure adlarının editör denetimi, A11.3); İ-29 (konteyner Yayınlayıcı için PUBLISHER_DEV_SIGNING_KEY ve DEV_LAN_IP)
+- Bekleyen insan adımları: İ-10 ve İ-17 (A09 için); İ-16 (kalan: EXPO_TOKEN, İ-15 Expo hesabına bağlı; A21/A34); İ-23 (sure adlarının editör denetimi, A11.3)
 - Son güncelleme: 2026-11-10
 <!-- durum:bitis -->
 
