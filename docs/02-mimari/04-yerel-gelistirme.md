@@ -105,7 +105,7 @@ dotnet user-secrets --project server/Mutalaa.Publisher set "Storage:PublicBaseUr
 
 `Storage:PublicBaseUrl` manifestteki mutlak paket adreslerinin tabanıdır ([Backend API](./05-backend-api.md) §10.5). Bilgisayarın LAN IP adresi değişirse bu değer güncellenir ve `publish` yeniden çalıştırılır.
 
-**API'nin öteki kullanıcı sırları (A14).** `Mutalaa:Seed:AdminEmail` ve `Mutalaa:Seed:AdminPassword` bölüm 6 adım 3'tedir. `Mutalaa:Auth:DevAutoLogin` (varsayılan `false`) açılırsa geri döngü adresinden gelen oturumsuz istek seed yöneticisiyle oturum açar; yalnız `Development` ortamında kabul edilir, başka ortamda açılış hata verir. Yol ayarları `Mutalaa:Paths:RawDir`, `SourcesDir`, `PacksDir` ve `TempDir` `appsettings.json` içinde varsayılanlarıyla durur (`data/raw`, `pipeline/sources`, `data/packs`, `.tmp/api`); göreli değerler çalışma dizinine göre çözülür ve değiştirmek gerekirse aynı anahtarlar kullanıcı sırlarıyla ezilir.
+**API'nin öteki kullanıcı sırları (A14).** `Mutalaa:Seed:AdminEmail` ve `Mutalaa:Seed:AdminPassword` bölüm 6 adım 3'tedir. `Mutalaa:Auth:DevAutoLogin` (varsayılan `false`) açılırsa geri döngü adresinden gelen ve Host başlığı `localhost`, `127.0.0.1` ya da `[::1]` olan oturumsuz istek seed yöneticisiyle oturum açar (DNS rebinding koruması, K-48 madde 10); yalnız `Development` ortamında kabul edilir, başka ortamda açılış hata verir. Yol ayarları `Mutalaa:Paths:RawDir`, `SourcesDir`, `PacksDir` ve `TempDir` `appsettings.json` içinde varsayılanlarıyla durur (`data/raw`, `pipeline/sources`, `data/packs`, `.tmp/api`); göreli değerler çalışma dizinine göre çözülür ve değiştirmek gerekirse aynı anahtarlar kullanıcı sırlarıyla ezilir.
 
 ```powershell
 dotnet user-secrets --project server/Mutalaa.Api set "Mutalaa:Auth:DevAutoLogin" "true"
