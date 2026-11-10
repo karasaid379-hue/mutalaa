@@ -1,6 +1,6 @@
 name: ci-ts
 
-# TypeScript: lint, typecheck, test (Turborepo) under two locales, script tests, dependency list.
+# TypeScript: lint, typecheck, test and build (Turborepo) under two locales, script tests, dependency list.
 # Locale matrix: C.UTF-8 and tr_TR.UTF-8 (catches Turkish locale bugs; docs/02-mimari/03-proje-yapisi.md §7).
 on:
   pull_request:
@@ -85,9 +85,9 @@ jobs:
       - name: Effective locale
         run: node -p "'LANG=' + process.env.LANG + ' locale=' + Intl.DateTimeFormat().resolvedOptions().locale + ' node=' + process.version + ' icu=' + process.versions.icu + ' unicode=' + process.versions.unicode"
 
-      - name: Lint, typecheck and test
+      - name: Lint, typecheck, test and build
         if: matrix.lang == 'C.UTF-8'
-        run: pnpm turbo run lint typecheck test
+        run: pnpm turbo run lint typecheck test build
       - name: Test under tr_TR
         if: matrix.lang != 'C.UTF-8'
         run: pnpm turbo run test
