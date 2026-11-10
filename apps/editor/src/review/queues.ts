@@ -1,0 +1,40 @@
+import type { QueueFilter } from './queries';
+import type { ReviewStats } from './types';
+
+export type QueueId = 'ocr' | 'lemma' | 'baglanti' | 'sure-adi';
+
+export interface QueueDef {
+  id: QueueId;
+  path: string;
+  /** The review queues (target table and field) that make up this screen; `lemma` has two tabs. */
+  filters: readonly QueueFilter[];
+}
+
+/** The four review screens (BÇ-12: `kuyruk/sure-adi` is the eighth route). `quran_word_fix` joins `lemma` in A17. */
+export const QUEUES: readonly QueueDef[] = [
+  { id: 'ocr', path: '/kuyruk/ocr', filters: [{ hedef_tablo: 'unit', alan: 'metin' }] },
+  {
+    id: 'lemma',
+    path: '/kuyruk/lemma',
+    filters: [
+      { hedef_tablo: 'lemma_gloss', alan: 'anlam_kisa' },
+      { hedef_tablo: 'lemma', alan: 'status' },
+    ],
+  },
+  { id: 'baglanti', path: '/kuyruk/baglanti', filters: [{ hedef_tablo: 'xref', alan: 'status' }] },
+  {
+    id: 'sure-adi',
+    path: '/kuyruk/sure-adi',
+    filters: [{ hedef_tablo: 'surah_alias', alan: 'status' }],
+  },
+];
+
+/** Open records of a screen from `GET /reviews/stats`; undefined while the stats are unknown. There is no per-editor count (K-25). */
+export function openCount(stats: ReviewStats | undefined, queue: QueueDef): number | undefined {
+  if (!stats) return undefined;
+  return stats.kuyruklar
+    .filter((entry) =>
+      queue.filters.some((f) => f.hedef_tablo === entry.hedef_tablo && f.alan === entry.alan),
+    )
+    .reduce((sum, entry) => sum + entry.acik, 0);
+}

@@ -1,24 +1,26 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createBrowserRouter } from 'react-router';
+import { RouterProvider } from 'react-router/dom';
 import { createApi } from '@/api/client';
-import { ApiContext } from '@/app/api-context';
-import { tr } from '@/i18n/tr';
+import { AppProviders } from '@/app/providers';
+import { SessionBridge, createQueryClient } from '@/app/query-client';
+import { createRoutes } from '@/app/routes';
 import './index.css';
 
-const queryClient = new QueryClient();
+const bridge = new SessionBridge();
+const queryClient = createQueryClient(bridge);
 // Browser: same origin (Vite proxy in dev, nginx in Docker), so the base URL is empty.
 const api = createApi({ baseUrl: '' });
+const router = createBrowserRouter(createRoutes({ api, queryClient, bridge }));
 
 const root = document.getElementById('root');
 if (!root) throw new Error('#root not found');
 
 createRoot(root).render(
   <StrictMode>
-    <ApiContext value={api}>
-      <QueryClientProvider client={queryClient}>
-        <h1>{tr.app.title}</h1>
-      </QueryClientProvider>
-    </ApiContext>
+    <AppProviders api={api} queryClient={queryClient}>
+      <RouterProvider router={router} />
+    </AppProviders>
   </StrictMode>,
 );
