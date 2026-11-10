@@ -8,3 +8,12 @@ data/
 **/.env.*
 !**/.env.example
 infra/local/s3.json
+**/dist
+**/.turbo
+**/coverage
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+**/TestResults
