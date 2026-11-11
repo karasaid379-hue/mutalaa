@@ -182,4 +182,18 @@ public sealed class OpenApiDocumentFixTests : IDisposable
             Assert.Contains("#/components/schemas/JsonElement", property.GetRawText(), StringComparison.Ordinal);
         }
     }
+
+    [Theory]
+    [InlineData("DecisionBody")]
+    [InlineData("BulkDecisionItem")]
+    public void The_decision_schemas_make_duzenlenen_optional_and_keep_karar_and_gerekce_required(string schemaName)
+    {
+        JsonElement schema = Schemas.GetProperty(schemaName);
+        string[] required = [.. schema.GetProperty("required").EnumerateArray().Select(r => r.GetString()!)];
+
+        Assert.True(schema.GetProperty("properties").TryGetProperty("duzenlenen", out _), $"{schemaName}.duzenlenen yok.");
+        Assert.DoesNotContain("duzenlenen", required);
+        Assert.Contains("karar", required);
+        Assert.Contains("gerekce", required);
+    }
 }

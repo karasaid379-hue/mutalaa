@@ -359,8 +359,8 @@ export interface components {
             /** Format: uint32 */
             xmin: number;
             karar: null | string;
-            duzenlenen: null | components["schemas"]["DecisionEdit"];
             gerekce: null | string;
+            duzenlenen?: null | components["schemas"]["DecisionEdit"];
         };
         BulkDecisionOutcome: {
             /** Format: int64 */
@@ -394,8 +394,8 @@ export interface components {
         };
         DecisionBody: {
             karar: null | string;
-            duzenlenen: null | components["schemas"]["DecisionEdit"];
             gerekce: null | string;
+            duzenlenen?: null | components["schemas"]["DecisionEdit"];
         };
         DecisionEdit: {
             metin: null | string;

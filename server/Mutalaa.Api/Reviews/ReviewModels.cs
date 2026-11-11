@@ -161,9 +161,9 @@ public sealed record ReviewStatsResponse(IReadOnlyList<ReviewQueueCount> Kuyrukl
 public sealed record DecisionEdit(string? Metin);
 
 /// <summary>Tekil karar govdesi. karar: onaylandi ya da reddedildi.</summary>
-public sealed record DecisionBody(string? Karar, DecisionEdit? Duzenlenen, string? Gerekce);
+public sealed record DecisionBody(string? Karar, string? Gerekce, DecisionEdit? Duzenlenen = null);
 
-public sealed record BulkDecisionItem(long Id, uint Xmin, string? Karar, DecisionEdit? Duzenlenen, string? Gerekce);
+public sealed record BulkDecisionItem(long Id, uint Xmin, string? Karar, string? Gerekce, DecisionEdit? Duzenlenen = null);
 
 public sealed record BulkDecisionBody(IReadOnlyList<BulkDecisionItem>? Kararlar);
 

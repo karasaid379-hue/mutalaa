@@ -1565,7 +1565,6 @@
           "id",
           "xmin",
           "karar",
-          "duzenlenen",
           "gerekce"
         ],
         "type": "object",
@@ -1584,6 +1583,12 @@
               "string"
             ]
           },
+          "gerekce": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
           "duzenlenen": {
             "oneOf": [
               {
@@ -1592,12 +1597,6 @@
               {
                 "$ref": "#/components/schemas/DecisionEdit"
               }
-            ]
-          },
-          "gerekce": {
-            "type": [
-              "null",
-              "string"
             ]
           }
         },
@@ -1732,12 +1731,17 @@
       "DecisionBody": {
         "required": [
           "karar",
-          "duzenlenen",
           "gerekce"
         ],
         "type": "object",
         "properties": {
           "karar": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "gerekce": {
             "type": [
               "null",
               "string"
@@ -1751,12 +1755,6 @@
               {
                 "$ref": "#/components/schemas/DecisionEdit"
               }
-            ]
-          },
-          "gerekce": {
-            "type": [
-              "null",
-              "string"
             ]
           }
         },
