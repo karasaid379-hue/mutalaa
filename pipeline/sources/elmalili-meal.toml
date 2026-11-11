@@ -1,11 +1,16 @@
-# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3
+# A16.2 (2026-11-11) · kaynak: docs/04-icerik/01-kaynaklar.md §3.3 · karar: K-49
 slug = "elmalili-meal"
 tur = "meal"
-baslik = "Hak Dini Kur'an Dili, özgün baskı (meal)"
+baslik = "Hak Dini Kur'an Dili, orijinal meal (Vikikaynak)"
 yazar = "Elmalılı Muhammed Hamdi Yazır"
-atif_metni = "Elmalılı Muhammed Hamdi Yazır, Hak Dini Kur'an Dili, İstanbul 1935–1939. Metin özgün baskıdan Mütâlaa tarafından aktarılmıştır. Aktarım sürümü {sürüm}."
+surum = "revid-liste-965a6249f61c-2026-11-11"
+provider = "vikikaynak"
+kaynak_url = "https://tr.wikisource.org/wiki/Kur'an"
+atif_metni = "Meal: Elmalılı Muhammed Hamdi Yazır, Hak Dini Kur'an Dili, İstanbul 1935–1939. Metin Vikikaynak 'Kur'an' sayfalarından alınmıştır."
 baski_bilgisi = { baski_kimligi = "elmalili-1935" }
 notlar = '''
-Açık soru: tarama kaynağı A09 tedarikinde ve pilot ölçümüyle seçilir; basılı takım (İ-09) yalnız internetteki taramalar ofset sınamasını geçmezse gerekir. Adaylar: archive.org HakDiniKuranDili (Eser 1979; tıpkıbasım kanıtlanmadı), İBB Atatürk Kitaplığı nüshaları, HathiTrust 1935 (yalnız arama); gerekirse sahaftan 1935 ya da 1960/1971 ofset takımı (TDV İA'ya göre ofset baskılar ilk baskıdan). Seçim yapılmadı (docs/04-icerik/01-kaynaklar.md §3.3).
-Hazır dijital meal metinleri (Vikikaynak, Tanzil ve Açık Kuran'daki Elmalılı metinleri) A09 pilotunda OCR ile yarışır; baskı esası ölçümle belirlenir (K-38).
-atif_metni içindeki {sürüm} Yayınlayıcı/alım sırasında doldurulur.'''
+Çapa: meal:elmalili:{sure}:{ayet}. Orijinal meal; sadeleştirilmiş metin ayrı kaynaktır (elmalili-sade-meal).
+Metin Vikikaynak (tr.wikisource.org) "Kur'an/<Sure> Suresi" sayfalarının kilitli revizyonlarıdır: 114 sayfa, revid listesi (başlığa göre sıralı "başlık TAB revid", SHA-256 965a6249f61c2921a042694de67471c10034def62e03b05cf8c3393b43cb308a) ve sayfa başına revid, SHA-1 ve wikitext özeti ingest/elmalili_meal.lock.json dosyasındadır; kilit yalnız /karar ile değişir (K-49 madde 11).
+Baskı esası belgesizdir (Vikikaynak metni kaynaksız girilmiştir): metin taslak girer, iki editör turundan geçer; özgün baskıyla karşılaştırma ve temel metin sayılması S-15'tedir (K-49 madde 2).
+Tanık (yalnız QA, yüklenmez): elmalili-meal-epub. Ortak köken ihtimali vardır; tanık uyumu özgün baskıya sadakat sayılmaz.
+Atıf (K-49 madde 14): G-INC geçince sona "Mütâlaa editörlerince denetlenmiştir." eklenir.'''
