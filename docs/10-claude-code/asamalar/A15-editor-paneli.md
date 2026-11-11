@@ -1,6 +1,6 @@
 # A15 · Editör paneli
 
-> **Sürüm:** 1.4 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-48](../../00-ozet/02-karar-defteri.md#k-48--editör-api-kuralları-inceleme-kararı-ikinci-onay-eşzamanlılık-yayın-talebi-ve-sayfa-görseli) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-43](../../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
+> **Sürüm:** 1.5 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-48](../../00-ozet/02-karar-defteri.md#k-48--editör-api-kuralları-inceleme-kararı-ikinci-onay-eşzamanlılık-yayın-talebi-ve-sayfa-görseli) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-43](../../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A14](./A14-api-editor-uclari.md) · **İnsan adımı:** —
 > **Ajanlar:** `web-gelistirici` · `arayuz-denetcisi` · `test-yazari` · `arastirmaci` · `inceleyici` · **Beceriler:** `windows-sorun` · `icerik-hatti` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A15`
@@ -68,7 +68,8 @@ Kendimiz yapacağımız işler: sekiz rota ve ortak inceleme bileşenleri (karar
 Bu iş A14 kodudur; kullanıcı kararıyla (10 Kasım 2026) A15'te yapıldı. İlerleme notunda "A14 kodu, A15'te düzeltildi" diye görünür.
 - **Liste öğesi ([BÇ-55](../07-belge-celiskileri.md#1-karar-bekleyenler)).** `ReviewModels.cs`: `Onceki`, `Onerilen` ve `Duzenlenen` alanları `ReviewDetailDto`'dan `ReviewItemDto`'ya taşındı (kalıtım kaldı; aynı ad iki sınıfta CS0108 verirdi). `ReviewQueries.cs`: üç sütun `Row` kaydına, `Select` ifadesine ve `ToItem` eşlemesine eklendi (`ReviewJson.Parse`); yorumlar düzeltildi. Panel kuyruk kartını ayrıntı çağrısı yapmadan çizer.
 - **Kesin JSON sayısı.** HTTP JSON seçeneklerine `NumberHandling = JsonNumberHandling.Strict` eklendi (`Program.cs`; `EditorJson.Options` içinde de açık). Tırnaklı sayı 400 `dogrulama` alır; OpenAPI belgesi tamsayıyı yalnız `integer` yazar (belgede `pattern` 0, `"integer"` 42). Üretilmiş istemci tipinde `id` ve `xmin` `number` olur. Ayrıntı: [Backend API](../../02-mimari/05-backend-api.md) §3 ve §6.
-- **Testler:** `ReviewListTests` (liste öğesi üç alanı taşır, ayrıntıyla eşittir, `surah_alias` için `onerilen` ham JSON olarak geçer), `ReviewJsonTextTests` (liste metinleri kaçışsız ve bayt bayt eşit), `ReviewInputFixTests` (tırnaklı `id` ya da `xmin` 400 alır ve hiçbir şey değişmez), `OpenApiDocumentFixTests` (sayı şemasında `string` ya da `pattern` yok; iki inceleme şeması üç alanı isteğe bağlı JSON olarak taşır).
+- **Karar gövdelerinde `duzenlenen` ([BÇ-57](../07-belge-celiskileri.md#1-karar-bekleyenler), 11 Kasım 2026).** `DecisionBody` ve `BulkDecisionItem` kayıt parametreleri yeniden sıralandı (`Duzenlenen = null` sona alındı); OpenAPI belgesinde `duzenlenen` isteğe bağlıdır (`karar` ve `gerekce` zorunlu kalır) ve üretilmiş istemci tipi `duzenlenen?` olur. K-48 madde 6 metni değişmedi.
+- **Testler:** `ReviewListTests` (liste öğesi üç alanı taşır, ayrıntıyla eşittir, `surah_alias` için `onerilen` ham JSON olarak geçer), `ReviewJsonTextTests` (liste metinleri kaçışsız ve bayt bayt eşit), `ReviewInputFixTests` (tırnaklı `id` ya da `xmin` 400 alır ve hiçbir şey değişmez), `OpenApiDocumentFixTests` (sayı şemasında `string` ya da `pattern` yok; iki inceleme şeması üç alanı isteğe bağlı JSON olarak taşır; `The_decision_schemas_make_duzenlenen_optional_and_keep_karar_and_gerekce_required`).
 - **Bitti sayılır:** `dotnet build server/Mutalaa.slnx -c Release` ile `v1.json` yeniden üretilir ve depodaki dosyayla aynıdır; `dotnet format --verify-no-changes` ve `dotnet test --solution server/Mutalaa.slnx -c Release --no-build` yeşil (Docker gerekir).
 
 ### A15.1 · Doğrulamalar
@@ -103,6 +104,7 @@ Bu iş A14 kodudur; kullanıcı kararıyla (10 Kasım 2026) A15'te yapıldı. İ
   - 412 akışında kayıt taze çekilir, alan farkı ve metin farkı gösterilir (`TextDiff`: `Intl.Segmenter` ile sözcük bölütleri ve `diff` paketinin `diffArrays` işlevi; hareke temel harften ayrılmaz); girdi korunur, otomatik yeniden gönderim yoktur. Toplu 412'de yalnız `kimlikler` kayıtları çekilir ve önbellek yamanır; 404 `kimlikler` ve kural ihlali (`kimlik`) satırda işaretlenir.
   - **Toplu kararda `If-Match` yoktur;** 1–100 öğe, yalnız onay, her öğe liste öğesinden aldığı `xmin` değerini taşır. Örneklem politikası kuyruk tablosundadır: `ceil(n/10)` kayıt, `crypto.getRandomValues`, reddetmeli seçim, kısmi Fisher-Yates; tek "Hatalı" toplu onayı iptal eder.
   - "Doğrulanmamış" rozeti yalnız `dogrulanmamis` alanından çizilir; "İkinci onay bekliyor" durumdan ayrı bir rozettir; ilk ve ikinci onay ayrı gruplarda gösterilir.
+  - Tablo kaydırma kapsayıcısı (`components/ui/table.tsx`) `scrollLabel` ile odaklanabilir adlı bölgedir (WCAG 2.1.1; klavye kullanıcısı kaydırabilir); test `test/table-scroll.test.tsx`.
   - Erişilebilirlik: tek karakterli kısayol yoktur, `Ctrl` ya da `Meta` + `Enter` gönderir; rota değişince `h1`'e, karar sonrası sonraki kayda, hatada hata özetine odak verilir; tek `role="status"` canlı bölge ve atlama bağlantısı vardır. Bütün metinler `src/i18n/tr*.ts` içindedir (biçimleme `Intl.*('tr-TR')` ve `Collator('tr')`; bilinmeyen değer ham gösterilir).
 - **Bitti sayılır:** bileşen testleri yeşil.
 
@@ -123,22 +125,22 @@ Bu iş A14 kodudur; kullanıcı kararıyla (10 Kasım 2026) A15'te yapıldı. İ
 - **Bitti sayılır:** üç rotanın testleri yeşil.
 
 ### A15.6 · Test ve arayüz denetimi
-- Vitest ve Testing Library: oturum yönlendirmesi (`test.each(ROUTE_PATHS)`, uzunluk 8), role göre düğme gizleme, 412 akışı, toplu karar sınırı ve örneklem, Tanzil biriminde düzeltme düğmesinin yokluğu, "doğrulanmamış" rozeti, ikinci onay gösterimi, dört kuyruğun boş, dolu ve hata durumları, kaynaklar, birimler, yayınlar, lib birim testleri; i18n hata kodu listesi `OpenApiSetup.cs` listesiyle eşit tutulan sabit diziyle karşılaştırılır. Ağ taklidi MSW değil `test/fake-api.ts`'tir (tipli `ok` ve `problem`; işlenmemiş istek testi düşürür); fikstürler üretilmiş tiplerle `satisfies` edilir ve metinleri sentetiktir ("Deneme paragrafı 1", `Deneme-sure-1`). Her rotanın (sekiz rota, üç ayrıntı ve durum ekranları) bileşen testinde `axe-core` ihlal bildirmez (`color-contrast` ve `target-size` jsdom'da ölçülemediği için kapalıdır). Kapanışta editör testleri 33 dosya ve 624 testtir (11 Kasım 2026).
+- Vitest ve Testing Library: oturum yönlendirmesi (`test.each(ROUTE_PATHS)`, uzunluk 8), role göre düğme gizleme, 412 akışı, toplu karar sınırı ve örneklem, Tanzil biriminde düzeltme düğmesinin yokluğu, "doğrulanmamış" rozeti, ikinci onay gösterimi, dört kuyruğun boş, dolu ve hata durumları, kaynaklar, birimler, yayınlar, lib birim testleri; i18n hata kodu listesi `OpenApiSetup.cs` listesiyle eşit tutulan sabit diziyle karşılaştırılır. Ağ taklidi MSW değil `test/fake-api.ts`'tir (tipli `ok` ve `problem`; işlenmemiş istek testi düşürür); fikstürler üretilmiş tiplerle `satisfies` edilir ve metinleri sentetiktir ("Deneme paragrafı 1", `Deneme-sure-1`). Her rotanın (sekiz rota, üç ayrıntı ve durum ekranları) bileşen testinde `axe-core` ihlal bildirmez (`color-contrast` ve `target-size` jsdom'da ölçülemediği için kapalıdır). Kapanışta editör testleri 37 dosya ve 661 testtir (11 Kasım 2026).
 - `arayuz-denetcisi`: etiketler, odak sırası, klavyeyle karar verme, `lang` ve `dir`, kontrast. Kullanıcı ekran görüntüsü alıp `.tmp/` altına koyarsa denetçi onu da okur. Denetçi masaüstü iç araç için WCAG 2.2 AA'yı baz alır; hedef boyutu 44×44 yerine 2.5.8 (24×24) ölçütüyle denetlenir; kontrast kodda (sınıf, jeton değeri) ve kullanıcının gözle denetimiyle doğrulanır (`.claude/agents/arayuz-denetcisi.md` "Editör paneli" bölümü).
 - **Bitti sayılır:** `lint`, `typecheck`, `test`, `build` yeşil; denetçi raporunda engelleyici bulgu yok.
 
 ## Kabul ölçütleri
-- [ ] `## Tedarik` tablosundaki her adres açılıyor ve kilit dosyasındaki sürümler tabloyla aynı (fark varsa tabloda yazılı).
-- [ ] Amiri Quran dosyası `data/gelen/amiri-quran-font/<YYYY-AA-GG>/` altında; SHA-256'sı `SHA256SUMS` dosyasında; `uv --directory pipeline run mutalaa sources check` `<N> kayit, 0 hata, 0 uyari` veriyor (N, o güne dek açılan kayıt sayısıdır).
-- [ ] Sekiz rota var; `giris` dışındaki yedi rota oturumsuz erişimde `giris` rotasına yönlendiriyor (test).
-- [ ] A14 sözleşme düzeltmesi (A15.0a): liste öğesi `onceki`, `onerilen`, `duzenlenen` taşıyor; tırnaklı sayı 400; OpenAPI belgesinde `pattern` 0 ve `string` sayı şeması yok (testler).
-- [ ] `src/api/` yalnız üretilmiş tipleri ve istemciyi içeriyor; `gen:api` sonrası `git diff --exit-code apps/editor/src/api` 0.
-- [ ] Karar istekleri `If-Match` taşıyor; 412'de kayıt yeniden yükleniyor (test).
-- [ ] İkinci onay gereken alanlarda ilk ve ikinci onay ayrı gösteriliyor; `yz_modeli` dolu kayıtta rozet var (test).
-- [ ] Tanzil biriminde düzeltme düğmesi yok (test).
-- [ ] `pnpm --filter @mutalaa/editor lint`, `typecheck`, `test` ve `build` yeşil.
-- [ ] `arayuz-denetcisi` raporunda engelleyici bulgu yok.
-- Yerelde A14 API'siyle giriş yapılıp sekiz rotanın açılması ve kontrastın gözle denetimi kullanıcıya bırakılır; aşamayı bekletmez, kapanış raporunda "kullanıcıya bırakıldı" diye yazılır.
+- [x] `## Tedarik` tablosundaki her adres açılıyor ve kilit dosyasındaki sürümler tabloyla aynı (fark varsa tabloda yazılı). Kanıt: A15.0 adres denetimi; tablo kurulan sürümleri verir ve 1 Kasım değerinden ayrılanlar satırda "(1 Kasım: …)" ile yazılıdır.
+- [x] Amiri Quran dosyası `data/gelen/amiri-quran-font/<YYYY-AA-GG>/` altında; SHA-256'sı `SHA256SUMS` dosyasında; `uv --directory pipeline run mutalaa sources check` `<N> kayit, 0 hata, 0 uyari` veriyor (N, o güne dek açılan kayıt sayısıdır). Kanıt: `data/gelen/amiri-quran-font/2026-11-10/SHA256SUMS`; `sources check` "31 kayit, 0 hata, 0 uyari"; `test/font.test.ts` SHA-256'yı kilitler.
+- [x] Sekiz rota var; `giris` dışındaki yedi rota oturumsuz erişimde `giris` rotasına yönlendiriyor (test). Kanıt: `test/session.test.tsx` (`it.each(ROUTE_PATHS)`, uzunluk 8).
+- [x] A14 sözleşme düzeltmesi (A15.0a): liste öğesi `onceki`, `onerilen`, `duzenlenen` taşıyor; tırnaklı sayı 400; OpenAPI belgesinde `pattern` 0 ve `string` sayı şeması yok (testler). Kanıt: `ReviewListTests`, `ReviewInputFixTests`, `OpenApiDocumentFixTests`; `dotnet test` 3.727 geçti, 1 atlandı.
+- [x] `src/api/` yalnız üretilmiş tipleri ve istemciyi içeriyor; `gen:api` sonrası `git diff --exit-code apps/editor/src/api` 0. Kanıt: `gen:api` sonrası `git diff` temiz; `test/deps.test.ts` `src/api` içeriğini kilitler.
+- [x] Karar istekleri `If-Match` taşıyor; 412'de kayıt yeniden yükleniyor (test). Kanıt: `test/decision-form.test.tsx` (`If-Match` başlığı ve 412 akışı).
+- [x] İkinci onay gereken alanlarda ilk ve ikinci onay ayrı gösteriliyor; `yz_modeli` dolu kayıtta rozet var (test). Kanıt: ikinci onay ve "doğrulanmamış" rozeti bileşen testleri (A15.6).
+- [x] Tanzil biriminde düzeltme düğmesi yok (test). Kanıt: `test/units-screen.test.tsx`.
+- [x] `pnpm --filter @mutalaa/editor lint`, `typecheck`, `test` ve `build` yeşil. Kanıt: 11 Kasım 2026 koşusu; `test` 37 dosya, 661 test.
+- [x] `arayuz-denetcisi` raporunda engelleyici bulgu yok. Kanıt: Önemli bulgular düzeltildi; tablo kaydırma kapsayıcısı odaklanabilir adlı bölge yapıldı (`test/table-scroll.test.tsx`).
+- [ ] Yerelde A14 API'siyle giriş yapılıp sekiz rotanın tarayıcıda açılması, kontrast ve odak halkasının gözle denetimi, 320 px yan menü, gerçek TIFF: kullanıcıya bırakıldı; aşamayı bekletmez, kapanış raporunda "kullanıcıya bırakıldı" diye yazılır. (Konteynerde `/`, `/kuyruk/ocr`, yazı tipi ve `/api/v1/auth/me` 401 denetimi yapıldı; aşama kaydına bakın.)
 
 ## Doğrulama
 ```bash
@@ -155,9 +157,12 @@ pnpm --filter @mutalaa/editor build
 pnpm turbo run lint typecheck test build
 pnpm exec prettier --check .
 uv --directory pipeline run mutalaa sources check          # <N> kayit, 0 hata, 0 uyari
-docker compose --profile app build editor                  # izin hatası olursa: docker build -f apps/editor/Dockerfile .
+BUILDX_BAKE_ENTITLEMENTS_FS=0 docker compose --profile app build editor   # değişken olmadan bu makinede bake izin hatası verir
+# yedek yol: docker build -f apps/editor/Dockerfile .
 node --test ".claude/hooks/test/*.test.mjs"                # kit değiştiği için
 ```
+**Docker uyarısı:** `docker compose build` ve `up --build` BuildKit "bake" yolunda izin hatası verebilir. Çözüm `BUILDX_BAKE_ENTITLEMENTS_FS=0` ortam değişkenidir (ör. `BUILDX_BAKE_ENTITLEMENTS_FS=0 docker compose --profile app up -d --build api editor`). Windows'ta proje yolundaki `İ` ve `ü` yüzünden Dockerfile "dışarıda" sayılıyor olabilir; kök neden doğrulanmadı, yalnız çözüm doğrulandı ([Yerel geliştirme §4](../../02-mimari/04-yerel-gelistirme.md#4-docker-composeyml)).
+
 Gözle kontrol kullanıcıya bırakılır: API (`dotnet watch --project server/Mutalaa.Api`) ve panel (`pnpm dev:editor`) ayrı terminallerde açılır; panel `http://127.0.0.1:5173` adresindedir (`localhost` değil; Vite vekili `/api` isteklerini `http://127.0.0.1:5080` adresine aktarır).
 
 ## Dikkat
@@ -181,7 +186,7 @@ Gözle kontrol kullanıcıya bırakılır: API (`dotnet watch --project server/M
 - Kök yapılandırma: `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `turbo.json`, `eslint.config.mjs`, `package.json`, `.prettierignore`, `.dockerignore`, `.github/workflows/ci-ts.yml`
 - A14 düzeltmesi (A15.0a): `server/Mutalaa.Api` (`ReviewModels.cs`, `ReviewQueries.cs`, `Program.cs`, `Endpoints/EditorJson.cs`, `openapi/v1.json`) ve testleri
 - `data/gelen/amiri-quran-font/2026-11-10/` (yazı tipi dosyası, `OFL.txt`, `SHA256SUMS`) ve güncellenmiş `pipeline/sources/amiri-quran-font.toml`
-- Karar defteri: K-13, K-43 ve K-48 güncellemeleri; belge çelişkileri BÇ-12 ve BÇ-55 çözüldü, BÇ-56 ve BÇ-57 açıldı (OCR ve bağlantı eylemleri için "Açık soru" etiketleri düğmelerde)
+- Karar defteri: K-13, K-43 ve K-48 güncellemeleri; belge çelişkileri BÇ-12, BÇ-55 ve BÇ-57 çözüldü, BÇ-56 açıldı (OCR ve bağlantı eylemleri için "Açık soru" etiketleri düğmelerde)
 
 ## Elle başlatma istemi
 ```text
@@ -190,7 +195,7 @@ docs/10-claude-code/asamalar/A15-editor-paneli.md dosyasındaki aşamayı yürü
 
 ## Aşama kaydı (2026-11-10/11)
 
-Kod ve testler 10–11 Kasım 2026'da yazıldı ve incelendi (inceleyici, metin-denetcisi, arayuz-denetcisi; Önemli bulguların hepsi düzeltildi). Editör testleri 36 dosya ve 659 testtir (11 Kasım 2026, `pnpm --filter @mutalaa/editor test`). Gözle denetim (yerelde A14 API'siyle giriş, sekiz rotanın tarayıcıda açılması, kontrast) kullanıcıya bırakıldı.
+Kod ve testler 10–11 Kasım 2026'da yazıldı ve incelendi (inceleyici, metin-denetcisi, arayuz-denetcisi; Önemli bulguların hepsi düzeltildi). Editör testleri 37 dosya ve 661 testtir (11 Kasım 2026, `pnpm --filter @mutalaa/editor test`). API ve editör konteynerle denendi: `BUILDX_BAKE_ENTITLEMENTS_FS=0 docker compose --profile app up -d --build api editor` ile ayağa kalktılar; `http://127.0.0.1:5174` üzerinde `/` 200 `text/html`, `/kuyruk/ocr` 200, `/fonts/AmiriQuran-Regular.ttf` 200 `font/ttf`, `/api/v1/auth/me` ve `/api/v1/reviews/stats` 401 `application/problem+json` (`urn:mutalaa:problem:oturum-acilamadi`; nginx vekili çalışıyor); sonra konteynerler durduruldu ve kaldırıldı. Kullanıcıya bırakıldı: yerelde giriş, sekiz rotanın tarayıcıda açılması, kontrast ve odak halkasının gözle denetimi, 320 px yan menü, gerçek TIFF.
 
 ### Kararlar ve gerekçeleri
 
@@ -198,7 +203,7 @@ Kod ve testler 10–11 Kasım 2026'da yazıldı ve incelendi (inceleyici, metin-
 - **Sayı kuralı.** `NumberHandling = Strict`: tırnaklı sayı artık 400 alır ve OpenAPI tamsayıyı yalnız `integer` yazar; üretilmiş istemcide `id` ve `xmin` `number` olur. Gerekçe: şema `["integer","string"]` ve `pattern` taşıdığı için tipi gevşekti.
 - **UI tabanı Base UI.** shadcn `--base base`, stil `base-nova`; Radix yedek kaldı ve `deps.test.ts` Radix paketlerini yasaklar.
 - **Bağlantı toplu seçimi kapalı** (K-13 politika 1; `BULK_ENABLED = false`): API aday sınıfını vermiyor; bileşen ve testler hazır. **Sure adı toplu onayı örneklemsiz** (politika 2): her satır kartta görünür, riskli adlar ve retler tek tek verilir.
-- **BÇ-57 açıldı (11 Kasım 2026).** Toplu karar öğesinde `duzenlenen` çalışma zamanında isteğe bağlıdır ve K-48 madde 6 da `duzenlenen?` yazar, ama OpenAPI şeması `karar`, `duzenlenen` ve `gerekce` alanlarını zorunlu-nullable yazar; panel her zaman `duzenlenen: null` gönderir.
+- **BÇ-57 açıldı ve çözüldü (11 Kasım 2026).** Toplu karar öğesinde `duzenlenen` çalışma zamanında isteğe bağlıdır ve K-48 madde 6 da `duzenlenen?` yazar, ama OpenAPI şeması `karar`, `duzenlenen` ve `gerekce` alanlarını zorunlu-nullable yazıyordu. Önce A16'ya ertelendi, sonra A15 içinde düzeltildi: `DecisionBody` ve `BulkDecisionItem` kayıt parametreleri yeniden sıralandı (`Duzenlenen = null` sona alındı), `duzenlenen` OpenAPI'de isteğe bağlıdır (`karar` ve `gerekce` zorunlu), üretilmiş istemci tipi `duzenlenen?`; test `OpenApiDocumentFixTests.The_decision_schemas_make_duzenlenen_optional_and_keep_karar_and_gerekce_required`; .NET 3.727 test geçti (1 atlandı). K-48 metni değişmedi; panel gönderimine dokunulmadı.
 
 ### Doğrulananlar
 
@@ -215,7 +220,8 @@ Kod ve testler 10–11 Kasım 2026'da yazıldı ve incelendi (inceleyici, metin-
 | ESLint kuralları | 23 örnek kod vakası (JSX sabit metni, `aria-label` sabit metni, `.normalize(`, `\d`, `toLocaleUpperCase()`, `localeCompare`, `react-router-dom`, `react-native`, izinsiz `@mutalaa/*`, `node:fs` kaynakta ve testte, koşullu kanca, react-refresh …) `eslint --stdin --stdin-filename` ile sınandı | `.tmp/a15/lint-cases.sh` |
 | `pnpm licenses --prod` | Editör ve çalışma alanı paketleriyle 31 paket (`shadcn` CLI paketi `devDependencies` altında; `dependencies` altındayken liste 254 pakete çıkıyordu) | [Teknoloji yığını §3](../../02-mimari/02-teknoloji-yigini.md#3-kitaplık-notları-ve-bağımlılık-listesi) |
 | Amiri Quran kapsamı | Boşluk dışı 68 ayırt edici kod noktasının 68'i fontta (`fontTools` `cmap`); GSUB ve GPOS ölçülmedi | [Kaynaklar §3.1](../../04-icerik/01-kaynaklar.md) |
-| Docker | `docker compose build` bu makinede BuildKit "bake" yolunda izin hatası verdi; `docker build -f apps/editor/Dockerfile .` ile imaj derlenir ([Yerel geliştirme §4](../../02-mimari/04-yerel-gelistirme.md#4-docker-composeyml)) | ana oturum bildirimi |
+| Docker | `docker compose build` bu makinede BuildKit "bake" yolunda izin hatası verdi. Çözüm `BUILDX_BAKE_ENTITLEMENTS_FS=0` ortam değişkenidir (`BUILDX_BAKE_ENTITLEMENTS_FS=0 docker compose --profile app up -d --build api editor` çalıştı); yedek yol `docker build -f apps/editor/Dockerfile .`. Windows'ta yoldaki `İ`/`ü` yüzünden Dockerfile "dışarıda" sayılıyor olabilir; kök neden doğrulanmadı, yalnız çözüm doğrulandı ([Yerel geliştirme §4](../../02-mimari/04-yerel-gelistirme.md#4-docker-composeyml)) | ana oturum bildirimi |
+| Konteyner denetimi | api ve editör ayağa kalktı; `http://127.0.0.1:5174`: `/` 200 `text/html`, `/kuyruk/ocr` 200, `/fonts/AmiriQuran-Regular.ttf` 200 `font/ttf`, `/api/v1/auth/me` ve `/api/v1/reviews/stats` 401 `application/problem+json` (`urn:mutalaa:problem:oturum-acilamadi`); nginx vekili çalışıyor; konteynerler kaldırıldı | ana oturum bildirimi |
 
 ### Çürüyen varsayımlar
 
