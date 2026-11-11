@@ -9,7 +9,7 @@ public class PackCatalogTests
     private static PackCatalog Catalog => PackCatalog.Default;
 
     [Fact]
-    public void Core_maps_the_three_tanzil_sources_with_distinct_roles()
+    public void Core_maps_the_three_tanzil_sources_and_the_two_optional_meal_sources_with_distinct_roles()
     {
         PackDefinition core = Catalog.Get("core");
 
@@ -19,13 +19,20 @@ public class PackCatalogTests
         Assert.True(core.CarriesQuranStructure);
         Assert.Equal(
             [
+                ("elmalili-meal", PackSourceRole.Content),
+                ("elmalili-sade-meal", PackSourceRole.Content),
                 ("tanzil-simple-clean", PackSourceRole.Attribution),
                 ("tanzil-ust-veri", PackSourceRole.Structure),
                 ("tanzil-uthmani", PackSourceRole.Content),
             ],
             core.Sources.OrderBy(s => s.Slug, StringComparer.Ordinal).Select(s => (s.Slug, s.Role)));
         Assert.Equal("medine-604", core.Sources.Single(s => s.Role == PackSourceRole.Structure).PageMapLayout);
-        Assert.Equal(["tanzil-uthmani"], core.ContentSources.Select(s => s.Slug));
+        Assert.Equal(["tanzil-uthmani", "elmalili-meal", "elmalili-sade-meal"], core.ContentSources.Select(s => s.Slug));
+
+        // K-49: mealler istege bagli (Required: false); Tanzil kaynaklari zorunlu kalir.
+        Assert.Equal(["elmalili-meal", "elmalili-sade-meal"], core.Sources.Where(s => !s.Required).Select(s => s.Slug).Order(StringComparer.Ordinal));
+        Assert.All(core.Sources.Where(s => s.Slug.StartsWith("tanzil-", StringComparison.Ordinal)), s => Assert.True(s.Required));
+        Assert.Equal("Kur'an ve Elmalılı mealleri", core.Title);
     }
 
     [Fact]
