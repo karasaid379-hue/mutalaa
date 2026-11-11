@@ -46,6 +46,8 @@ public readonly record struct ReviewDecisionRequest
 /// <summary>
 /// Birim hedefinin karar anindaki durumu (unit satirindan okunur). <paramref name="HasOffsetData"/>: birimin metne bagli ofsetli
 /// turev alani var (bos olmayan <c>marks</c> ya da en az bir <c>sentences</c> araligi; <see cref="ReviewDecisions.HasOffsetData"/>).
+/// <paramref name="IsMergedFollower"/>: birlesik mealin izleyen birimi (<c>attrs.birlesik_ile</c> dolu; K-49 madde 8,
+/// <see cref="ReviewDecisions.IsMergedFollower"/>): metni bas birimdedir, kendi metni degistirilemez.
 /// </summary>
 public readonly record struct UnitReviewState(
     UnitKind Kind,
@@ -54,7 +56,8 @@ public readonly record struct UnitReviewState(
     string Metin,
     string ContentHash,
     int Rev,
-    bool HasOffsetData = false);
+    bool HasOffsetData = false,
+    bool IsMergedFollower = false);
 
 /// <summary>Hedefin karar anindaki durumu: durum sutunlu hedeflerde Status, birimde Unit.</summary>
 public readonly record struct ReviewTargetState
@@ -196,8 +199,9 @@ public static class ReviewDecisions
     /// (2) uygulanacak metin duzenlenen, yoksa onerilen; ikisi de bossa (yalniz durum onayi) metin degismez, null doner;
     /// (3) metin degisiyorsa Canonicalize, ContentHash, rev + 1 ve arama anahtarlari (tr_stem NULL). Ozet degismiyorsa null doner.
     /// Degistirilemez metin (ayet, kuran_metni) 422 <c>degistirilemez-metin</c>.
-    /// Ofsetli turev alanlar (marks, sentences) metin degisimiyle kayar ve yeniden hesaplanmasi A16'ya kalmistir:
-    /// metin GERCEKTEN degisiyorsa ve birimde ofsetli alan varsa 422 <c>inceleme-desteklenmiyor</c> (K-48 degismez; kisitlama A16'da kalkar).
+    /// Ofsetli turev alanlar (marks, sentences) metin degisimiyle kayar; yeniden hesaplari BC-59'dadir (A20):
+    /// metin GERCEKTEN degisiyorsa ve birimde ofsetli alan varsa 422 <c>inceleme-desteklenmiyor</c> (K-48 degismez; kisitlama BC-59'da kalkar).
+    /// Birlesik mealin izleyen biriminde (<c>attrs.birlesik_ile</c> dolu; K-49 madde 8) metin degistiren her karar da ayni kodla 422 verir.
     /// Durum onayi (metin degismez) ve ret serbesttir.
     /// </summary>
     public static UnitTextUpdate? ApplyUnitText(UnitReviewState unit, string? onceki, string? onerilen, string? duzenlenen)
@@ -238,6 +242,7 @@ public static class ReviewDecisions
             return null;
         }
 
+        RequireNotMergedFollower(unit);
         RequireNoOffsetData(unit);
 
         SearchKeys keys = SearchNormalizer.Keys(canonical);
@@ -276,13 +281,57 @@ public static class ReviewDecisions
         }
     }
 
+    /// <summary>
+    /// Birim birlesik mealin izleyen birimi mi: <c>attrs</c> jsonb'sinde <c>birlesik_ile</c> anahtari dolu (bos olmayan metin ya da
+    /// null olmayan baska deger). Degismez iki yonludur (<c>birlesik_ile</c> varsa metin bos); metin bas birimdedir (K-49 madde 8).
+    /// </summary>
+    public static bool IsMergedFollower(string? attrsJson)
+    {
+        if (string.IsNullOrWhiteSpace(attrsJson))
+        {
+            return false;
+        }
+
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(attrsJson);
+            if (document.RootElement.ValueKind != JsonValueKind.Object
+                || !document.RootElement.TryGetProperty("birlesik_ile", out JsonElement value))
+            {
+                return false;
+            }
+
+            return value.ValueKind switch
+            {
+                JsonValueKind.Null or JsonValueKind.Undefined => false,
+                JsonValueKind.String => !string.IsNullOrEmpty(value.GetString()),
+                _ => true,
+            };
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
     private static void RequireNoOffsetData(UnitReviewState unit)
     {
         if (unit.HasOffsetData)
         {
             throw new DomainException(
                 DomainErrorCodes.IncelemeDesteklenmiyor,
-                "Ofsetli alanlar (marks, sentences) metin degisimini A16'da hesaplanana kadar desteklenmiyor; metni degistiren onay yapilamaz.");
+                "Ofsetli alanlarin (marks, sentences) yeniden hesabi BC-59'da (A20) yapilana kadar bu birimde metin degisimi desteklenmiyor; metni degistiren onay yapilamaz.");
+        }
+    }
+
+    /// <summary>Izleyen birimin metni bos kalir; metin degistiren karar 422. Ileti "Ofsetli" ile baslamaz (editor OFFSET_MARKER eslesmesi).</summary>
+    private static void RequireNotMergedFollower(UnitReviewState unit)
+    {
+        if (unit.IsMergedFollower)
+        {
+            throw new DomainException(
+                DomainErrorCodes.IncelemeDesteklenmiyor,
+                "Birlesik meal izleyen birimi (attrs.birlesik_ile) kendi metnini tasimaz; metin degistiren karar verilemez, metin bas birimde duzeltilir.");
         }
     }
 
@@ -342,7 +391,7 @@ public static class ReviewDecisions
         {
             // Ilk onay: metin uygulanmaz, kayit acik kalir. Taslak birim incelemede olur; onayli birim eski metnini ve durumunu korur.
             RequireFresh(unit, review.Onceki);
-            if (unit.HasOffsetData)
+            if (unit.HasOffsetData || unit.IsMergedFollower)
             {
                 // Metin ikinci onayda uygulanir; uygulanamayacak degisikligi kullanici ilk onayda ogrensin.
                 _ = ResolveTextChange(unit, review.Onerilen, stored);

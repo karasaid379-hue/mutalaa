@@ -728,6 +728,20 @@
             }
           },
           {
+            "name": "kaynak",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "asama",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "cursor",
             "in": "query",
             "schema": {

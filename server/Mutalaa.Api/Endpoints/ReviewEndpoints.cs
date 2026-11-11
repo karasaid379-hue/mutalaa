@@ -81,6 +81,8 @@ public static class ReviewEndpoints
         [FromQuery(Name = "hedef_tablo")] string? hedefTablo,
         string? alan,
         string? durum,
+        string? kaynak,
+        string? asama,
         string? cursor,
         int? limit,
         IcerikDbContext db,
@@ -100,6 +102,32 @@ public static class ReviewEndpoints
         }
 
         WritableText.Check(errors, "alan", alan);
+
+        if (kaynak is not null && string.IsNullOrWhiteSpace(kaynak))
+        {
+            errors["kaynak"] = ["kaynak boş olamaz."];
+        }
+        else
+        {
+            WritableText.Check(errors, "kaynak", kaynak);
+        }
+
+        ReviewStage? stage = null;
+        if (asama is not null)
+        {
+            if (string.Equals(asama, "ilk", StringComparison.Ordinal))
+            {
+                stage = ReviewStage.Ilk;
+            }
+            else if (string.Equals(asama, "ikinci", StringComparison.Ordinal))
+            {
+                stage = ReviewStage.Ikinci;
+            }
+            else
+            {
+                errors["asama"] = ["Geçersiz asama. İzin verilenler: ilk, ikinci."];
+            }
+        }
 
         int take = limit ?? ReviewQueries.DefaultLimit;
         if (take is < 1 or > ReviewQueries.MaxLimit)
@@ -125,7 +153,7 @@ public static class ReviewEndpoints
             return ApiProblem.Validation(errors);
         }
 
-        return TypedResults.Ok(await ReviewQueries.ListAsync(db, hedefTablo, alan, status, after, take, cancellationToken));
+        return TypedResults.Ok(await ReviewQueries.ListAsync(db, hedefTablo, alan, status, kaynak, stage, after, take, cancellationToken));
     }
 
     private static async Task<IResult> StatsAsync(IcerikDbContext db, CancellationToken cancellationToken) =>
