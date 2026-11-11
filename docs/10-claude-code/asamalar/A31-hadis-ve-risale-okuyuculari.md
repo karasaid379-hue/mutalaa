@@ -133,7 +133,7 @@ adb exec-out screencap -p > .tmp/a31/risale-fikstur.png
 - Commit kapsamları: `mobile`, `anchors` (yalnız rota yardımcısı değişirse), `pipeline` (fikstür).
 
 ## İnsan adımları
-- Yok. Cihaz denetimleri kullanıcıya bırakılır ve aşamayı bekletmez. A19'un editör adımları (İ-11, İ-14) ve A20'nin editör adımları (İ-24, İ-28) da bu aşamayı bekletmez: okuyucu onaysız birimi "doğrulanmamış" rozetiyle, onaylı birimi rozetsiz gösterir. Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
+- Yok. Cihaz denetimleri kullanıcıya bırakılır ve aşamayı bekletmez. A19'un editör adımları (İ-11 hadis turları, İ-14) ve Elmalılı meal turları (İ-11, K-49) ve A20'nin editör adımları (İ-24, İ-28) da bu aşamayı bekletmez: okuyucu onaysız birimi "doğrulanmamış" rozetiyle, onaylı birimi rozetsiz gösterir. Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
 
 ## Çıktılar
 - `apps/mobile/app/(tabs)/kutuphane/hadis/[koleksiyon]/index.tsx`, `[koleksiyon]/[no].tsx`; `apps/mobile/app/(tabs)/kutuphane/risale/[kitap]/index.tsx`, `[kitap]/[...bolum].tsx`

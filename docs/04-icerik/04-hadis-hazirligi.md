@@ -129,7 +129,7 @@ Amaç: Tecrîd hadisinden Buhârî'deki tam rivayete geçiş, Naim çevirisini K
 - **Motor ve maliyet.** OCR yapılırsa (S-15) motor o aşamada seçilir; A09 ertelendi ve motor seçilmedi. Ücretli motor ya da görsel model kullanılırsa tam koşudan önce tahmini maliyet kullanıcıya gösterilir ([İçerik hattı](./02-icerik-hatti.md) §11). Yapay zekâ OCR'da yalnız görsel okuma yapar; hadis çevirmez.
 - **Hadis birimlerine bölme.** Hadis numarası işaretleri bulunur; her numara için Arapça blok ile Türkçe blok eşlenir; `h:tecrid:{no}`, `ht:naim:tecrid:{no}` ve `ht:miras:tecrid:{no}` birimleri üretilir (`ceviri` cilt eşlemesinden gelir). Sayfa eşlemesi Elmalılı'daki gibi `page_map` tablosuna birimin kaynağıyla (`source_id`), cilt ve sayfayla yazılır; baskı künyesi kaynağın `baski_bilgisi` alanındadır ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md#91-page_map-ayah_box-audio_timing) §9.1).
 - **Kütüb-i Sitte.** OCR yalnız kendi sayısallaştırma yolu seçilirse gerekir. Harekeli Arapça için ayrı CER eşiği konur.
-- **Editör turları.** Naim ve Miras aktarımı `review` kuyruğuna düşer (`hedef_tablo = 'unit'`, `alan = 'metin'`); düzeltme turları ve onay editör emeğidir (İ-11). Onaylanana kadar birimler `metin_durumu = 'taslak'` kalır.
+- **Editör turları.** Naim ve Miras aktarımı `review` kuyruğuna düşer (`hedef_tablo = 'unit'`, `alan = 'metin'`); düzeltme turları ve onay editör emeğidir (İ-11 hadis turları; Elmalılı meal turları ayrıdır ve bu hattı bekletmez, K-49). Onaylanana kadar birimler `metin_durumu = 'taslak'` kalır.
 
 ```bash
 # S-15 (ertelendi; komutlar henüz yok)

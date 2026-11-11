@@ -1,7 +1,7 @@
 # A34 · Mağaza v1 yayın hazırlığı
 
 > **Sürüm:** 1.1 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-41](../../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-21](../../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-15](../../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-49](../../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
-> **Faz:** 3 · Mağaza v1 · **Önkoşul:** [A33](./A33-uctan-uca-test-ve-ic-dagitim.md) · **İnsan adımı:** İ-15, İ-18, İ-27
+> **Faz:** 3 · Mağaza v1 · **Önkoşul:** [A33](./A33-uctan-uca-test-ve-ic-dagitim.md) · **İnsan adımı:** İ-11 (meal turları) · İ-15, İ-18, İ-27
 > **Ajanlar:** `arastirmaci` (A34.0 tedarik) · `mobil-gelistirici` · `sunucu-gelistirici` · `arayuz-denetcisi` · `inceleyici` · `belge-bekcisi` · **Beceriler:** `paket-yayini` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A34`
 
@@ -66,7 +66,7 @@ Kendimiz yapacağımız işler: sürüm kaydı ve kanıt tablosu, mağaza metni 
 - **Bitti sayılır:** sürüm kaydı var; her madde ya kanıt ya da İ numarası taşıyor; `arastirmaci` raporu bağlantılı ve tarihli.
 
 ### A34.2 · İçerik dondurma ve kanıt dosyaları
-- Mealin iki düzeltme turu kapalıdır (A16; İ-11); `elmalili-meal` birimlerinden `onayli` olmayan kalmaz (SQL aşağıda). G-INC geçmeden `public`'e meal kaynağı çıkmaz ([K-49](../../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi) madde 5): bir meal kaynağının bütün âyetleri onaylanıp G-INC geçmedikçe `public` derleme o kaynağı dışarıda bırakır; bu kural kodda bu aşamada yazılır ve her meal kaynağı (`elmalili-meal`, `elmalili-sade-meal`) için ayrı denetlenir. A34'e kadar bu kural yoktur: `PackCatalog.cs` açıklamasındaki not gereği kısmi (kısmen onaylı) meal `public` derlemeye girebilir; yalnız onaylı birimler girer (P-10). Kapanmamışsa terfi yapılmaz: onaylı birimde sonradan yapılan her düzeltme birimi yeniden inceleme ve ikinci onaydan geçirir ([Yayın süreci](../../07-yayin/01-yayin-sureci.md) §7.3).
+- **`public` yayının önkoşulu: İ-11 meal turları** (K-49 madde 12; A16, A18, A19 ve A37'yi bekletmediler, `public` yayını bekletirler). İki meal için ayrı ayrı: tur 1 tam (bütün birimler `onayli`), tur 2 en az 600 âyet ve G-INC geçti; `elmalili-meal` ve `elmalili-sade-meal` birimlerinden `onayli` olmayan kalmaz (SQL aşağıda). Birimler bu ana kadar `taslak` kalır. G-INC geçmeden `public`'e meal kaynağı çıkmaz ([K-49](../../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi) madde 5): bir meal kaynağının bütün âyetleri onaylanıp G-INC geçmedikçe `public` derleme o kaynağı dışarıda bırakır; bu kural kodda bu aşamada yazılır ve her meal kaynağı (`elmalili-meal`, `elmalili-sade-meal`) için ayrı denetlenir. A34'e kadar bu kural yoktur: `PackCatalog.cs` açıklamasındaki not gereği kısmi (kısmen onaylı) meal `public` derlemeye girebilir; yalnız onaylı birimler girer (P-10). Kapanmamışsa terfi yapılmaz: onaylı birimde sonradan yapılan her düzeltme birimi yeniden inceleme ve ikinci onaydan geçirir ([Yayın süreci](../../07-yayin/01-yayin-sureci.md) §7.3).
 - Dondurma yayını: `dotnet run --project server/Mutalaa.Publisher -- publish --flavor internal`. Yayın sürümü (`S`, CalVer) ve `release.ozetler` içindeki içerik özetleri, Tanzil dosya özeti (`source.dosya_sha256`), Elmalılı metin sürümü (`elmalili-meal` anlamsal sürümü; ilk onaylı sürüm 1.0.0), ses giriyorsa kayıt başına sure-dosya listesi (bayt, sha256, dosya sürümü) sürüm kaydına yazılır ([Yayın süreci](../../07-yayin/01-yayin-sureci.md) §7.1 madde 1–2).
 - Kanıt dosyaları sürüm kaydında bağlantı ya da özetle durur: Tanzil'le bayt bayt eşitlik raporu (A10 değişmezlik testleri), test raporları (A33), kapı raporu (`release` kaydına bağlı JSON). Büyük dosyalar `data/reports/` altında tutulur (git dışı).
 - Mağaza ekran görüntüleri: Maestro `takeScreenshot` akışını Claude Code yazar (`apps/mobile/e2e/magaza-ekran-goruntuleri.yaml`); akışı koşmak ve ekran görüntüsü almak kullanıcıdadır (Android emülatör ya da cihaz; iOS için TestFlight derlemesinde gerçek iPhone). Ölçüler Tedarik tablosundadır; dosyalar `data/reports/magaza/` altına konur (git dışı). Sürüm kaydında "kullanıcıya bırakıldı" diye yazılır.
@@ -109,7 +109,7 @@ Kendimiz yapacağımız işler: sürüm kaydı ve kanıt tablosu, mağaza metni 
 - [ ] Terfide içerik özetleri iç kanalda test edilen yayınla aynı (P-14).
 - [ ] `fetch-core.mjs` public manifest imzasını `keys.ts` içindeki `public` anahtarıyla doğruluyor; gömülü `core` sha256'sı public manifestte bir kez geçiyor.
 - [ ] Public manifestte `test-` önekli ya da `ses-test` paketi yok.
-- [ ] `elmalili-meal` birimlerinde `onayli` olmayan satır sayısı 0.
+- [ ] `elmalili-meal` ve `elmalili-sade-meal` birimlerinde `onayli` olmayan satır sayısı 0 (İ-11 tur 1) ve her iki meal için tur 2 (en az 600 âyet) ile G-INC geçti.
 - [ ] `uv --directory pipeline run mutalaa sources check` 0 hata ve 0 uyarıyla bitiyor; atıf karşılaştırması farksız; `core` paketinde Tanzil'in kendi bildirimi bayt bayt var ve SHA-256'sı kilitteki `bildirim_sha256` değerine eşit (değişmezlik testi 6).
 - [ ] Açık kaynak bağımlılık listesi yeniden üretildiğinde Ayarlar › Kaynaklar ekranındaki bölümle aynı; listede reklam ya da izleme SDK'sı yok.
 - [ ] `pnpm --filter @mutalaa/mobile test` yeşil ve `beforeSend` ayıklama testi içinde.
@@ -123,7 +123,7 @@ Kendimiz yapacağımız işler: sürüm kaydı ve kanıt tablosu, mağaza metni 
 pnpm turbo run lint typecheck test && dotnet test --solution server/Mutalaa.slnx && uv --directory pipeline run pytest
 uv --directory pipeline run pytest -m degismezlik
 uv --directory pipeline run mutalaa sources check; echo "çıkış: $?"
-docker compose exec -T postgres psql -U mutalaa -d mutalaa -c "SELECT count(*) FROM icerik.unit WHERE source_id = 'elmalili-meal' AND metin_durumu <> 'onayli';"
+docker compose exec -T postgres psql -U mutalaa -d mutalaa -c "SELECT count(*) FROM icerik.unit WHERE source_id IN ('elmalili-meal', 'elmalili-sade-meal') AND metin_durumu <> 'onayli';"
 dotnet run --project server/Mutalaa.Publisher -- publish --flavor public --dry-run; echo "çıkış: $?"
 MANIFEST_URL="https://<içerik-alanı>/public/manifest.json" pnpm --filter @mutalaa/mobile exec node scripts/fetch-core.mjs
 dotnet run --project server/Mutalaa.Publisher -- verify --flavor public --embedded-core apps/mobile/assets/db/core.db; echo "çıkış: $?"
@@ -155,6 +155,7 @@ Gömülü `core` dosyasının adı A23'teki BÇ-25 kararıdır (öneri `core.db`
 - Maestro akışını koşmak ve ekran görüntüsü almak kullanıcıdadır ([çalışma düzeni](../../../CLAUDE.md)); ilerleme notunda ve kapanış raporunda "kullanıcıya bırakıldı" yazılır.
 
 ## İnsan adımları
+- İ-11 · Elmalılı meal turları (iki meal için ayrı ayrı: tur 1 tam, tur 2 en az 600 âyet, G-INC): `public` yayının önkoşuludur (A34.2); `public` dışındaki işleri bekletmez.
 - İ-15 · Expo, Apple Developer ve Google Play hesapları: mağaza adı kontrolü (S-08), beyan formları, test kanalı (kişisel Google Play hesabında kapalı test kullanıcıları dahil), `eas submit` ve yayına alma; A34.6'da.
 - İ-18 · Canlı içerik deposu ve alan adı: A34.4 ve gizlilik sayfasından önce.
 - İ-27 · Sentry projesi ve DSN; proje ayarında IP saklamanın kapatılması ve kaynak eşlemesi yükleme sırrı (`SENTRY_AUTH_TOKEN`).

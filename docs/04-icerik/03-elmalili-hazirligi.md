@@ -1,5 +1,5 @@
 # Elmalılı Hazırlığı
-> **Sürüm:** 2.1 · **Tarih:** 12 Kasım 2026 · **Durum:** Taslak
+> **Sürüm:** 2.2 · **Tarih:** 12 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
 
 Bu dosya Elmalılı Muhammed Hamdi Yazır'ın *Hak Dini Kur'an Dili* eserinin meal ve tefsir metninin nasıl hazırlanacağını anlatır. K-03 gereği önce âyet meali hazırlanır ve `core` paketine çapalarıyla girer: orijinal meal `meal:elmalili:{sure}:{ayet}`, güncel (sadeleştirilmiş) meal `meal:elmalili-sade:{sure}:{ayet}` ([K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)). Tefsir metni ikinci aşamadır ve `tefsir-elmalili` paketine `tf:elmalili:…` çapalarıyla girer.
@@ -170,13 +170,13 @@ flowchart TD
 | Kapsam raporu | Sayfa başına âyet sayısı Tanzil sayısıyla karşılaştırılır; sayfa başı ve sonu içeriği raporlanır | Eksik 0 |
 | Çapraz tanık raporu | Orijinal mealde `tr_narrow` üzerinde `rapidfuzz` ile EPUB tanığına uyum (YEK meal bloklarına ayrılamadığı için kullanılmadı; A37 adayı); skor "özgün baskıya sadakat" diye sunulmaz | Rapor; ilk yüklemede inceleme sırası |
 | Sadeleştirme taraması | Orijinal mealde, aynı âyette güncel mealle ortak olup tanıkta bulunmayan sözcükler ve şapka ile kesme farkları (veriye dayanır, yapay zekâ yok) | Rapor; iz bulunursa tur 1'de incelenir |
-| Tur 1 | Her âyetin iki ayrı kişiyle onayı (K-38'deki 60 âyetlik elle ön denetimi karşılar) | Bütün birimler `onayli`, açık inceleme 0 |
+| Tur 1 (İ-11; A16, A18, A19 ve A37'yi bekletmez; `public` yayını ve Faz 1 çıkışı için şart) | Her âyetin iki ayrı kişiyle onayı (K-38'deki 60 âyetlik elle ön denetimi karşılar) | Bütün birimler `onayli`, açık inceleme 0 |
 | Tur 2, ikinci okuma hata oranı | Rastgele seçilen onaylı âyetlerde ikinci kişinin bulduğu hatalı âyet oranı; en az 600 âyet, sure grubuna göre tabakalı (cilt S-15'e kalır), sabit tohumla | %95 güvenle < %0,5 (G-INC, `qa sample` raporu) |
 | G-MET (CER, imlâ tutarlılığı, `⟦?⟧`) | OCR yolunda | Bu yolda uygulanmaz; S-15 |
 
 **Tur 1 ve ön denetim.** Eskiden önerilen 60 âyetlik elle örneklem, metnin %5'ini etkileyen bir sorunu yaklaşık %95 olasılıkla yakalardı (0,95^60 ≈ 0,046). Tur 1 her âyeti iki kişiyle onayladığı için bu ön denetimi karşılar ([K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi) madde 12).
 
-**Örneklem büyüklüğü.** Örneklemde hiç hata çıkmazsa hata oranının %95 güven üst sınırı yaklaşık `3 / n` olur. Üst sınırı %0,5'in altına indirmek için en az 600 âyet okunur. Örneklem sure grubuna göre tabakalanır (cilt tarama ile birlikte S-15'e kalır) ve sabit tohumla seçilir. Hata bulunursa hata deseni düzeltilir, ilgili bölümler taranır ve yeni bir örneklem çekilir. Faz 1 çıkışını yalnız orijinal mealin tur 1 ve tur 2'si bağlar.
+**Örneklem büyüklüğü.** Örneklemde hiç hata çıkmazsa hata oranının %95 güven üst sınırı yaklaşık `3 / n` olur. Üst sınırı %0,5'in altına indirmek için en az 600 âyet okunur. Örneklem sure grubuna göre tabakalanır (cilt tarama ile birlikte S-15'e kalır) ve sabit tohumla seçilir. Hata bulunursa hata deseni düzeltilir, ilgili bölümler taranır ve yeni bir örneklem çekilir. Faz 1 çıkışını yalnız orijinal mealin tur 1 ve tur 2'si bağlar. İki tur A16'nın, A18'in, A19'un ve A37'nin kapanışını ya da başlamasını bekletmez; `public` yayının (A34) ve Faz 1 çıkışının şartıdır. Turlar bitene kadar iki mealin birimleri `taslak` ve "doğrulanmamış" kalır, `onayli` yazılmaz (K-49 madde 12, 12 Kasım 2026).
 
 ## 9. Baskı künyesi, sürüm ve atıf
 
