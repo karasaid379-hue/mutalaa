@@ -6,7 +6,7 @@
 > **Başlat:** `/asama A19`
 
 ## Amaç
-K-04 gereği Tecrîd-i Sarîh'in Arapça metni ve Türkçesi (Babanzâde Ahmed Naim ve Kâmil Miras ciltleri; tam takım) ile Kütüb-i Sitte'nin Arapça metni için hat kurulur: tedarik ve indirme (A19.0), kaynak kayıtları ve cilt eşlemesi, hazır dijital metin (OCR ve tarama S-15'e ertelendi, K-49), hadis birimleri (`h:{koleksiyon}:{no}`, `ht:{ceviri}:tecrid:{no}`), numara eşleme ve konum tabloları, Tecrîd → Buhârî eşlemesi ve hadis atıf ayrıştırıcısı. Kaynakları internetten ve GitHub'dan Claude Code indirir. İnsan işi yalnız cilt künyelerinin ve mütercim bilgisinin doğrulanması (İ-14) ile Türkçe aktarımın düzeltme turlarıdır (İ-11).
+K-04 gereği Tecrîd-i Sarîh'in Arapça metni ve Türkçesi (Babanzâde Ahmed Naim ve Kâmil Miras ciltleri; tam takım) ile Kütüb-i Sitte'nin Arapça metni için hat kurulur: tedarik ve indirme (A19.0), kaynak kayıtları ve cilt eşlemesi, hazır dijital metin (OCR ve tarama S-15'e ertelendi, K-49), hadis birimleri (`h:{koleksiyon}:{no}`, `ht:{ceviri}:tecrid:{no}`), numara eşleme ve konum tabloları, Tecrîd → Buhârî eşlemesi ve hadis atıf ayrıştırıcısı. Kaynakları internetten ve GitHub'dan Claude Code indirir. İnsan işi yalnız cilt künyelerinin ve mütercim bilgisinin doğrulanması (İ-14) ile Türkçe aktarımın (Naim ve Miras) hadis düzeltme turlarıdır (İ-11 hadis turları; bu hüküm değişmedi). Elmalılı meal turları (İ-11, K-49) A19'u bekletmez.
 
 ## Okunacak belgeler
 - [Hadis hazırlığı](../../04-icerik/04-hadis-hazirligi.md): tamamı
@@ -88,7 +88,7 @@ Seçilmeyenler (erişim ve kalite): Sunnah.com API (API anahtarı ister); fawaza
 - Katman denetimi: tabakalı örneklem üzerinde Türkçe sözcük ve numara denetimleri, Diyanet ciltlerindeki Arapça bloklar için Shamela metniyle karşılaştırma (temel harf ve hareke farkı ayrı raporlanır); iki kişilik altın metin ve CER ölçümü S-15'tedir. Ciltler Latin harflidir; Osmanlıca harfli bir cilt kullanılırsa Elmalılı hazırlığı §5 aktarım kılavuzu uygulanır. Katmanın kabulü `/karar` ile.
 - Hadis numarası işaretlerinin bulunması, Arapça blok ile Türkçe bloğun eşlenmesi. Birimler: `h:tecrid:{no}`, `ht:naim:tecrid:{no}` (cilt 1–3) ve `ht:miras:tecrid:{no}` (cilt 4–12); `ceviri` cilt eşlemesinden gelir. Kendi taramamızdan aktarılan metin bizim ürettiğimiz metindir ve ilk kayıtta NFC'ye çevrilir; üçüncü taraf Arapça metin dağıtıldığı hâliyle saklanır.
 - `hadith_location` (kitap › bâb › hadis, `ord`), `hadith_number_map` (sistemler) ve baskı sayfa eşlemesi (`page_map`; `source_id` birimin kaynağıdır, baskı künyesi kaynağın `baski_bilgisi` alanındadır; Hadis hazırlığı §7, Editoryal veritabanı §9.1).
-- Naim ve Miras aktarımı `review` (`hedef_tablo = 'unit'`, `alan = 'metin'`) kuyruğuna düşer; düzeltme ve onay insan işidir (İ-11); onaylanana kadar birimler `metin_durumu = 'taslak'` kalır. Kalan iş yalnız bu turları bekliyorsa `/asama` aşamayı ilerleme dosyasında `engelli` durumuna alır ve Not sütununa bekleyen işi yazar; kuyruk kurulduğu için A19.4–A19.6 sürer.
+- Naim ve Miras aktarımı `review` (`hedef_tablo = 'unit'`, `alan = 'metin'`) kuyruğuna düşer; düzeltme ve onay insan işidir (İ-11 hadis turları); onaylanana kadar birimler `metin_durumu = 'taslak'` kalır. Kalan iş yalnız bu turları bekliyorsa `/asama` aşamayı ilerleme dosyasında `engelli` durumuna alır ve Not sütununa bekleyen işi yazar; kuyruk kurulduğu için A19.4–A19.6 sürer.
 - **Panelde Arapça hadis birimi (A15 notu).** A15 paneli Arapça metni yalnız `ArabicText` bileşeniyle çizer (`lang="ar"`, `dir="rtl"`, Amiri Quran; kırpma ve normalizasyon yok) ve Kur'an birimi için yazılmıştır. Arapça hadis birimleri (`h:tecrid:{no}`, `h:…`) panelde `kuyruk/ocr` ve `birimler` ekranlarına geldiğinde `ArabicText` ve sağdan sola düzen bu birimler için genişletilir (harekeli metnin satır aralığı ve yazı tipi yedeği, karma Türkçe/Arapça satırlar); değişmez metin kuralı hazır Arapça hadis için de [BÇ-52](../07-belge-celiskileri.md#1-karar-bekleyenler) ile karara bağlanır.
 - **Bitti sayılır:** örneklem CER raporu var; birimler G-CAP, G-BUT ve G-KAY'dan geçiyor; cilt 1–12 birimleri yüklü; cilt 13 kaynaklı birim 0.
 
@@ -152,7 +152,7 @@ dotnet run --project server/Mutalaa.Publisher -- publish --flavor public --dry-r
 ## İnsan adımları
 - İ-14 · Künye ve mütercim doğrulaması: kaynağı Claude Code seçer, indirir ve cilt künyelerinden ön listeyi çıkarır (A19.0, A19.2). Editör her cildin künye sayfasındaki mütercim adını ve baskı yılını, ayrıca Naim'in çevirisinin bittiği hadis numarasını doğrular. A19.3 ön eşlemeyle (cilt 1–3 Naim, cilt 4–12 Miras) ilerler; çapalardaki `ceviri` değeri bu eşlemeden geldiği için doğrulama ilk `internal` derlemeden önce tamamlanır.
 - Tecrîd OCR altın örneklemi S-15'e kalır (K-49); İ-10 `gerekmiyor`. Tecrîd → Buhârî altın seti İ-13 kapsamındadır.
-- İ-11 · Naim ve Miras aktarımının düzeltme turları ve onayı: kalan iş yalnız bu turlara bağlıysa ilerleme dosyasına `engelli` ve bekleyen iş yazılır ([İnsan adımları](../06-insan-adimlari.md)).
+- İ-11 (hadis turları) · Naim ve Miras aktarımının düzeltme turları ve onayı (Elmalılı meal turları A19'u bekletmez, K-49): kalan iş yalnız bu turlara bağlıysa ilerleme dosyasına `engelli` ve bekleyen iş yazılır ([İnsan adımları](../06-insan-adimlari.md)).
 
 ## Çıktılar
 - `data/gelen/<kaynak>/<YYYY-AA-GG>/` altında indirilen dosyalar ve `SHA256SUMS` (git dışı)

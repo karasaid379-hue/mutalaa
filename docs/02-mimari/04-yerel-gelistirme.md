@@ -105,6 +105,8 @@ dotnet user-secrets --project server/Mutalaa.Publisher set "Storage:PublicBaseUr
 
 `Storage:PublicBaseUrl` manifestteki mutlak paket adreslerinin tabanıdır ([Backend API](./05-backend-api.md) §10.5). Bilgisayarın LAN IP adresi değişirse bu değer güncellenir ve `publish` yeniden çalıştırılır. Adres `powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/lan-ip.ps1` ile bulunur (varsayılan bağdaştırıcı Wi-Fi; WSL ve Hyper-V sanal bağdaştırıcılarının adresleri telefondan erişilemez). Konteynerdeki `watch` kullanılıyorsa aynı adres `.env` içindeki `DEV_LAN_IP` değerine de yazılmalıdır, yoksa `verify` `url-uyumsuz` verir ([İ-29](../10-claude-code/06-insan-adimlari.md)); ana makinedeki `dotnet run` yayını yalnız kullanıcı sırrını okur.
 
+**Yayınlayıcı kullanıcı sırlarını yalnız `Development` ortamında okur.** Kendi PowerShell'inizde `dotnet run --project server/Mutalaa.Publisher -- …` "Eksik ayar: Storage:SecretKey." ile başlıyorsa sırlar yüklenmemiştir, çünkü `DOTNET_ENVIRONMENT` tanımlı değildir (varsayılan `Production`). Oturum başına `$env:DOTNET_ENVIRONMENT = "Development"` yazın; kalıcı olması için `setx DOTNET_ENVIRONMENT Development` ile kullanıcı ortam değişkeni yapılabilir (yeni terminal gerekir). Claude Code oturumunda değişken `.claude/settings.json` ile zaten tanımlıdır, bu yüzden orada bu hata görülmez.
+
 **Sırları listelerken değer görünmesin.** `dotnet user-secrets list` bağlantı dizesindeki parolayı ve anahtarları açık yazar; çıktısı sohbete, rapora ya da günlüğe girmemelidir ([CLAUDE.md](../../CLAUDE.md) kural 8). Yapılandırmayı denetlemek için yalnız anahtar adları listelenir:
 
 ```bash

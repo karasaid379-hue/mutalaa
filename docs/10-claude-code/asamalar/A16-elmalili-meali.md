@@ -1,6 +1,6 @@
 # A16 · Elmalılı mealleri: orijinal ve sadeleştirilmiş, hazır metin yolu, inceleme kuyruğu, iki tur
 
-> **Sürüm:** 2.1 · **Tarih:** 12 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-38](../../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-48](../../00-ozet/02-karar-defteri.md#k-48--editör-api-kuralları-inceleme-kararı-ikinci-onay-eşzamanlılık-yayın-talebi-ve-sayfa-görseli) · [K-49](../../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
+> **Sürüm:** 2.2 · **Tarih:** 12 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-38](../../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-48](../../00-ozet/02-karar-defteri.md#k-48--editör-api-kuralları-inceleme-kararı-ikinci-onay-eşzamanlılık-yayın-talebi-ve-sayfa-görseli) · [K-49](../../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A10](./A10-tanzil-alimi.md) · [A15](./A15-editor-paneli.md) · **İnsan adımı:** İ-11
 > **Ajanlar:** `hat-gelistirici` · `metin-denetcisi` · `sunucu-gelistirici` · `web-gelistirici` · `arastirmaci` · `test-yazari` · `inceleyici` · **Beceriler:** `icerik-hatti` · `metin-butunlugu` · `capa-gramer` · `paket-yayini` · **Tahmini oturum:** 5–7 Claude Code oturumu; insan turları ayrıca
 > **Başlat:** `/asama A16`
@@ -8,7 +8,7 @@
 ## Amaç
 Elmalılı'nın iki mealini hazır dijital metinle içe almak (K-49): **orijinal meal** (`meal:elmalili`, kaynak `elmalili-meal`, Vikikaynak "Kur'an" sayfaları) ve **sadeleştirilmiş meal** (`meal:elmalili-sade`, kaynak `elmalili-sade-meal`, fawazahmed0/quran-api `tur-elmallsadelesti`). Arayüzde ikincisi "sadeleştirilmiş" etiketiyle görünür ve orijinal meali değiştirmez. İki meal de `taslak` girer, iki insan turundan geçer ve onaylanınca `core` paketine girer. A09 ölçümü beklenmez; OCR ve özgün baskı taraması proje sonuna ertelendi (S-15).
 
-Aşama tedarikle başlar (A16.0): kaynak dosyalarını Claude Code internetten indirir, ölçer ve kilitler. Claude Code bağdaştırıcıları, kapıları, yüklemeyi, API süzgeçlerini ve editör ekranlarını kurar; düzeltme ve onay insan turlarıdır (İ-11). Yapay zekâ meal yazmaz, çevirmez, düzeltmez ve sadeleştirmez.
+Aşama tedarikle başlar (A16.0): kaynak dosyalarını Claude Code internetten indirir, ölçer ve kilitler. Claude Code bağdaştırıcıları, kapıları, yüklemeyi, API süzgeçlerini ve editör ekranlarını kurar; düzeltme ve onay insan turlarıdır (İ-11); turlar aşamayı kapatmayı bekletmez, `public` yayının (A34) ve Faz 1 çıkışının şartıdır. İki mealin birimleri turlar bitene kadar `taslak` ve "doğrulanmamış" kalır; `onayli` yazılarak editör onayı taklit edilmez. Yapay zekâ meal yazmaz, çevirmez, düzeltmez ve sadeleştirmez.
 
 ## Okunacak belgeler
 - [K-49](../../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi): tamamı (iki meal, yol, sınır durumları, inceleme kuralları, kapılar, atıf); [K-38](../../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) madde 2–4 (çıkarılmış metin, `taslak` başlangıç durumu) ve [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 1–2 (tedarik akışı, indirme)
@@ -31,7 +31,7 @@ Aşama tedarikle başlar (A16.0): kaynak dosyalarını Claude Code internetten i
 - `export pg` ile `taslak` yükleme ve inceleme kuyruğu (A16.4).
 - `GET /api/v1/reviews` süzgeçleri (`kaynak`, `asama`), birleşik izleyen birimde 422, editörde iki meal sekmesi, rozet ve uyarı kutusu (A16.5).
 - `core` kataloğuna iki meal ve `dev` yeniden yayını (A16.6).
-- `qa sample` örneklem aracı, ikinci okuma ve G-INC ölçüm raporu; tur 1 ve tur 2 (A16.7; İ-11).
+- `qa sample` örneklem aracı, ikinci okuma ve G-INC ölçüm raporu (A16.7). Tur 1 ve tur 2 (İ-11) aşamanın dışında sürer.
 
 **Yapılmaz**
 - OCR, tarama ve `page_map` (S-15). Özgün baskıyla karşılaştırma ve "temel metin" sayılma da S-15'tedir.
@@ -144,11 +144,11 @@ Sıra: A16.0 → A16.1 (belgeler; kod başlamadan) → A16.2 → A16.3 → A16.4
 - **İlk `publish --flavor dev`.** Yalnız G-HIZ ve K-49 madde 8 kesinleştikten sonra yapılır. Önce LAN IP ve `Storage:PublicBaseUrl` denetlenir. Ardından `verify --flavor dev` koşar; `internal` ve `public` kuru çalıştırılır.
 - **Bitti sayılır:** `verify` 0; `core` öz denetiminde iki meal için 6.236'şar `unit`; `public` kuru çalıştırmada meal birimleri dışarıda.
 
-### A16.7 · Tur araçları ve editör turları (İ-11)
+### A16.7 · Tur araçları (editör turları İ-11, aşamayı bekletmez)
 - `uv run mutalaa qa sample --source <kimlik> --n 600 --seed <sabit>`: sure grubuna göre tabakalı örneklem (cilt S-15'e kalır). İkinci okuma rapor şablonu ve G-INC ölçüm raporu (veritabanını okur).
 - Tur 1 her âyetin iki ayrı kişiyle onayıdır (K-38'deki 60 âyetlik elle ön denetimi karşılar); tur 2 en az 600 âyetlik ikinci okumadır, hedef %95 güvenle hatalı âyet oranı < %0,5 (K-49 madde 12; hiç hata yoksa üst sınır yaklaşık `3 / n`). Hata bulunursa desen düzeltilir, ilgili bölümler taranır, yeni örneklem çekilir. Turlar iki meal için yapılır; Faz 1'i yalnız orijinal mealin turları bağlar (K-49 madde 6).
-- Kod işi bitince A16 `engelli` olur. Not: "A16.0–A16.6 tamam; İ-11 tur 1 ve tur 2 bekleniyor".
-- **Bitti sayılır:** örneklem ve ölçüm araçları hazır; kalan iş insan turlarıdır.
+- İ-11 turları A16'nın kapanışını bekletmez (K-49 madde 12, 12 Kasım 2026): kod işi bitince aşama `tamam` olabilir; tur 1 ve tur 2 `public` yayının (A34) ve Faz 1 çıkışının şartı olarak sürer. A16.7 araçları (`qa sample`, G-INC ölçüm raporu) hazır kalır.
+- **Bitti sayılır:** örneklem ve ölçüm araçları hazır; insan turları aşamanın dışında sürer.
 
 ## Kabul ölçütleri
 **Kod ve veri**
@@ -163,10 +163,10 @@ Sıra: A16.0 → A16.1 (belgeler; kod başlamadan) → A16.2 → A16.3 → A16.4
 9. [ ] Atıf metinleri K-49 madde 14'e uygun.
 10. [ ] Belgeler: arama ifadeleri temiz, bağlantı denetimi temiz, kit testleri yeşil.
 
-**İ-11'e bağlı**
+**İ-11'e bağlı (A16'yı kapatmayı bekletmez; A34 ve Faz 1 çıkışı için ertelendi, K-49 madde 12, 12 Kasım 2026)**
 
-11. [ ] Tur 1: iki mealde bütün birimler `onayli`; `unit` hedefli açık inceleme 0 (SQL).
-12. [ ] Tur 2: her meal için en az 600 âyet; üst sınır raporda; G-INC geçti.
+11. [ ] Tur 1 (A34 ve Faz 1 çıkışı için ertelendi): iki mealde bütün birimler `onayli`; `unit` hedefli açık inceleme 0 (SQL). Turlar bitene kadar birimler `taslak` kalır.
+12. [ ] Tur 2 (A34 ve Faz 1 çıkışı için ertelendi): her meal için en az 600 âyet; üst sınır raporda; G-INC geçti.
 
 ## Doğrulama
 ```bash
@@ -203,7 +203,7 @@ Komut adları ve bayraklar uygulamada `package.json` ve `cli.py` ile karşılaş
 - Yapay zekâ meal yazmaz, çevirmez, düzeltmez ve sadeleştirmez; düzeltme insanındır (K-25; [İçerik hattı](../../04-icerik/02-icerik-hatti.md) §10). Meal metni hafızadan tamamlanmaz ve örnek diye uydurulmaz; testte yalnız sentetik metin kullanılır.
 - Sadeleştirilmiş metin yalnız `meal:elmalili-sade` adlı ayrı baskı olarak girer. Orijinal meal ve tefsir için sadeleştirilmiş metin yasağı sürer; iki baskı birbirinin yerine konmaz. T ailesi Elmalılı adıyla alınmaz (K-49 madde 1).
 - Çapa adları başka bir metne verilmez (K-26). Aile ayrımı 16:43 âyetindeki çeviri farkına dayanır.
-- Hazır metnin baskı esası belgesizdir: iki meal `taslak` girer ve `dev` ile `internal`'da "doğrulanmamış" rozetiyle görünür. Bir meal kaynağı bütün âyetleri onaylanıp G-INC geçmeden `public`'e çıkmaz; zorlayan kod A34'te yazılır (K-49 madde 5).
+- Hazır metnin baskı esası belgesizdir: iki meal `taslak` girer ve `dev` ile `internal`'da "doğrulanmamış" rozetiyle görünür. Bir meal kaynağı bütün âyetleri onaylanıp G-INC geçmeden `public`'e çıkmaz; zorlayan kod A34'te yazılır (K-49 madde 5). İki tur bu yüzden A34'ün ve Faz 1 çıkışının şartıdır, A16'nın değil.
 - Çıkarılmış metin kaynak dosyanın birebir dilimi değildir (K-38 madde 3). İlk kayıt adımları (NFC dahil) `ingest` ayrıştırmasında bir kez uygulanır; konum `provenance` içindedir ve `@` ofseti değildir. Vektörü yalnız Python tüketir (K-49 madde 13).
 - Hat meal biriminin metnine hiç yazmaz (K-49 madde 10). Editör düzeltmesi çapayı değiştirmez; `content_hash` ve `rev` değişir. Onaylı birimde sonradan yapılan düzeltme yeniden inceleme ve ikinci onaydan geçer ([Yayın süreci](../../07-yayin/01-yayin-sureci.md) §7.3).
 - Editörler çalışırken meal `export pg` yapılmaz: hat ve API farklı kilit anahtarı kullanır ve açık kayıt tekilliği yoktur. Kısmi tekil dizin önerisi yeni bir BÇ olarak açılır.
@@ -213,7 +213,7 @@ Komut adları ve bayraklar uygulamada `package.json` ve `cli.py` ile karşılaş
 - Günlüklere, raporlara ve commit'lere meal metni yazılmaz. Kuyruk ekranlarının tarayıcıda görülmesi kullanıcıya bırakılır.
 
 ## İnsan adımları
-- İ-11 · Düzeltme turları: iki mealde tur 1 (her âyetin iki ayrı kişiyle onayı) ve tur 2 (en az 600 âyetlik ikinci okuma). Orijinal mealin turları Faz 1'i bağlar; sadeleştirilmiş mealin turları fazı bekletmez. İnsan turu yalnız A16.7'nin kapanışını bekletir; araç, kuyruk ve rapor işleri sürer, öteki aşamalar beklemez. Bekleyen adım ilerleme dosyasında ve durum bloğunda görünür. Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
+- İ-11 · Düzeltme turları: iki mealde tur 1 (her âyetin iki ayrı kişiyle onayı) ve tur 2 (en az 600 âyetlik ikinci okuma). Turlar A16'yı, A18'i, A19'u ve A37'yi bekletmez (proje sahibi kararı, 12 Kasım 2026); `public` yayının (A34) ve Faz 1 çıkışının şartıdır. Orijinal mealin turları Faz 1'i bağlar; sadeleştirilmiş mealin turları fazı bekletmez. Birimler `taslak` ve "doğrulanmamış" kalır, `onayli` yazılmaz. Bekleyen adım ilerleme dosyasında ve durum bloğunda görünür. Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
 
 ## Çıktılar
 - `pipeline/src/mutalaa_pipeline/ingest/` altında `meal_kaynaklari.py`, `elmalili_vikikaynak.py`, sadeleştirilmiş meal ve tanık bağdaştırıcıları, `elmalili_meal.lock.json`; `adimlar/meal.py`, `qa/checks/meal.py`, `export/pg_meal.py`, `qa sample`; testler

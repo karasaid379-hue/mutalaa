@@ -76,7 +76,7 @@ Seçilmeyenler (kalite ve erişim): sadeleştirilmiş baskılar (fawazahmed0 `tu
 - `uv run mutalaa anchor --source elmalili-tefsir`, `qa run --source elmalili-tefsir`, `export pg --source elmalili-tefsir --dry-run`, sonra `export pg`. Birimler `metin_durumu = 'taslak'` girer.
 - **Bitti sayılır:** `qa run` G-KAY, G-BUT, G-CAP ve G-HIZ (tefsir aralıkları âyet sınırında) kapılarını geçiyor; kuru yükleme raporu incelendi.
 
-### A37.3 · Düzeltme turları ve nitelik (İ-11)
+### A37.3 · Düzeltme turları ve nitelik (İ-11 tefsir turları)
 - Editör panelindeki inceleme kuyruğu (`kuyruk/ocr` rotası; A15, A16) tefsir birimleriyle çalışır: dört göz; tefsir metni ikinci onay gerektirir (`inceleyen` ve `ikinci_inceleyen` farklı editör).
 - Claude Code tefsir metnini hafızadan yazmaz, tamamlamaz, "düzeltmez". Yalnız inceleme adayı üretir: imlâ sözlüğü çakışmaları, `⟦?⟧` işaretleri, Arapça alıntının Tanzil hizalamasında çıkan farkı. Karar görsele bakan insanındır; alıntı Tanzil metniyle değiştirilmez.
 - G-MET bu yolda uygulanmaz (K-49 madde 12); G-INC (ikinci okuma örneklemi; hata yoksa %95 üst sınır ≈ 3/n, öneri en az 600 birim) ve sadeleştirme denetimi (0) uygulanır.
@@ -137,7 +137,7 @@ adb exec-out screencap -p > .tmp/tefsir.png   # Kâğıt, Gece, %200
 - İş büyüktür: oturumlar sure grupları hâlinde planlanır; yarıda kalan adımın yeri ilerleme notuna yazılır. Windows'ta dosyalar `encoding="utf-8"` ile açılır.
 
 ## İnsan adımları
-- İ-11 · Tefsir düzeltme turları ve ikinci okuma: A37.3 boyunca.
+- İ-11 (tefsir turları) · Tefsir düzeltme turları ve ikinci okuma: A37.3 boyunca. Elmalılı meal turları (İ-11, K-49 madde 12) A37'yi bekletmez; `public` yayının (A34) ve Faz 1 çıkışının şartıdır.
 - Proje sahibi: öncelik sırası ve kısmi yayın (A37.1); `public`'e geçiş kararı (`promote`).
 - Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
 

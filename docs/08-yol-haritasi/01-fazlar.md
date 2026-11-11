@@ -1,6 +1,6 @@
 # Fazlar
 
-> **Sürüm:** 1.5 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak
+> **Sürüm:** 1.6 · **Tarih:** 12 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
 
 Claude Code ile yürütmek için fazlar A00–A40 aşamalarına bölündü: [Aşama haritası](../10-claude-code/04-asama-haritasi.md) ([K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)).
@@ -87,7 +87,7 @@ flowchart LR
 **Çıkış ölçütleri**
 - `core` paketi aynı girdiyle aynı içerik özetini üretiyor.
 - Değişmezlik ve kalite kapısı testleri yeşil; `public` manifest onaysız birim, yapay zekâ taslağı, insan onayı isteyen türde aday bağlantı ve `test-` önekli kaynak içermiyor.
-- Orijinal mealin 6.236 âyeti iki düzeltme turundan geçti (tur 1 her âyetin iki kişiyle onayı, tur 2 en az 600 âyetlik ikinci okuma); kalan hata oranı ölçüldü. Sadeleştirilmiş mealin turları fazı bekletmez; bir meal kaynağı G-INC geçmeden `public`'e çıkmaz (K-49).
+- Orijinal mealin 6.236 âyeti iki düzeltme turundan geçti (tur 1 her âyetin iki kişiyle onayı, tur 2 en az 600 âyetlik ikinci okuma); kalan hata oranı ölçüldü. Sadeleştirilmiş mealin turları fazı bekletmez; bir meal kaynağı G-INC geçmeden `public`'e çıkmaz (K-49). Bu turlar A16'nın kapanışını ve A18, A19 ile A37'nin ilerlemesini bekletmez; Faz 1 çıkışının ve `public` yayının şartıdır (K-49 madde 12).
 - v1 bağlantı türleri altın set kapılarını geçti ([Test stratejisi](../07-yayin/03-test-stratejisi.md)).
 
 **Bağımlılık.** Faz 0 (çapa grameri, kaynak kayıtları, Elmalılı için hazır metin yolu).
