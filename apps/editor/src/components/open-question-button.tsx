@@ -5,8 +5,8 @@ import { tr } from '@/i18n/tr';
 export interface OpenQuestionButtonProps {
   /** Name of the action that has no API counterpart yet (Turkish, from tr.ts). */
   label: string;
-  /** The stage that will decide it: A16, A17 or A18. */
-  phase: 'A16' | 'A17' | 'A18';
+  /** The stage that will decide it: S-15 (OCR and scanning, left to the end of the project), A17, A18 or A20. */
+  phase: 'S-15' | 'A17' | 'A18' | 'A20';
 }
 
 /**

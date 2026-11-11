@@ -114,12 +114,12 @@ describe('problemText', () => {
       {
         kod: 'inceleme-desteklenmiyor',
         detail:
-          "Ofsetli alanlar (marks, sentences) metin degisimini A16'da hesaplanana kadar desteklenmiyor.",
+          "Ofsetli alanlar (marks, sentences) metin degisimini A20'de hesaplanana kadar desteklenmiyor.",
       },
       'decision',
     );
     expect(offset).toBe(
-      "Bu birimin ofsetli alanları (işaretler, cümleler) var; metin düzeltmesi A16'da desteklenecek",
+      "Bu birimin ofsetli alanları (işaretler, cümleler) var; metin düzeltmesi A20'de desteklenecek",
     );
     // Another reason for the same code keeps the generic wording.
     expect(

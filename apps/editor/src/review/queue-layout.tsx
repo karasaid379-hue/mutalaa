@@ -1,5 +1,6 @@
-import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Fragment, useEffect, useEffectEvent, useMemo, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
+import { useAnnounce } from '@/app/announce-context';
 import { useApi } from '@/app/api-context';
 import { PageHeading } from '@/components/page-heading';
 import { ProblemMessage } from '@/components/problem-message';
@@ -37,6 +38,13 @@ export interface QueueLayoutProps {
   pageSize?: number;
   /** Load every page without a button (sure adı queue). */
   loadAll?: boolean;
+  /**
+   * Say "N kayıt yüklendi" through the single live region when the list has loaded for a filter and when a page
+   * is added (for queues whose filter changes under the user's hands; a decision's own message is not replaced).
+   */
+  announceCount?: boolean;
+  /** Extra content inside the link of a row, under the badges (for example the source of the record). */
+  renderItemMeta?: (item: ReviewItem) => ReactNode;
   /** Extra content after the link of a row (for example a selection checkbox); it is not inside the link. */
   renderItem?: (item: ReviewItem) => ReactNode;
   /**
@@ -68,7 +76,9 @@ export function QueueLayout({
   filter,
   pageSize,
   loadAll = false,
+  announceCount = false,
   renderItem,
+  renderItemMeta,
   renderListHeader,
   renderDetail,
   className,
@@ -99,6 +109,16 @@ export function QueueLayout({
     if (loadAll && pageCount > 0 && hasNextPage && !isFetchingNextPage) void fetchNextPage();
   }, [loadAll, pageCount, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  // The count is spoken when the filter changes or a page arrives, not on every change of the list (a decision
+  // removes a row and has its own announcement).
+  const announce = useAnnounce();
+  const announceLoaded = useEffectEvent(() => announce(tr.queue.loadedCount(items.length)));
+  const settled = !list.isPending && !list.isError;
+  const filterKey = JSON.stringify(filter);
+  useEffect(() => {
+    if (announceCount && settled) announceLoaded();
+  }, [announceCount, settled, filterKey, pageCount]);
+
   // The two regions are held in state (callback refs) so the decision handler can move focus to them.
   const [listEl, setListEl] = useState<HTMLElement | null>(null);
   const [detailEl, setDetailEl] = useState<HTMLElement | null>(null);
@@ -106,13 +126,19 @@ export function QueueLayout({
   function onDecided(result: DecisionResult) {
     const index = items.findIndex((item) => item.id === result.id);
     const next = index >= 0 ? (items[index + 1] ?? items[index - 1]) : undefined;
-    setParams(next ? { kayit: String(next.id) } : {}, { replace: true });
+    // Only `kayit` changes: the other parameters (a queue's tabs) stay.
+    const nextParams = new URLSearchParams(params);
+    if (next) nextParams.set('kayit', String(next.id));
+    else nextParams.delete('kayit');
+    setParams(nextParams, { replace: true });
     // The regions stay mounted while their content changes: focus goes to the next record, or to the list when none is left.
     (next ? detailEl : listEl)?.focus();
   }
 
   function select(id: number): { search: string } {
-    return { search: `?kayit=${id}` };
+    const next = new URLSearchParams(params);
+    next.set('kayit', String(id));
+    return { search: `?${next.toString()}` };
   }
 
   return (
@@ -163,6 +189,7 @@ export function QueueLayout({
                     >
                       <span className="font-medium break-all">{item.hedef_anahtar}</span>
                       <ReviewBadges review={item} />
+                      {renderItemMeta?.(item)}
                     </Link>
                     {renderItem?.(item)}
                   </li>

@@ -1,6 +1,10 @@
 import { format, tryParse } from '@mutalaa/anchors';
 
-/** The single meal of the project (Elmalılı, K-13); the meal anchor of an ayah is `meal:{id}:{sure}:{ayet}`. */
+/**
+ * The meal a link points at; the meal anchor of an ayah is `meal:{id}:{sure}:{ayet}`. The link target is the
+ * original meal (`meal:elmalili`); the simplified meal has its own anchor (`meal:elmalili-sade`, K-49) and is not
+ * a link target. The link target is the original meal; it is reviewed again in A18.
+ */
 export const MEAL_ID = 'elmalili';
 
 export interface TargetInfo {

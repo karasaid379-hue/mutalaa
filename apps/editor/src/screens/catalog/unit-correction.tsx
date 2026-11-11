@@ -27,7 +27,7 @@ export interface UnitCorrectionProps {
 /**
  * The correction proposal of a unit text (`POST /units/{anchor}/corrections`, `{metin, gerekce}`).
  * - Immutable text (`duzeltilebilir` false, an `ayet` unit, a `kuran_metni` source): a note only, no button.
- * - A unit with offset data (`marks`, `sentences`): the button is closed ("Açık soru: A16"), no request.
+ * - A unit with offset data (`marks`, `sentences`): the button is closed ("Açık soru: A20"), no request.
  * - Otherwise a form behind a "Düzeltme öner" button, for editors and admins only.
  * The proposal opens a review row; the text changes only after an approval, so nothing is applied here.
  */
@@ -41,7 +41,7 @@ export function UnitCorrection({ unit }: UnitCorrectionProps) {
   if (hasOffsetData(unit)) {
     return (
       <div className="flex flex-col items-start gap-1">
-        <OpenQuestionButton label={trc.units.correct} phase="A16" />
+        <OpenQuestionButton label={trc.units.correct} phase="A20" />
       </div>
     );
   }

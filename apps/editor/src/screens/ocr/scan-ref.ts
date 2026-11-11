@@ -2,8 +2,8 @@ import { readString } from '@/lib/payload';
 
 /**
  * Which page image of which edition a unit belongs to. The field names of the unit's `attrs` become final in
- * A16 (Elmalılı hazırlığı §6); until then the panel reads `baski` and `sayfa` and shows a notice when they are
- * not there. Both values must match the patterns of `GET /scans/{baski}/{sayfa}`, otherwise no request is made.
+ * S-15 (scanning and the page mapping are left to the end of the project, K-49); until then the panel reads
+ * `baski` and `sayfa` and shows a notice when they are not there. Both values must match the patterns of `GET /scans/{baski}/{sayfa}`, otherwise no request is made.
  */
 export interface ScanRef {
   baski: string;

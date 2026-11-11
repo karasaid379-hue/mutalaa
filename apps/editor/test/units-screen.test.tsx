@@ -370,14 +370,14 @@ describe('units screen: correction', () => {
     fake.get('/api/v1/units/{anchor}', ok(unitDetail(over)));
   }
 
-  it('is closed with "Açık soru: A16" on a unit with offset data and sends nothing', async () => {
+  it('is closed with "Açık soru: A20" on a unit with offset data and sends nothing', async () => {
     signedIn(fake);
     editable({ marks: [{ s: 0, e: 3, t: 'ar' }] });
     const { user } = renderApp(fake, '/birimler?birim=rn%3Adeneme%3Ap1');
     const button = await screen.findByRole('button', {
-      name: `${trc.units.correct} · ${tr.openQuestion('A16')}`,
+      name: `${trc.units.correct} · ${tr.openQuestion('A20')}`,
     });
-    expect(button).toHaveAttribute('data-open-question', 'A16');
+    expect(button).toHaveAttribute('data-open-question', 'A20');
     expect(button).toHaveAttribute('aria-disabled', 'true');
     await user.click(button);
     expect(
@@ -390,7 +390,7 @@ describe('units screen: correction', () => {
     signedIn(fake);
     editable({ sentences: [[0, 5]] });
     renderApp(fake, '/birimler?birim=rn%3Adeneme%3Ap1');
-    expect(await screen.findByRole('button', { name: /Açık soru: A16/ })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /Açık soru: A20/ })).toBeInTheDocument();
   });
 
   it('is hidden for a user without a role', async () => {

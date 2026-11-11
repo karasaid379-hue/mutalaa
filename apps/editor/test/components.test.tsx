@@ -47,7 +47,7 @@ describe('ProblemMessage', () => {
     );
     expect(
       screen.getByText(
-        "Bu birimin ofsetli alanları (işaretler, cümleler) var; metin düzeltmesi A16'da desteklenecek",
+        "Bu birimin ofsetli alanları (işaretler, cümleler) var; metin düzeltmesi A20'de desteklenecek",
       ),
     ).toBeInTheDocument();
   });
@@ -118,10 +118,10 @@ describe('OpenQuestionButton', () => {
   const fake = useFakeApi();
 
   it('carries the open question label, stays focusable and sends no request when clicked', async () => {
-    const { user } = renderWithProviders(fake, <OpenQuestionButton label="Böl" phase="A16" />);
-    const button = screen.getByRole('button', { name: `Böl · ${tr.openQuestion('A16')}` });
+    const { user } = renderWithProviders(fake, <OpenQuestionButton label="Böl" phase="S-15" />);
+    const button = screen.getByRole('button', { name: `Böl · ${tr.openQuestion('S-15')}` });
     expect(button).toHaveAttribute('aria-disabled', 'true');
-    expect(button).toHaveTextContent('Açık soru: A16');
+    expect(button).toHaveTextContent('Açık soru: S-15');
     await user.tab();
     expect(button).toHaveFocus();
     await user.click(button);
@@ -129,7 +129,7 @@ describe('OpenQuestionButton', () => {
     expect(fake.calls).toHaveLength(0);
   });
 
-  it.each(['A16', 'A17', 'A18'] as const)('names the stage %s', (phase) => {
+  it.each(['S-15', 'A17', 'A18', 'A20'] as const)('names the stage %s', (phase) => {
     render(<OpenQuestionButton label="Eylem" phase={phase} />);
     expect(screen.getByRole('button')).toHaveTextContent(`Açık soru: ${phase}`);
   });

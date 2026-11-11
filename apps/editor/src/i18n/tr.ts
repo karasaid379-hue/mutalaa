@@ -19,7 +19,7 @@ const problemCodes: Record<ProblemCode, string> = {
     'Kayıt siz okuduktan sonra değişti. Kayıt yenilendi; girdiniz korundu. Denetleyip yeniden gönderin.',
   'surum-gerekli': 'İstek sürüm bilgisi taşımıyor (istemci hatası).',
   'inceleme-desteklenmiyor':
-    'Bu işlem için inceleme akışı henüz desteklenmiyor (A16, A17 ya da A18).',
+    'Bu işlem bu kayıt için henüz desteklenmiyor; ayrıntı sunucu iletisindedir.',
   'yayin-suruyor': 'Bu derleme türünde açık bir yayın var; bitmesini bekleyin.',
   'kalite-kapisi': 'Kalite kapısı yayını reddetti. Kapı raporuna bakın.',
   'onceki-yayin-bozuk': 'Önceki yayının manifesti yok ya da okunamıyor.',
@@ -179,7 +179,7 @@ export const tr = {
     anchorCode: 'Çapa hata kodu',
     /** Verbatim (A15.3): shown for 422 inceleme-desteklenmiyor on a unit with offset data. */
     offsetUnsupported:
-      "Bu birimin ofsetli alanları (işaretler, cümleler) var; metin düzeltmesi A16'da desteklenecek",
+      "Bu birimin ofsetli alanları (işaretler, cümleler) var; metin düzeltmesi A20'de desteklenecek",
     /** Per-operation overrides of the generic message. */
     contexts: {
       decision: {

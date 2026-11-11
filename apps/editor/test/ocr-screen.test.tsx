@@ -233,18 +233,18 @@ describe('kuyruk/ocr', () => {
   });
 
   describe('actions without an API counterpart', () => {
-    it('shows Böl, Birleştir, Belirsiz işaretle and Not ekle closed with the A16 label, and sends nothing', async () => {
+    it('shows Böl, Birleştir, Belirsiz işaretle and Not ekle closed with the S-15 label, and sends nothing', async () => {
       const { user, scan } = setup();
       const closed = await screen.findByTestId('ocr-closed-actions');
       const buttons = within(closed).getAllByRole('button');
       expect(buttons.map((button) => button.textContent)).toEqual(
         [trOcr.actions.split, trOcr.actions.merge, trOcr.actions.uncertain, trOcr.actions.note].map(
-          (label) => `${label} · ${tr.openQuestion('A16')}`,
+          (label) => `${label} · ${tr.openQuestion('S-15')}`,
         ),
       );
       for (const button of buttons) {
         expect(button).toHaveAttribute('aria-disabled', 'true');
-        expect(button).toHaveAttribute('data-open-question', 'A16');
+        expect(button).toHaveAttribute('data-open-question', 'S-15');
       }
       await screen.findByTestId('scan-canvas');
       const before = fake.calls.length;
@@ -306,7 +306,7 @@ describe('kuyruk/ocr', () => {
       });
     });
 
-    it('closes the edit field for a unit with marks and shows the A16 question instead', async () => {
+    it('closes the edit field for a unit with marks and shows the A20 question instead', async () => {
       const { user } = setup({
         unit: (anchor) => ocrUnit(anchor, { marks: [{ start: 0, end: 3, tur: 'deneme' }] }),
       });
@@ -315,8 +315,8 @@ describe('kuyruk/ocr', () => {
         expect(within(section).getByText(trOcr.correct.offsetBlocked)).toBeInTheDocument(),
       );
       const button = within(section).getByRole('button');
-      expect(button).toHaveTextContent(`${trOcr.actions.fix} · ${tr.openQuestion('A16')}`);
-      expect(button).toHaveAttribute('data-open-question', 'A16');
+      expect(button).toHaveTextContent(`${trOcr.actions.fix} · ${tr.openQuestion('A20')}`);
+      expect(button).toHaveAttribute('data-open-question', 'A20');
       await user.click(await approve());
       expect(screen.queryByLabelText(tr.review.editedText)).toBeNull();
       const before = fake.calls.length;
@@ -330,7 +330,7 @@ describe('kuyruk/ocr', () => {
       expect(screen.queryByLabelText(tr.review.editedText)).toBeNull();
       expect(within(screen.getByTestId('ocr-correct')).getByRole('button')).toHaveAttribute(
         'data-open-question',
-        'A16',
+        'A20',
       );
     });
 

@@ -71,7 +71,7 @@ describe('catalog screens: axe', () => {
       ),
     );
     const view = renderApp(fake, '/birimler?birim=rn%3Adeneme%3Ap1');
-    await screen.findByRole('button', { name: /Açık soru: A16/ });
+    await screen.findByRole('button', { name: /Açık soru: A20/ });
     expect(await violations(view.container)).toEqual([]);
     view.unmount();
 

@@ -25,13 +25,24 @@ export const SESSION_QUERY_OPTIONS = {
 export interface QueueFilter {
   hedef_tablo: string;
   alan: string;
+  /** Source slug of the unit (`unit` targets only), e.g. `elmalili-meal`. */
+  kaynak?: string;
+  /** Approval stage: `ilk` (open, no reviewer yet) or `ikinci` (open, waiting for the second approval). */
+  asama?: 'ilk' | 'ikinci';
 }
 
-/** Init of the queue list: open records of one target and field. */
+/** Init of the queue list: open records of one target and field, optionally of one source and stage. */
 export function reviewListInit(filter: QueueFilter, limit: number = QUEUE_PAGE_SIZE) {
   return {
     params: {
-      query: { hedef_tablo: filter.hedef_tablo, alan: filter.alan, durum: 'acik', limit },
+      query: {
+        hedef_tablo: filter.hedef_tablo,
+        alan: filter.alan,
+        durum: 'acik',
+        ...(filter.kaynak !== undefined ? { kaynak: filter.kaynak } : {}),
+        ...(filter.asama !== undefined ? { asama: filter.asama } : {}),
+        limit,
+      },
     },
   };
 }

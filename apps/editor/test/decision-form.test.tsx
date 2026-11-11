@@ -211,7 +211,7 @@ describe('DecisionForm', () => {
         '/api/v1/reviews/{id}/decision',
         problem(422, 'inceleme-desteklenmiyor', {
           detail:
-            "Ofsetli alanlar (marks, sentences) metin degisimini A16'da hesaplanana kadar desteklenmiyor.",
+            "Ofsetli alanlar (marks, sentences) metin degisimini A20'de hesaplanana kadar desteklenmiyor.",
         }),
       );
       await user.click(approve());
