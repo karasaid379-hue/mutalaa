@@ -1,7 +1,7 @@
 # Aşama haritası
 
-> **Sürüm:** 1.4 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
+> **Sürüm:** 1.5 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
 
 Bu dosya [Fazlar](../08-yol-haritasi/01-fazlar.md) planını Claude Code'un yürütebileceği aşamalara böler. Her aşamanın kendi dosyası vardır ve `/asama <no>` ile başlatılır. Bir aşama tek oturumda bitmek zorunda değildir; aşama dosyasındaki adımlar (`A07.1`, `A07.2` …) tek oturumluk iştir. A09–A40 aşamalarının (A39 hariç) ilk adımı `.0` numaralı tedarik adımıdır (`A09.0`): gerekli yapılar araştırılır, aşamanın `## Tedarik` bölümüne yazılır ve indirilir; öteki adımların numaraları kaymaz ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)). Aşamaların durumu [İlerleme](./05-ilerleme.md) dosyasında, Claude Code'un yapamadığı işler (hesap, altyapı, editör emeği) [İnsan adımları](./06-insan-adimlari.md) dosyasındadır.
 
@@ -18,16 +18,16 @@ Bu dosya [Fazlar](../08-yol-haritasi/01-fazlar.md) planını Claude Code'un yür
 | [A06](./asamalar/A06-kaynak-kayitlari-ve-enumlar.md) | Kaynak kayıtları ve ortak enum şeması | 0 | A02 | — |
 | [A07](./asamalar/A07-editoryal-veritabani.md) | Editoryal veritabanı (EF Core 10 + PostgreSQL 18) | 0 | A03, A04, A06 | — |
 | [A08](./asamalar/A08-ci-is-akislari.md) | CI iş akışları (GitHub Actions) | 0 | A05, A07 | İ-16 |
-| [A09](./asamalar/A09-elmalili-ocr-pilotu.md) | Elmalılı OCR pilotu ve yol seçimi (OCR motorları ve hazır metin adayları, K-38) | 0 | A02, A06 | İ-09, İ-10, İ-17 |
+| [A09](./asamalar/A09-elmalili-ocr-pilotu.md) | Elmalılı OCR pilotu ve yol seçimi (OCR motorları ve hazır metin adayları, K-38). **Ertelendi (K-49; S-15)** | 0 | A02, A06 | İ-09, İ-10, İ-17 (gerekmiyor) |
 | [A10](./asamalar/A10-tanzil-alimi.md) | Tanzil alımı ve değişmezlik testleri | 1 | A05, A06, A07 | — |
 | [A11](./asamalar/A11-kuran-yapisi-ve-sayfa-eslemesi.md) | Kur'an yapısı: sure adları, cüz, secde, sayfa eşlemesi | 1 | A10 | İ-23 |
 | [A12](./asamalar/A12-arama-indeksi-ve-paket-semasi.md) | Arama indeksi ve paket şeması | 1 | A05, A10 | — |
 | [A13](./asamalar/A13-yayinlayici-ve-kalite-kapisi.md) | Yayınlayıcı ve kalite kapısı (ilk `dev` `core`) | 1 | A07, A12 | — |
 | [A14](./asamalar/A14-api-editor-uclari.md) | API editör uçları | 1 | A07 | — |
 | [A15](./asamalar/A15-editor-paneli.md) | Editör paneli (sekiz rota; A14 liste öğesi ve kesin JSON sayısı düzeltmesi dahil) | 1 | A14 | — |
-| [A16](./asamalar/A16-elmalili-meali.md) | Elmalılı meali: hazır metin ya da OCR (A09 yol kararına göre), düzeltme kuyruğu, iki tur | 1 | A09, A10, A15 | İ-09, İ-11, İ-17 |
+| [A16](./asamalar/A16-elmalili-meali.md) | Elmalılı mealleri: orijinal ve sadeleştirilmiş, hazır metin yolu, inceleme kuyruğu, iki tur | 1 | A10, A15 | İ-11 |
 | [A17](./asamalar/A17-kelime-katmani.md) | Kelime katmanı: `quran_word`, `kelime-kok`, anlam taslakları | 1 | A10, A11 (A11.2), A15 | İ-12, İ-17 |
-| [A18](./asamalar/A18-baglantilar-ve-altin-setler.md) | Bağlantılar (`xref`) ve altın setler | 1 | A16, A17 | İ-12, İ-13 |
+| [A18](./asamalar/A18-baglantilar-ve-altin-setler.md) | Bağlantılar (`xref`) ve altın setler | 1 | A16 (A16.4 yeterli), A17 | İ-12, İ-13 |
 | [A19](./asamalar/A19-hadis-hatlari.md) | Hadis hatları | 1 | A10, A15 | İ-11, İ-14 |
 | [A20](./asamalar/A20-risale-altyapisi.md) | Risale altyapısı ve metni | 1 | A07, A13 | İ-24, İ-28 |
 | [A21](./asamalar/A21-mobil-iskelet.md) | Mobil iskelet | 2 | A02, A04 | İ-15 |
@@ -46,7 +46,7 @@ Bu dosya [Fazlar](../08-yol-haritasi/01-fazlar.md) planını Claude Code'un yür
 | [A34](./asamalar/A34-magaza-yayini.md) | Mağaza v1 yayın hazırlığı | 3 | A33 | İ-15, İ-18, İ-27 |
 | [A35](./asamalar/A35-hesap-ve-gizlilik.md) | Hesap ve gizlilik | 4 | A34 | İ-20 |
 | [A36](./asamalar/A36-senkron.md) | Senkron ve bağlantı oyları | 4 | A35 | İ-20 (canlıya açılış) |
-| [A37](./asamalar/A37-elmalili-tefsir-paketi.md) | Elmalılı tefsir paketi | 4 | A16, A18 | İ-11, İ-17 |
+| [A37](./asamalar/A37-elmalili-tefsir-paketi.md) | Elmalılı tefsir paketi | 4 | A16 (A16.4 yeterli), A18 | İ-11 |
 | [A38](./asamalar/A38-web.md) | Web (Next.js) | 5 | A34 | İ-18 |
 | [A39](./asamalar/A39-devre-disi.md) | Devre dışı | 6 | — | — |
 | [A40](./asamalar/A40-mushaf-b.md) | Mushaf B (Türk hattı) | 6 | A24 | — |
@@ -77,7 +77,6 @@ flowchart LR
   A07 --> A13
   A12 --> A13
   A07 --> A14 --> A15
-  A09 --> A16
   A10 --> A16
   A15 --> A16
   A10 --> A17
@@ -126,9 +125,9 @@ A33'ün önkoşulu A24 ile A32 arasındaki bütün aşamalardır; grafikte yaln�
 
 - **Tedarik ve kalite belirler.** Her aşama tedarikle başlar: gerekli yapılar internette ve GitHub'da araştırılır, `## Tedarik` bölümüne yazılır ve Claude Code tarafından indirilir. Hiçbir aşama dış bir cevabı, onayı ya da tarihi beklemez. Kritik yolu önkoşul aşamaları ile editoryal kalite (editör onayı, Yayınlayıcı kalite kapısı) belirler ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)).
 - **Mobil uzun içerik işlerini beklemez.** A13 ilk `dev` `core` paketini Tanzil metni, A11'in yapı verisi (kelime bölmesi, sayfa eşlemesi, cüz ve secde) ve açıkça sentetik `test-` fikstürleriyle üretir. Mobil aşamaları (A21 sonrası) buna dayanır. Meal (A16), kelime katmanı (A17), bağlantılar (A18), hadis (A19) ve Risale (A20) hazır oldukça paketler yeniden yayımlanır.
-- **Editör emeği gereken aşamalar yarıda bırakılabilir.** A09 (İ-10, İ-17; İ-09 yalnız internetteki taramalar ofset sınamasını geçmezse), A11 (İ-23), A16 (İ-11, İ-17), A17 (İ-12, İ-17), A18 (İ-12, İ-13), A19 (İ-11, İ-14) ve A20 (İ-24, İ-28) araç ve kuyruğu kurar; editör turu, editör denetimi ya da hesap ve anahtar adımı yalnız kendisine bağlı alt adımı bekletir. Aşamanın kalanı ve başka aşamalar sürer; Claude Code devam için sormaz. Kalan iş yalnız o insan adımını bekliyorsa İlerleme dosyasında durum `engelli` olur; Not sütununa biten adımlar ve beklenen insan adımı yazılır (ör. "A16.1–A16.3 tamam; İ-11 bekleniyor"). A11'de sure adlarının onayı (A11.3) İ-23'e bağlıdır ve A15 panelinin `kuyruk/sure-adi` rotasından (A14'ün karar uçlarıyla) verilir; A17 ve A24 yalnız A11'in yapı adımlarına dayanır.
+- **Editör emeği gereken aşamalar yarıda bırakılabilir.** A11 (İ-23), A16 (İ-11), A17 (İ-12, İ-17), A18 (İ-12, İ-13), A19 (İ-11, İ-14) ve A20 (İ-24, İ-28) araç ve kuyruğu kurar; editör turu, editör denetimi ya da hesap ve anahtar adımı yalnız kendisine bağlı alt adımı bekletir. Aşamanın kalanı ve başka aşamalar sürer; Claude Code devam için sormaz. Kalan iş yalnız o insan adımını bekliyorsa İlerleme dosyasında durum `engelli` olur; Not sütununa biten adımlar ve beklenen insan adımı yazılır (ör. "A16.0–A16.6 tamam; İ-11 bekleniyor"). A11'de sure adlarının onayı (A11.3) İ-23'e bağlıdır ve A15 panelinin `kuyruk/sure-adi` rotasından (A14'ün karar uçlarıyla) verilir; A17 ve A24 yalnız A11'in yapı adımlarına dayanır.
 - **Paralel yürütülebilecek gruplar** (önkoşulları tamamsa): A03 ile A04 ile A06; A14 ile A12; A22 ile A23; A26, A28, A29 birbirinden bağımsızdır; A27 A29.4 bitince başlar (ses indirmesi A29 kuyruğunu kullanır).
-- **Önerilen sıra:** A00 → A02 → A04 → A06 → A03 → A05 → A07 → A10 → A11 (A11.3 hariç) → A12 → A13 → A21 → A22 → A23 → A24 → A25 → (A28, A29, A30, A27) → A14 → A15 → A11.3 (sure adları) → A09 → A16 → A17 → A18 → A19 → A20 → A26 → A31 → A32 → A33 → A08 (GitHub hazır olunca daha önce) → A34. Bu sıra bir öneridir; `/durum` başlanabilecek aşamaları önkoşula göre listeler.
+- **Önerilen sıra:** A00 → A02 → A04 → A06 → A03 → A05 → A07 → A10 → A11 (A11.3 hariç) → A12 → A13 → A21 → A22 → A23 → A24 → A25 → (A28, A29, A30, A27) → A14 → A15 → A11.3 (sure adları) → A16 → A17 → A18 → A19 → A20 → A26 → A31 → A32 → A33 → A08 (GitHub hazır olunca daha önce) → A34. Bu sıra bir öneridir; `/durum` başlanabilecek aşamaları önkoşula göre listeler.
 
 ## 4. Fazların çıkış ölçütleriyle eşleşme
 
@@ -136,10 +135,10 @@ A33'ün önkoşulu A24 ile A32 arasındaki bütün aşamalardır; grafikte yaln�
 |---|---|
 | Kaynak kayıtları geçerli: `sources check` hatasız biter | A06 |
 | Vektör testleri üç dilde CI'da yeşil | A04, A05, A08 |
-| OCR yöntemi ya da hazır metin yolu ölçümle seçildi | A09 |
+| Elmalılı için hazır metin yolu K-49 ile seçildi (OCR ve A09 ertelendi; S-15) | K-49 |
 | Yerel ortam tek komutla kalkıyor | A03 |
 | `core` aynı girdiyle aynı içerik özetini üretiyor; değişmezlik ve kalite kapısı testleri yeşil; `public` manifest onaysız birim, insan onayı isteyen türde aday bağlantı ve `test-` önekli kaynak içermiyor | A10, A13 |
-| Meal iki düzeltme turundan geçti | A16 |
+| Orijinal Elmalılı meali iki düzeltme turundan geçti (tur 1 ve tur 2; sadeleştirilmiş mealin turları fazı bekletmez) | A16 |
 | Bağlantı türleri altın set kapılarını geçti | A18 |
 | Maestro akışları yeşil; arama p95 < 50 ms (K-17); erişilebilirlik tamam | A28, A32, A33 |
 | `public` kuru çalıştırması 0 ile bitiyor; terfide içerik özetleri iç kanalda test edilen yayınla aynı (P-14); `public` yapıt taraması yeşil; mağazada yayında | A34 |

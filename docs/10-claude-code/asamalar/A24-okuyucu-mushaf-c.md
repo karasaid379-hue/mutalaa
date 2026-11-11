@@ -1,6 +1,6 @@
 # A24 · Okuyucu: Mushaf C, okuma biçimleri, sayfalayıcı
 
-> **Sürüm:** 1.1 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-07](../../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-29](../../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
+> **Sürüm:** 1.1 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-07](../../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-29](../../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-49](../../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
 > **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A23](./A23-cihaz-veri-katmani.md) · [A11](./A11-kuran-yapisi-ve-sayfa-eslemesi.md) (A11.2, A11.4–A11.6) · **İnsan adımı:** —
 > **Ajanlar:** `mobil-gelistirici` · `arayuz-denetcisi` · `test-yazari` · `arastirmaci` · `inceleyici` · **Beceriler:** `mobil-ekran` · `capa-gramer` · `metin-butunlugu` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A24`
@@ -26,6 +26,7 @@ Kur'an okuyucusunun temeli kurulur: indirme gerektirmeyen Mod C (akan Unicode me
 - Mod C çizimi (`AyahFlow`), `SurahHeader`, `Besmele`, `AyahMarker`, `SecdeMarker`, `JuzMarker`, `PageView`.
 - Mod C yazı tipi seçimi (Amiri Quran ya da KFGQPC Hafs) ve sayfalayıcı kitaplığı kararı (`FlatList`, `react-native-pager-view`, FlashList).
 - Üç okuma biçimi; telefonda "Sayfa | Meal" sekmesi ve etkin âyet altyazısı; tablet yatayda açık kitap.
+- İki Elmalılı meali arasında gösterim: orijinal (`meal:elmalili`) ve "sadeleştirilmiş" etiketli güncel meal (`meal:elmalili-sade`); iki meal arasında seçim ve gösterim A16'dan bu aşamaya devredildi ([K-49](../../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)). Seçim ayarı A32'dedir; mealin kendisi `core`'dan okunur, etiket metni arayüz dosyalarındadır.
 - Sağdan sola sayfalayıcı, yön ayarı, etiketli düğmeler, odak modu, konum koruma, okuma konumu yazımı.
 - Tek `SheetHost` ve "Aa" Okuma ayarları alt sayfası.
 - Fihrist (`oku/fihrist`), tefsir görünümünün iskeleti (`oku/tefsir/...`), okuyucu parçalarının Tasarım vitrinine eklenmesi.
@@ -91,7 +92,7 @@ Kendimiz yapacağımız işler: `reader-core` modeli ve sorguları; sayfa ↔ â
 - Mushaf + Meal: telefonda "Sayfa | Meal" `SegmentedControl` (varsayılan) ya da etkin âyet altyazı şeridi. `MealPane` sayfadaki âyetleri "2:255" etiketiyle listeler; âyete dokunmak meal paragrafını işaretler, meal paragrafına dokunmak âyeti tonlar. "Panelleri bağla" varsayılan açıktır.
 - Âyet âyet: dikey liste; her zaman Mod C yazı tipi; öğede âyet numarası, Arapça, meal. Âyet öğeleri âyet sırasıyla dizilir.
 - Düzenler Okuma deneyimi §4'teki gibidir: < 600 dp tek bölme; 600–899 dp ortalı sütun; ≥ 900 dp yatay açık kitap (sağda sayfa, solda meal).
-- Meal birimi `core`'da yoksa (A16 bitmeden) meal bölmesi boş durum kartı gösterir; yer tutucu ya da sentetik meal metni yazılmaz.
+- Meal birimi `core`'da yoksa (A16 meal yayını bitmeden ya da meal `public` derlemede onaysız olduğu için dışarıda kaldığında) meal bölmesi boş durum kartı gösterir; yer tutucu ya da sentetik meal metni yazılmaz.
 - Tek `SheetHost` (Mobil mimari §4) kurulur: aynı anda tek alt sayfa, görünür "Kapat", Android geri tuşu önce alt sayfayı kapatır. "Aa" düğmesi Okuma ayarlarını açar (%60): biçim, çizim yolu, tema, Arapça ve Türkçe boyut. Değişiklik arkada anında görünür; ekrandaki ilk âyetin çapası korunur. Mod A ve B yalnız paketleri derlemede görünürse listelenir (Mobil mimari §7.4).
 - **Bitti sayılır:** RNTL testleri yeşil: biçim değişiminde ilk görünen âyetin çapası aynı kalır; meal yokken boş durum kartı; görünür paket yokken Mod A ve B seçeneği listede yok.
 

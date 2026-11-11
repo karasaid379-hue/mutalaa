@@ -1,6 +1,6 @@
 # Hadis Hazırlığı
-> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)
+> **Sürüm:** 1.4 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
 
 K-04 gereği Tecrîd-i Sarîh (Arapça metin ve Türkçesi: Babanzâde Ahmed Naim ile Kâmil Miras ciltleri, tam takım) ile Kütüb-i Sitte'nin Arapça metni birlikte işlenir. Paketler `hadis-tecrid` ve `hadis-kutub-i-sitte` adını taşır. Çapalar `h:{koleksiyon}:{no}` (Arapça) ve `ht:{ceviri}:{koleksiyon}:{no}` (çeviri) biçimindedir; örnek `h:tecrid:15`, `ht:naim:tecrid:15`, `h:buhari:52`.
 
@@ -123,15 +123,16 @@ Amaç: Tecrîd hadisinden Buhârî'deki tam rivayete geçiş, Naim çevirisini K
 
 **QA.** Ciltlere göre tabakalı 200 Tecrîd hadisi elle eşlenir ve altın set olur. Birincil eşleme için kesinlik ve duyarlılık raporlanır. Öneri eşiği: otomatik önerilen birincil eşlemelerde kesinlik ≥ 0,98; altına düşerse bütün eşlemeler tek tek onaylanır.
 
-## 7. OCR ihtiyacı
+## 7. OCR ihtiyacı (S-15'e ertelendi)
 
-- **Tecrîd.** Türkçe metin ve harekeli Arapça metin aynı sayfadadır. Diyanet takımı Latin harflidir; archive.org metin katmanı (`_djvu.txt`) ilk geçiştir ve CER eşiği geçilmezse OCR devreye girer (K-38). Metin katmanında Arapça harf yoktur: Arapça bloklar görüntüden okunur ve Shamela metniyle karşılaştırılır; kendi Arapça OCR'ımız yazılmaz, Arapça birimler Shamela metninden gelir. Osmanlıca harfli bir cilt kullanılırsa Elmalılı aktarım kılavuzu uygulanır ([Elmalılı hazırlığı](./03-elmalili-hazirligi.md)). Değerlendirme yöntemi aynıdır: tabakalı örneklem, altın metin, CER; hazır katman ve A09 motorları aynı örneklemde ölçülür. Arapçada temel harf CER'i ile hareke CER'i ayrı ölçülür.
-- **Motor ve maliyet.** OCR motoru A09 yol kararından gelir (`pipeline/mutalaa.toml` içinde `[baski.<ad>] ocr_motoru`). Ücretli motor ya da görsel model kullanılırsa tam koşudan önce tahmini maliyet kullanıcıya gösterilir ([İçerik hattı](./02-icerik-hatti.md) §11). Yapay zekâ OCR'da yalnız görsel okuma yapar; hadis çevirmez.
+- **Tecrîd.** Türkçe metin ve harekeli Arapça metin aynı sayfadadır. Diyanet takımı Latin harflidir; archive.org metin katmanı (`_djvu.txt`) hazır metin yoluyla alınır (K-38, [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi) madde 3); katman uygun değilse (eksiksiz kapsam, yapılandırılabilir biçim, sabitlenebilir sürüm) ilgili cildin OCR'ı proje sonuna bırakılır (S-15). Metin katmanında Arapça harf yoktur: Arapça bloklar görüntüden okunur ve Shamela metniyle karşılaştırılır; kendi Arapça OCR'ımız yazılmaz, Arapça birimler Shamela metninden gelir. Osmanlıca harfli bir cilt kullanılırsa Elmalılı aktarım kılavuzu uygulanır ([Elmalılı hazırlığı](./03-elmalili-hazirligi.md)). OCR değerlendirmesi (tabakalı örneklem, altın metin, CER) S-15'tedir; A19'da katman otomatik denetimlerle ve Shamela karşılaştırmasıyla ölçülür. Arapçada temel harf farkı ile hareke farkı ayrı raporlanır.
+- **Motor ve maliyet.** OCR yapılırsa (S-15) motor o aşamada seçilir; A09 ertelendi ve motor seçilmedi. Ücretli motor ya da görsel model kullanılırsa tam koşudan önce tahmini maliyet kullanıcıya gösterilir ([İçerik hattı](./02-icerik-hatti.md) §11). Yapay zekâ OCR'da yalnız görsel okuma yapar; hadis çevirmez.
 - **Hadis birimlerine bölme.** Hadis numarası işaretleri bulunur; her numara için Arapça blok ile Türkçe blok eşlenir; `h:tecrid:{no}`, `ht:naim:tecrid:{no}` ve `ht:miras:tecrid:{no}` birimleri üretilir (`ceviri` cilt eşlemesinden gelir). Sayfa eşlemesi Elmalılı'daki gibi `page_map` tablosuna birimin kaynağıyla (`source_id`), cilt ve sayfayla yazılır; baskı künyesi kaynağın `baski_bilgisi` alanındadır ([Editoryal veritabanı](../03-veri/02-editoryal-veritabani.md#91-page_map-ayah_box-audio_timing) §9.1).
 - **Kütüb-i Sitte.** OCR yalnız kendi sayısallaştırma yolu seçilirse gerekir. Harekeli Arapça için ayrı CER eşiği konur.
 - **Editör turları.** Naim ve Miras aktarımı `review` kuyruğuna düşer (`hedef_tablo = 'unit'`, `alan = 'metin'`); düzeltme turları ve onay editör emeğidir (İ-11). Onaylanana kadar birimler `metin_durumu = 'taslak'` kalır.
 
 ```bash
+# S-15 (ertelendi; komutlar henüz yok)
 uv run mutalaa ingest scans --edition tecrid-diyanet --dir data/gelen/tecrid-diyanet/<YYYY-AA-GG>/c01 --cilt 1   # 13 cilt için
 uv run mutalaa ocr run   --edition tecrid-diyanet --engine vision --pages c01:1-30
 uv run mutalaa ocr eval  --edition tecrid-diyanet --gold data/gold/tecrid-ocr/

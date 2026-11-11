@@ -1,7 +1,7 @@
 # Mobil mimari
 
 > **Sürüm:** 1.4 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
+> **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
 
 Bu dosya Expo uygulamasının iç yapısını tanımlar: klasörler, rotalar, durum yönetimi, veri erişimi, üç mushaf modunun çizimi, sağdan sola sayfalayıcı, performans bütçeleri, derleme türleri, hata yönetimi, hata izleme, erişilebilirlik ve dil. Ses ayrıntısı [Ses sistemi](./02-ses-sistemi.md), paket indirme ve silme ayrıntısı [Depolama yöneticisi](./03-depolama-yoneticisi.md) dosyasındadır. Ekranların görünüşü [Mobil ekranlar](../01-urun/03-mobil-ekranlar.md), okuma akışı [Okuma deneyimi](../01-urun/02-okuma-deneyimi.md) dosyasında anlatılır.
 
@@ -821,7 +821,7 @@ export type AppError =
 
 | Özellik | Çevrimdışı davranış |
 |---|---|
-| Kur'an ve Elmalılı meali (`core`) | Tam |
+| Kur'an ve Elmalılı mealleri (`core`) | Tam |
 | Mushaf A | İndirilen cüzlerde tam; diğer sayfalar Mod C ile |
 | Mushaf B | İndirildiyse tam |
 | Tefsir, hadis, Risale | İndirildiyse tam; değilse "İndir" kartı |

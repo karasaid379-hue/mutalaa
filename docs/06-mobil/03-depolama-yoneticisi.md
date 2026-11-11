@@ -1,7 +1,7 @@
 # Depolama yöneticisi
 
 > **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
+> **Bağlı kararlar:** [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
 
 [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) proje sahibinin önerisidir (18 Ekim 2026): Ayarlar › Depolama ekranı v1'de bulunur; paket listesi, boyut, sürüm, tek dokunuşla silme, okuyucu başına ses silme, yalnız Wi-Fi ile indirme ve duraklatılabilir indirme kuyruğu içerir. Bu dosya ekranı, yerel tabloları, kuyruğu, eşikleri, otomatik temizliği, manifest güncellemelerini ve kenar durumları tanımlar. Kod `src/features/storage` ve `src/packs` içindedir ([Mobil mimari](./01-mobil-mimari.md)). Paket biçimleri [İçerik paketleri](../03-veri/03-icerik-paketleri.md) dosyasında kesinleşir.
 
@@ -27,7 +27,7 @@
 |                  [Hücresel veriyle indir]  |
 +--------------------------------------------+
 | METIN PAKETLERI                            |
-| Çekirdek: Kur'an ve Elmalılı meali [kilit] |
+| Çekirdek: Kur'an ve Elmalılı mealleri [kilit] |
 |   38 MB - 2026.10.0 - uygulamayla gelir    |
 | Elmalılı Tefsiri         [Sabitle] [Sil]   |
 |   21,4 MB - 2026.10.2 - son kullanım: dün  |

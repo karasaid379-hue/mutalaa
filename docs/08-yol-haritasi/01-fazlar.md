@@ -1,7 +1,7 @@
 # Fazlar
 
-> **Sürüm:** 1.4 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
+> **Sürüm:** 1.5 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
 
 Claude Code ile yürütmek için fazlar A00–A40 aşamalarına bölündü: [Aşama haritası](../10-claude-code/04-asama-haritasi.md) ([K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)).
 
@@ -11,7 +11,7 @@ Bu plan takvim tarihi vermez. Fazlar bağımlılık sırasına göre dizilir. S�
 
 | Faz | Amaç | Ana çıktı | Göreli büyüklük (tahmin) |
 |---|---|---|---|
-| Faz 0 · Hazırlık | Ortak temeli kurmak, OCR kalitesi gibi en pahalı teknik belirsizliği kod öncesi ölçmek | Kaynak kayıtları ve ortak enum şeması, çapa grameri ve vektörler, editoryal veritabanı, CI, OCR pilotu | Küçük–orta |
+| Faz 0 · Hazırlık | Ortak temeli kurmak; Elmalılı için hazır metin yolunu seçmek (OCR en pahalı belirsizlikti; K-49 onu proje sonuna erteledi) | Kaynak kayıtları ve ortak enum şeması, çapa grameri ve vektörler, editoryal veritabanı, CI | Küçük–orta |
 | Faz 1 · İçerik hattı | Hattan editoryal veritabanına, oradan ilk `core` paketine uçtan uca akış | `core` paketi, editör paneli, Publisher | Büyük |
 | Faz 2 · Mobil v1 (iç test) | Bütün v1 ekranları çevrimdışı; önce ekip, sonra davetli test kullanıcıları | `dev` ve `internal` derleme | Büyük |
 | Faz 3 · Mağaza v1 | Kalite kapısından geçmiş içerikle mağaza yayını | `public` derleme | Küçük |
@@ -26,8 +26,7 @@ Kalın oklar kritik yoldur. Kesikli oklar yan bağımlılıktır.
 ```mermaid
 flowchart LR
   subgraph I["İçerik"]
-    OCR["Elmalılı OCR pilotu ve yol seçimi (A09)"]
-    TR["Meal: hazır metin ya da OCR, düzeltme turları"]
+    TR["Elmalılı mealleri: hazır metin, düzeltme turları (A16)"]
     CORE["core paketi"]
     SESK["Ses kaynağı ve okuyucu araştırması (A27.1, K-41)"]
     SES["Ses kataloğu, ayna ve zamanlama (A27.2)"]
@@ -40,7 +39,7 @@ flowchart LR
     KK["Kalite kapısı ve promote"]
     F3["Faz 3 · Mağaza v1"]
   end
-  OCR ==> TR ==> CORE ==> F2 ==> KK ==> F3
+  TR ==> CORE ==> F2 ==> KK ==> F3
   SESK --> SES --> F2
   F0 --> CORE
   F3 --> F4["Faz 4 · v1.x"] --> F5["Faz 5 · Web"]
@@ -51,12 +50,12 @@ flowchart LR
 
 ### Faz 0 · Hazırlık
 
-**Amaç.** Ortak temeli (depo, kaynak kayıtları, çapa grameri, editoryal veritabanı, CI) kurmak ve en pahalı teknik belirsizliği, Elmalılı'nın özgün baskısından metin çıkarmanın kalitesini, kod yazmadan önce ölçmek. Ses için hazır kayıtlar kullanılır ([K-40](../00-ozet/02-karar-defteri.md#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları), [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)).
+**Amaç.** Ortak temeli (depo, kaynak kayıtları, çapa grameri, editoryal veritabanı, CI) kurmak. Elmalılı'nın özgün baskısından metin çıkarmanın (OCR) kalitesi en pahalı belirsizlikti; [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi) bunu proje sonuna erteledi ve Elmalılı mealleri hazır metinle alınır ([S-15](./02-sonra-yapilacaklar.md)). Ses için hazır kayıtlar kullanılır ([K-40](../00-ozet/02-karar-defteri.md#k-40--ses-kaynağı-hazır-dijital-tilavet-kaynakları), [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)).
 
 **İşler**
 - Kaynak kayıtları ve ortak enum şeması (A06): v1 kaynaklarının hepsi `pipeline/sources/{kimlik}.toml` kaydı taşır ([Kaynaklar](../04-icerik/01-kaynaklar.md)).
 - Ses kaynağı ve okuyucu araştırması (A27.1, 30 Ekim 2026; [Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md)). Hazır kayıtlar kullanılır (K-40, K-41).
-- Elmalılı özgün baskısının (İstanbul 1935–1938, 6.442 sayfa) tarama envanteri ve OCR pilotu. Türkçe metnin Latin harfli, âyetlerin Arapça harfli olduğu bir tarama nüshasında doğrulanır ([K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) düzeltmesi); karakter hata oranı ölçülür. Pilotta kayıtlı hazır metin adayları da aynı örneklemde ölçülür ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)); hazır metin yolu yalnız eşik geçilirse seçilir.
+- Elmalılı için metin yolu: hazır metin ([K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)). Özgün baskının (İstanbul 1935–1939) taraması, OCR pilotu (A09) ve karakter hata oranı ölçümü ertelendi ve [S-15](./02-sonra-yapilacaklar.md)'e taşındı; bu iş Faz 0'ı bekletmez.
 - Tek depo iskeleti, Docker Compose (`postgres:18`, `api`, `editor`, SeaweedFS S3 deposu; [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı)), GitHub Actions.
 - `packages/anchors` ve `shared/test-vectors/`; Python, TypeScript ve C# uygulamaları.
 - Expo hesabı (İ-15). EAS projesi ve `development`, `internal`, `production` profilleri Faz 0'da değil, Faz 2'de mobil iskeletle birlikte kurulur (A21); derleme türü `APP_FLAVOR` ile `dev`, `internal`, `public` değerini alır ([Mobil mimari](../06-mobil/01-mobil-mimari.md), bölüm 10).
@@ -64,7 +63,7 @@ flowchart LR
 **Çıkış ölçütleri**
 - Kaynak kayıtları geçerli: `uv run mutalaa sources check` hatasız biter.
 - Vektör testleri üç dilde CI'da yeşil.
-- OCR yöntemi ya da hazır metin yolu ölçümle seçildi ve yazıldı.
+- Elmalılı için hazır metin yolu K-49 ile seçildi ve yazıldı (OCR ve A09 ertelendi; S-15).
 - Yerel ortam tek komutla kalkıyor.
 
 **Bağımlılık.** Yok.
@@ -75,7 +74,7 @@ flowchart LR
 
 **İşler**
 - Tanzil Uthmani ve Simple Clean alımı; değişmezlik testleri.
-- Elmalılı meali: A09 yol kararına göre ya kontrollü hazır metin (`taslak` giriş, özgün baskıyla karşılaştırma) ya da 1930'ların dizgisine ve imlasına uygun OCR; iki yolda da iki düzeltme turu; `meal:elmalili:{sure}:{ayet}` ([Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md)).
+- Elmalılı mealleri (A16, K-49): orijinal (`meal:elmalili`) ve sadeleştirilmiş (`meal:elmalili-sade`, arayüzde "sadeleştirilmiş" etiketli) meal hazır metinle alınır, `taslak` girer ve iki düzeltme turundan geçer ([Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md)). Özgün baskıyla karşılaştırma S-15'tedir.
 - `quran_word`: QAC'den türeyen kök ve lemma (`qac-morfoloji`) ayrı ve isteğe bağlı `kelime-kok` paketindedir ve bütün derlemelerde yer alır ([Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)); Türkçe lemma anlamları için önce hazır Türkçe kelime anlamı kaynağı aranır, bulunamazsa yapay zekâ taslağı ve insan onayı kullanılır ([K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları)).
 - `page_map` (Medine 604 sayfa); Mushaf A için cüz başına QPC font paketleri (yazı tipleri ve düzen verisi GitHub ya da QUL'dan alınır).
 - `xref`: âyet ↔ meal, Kur'an içi kök ve lemma, benzer âyet.
@@ -83,15 +82,15 @@ flowchart LR
 - Editör paneli: iktibas, kök etiketi, kelime anlamı ve metin düzeltme kuyrukları.
 - Publisher: kalite kapısı (P-01, P-07…P-14), imzalı manifestler, yerel S3 deposuna (SeaweedFS) yayın.
 - Altın setler ve değerlendirme raporları.
-- Faz 2'yi bloklamayan uzun işler: Risale altyapısı ve metni (A20): paragraf çapaları, metinli atıf dizini ve lügat; kaynak A20'de araştırmayla seçilir ve Risale kelimesi kelimesine, kısaltılmadan ve sadeleştirilmeden yayımlanır ([K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)). Hadis hatları (A19): Tecrîd-i Sarîh tamamı (Naim ve Kâmil Miras ciltleri) ve Kütüb-i Sitte'nin Arapça metni ([K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları)). Elmalılı tefsir metninin OCR'ı ya da ölçümü geçerse hazır metin adayı ([K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali), [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)).
+- Faz 2'yi bloklamayan uzun işler: Risale altyapısı ve metni (A20): paragraf çapaları, metinli atıf dizini ve lügat; kaynak A20'de araştırmayla seçilir ve Risale kelimesi kelimesine, kısaltılmadan ve sadeleştirilmeden yayımlanır ([K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)). Hadis hatları (A19): Tecrîd-i Sarîh tamamı (Naim ve Kâmil Miras ciltleri) ve Kütüb-i Sitte'nin Arapça metni ([K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları)). Elmalılı tefsir metni: uygun hazır metin adayı varsa o (yoksa OCR ve özgün baskı taraması S-15'e kalır; [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali), [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme)).
 
 **Çıkış ölçütleri**
 - `core` paketi aynı girdiyle aynı içerik özetini üretiyor.
 - Değişmezlik ve kalite kapısı testleri yeşil; `public` manifest onaysız birim, yapay zekâ taslağı, insan onayı isteyen türde aday bağlantı ve `test-` önekli kaynak içermiyor.
-- Mealin 6.236 âyeti iki düzeltme turundan geçti; kalan hata oranı ölçüldü.
+- Orijinal mealin 6.236 âyeti iki düzeltme turundan geçti (tur 1 her âyetin iki kişiyle onayı, tur 2 en az 600 âyetlik ikinci okuma); kalan hata oranı ölçüldü. Sadeleştirilmiş mealin turları fazı bekletmez; bir meal kaynağı G-INC geçmeden `public`'e çıkmaz (K-49).
 - v1 bağlantı türleri altın set kapılarını geçti ([Test stratejisi](../07-yayin/03-test-stratejisi.md)).
 
-**Bağımlılık.** Faz 0 (çapa grameri, kaynak kayıtları, OCR yöntemi ya da hazır metin yolu).
+**Bağımlılık.** Faz 0 (çapa grameri, kaynak kayıtları, Elmalılı için hazır metin yolu).
 
 ### Faz 2 · Mobil v1 (iç test)
 
@@ -150,7 +149,7 @@ flowchart LR
 
 **İşler**
 - Mushaf B: Türk hattı sayfa görselleriyle açılır (A40; önkoşul yalnız A24). Sayfa görselleri ve `ayah_box` verisi A40'ın tedarik adımında araştırılır.
-- Ek paketler: [Sonra yapılacaklar](./02-sonra-yapilacaklar.md) listesinden seçilen kitaplar (S-02), güncel dilli meal (S-05), diğer tefsir ve mealler (S-09), sesli meal (S-13) ve ek okuyucu kayıtları (katalog sürümüyle).
+- Ek paketler: [Sonra yapılacaklar](./02-sonra-yapilacaklar.md) listesinden seçilen kitaplar (S-02), güncel dilli meal (S-05), diğer tefsir ve mealler (S-09), sesli meal (S-13), OCR ve özgün baskı taraması (S-15) ve ek okuyucu kayıtları (katalog sürümüyle).
 
 **Çıkış ölçütleri.** Her ek paket aynı yolu izler: kaynak kaydı (`pipeline/sources/{kimlik}.toml`) açılır, içerik hattından geçer, editör onayıyla `onayli` olur, kalite kapısından geçer ve yeni paket sürümüyle yayımlanır.
 
@@ -160,7 +159,7 @@ flowchart LR
 
 | Zincir | Neden kritik | Erken uyarı | Kısaltma yolu |
 |---|---|---|---|
-| **Elmalılı OCR kalitesi:** pilot → OCR → düzeltme → `core` | 6.442 sayfalık özgün baskıda Türkçe metin büyük olasılıkla Latin harfli, âyetler Arapça harfli; iş 1930'ların dizgisine ve imlasına uygun OCR ve düzeltmedir ([K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) düzeltmesi, [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python)). Güvenilir dijital özgün baskı bulunamadı. Meal `core`'un parçasıdır; ikinci editör onayı tamamlanmayan âyet `public`'e girmez (P-10). | Tarama nüshasında Latin harfin doğrulanamaması; pilotta yüksek hata oranı; düzeltme hızının planın gerisinde kalması | Yöntem pilotla seçilir; Türkçe ve Arapça kısımlar için OCR ayrı ayarlanır (öneri); düzeltme kuyruğu editör panelindedir; tefsir metni meal yolundan ayrılır |
+| **Elmalılı mealleri:** hazır metin → `taslak` giriş → iki düzeltme turu → `core` | Meal `core`'un parçasıdır; iki meal de hazır metinle girer (K-49) ama baskı esasları belgesizdir. İki düzeltme turu insan emeğidir (2×6.236 âyet, iki onay ve iki ikinci okuma); ikinci editör onayı tamamlanmayan âyet `public`'e girmez (P-10) ve bir meal kaynağı G-INC geçmeden `public`'e çıkmaz. OCR ve özgün baskıyla karşılaştırma S-15'e ertelendi. | Hazır metinde sistematik sadeleştirme ya da baskı farkı; çapraz tanık raporunda düşük uyum; düzeltme hızının planın gerisinde kalması | Tur 1 kuyruğu tanık skoruna göre sıralanır; yalnız orijinal mealin turları Faz 1'i bağlar; düzeltme kuyruğu editör panelindedir; tefsir metni meal yolundan ayrılır |
 | **Ses kaynağı:** araştırma → katalog ve ayna → oynatıcı → cihaz testi | Kapandı (30 Ekim 2026): hazır kayıtlar ve QUD zamanlaması kullanılır (K-40, K-41). Kalan risk teknik: kaynakta dosya değişmesi, VBR konumlanma ([Ses kaynağı araştırması](../06-mobil/04-ses-kaynak-arastirmasi.md) §7) | Ayna dosyası sha256 ile tutmazsa içerik hattı durur | Ayna değişmez sürümlü adres kullanır; MP3Quran yedek âyet zamanlaması |
 
 İkincil bağımlılıklar: Mushaf A'nın QPC yazı tiplerinin ve düzen verisinin tedariki (A26); Mushaf C yazı tipinin seçimi (KFGQPC Hafs ya da Amiri Quran, görsel kaliteye göre; A24).

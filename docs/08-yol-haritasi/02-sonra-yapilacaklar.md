@@ -1,9 +1,9 @@
 # Sonra yapılacaklar
 
-> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-01](../00-ozet/02-karar-defteri.md#k-01--ad-mütâlaa) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
+> **Sürüm:** 1.4 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-01](../00-ozet/02-karar-defteri.md#k-01--ad-mütâlaa) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
 
-Bu liste park alanıdır. Bir faza girmeyen ama unutulmaması gereken işler burada durur. Her madde neden önemli olduğunu, ne zaman yeniden açılacağını, ilk somut adımı ve ilgili kararı yazar. Bir madde ele alınınca karar defterine yeni bir karar olarak işlenir ve burada "Kapandı" diye işaretlenir. S-01 ile S-10 brifteki listeden, S-13 ile S-14 bu dosyanın ve koordinasyon notlarının eklediği maddelerdir. Madde numaraları sabittir; yeniden kullanılmaz ve yeniden numaralandırılmaz.
+Bu liste park alanıdır. Bir faza girmeyen ama unutulmaması gereken işler burada durur. Her madde neden önemli olduğunu, ne zaman yeniden açılacağını, ilk somut adımı ve ilgili kararı yazar. Bir madde ele alınınca karar defterine yeni bir karar olarak işlenir ve burada "Kapandı" diye işaretlenir. S-01 ile S-10 brifteki listeden, S-13 ile S-14 bu dosyanın ve koordinasyon notlarının eklediği maddelerdir; S-15 K-49 ile eklendi (11 Kasım 2026). Madde numaraları sabittir; yeniden kullanılmaz ve yeniden numaralandırılmaz.
 
 ## Özet
 
@@ -18,6 +18,7 @@ Bu liste park alanıdır. Bir faza girmeyen ama unutulmaması gereken işler bur
 | S-10 | Anlamsal katman ve "kaynaklara sor" | Altın set ölçümleri oturunca (Faz 4) | K-27, K-25 |
 | S-13 | Sesli meal | Faz 3'ten sonra | K-28, K-03, K-41, K-42 |
 | S-14 | Okuma planları ve paylaşım kartları | Faz 4 | K-25 |
+| S-15 | OCR ve özgün baskı taraması (hazır metni olmayan kitaplar, Elmalılı özgün baskıyla karşılaştırma) | A34'ten sonra (Faz 6) | K-49, K-38 |
 
 ## S-01 · Fiyatlandırma ve gelir modeli
 
@@ -47,7 +48,7 @@ Proje sahibi bu maddenin kayda geçmesini özellikle istedi. [K-22](../00-ozet/0
 
 ## S-05 · Güncel dilli meal (Diyanet meali)
 
-- **Neden önemli.** Güncel dilli bir meal talebi var; vavtv de Diyanet mealini kullanıyor ([vavtv](https://www.vavtv.com.tr/kurani-kerim)). [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) şimdilik tek meal olarak Elmalılı'yı seçti; ek meal yeni bir karar ister. Aday kaynaklar hazır dijital metin olarak internette ve GitHub'da aranır; başvuru, onay ya da anahtar isteyen kaynak seçilmez ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 1 ve 2). Ölçüt eksiksizlik (114 sure, 6.236 âyet), kalite, biçim ve sürümün sabitlenebilmesidir. Tarafsızlık ilkesi ([K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)) seçimin çerçevesidir.
+- **Neden önemli.** Güncel dilli bir meal talebi var; vavtv de Diyanet mealini kullanıyor ([vavtv](https://www.vavtv.com.tr/kurani-kerim)). [K-03](../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) şimdilik tek meal olarak Elmalılı'yı seçti; ek meal yeni bir karar ister. Güncel Elmalılı meali S-05 değildir ([K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi): `meal:elmalili-sade`, A16'da); S-05 Diyanet meali olarak kalır. Aday kaynaklar hazır dijital metin olarak internette ve GitHub'da aranır; başvuru, onay ya da anahtar isteyen kaynak seçilmez ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 1 ve 2). Ölçüt eksiksizlik (114 sure, 6.236 âyet), kalite, biçim ve sürümün sabitlenebilmesidir. Tarafsızlık ilkesi ([K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)) seçimin çerçevesidir.
 - **Tetik.** Faz 3'ten sonra ya da iç testte Elmalılı'nın dili için yoğun geri bildirim gelirse.
 - **İlk somut adım.** `arastirmaci` ile hazır dijital kaynakların (Tanzil'in Türkçe çeviri dosyaları, GitHub veri setleri) araştırılması; örneklemlerinin basılı sürümle karşılaştırılması ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) ölçüm yolu); sonucun `/karar` ile kaydedilmesi.
 - **İlgili karar.** K-02, K-03, K-25, K-42.
@@ -89,6 +90,18 @@ Proje sahibi bu maddenin kayda geçmesini özellikle istedi. [K-22](../00-ozet/0
 - **Tetik.** Faz 4.
 - **İlk somut adım.** Riyâsız tasarım ilkeleriyle bir ekran taslağı.
 - **İlgili karar.** K-25.
+
+## S-15 · OCR ve özgün baskı taraması (hazır metni olmayan kitaplar, Elmalılı özgün baskıyla karşılaştırma)
+
+- **Neden önemli.** [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi) her kitabı önce hazır dijital metinle alır. Uygun hazır metin (eksiksiz kapsam, yapılandırılabilir biçim, sabitlenebilir sürüm) yoksa o kitabın OCR'ı ve özgün baskı taraması proje sonuna kalır; bu yüzden v1 içerik seti eksik kalabilir. Elmalılı mealleri hazır metinle girdi ama baskı esasları belgesizdir: orijinal mealin Vikikaynak metni kaynaksız girilmiştir ve özgün baskıyla karşılaştırılmamıştır. Bu karşılaştırma yapılmadan metin "temel metin" sayılmaz; sadeleştirme izi ve CER ölçümü de buna bağlıdır. Baskı sayfa eşlemesi (`page_map`) ve görsel eşleme de bu maddededir.
+- **Tetik.** A34'ten sonra (Faz 6), v1 yayımlandıktan ve proje sahibi isteyince.
+- **İlk somut adım.** [A09](../10-claude-code/asamalar/A09-elmalili-ocr-pilotu.md) dosyası ertelenmiş hâliyle hazırdır (Tedarik, OCR motorları, altın örneklem, CER). [Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md) §3 ve §4 baskı doğrulama ve OCR yöntemini anlatır. Önce indirilebilir bir tarama kaynağı aranır (archive.org, HathiTrust, kütüphane dijital koleksiyonları; 11 Kasım 2026'da 1935 baskısının indirilebilir taraması bulunamadı); bulunamazsa basılı takım sahaftan edinilir ve taranır (İ-09). Sonra A09'un ölçümü yürütülür.
+- **Kapsadığı kitaplar.**
+  - Elmalılı tefsir (A37): hazır metin uygun çıkmazsa OCR; çıkarsa özgün baskıyla karşılaştırma.
+  - Elmalılı meali, özgün baskıyla karşılaştırma (A16): orijinal ve sadeleştirilmiş mealin baskı esasının belgelenmesi, CER ve sadeleştirme izi, "temel metin" sayılması.
+  - Tecrîd-i Sarîh Türkçesi (A19): `_djvu.txt` katmanı uygun değilse ilgili ciltlerin OCR'ı.
+  - Risale-i Nur (A20): hazır metin yetmezse; Osmanlıca harfli metin ve sözlük taramaları zaten ayrı iştir.
+- **İlgili karar.** K-49, [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme).
 
 ## İlgili dosyalar
 

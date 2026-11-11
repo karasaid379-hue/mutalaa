@@ -1,7 +1,7 @@
 # İçerik Paketleri
 
-> **Sürüm:** 1.9 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json) · K-21 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-44](../00-ozet/02-karar-defteri.md#k-44--arama-indeksi-ve-paket-şeması-cihaz-gövdeleyicisi-simple-clean-paket-tabloları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
+> **Sürüm:** 1.10 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json) · K-21 ([karar defteri](../00-ozet/02-karar-defteri.md)) · [K-44](../00-ozet/02-karar-defteri.md#k-44--arama-indeksi-ve-paket-şeması-cihaz-gövdeleyicisi-simple-clean-paket-tabloları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları) · [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
 
 İçerik cihaza sürümlü SQLite paketleri olarak iner. Yerelde SeaweedFS'in S3 API'si ([Yerel geliştirme](../02-mimari/04-yerel-gelistirme.md)), canlıda S3 uyumlu bir depo kullanılır; öneri Cloudflare R2'dir (depolama 0,015 $/GB-ay, veri çıkışı ücretsiz; [R2 fiyatlandırma](https://developers.cloudflare.com/r2/pricing)). Yayınlayıcı (`Mutalaa.Publisher`) editoryal veritabanından her derleme türü için ayrı paketler ve ayrı, imzalı bir manifest üretir ([Editoryal veritabanı](./02-editoryal-veritabani.md); [Yayın süreci](../07-yayin/01-yayin-sureci.md)).
 
@@ -17,9 +17,9 @@ Cihazda üç tür yerel veritabanı vardır ([Mobil mimari](../06-mobil/01-mobil
 
 | pack_id | İçerik | Kaynak ve not |
 |---|---|---|
-| `core` (uygulamaya gömülü) | Tanzil Uthmani metni ve Simple Clean'den üretilen Arapça arama metni (bölüm 3.2), Elmalılı meali, Tanzil'den türetilen kelime bölmesi (`quran_word`), Kur'an içi ve meal bağlantı indeksleri, Medine 604 sayfa eşlemesi, `sure` tablosu | Yalnız Kur'an metni, meal ve kendi verimiz; her derlemede bulunur |
+| `core` (uygulamaya gömülü) | Tanzil Uthmani metni ve Simple Clean'den üretilen Arapça arama metni (bölüm 3.2), Elmalılı mealleri (orijinal `elmalili-meal` ve sadeleştirilmiş `elmalili-sade-meal`; `taslak` girer, `dev` ve `internal`'da "doğrulanmamış" rozetiyle görünür, `public`'te yalnız onaylılar; [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)), Tanzil'den türetilen kelime bölmesi (`quran_word`), Kur'an içi ve meal bağlantı indeksleri, Medine 604 sayfa eşlemesi, `sure` tablosu | Yalnız Kur'an metni, meal ve kendi verimiz; her derlemede bulunur |
 | `kelime-kok` | QAC kaynaklı kök, lemma ve kelime morfolojisi; Türkçe kelime anlamları; Türkçe biçim sözlüğü; meal için Türkçe → kök indeksi | Bütün derlemelerde yer alır; boyutu yüzünden ayrı ve isteğe bağlı pakettir. Türkçe anlamlar önce hazır kaynaktan alınır (K-19) |
-| `tefsir-elmalili` | Hak Dini Kur'an Dili paragrafları ve haşiyeleri, bağlantılar, 1935–39 baskı sayfa eşlemesi | Metin kaynağı A09 yol kararıyla belirlenir (K-38) |
+| `tefsir-elmalili` | Hak Dini Kur'an Dili paragrafları ve haşiyeleri, bağlantılar, 1935–39 baskı sayfa eşlemesi | Metin kaynağı hazır metin uygunsa A37'de alınır; uygun değilse S-15 (K-38, K-49) |
 | `hadis-tecrid` | `h:tecrid` Arapça, `ht:naim` ve `ht:miras` çevirileri | Tecrîd-i Sarîh'in tamamı: Ahmed Naim ve Kâmil Miras çevirileri (K-04) |
 | `hadis-kutub-i-sitte` | Altı kitabın Arapça metni | Kaynak, eksiksizlik ve numaralandırma ölçümüyle A19'da seçilir (K-04) |
 | `risale-dizin` | Bütün Risale kitapları için arama indeksi, Risale bağlantı indeksi, baskı sayfa eşlemeleri | Metinli atıf dizini; Risale metniyle birlikte üretilir (A20) |
@@ -222,7 +222,7 @@ Aşağıdaki örnek `dev` derlemenin manifestidir; `dev` manifesti yerel Seaweed
       "depends_on": [],
       "url": "http://192.168.1.50:8333/mutalaa/packs/dev/core/2026.11.0/core-2026.11.0.db",
       "schema_version": 1,
-      "title": "Kur'an ve Elmalılı meali",
+      "title": "Kur'an ve Elmalılı mealleri",
       "bundled": true
     },
     {

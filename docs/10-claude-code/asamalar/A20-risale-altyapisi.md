@@ -1,6 +1,6 @@
 # A20 · Risale altyapısı ve metni
 
-> **Sürüm:** 1.1 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-02](../../00-ozet/02-karar-defteri.md#k-02--i̇lk-içerik-seti) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
+> **Sürüm:** 1.1 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-02](../../00-ozet/02-karar-defteri.md#k-02--i̇lk-içerik-seti) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-49](../../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A07](./A07-editoryal-veritabani.md) · [A13](./A13-yayinlayici-ve-kalite-kapisi.md) · **İnsan adımı:** İ-24 · İ-28
 > **Ajanlar:** `arastirmaci` (A20.0 tedarik) · `hat-gelistirici` · `sunucu-gelistirici` (Yayınlayıcı paket tanımları) · `metin-denetcisi` · `test-yazari` · `inceleyici` · **Beceriler:** `icerik-hatti` · `capa-gramer` · `paket-yayini` · `metin-butunlugu` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A20`
@@ -26,12 +26,13 @@ Risale-i Nur Külliyatı'nın metni, adresleri, basılı sayfa eşlemesi, âyet 
 - Baskı kaydı ve basılı sayfa eşlemesi (`page_map`); içindekilerin dijital kaynaklarla karşılaştırılması.
 - Yayınlayıcıda `risale-dizin` ve `risale-{kitap}` paket tanımları.
 - Sentetik fikstür kaynağı `test-risale-ornek`, üreteci ve `dev` yayını.
+- [BÇ-59](../07-belge-celiskileri.md#1-karar-bekleyenler) kararı: Risale birimlerinde metin onayının `marks`, `sentences` ve `ayah_range` alanlarını yeniden hesaplaması ya da korumanın kalması `/karar` ile seçilir (`marks` ve `sentences` ilk kez bu aşamada dolar).
 - Lügat altyapısı: kaynak kayıtları, `lugat_madde` şeması, Kelime-Frekans'tan başlık söz listesi ve anlam taslakları, editör kuyruğu, fikstür için sentetik maddeler (A20.6).
 - Metinli âyet atıf dizini: açık atıflar ve Arapça alıntılar, `xref` aday satırları, parça metin (A20.7).
 
 **Yapılmaz**
 - Risale metnini düzeltmek, sadeleştirmek, özetlemek ya da yapay zekâ ile işlemek (K-25, K-30); metin kaynak dosyadaki gibi saklanır.
-- Arap harfli (Osmanlıca) metnin içe alınması ve OCR'ı; sözlük taramalarının toplu OCR'ı ve madde madde içe aktarılması (ayrı iş).
+- Arap harfli (Osmanlıca) metnin içe alınması ve OCR'ı; sözlük taramalarının toplu OCR'ı ve madde madde içe aktarılması (ayrı iş). Uygun hazır metni olmayan kitabın OCR'ı ve özgün baskı taraması proje sonuna bırakılır ([S-15](../../08-yol-haritasi/02-sonra-yapilacaklar.md); K-49 madde 3).
 - Lügat kartı ve yoğunluk ayarı (A31). Konu listesi (v1.x).
 - Risale okuyucusu ve cihazda ATTACH yönetimi (A31, A23).
 - Risale atıf ve iktibas altın setinin etiketlenmesi (İ-13; A18'in etiketleme arayüzü).
