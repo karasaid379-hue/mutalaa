@@ -103,7 +103,15 @@ dotnet user-secrets --project server/Mutalaa.Publisher set "Storage:SecretKey" "
 dotnet user-secrets --project server/Mutalaa.Publisher set "Storage:PublicBaseUrl" "http://192.168.1.50:8333/mutalaa"
 ```
 
-`Storage:PublicBaseUrl` manifestteki mutlak paket adreslerinin tabanıdır ([Backend API](./05-backend-api.md) §10.5). Bilgisayarın LAN IP adresi değişirse bu değer güncellenir ve `publish` yeniden çalıştırılır.
+`Storage:PublicBaseUrl` manifestteki mutlak paket adreslerinin tabanıdır ([Backend API](./05-backend-api.md) §10.5). Bilgisayarın LAN IP adresi değişirse bu değer güncellenir ve `publish` yeniden çalıştırılır. Adres `powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/lan-ip.ps1` ile bulunur (varsayılan bağdaştırıcı Wi-Fi; WSL ve Hyper-V sanal bağdaştırıcılarının adresleri telefondan erişilemez). Konteynerdeki `watch` kullanılıyorsa aynı adres `.env` içindeki `DEV_LAN_IP` değerine de yazılmalıdır, yoksa `verify` `url-uyumsuz` verir ([İ-29](../10-claude-code/06-insan-adimlari.md)); ana makinedeki `dotnet run` yayını yalnız kullanıcı sırrını okur.
+
+**Sırları listelerken değer görünmesin.** `dotnet user-secrets list` bağlantı dizesindeki parolayı ve anahtarları açık yazar; çıktısı sohbete, rapora ya da günlüğe girmemelidir ([CLAUDE.md](../../CLAUDE.md) kural 8). Yapılandırmayı denetlemek için yalnız anahtar adları listelenir:
+
+```bash
+dotnet user-secrets list --project server/Mutalaa.Publisher | sed -E 's/ = .*/ = <gizli>/'
+```
+
+`Storage:PublicBaseUrl` gizli değer değildir; değerine bakmak gerekirse tek anahtar için `grep '^Storage:PublicBaseUrl'` kullanılır.
 
 **API'nin öteki kullanıcı sırları (A14).** `Mutalaa:Seed:AdminEmail` ve `Mutalaa:Seed:AdminPassword` bölüm 6 adım 3'tedir. `Mutalaa:Auth:DevAutoLogin` (varsayılan `false`) açılırsa geri döngü adresinden gelen ve Host başlığı `localhost`, `127.0.0.1` ya da `[::1]` olan oturumsuz istek seed yöneticisiyle oturum açar (DNS rebinding koruması, K-48 madde 10); yalnız `Development` ortamında kabul edilir, başka ortamda açılış hata verir. Yol ayarları `Mutalaa:Paths:RawDir`, `SourcesDir`, `PacksDir` ve `TempDir` `appsettings.json` içinde varsayılanlarıyla durur (`data/raw`, `pipeline/sources`, `data/packs`, `.tmp/api`); göreli değerler çalışma dizinine göre çözülür ve değiştirmek gerekirse aynı anahtarlar kullanıcı sırlarıyla ezilir.
 

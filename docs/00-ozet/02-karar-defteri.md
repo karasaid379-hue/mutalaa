@@ -517,6 +517,10 @@ Eski planın okuyucu tasarımları, "okuma simetrisi" çekirdeği (son okunan ye
   - Üç metin ailesi ayrımı olmadan "Elmalılı" etiketli bir metin yanlış kişiye atfedilebilirdi.
 - **Değerlendirilen alternatifler:** Tanzil `tr.yazir`'i güncel meal yapmak (atfı yanlış, Pink). A09'u önce yürütmek (insan emeği ve basılı takım gerekir). Kısmi meali olduğu gibi `public`'e bırakmak ve kapıyı şimdi A16'da kurmak (A34'e ertelendi). Bütün kitaplar için tek tek karar (genel kural seçildi).
 - **Kaynak:** Proje sahibinin kararı (11 Kasım 2026): güncel meal sadeleştirilmiş metindir; hazır metin yolu; OCR bütün kitaplar için proje sonuna; `taslak` giriş; kısmi meal A34'te; Faz 1 yalnız orijinal meal; A18 ve A37 meallerin yüklenmesiyle başlar. Araştırma: `arastirmaci` (11 Kasım 2026), plan ve çok mercekli bağımsız gözden geçirme. Güncellenen kararlar: K-02, K-03, K-38, K-48.
+- **Güncelleme (12 Kasım 2026):**
+  - **Madde 8'in gerekçesi.** İlk metin yalnız `N-M` aralıklı işareti birleşik meal sayıyordu. A16.2 ölçümü (Vikikaynak, kilitli revizyonlar) metin taşımayan ardışık numaralı işaretler (17 grup) ve ardışık olmayan işaretlerin paylaştığı metinler (17 birim) gösterdi. Aynı kural 27 boş birim üretir, G-BUT ile G-HIZ'ı kırardı; bu yüzden ardışık işaretler birleşik meal, ardışık olmayanlar `ortak_metin` uyarısıyla aynı metni alan birimler oldu. Metin kaynakta hangi âyetlere verilmişse öyle saklanır; âyeti bölmek ya da taşımak editörün Düzelt kararıdır (iki düzeltme).
+  - **Çapa kümesi (K-47).** İlk meal yayını (`dev` 2026.11.2) ile iki mealin 6.236'şar çapası K-47 madde 2 sürekliliğine girdi: sonraki yayınlarda her çapa birim ya da geri çekilme kaydı taşır, aksi hâlde yayın `capa-kayboldu` ile reddedilir. Meal çapası âyet başınadır (`meal:elmalili:{sure}:{ayet}`); sınır durumu kuralları metni ve `attrs` değerlerini değiştirir, çapa kümesini değiştirmez. Bu yüzden süreklilik denetimi bu kararın kurallarını kısıtlamaz.
+  - **Yayın sınırı (madde 5).** Kısmi meal kaynağını `public`'ten uzak tutan kod A34'te yazılır; o zamana kadar yayın yalnız `dev` ve `internal` derlemelerinde yapılır, `public` derleme A34.3 kuru çalıştırmasıyla başlar.
 
 ---
 
