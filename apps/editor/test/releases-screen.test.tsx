@@ -273,6 +273,11 @@ describe('releases screen: preview, then request', () => {
     const open = await screen.findByRole('button', { name: trc.releases.requestOpen });
     expect(open).toBeDisabled();
     expect(screen.getByText(trc.releases.previewNeeded)).toBeInTheDocument();
+    // The closed button is tied to the visible reason.
+    expect(open).toHaveAttribute(
+      'aria-describedby',
+      screen.getByText(trc.releases.previewNeeded).id,
+    );
     await user.click(open);
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     expect(calls('/api/v1/releases')).toHaveLength(0);
@@ -376,6 +381,13 @@ describe('releases screen: preview, then request', () => {
     });
     await user.click(open);
     expect(await screen.findByText(trc.releases.notesTooLong(2001, 2000))).toBeInTheDocument();
+    // The notes field points at the message and the message links back to it.
+    const notes = screen.getByRole('textbox', { name: trc.releases.newNotes });
+    const message = screen.getByText(trc.releases.notesTooLong(2001, 2000)).closest('[id]')!;
+    expect(notes).toHaveAttribute('aria-invalid', 'true');
+    expect(notes.getAttribute('aria-describedby')!.split(' ')).toContain(message.id);
+    await user.click(screen.getByRole('link', { name: trc.releases.notesTooLong(2001, 2000) }));
+    expect(notes).toHaveFocus();
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     fireEvent.change(screen.getByRole('textbox', { name: trc.releases.newNotes }), {
       target: { value: 'a\u0000b' },

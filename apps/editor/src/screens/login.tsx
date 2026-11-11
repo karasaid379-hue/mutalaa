@@ -20,7 +20,7 @@ export function Component() {
   const loggedOut = params.get('cikis') === '1';
   const next = safeNext(params.get('sonraki'));
   const login = api.$api.useMutation('post', '/api/v1/auth/login');
-  const ids = { email: useId(), password: useId() };
+  const ids = { email: useId(), password: useId(), error: useId() };
   const [email, setEmail] = useState('');
   const [parola, setParola] = useState('');
   const errorRef = useRef<HTMLDivElement>(null);
@@ -57,7 +57,11 @@ export function Component() {
           </Link>
         </div>
       ) : null}
-      {failed ? <ProblemMessage ref={errorRef} error={login.error} context="login" /> : null}
+      {failed ? (
+        <div id={ids.error}>
+          <ProblemMessage ref={errorRef} error={login.error} context="login" />
+        </div>
+      ) : null}
       <form className="flex flex-col gap-3" noValidate onSubmit={(event) => void submit(event)}>
         <div className="flex flex-col gap-1">
           <Label htmlFor={ids.email}>{tr.session.email}</Label>
@@ -67,6 +71,8 @@ export function Component() {
             autoComplete="username"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
+            aria-invalid={failed ? true : undefined}
+            aria-describedby={failed ? ids.error : undefined}
           />
         </div>
         <div className="flex flex-col gap-1">
@@ -77,6 +83,8 @@ export function Component() {
             autoComplete="current-password"
             value={parola}
             onChange={(event) => setParola(event.target.value)}
+            aria-invalid={failed ? true : undefined}
+            aria-describedby={failed ? ids.error : undefined}
           />
         </div>
         <Button type="submit" disabled={login.isPending}>

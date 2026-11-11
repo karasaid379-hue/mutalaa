@@ -59,6 +59,29 @@ describe('DecisionForm', () => {
       expect(reject()).not.toBeChecked();
     });
 
+    it('ties each message to its field: aria-invalid, aria-describedby and a link that focuses the field', async () => {
+      const { user } = setup();
+      await user.click(submit());
+      const summary = await screen.findByTestId('decision-summary');
+      // The reason field points at its message and keeps its hint.
+      const message = within(summary).getByText(tr.review.reasonRequired).closest('li')!;
+      expect(reason()).toHaveAttribute('aria-invalid', 'true');
+      const described = reason().getAttribute('aria-describedby')!.split(' ');
+      expect(described).toContain(message.id);
+      expect(described.length).toBe(2);
+      // The choice group is invalid too.
+      const group = screen.getByRole('radiogroup');
+      expect(group).toHaveAttribute('aria-invalid', 'true');
+      expect(group.getAttribute('aria-describedby')).toContain(
+        within(summary).getByText(tr.review.chooseDecision).closest('li')!.id,
+      );
+      // A link in the summary focuses its field.
+      await user.click(within(summary).getByRole('link', { name: tr.review.reasonRequired }));
+      expect(reason()).toHaveFocus();
+      await user.click(within(summary).getByRole('link', { name: tr.review.chooseDecision }));
+      expect(approve()).toHaveFocus();
+    });
+
     it('requires a non-blank reason', async () => {
       const { user } = setup();
       await user.click(approve());
@@ -314,6 +337,12 @@ describe('DecisionForm', () => {
       await user.click(submit());
       await waitFor(() => expect(decisionCalls()).toHaveLength(1));
       expect((decisionCalls()[0]?.json as { karar: string }).karar).toBe('reddedildi');
+    });
+
+    it('ties the closed "Onayla" to the visible reason', async () => {
+      setup(reviewDetail({ koken: 'editor', oneren: EDITOR_EMAIL }));
+      const reasonText = await screen.findByTestId('approve-closed-reason');
+      expect(approve()).toHaveAttribute('aria-describedby', reasonText.id);
     });
 
     it('closes the second approval for the first approver', async () => {

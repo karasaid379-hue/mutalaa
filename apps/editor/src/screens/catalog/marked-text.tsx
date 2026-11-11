@@ -1,5 +1,6 @@
 import { Fragment, useId } from 'react';
 import { ArabicText } from '@/components/arabic-text';
+import { ScrollRegion } from '@/components/scroll-region';
 import {
   Table,
   TableBody,
@@ -11,7 +12,8 @@ import {
 } from '@/components/ui/table';
 import { trc } from '@/i18n/tr-catalog';
 import { cn } from '@/lib/utils';
-import { cpLength, layoutMarks, prettyJson, readMarks, type MarkEntry } from './readers';
+import { codePointCount } from '@/lib/text';
+import { layoutMarks, prettyJson, readMarks, type MarkEntry } from './readers';
 
 export interface MarkedTextProps {
   /** The canonical text exactly as stored; it is rendered as is (no trim, no normalization; K-26). */
@@ -30,7 +32,7 @@ export interface MarkedTextProps {
  * listed in `MarksTable` too, so nothing is carried by the highlight alone.
  */
 export function MarkedText({ text, marks, arabic = false, className }: MarkedTextProps) {
-  const entries = readMarks(marks, cpLength(text)) ?? [];
+  const entries = readMarks(marks, codePointCount(text)) ?? [];
   const { segments, points } = layoutMarks(text, entries);
   const drawn = segments.some((segment) => segment.marks.length > 0) || points.length > 0;
 
@@ -67,7 +69,9 @@ export function MarkedText({ text, marks, arabic = false, className }: MarkedTex
       {body}
     </ArabicText>
   ) : (
-    <p className={cn('break-words whitespace-pre-wrap', className)}>{body}</p>
+    <p dir="auto" className={cn('break-words whitespace-pre-wrap', className)}>
+      {body}
+    </p>
   );
 }
 
@@ -94,9 +98,13 @@ export function MarksTable({ marks, textLength }: { marks: unknown; textLength: 
       {entries === null ? (
         <div className="flex flex-col gap-1">
           <p className="text-sm">{trc.units.marksUnreadable}</p>
-          <pre className="max-h-48 overflow-auto rounded-lg border p-2 text-xs whitespace-pre-wrap">
+          <ScrollRegion
+            label={trc.common.scrollArea(trc.units.marks)}
+            dir="ltr"
+            className="max-h-48 overflow-auto rounded-lg border p-2 text-xs whitespace-pre-wrap"
+          >
             {prettyJson(marks)}
-          </pre>
+          </ScrollRegion>
         </div>
       ) : entries.length === 0 ? (
         <p className="text-sm text-muted-foreground">{trc.units.marksNone}</p>

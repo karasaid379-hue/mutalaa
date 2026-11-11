@@ -32,7 +32,8 @@ export function Component() {
       <div className="grid gap-4 lg:grid-cols-[minmax(16rem,22rem)_minmax(0,1fr)]">
         <section aria-label={trc.sources.listLabel} className="flex flex-col gap-3">
           {list.isPending ? (
-            <div className="flex flex-col gap-2" data-testid="sources-loading">
+            <div className="flex flex-col gap-2" data-testid="sources-loading" aria-busy="true">
+              <span className="sr-only">{tr.ui.loading}</span>
               <Skeleton className="h-12" />
               <Skeleton className="h-12" />
               <Skeleton className="h-12" />
@@ -60,7 +61,7 @@ export function Component() {
                     to={{ search: `?kaynak=${encodeURIComponent(source.slug)}` }}
                     aria-current={source.slug === selected ? 'true' : undefined}
                     className={cn(
-                      'flex min-h-6 flex-col gap-1 rounded-lg border p-2 hover:bg-muted',
+                      'flex min-h-6 flex-col gap-1 rounded-lg border p-2 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
                       source.slug === selected && 'border-primary bg-muted',
                     )}
                   >

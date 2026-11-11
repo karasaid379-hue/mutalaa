@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { useState } from 'react';
 import type { InfiniteData } from '@tanstack/react-query';
 import { describe, expect, it, vi } from 'vitest';
 import type { components } from '@/api/schema';
@@ -32,6 +33,30 @@ function makeItems(count: number): Item[] {
 const sampleRows = () => screen.queryAllByTestId('bulk-sample-row');
 const confirm = () => screen.getByRole('button', { name: tr.bulk.confirm });
 const reason = () => screen.getByLabelText(tr.bulk.reason);
+
+/** Lets a test change the selection (drop the first record, bring it back) without remounting. */
+function Harness({ all, random }: { all: Item[]; random: () => number }) {
+  const [skip, setSkip] = useState(0);
+  return (
+    <>
+      <button type="button" onClick={() => setSkip(1)}>
+        drop-first
+      </button>
+      <button type="button" onClick={() => setSkip(0)}>
+        restore
+      </button>
+      <BulkDecision
+        items={all.slice(skip)}
+        sampling="tenth"
+        random={random}
+        renderSample={(item) => <p>{`Deneme içerik ${item.id}`}</p>}
+      />
+    </>
+  );
+}
+
+const sampleTexts = () =>
+  sampleRows().map((row) => within(row).getByText(/Deneme içerik/).textContent);
 
 describe('BulkDecision', () => {
   const fake = useFakeApi();
@@ -118,6 +143,89 @@ describe('BulkDecision', () => {
       await user.click(within(rows[1]!).getByRole('radio', { name: tr.bulk.correct }));
       expect(confirm()).toBeDisabled();
       expect(decisionsCalls()).toHaveLength(0);
+    });
+  });
+
+  describe('selection session', () => {
+    function harness(count = 25) {
+      fake.post('/api/v1/reviews/decisions', ok({ sonuclar: [] }));
+      const random = vi.fn(() => 0);
+      const view = renderWithProviders(fake, <Harness all={makeItems(count)} random={random} />);
+      return { ...view, random };
+    }
+    const drop = () => screen.getByRole('button', { name: 'drop-first' });
+    const restore = () => screen.getByRole('button', { name: 'restore' });
+
+    it('keeps the cancellation when the selection changes and the "Hatalı" record leaves it', async () => {
+      const { user } = harness();
+      expect(sampleTexts()).toEqual(['Deneme içerik 1', 'Deneme içerik 2', 'Deneme içerik 3']);
+      await user.click(within(sampleRows()[0]!).getByRole('radio', { name: tr.bulk.wrong }));
+      expect(await screen.findByTestId('bulk-cancelled')).toBeInTheDocument();
+      await user.click(drop());
+      expect(screen.getByTestId('bulk-count')).toHaveTextContent(tr.bulk.count(24));
+      expect(screen.getByTestId('bulk-cancelled')).toBeInTheDocument();
+      expect(confirm()).toBeDisabled();
+      await user.click(restore());
+      expect(screen.getByTestId('bulk-cancelled')).toBeInTheDocument();
+      expect(confirm()).toBeDisabled();
+      expect(decisionsCalls()).toHaveLength(0);
+    });
+
+    it('draws the sample once: leaving and coming back does not draw again, a shortfall is filled up', async () => {
+      const { user, random } = harness();
+      const first = sampleTexts();
+      const drawsAfterStart = random.mock.calls.length;
+      expect(drawsAfterStart).toBeGreaterThan(0);
+
+      await user.click(drop());
+      // Record 1 left: the sample is topped up with a record that was never drawn (4), the rest stays.
+      expect(sampleTexts()).toEqual(['Deneme içerik 2', 'Deneme içerik 3', 'Deneme içerik 4']);
+      const drawsAfterDrop = random.mock.calls.length;
+      expect(drawsAfterDrop).toBeGreaterThan(drawsAfterStart);
+
+      await user.click(restore());
+      // The first sample is back and nothing was drawn for it.
+      expect(sampleTexts()).toEqual(first);
+      expect(random.mock.calls.length).toBe(drawsAfterDrop);
+    });
+
+    it('keeps the verdicts of records that left the selection', async () => {
+      const { user } = harness();
+      await user.click(within(sampleRows()[0]!).getByRole('radio', { name: tr.bulk.correct }));
+      await user.click(within(sampleRows()[1]!).getByRole('radio', { name: tr.bulk.correct }));
+      await user.click(drop());
+      expect(screen.getByText(tr.bulk.verdictPending(1, 3))).toBeInTheDocument();
+      await user.click(restore());
+      expect(screen.getByText(tr.bulk.verdictPending(2, 3))).toBeInTheDocument();
+      expect(within(sampleRows()[0]!).getByRole('radio', { name: tr.bulk.correct })).toBeChecked();
+      expect(within(sampleRows()[1]!).getByRole('radio', { name: tr.bulk.correct })).toBeChecked();
+    });
+  });
+
+  describe('field errors', () => {
+    it('ties the reason message to the reason field and links to it', async () => {
+      const { user } = setup(makeItems(3), 'none');
+      await user.click(confirm());
+      const summary = await screen.findByTestId('bulk-summary');
+      expect(reason()).toHaveAttribute('aria-invalid', 'true');
+      const described = reason().getAttribute('aria-describedby')!.split(' ');
+      expect(described).toHaveLength(2);
+      expect(document.getElementById(described[1]!)).toContainElement(summary.querySelector('a'));
+      await user.click(within(summary).getByRole('link', { name: tr.review.reasonRequired }));
+      expect(reason()).toHaveFocus();
+      fireEvent.change(reason(), { target: { value: 'Gerekçe' } });
+      expect(reason()).not.toHaveAttribute('aria-invalid');
+    });
+
+    it('flags the unjudged sample records when the verdicts are missing', async () => {
+      const { user } = setup(makeItems(25), 'tenth', () => 0);
+      fireEvent.change(reason(), { target: { value: 'Gerekçe' } });
+      await user.click(confirm());
+      const summary = await screen.findByTestId('bulk-summary');
+      const groups = screen.getAllByRole('radiogroup');
+      expect(groups.every((group) => group.getAttribute('aria-invalid') === 'true')).toBe(true);
+      await user.click(within(summary).getByRole('link'));
+      expect(within(sampleRows()[0]!).getAllByRole('radio')[0]).toHaveFocus();
     });
   });
 
@@ -275,6 +383,49 @@ describe('BulkDecision', () => {
       expect(within(sampleRows()[1]!).getByRole('radio', { name: tr.bulk.correct })).toBeChecked();
       expect(screen.getByText(tr.bulk.verdictPending(2, 3))).toBeInTheDocument();
     });
+
+    it.each(['none', 'tenth'] as const)(
+      '412: a changed record the sample does not show is shown and needs an explicit acknowledgement (%s)',
+      async (sampling) => {
+        const items = makeItems(25);
+        const { user } = setup(items, sampling, () => 0);
+        let call = 0;
+        fake.post('/api/v1/reviews/decisions', (request) => {
+          call += 1;
+          const ids = (request.json as { kararlar: { id: number }[] }).kararlar.map((e) => e.id);
+          return call === 1
+            ? problem(412, 'surum-uyusmazligi', { kimlikler: [10] })
+            : ok({ sonuclar: ids.map(OUTCOME) });
+        });
+        fake.get('/api/v1/reviews/{id}', ok(reviewDetail({ ...items[9]!, xmin: 9100 })));
+        if (sampling === 'tenth') await judgeAll(user, tr.bulk.correct);
+        fireEvent.change(reason(), { target: { value: 'Toplu' } });
+        await user.click(confirm());
+
+        // The changed record is on screen with its anchor and the content of the screen.
+        const stale = await screen.findByTestId('bulk-stale');
+        expect(within(stale).getByTestId('bulk-stale-row')).toHaveTextContent('kayit-10');
+        expect(stale).toHaveTextContent('Deneme içerik 10');
+        const ack = within(stale).getByRole('checkbox', { name: tr.bulk.staleAck });
+        expect(ack).not.toBeChecked();
+
+        // Without the acknowledgement nothing is sent and the checkbox is flagged.
+        await user.click(confirm());
+        expect(await screen.findByTestId('bulk-summary')).toHaveTextContent(
+          tr.bulk.staleAckRequired,
+        );
+        expect(decisionsCalls()).toHaveLength(1);
+        expect(ack).toHaveAttribute('aria-invalid', 'true');
+        await user.click(within(screen.getByTestId('bulk-summary')).getByRole('link'));
+        expect(ack).toHaveFocus();
+
+        await user.click(ack);
+        await user.click(confirm());
+        await waitFor(() => expect(decisionsCalls()).toHaveLength(2));
+        const sent = (decisionsCalls()[1]!.json as { kararlar: { id: number }[] }).kararlar;
+        expect(sent.map((entry) => entry.id)).toContain(10);
+      },
+    );
 
     it('404 kimlikler: marks the missing records and leaves them out of the next attempt', async () => {
       const { user } = setup(makeItems(6), 'none');

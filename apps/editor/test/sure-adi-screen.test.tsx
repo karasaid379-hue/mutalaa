@@ -175,6 +175,14 @@ describe('SureAdiQueue', () => {
       expect(text.textContent).toBe(ARABIC_SAMPLE);
     });
 
+    it('draws the Arabic name in the detail with lang and dir too', async () => {
+      setup(SPECS, '/?kayit=5');
+      const region = await screen.findByRole('region', { name: tr.queue.detailLabel });
+      const text = await within(region).findByText(ARABIC_SAMPLE);
+      expect(text).toHaveAttribute('lang', 'ar');
+      expect(text).toHaveAttribute('dir', 'rtl');
+    });
+
     it('warns about a Tanzil difference with a heading, an icon and a table (not by colour alone)', async () => {
       setup();
       const note = await screen.findByTestId('tanzil-fark');
@@ -314,6 +322,17 @@ describe('SureAdiQueue', () => {
       expect(screen.getByText('Riskli-deneme')).toBeInTheDocument();
       expect(screen.getByText('Deneme-sure-10')).toBeInTheDocument();
       expect(screen.queryByTestId('sure-adi-bulk')).not.toBeInTheDocument();
+    });
+
+    it('moves focus to the list region when the bulk approval is done and its section is gone', async () => {
+      const { user } = setup();
+      await user.click(
+        await screen.findByRole('checkbox', { name: trSureAdi.selectRow('Deneme-sure-10-b') }),
+      );
+      fireEvent.change(reasonField(), { target: { value: 'Deneme gerekçesi' } });
+      await user.click(screen.getByRole('button', { name: tr.bulk.confirm }));
+      await waitFor(() => expect(screen.queryByTestId('sure-adi-bulk')).not.toBeInTheDocument());
+      expect(screen.getByRole('region', { name: tr.queue.listLabel })).toHaveFocus();
     });
 
     it('does not send a bulk request without a reason', async () => {

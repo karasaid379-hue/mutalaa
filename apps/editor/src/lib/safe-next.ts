@@ -22,6 +22,8 @@ export function safeNext(raw: string | null | undefined, fallback = '/'): string
     return fallback;
   }
   if (url.origin !== ORIGIN) return fallback;
+  // Normalisation can turn `/.//host` into `//host` (a protocol-relative address): judge the result too.
+  if (url.pathname.startsWith('//')) return fallback;
   if (BLOCKED.includes(url.pathname)) return fallback;
   return `${url.pathname}${url.search}${url.hash}`;
 }

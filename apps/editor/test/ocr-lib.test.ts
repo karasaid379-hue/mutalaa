@@ -44,7 +44,10 @@ describe('readScanRef', () => {
     ['a baski over 64 characters', { baski: 'a'.repeat(65), sayfa: 'c01-s0001' }],
     ['a page without the volume', { baski: 'deneme', sayfa: 's0001' }],
     ['a trailing newline', { baski: 'deneme', sayfa: 'c01-s0001\n' }],
-    ['non-ASCII digits', { baski: 'deneme', sayfa: 'c١٢-s0001' }],
+    [
+      'non-ASCII digits',
+      { baski: 'deneme', sayfa: `c${String.fromCodePoint(0x0661, 0x0662)}-s0001` },
+    ],
   ])('gives null for %s', (_name, attrs) => {
     expect(readScanRef(attrs)).toBeNull();
   });

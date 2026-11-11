@@ -1,3 +1,4 @@
+import { tryParse } from '@mutalaa/anchors';
 import { useApi } from '@/app/api-context';
 import { OpenQuestionButton } from '@/components/open-question-button';
 import { ProblemMessage } from '@/components/problem-message';
@@ -88,7 +89,8 @@ export function OcrDetail({ review, onDecided }: QueueDetailProps) {
     { retry: false },
   );
   const parsed = ayahAnchors(review.hedef_anahtar);
-  const textHeading = review.hedef_anahtar.startsWith('meal:') ? trOcr.text.meal : trOcr.text.unit;
+  const textHeading =
+    tryParse(review.hedef_anahtar)?.anchor.t === 'meal' ? trOcr.text.meal : trOcr.text.unit;
 
   return (
     <div className="flex flex-col gap-4">
@@ -99,7 +101,7 @@ export function OcrDetail({ review, onDecided }: QueueDetailProps) {
       </div>
 
       {unit.isPending ? (
-        <div className="flex flex-col gap-2" data-testid="ocr-unit-loading">
+        <div className="flex flex-col gap-2" data-testid="ocr-unit-loading" aria-busy="true">
           <p className="text-sm text-muted-foreground">{trOcr.unitLoading}</p>
           <Skeleton className="h-40" />
         </div>

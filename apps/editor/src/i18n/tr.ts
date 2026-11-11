@@ -313,6 +313,12 @@ export const tr = {
     rowRefreshFailed: 'Yenilenemedi.',
     rowViolation: 'Karar kuralı ihlali',
     recordLabel: (id: number) => `Kayıt ${id}`,
+    staleHeading: 'Değişen kayıtlar',
+    staleIntro: (count: number) =>
+      `${count} kayıt siz okuduktan sonra değişti ve örneklemde yok. Değişmiş hâllerini gözden geçirin; onaylamak için aşağıdaki kutuyu işaretleyin.`,
+    staleAck: 'Değişen kayıtları da onaylıyorum',
+    staleAckRequired:
+      'Değişen kayıtları gözden geçirip "Değişen kayıtları da onaylıyorum" kutusunu işaretleyin.',
     summaryTitle: 'Toplu onay yapılamadı',
     nothingApplied: 'Hiçbir karar uygulanmadı.',
     reset: 'Seçimi temizle',

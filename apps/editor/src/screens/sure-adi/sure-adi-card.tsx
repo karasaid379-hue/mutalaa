@@ -131,7 +131,7 @@ export function SureAdiCard({ row, checked, onToggle, current, marked }: SureAdi
       ) : null}
 
       {payload?.anlam ? (
-        <p className="text-sm">
+        <p dir="auto" className="text-sm">
           <span className="text-muted-foreground">{`${trSureAdi.anlam}: `}</span>
           {payload.anlam}
         </p>

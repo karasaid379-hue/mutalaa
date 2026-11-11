@@ -1,11 +1,12 @@
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import type { Api } from '@/api/client';
-import { Toaster } from '@/components/ui/toast';
 import { AnnounceProvider } from './announce-provider';
 import { ApiContext } from './api-context';
 
-/** Everything the screens need outside the router: API, query cache, live region and toasts (browser and tests). */
+// The shadcn `Toaster` (components/ui/toast.tsx) is not mounted: no code raises a toast, and an empty toast
+// region would be a second live region next to the announcer. Mount it here when the first toast is needed.
+/** Everything the screens need outside the router: API, query cache, live region (browser and tests). */
 export function AppProviders({
   api,
   queryClient,
@@ -18,9 +19,7 @@ export function AppProviders({
   return (
     <ApiContext value={api}>
       <QueryClientProvider client={queryClient}>
-        <AnnounceProvider>
-          <Toaster>{children}</Toaster>
-        </AnnounceProvider>
+        <AnnounceProvider>{children}</AnnounceProvider>
       </QueryClientProvider>
     </ApiContext>
   );

@@ -39,6 +39,7 @@ import { trc } from '@/i18n/tr-catalog';
 import { isRecord } from '@/lib/payload';
 import { toProblem, type Problem } from '@/lib/problem';
 import { codePointCount, isWritable } from '@/lib/text';
+import { ProblemLink } from '@/review/problem-list';
 import { GateReportTable } from './gate-report-table';
 
 export type ReleaseAccepted = components['schemas']['ReleaseAccepted'];
@@ -158,6 +159,8 @@ export function NewReleasePanel({ onAccepted, releaseHref }: NewReleasePanelProp
     packsHint: useId(),
     notes: useId(),
     notesHint: useId(),
+    localProblem: useId(),
+    previewHint: useId(),
   };
   const [flavor, setFlavor] = useState<string>('dev');
   const [packsText, setPacksText] = useState('');
@@ -184,6 +187,8 @@ export function NewReleasePanel({ onAccepted, releaseHref }: NewReleasePanelProp
   const key = `${flavor}|${packs.join(',')}`;
   const previewCurrent = preview !== null && preview.key === key;
   const noteIssue = notesProblem(notes);
+  // The message in the summary is about the notes field only when it is the notes problem.
+  const notesInvalid = localProblem !== null && localProblem === noteIssue;
 
   async function runPreview() {
     if (previewMutation.isPending) return;
@@ -294,7 +299,8 @@ export function NewReleasePanel({ onAccepted, releaseHref }: NewReleasePanelProp
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
           onKeyDown={(event) => onModEnter(event, askConfirm)}
-          aria-describedby={ids.notesHint}
+          aria-invalid={notesInvalid ? true : undefined}
+          aria-describedby={notesInvalid ? `${ids.notesHint} ${ids.localProblem}` : ids.notesHint}
           rows={3}
         />
         <p id={ids.notesHint} className="text-xs text-muted-foreground">
@@ -315,12 +321,13 @@ export function NewReleasePanel({ onAccepted, releaseHref }: NewReleasePanelProp
           type="button"
           onClick={askConfirm}
           disabled={!previewCurrent || createMutation.isPending}
+          aria-describedby={!previewCurrent ? ids.previewHint : undefined}
         >
           {createMutation.isPending ? trc.releases.requesting : trc.releases.requestOpen}
         </Button>
       </div>
       {!previewCurrent ? (
-        <p className="text-xs text-muted-foreground">
+        <p id={ids.previewHint} className="text-xs text-muted-foreground">
           {preview !== null ? trc.releases.previewStale : trc.releases.previewNeeded}
         </p>
       ) : null}
@@ -328,7 +335,11 @@ export function NewReleasePanel({ onAccepted, releaseHref }: NewReleasePanelProp
       {localProblem !== null ? (
         <Alert ref={summaryRef} tabIndex={-1} variant="destructive">
           <AlertTitle>{trc.releases.summaryTitle}</AlertTitle>
-          <AlertDescription>{localProblem}</AlertDescription>
+          <AlertDescription id={ids.localProblem}>
+            <ProblemLink
+              problem={{ message: localProblem, fieldId: notesInvalid ? ids.notes : null }}
+            />
+          </AlertDescription>
         </Alert>
       ) : null}
       {previewError !== null ? (
@@ -398,7 +409,7 @@ export function ReleaseRequestButtons({
 }: ReleaseRequestButtonsProps) {
   const api = useApi();
   const announce = useAnnounce();
-  const ids = { notes: useId(), hint: useId() };
+  const ids = { notes: useId(), hint: useId(), problem: useId() };
   const [kind, setKind] = useState<RequestKind | null>(null);
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<unknown>(null);
@@ -502,14 +513,15 @@ export function ReleaseRequestButtons({
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
             onKeyDown={(event) => onModEnter(event, () => void confirm())}
-            aria-describedby={ids.hint}
+            aria-invalid={localProblem !== null ? true : undefined}
+            aria-describedby={localProblem !== null ? `${ids.hint} ${ids.problem}` : ids.hint}
             rows={3}
           />
           <p id={ids.hint} className="text-xs text-muted-foreground">
             {trc.releases.newNotesHint}
           </p>
           {localProblem !== null ? (
-            <p role="alert" className="text-xs text-destructive">
+            <p id={ids.problem} role="alert" className="text-xs text-destructive">
               {localProblem}
             </p>
           ) : null}

@@ -39,8 +39,14 @@ export interface QueueLayoutProps {
   loadAll?: boolean;
   /** Extra content after the link of a row (for example a selection checkbox); it is not inside the link. */
   renderItem?: (item: ReviewItem) => ReactNode;
-  /** Content above the list (tabs, bulk bar); receives the loaded records. */
-  renderListHeader?: (context: { items: readonly ReviewItem[] }) => ReactNode;
+  /**
+   * Content above the list (tabs, bulk bar); receives the loaded records and `focusList`, which moves focus to
+   * the list region (for content that disappears while it holds focus, such as the bulk bar after its approval).
+   */
+  renderListHeader?: (context: {
+    items: readonly ReviewItem[];
+    focusList: () => void;
+  }) => ReactNode;
   /** The detail of the selected record. */
   renderDetail: (props: QueueDetailProps) => ReactNode;
   className?: string;
@@ -119,7 +125,7 @@ export function QueueLayout({
           aria-label={tr.queue.listLabel}
           className="flex flex-col gap-3 outline-none"
         >
-          {renderListHeader?.({ items })}
+          {renderListHeader?.({ items, focusList: () => listEl?.focus() })}
           {list.isPending ? (
             <div className="flex flex-col gap-2" data-testid="queue-loading">
               <Skeleton className="h-12" />
@@ -151,7 +157,7 @@ export function QueueLayout({
                       to={select(item.id)}
                       aria-current={selected ? 'true' : undefined}
                       className={cn(
-                        'flex min-h-6 flex-col gap-1 rounded-lg border p-2 hover:bg-muted',
+                        'flex min-h-6 flex-col gap-1 rounded-lg border p-2 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring',
                         selected && 'border-primary bg-muted',
                       )}
                     >

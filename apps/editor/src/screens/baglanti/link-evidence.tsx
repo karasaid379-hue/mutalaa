@@ -40,7 +40,7 @@ function UnitSection({ label, anchor, arabic = false }: UnitSectionProps) {
       ) : arabic ? (
         <ArabicText as="p" text={unit.data.metin} />
       ) : (
-        <p lang="tr" className="text-sm whitespace-pre-wrap">
+        <p lang="tr" dir="auto" className="text-sm whitespace-pre-wrap">
           {unit.data.metin}
         </p>
       )}

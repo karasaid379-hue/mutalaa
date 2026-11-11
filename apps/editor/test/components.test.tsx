@@ -216,7 +216,8 @@ describe('TextDiff', () => {
     const diff = screen.getByTestId('text-diff');
     expect(diff.querySelector('del')).toHaveTextContent('1');
     expect(diff.querySelector('ins')).toHaveTextContent('2');
-    expect(diff.textContent).toBe('Deneme paragrafı 12');
+    // Hidden group names sit around the marked words (see test/ui-fixes.test.tsx); the words themselves stay as given.
+    expect(diff.textContent).toContain('Deneme paragrafı ');
   });
 
   it('renders Arabic with lang and dir', () => {

@@ -1,13 +1,12 @@
 import { cn } from 'cn';
 import { Loader2Icon } from 'lucide-react';
-import { tr } from '@/i18n/tr';
 
+/** Decorative: the loading text is given by the caller (a single live region exists in the app). */
 function Spinner({ className, ...props }: React.ComponentProps<'svg'>) {
   return (
     <Loader2Icon
       data-slot="spinner"
-      role="status"
-      aria-label={tr.ui.loading}
+      aria-hidden="true"
       className={cn('size-4 animate-spin', className)}
       {...props}
     />

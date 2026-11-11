@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { trOcr } from '@/i18n/tr-ocr';
 import { tr } from '@/i18n/tr';
@@ -213,6 +213,73 @@ describe('ScanViewer', () => {
       const zoomed = content.style.transform;
       await user.click(screen.getByRole('button', { name: trOcr.scan.zoomOut }));
       await waitFor(() => expect(content.style.transform).not.toBe(zoomed));
+    });
+  });
+
+  describe('pan buttons and cancelled decoding', () => {
+    it('has four pan buttons of at least 24x24 (what they do is in scan-pan.test.tsx)', async () => {
+      setup({ body: PNG_BYTES, contentType: 'image/png' });
+      await screen.findByTestId('scan-image');
+      const group = screen.getByRole('group', { name: trOcr.scan.pan });
+      const names = [trOcr.scan.panUp, trOcr.scan.panDown, trOcr.scan.panLeft, trOcr.scan.panRight];
+      for (const name of names) {
+        const button = within(group).getByRole('button', { name });
+        expect(button).toHaveAttribute('type', 'button');
+        // size-8 (2rem) is above the 24 px target of WCAG 2.5.8.
+        expect(button).toHaveClass('size-8');
+      }
+    });
+
+    it('creates no object URL when the viewer goes away while the file head is being read', async () => {
+      const real = Blob.prototype.arrayBuffer;
+      let release: () => void = () => undefined;
+      const spy = vi.spyOn(Blob.prototype, 'arrayBuffer').mockImplementation(function (this: Blob) {
+        return new Promise<ArrayBuffer>((resolve) => {
+          release = () => resolve(real.call(this));
+        });
+      });
+      try {
+        const { unmount } = setup({ body: PNG_BYTES, contentType: 'image/png' });
+        await waitFor(() => expect(spy).toHaveBeenCalledTimes(1));
+        unmount();
+        release();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(urls.created).toHaveLength(0);
+        expect(urls.revoked).toHaveLength(0);
+      } finally {
+        spy.mockRestore();
+      }
+    });
+
+    it('paints nothing when the viewer goes away while a TIFF is being read', async () => {
+      const real = Blob.prototype.arrayBuffer;
+      let calls = 0;
+      let release: () => void = () => undefined;
+      const spy = vi.spyOn(Blob.prototype, 'arrayBuffer').mockImplementation(function (this: Blob) {
+        calls += 1;
+        if (calls === 1) return real.call(this);
+        return new Promise<ArrayBuffer>((resolve) => {
+          release = () => resolve(real.call(this));
+        });
+      });
+      try {
+        const { unmount } = setup({ body: syntheticTiff(2, 1), contentType: 'image/tiff' });
+        await waitFor(() => expect(spy).toHaveBeenCalledTimes(2));
+        unmount();
+        release();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(urls.created).toHaveLength(0);
+        expect(canvas.context.putImageData).not.toHaveBeenCalled();
+      } finally {
+        spy.mockRestore();
+      }
+    });
+
+    it('revokes exactly the object URLs it created', async () => {
+      const { unmount } = setup({ body: JPEG_BYTES, contentType: 'image/jpeg' });
+      await screen.findByTestId('scan-image');
+      unmount();
+      expect(urls.revoked).toEqual(urls.created.map((_, index) => `blob:deneme-${index + 1}`));
     });
   });
 });

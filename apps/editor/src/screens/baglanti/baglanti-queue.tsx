@@ -84,7 +84,7 @@ export function BaglantiQueue({ bulkEnabled = BULK_ENABLED }: BaglantiQueueProps
           </label>
         ) : null
       }
-      renderListHeader={({ items }) => {
+      renderListHeader={({ items, focusList }) => {
         if (!bulkEnabled) {
           return (
             <div>
@@ -104,7 +104,10 @@ export function BaglantiQueue({ bulkEnabled = BULK_ENABLED }: BaglantiQueueProps
               items={chosen}
               sampling="tenth"
               renderSample={(item) => <SampleEvidence item={item} />}
-              onDone={clear}
+              onDone={() => {
+                focusList();
+                clear();
+              }}
               onCancel={clear}
             />
           </section>

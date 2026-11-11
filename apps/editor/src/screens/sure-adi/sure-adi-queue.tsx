@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useApi } from '@/app/api-context';
+import { ArabicText } from '@/components/arabic-text';
 import { PageHeading } from '@/components/page-heading';
 import { ProblemMessage } from '@/components/problem-message';
 import { Button } from '@/components/ui/button';
@@ -102,10 +103,18 @@ function Detail({ review, onDecided }: { review: ReviewDetail; onDecided: (id: n
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <h2 className="text-base font-semibold">{trSureAdi.detailHeading}</h2>
-        <p className="font-medium break-words">{payload?.alias ?? review.hedef_anahtar}</p>
+        {payload?.kind === 'arapca' ? (
+          <ArabicText as="p" text={payload.alias ?? review.hedef_anahtar} className="text-xl" />
+        ) : (
+          <p dir="auto" className="font-medium break-words">
+            {payload?.alias ?? review.hedef_anahtar}
+          </p>
+        )}
         <ReviewBadges review={review} showOrigin />
       </div>
-      <p className="text-sm text-muted-foreground">{trSureAdi.singleOnlyNote}</p>
+      <p dir="auto" className="text-sm text-muted-foreground">
+        {trSureAdi.singleOnlyNote}
+      </p>
       <ApprovalStages review={review} />
       <DecisionForm review={review} onDecided={(result) => onDecided(result.id)} />
     </div>
@@ -187,6 +196,13 @@ export function SureAdiQueue() {
     setMarks({});
   }
 
+  // After the bulk approval the section with the focused button is gone: focus goes to the list region, like
+  // the single decision does when no record is left.
+  function onBulkDone() {
+    listEl?.focus();
+    clearSelection();
+  }
+
   function onDecided(id: number) {
     const index = ordered.findIndex((row) => row.item.id === id);
     const next = index >= 0 ? (ordered[index + 1] ?? ordered[index - 1]) : undefined;
@@ -257,7 +273,12 @@ export function SureAdiQueue() {
               <BulkDecision
                 items={selectedItems}
                 sampling="none"
-                onDone={clearSelection}
+                renderSample={(item) => (
+                  <p dir="auto" className="text-sm">
+                    {readSureAdiPayload(item.onerilen)?.alias ?? item.hedef_anahtar}
+                  </p>
+                )}
+                onDone={onBulkDone}
                 onCancel={clearSelection}
                 onMarksChange={setMarks}
               />

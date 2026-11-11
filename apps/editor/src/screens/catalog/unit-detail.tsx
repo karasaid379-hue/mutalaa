@@ -10,11 +10,11 @@ import { labelOf } from '@/i18n/labels';
 import { tr } from '@/i18n/tr';
 import { trc } from '@/i18n/tr-catalog';
 import { formatDateTime, formatNumber } from '@/lib/format';
+import { codePointCount } from '@/lib/text';
 import type { UnitDetail as UnitDetailData } from '@/review/types';
 import { checkUnitAnchor } from './anchor-check';
 import { JsonBlock } from './json-block';
 import { MarkedText, MarksTable } from './marked-text';
-import { cpLength } from './readers';
 import { SentencesTable } from './sentences-table';
 import { UnitCorrection } from './unit-correction';
 
@@ -29,13 +29,14 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
+// Right to left only for ayah units and Quran text sources. Arabic hadith text will need this widened in A19.
 function isArabicUnit(unit: Pick<UnitDetailData, 'kind' | 'kaynak_tur'>): boolean {
   return unit.kind === 'ayet' || unit.kaynak_tur === 'kuran_metni';
 }
 
 /** The detail of a loaded unit: the canonical text with its marks, the hashes and states, the derived ranges and the correction. */
 export function UnitDetailView({ unit }: { unit: UnitDetailData }) {
-  const length = cpLength(unit.metin);
+  const length = codePointCount(unit.metin);
   return (
     <article className="flex flex-col gap-4" aria-labelledby="unit-anchor">
       <header className="flex flex-col gap-1">
@@ -89,7 +90,11 @@ export function UnitDetailView({ unit }: { unit: UnitDetailData }) {
           )}
         </Row>
         <Row label={trc.units.ayahRange}>
-          {unit.ayah_range ? <code>{JSON.stringify(unit.ayah_range)}</code> : trc.common.none}
+          {unit.ayah_range ? (
+            <code dir="ltr">{JSON.stringify(unit.ayah_range)}</code>
+          ) : (
+            trc.common.none
+          )}
         </Row>
         <Row label={trc.units.dataVersion}>{unit.data_version}</Row>
         <Row label={trc.units.createdAt}>{formatDateTime(unit.created_at)}</Row>

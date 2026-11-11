@@ -1,12 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { codePointCount } from '@/lib/text';
 import { checkUnitAnchor } from '@/screens/catalog/anchor-check';
-import {
-  cpLength,
-  layoutMarks,
-  readDigests,
-  readMarks,
-  readSentences,
-} from '@/screens/catalog/readers';
+import { layoutMarks, readDigests, readMarks, readSentences } from '@/screens/catalog/readers';
 import { isPreparing, pollInterval, RELEASE_POLL_MS } from '@/screens/catalog/polling';
 
 describe('checkUnitAnchor', () => {
@@ -51,16 +46,40 @@ describe('marks', () => {
   const text = 'a😀b';
 
   it('reads offsets as code points', () => {
-    expect(cpLength(text)).toBe(3);
-    const marks = readMarks([{ s: 1, e: 2, t: 'ar' }], cpLength(text))!;
+    expect(codePointCount(text)).toBe(3);
+    const marks = readMarks([{ s: 1, e: 2, t: 'ar' }], codePointCount(text))!;
     const { segments } = layoutMarks(text, marks);
     expect(segments.map((segment) => segment.text)).toEqual(['a', '😀', 'b']);
     expect(segments.map((segment) => segment.marks)).toEqual([[], [1], []]);
   });
 
+  it('never cuts between a base letter and its nonspacing mark (synthetic letter and mark)', () => {
+    // Synthetic text: base letter U+0628 + fatha U+064E, base U+0627, base U+0628 + kasra U+0650 (code points: 5).
+    const stored = String.fromCodePoint(0x628, 0x64e, 0x627, 0x628, 0x650);
+    const length = codePointCount(stored);
+    expect(length).toBe(5);
+    // A range that starts on the fatha (1) is widened back to its base letter (0); the end (3) is on a letter.
+    const marks = readMarks(
+      [
+        { s: 1, e: 3, t: 'a' },
+        { s: 4, t: 'nokta' },
+      ],
+      length,
+    )!;
+    const { segments, points } = layoutMarks(stored, marks);
+    expect(segments.map((segment) => segment.text)).toEqual([
+      String.fromCodePoint(0x628, 0x64e, 0x627),
+      String.fromCodePoint(0x628, 0x650),
+    ]);
+    expect(segments.map((segment) => segment.marks)).toEqual([[1], []]);
+    // The point mark that sat on the kasra moves back in front of its base letter.
+    expect(points).toEqual([{ index: 2, before: 1 }]);
+    expect(segments.map((segment) => segment.text).join('')).toBe(stored);
+  });
+
   it('gives back the stored text however the marks overlap', () => {
     const stored = '  Deneme 😀 paragrafı\n ';
-    const length = cpLength(stored);
+    const length = codePointCount(stored);
     const marks = readMarks(
       [
         { s: 2, e: 9, t: 'a' },

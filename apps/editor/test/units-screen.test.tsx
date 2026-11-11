@@ -444,9 +444,43 @@ describe('units screen: correction', () => {
       metin: '  Deneme paragrafı 1 düzeltilmiş \n',
       gerekce: ' Deneme gerekçe  ',
     });
-    // The form closes; the button is back.
+    // The form closes; the button is back and has the focus.
     expect(screen.getByRole('button', { name: trc.units.correct })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: trc.units.correct })).toHaveFocus(),
+    );
     expect(screen.getByRole('status')).toHaveTextContent(trc.units.correctionDone(41));
+  });
+
+  it('keeps the button in the DOM, toggles aria-expanded and moves the focus into the form and back', async () => {
+    signedIn(fake);
+    editable();
+    const { user } = renderApp(fake, '/birimler?birim=rn%3Adeneme%3Ap1');
+    const button = await screen.findByRole('button', { name: trc.units.correct });
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    await user.click(button);
+    expect(screen.getByRole('button', { name: trc.units.correct })).toBe(button);
+    expect(button).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('textbox', { name: trc.units.correctionText })).toHaveFocus();
+    await user.click(screen.getByRole('button', { name: trc.units.correctionCancel }));
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    expect(button).toHaveFocus();
+  });
+
+  it('ties the form messages to their fields', async () => {
+    signedIn(fake);
+    editable();
+    const { user } = renderApp(fake, '/birimler?birim=rn%3Adeneme%3Ap1');
+    await user.click(await screen.findByRole('button', { name: trc.units.correct }));
+    await user.click(screen.getByRole('button', { name: trc.units.correctionSubmit }));
+    const reason = screen.getByRole('textbox', { name: trc.units.correctionReason });
+    const text = screen.getByRole('textbox', { name: trc.units.correctionText });
+    expect(reason).toHaveAttribute('aria-invalid', 'true');
+    expect(text).toHaveAttribute('aria-invalid', 'true');
+    const message = screen.getByText(trc.units.correctionReasonRequired).closest('li')!;
+    expect(reason.getAttribute('aria-describedby')!.split(' ')).toContain(message.id);
+    await user.click(screen.getByRole('link', { name: trc.units.correctionReasonRequired }));
+    expect(reason).toHaveFocus();
   });
 
   it('sends with Ctrl+Enter from the reason field', async () => {

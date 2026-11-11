@@ -193,7 +193,9 @@ export function ReleaseDetailPane({
         </Row>
         <Row label={trc.releases.notes}>
           {release.notlar ? (
-            <span className="whitespace-pre-wrap">{release.notlar}</span>
+            <span dir="auto" className="whitespace-pre-wrap">
+              {release.notlar}
+            </span>
           ) : (
             trc.common.none
           )}

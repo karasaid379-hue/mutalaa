@@ -81,7 +81,8 @@ export function Component() {
             onOpen={(anchor) => setParams(withParams(params, { birim: anchor }))}
           />
           {list.isPending ? (
-            <div className="flex flex-col gap-2" data-testid="units-loading">
+            <div className="flex flex-col gap-2" data-testid="units-loading" aria-busy="true">
+              <span className="sr-only">{tr.ui.loading}</span>
               <Skeleton className="h-14" />
               <Skeleton className="h-14" />
               <Skeleton className="h-14" />
@@ -113,7 +114,7 @@ export function Component() {
                       to={{ search: `?${withParams(params, { birim: unit.anchor }).toString()}` }}
                       aria-current={current ? 'true' : undefined}
                       className={cn(
-                        'flex min-h-6 flex-col gap-1 rounded-lg border p-2 hover:bg-muted',
+                        'flex min-h-6 flex-col gap-1 rounded-lg border p-2 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
                         current && 'border-primary bg-muted',
                       )}
                     >

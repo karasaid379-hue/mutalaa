@@ -339,6 +339,20 @@ describe('BaglantiQueue', () => {
         await waitFor(() => expect(screen.queryByTestId('baglanti-bulk')).not.toBeInTheDocument());
       });
 
+      it('moves focus to the list region after the bulk approval', async () => {
+        const { user } = setup(items(12), '/', true);
+        await selectFirst(user, 11);
+        fireEvent.change(screen.getByLabelText(tr.bulk.reason), {
+          target: { value: 'Örneklem temiz' },
+        });
+        for (const row of screen.getAllByTestId('bulk-sample-row')) {
+          await user.click(within(row).getByRole('radio', { name: tr.bulk.correct }));
+        }
+        await user.click(screen.getByRole('button', { name: tr.bulk.confirm }));
+        await waitFor(() => expect(screen.queryByTestId('baglanti-bulk')).not.toBeInTheDocument());
+        expect(screen.getByRole('region', { name: tr.queue.listLabel })).toHaveFocus();
+      });
+
       it('is cancelled by a single "Hatalı"', async () => {
         const { user } = setup(items(12), '/', true);
         await selectFirst(user, 11);

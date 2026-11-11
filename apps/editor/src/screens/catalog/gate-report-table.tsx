@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { ScrollRegion } from '@/components/scroll-region';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -39,9 +40,13 @@ export function GateReportTable({ report, className }: GateReportTableProps) {
       ) : data === null ? (
         <div className="flex flex-col gap-1">
           <p className="text-sm">{trc.gate.unreadable}</p>
-          <pre className="max-h-64 overflow-auto rounded-lg border p-2 text-xs whitespace-pre-wrap">
+          <ScrollRegion
+            label={trc.common.scrollArea(trc.gate.heading)}
+            dir="ltr"
+            className="max-h-64 overflow-auto rounded-lg border p-2 text-xs whitespace-pre-wrap"
+          >
             {prettyJson(report)}
-          </pre>
+          </ScrollRegion>
         </div>
       ) : (
         <div className="flex flex-col gap-3">

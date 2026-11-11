@@ -27,6 +27,7 @@ export function AppShell({ bridge }: { bridge: SessionBridge }) {
   const me = api.$api.useQuery('get', ME_PATH, undefined, SESSION_QUERY_OPTIONS);
 
   const mainRef = useRef<HTMLElement>(null);
+  const logoutErrorRef = useRef<HTMLDivElement>(null);
   const locationRef = useRef(location);
   const handling = useRef(false);
   // Set when the shell is about to be left because of a signed-out session: the cache is cleared when the
@@ -34,6 +35,11 @@ export function AppShell({ bridge }: { bridge: SessionBridge }) {
   const clearOnUnmount = useRef(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState<unknown>(null);
+
+  // A failed logout is an alert that sits above the page: move focus to its summary so it is not missed.
+  useEffect(() => {
+    if (logoutError !== null) logoutErrorRef.current?.focus();
+  }, [logoutError]);
 
   useEffect(() => {
     locationRef.current = location;
@@ -146,10 +152,10 @@ export function AppShell({ bridge }: { bridge: SessionBridge }) {
       </header>
       {logoutError !== null ? (
         <div className="px-4 pt-2">
-          <ProblemMessage error={logoutError} />
+          <ProblemMessage ref={logoutErrorRef} error={logoutError} />
         </div>
       ) : null}
-      <div className="flex flex-1">
+      <div className="flex flex-1 flex-col lg:flex-row">
         <Sidebar />
         <main
           id="main"

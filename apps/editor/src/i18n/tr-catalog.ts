@@ -14,6 +14,8 @@ const anchorErrors = {
 
 export const trc = {
   common: {
+    /** Name of a scrollable block that takes keyboard focus (it differs from the heading of its section). */
+    scrollArea: (title: string) => `${title} (kaydırılabilir alan)`,
     refresh: 'Yenile',
     retry: 'Yeniden dene',
     loading: 'Yükleniyor',

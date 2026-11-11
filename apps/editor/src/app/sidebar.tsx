@@ -22,25 +22,29 @@ const PAGES = [
 
 function linkClass({ isActive }: { isActive: boolean }): string {
   return cn(
-    'flex min-h-6 items-center justify-between gap-2 rounded-lg px-2 py-1 text-sm hover:bg-muted',
+    'flex min-h-6 items-center justify-between gap-2 rounded-lg px-2 py-1 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
     isActive && 'bg-muted font-medium',
   );
 }
 
 /**
  * Navigation of the app shell. The queue entries show the number of open records from
- * `GET /reviews/stats`; there is no count per editor (K-25: no leaderboard).
+ * `GET /reviews/stats`; there is no count per editor (K-25: no leaderboard). Below the `lg` breakpoint it sits on
+ * top of the page and its entries wrap (WCAG 1.4.10 reflow); from `lg` up it is the 14rem column on the left.
  */
 export function Sidebar() {
   const api = useApi();
   const stats = api.$api.useQuery('get', REVIEW_STATS_PATH, undefined, { staleTime: 15_000 });
   return (
-    <nav aria-label={tr.nav.label} className="flex w-56 shrink-0 flex-col gap-4 border-r p-3">
+    <nav
+      aria-label={tr.nav.label}
+      className="flex w-full shrink-0 flex-col gap-3 border-b p-3 lg:w-56 lg:gap-4 lg:border-r lg:border-b-0"
+    >
       <div>
         <h2 className="mb-1 px-2 text-xs font-medium text-muted-foreground uppercase">
           {tr.nav.queues}
         </h2>
-        <ul className="flex flex-col gap-1">
+        <ul className="flex flex-wrap gap-1 lg:flex-col">
           {QUEUES.map((queue) => {
             const count = openCount(stats.data, queue);
             return (
@@ -66,7 +70,7 @@ export function Sidebar() {
         <h2 className="mb-1 px-2 text-xs font-medium text-muted-foreground uppercase">
           {tr.nav.pages}
         </h2>
-        <ul className="flex flex-col gap-1">
+        <ul className="flex flex-wrap gap-1 lg:flex-col">
           {PAGES.map((page) => (
             <li key={page.path}>
               <NavLink to={page.path} className={linkClass}>

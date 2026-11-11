@@ -135,7 +135,8 @@ export function Component() {
           {admin ? <NewReleasePanel onAccepted={accepted} releaseHref={hrefFor} /> : null}
 
           {list.isPending ? (
-            <div className="flex flex-col gap-2" data-testid="releases-loading">
+            <div className="flex flex-col gap-2" data-testid="releases-loading" aria-busy="true">
+              <span className="sr-only">{tr.ui.loading}</span>
               <Skeleton className="h-14" />
               <Skeleton className="h-14" />
               <Skeleton className="h-14" />
@@ -167,7 +168,7 @@ export function Component() {
                       to={{ search: hrefFor(item.id) }}
                       aria-current={current ? 'true' : undefined}
                       className={cn(
-                        'flex min-h-6 flex-col gap-1 rounded-lg border p-2 hover:bg-muted',
+                        'flex min-h-6 flex-col gap-1 rounded-lg border p-2 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
                         current && 'border-primary bg-muted',
                       )}
                     >

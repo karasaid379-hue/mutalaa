@@ -13,16 +13,19 @@ import { formatIfMatch } from '@/lib/etag';
 import { codePointCount, findUnwritable, stripUnwritable } from '@/lib/text';
 import { problemCode, problemStatus, toProblem } from '@/lib/problem';
 import { canDecide } from '@/lib/roles';
+import { fieldA11y, type FieldProblem } from './field-errors';
+import { ProblemList } from './problem-list';
 import { MAX_REASON_LENGTH } from './limits';
 import {
   ME_PATH,
-  REVIEW_PATH,
   REVIEWS_PATH,
   SESSION_QUERY_OPTIONS,
   invalidateReviewCounts,
   patchReviewInLists,
   removeReviewsFromLists,
+  reviewDetailInit,
   reviewDetailKey,
+  REVIEW_PATH,
   toListItem,
 } from './queries';
 import {
@@ -85,12 +88,15 @@ export function DecisionForm({
     reasonHint: useId(),
     edited: useId(),
     editedHint: useId(),
+    decision: useId(),
+    summary: useId(),
+    approveClosed: useId(),
   };
 
   const [karar, setKarar] = useState<DecisionKind | ''>('');
   const [gerekce, setGerekce] = useState('');
   const [edited, setEdited] = useState<string | null>(null);
-  const [problems, setProblems] = useState<string[]>([]);
+  const [problems, setProblems] = useState<FieldProblem[]>([]);
   const [error, setError] = useState<unknown>(null);
   const [stale, setStale] = useState<Stale | null>(null);
   const [refreshed, setRefreshed] = useState<Refreshed | null>(null);
@@ -141,19 +147,22 @@ export function DecisionForm({
     if (focusTick > 0) summaryRef.current?.focus();
   }, [focusTick]);
 
-  function validate(): string[] {
-    const found: string[] = [];
-    if (selected === '') found.push(tr.review.chooseDecision);
-    if (gerekce.trim() === '') found.push(tr.review.reasonRequired);
+  function validate(): FieldProblem[] {
+    const found: FieldProblem[] = [];
+    const add = (fieldId: string, message: string) => found.push({ fieldId, message });
+    if (selected === '') add(ids.decision, tr.review.chooseDecision);
+    if (gerekce.trim() === '') add(ids.reason, tr.review.reasonRequired);
     const length = codePointCount(gerekce);
-    if (length > MAX_REASON_LENGTH) found.push(tr.review.reasonTooLong(length, MAX_REASON_LENGTH));
+    if (length > MAX_REASON_LENGTH) {
+      add(ids.reason, tr.review.reasonTooLong(length, MAX_REASON_LENGTH));
+    }
     if (unwritable.gerekce.nul || unwritable.gerekce.loneSurrogate) {
-      found.push(`${tr.review.reason}: ${tr.review.unwritable}`);
+      add(ids.reason, `${tr.review.reason}: ${tr.review.unwritable}`);
     }
     if (canEdit && selected === 'onaylandi') {
-      if (editedValue.trim() === '') found.push(tr.review.editedEmpty);
+      if (editedValue.trim() === '') add(ids.edited, tr.review.editedEmpty);
       if (unwritable.edited.nul || unwritable.edited.loneSurrogate) {
-        found.push(`${tr.review.editedText}: ${tr.review.unwritable}`);
+        add(ids.edited, `${tr.review.editedText}: ${tr.review.unwritable}`);
       }
     }
     return found;
@@ -161,14 +170,12 @@ export function DecisionForm({
 
   async function refresh(before: ReviewDetail) {
     try {
-      const { data, error: refreshError } = await api.client.GET(REVIEW_PATH, {
-        params: { path: { id: before.id } },
+      // Through the query client, so a 401 reaches the session bridge of the query cache; the client also
+      // stores the fetched record under its detail key.
+      const data = await queryClient.fetchQuery({
+        ...api.$api.queryOptions('get', REVIEW_PATH, reviewDetailInit(before.id)),
+        staleTime: 0,
       });
-      if (!data) {
-        setStale({ before, after: null, refreshError });
-        return;
-      }
-      queryClient.setQueryData(reviewDetailKey(api, before.id), data);
       patchReviewInLists(queryClient, toListItem(data));
       setRefreshed({ from: review, to: data });
       setStale({ before, after: data });
@@ -265,7 +272,11 @@ export function DecisionForm({
           </Alert>
         ) : null}
         {approveClosed ? (
-          <p className="text-sm text-muted-foreground" data-testid="approve-closed-reason">
+          <p
+            id={ids.approveClosed}
+            className="text-sm text-muted-foreground"
+            data-testid="approve-closed-reason"
+          >
             {block === 'own-proposal'
               ? tr.review.blockedOwnProposal
               : tr.review.blockedSameFirstApprover}
@@ -281,11 +292,7 @@ export function DecisionForm({
               <Alert variant="destructive" data-testid="decision-summary">
                 <AlertTitle>{tr.review.summaryTitle}</AlertTitle>
                 <AlertDescription>
-                  <ul className="list-disc pl-5">
-                    {problems.map((message) => (
-                      <li key={message}>{message}</li>
-                    ))}
-                  </ul>
+                  <ProblemList problems={problems} listId={ids.summary} />
                 </AlertDescription>
               </Alert>
             ) : null}
@@ -304,14 +311,20 @@ export function DecisionForm({
         ) : null}
 
         <RadioGroup
+          id={ids.decision}
           aria-label={tr.review.decisionLegend}
+          {...fieldA11y(problems, ids.decision, ids.summary)}
           value={selected}
           disabled={closed}
           onKeyDown={onKeyDown}
           onValueChange={(value) => setKarar(value === 'onaylandi' ? 'onaylandi' : 'reddedildi')}
         >
           <Label className="min-h-6 gap-2 font-normal">
-            <RadioGroupItem value="onaylandi" disabled={closed || approveClosed} />
+            <RadioGroupItem
+              value="onaylandi"
+              disabled={closed || approveClosed}
+              aria-describedby={approveClosed ? ids.approveClosed : undefined}
+            />
             {tr.review.approve}
           </Label>
           <Label className="min-h-6 gap-2 font-normal">
@@ -328,7 +341,7 @@ export function DecisionForm({
               value={editedValue}
               onChange={(event) => setEdited(event.target.value)}
               onKeyDown={onKeyDown}
-              aria-describedby={ids.editedHint}
+              {...fieldA11y(problems, ids.edited, ids.summary, ids.editedHint)}
               rows={6}
             />
             <p id={ids.editedHint} className="text-xs text-muted-foreground">
@@ -350,7 +363,7 @@ export function DecisionForm({
             value={gerekce}
             onChange={(event) => setGerekce(event.target.value)}
             onKeyDown={onKeyDown}
-            aria-describedby={ids.reasonHint}
+            {...fieldA11y(problems, ids.reason, ids.summary, ids.reasonHint)}
             aria-required="true"
             disabled={closed}
             rows={3}

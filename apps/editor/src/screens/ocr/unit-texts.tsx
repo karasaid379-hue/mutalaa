@@ -15,15 +15,15 @@ function AyahText({ anchor }: { anchor: string }) {
     { retry: false },
   );
   return (
-    <li className="flex flex-col gap-1">
+    <li className="flex flex-col gap-1" aria-busy={unit.isPending ? 'true' : undefined}>
       <span className="text-xs text-muted-foreground break-all">{anchor}</span>
       {unit.isPending ? (
         <span className="text-sm text-muted-foreground">{trOcr.ayah.loading}</span>
       ) : unit.isError ? (
-        <span className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1">
           <span className="text-sm font-medium">{trOcr.ayah.failed}</span>
           <ProblemMessage error={unit.error} />
-        </span>
+        </div>
       ) : (
         <ArabicText as="p" text={unit.data.metin} />
       )}

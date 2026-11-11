@@ -1,4 +1,5 @@
 import { ArabicText } from '@/components/arabic-text';
+import { trUi } from '@/i18n/tr-ui';
 import { diffText } from '@/lib/text-diff';
 import { cn } from '@/lib/utils';
 
@@ -12,26 +13,33 @@ export interface TextDiffProps {
 
 /**
  * Word level difference of two texts: removed words are struck through (`del`), added words underlined
- * (`ins`). The marks are not colour only. A combining mark never separates from its letter (see lib/text-diff).
+ * (`ins`) in the normal text colour on a light tint, and hidden text ("Silinen metin başı", "Eklenen metin
+ * başı") names each group for screen readers. The meaning is never colour only. A combining mark never
+ * separates from its letter (see lib/text-diff).
  */
 export function TextDiff({ before, after, arabic = false, className }: TextDiffProps) {
   const parts = diffText(before, after);
   const body = parts.map((part, index) => {
     if (part.kind === 'removed') {
       return (
-        <del key={index} className="bg-destructive/10 text-destructive">
-          {part.text}
-        </del>
+        <span key={index}>
+          <span className="sr-only">{trUi.diff.removedStart}</span>
+          <del className="bg-destructive/10 text-foreground decoration-destructive decoration-2">
+            {part.text}
+          </del>
+          <span className="sr-only">{trUi.diff.removedEnd}</span>
+        </span>
       );
     }
     if (part.kind === 'added') {
       return (
-        <ins
-          key={index}
-          className="bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100"
-        >
-          {part.text}
-        </ins>
+        <span key={index}>
+          <span className="sr-only">{trUi.diff.addedStart}</span>
+          <ins className="bg-success/15 text-foreground underline decoration-success decoration-2 underline-offset-2">
+            {part.text}
+          </ins>
+          <span className="sr-only">{trUi.diff.addedEnd}</span>
+        </span>
       );
     }
     return <span key={index}>{part.text}</span>;

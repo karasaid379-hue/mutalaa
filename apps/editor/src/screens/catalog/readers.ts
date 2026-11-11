@@ -1,7 +1,8 @@
 // Run-time readers for the opaque JSON of the catalog screens (gate report, digests, marks, sentences).
 // Nothing here trusts the shape: a reader returns null (or marks an entry invalid) instead of throwing.
-import { cpToUtf16 } from '@mutalaa/anchors';
+import { cpToUtf16, snapSpan } from '@mutalaa/anchors';
 import { isRecord, readArray, readBoolean, readNumber, readString } from '@/lib/payload';
+import { codePointCount } from '@/lib/text';
 
 export interface GateRow {
   kind: string;
@@ -194,16 +195,6 @@ export function readSentences(
   });
 }
 
-/** Number of Unicode code points of a text. */
-export function cpLength(text: string): number {
-  let count = 0;
-  for (let i = 0; i < text.length; i++) {
-    if ((text.codePointAt(i) ?? 0) > 0xffff) i++;
-    count++;
-  }
-  return count;
-}
-
 export interface TextSegment {
   text: string;
   /** Numbers of the marks that cover this segment; empty for plain text. */
@@ -218,22 +209,31 @@ export interface MarkedLayout {
 
 /**
  * Cuts a text at the boundaries of the valid marks (code point offsets, converted to UTF-16 only here).
+ * A cut never falls between a base letter and its nonspacing marks (harakat): it is moved with `snapSpan` of
+ * `@mutalaa/anchors` (a start back, an end forward), so the highlight may be wider than the stored offsets.
  * The text itself is never changed: the segments joined give back the input.
  */
 export function layoutMarks(text: string, marks: readonly MarkEntry[]): MarkedLayout {
-  const length = cpLength(text);
-  const ranges = marks.filter(
-    (mark): mark is MarkEntry & { start: number; end: number } =>
-      mark.valid && mark.start !== null && mark.end !== null && mark.end <= length,
-  );
-  const pointMarks = marks.filter((mark) => mark.valid && mark.start !== null && mark.end === null);
+  const length = codePointCount(text);
+  const ranges = marks
+    .filter(
+      (mark): mark is MarkEntry & { start: number; end: number } =>
+        mark.valid && mark.start !== null && mark.end !== null && mark.end <= length,
+    )
+    .map((mark) => ({ ...mark, ...snapSpan(text, { start: mark.start, end: mark.end }) }));
+  const pointMarks = marks
+    .filter((mark) => mark.valid && mark.start !== null && mark.end === null)
+    .map((mark) => ({
+      ...mark,
+      start: snapSpan(text, { start: mark.start ?? 0, end: mark.start ?? 0 }).start,
+    }));
 
   const cuts = new Set<number>([0, length]);
   for (const mark of ranges) {
     cuts.add(mark.start);
     cuts.add(mark.end);
   }
-  for (const mark of pointMarks) cuts.add(mark.start ?? 0);
+  for (const mark of pointMarks) cuts.add(mark.start);
   const sorted = [...cuts].sort((a, b) => a - b);
 
   const segments: TextSegment[] = [];
@@ -251,7 +251,7 @@ export function layoutMarks(text: string, marks: readonly MarkEntry[]): MarkedLa
     starts.push(from);
   }
   const points = pointMarks.map((mark) => {
-    const at = mark.start ?? 0;
+    const at = mark.start;
     const found = starts.findIndex((start) => start >= at);
     return { index: mark.index, before: found === -1 ? segments.length : found };
   });

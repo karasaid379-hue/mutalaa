@@ -13,6 +13,8 @@ import { toProblem } from '@/lib/problem';
 import { canDecide } from '@/lib/roles';
 import { codePointCount, isWritable } from '@/lib/text';
 import { MAX_REASON_LENGTH } from '@/review/limits';
+import { fieldA11y, focusField, type FieldProblem } from '@/review/field-errors';
+import { ProblemList } from '@/review/problem-list';
 import { ME_PATH, SESSION_QUERY_OPTIONS, invalidateReviewCounts } from '@/review/queries';
 import { hasOffsetData } from '@/review/rules';
 import type { UnitDetail } from '@/review/types';
@@ -51,14 +53,23 @@ function CorrectionForm({ unit }: UnitCorrectionProps) {
   const api = useApi();
   const queryClient = useQueryClient();
   const announce = useAnnounce();
-  const ids = { text: useId(), reason: useId(), reasonHint: useId() };
+  const ids = {
+    text: useId(),
+    reason: useId(),
+    reasonHint: useId(),
+    summary: useId(),
+    form: useId(),
+    button: useId(),
+  };
   const [open, setOpen] = useState(false);
   const [metin, setMetin] = useState(unit.metin);
   const [gerekce, setGerekce] = useState('');
-  const [problems, setProblems] = useState<string[]>([]);
+  const [problems, setProblems] = useState<FieldProblem[]>([]);
   const [error, setError] = useState<unknown>(null);
   const [doneId, setDoneId] = useState<number | null>(null);
   const [focusTick, setFocusTick] = useState(0);
+  // Where focus goes after the form opens or closes; `n` makes a repeated request count.
+  const [focusTo, setFocusTo] = useState<{ target: 'field' | 'button'; n: number } | null>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
   const propose = api.$api.useMutation('post', '/api/v1/units/{anchor}/corrections');
 
@@ -66,17 +77,28 @@ function CorrectionForm({ unit }: UnitCorrectionProps) {
     if (focusTick > 0) summaryRef.current?.focus();
   }, [focusTick]);
 
-  function validate(): string[] {
-    const found: string[] = [];
-    if (metin === '') found.push(trc.units.correctionTextEmpty);
-    else if (metin === unit.metin) found.push(trc.units.correctionTextUnchanged);
-    if (!isWritable(metin)) found.push(trc.units.correctionTextUnwritable);
-    if (gerekce.trim() === '') found.push(trc.units.correctionReasonRequired);
+  useEffect(() => {
+    if (focusTo === null) return;
+    if (focusTo.target === 'field') focusField(ids.text);
+    else document.getElementById(ids.button)?.focus();
+  }, [focusTo, ids.text, ids.button]);
+
+  function requestFocus(target: 'field' | 'button') {
+    setFocusTo((previous) => ({ target, n: (previous?.n ?? 0) + 1 }));
+  }
+
+  function validate(): FieldProblem[] {
+    const found: FieldProblem[] = [];
+    const add = (fieldId: string, message: string) => found.push({ fieldId, message });
+    if (metin === '') add(ids.text, trc.units.correctionTextEmpty);
+    else if (metin === unit.metin) add(ids.text, trc.units.correctionTextUnchanged);
+    if (!isWritable(metin)) add(ids.text, trc.units.correctionTextUnwritable);
+    if (gerekce.trim() === '') add(ids.reason, trc.units.correctionReasonRequired);
     const length = codePointCount(gerekce);
     if (length > MAX_REASON_LENGTH) {
-      found.push(trc.units.correctionReasonTooLong(length, MAX_REASON_LENGTH));
+      add(ids.reason, trc.units.correctionReasonTooLong(length, MAX_REASON_LENGTH));
     }
-    if (!isWritable(gerekce)) found.push(trc.units.correctionReasonUnwritable);
+    if (!isWritable(gerekce)) add(ids.reason, trc.units.correctionReasonUnwritable);
     return found;
   }
 
@@ -101,6 +123,7 @@ function CorrectionForm({ unit }: UnitCorrectionProps) {
       setOpen(false);
       setMetin(unit.metin);
       setGerekce('');
+      requestFocus('button');
       void invalidateReviewCounts(queryClient);
     } catch (thrown) {
       setError(toProblem(thrown));
@@ -121,6 +144,7 @@ function CorrectionForm({ unit }: UnitCorrectionProps) {
     setError(null);
     setMetin(unit.metin);
     setGerekce('');
+    requestFocus('button');
   }
 
   return (
@@ -130,22 +154,25 @@ function CorrectionForm({ unit }: UnitCorrectionProps) {
           {trc.units.correctionDone(doneId)}
         </p>
       ) : null}
-      {!open ? (
-        <div>
-          <Button
-            type="button"
-            variant="outline"
-            aria-expanded={false}
-            onClick={() => {
-              setOpen(true);
-              setDoneId(null);
-            }}
-          >
-            {trc.units.correct}
-          </Button>
-        </div>
-      ) : (
+      <div>
+        <Button
+          id={ids.button}
+          type="button"
+          variant="outline"
+          aria-expanded={open}
+          aria-controls={open ? ids.form : undefined}
+          onClick={() => {
+            setOpen(true);
+            setDoneId(null);
+            requestFocus('field');
+          }}
+        >
+          {trc.units.correct}
+        </Button>
+      </div>
+      {open ? (
         <form
+          id={ids.form}
           className="flex flex-col gap-3"
           onSubmit={(event) => {
             event.preventDefault();
@@ -160,11 +187,7 @@ function CorrectionForm({ unit }: UnitCorrectionProps) {
             <Alert ref={summaryRef} tabIndex={-1} variant="destructive">
               <AlertTitle>{trc.units.correctionSummaryTitle}</AlertTitle>
               <AlertDescription>
-                <ul className="list-disc pl-5">
-                  {problems.map((problem) => (
-                    <li key={problem}>{problem}</li>
-                  ))}
-                </ul>
+                <ProblemList problems={problems} listId={ids.summary} />
               </AlertDescription>
             </Alert>
           ) : null}
@@ -181,6 +204,7 @@ function CorrectionForm({ unit }: UnitCorrectionProps) {
               onKeyDown={onKeyDown}
               rows={6}
               aria-required="true"
+              {...fieldA11y(problems, ids.text, ids.summary)}
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -192,7 +216,7 @@ function CorrectionForm({ unit }: UnitCorrectionProps) {
               onKeyDown={onKeyDown}
               rows={3}
               aria-required="true"
-              aria-describedby={ids.reasonHint}
+              {...fieldA11y(problems, ids.reason, ids.summary, ids.reasonHint)}
             />
             <p id={ids.reasonHint} className="text-xs text-muted-foreground">
               {`${trc.units.correctionReasonHint} ${trc.units.correctionReasonCount(codePointCount(gerekce), MAX_REASON_LENGTH)} ${trc.units.correctionShortcut}`}
@@ -207,7 +231,7 @@ function CorrectionForm({ unit }: UnitCorrectionProps) {
             </Button>
           </div>
         </form>
-      )}
+      ) : null}
     </section>
   );
 }

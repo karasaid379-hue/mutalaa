@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import type { components } from '@/api/schema';
 import { useApi } from '@/app/api-context';
 import { ProblemMessage } from '@/components/problem-message';
+import { ScrollRegion } from '@/components/scroll-region';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -40,12 +41,24 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-function Preformatted({ value }: { value: string }) {
-  // The text is placed as stored: no trim, no normalization (K-26).
+function Preformatted({
+  value,
+  label,
+  dir,
+}: {
+  value: string;
+  label: string;
+  dir: 'auto' | 'ltr';
+}) {
+  // The text is placed as stored: no trim, no normalization (K-26). It scrolls, so it is a focusable region.
   return (
-    <pre className="max-h-96 overflow-auto rounded-lg border bg-muted/30 p-2 text-xs break-words whitespace-pre-wrap">
+    <ScrollRegion
+      label={trc.common.scrollArea(label)}
+      dir={dir}
+      className="max-h-96 overflow-auto rounded-lg border bg-muted/30 p-2 text-xs break-words whitespace-pre-wrap"
+    >
       {value}
-    </pre>
+    </ScrollRegion>
   );
 }
 
@@ -90,7 +103,9 @@ function SourceDetail({ source }: { source: Source }) {
         </Row>
         <Row label={trc.sources.notes}>
           {source.notlar ? (
-            <span className="whitespace-pre-wrap">{source.notlar}</span>
+            <span dir="auto" className="whitespace-pre-wrap">
+              {source.notlar}
+            </span>
           ) : (
             trc.common.notSet
           )}
@@ -103,7 +118,7 @@ function SourceDetail({ source }: { source: Source }) {
         <h3 id="source-citation" className="text-sm font-medium">
           {trc.sources.citation}
         </h3>
-        <Preformatted value={source.atif_metni} />
+        <Preformatted value={source.atif_metni} label={trc.sources.citation} dir="auto" />
       </section>
 
       <section className="flex flex-col gap-1" aria-labelledby="source-notice">
@@ -111,7 +126,7 @@ function SourceDetail({ source }: { source: Source }) {
           {trc.sources.notice}
         </h3>
         {source.notice_text !== null ? (
-          <Preformatted value={source.notice_text} />
+          <Preformatted value={source.notice_text} label={trc.sources.notice} dir="auto" />
         ) : (
           <p className="text-sm text-muted-foreground">{trc.common.notSet}</p>
         )}
@@ -122,7 +137,11 @@ function SourceDetail({ source }: { source: Source }) {
           <h3 id="source-print" className="text-sm font-medium">
             {trc.sources.printInfo}
           </h3>
-          <Preformatted value={prettyJson(source.baski_bilgisi)} />
+          <Preformatted
+            value={prettyJson(source.baski_bilgisi)}
+            label={trc.sources.printInfo}
+            dir="ltr"
+          />
         </section>
       ) : null}
 

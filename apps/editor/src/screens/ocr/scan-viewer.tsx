@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, ArrowUpIcon } from 'lucide-react';
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import {
   TransformComponent,
@@ -25,6 +26,14 @@ const SCAN_PATH = '/api/v1/scans/{baski}/{sayfa}' as const;
 /** Pixels one arrow key press moves the page; one Ctrl/Cmd+arrow press changes the scale by `ZOOM_STEP`. */
 const PAN_STEP = 60;
 const ZOOM_STEP = 0.25;
+
+/** Pan directions as `[dx, dy]` of `panBy` (the page moves opposite to the view: ArrowLeft pans by +x). */
+const PAN_BUTTONS = [
+  { key: 'panUp', dx: 0, dy: PAN_STEP, Icon: ArrowUpIcon },
+  { key: 'panDown', dx: 0, dy: -PAN_STEP, Icon: ArrowDownIcon },
+  { key: 'panLeft', dx: PAN_STEP, dy: 0, Icon: ArrowLeftIcon },
+  { key: 'panRight', dx: -PAN_STEP, dy: 0, Icon: ArrowRightIcon },
+] as const;
 
 /** How many bytes are enough to tell the file kind apart. */
 const SNIFF_BYTES = 16;
@@ -61,6 +70,8 @@ function useShown(blob: Blob | undefined): Shown | null {
     async function run(source: Blob): Promise<Shown> {
       if (source.size > MAX_SCAN_BYTES) throw new ScanError('too-large');
       const head = new Uint8Array(await source.slice(0, SNIFF_BYTES).arrayBuffer());
+      // The cleanup ran while the head was being read: do not create a URL nobody will revoke.
+      if (cancelled) throw new ScanError('image-failed');
       const kind = sniffScanKind(head);
       if (kind === null) throw new ScanError('unknown-format');
       if (kind === 'tiff') {
@@ -198,6 +209,8 @@ export function ScanViewer({ baski, sayfa }: ScanViewerProps) {
   const failure: ScanErrorCode | null =
     canvasError ?? (imageFailed ? 'image-failed' : shown?.kind === 'error' ? shown.code : null);
 
+  const busy = query.isPending || (!query.isError && failure === null && shown === null);
+
   let body;
   if (query.isPending) {
     body = <p className="text-sm text-muted-foreground">{trOcr.scan.loading}</p>;
@@ -272,6 +285,21 @@ export function ScanViewer({ baski, sayfa }: ScanViewerProps) {
               {trOcr.scan.fit}
             </Button>
           </div>
+          {/* Panning without dragging (WCAG 2.5.7): one button per direction. */}
+          <div role="group" aria-label={trOcr.scan.pan} className="flex flex-wrap gap-2">
+            {PAN_BUTTONS.map(({ key, dx, dy, Icon }) => (
+              <Button
+                key={key}
+                type="button"
+                variant="outline"
+                size="icon"
+                aria-label={trOcr.scan[key]}
+                onClick={() => void controls.current?.panBy(dx, dy, 0)}
+              >
+                <Icon aria-hidden="true" />
+              </Button>
+            ))}
+          </div>
           {note ? <p className="text-xs text-muted-foreground">{note}</p> : null}
           {/* The viewport is a keyboard target for panning and zooming, so it must be focusable. */}
           {/* eslint-disable jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions */}
@@ -300,6 +328,7 @@ export function ScanViewer({ baski, sayfa }: ScanViewerProps) {
   return (
     <section
       aria-label={trOcr.scan.heading}
+      aria-busy={busy ? 'true' : undefined}
       className="flex flex-col gap-2"
       data-testid="scan-viewer"
     >

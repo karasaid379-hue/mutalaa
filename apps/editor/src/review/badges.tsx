@@ -1,3 +1,5 @@
+import { TriangleAlertIcon } from 'lucide-react';
+import { useId } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { originLabel, statusLabel } from '@/i18n/labels';
 import { tr } from '@/i18n/tr';
@@ -10,6 +12,8 @@ type BadgeSource = Pick<ReviewItem, 'durum' | 'dogrulanmamis' | 'ikinci_onay_bek
  * Status badges of a review. "Doğrulanmamış" (K-25) is drawn only from the API's `dogrulanmamis`
  * field, never recomputed from `yz_modeli`; "İkinci onay bekliyor" comes from `ikinci_onay_bekliyor`
  * and is separate from the status badge (a record waiting for its second approval is still `acik`).
+ * The unverified badge is a bordered, high contrast label with a warning icon (never colour only) and its
+ * explanation is hidden text tied with `aria-describedby`, not a `title`.
  */
 export function ReviewBadges({
   review,
@@ -18,13 +22,20 @@ export function ReviewBadges({
   review: BadgeSource;
   showOrigin?: boolean;
 }) {
+  const hintId = useId();
   return (
     <span className="flex flex-wrap items-center gap-1">
       <Badge variant="secondary">{statusLabel(review.durum)}</Badge>
       {review.dogrulanmamis ? (
-        <Badge variant="destructive" title={tr.badge.unverifiedHint}>
-          {tr.badge.unverified}
-        </Badge>
+        <>
+          <Badge variant="destructive" aria-describedby={hintId}>
+            <TriangleAlertIcon aria-hidden="true" />
+            {tr.badge.unverified}
+          </Badge>
+          <span id={hintId} className="sr-only">
+            {tr.badge.unverifiedHint}
+          </span>
+        </>
       ) : null}
       {review.ikinci_onay_bekliyor ? (
         <Badge variant="outline">{tr.badge.secondPending}</Badge>
