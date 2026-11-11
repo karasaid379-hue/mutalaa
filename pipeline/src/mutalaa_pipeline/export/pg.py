@@ -25,6 +25,10 @@ Sentetik fiksturler (A13.6, `export/pg_fikstur.py`): `test-kucuk` ve `test-tefsi
 `metin_durumu = 'taslak'` girer (kanonik basvuru degil, K-38 madde 4) ve `tr_narrow`, `tr_wide`,
 `tr_stem` ile birlikte yuklenir; `test-ses` birim tasimaz, yalniz `source` satiri yuklenir.
 
+Meal (A16.4, K-49): `elmalili-meal` ve `elmalili-sade-meal` birimleri `taslak` girer; hat meal
+biriminin metnine hic yazmaz ve her birim icin bir inceleme kaydi acar (`export/pg_meal.py`).
+Tanik kaynagi yuklenmez.
+
 Cikis kodlari: 0 basarili, 1 QA kapisi/ozet farki/eksik capa, 2 girdi ve yapilandirma (kayitsiz
 ya da gecersiz kaynak kaydi dahil). Iletilere satir icerigi ve baglanti dizesi yazilmaz; yalniz
 capa, sayi, ozet ve alan adi.
@@ -52,6 +56,7 @@ from mutalaa_pipeline.db import VeritabaniHatasi, baglan
 from mutalaa_pipeline.enums import SourceKind
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kati_json
 from mutalaa_pipeline.ingest import fikstur as fikstur_uretec
+from mutalaa_pipeline.ingest.meal_kaynaklari import MEAL_KAYNAKLARI, meal_mi
 from mutalaa_pipeline.lineage import (
     KELIMELER_ADI,
     NOTICE_ADI,
@@ -79,6 +84,8 @@ EK_KAYNAKLAR: Final[Mapping[str, tuple[str, ...]]] = {
     "test-kucuk": (),  # sentetik kitap fiksturu (A13.6; pg_fikstur.py)
     "test-tefsir-ornek": (),  # sentetik tefsir fiksturu (A13.6; pg_fikstur.py)
     "test-ses": (),  # sentetik ses fiksturu: yalniz source satiri (A13.6)
+    # Iki meal (A16.4; pg_meal.py). Tanik `elmalili-meal-epub` yuklenmez: tabloda yoktur.
+    **{slug: () for slug in MEAL_KAYNAKLARI},
 }
 # Birim degil yapi satiri yukleyen kaynaklar (K-43 madde 3): units.jsonl yerine markers/pages.
 YAPI_KAYNAKLARI: Final = frozenset({"tanzil-ust-veri"})
@@ -245,6 +252,34 @@ class FiksturSatiri:
 
 
 @dataclass(frozen=True)
+class MealSatiri:
+    """Meal `units.jsonl` satiri (A16.4); `metin` yalniz veritabanina gider, iletilere girmez.
+
+    `tanik`: capraz tanik skoru nesnesi ya da None; `uyari`: sinir durumu kodlari
+    (`provenance.uyari`); ikisi de yalniz `review.onerilen` icindir (unit tablosuna yazilmaz).
+    """
+
+    anchor: str
+    kind: str
+    role: str
+    ord: int
+    ayah_lo: int
+    ayah_hi: int
+    metin: str
+    content_hash: str
+    metin_durumu: str
+    attrs: dict[str, object]
+    tr_narrow: str
+    tr_wide: str
+    tr_stem: str
+    data_version: str
+    provenance: dict[str, object]
+    source_id: str
+    tanik: dict[str, object] | None
+    uyari: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class ZincirRun:
     run_id: str
     adim: str
@@ -282,6 +317,8 @@ class Hazirlik:
     fikstur: bool = False  # True: fikstur birimleri yuklenir (taslak + tr_*; pg_fikstur.py)
     fikstur_satirlari: list[FiksturSatiri] = field(default_factory=list)
     yalniz_kaynak: bool = False  # True: yalniz source satiri yuklenir (zincir ve birim yok)
+    meal: bool = False  # True: taslak meal birimleri ve inceleme kuyrugu (pg_meal.py)
+    meal_satirlari: list[MealSatiri] = field(default_factory=list)
 
 
 # --- yardimcilar -------------------------------------------------------------------------
@@ -680,6 +717,10 @@ def hazirla(
         from mutalaa_pipeline.export import pg_sure_adlari
 
         return pg_sure_adlari.hazirla(ctx, source_id, run, ek_kaynaklar)
+    if meal_mi(source_id):
+        from mutalaa_pipeline.export import pg_meal
+
+        return pg_meal.hazirla(ctx, source_id, run, ek_kaynaklar)
     if source_id in FIKSTUR_KAYNAKLARI or source_id in YALNIZ_KAYNAK_KAYNAKLARI:
         from mutalaa_pipeline.export import pg_fikstur
 
@@ -1070,6 +1111,10 @@ def _yukle(conn: psycopg.Connection, ctx: RunContext, h: Hazirlik) -> dict[str, 
         from mutalaa_pipeline.export import pg_fikstur
 
         sayilar.update(pg_fikstur.yukle(conn, ctx, h))
+    elif h.meal:
+        from mutalaa_pipeline.export import pg_meal
+
+        sayilar.update(pg_meal.yukle(conn, ctx, h))
     elif h.yalniz_kaynak:
         pass  # yalniz `source` satiri (yukarida yazildi): unit, review ve xref yok
     else:
