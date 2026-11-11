@@ -1,7 +1,6 @@
-import { PageHeading } from '@/components/page-heading';
-import { tr } from '@/i18n/tr';
+import { LemmaQueue } from './lemma/lemma-queue';
 
-// Placeholder of A15.3: the lemma queue screen is written in A15.4.
+/** Route `kuyruk/lemma`: word meaning drafts and lemma status (K-48; the other actions are A17 and A18). */
 export function Component() {
-  return <PageHeading>{tr.nav.queueLemma}</PageHeading>;
+  return <LemmaQueue />;
 }
