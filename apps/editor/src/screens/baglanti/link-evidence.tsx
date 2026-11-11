@@ -25,7 +25,12 @@ function UnitSection({ label, anchor, arabic = false }: UnitSectionProps) {
     { retry: false },
   );
   return (
-    <section aria-labelledby={headingId} className="flex flex-col gap-1 rounded-lg border p-3">
+    // A group, not a region landmark: the same three names repeat in every sampled row (axe landmark-unique).
+    <div
+      role="group"
+      aria-labelledby={headingId}
+      className="flex flex-col gap-1 rounded-lg border p-3"
+    >
       <h3 id={headingId} className="text-sm font-medium">
         {label}
       </h3>
@@ -44,7 +49,7 @@ function UnitSection({ label, anchor, arabic = false }: UnitSectionProps) {
           {unit.data.metin}
         </p>
       )}
-    </section>
+    </div>
   );
 }
 

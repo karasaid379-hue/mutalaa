@@ -1,19 +1,30 @@
 // axe-core pass over the whole panel (A15.6): the eight routes with empty data, three details (OCR card, surah
 // name card, unit and release detail), the decision form while it shows a 412 difference, the error and loading
-// states, the login page and the 403 page. Zero violations are expected everywhere.
+// states, the login page and the 403 page, the link candidates card in full (evidence, four missing sections,
+// closed buttons, decision form) and its 10 percent sample panel with the bulk flag injected on. Zero
+// violations are expected everywhere.
 // Colour contrast and target size cannot be measured in jsdom (no layout, no computed colours), so those two
 // rules are off; the contrast is measured by hand and the 24x24 target size is kept by the `min-h-6`/`min-w-6`
 // classes (WCAG 2.2 AA 2.5.8). Every other axe rule stays on.
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import axe from 'axe-core';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ROUTE_PATHS, type RoutePath } from '@/app/routes';
 import { tr } from '@/i18n/tr';
 import { trc } from '@/i18n/tr-catalog';
 import { DecisionForm } from '@/review/decision-form';
+import { BaglantiQueue } from '@/screens/baglanti/baglanti-queue';
 import { ok, problem, useFakeApi } from './fake-api';
 import { EDITOR_EMAIL, page, reviewDetail, session, signedIn, unitDetail } from './fixtures';
-import { aliasDetail, aliasItem, TANZIL_FARK, type AliasSpec } from './fixtures-baglanti-sure';
+import {
+  ARABIC_SAMPLE,
+  aliasDetail,
+  aliasItem,
+  TANZIL_FARK,
+  xrefHandlers,
+  xrefItem,
+  type AliasSpec,
+} from './fixtures-baglanti-sure';
 import {
   RELEASE_GATE_REPORT,
   releaseDetail,
@@ -32,7 +43,7 @@ import {
   type CanvasStub,
   type ObjectUrlStub,
 } from './fixtures-ocr';
-import { renderApp, renderWithProviders } from './render-app';
+import { renderApp, renderInRouter, renderWithProviders } from './render-app';
 
 async function violations(container: HTMLElement): Promise<string[]> {
   const result = await axe.run(container, {
@@ -179,6 +190,54 @@ describe('axe: details', () => {
     fake.get('/api/v1/sources/{slug}', ok(record));
     const { container } = renderApp(fake, '/kaynaklar?kaynak=test-deneme');
     await screen.findByRole('article');
+    expect(await violations(container)).toEqual([]);
+  });
+});
+
+describe('axe: the link candidates queue (full card and the 10 percent sample panel)', () => {
+  const fake = useFakeApi();
+
+  /** The queue on its own router with a list of `count` synthetic candidates; the bulk flag is injected. */
+  function setupQueue(count: number, route: string, bulkEnabled?: boolean) {
+    const list = Array.from({ length: count }, (_, index) => xrefItem(index + 1));
+    fake.get('/api/v1/reviews', ok(page(list)));
+    xrefHandlers(fake);
+    fake.get('/api/v1/auth/me', ok(session()));
+    return renderInRouter(fake, <BaglantiQueue bulkEnabled={bulkEnabled} />, route);
+  }
+
+  it('the full card: evidence, four missing sections, closed buttons and the decision form', async () => {
+    const { container } = setupQueue(2, '/?kayit=1');
+    // Evidence: paragraph, candidate ayah (Arabic, as stored) and meal, all loaded.
+    await screen.findByText('Deneme paragrafı 1');
+    await screen.findByText('Deneme meal metni 1');
+    expect(await screen.findByText(ARABIC_SAMPLE)).toHaveAttribute('lang', 'ar');
+    // The closed buttons and the decision form are on screen.
+    expect(container.querySelectorAll('[data-open-question]').length).toBeGreaterThan(0);
+    await screen.findByRole('radio', { name: tr.review.approve });
+    expect(screen.getByRole('button', { name: tr.review.submit })).toBeInTheDocument();
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the list with the bulk flag injected on and nothing selected: a checkbox on every row', async () => {
+    const { container } = setupQueue(12, '/', true);
+    expect(await screen.findAllByRole('checkbox')).toHaveLength(12);
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the sample panel with the bulk flag injected on: bar, radio groups and the evidence of each sampled row', async () => {
+    const { container, user } = setupQueue(12, '/', true);
+    const boxes = await screen.findAllByRole('checkbox');
+    expect(boxes).toHaveLength(12);
+    // 11 rows selected: ceil(11 / 10) = 2 sample rows with their radio groups.
+    for (const box of boxes.slice(0, 11)) await user.click(box);
+    const rows = await screen.findAllByTestId('bulk-sample-row');
+    expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      await within(row).findByText('Deneme paragrafı 1');
+      await within(row).findByText(ARABIC_SAMPLE);
+    }
+    expect(screen.getAllByRole('radio', { name: tr.bulk.correct })).toHaveLength(2);
     expect(await violations(container)).toEqual([]);
   });
 });

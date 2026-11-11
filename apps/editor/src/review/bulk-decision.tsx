@@ -320,9 +320,9 @@ export function BulkDecision({
       }}
     >
       <div className="flex flex-col gap-4">
-        <h3 id={ids.heading} className="text-base font-medium">
+        <h2 id={ids.heading} className="text-base font-medium">
           {tr.bulk.heading}
-        </h3>
+        </h2>
         <p className="text-sm" data-testid="bulk-count">
           {tr.bulk.count(batch.length)}
         </p>
@@ -434,7 +434,7 @@ export function BulkDecision({
 
         {markedRows.length > 0 ? (
           <section aria-label={tr.bulk.problemRows} data-testid="bulk-problem-rows">
-            <h4 className="text-sm font-medium">{tr.bulk.problemRows}</h4>
+            <h3 className="text-sm font-medium">{tr.bulk.problemRows}</h3>
             <ul className="list-disc pl-5 text-sm">
               {markedRows.map(({ id, mark, item }) => (
                 <li
