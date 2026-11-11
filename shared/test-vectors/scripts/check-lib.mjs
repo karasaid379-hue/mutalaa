@@ -536,6 +536,53 @@ function ftsQueryRule(line, out) {
 }
 
 /**
+ * extract/meal (K-49 item 13): three sources. Required input keys and expected shape depend on
+ * input.kaynak; an "hata" row is { hata: true } and nothing else.
+ * - vikikaynak: input { sure, ayet_sayisi, wikitext }; expected { birimler, on_bolge, son_bolge }
+ * - sade: input { metin }; expected { metin }
+ * - epub: input { sure, akis }; expected { parcalar, artik, yinelenen }
+ * @param {Record<string, unknown>} line
+ * @param {string[]} out
+ */
+function extractMealRule(line, out) {
+  const input = line['input'];
+  const expected = line['expected'];
+  if (!isRecord(input) || !isRecord(expected)) {
+    return;
+  }
+  const source = input['kaynak'];
+  const inputKeys = {
+    vikikaynak: ['sure', 'ayet_sayisi', 'wikitext'],
+    sade: ['metin'],
+    epub: ['sure', 'akis'],
+  };
+  const expectedKeys = {
+    vikikaynak: ['birimler', 'on_bolge', 'son_bolge'],
+    sade: ['metin'],
+    epub: ['parcalar', 'artik', 'yinelenen'],
+  };
+  if (typeof source !== 'string' || !Object.hasOwn(inputKeys, source)) {
+    return;
+  }
+  for (const key of inputKeys[/** @type {keyof typeof inputKeys} */ (source)]) {
+    if (!Object.hasOwn(input, key)) {
+      out.push(`input: missing key "${key}" (required for kaynak "${source}")`);
+    }
+  }
+  if (Object.hasOwn(expected, 'hata')) {
+    if (expected['hata'] !== true || Object.keys(expected).length !== 1) {
+      out.push('expected: "hata" must be true and exclude every other key');
+    }
+    return;
+  }
+  for (const key of expectedKeys[/** @type {keyof typeof expectedKeys} */ (source)]) {
+    if (!Object.hasOwn(expected, key)) {
+      out.push(`expected: missing key "${key}" (required unless "hata" is true)`);
+    }
+  }
+}
+
+/**
  * normalize/ar: the key has no leading, trailing or doubled U+0020.
  * @param {Record<string, unknown>} line
  * @param {string[]} out
@@ -625,6 +672,48 @@ const KINDS = new Map([
   [
     'normalize/tr-govde.jsonl',
     { input: string, expected: string, extra: normalizeArRule, escapes: true },
+  ],
+  // Extracted text (K-49 item 13): synthetic wikitext -> verse units; only Python runs it.
+  [
+    'extract/meal.jsonl',
+    {
+      input: object({
+        kaynak: req(oneOf(['vikikaynak', 'sade', 'epub'])),
+        sure: opt(positive),
+        ayet_sayisi: opt(positive),
+        wikitext: opt(string),
+        metin: opt(string),
+        akis: opt(string),
+      }),
+      expected: object({
+        birimler: opt(
+          arrayOf(
+            object({
+              ayet: req(positive),
+              metin: req(string),
+              attrs: req(object({}, { open: true })),
+              uyari: req(arrayOf(string)),
+            }),
+          ),
+        ),
+        on_bolge: opt(boolean),
+        son_bolge: opt(boolean),
+        metin: opt(string),
+        parcalar: opt(
+          arrayOf(
+            object({
+              ayet: req(positive),
+              kapsam: req(tuple([positive, positive], '2 positive integers')),
+              metin: req(string),
+            }),
+          ),
+        ),
+        artik: opt(count),
+        yinelenen: opt(count),
+        hata: opt(boolean),
+      }),
+      extra: extractMealRule,
+    },
   ],
   // FTS5 query builder (Arama 3). stems and sures are the fixed lookups the test injects.
   [
