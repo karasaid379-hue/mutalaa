@@ -29,7 +29,7 @@ export function SentencesTable({
       {entries.length === 0 ? (
         <p className="text-sm text-muted-foreground">{trc.units.sentencesNone}</p>
       ) : (
-        <Table>
+        <Table scrollLabel={trc.common.scrollArea(trc.units.sentencesCaption)}>
           <TableCaption>{trc.units.sentencesCaption}</TableCaption>
           <TableHeader>
             <TableRow>

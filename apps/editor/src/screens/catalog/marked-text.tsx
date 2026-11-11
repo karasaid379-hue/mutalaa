@@ -109,7 +109,7 @@ export function MarksTable({ marks, textLength }: { marks: unknown; textLength: 
       ) : entries.length === 0 ? (
         <p className="text-sm text-muted-foreground">{trc.units.marksNone}</p>
       ) : (
-        <Table>
+        <Table scrollLabel={trc.common.scrollArea(trc.units.marksNote)}>
           <TableCaption>{trc.units.marksNote}</TableCaption>
           <TableHeader>
             <TableRow>

@@ -40,7 +40,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 
 function DigestTable({ caption, entries }: { caption: string; entries: DigestEntry[] }) {
   return (
-    <Table>
+    <Table scrollLabel={trc.common.scrollArea(caption)}>
       <TableCaption>{caption}</TableCaption>
       <TableHeader>
         <TableRow>

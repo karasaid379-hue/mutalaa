@@ -40,7 +40,7 @@ function TanzilFarkNote({ fark }: { fark: TanzilFark }) {
         {trSureAdi.tanzilFarkTitle}
       </p>
       <p className="text-xs text-muted-foreground">{trSureAdi.tanzilFarkHint}</p>
-      <Table>
+      <Table scrollLabel={trSureAdi.tanzilFarkTitle}>
         <TableHeader>
           <TableRow>
             <TableHead>{trSureAdi.tanzilField}</TableHead>

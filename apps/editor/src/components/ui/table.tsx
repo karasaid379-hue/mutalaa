@@ -1,9 +1,22 @@
 import * as React from 'react';
 import { cn } from 'cn';
 
-function Table({ className, ...props }: React.ComponentProps<'table'>) {
+interface TableProps extends React.ComponentProps<'table'> {
+  /**
+   * Accessible name of the scrolling container. A scrollable area has to be reachable by keyboard
+   * (WCAG 2.1.1), so a named container is a focusable region; without it the container is plain.
+   */
+  scrollLabel?: string;
+}
+
+function Table({ className, scrollLabel, ...props }: TableProps) {
+  const region =
+    scrollLabel === undefined
+      ? {}
+      : // A scrollable block is the one non-interactive element that must take focus.
+        { tabIndex: 0, role: 'region', 'aria-label': scrollLabel };
   return (
-    <div data-slot="table-container" className="relative w-full overflow-x-auto">
+    <div data-slot="table-container" className="relative w-full overflow-x-auto" {...region}>
       <table
         data-slot="table"
         className={cn('w-full caption-bottom text-sm', className)}

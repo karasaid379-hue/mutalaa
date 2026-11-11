@@ -60,7 +60,7 @@ export function GateReportTable({ report, className }: GateReportTableProps) {
           </p>
 
           <div>
-            <Table>
+            <Table scrollLabel={trc.common.scrollArea(trc.gate.rowsCaption)}>
               <TableCaption>{trc.gate.rowsCaption}</TableCaption>
               <TableHeader>
                 <TableRow>
@@ -102,7 +102,7 @@ export function GateReportTable({ report, className }: GateReportTableProps) {
           </div>
 
           <div>
-            <Table>
+            <Table scrollLabel={trc.common.scrollArea(trc.gate.violationsCaption)}>
               <TableCaption>{trc.gate.violationsCaption}</TableCaption>
               <TableHeader>
                 <TableRow>
