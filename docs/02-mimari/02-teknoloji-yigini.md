@@ -1,6 +1,6 @@
 # Teknoloji yığını
 
-> **Sürüm:** 1.12 · **Tarih:** 10 Kasım 2026 · **Durum:** Taslak
+> **Sürüm:** 1.13 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-48](../00-ozet/02-karar-defteri.md#k-48--editör-api-kuralları-inceleme-kararı-ikinci-onay-eşzamanlılık-yayın-talebi-ve-sayfa-görseli) · [K-45](../00-ozet/02-karar-defteri.md#k-45--manifest-imzası-ve-kanonik-json) · [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-28](../00-ozet/02-karar-defteri.md#k-28--ses) · [K-29](../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-34](../00-ozet/02-karar-defteri.md#k-34--typescript-tek-sürüm-60x) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme)
 
 Bu dosya her katmanın teknolojisini, sürümünü, seçilme nedenini ve reddedilen seçenekleri listeler. Sürüm ve fiyatlar 16 Ekim 2026 araştırmasından gelir ([araştırma raporu](../09-kaynakca.md), araştırma notu 05). Kaynağı olmayan sürüm numaraları "Doğrulanacak" diye işaretlidir ve kurulum günü kilit dosyasına yazılır.
@@ -26,7 +26,7 @@ Bu dosya her katmanın teknolojisini, sürümünü, seçilme nedenini ve reddedi
 | Veritabanı | PostgreSQL 18 (Docker `postgres:18`) | Editoryal veri; v1.x'te kullanıcı verisi | K-11; hazır `turkish` ve `arabic` Snowball yapılandırmaları ([PostgreSQL 18](https://docs.w3cub.com/postgresql~18/textsearch-psql)) | MSSQL (K-11). PostgreSQL 19: RC1 15 Ekim 2026'da çıktı ([PG 19](https://www.postgresql.org/docs/19/release-19.html)); kararlı sürüm ve eklenti desteğinden sonra |
 | Kimlik | ASP.NET Core Identity | v1'de editör rolleri, v1.x'te okur hesabı | Ek servis gerektirmez | Azure AD B2C: 1 Mayıs 2025'ten beri yeni müşteriye satılmıyor ([Microsoft Learn](https://learn.microsoft.com/en-my/azUre/active-directory-b2c/faq)) |
 | İçerik hattı | Python 3.13 + uv | OCR ve düzeltme, Arapça NLP, gömme, toplu etiketleme | K-12 | .NET 10 + ZemberekDotNet; TypeScript (K-12) |
-| Editör paneli | React, TypeScript, Vite, shadcn/ui, Tailwind CSS v4 (v4.3.3, [Tailwind](https://github.com/tailwindlabs/tailwindcss/releases)) | İç araç | K-13 | Next.js: iç araçta arama motoru görünürlüğü gerekmez (K-14) |
+| Editör paneli | React, TypeScript, Vite, shadcn/ui (taban kitaplık Base UI), Tailwind CSS v4 (v4.3.5, [Tailwind](https://github.com/tailwindlabs/tailwindcss/releases)); ayrıntı §2.5 | İç araç | K-13 | Next.js: iç araçta arama motoru görünürlüğü gerekmez (K-14). Radix tabanı: yedek olarak kaldı, kullanılmıyor |
 | Web (Faz 5) | Next.js 16.4 (6 Ekim 2026; React 19.3; `ensureStatic`) ([Next.js 16.4](https://nextjs.org/blog/next-16-4)) | Her âyete ayrı adresli statik sayfa | K-14 | Expo Router web: SSR SDK 58'de kararlı oluyor, 20 bin sayfalık kanıt yok ([araştırma raporu](../09-kaynakca.md)) |
 | Nesne deposu | Yerelde S3 uyumlu konteyner (örnek SeaweedFS, Doğrulanacak); canlıda S3 uyumlu depo, öneri Cloudflare R2: depolama 0,015 $/GB-ay, veri çıkışı ücretsiz ([R2](https://developers.cloudflare.com/r2/pricing)) | Paket, manifest, ses | K-21 | MinIO topluluk sürümü: Ekim 2025'ten beri imaj yayımlanmıyor, Aralık 2025'ten beri bakım kipinde ([linuxiac](https://linuxiac.com/minio-ends-active-development/)). Supabase Storage: veri çıkışı GB başına 0,09 $ ([Toolradar](https://toolradar.com/blog/supabase-pricing-2026)) |
 | Depo araçları | pnpm workspaces + Turborepo; .NET çözümü; uv | Üç dilin tek depoda derlenmesi | Brifteki proje yapısı | npm ve yarn çalışma alanları; Nx (değerlendirilmedi) |
@@ -116,14 +116,22 @@ NSec yerel `libsodium` kitaplığını yükler; Linux CI'da yüklenmesi ilk koş
 
 ### 2.5 Editör paneli (`apps/editor`)
 
-| Paket | Görev |
-|---|---|
-| `react`, `vite`, `@vitejs/plugin-react` | Çatı ve derleme |
-| `tailwindcss` v4.3, shadcn/ui (bileşenler depoya kopyalanır) | Arayüz |
-| `react-router` | Rotalar; sürüm Doğrulanacak |
-| `@tanstack/react-query` | Sunucu durumu |
-| `openapi-typescript`, `openapi-fetch` | OpenAPI belgesinden tip ve istemci |
-| `vitest`, `@testing-library/react` | Test |
+Sürümler `apps/editor/package.json` ve `pnpm-lock.yaml` dosyalarından yazıldı (11 Kasım 2026, A15); dış bağımlılıklar tam sürümle sabittir (`saveExact`, [Proje yapısı](./03-proje-yapisi.md) §4.1).
+
+| Paket | Sürüm | Görev |
+|---|---|---|
+| `react`, `react-dom` | 19.3.1 | Çatı |
+| `vite`, `@vitejs/plugin-react` | 8.3.7, 6.3.0 | Derleme (Vite Node 20.19+ ya da 22.12+ ister) |
+| `tailwindcss`, `@tailwindcss/vite`, `tw-animate-css` | 4.3.5, 4.3.5, 1.4.0 | Stil |
+| shadcn/ui: CLI `shadcn` 4.23.0, stil `base-nova`, taban `@base-ui/react` | 1.9.0 | Bileşenler depoya kopyalanır (`src/components/ui/`); `class-variance-authority` 0.7.1, `cn` 0.5.2 (shadcn'in `lib/utils.ts` içinde kullandığı yardımcı paket), `lucide-react` 1.70.0, `@fontsource-variable/geist` 5.3.0 |
+| `react-router` (tek paket; Data Mode) | 8.5.1 | Rotalar; Node 22.22+ ister. Çözüldü (A15): sürüm 8.5.1 |
+| `@tanstack/react-query` | 5.107.1 | Sunucu durumu |
+| `openapi-typescript`, `openapi-fetch`, `openapi-react-query` | 7.13.0, 0.17.0, 0.5.4 | OpenAPI belgesinden tip, istemci ve sorgu kancaları (`gen:api`) |
+| `diff` (jsdiff), `react-zoom-pan-pinch`, `utif2` | 9.0.0, 4.2.0, 4.1.0 | 412 sonrası metin farkı, sayfa görseli yakınlaştırma, TIFF çözücü (MIT) |
+| `vitest`, `@testing-library/react`, `/dom`, `/jest-dom`, `/user-event`, `jsdom`, `axe-core` | 5.0.5, 16.3.3, 10.4.2, 7.0.1, 14.6.9, 31.0.0, 4.14.0 | Test (jsdom 31 Node `^22.22.2 \|\| ^24.15.0 \|\| >=26.0.0` ister) |
+| `eslint-plugin-jsx-a11y`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh` | 6.10.2, 7.1.1, 0.5.7 | Erişilebilirlik, kanca ve hızlı yenileme kuralları |
+
+Panelin Arapça yazı tipi Amiri Quran'dır (`public/fonts/`, kaynak kaydı `amiri-quran-font`); Latin arayüz yazı tipi Geist Variable'dır (`@fontsource-variable/geist`).
 
 ### 2.6 Web (Faz 5) ve paylaşılan paketler
 
@@ -142,6 +150,7 @@ NSec yerel `libsodium` kitaplığını yükler; Linux CI'da yüklenmesi ilk koş
   - Python: `pip-licenses` 5.5.5, `uv run --with "pip-licenses==5.5.5"` ile (projeye bağımlılık eklenmez) ([pip-licenses](https://pypi.org/project/pip-licenses/)).
   - Betik: [scripts/ci/list-licenses.mjs](../../scripts/ci/list-licenses.mjs). pnpm ve `nuget-license` çıktısını okur; paket başına bir satır ve lisans başına sayım yazar. Okuma, ayrıştırma ve alan hatasında (eksik ya da yeniden adlandırılmış paket alanı), `--json` dosyası yazılamadığında ve boş NuGet listesinde 2 ile çıkar, öteki her durumda 0.
   - İlk sonuçlar (27 Ekim 2026): pnpm `--prod` kümesi boş (uygulama paketleri henüz yok); .NET test dışı 4 proje, 46 paket (MIT 43, Apache-2.0 1, PostgreSQL 2).
+  - pnpm `--prod` kümesi (11 Kasım 2026, A15 incelemesi sonrası; `shadcn` CLI paketi editörün `devDependencies` alanındadır): 31 paket (MIT 25, BSD-3-Clause 2; Apache-2.0, ISC, OFL-1.1 ve `(MIT AND Zlib)` birer paket). Ölçüm: `pnpm -r licenses list --prod --json` çıktısı `list-licenses.mjs pnpm` betiğine verildi. `src/index.css` `shadcn/tailwind.css` dosyasını içe aktarır; Vite bunu derleme zamanında çözdüğü için paket çalışma zamanı bağımlılığı sayılmaz. Paket `dependencies` altındayken CLI bağımlılıkları (`ts-morph`, `zod`, `@dotenvx/dotenvx` ve altındakiler) listeyi 254 pakete çıkarıyordu.
 
   Liste Ayarlar › Kaynaklar ekranının açık kaynak bölümünü besler; `list-licenses.mjs --json` çıktısı girdi olur (A32).
 
@@ -161,7 +170,7 @@ NSec yerel `libsodium` kitaplığını yükler; Linux CI'da yüklenmesi ilk koş
 | CI eylemleri ve runner'lar | Eylemler tam commit SHA'sı ve sürüm yorumuyla sabittir; runner'lar `ubuntu-24.04` ve `windows-2025` (`-latest` kullanılmaz). Sürümler ve gerekçe: [Proje yapısı §7](./03-proje-yapisi.md#7-ci-iş-akışları-github-actions) |
 | pnpm sürümü (CI) | CI'da `pnpm/action-setup` sürümü `devEngines.packageManager` alanından okur; iş akışında `version` girdisi yoktur |
 | Expo'ya bağlı paketler | `npx expo install` ile kurulur; CI `npx expo install --check` ile uyumu denetler |
-| Docker imajları | En az ana sürümle (`postgres:18`); canlıya yakın ara sürüm ve özetle (digest). Yerel imajlar sabit etiketlidir: `postgres:18`, `chrislusf/seaweedfs:4.48`, `amazon/aws-cli:2.38.3`; `latest` kullanılmaz. Etiketler kök `.env.example` içindeki `POSTGRES_TAG`, `SEAWEEDFS_TAG` ve `AWSCLI_TAG` değişkenleriyle verilir ([Yerel geliştirme](./04-yerel-gelistirme.md) §5) |
+| Docker imajları | En az ana sürümle (`postgres:18`); canlıya yakın ara sürüm ve özetle (digest). Yerel imajlar sabit etiketlidir: `postgres:18`, `chrislusf/seaweedfs:4.48`, `amazon/aws-cli:2.38.3`; `latest` kullanılmaz. Etiketler kök `.env.example` içindeki `POSTGRES_TAG`, `SEAWEEDFS_TAG` ve `AWSCLI_TAG` değişkenleriyle verilir ([Yerel geliştirme](./04-yerel-gelistirme.md) §5). Derleme imajları Dockerfile içinde yazılıdır: editör `node:24-alpine` (derleme; 24.22.2) ve `nginx:1.30-alpine` (sunum; 1.30.6, `stable-alpine` değil: kayan etiket yerine ana.ara sürüm), API `mcr.microsoft.com/dotnet/sdk:10.0` ve `aspnet:10.0`, Yayınlayıcı `sdk:10.0` ve `runtime:10.0`. Docker Hub'da iki editör etiketi de bulunur (11 Kasım 2026: `1.30-alpine` 6 Kasım, `24-alpine` 5 Kasım 2026'da güncellendi); yama sürümleri 10 Kasım 2026 araştırmasından gelir. Dockerfile içindeki pnpm sürümü (`npm install --global pnpm@12.14.0`) kök `devEngines.packageManager` ile aynı olmalıdır |
 
 ### 4.2 Yükseltme politikası
 
@@ -174,7 +183,7 @@ NSec yerel `libsodium` kitaplığını yükler; Linux CI'da yüklenmesi ilk koş
 | Node.js | Expo araçları 22.13+, 24.3+ ya da 26+ ister; tek sayılı 23 ve 25 desteklenmez ([SDK 58 kararlı sürüm notu](https://expo.dev/changelog/sdk-58), 15 Ekim 2026; aralık beta notuyla aynı). Seçim Node.js 24 LTS |
 | Python | 3.13. CAMeL Tools 3.14'ü destekliyor; OCR araçları da hazır olunca 3.14'e geçilir |
 | Next.js | Faz 5 başında güncel kararlı sürüm; yükseltmede `next upgrade --agent` ([Next.js 16.4](https://nextjs.org/blog/next-16-4)) |
-| Bağımlılık güncellemesi | [Dependabot](../../.github/dependabot.yml): `npm`, `github-actions` ve `uv` (`/pipeline`) için haftalık PR; ekosistem başına tek grup (minor ve patch birlikte, major ayrı). Başlık önekleri `build(infra)`, `ci(infra)`, `build(pipeline)` (Proje yapısı §6 kapsamları). `uv` desteği doğrulandı (27 Ekim 2026, A08.1): `package-ecosystem: uv` vardır ve `uv.lock` dosyasını günceller; bazı durumlar çalışmıyor ([astral-sh/uv#2512](https://github.com/astral-sh/uv/issues/2512)). Expo'ya bağlı paketler yalnız SDK yükseltmesiyle güncellenir; Expo paketleri için `ignore` kuralı `apps/mobile` eklenirken A21'de yazılır. Güvenlik güncellemeleri beklemeden alınır. **Dependabot'un kapsamadıkları:** (1) pnpm 12'nin yazdığı iki belgeli `pnpm-lock.yaml`'da sürüm güncellemesi çalışır, ama bağımlılık grafiği ve güvenlik uyarısı üretilmez. (2) NuGet dışarıdadır: `ProjectReference` ile etkilenen projelerde kilit dosyası güncellenmiyor ve `dotnet restore --locked-mode` NU1004 veriyor ([dependabot-core#13950](https://github.com/dependabot/dependabot-core/issues/13950)). (3) `docker-compose.yml` dışarıdadır: imaj etiketleri `.env` değişkeninden geliyor ve Dependabot atlıyor. Bu yüzden `dotnet-ef`, .NET SDK, NuGet paketleri, Testcontainers imajı ve compose etiketleri elle güncellenir; compose etiketi ile `PostgresFixture` imajı birlikte değişir |
+| Bağımlılık güncellemesi | [Dependabot](../../.github/dependabot.yml): `npm`, `github-actions` ve `uv` (`/pipeline`) için haftalık PR; ekosistem başına tek grup (minor ve patch birlikte, major ayrı). Başlık önekleri `build(infra)`, `ci(infra)`, `build(pipeline)` (Proje yapısı §6 kapsamları). `uv` desteği doğrulandı (27 Ekim 2026, A08.1): `package-ecosystem: uv` vardır ve `uv.lock` dosyasını günceller; bazı durumlar çalışmıyor ([astral-sh/uv#2512](https://github.com/astral-sh/uv/issues/2512)). Expo'ya bağlı paketler yalnız SDK yükseltmesiyle güncellenir; Expo paketleri için `ignore` kuralı `apps/mobile` eklenirken A21'de yazılır. Güvenlik güncellemeleri beklemeden alınır. **Dependabot'un kapsamadıkları:** (1) pnpm 12'nin yazdığı iki belgeli `pnpm-lock.yaml`'da sürüm güncellemesi çalışır, ama bağımlılık grafiği ve güvenlik uyarısı üretilmez. (2) NuGet dışarıdadır: `ProjectReference` ile etkilenen projelerde kilit dosyası güncellenmiyor ve `dotnet restore --locked-mode` NU1004 veriyor ([dependabot-core#13950](https://github.com/dependabot/dependabot-core/issues/13950)). (3) `docker-compose.yml` dışarıdadır: imaj etiketleri `.env` değişkeninden geliyor ve Dependabot atlıyor. (4) Dockerfile `FROM` etiketleri dışarıdadır: `dependabot.yml` `docker` ekosistemi taşımaz. Bu yüzden `dotnet-ef`, .NET SDK, NuGet paketleri, Testcontainers imajı, compose etiketleri ve Dockerfile `FROM` etiketleri (`node:24-alpine`, `nginx:1.30-alpine`, `mcr.microsoft.com/dotnet/*:10.0`) elle güncellenir; compose etiketi ile `PostgresFixture` imajı birlikte değişir. Editör Dockerfile'ındaki pnpm sürümü kök `package.json` ile elle eşit tutulur |
 
 ## 5. Eski plandan çıkarılan teknolojiler (K-30)
 
