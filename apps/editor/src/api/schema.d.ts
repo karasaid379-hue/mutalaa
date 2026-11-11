@@ -1294,6 +1294,8 @@ export interface operations {
                 hedef_tablo?: string;
                 alan?: string;
                 durum?: string;
+                kaynak?: string;
+                asama?: string;
                 cursor?: string;
                 limit?: number;
             };

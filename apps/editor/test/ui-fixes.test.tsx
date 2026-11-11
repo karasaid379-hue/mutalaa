@@ -100,7 +100,7 @@ describe('hidden explanations', () => {
   });
 
   it('the open question button is described by hidden text, has no title and no pressed movement', () => {
-    render(<OpenQuestionButton label="Böl" phase="A16" />);
+    render(<OpenQuestionButton label="Böl" phase="S-15" />);
     const button = screen.getByRole('button');
     expect(button).not.toHaveAttribute('title');
     expect(button).toHaveAccessibleDescription(tr.openQuestionHint);

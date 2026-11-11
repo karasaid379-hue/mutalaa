@@ -1,4 +1,4 @@
-import { readTextPayload } from '@/lib/payload';
+import { readMealAttrs, readTextPayload } from '@/lib/payload';
 import type { ReviewItem, UnitDetail } from './types';
 
 // Pre-checks of the decision form. They only close controls early; the API has the last word (K-48),
@@ -8,14 +8,14 @@ import type { ReviewItem, UnitDetail } from './types';
 export type UnitEditInfo = Pick<
   UnitDetail,
   'kind' | 'kaynak_tur' | 'duzeltilebilir' | 'marks' | 'sentences'
->;
+> & { attrs?: unknown };
 
 export const IMMUTABLE_UNIT_KIND = 'ayet';
 export const IMMUTABLE_SOURCE_KIND = 'kuran_metni';
 
 /**
  * Offset-bearing derived data (non-empty `marks` or any `sentences` range) shifts with a text change and is
- * only recomputed in A16 (Backend API 4.1). Anything unreadable counts as present, like on the server.
+ * only recomputed in A20 (Backend API 4.1; BÇ-59). Anything unreadable counts as present, like on the server.
  */
 export function hasOffsetData(unit: { marks?: unknown; sentences?: number[][] | null }): boolean {
   if (unit.sentences && unit.sentences.length > 0) return true;
@@ -37,7 +37,8 @@ export function isFirstStageUnitText(review: ReviewItem): boolean {
 /**
  * Whether the decision form may show the "edited text" field: unit + metin, open review, approval,
  * first stage, an editable unit (`duzeltilebilir`, not Tanzil/ayet) and no offset data.
- * Without unit information the answer is false.
+ * A joined meal follower (`attrs.birlesik_ile`) has no text of its own, so its edit field stays closed too (K-49
+ * madde 8). Without unit information the answer is false.
  */
 export function canEditValue(review: ReviewItem, unit: UnitEditInfo | null | undefined): boolean {
   if (!unit || !isFirstStageUnitText(review)) return false;
@@ -45,7 +46,8 @@ export function canEditValue(review: ReviewItem, unit: UnitEditInfo | null | und
     unit.duzeltilebilir &&
     unit.kind !== IMMUTABLE_UNIT_KIND &&
     unit.kaynak_tur !== IMMUTABLE_SOURCE_KIND &&
-    !hasOffsetData(unit)
+    !hasOffsetData(unit) &&
+    !readMealAttrs(unit.attrs).follower
   );
 }
 

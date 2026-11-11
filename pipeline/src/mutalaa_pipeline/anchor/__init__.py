@@ -28,7 +28,12 @@ from mutalaa_pipeline.anchor.capa import (
     try_parse,
     unit_of,
 )
-from mutalaa_pipeline.anchor.metin import content_hash, kanonik_metin, snap_span
+from mutalaa_pipeline.anchor.metin import (
+    content_hash,
+    kanonik_metin,
+    silinecekleri_sil,
+    snap_span,
+)
 
 __all__ = [
     "Anchor",
@@ -54,6 +59,7 @@ __all__ = [
     "format",
     "kanonik_metin",
     "parse",
+    "silinecekleri_sil",
     "snap_span",
     "sort_key",
     "to_route",

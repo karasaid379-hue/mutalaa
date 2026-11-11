@@ -1,185 +1,226 @@
-# A16 · Elmalılı meali: hazır metin ya da OCR (A09 yol kararına göre), düzeltme kuyruğu, iki tur
+# A16 · Elmalılı mealleri: orijinal ve sadeleştirilmiş, hazır metin yolu, inceleme kuyruğu, iki tur
 
-> **Sürüm:** 1.4 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-38](../../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
-> **Faz:** 1 · İçerik hattı · **Önkoşul:** [A09](./A09-elmalili-ocr-pilotu.md) · [A10](./A10-tanzil-alimi.md) · [A15](./A15-editor-paneli.md) · **İnsan adımı:** İ-09 · İ-11 · İ-17
-> **Ajanlar:** `hat-gelistirici` · `metin-denetcisi` · `sunucu-gelistirici` (görsel ucu ve şema eki gerekirse) · `arastirmaci` · `test-yazari` · `inceleyici` · **Beceriler:** `icerik-hatti` · `metin-butunlugu` · `capa-gramer` · **Tahmini oturum:** 3–4 Claude Code oturumu; insan turları ayrıca
+> **Sürüm:** 2.1 · **Tarih:** 12 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-38](../../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-48](../../00-ozet/02-karar-defteri.md#k-48--editör-api-kuralları-inceleme-kararı-ikinci-onay-eşzamanlılık-yayın-talebi-ve-sayfa-görseli) · [K-49](../../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
+> **Faz:** 1 · İçerik hattı · **Önkoşul:** [A10](./A10-tanzil-alimi.md) · [A15](./A15-editor-paneli.md) · **İnsan adımı:** İ-11
+> **Ajanlar:** `hat-gelistirici` · `metin-denetcisi` · `sunucu-gelistirici` · `web-gelistirici` · `arastirmaci` · `test-yazari` · `inceleyici` · **Beceriler:** `icerik-hatti` · `metin-butunlugu` · `capa-gramer` · `paket-yayini` · **Tahmini oturum:** 5–7 Claude Code oturumu; insan turları ayrıca
 > **Başlat:** `/asama A16`
 
 ## Amaç
-Elmalılı'nın özgün baskısından (baskı kimliği `elmalili-1935`) âyet meali, A09'daki yol kararına göre iki daldan biriyle hazırlanır (K-38): (a) hazır metin dalı: A09 pilotunda eşiği geçen hazır metin kalıcı olarak içe alınır; (b) OCR dalı: A09'da seçilen OCR yöntemiyle sayfalar okunur. İki dalda da meal âyetlere bölünür ve `meal:elmalili:{sure}:{ayet}` birimleri `taslak` olarak yüklenir. Aşama tedarikle başlar (A16.0): hazır metni ve tarama dosyalarını Claude Code internetten indirir, kaynak kaydını yazar. Claude Code araçları, kuyruğu ve QA kapılarını kurar; düzeltme ve onay iki insan turuyla yapılır. Onaylı meal `core` paketine girer. Yapay zekâ yalnız sayfa görselini okur; meal yazmaz, çevirmez, düzeltmez.
+Elmalılı'nın iki mealini hazır dijital metinle içe almak (K-49): **orijinal meal** (`meal:elmalili`, kaynak `elmalili-meal`, Vikikaynak "Kur'an" sayfaları) ve **sadeleştirilmiş meal** (`meal:elmalili-sade`, kaynak `elmalili-sade-meal`, fawazahmed0/quran-api `tur-elmallsadelesti`). Arayüzde ikincisi "sadeleştirilmiş" etiketiyle görünür ve orijinal meali değiştirmez. İki meal de `taslak` girer, iki insan turundan geçer ve onaylanınca `core` paketine girer. A09 ölçümü beklenmez; OCR ve özgün baskı taraması proje sonuna ertelendi (S-15).
 
-**Dal seçimi.** A09 yol kararına bakılır. Karar hazır metinse dal (a), OCR ise dal (b) yürür. Hazır metin dalı yalnız A09 eşiği geçildiyse geçerlidir; aksi hâlde A16 OCR dalı (A16.1–A16.6) aynen sürer. Özgün baskı taraması iki dalda da gerekir (A16.1): örneklem ve özgün baskıya sadakat kanıtı bundan gelir. Hazır metin dalı A16.0'ı, A16.1'i, A16.3'ün bölme ve çapa adımlarını (kaynak olarak OCR bölgeleri yerine içe alınan metin), A16.5'i ve A16.6'yı paylaşır; A16.2 (OCR koşusu) ve A16.4 yerine A16.7–A16.9 uygulanır.
+Aşama tedarikle başlar (A16.0): kaynak dosyalarını Claude Code internetten indirir, ölçer ve kilitler. Claude Code bağdaştırıcıları, kapıları, yüklemeyi, API süzgeçlerini ve editör ekranlarını kurar; düzeltme ve onay insan turlarıdır (İ-11). Yapay zekâ meal yazmaz, çevirmez, düzeltmez ve sadeleştirmez.
 
 ## Okunacak belgeler
-- [Elmalılı hazırlığı](../../04-icerik/03-elmalili-hazirligi.md): tamamı (§3 baskı doğrulama, §4 OCR, §5 Yol A, §6 âyetlere bölme, §7 editör, §8 QA ve örneklem, §9 künye ve sürüm)
-- [İçerik hattı](../../04-icerik/02-icerik-hatti.md): §4 komutlar, §5 veri soyu, §8 yeni kaynak ekleme, §9 kapılar (G-HIZ, G-MET, G-INC, G-YZ, G-KAY), §10 yapay zekâ politikası, §11 maliyet, §12 yeniden üretilebilirlik
-- [Kaynaklar](../../04-icerik/01-kaynaklar.md): §3.3 Elmalılı kartı, §4 Seçilmeyen adaylar, §5 yeni kaynak ekleme
+- [K-49](../../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi): tamamı (iki meal, yol, sınır durumları, inceleme kuralları, kapılar, atıf); [K-38](../../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) madde 2–4 (çıkarılmış metin, `taslak` başlangıç durumu) ve [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 1–2 (tedarik akışı, indirme)
+- [Elmalılı hazırlığı](../../04-icerik/03-elmalili-hazirligi.md): tamamı (§3 aile ayrımı ve tedarik, §6 âyetlere bölme, §7 editör, §8 QA ve örneklem, §9 künye ve atıf)
+- [İçerik hattı](../../04-icerik/02-icerik-hatti.md): §4 komutlar, §5 veri soyu, §8 yeni kaynak ekleme, §9 kapılar (G-HIZ, G-CAP, G-INC, G-KAY), §10 yapay zekâ politikası, §12 yeniden üretilebilirlik
+- [Kaynaklar](../../04-icerik/01-kaynaklar.md): §3.3 Elmalılı kartları, §4 Seçilmeyen adaylar
 - [Çapa şeması](../../03-veri/01-capa-semasi.md): §1 meal çapası, §7 kendi metnimizin ilk kaydı
-- [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §4 `unit` ve `metin_durumu`, §8 `review` ve ikinci onay, §9.1 `page_map`
+- [Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md): §4 `unit` ve `metin_durumu`, §8 `review`, ikinci onay ve hat yazma istisnası
+- [Backend API](../../02-mimari/05-backend-api.md): §4 inceleme uçları ve liste süzgeçleri, §4.1 karar kuralları, §6
+- [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §1 `core` içeriği, §5 meal başlığı
 - [Yayın süreci](../../07-yayin/01-yayin-sureci.md): §7.3 değişiklik yönetimi
-- A09'un çıktıları: yol kararı ve OCR yöntemi kararı (karar defteri), altın örneklem (`data/gold/elmalili-ocr/`), hazır metin adayının kaynak kaydı, revizyon listesi ya da dosya özeti, pilot raporu
-- [Karar defteri](../../00-ozet/02-karar-defteri.md): [K-38](../../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) madde 2–4 (hazır metin eşiği, çıkarılmış metin, `taslak` başlangıç durumu) ve [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 1–2 (tedarik akışı, indirme)
+- [Belge çelişkileri](../07-belge-celiskileri.md): BÇ-08 (çözüldü), BÇ-53 (meal için çözüldü), BÇ-54, BÇ-58 ve BÇ-59 (bu aşamada değil; A18 ve A20)
 
 ## Kapsam
 **Yapılır**
-- Tedarik doğrulaması ve indirme (A16.0): hazır metin, tarama dosyaları ve kitaplık sürümleri.
-- Tarama envanteri ve baskı doğrulaması (iki dalda da).
-- Dal (b), OCR: bütün meal sayfalarının OCR'ı.
-- Dal (a), hazır metin: kaynak kaydı olan hazır metnin kalıcı içe aktarımı (seçilen adayın biçimi için hazır kitaplıkla okuyucu, `ingest register` komutu, çıkarılmış metin için ortak test vektörü; hepsi planlıdır, henüz yoktur), `taslak` girişi, iki düzeltme turu ve özgün baskı görseliyle karşılaştırma.
-- `ayet_ar` bloğunun Tanzil'e eşlenmesi, mealin âyetlere bölünmesi, sınır durumu kararları, `meal:elmalili` birimleri.
-- İnceleme kuyruğu; tur 1 ve tur 2 için araç ve ölçüm; G-HIZ, G-MET, G-INC, G-YZ ve G-KAY kapıları; baskı sayfa eşlemesi; `core` yeniden yayını (`dev`).
+- Tedarik doğrulaması, indirme ve ölçüm (A16.0): iki meal ve EPUB tanığı; ölçüm raporu (`data/reports/a16-tedarik-olcum.json`).
+- Belge ve kit eşitlemesi (A16.1).
+- Kaynak kayıtları, kilit dosyası, Vikikaynak ve JSON bağdaştırıcıları, tanık bağdaştırıcıları, `extract/meal.jsonl` vektörü (A16.2).
+- Normalize, anchor, meal kapıları (G-KAY, G-BUT, G-CAP, G-NOR, G-HIZ), tanık skoru, kapsam ve sadeleştirme taraması raporları (A16.3).
+- `export pg` ile `taslak` yükleme ve inceleme kuyruğu (A16.4).
+- `GET /api/v1/reviews` süzgeçleri (`kaynak`, `asama`), birleşik izleyen birimde 422, editörde iki meal sekmesi, rozet ve uyarı kutusu (A16.5).
+- `core` kataloğuna iki meal ve `dev` yeniden yayını (A16.6).
+- `qa sample` örneklem aracı, ikinci okuma ve G-INC ölçüm raporu; tur 1 ve tur 2 (A16.7; İ-11).
 
 **Yapılmaz**
-- Tefsir metni (`tf:elmalili`; A37). Tefsir bölgelerinin OCR çıktısı `data/ocr` içinde kalır.
-- İktibas ve atıf tespiti (A18). Kelime anlamları (A17). Sürüm dondurma ve mağaza yayını (A34).
-- Yapay zekâ ile meal üretimi ya da metin düzeltmesi: yasaktır.
+- OCR, tarama ve `page_map` (S-15). Özgün baskıyla karşılaştırma ve "temel metin" sayılma da S-15'tedir.
+- Tefsir metni (`tf:elmalili`) ve A37 kaynak seçimi: tanıklar yalnız A16 raporu içindir.
+- Mobilde meal seçimi ve gösterimi (A24, A32).
+- Ofsetli tablolar ve iktibas bağlantısı (A18; [BÇ-58](../07-belge-celiskileri.md#1-karar-bekleyenler)). Birim `marks`/`sentences` yeniden hesabı (A20; [BÇ-59](../07-belge-celiskileri.md#1-karar-bekleyenler)).
+- Kelime anlamları (A17). Sürüm dondurma ve mağaza yayını (A34).
+- Yapay zekâ ile meal üretimi, çevirisi, düzeltmesi ya da sadeleştirmesi: yasaktır.
+- T ailesinden ("yeni Elmalılı": Tanzil `tr.yazir` vb.) metin almak: Elmalılı adıyla alınmaz.
 
 ## Tedarik
-Araştırma tarihi 1 Kasım 2026; A16.0'da yenilenir. Dal seçimi A09 yol kararına bağlıdır, bu yüzden iki dalın yapıları birlikte listelenir. Ön ölçümde Vikikaynak özgün baskıyla en yüksek örtüşmeyi verdi; seçimi yalnız A09 ölçümü belirler.
+Araştırma 11 Kasım 2026 (`arastirmaci`); A16.0'da kodla yenilenir. İnternetteki "Elmalılı meali" metinleri üç ailedir; ayırt edici işaret Johanna Pink'in 16:43 âyeti tespitidir ([GloQur](https://gloqur.de/?p=2195)):
+- **O, özgün:** Vikikaynak, archive.org `meal-i-serif` EPUB'ı, kuranmeali.com "Orijinal", Açık Kuran.
+- **S, sadeleştirilmiş:** fawazahmed0 `tur-elmallsadelesti`, Açık Kuran "sadeleştirilmiş".
+- **T, "yeni Elmalılı" (1994–96):** Tanzil `tr.yazir`, fawazahmed0 `tur-elmalilihamdiya` ve `tur-elmallsadelesti1`, GitHub `elmalili-meal/kuran`, kuranmeali id=16. Bu aile Elmalılı adıyla alınmaz.
 
 | Gerekli yapı | Seçilen kaynak (ad, adres, sürüm ya da commit, biçim) | Alma yolu | Eksiksizlik kanıtı | Yedek aday |
 |---|---|---|---|---|
-| Elmalılı meali, hazır metin (dal a), aday 1 | Vikikaynak `Kur'an/<Sure> Suresi` alt sayfaları (tr.wikisource.org; 114 sayfa; wikitext, âyet işareti `{{kısım\|\|N}}`; sayfa başına `revid` sabit, 74319–158621; başlık ve `revid` listesinin SHA-256'sı `965a6249…b308a`) | MediaWiki API `https://tr.wikisource.org/w/api.php?action=query&prop=revisions&rvprop=ids\|timestamp\|size\|sha1\|content&rvslots=main` (50 başlık/istek, istekler arası 1,5 sn). Toplu yol: `https://dumps.wikimedia.org/trwikisource/20261001/trwikisource-20261001-pages-articles.xml.bz2` (25.341.657 bayt, SHA-1 `909ca820…bb00`) | 114/114 sure; `kısım` işareti 6.238, benzersiz âyet 6.236 (Tanzil sayımıyla birebir); 114 `revid` 1 Kasım 2026'da canlı sürümle aynı; wikitext 961.210 bayt. Özgün baskıyla örtüşme (ön ölçüm): âyet üç-gramlarının archive.org `HakDiniKuranDili` OCR metninde bulunma oranı 0,843; kesin baskı esası A09 CER ölçümüyle belirlenir | Tanzil `tr.yazir` |
-| Elmalılı meali, hazır metin (dal a), aday 2 | Tanzil `tr.yazir` ("Elmalılı Hamdi Yazır"; "Text (with aya numbers)" = `type=txt-2`, ayrıca XML) | `https://tanzil.net/trans/?transID=tr.yazir&type=txt-2` ve `…&type=xml` doğrudan dosya (200; iki indirmede aynı SHA-256) | 6.236 âyet satırı (+13 üstbilgi satırı), 944.235 bayt, SHA-256 `4c9a6bea…f926`; XML 1.100.494 bayt, `5097940d…ba43`. Özgün baskıyla örtüşme (ön ölçüm): üç-gram bulunma oranı 0,162; Vikikaynak ile kelime kümesi örtüşmesi 0,254, yani ayrı bir metin; A09 ölçümüne aday olarak girer | fawazahmed0/quran-api `editions/tur-elmalilihamdiya.json`, `93e6f649…2316` (Tanzil metniyle aynı kelime kümesi, 1.494.041 bayt) |
-| Özgün baskı sayfa görselleri (iki dalda; sayfa eşlemesi, karşılaştırma, OCR girdisi) | archive.org `HakDiniKuranDili`: `Hak Dini Kuran Dili.pdf` (Text PDF, 300 ppi, 39.692.765 bayt, SHA-1 `ad080b00…ef6e`) ve metin katmanı `Hak Dini Kuran Dili_djvu.txt` (11.444.009 bayt); öğenin son güncellemesi 13 Temmuz 2026. Baskı esasını A09.7 ofset sınaması doğrular | `https://archive.org/download/HakDiniKuranDili/<dosya>` doğrudan dosya (200); MD5, SHA-1 ve boyut `https://archive.org/metadata/HakDiniKuranDili` kaydından | Princeton: 8 cilt, 6.442 sayfa (fihrist ayrı, 1939). Öğede 8.928 yaprak sayıldı; cilt başına sayfa dökümü A16.1'de `*_page_numbers.json` ile ölçülür | archive.org `hak-dini-kuran-dili-cilt-1-elmalili-hamdi-yazir` (10 PDF, 300 ppi, 16.274.710–32.982.960 bayt; son güncelleme 23 Nisan 2025); sayfa numarası doğrulaması için HathiTrust 1935 kaydı (v.1–9, yalnız arama); sahaftan takım (İ-09, yalnız ofset sınaması geçilmezse) |
-| PDF'den sayfa görseli çıkarma | `pypdfium2` 5.14.0 (PyPI, 4 Ekim 2026) ve `pillow` 13.0.0 (16 Ekim 2026) | `uv add --directory pipeline pypdfium2 pillow`; sürümler `uv.lock` içinde sabit | PyPI kayıtları 1 Kasım 2026'da okundu (Python ≥3.6 ve ≥3.11; win_amd64 tekerleri var); bir PDF sayfasının 300 ppi görüntüye çevrilmesi A16.0'da denenir | `pikepdf` 10.17.0 (gömülü sayfa görselini kayıpsız çıkarır; 11 Ekim 2026) |
-| Metin okuyucusu (dal a) | Vikikaynak wikitext'i için `mwparserfromhell` 0.7.2 (PyPI, 1 Temmuz 2025); Tanzil biçimi (`sure\|âyet\|metin`, XML) için standart kitaplık; metin katmanlı PDF çıkarsa `pypdf` 6.21.4 (28 Ekim 2026) | `uv add --directory pipeline mwparserfromhell` | PyPI kaydı: Python ≥3.9, Python 3.13 tekerleri var; `kısım` şablonları ayrıştırıcıyla çıkarılır (A16.0 denemesi) | Düzenli ifade (ölçüm betiği `{{kısım\|\|N}}` işaretini böyle ayırdı) |
-| CER ve bulanık eşleme | `rapidfuzz` 3.14.6 (PyPI, 30 Ağustos 2026; `pipeline/pyproject.toml` bağımlılığı, `rapidfuzz.distance.Levenshtein`) | Yeni paket yok; sürüm `uv.lock` içinde | PyPI kaydı: Python ≥3.11, Python 3.13 tekerleri var; A09 `ocr eval` aynı kitaplığı kullanır | `jiwer` 4.0.0 (19 Haziran 2025) |
-| Kur'an metni ve sure/âyet iskeleti (`ayet_ar` eşlemesi; 114 sure, 6.236 âyet) | Tanzil Uthmani ve Simple Clean (`tanzil-uthmani`, `tanzil-simple-clean`) ve `quran-data.xml`; A10 alır | A10'da `data/gelen/tanzil/<YYYY-AA-GG>/` altına iner; A16 yeniden indirmez | A10 kabul ölçütleri: 114 sure, 6.236 âyet; sure ve âyet numaraları Vikikaynak ve Tanzil `tr.yazir` ile 1 Kasım 2026'da birebir örtüştü | Yok (A10 kaydı tek kaynaktır) |
-| OCR motoru (dal b) | A09'un seçtiği motor (`pipeline/mutalaa.toml` içinde `[baski.elmalili-1935] ocr_motoru`); adaylar A09 Tedarik'indedir | A09 çıktısı; Anthropic görsel modeli ücretlidir: tam koşudan önce tahmini maliyet kullanıcıya gösterilir (İ-17) | A09 pilot raporu: CER, WER, sayfa başı maliyet | A09'un ikinci motoru |
-| Düzeltme kuyruğu ve görselle karşılaştırma arayüzü | A15 editör paneli (K-13); metin farkı için `diff` 9.0.0, sayfa görseli için `react-zoom-pan-pinch` 4.2.0 (A15 Tedarik'i) | A15 kurar; A16 yeni paket almaz | A15 kabul ölçütleri (kuyruk rotaları, OCR bölge kutusu katmanı) | Yok |
+| Orijinal meal (O); kaynak `elmalili-meal` | Vikikaynak `Kur'an/<Sure> Suresi`, 114 sayfa, wikitext, `{{kısım\|\|N}}`; `revid` 74319–158621 | MediaWiki API `action=query&prop=revisions&rvprop=ids\|timestamp\|size\|sha1\|content&rvslots=main&format=json`, 50 başlık/istek, istekler arası ≥ 1,5 sn, kişisel bilgi taşımayan genel `User-Agent` | 11 Kasım: 114/114 `lastrevid` 1 Kasım'la aynı; `length` toplamı 961.210; `kısım` 6.238, benzersiz âyet 6.236. Liste SHA-256 `965a6249…b308a` A16.0'da yeniden hesaplanır | Döküm `trwikisource-20261101-pages-articles.xml.bz2` (25.376.776 bayt, SHA-1 `c06eaf65…32bc`); revizyonlar kilitle karşılaştırılır |
+| Orijinal mealin ikinci tanığı (O ailesi); kaynak `elmalili-meal-epub`, yalnız QA | archive.org `elmalili-hamdi-yazir-meal-i-serif` EPUB, 379.462 bayt, MD5 `ec786be4…6fcc`, SHA-1 `97477fdd…3bc6` | `https://archive.org/download/<öğe>/<dosya>`; dosya adı ve özetler `metadata` kaydından | 6.236 âyet A16.0'da sayılır | Kardeş öğe `…-tefsirindeki-meal-i-serif` PDF (1.376.405 bayt, SHA-1 `597cf819…f156`); PDF indirilmez, yalnız yedek olarak kayıtlıdır |
+| Bağımsız tanık adayı (ayrı nüsha soyu); kaynak `elmalili-tefsir-yek` | KULLANILMADI. YEK tenkitli neşir (Köksal ve Kaya, 2021–2023; esas: 1935–38 matbu baskı ve üç yazma); archive.org `hak-dini-kuran-dili` (cilt başına `djvu.txt`) ve `…-1-6-…-yek-yay` (`djvu.txt` 13.692.391 bayt) | — | A16.0 ölçümünde (11 Kasım 2026) YEK metin katmanı meal bloklarına ayrılamadı; tanık yalnız EPUB'dır (`elmalili-meal-epub`). Kayıt açılmadı, dosya indirilmedi ya da kullanılmadı | A37 adayıdır (tefsir hazır metin adayı) |
+| Sadeleştirilmiş meal (S); kaynak `elmalili-sade-meal` | fawazahmed0/quran-api `editions/tur-elmallsadelesti.json` @ `93e6f64925ae76273520d636fcaaf061129f2316`; 1.471.811 bayt, blob `f9421578…fada6`; edition `source` qurandatabase.org | `https://raw.githubusercontent.com/fawazahmed0/quran-api/<commit>/editions/tur-elmallsadelesti.json` | 6.236 kayıt ve S aile işareti A16.0'da kodla ölçülür | Açık Kuran "sadeleştirilmiş" âyet sayfaları (hız sınırlı) |
+| Wikitext ayrıştırıcı | `mwparserfromhell` 0.7.2 (cp313 win_amd64 tekeri) | `uv add --directory pipeline mwparserfromhell==0.7.2` | PyPI, 11 Kasım 2026 | Düzenli ifade |
+| EPUB ve JSON okuma | Standart kitaplık (`zipfile`, `html.parser`, `json`) | — | — | `ebooklib` |
+| Benzerlik ölçümü | `rapidfuzz` 3.14.6 (mevcut; `processor=None` açıkça) | — | `uv.lock` | `jiwer` |
+| Sure ve âyet iskeleti | A10 Tanzil verisi, `shared/data/ayet-sayilari.json` | Yeniden indirilmez | 114 sure, 6.236 âyet | — |
 
-Kendimiz yapacağımız işler: âyetlere bölme ve sınır durumları (birleşik meal, besmele, numaralandırma farkı); wikitext ya da Tanzil biçiminden metin çıkarımının deterministik dönüşümü ve ortak test vektörü (sentetik metinle); `unit` girişi, çapa üretimi, ilk kayıtta NFC; sayfa eşlemesi (`page_map`); G-HIZ, G-MET, G-INC, G-YZ ve G-KAY kapıları ile sadeleştirme taraması; düzeltme kuyruğu görevi; ikinci okuma örneklemi ve ölçümü.
+S-15'e çıkanlar: `pypdfium2`, `pillow`, `pypdf`, OCR motorları, özgün baskı taraması.
 
-Seçilmeyenler (kalite ve erişim): sadeleştirilmiş metinler (fawazahmed0 `tur-elmallsadelesti`, GitHub `elmalili-meal/kuran`, Azim; K-38); Açık Kuran (depoda veri kümesi yok, `api.acikkuran.com` 1 Kasım 2026'da çözümlenmedi); İBB Atatürk Kitaplığı reprodüksiyonu (başvuru gerektirir).
+Seçilmeyenler (kalite ve erişim; ayrıntı [Kaynaklar](../../04-icerik/01-kaynaklar.md) §4):
+- **T ailesi:** atfı yanlış (Pink). `elmalili-meal/kuran` README'si "sadeleştirilmiş" der ama aile işaretine göre T ailesidir.
+- **kuranmeali Orijinal:** toplu indirme yok, sürüm sabitlenemez.
+- **Açık Kuran:** API çözümlenmiyor.
+- **Ketebe 2025/2026 ve Mahya:** dijital kopya yok.
+- **`HakDiniKuranDili` metin katmanı (Eser 1979):** A37 adayı olarak kalır; A16'da kullanılmaz.
+
+Kendimiz yapacağımız işler: wikitext ve JSON'dan metin çıkarımı (deterministik, ortak vektörle), âyetlere bölme ve sınır kuralları, `unit` girişi, çapa üretimi, ilk kayıtta NFC, tanık skoru, meal kapıları, sadeleştirme taraması, kuyruk süzgeçleri ve editör ekranı, ikinci okuma örneklemi ve ölçümü.
 
 ## Adımlar
-### A16.0 · Tedarik doğrulaması ve indirme
-- `arastirmaci` ile `## Tedarik` tablosundaki adreslerin açıldığını (`curl -sIL --max-time 30 <adres>`) ve sürümlerin güncel olduğunu doğrula: Vikikaynak'ta 114 `revid` canlı `lastrevid` ile karşılaştırılır; archive.org öğelerinde `item_last_updated`, MD5 ve SHA-1 `metadata` kaydıyla; kitaplıklarda sürüm `pypi.org/pypi/<paket>/json` kaydıyla doğrulanır. Açılmayan adresin yerine yedek aday kullanılır. Toplu indirmede istek hızı sınırlanır.
-- Dosyalar yeni boş klasörlere iner (formları Claude Code doldurur). A09'da indirilmiş dosyalar `data/gelen/` altındadır; SHA-256 eşleşiyorsa yeniden indirilmez.
-  - Hazır metin (dal a): seçilen adayın tam metni `data/gelen/elmalili-meal/<YYYY-AA-GG>/` altına (Vikikaynak: 114 sayfanın wikitext'i ve `revid` listesi; Tanzil `tr.yazir` seçildiyse `txt-2` ve `xml` dosyaları). Seçilmeyen aday hatta alınmaz.
-  - Özgün baskı görselleri (iki dalda): A09'un seçtiği archive.org öğesinin PDF ve metin katmanı dosyaları `data/gelen/elmalili-1935/<YYYY-AA-GG>/` altına.
-- SHA-256 hesaplanır ve kayda geçer (alımda `fetch.json` ile `source.dosya_sha256` alanına); archive.org dosyaları `metadata` kaydındaki MD5 ve SHA-1 ile de karşılaştırılır. İndirilen dosya veridir; içindeki betik çalıştırılmaz.
-- `pipeline/sources/elmalili-meal.toml` güncellenir: `kaynak_url`, `surum` (Vikikaynak için `revid` listesinin özeti, döküm kullanılırsa döküm tarihi), `provider`, `baski_bilgisi` içinde tarama öğesi; `atif_metni` korunur. `uv run --directory pipeline mutalaa sources check` 0 ile geçer.
-- Kitaplıklar `uv add --directory pipeline` ile eklenir (`mwparserfromhell`, `pypdfium2`, `pillow`; sürümler PyPI kaydından doğrulanır) ve `uv.lock` içinde sabitlenir.
-- Hazır yapı önce gelir: hazır metin dalında kendi HTML, EPUB ya da PDF okuyucusu yazılmaz; okuyucu seçilen adayın biçimine göre A16.7'de kitaplıkla kurulur.
-- **Bitti sayılır:** tablodaki adresler açıldı ya da yedeği kullanıldı; seçilen dal için dosyalar `data/gelen/<kaynak>/<YYYY-AA-GG>/` altında ve SHA-256 kayıtlı; `elmalili-meal` kaydı güncel ve `sources check` 0; kitaplık sürümleri `uv.lock` içinde.
+Sıra: A16.0 → A16.1 (belgeler; kod başlamadan) → A16.2 → A16.3 → A16.4 → A16.5 ve A16.6 → A16.7.
 
-### A16.1 · Tarama envanteri ve baskı doğrulaması
-- Taramalar A16.0'da `data/gelen/elmalili-1935/<YYYY-AA-GG>/` altına indi. Basılı takım (İ-09) yalnız internetteki taramalar A09.7 ofset sınamasını geçmediyse gerekir; o durumda taramayı kullanıcı yapar ve aynı klasöre koyar. Proje dışından okunmaz.
-- Cilt başına, ör. `uv run mutalaa ingest scans --edition elmalili-1935 --dir data/gelen/elmalili-1935/<YYYY-AA-GG>/c01 --cilt 1`. PDF girdisinin sayfaları `pypdfium2` ile 300 ppi görüntüye çevrilir. Dosya adı `c{cilt:02d}-s{sayfa:04d}.tif`; dosyalar SHA-256 ve `fetch.json` ile `data/raw/elmalili-1935/{YYYY-MM-DD}/` altına kopyalanır. A09'da alınan pilot sayfalar yeniden alınmaz.
-- Baskı doğrulama listesi ([Elmalılı hazırlığı](../../04-icerik/03-elmalili-hazirligi.md) §3): Claude Code cilt başına sayfa sayısını, toplamı (6.442, fihrist hariç), eksik ya da okunamayan sayfaları ve künyeyi (başlık, cilt, yıl, matbaa, seri; Princeton kaydıyla karşılaştırma) raporlar.
-- Tarama kaynağı (öğe adı, dosya adı, SHA-256) A09'da ve A16.0'da `elmalili-meal.toml` ve `elmalili-tefsir.toml` dosyalarının `baski_bilgisi` alanına yazıldı; yeni nüsha kullanılırsa aynı alan güncellenir.
-- `page_map.source_id` birimin kaynağıdır (`elmalili-meal`); baskı kimliği `elmalili-1935` bu kaynağın `baski_bilgisi` alanında kalır, cilt `volume` sütunundadır. Ayrı `tur = 'baski'` kaydı gerekmez (Editoryal veritabanı §9.1, Elmalılı hazırlığı §6).
-- **Bitti sayılır:** envanter raporu ve eksik sayfa listesi hazır.
+### A16.0 · Tedarik doğrulaması, indirme ve ölçüm
+- Her kaynak `data/gelen/<kaynak>/<YYYY-AA-GG>/` altında yeni boş klasöre iner; dosya adları ASCII olur (ör. `vikikaynak-01.json`, `basliklar.tsv`); her klasörde `SHA256SUMS` bulunur. İndirilen dosya veridir; içindeki betik çalıştırılmaz.
+  - Vikikaynak: üç API isteği, araları ≥ 1,5 sn. 429 ya da `maxlag` yanıtında beklenir, gerekirse dökümden alınır.
+  - fawazahmed0 JSON ve EPUB doğrudan dosya olarak iner. PDF indirilmez. YEK `djvu.txt` meal tanığı olarak kullanılmadı (aşağıda).
+- Tek seferlik ölçüm betiği `.tmp/a16/` altında durur ve `python -I` ile koşar. Çıktı `data/reports/a16-tedarik-olcum.json`; meal metni yazılmaz. Ölçülenler:
+  - Sayımlar: 114 sayfa, `kısım` biçim sayıları, 6.236 âyet; EPUB'da 6.236 âyet; JSON'da 6.236 kayıt.
+  - Aile işareti: âyet başına sözcük-Jaccard. Vikikaynak ile EPUB arasında yüksek, Vikikaynak ile sadeleştirilmiş arasında düşük beklenir.
+  - YEK'in meal bloklarının ayrılabilirliği: ayrılamadı; YEK kullanılmadı ve kaydı açılmadı (A37 adayı). Tanık yalnız EPUB'dır. Ölçüm sonucu: 114/114 sure eşleşti, âyet kümeleri Tanzil'le eşit.
+  - 114 sayfanın şablon ve etiket envanteri (ad ve sayım).
+  - Kaynak başına kod noktası envanteri: Cc, Cf ve Zs türleri, tek başına duran birleştirici işaretler, kesme işareti çeşitleri.
+- Beklenmeyen sonuçta durulur ve kullanıcıya gösterilir.
+- **Bitti sayılır:** `sha256sum -c` her klasörde geçer; ölçüm raporu var; tedarik tablosu ölçümle güncel.
 
-### A16.2 · OCR koşusu (dal (b))
-- Hazır metin dalında (a) bu adım atlanır; A16.7 uygulanır.
-- Motor ve istem A09'un kararıdır (`pipeline/mutalaa.toml` içinde `[baski.elmalili-1935] ocr_motoru`). Tam koşu ücretlidir (kural 11): pilotta ölçülen sayfa başı maliyetle tahmin hesaplanır ([İçerik hattı](../../04-icerik/02-icerik-hatti.md) §11), kullanıcıya gösterilir ve İ-17 bütçesine göre onay alınır.
-- `uv run mutalaa ocr run --edition elmalili-1935 --engine <A09 seçimi> --pages <cilt:aralık>` cilt cilt koşar. Çıktı `data/ocr/elmalili-1935/{run_id}/` altında sayfa başına bölge JSON'udur (`ayet_ar`, `meal`, `tefsir`, `dipnot`, `baslik`, `sayfa_no`). Yanıtlar `data/llm-cache/` altında `(model, prompt_sha256, input_sha256)` anahtarıyla saklanır; yeniden üretim yalnız `--regenerate` ile.
-- İstem ilkeleri §4'tekilerdir: metin aynen, modernleştirme ve düzeltme yok, okunamayan karakter `⟦?⟧`, sıcaklık 0.
-- Yol A seçildiyse §5 aktarım kılavuzu ve imlâ sözlüğü uygulanır (sözlük yolu modül düzenine göre: `pipeline/src/mutalaa_pipeline/normalize/elmalili_imla.tsv`). Yol B'de metin baskıdaki imlâsıyla kalır; açık dizgi hataları ayrı tashih katmanında tutulur.
-- **Bitti sayılır:** bütün meal sayfalarının OCR çıktısı var; her çağrı model, istem özeti, girdi özeti, token ve maliyetle günlükte.
+### A16.1 · Belgeler ve kit eşitlemesi
+- `belge-bekcisi` belgeleri K-49'a göre eşitler (bu dosya dahil); kit dosyalarını (`icerik-hatti` ve `metin-butunlugu` becerileri, `test-vektoru` becerisi, `paylasilan-paketler` ve `icerik-hatti` kuralları, `arayuz-denetcisi` ajanı) ana oturum günceller, ayrı commit atar.
+- Arama ifadeleri (docs/ ve .claude/ altında): `A09`, `OCR`, `pilot`, `ingest register`, `ingest scans`, `Sadeleştiril`, `sadeleş`, `A16'da`, `Açık soru: A16`, `1935–1938`, `İ-09`, `İ-10`, `İ-17`, `G-HIZ`, `G-MET`, `tr.yazir`, `A16.1`…`A16.9`. Karara aykırı atıf kalmaz.
+- **Bitti sayılır:** aynı aramalar yeniden koşar ve aykırı atıf kalmaz; `belge-esitle` bağlantı denetimi temiz; `node --test ".claude/hooks/test/*.test.mjs"` yeşil.
 
-### A16.3 · Âyetlere bölme ve birimler
-- §6 akışı: `ayet_ar` bloğu Arapça normalize edilip Tanzil'e eşlenir ve kapsanan aralık bulunur; meal bloğu âyet işaretlerine göre bölünür. İşaret yoksa cümle sınırı ve âyet sayısıyla bölme önerisi üretilir ve kuyruğa düşer.
-- Sınır durumları (§6, Açık soru): birleşik meal (`kapsam`, `birlesik_ile`), besmele meali, numaralandırma farkı (`versification_map`), parantez ve dipnot. Veri modeli planda önerilir ve `/karar` ile yazılır. Öznitelikler editoryal `unit.attrs` sütununda tutulur (Editoryal veritabanı §4).
-- Birim: `meal:elmalili:{s}:{a}`, `kind = 'meal'`, metin ilk kayıtta NFC ve [Çapa şeması](../../03-veri/01-capa-semasi.md) §7 adımları, `content_hash`, `metin_durumu = 'taslak'`, `ayah_range`, `attrs` (cilt, sayfa, bölge kutusu; §6), `provenance` (OCR çalıştırması). Her birime `review` satırı (`hedef_tablo = 'unit'`, `alan = 'metin'`). **`attrs` alan adları bu adımda kesinleşir** (K-48 madde 8): A15 paneli sayfa görselini `GET /api/v1/scans/{baski}/{sayfa}` ucundan çekmek için `attrs.baski` (`^[a-z0-9-]{1,64}$`) ve `attrs.sayfa` (`^c[0-9]{2}-s[0-9]{4}$`, ör. `c01-s0045`) değerlerini geçici olarak okur (`apps/editor/src/screens/ocr/scan-ref.ts`); alan adları farklı kesinleşirse `scan-ref.ts` o adlara çekilir, değerler desene uymuyorsa panel istek göndermez ve "Görsel eşlemesi henüz tanımlı değil (A16)" der. Bölge kutusu alanları da burada kesinleşir; A15 bölge kutusu katmanını çizmedi.
-- Türkçe arama anahtarları A05 normalleştiricisiyle üretilir. Baskı sayfa eşlemesi `page_map` tablosuna `source_id = 'elmalili-meal'` ve cilt (`volume`) ile yazılır (Elmalılı hazırlığı §6).
-- Komutlar: `normalize`, `anchor`, `qa run`, `export pg` (`--source elmalili-meal`).
-- **Bitti sayılır:** 6.236 âyetin her biri bir meal birimine ya da `birlesik_ile` bağına sahip ya da kuyrukta işaretli.
+### A16.2 · Kaynak kayıtları, kilit ve içe aktarım (`hat-gelistirici`)
+- **Kaynak kayıtları.** `elmalili-meal.toml` için `surum` yoktur ve `export pg` onsuz çıkış 2 verir; eklenen alanlar: `surum`, `kaynak_url`, `provider`, K-49 atfı; notlar yeniden yazılır. `surum` biçimi (ASCII, boşluksuz): `elmalili-meal` `revid-liste-965a6249f61c-2026-11-11`, `elmalili-sade-meal` `commit-93e6f64925ae76273520d636fcaaf061129f2316`, `elmalili-meal-epub` `sha1-97477fdddf3b-2026-11-11`; `data_version = '{slug}@{surum}'`. Yeni kayıtlar: `elmalili-sade-meal.toml`, `elmalili-meal-epub.toml`. `elmalili-tefsir-yek` kaydı açılmaz (YEK kullanılmadı; A37 adayı).
+- **Tek kayıt modülü** `ingest/meal_kaynaklari.py`: kaynak kimliğine bağdaştırıcıyı, çapa eserini, kilit bölümünü, tanık bağını ve kapı kümesini eşler. `cli.py` (normalize, anchor, ingest), `qa/run.py`, `export/pg.py` ve `qa/__init__.py` `kaynak_kapilari` bu kümeden türer. Tutarlılık testi yazılır.
+- **Kilit** `ingest/elmalili_meal.lock.json` kendi şemasını taşır:
+  - Vikikaynak sayfa başına: `baslik`, `sure` (114 açık eşleme; başlık çalışma sırasında ayrıştırılmaz), `revid`, `sha1`, `wikitext_sha256`.
+  - Sadeleştirilmiş meal: `url`, `commit`, `boyut`, `sha256`.
+  - Tanık (EPUB): öğe, dosya, boyut, `sha1`, `sha256`.
+  - `ingest meal --kilit-oner` öneriyi yazdırır, dosya yazmaz. Her sayfanın âyet sayısı Tanzil sayısıyla karşılaştırılır. Kilit yalnız `/karar` ile değişir (K-49 madde 11).
+- **Yeniden kullanım.** Yardımcılar (`_yaz_esitle`, `_klasoru_tasi`, `tarih_gecerli`, `ham_kopyala` …) `ingest/tanzil_ust_veri.py` örneğindeki gibi `ingest/tanzil.py` ve `ingest/sure_adlari.py`'den içe aktarılır. Taşıma yapılmaz; A10 ve A11 koduna dokunulmaz.
+- **Vikikaynak bağdaştırıcısı** (`ingest/elmalili_vikikaynak.py`, `SourceAdapter` ve `run_ingest` düzeni). `parse` adımında sırayla:
+  1. `mwparserfromhell` ile ayrıştırma; çağrı parametreleri açıkça verilir.
+  2. A16.0 envanterinden kurulan açık kural tablosu: her şablon ve etiket için "at", "N'inci parametreyi tut" ya da "boşluk yap". Bilinmeyen şablon ya da etiket çıkış 2 verir.
+  3. Satır sonu kuralı yazılır. `str.split()`, `str.strip()` ve `\s` kullanılmaz (U+00A0); sayılar `[0-9]` ile okunur.
+  4. Sayfa başı ve sonu bölgeleri ile K-49 madde 8 sınır kuralları; uyarılar.
+  5. `anchor/metin.py` `kanonik_metin` (ilk kayıt; NFC yalnız burada).
+  6. Konum ve `provenance`: ham dosya SHA-256, `CIKARICI_SURUMU`, `mwparserfromhell` sürümü, `unicodedata.unidata_version`. Konum kilitli revizyonun wikitext dizgisinde yarı açık kod noktası aralıklarının listesidir; `@` ofseti değildir.
+  - Çıktı doğrudan `meal:elmalili:{s}:{a}` birimleridir.
+- **Sadeleştirilmiş meal bağdaştırıcısı:** `json`, çapa `meal:elmalili-sade`; konum JSON yoludur.
+- **Tanık bağdaştırıcıları.** EPUB (`zipfile` ve `html.parser`) `data/raw`'a alınır; YEK kullanılmadı. Çıktı birimsiz, (sure, âyet) anahtarlı staged `tanik.jsonl` dosyasıdır; adı `lineage.py`'de tanımlanır.
+- **Komut:** `uv run mutalaa ingest meal --source <kimlik> [--gelen-tarih] [--force] [--dry-run]`. `--limit` çıkış 2 verir.
+- **Vektör** `shared/test-vectors/extract/meal.jsonl`: yalnız sentetik girdi; her tuzak için bir satır (şablon, `<ref>`, `<br>`, nowiki, `&nbsp;`, `''` ve `'''`, satır sonu, numarasız, aralıklı, ardışık işaretler, ortak metin, yinelenen, besmele). Kayıt yerleri: `check-lib.mjs` `KINDS`, `check.test.mjs` `VECTOR_KINDS`, `pipeline/tests/vektor_dosyalari.py` `KOSULAN`, `server/tests/Mutalaa.Domain.Tests/VectorCoverageTests.cs` `SkippedFiles` (K-49 madde 13 gerekçesiyle). Gerçek meal metni teste ve vektöre girmez.
+- `mwparserfromhell` tip bilgisi taşımıyorsa `pipeline/stubs/` altına taslak eklenir.
+- **Testler.** Çıkış 2 beklenenler: kilit uyuşmazlığı, bozuk wikitext, bilinmeyen şablon, `--limit`. Yazım davranışı: `--dry-run` `data/raw`'a yazmaz; var olan raw yeniden kullanılır; `--force` ile iki koşu bayt bayt aynı staged üretir. Sınır kuralları (birleşik ve ardışık işaretler, `ortak_metin`, numarasız, yinelenen, besmele işareti, sayfa başı ve sonu) ayrı ayrı sınanır. Gerçek veride beklenen sayılar (11 Kasım 2026 ölçümü, orijinal meal): 19 baş ve 19 izleyen birleşik birim, 17 `ortak_metin` birimi, 3 numarasız parça, Nisâ 68 yinelenen numara; `{{kısım||besmele}}` gerçek veride yoktur.
+- **Bitti sayılır:** iki meal ve tanıklar staged'de; testler ve vektör yeşil.
 
-### A16.4 · Kuyruk ve tur 1 (İ-11; dal (b))
-- Hazır metin dalında (a) tur 1 A16.9'dadır.
-- Kuyruk A15'in `kuyruk/ocr` rotasıdır (görev adı öneri: `uv run mutalaa export review-queue --task ocr`). Görsel ucu A14'te yazıldı (`GET /api/v1/scans/{baski}/{sayfa}`, K-48 madde 8) ve A15 paneli TIFF'i `utif2` ile çizer. Panelde Böl, Birleştir, Belirsiz işaretle, Not ekle ve ofsetli birimde Düzelt düğmeleri kapalı "Açık soru: A16" etiketlidir ([BÇ-54](../07-belge-celiskileri.md#1-karar-bekleyenler), [BÇ-53](../07-belge-celiskileri.md#1-karar-bekleyenler)): hangilerinin gerçekten gerektiği bu adımda kararlaştırılır ve karar ucuna `/karar` ile eklenir.
-- G-YZ alanları: OCR'da görsel model kullanıldıysa birimin `review` satırında durur ([K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları), 26 Ekim 2026). `ai_model` → `review.yz_modeli`; `prompt_id`, `prompt_sha256` ve `input_sha256` → `review.yz_kaydi` (kısıt `review_yz_kaydi_check`); `review_id` → `review.id`; `created_at` → `review.created_at`. `dogrulanmis` saklanmaz; birimin `metin_durumu = 'onayli'` olmasından türetilir ([Editoryal veritabanı](../../03-veri/02-editoryal-veritabani.md) §8; BÇ-05). Göç A07'dedir; burada yalnız hat bu sütunları doldurur.
-- Tur 1 (insan): her birim düzeltilir ve onaylanır. Dört göz kuralı geçerlidir: düzelten ve onaylayan farklıdır; meal metni ikinci onay alanıdır. Claude Code kuyruk sayılarını ve hata desenlerini raporlar, metni kendisi düzeltmez.
-- İnsan turu: tur 1 editör emeğidir (İ-11) ve yalnız A16.4'ün kapanışını bekletir. Claude Code kuyruğu, ölçüm raporlarını ve A16.5'in araçlarını (örneklem betiği, kapılar) hazırlamayı sürdürür; bekleyen adım ilerleme dosyasında ve durum bloğunda "İ-11 tur 1" olarak yazılır ve kullanıcıya söylenir. Tur bitince A16.5 sürer.
-- **Bitti sayılır:** `meal:elmalili` birimlerinin tamamı `onayli`; açık `review` kaydı 0.
+### A16.3 · Normalize, anchor, kapılar ve raporlar (`hat-gelistirici`, `metin-denetcisi`)
+- **Ortak işlevler.** `adimlar/meal.py` kaynak parametreli çalışır (şablon: `adimlar/fikstur.py`). normalize: `search_keys` ile `tr_*`. anchor: `content_hash`, `ord`, `ayah_range` (baş birimde kapsam aralığı), `metin_durumu = 'taslak'`, `data_version = '{slug}@{surum}'`.
+- **Tanık skoru.** `elmalili-meal` anchor adımında hesaplanır; tanık staged dosyası girdi olur. `rapidfuzz`, `processor=None`, `tr_narrow` üzerinde; ölçek 0–100; yöntem sürümüyle staged'e yazılır.
+- **Kapılar** (`qa/checks/meal.py`, `MEAL_KAPILARI`): G-KAY; G-BUT (yeniden üretilebilirlik, birleşik birim için iki yönlü değişmez, NFC; U+200C ve U+200D serbest, öteki Cf ve Cc karakterleri red; sayfa başı ya da sonu bölgesi 100 karakterden uzunsa kalır: `bolge_sayisi`, `en_uzun_bolge`); G-CAP (meal tanımı: çapa durur, `content_hash` yalnız kilit değişiminde değişebilir ve rapora yazılır); G-NOR; G-HIZ (sert kapı: kalırsa `export pg` yapılmaz). G-MET bu yolda uygulanmaz (K-49 madde 12). `qa/rapor.py` sayı sözlüğüne `5: "bes"` eklenir; `cli.py` yardım metni güncellenir.
+- **Raporlar** (`data/reports/`, meal metni yok): kapsam raporu; kod noktası envanteri; çapraz tanık raporu (başına tanığın baskı esası ve ortak köken ihtimali yazılır; skor "özgün baskıya sadakat" diye sunulmaz); sadeleştirme taraması (orijinal mealde; veriye dayanır, yapay zekâ kullanılmaz: aynı âyette sadeleştirilmiş mealle ortak olup tanıkta bulunmayan sözcükler, şapka ve kesme farkları; karşılaştırma `tr_narrow` ve ham sözcüklerle).
+- **Testler:** G-HIZ kalınca çıkış 1; beş kapılı rapor kabul edilir; G-BUT değişmezi; U+200C korunur.
+- **Bitti sayılır:** iki kaynakta da kapılar geçti; `metin-denetcisi` raporu temiz.
 
-### A16.5 · Tur 2 ve QA kapıları (İ-11)
-- Belgeler "iki düzeltme turu" der ama ikinci turun kapsamını tanımlamaz; planda kullanıcıya sorulur ve `/karar` ile yazılır. Öneri: §8'deki ikinci okuma. Örneklem en az 600 âyettir, cilt ve sureye göre tabakalıdır, sabit tohumla seçilir; ikinci kişi görselle karşılaştırır.
-- Ölçüm: hatalı âyet oranı; hiç hata yoksa %95 üst sınır yaklaşık `3 / n`; hedef < %0,5 (öneri). Hata bulunursa desen düzeltilir, ilgili bölümler taranır, yeni örneklem çekilir.
-- Kapılar: G-HIZ (%100), G-MET (CER eşiği, imlâ sözlüğü çakışması 0, kalan `⟦?⟧` 0), G-INC (bütün birimler `onayli`, ikinci okuma eşiğin altında), G-YZ, G-KAY (kaynak kaydı geçerli, `atif_metni` dolu) ve sadeleştirme denetimi (örneklemde modernleştirilmiş kelime 0).
-- **Bitti sayılır:** QA ve ikinci okuma raporları `data/reports/` altında; kapılar "geçti".
+### A16.4 · Yükleme ve inceleme kuyruğu (`hat-gelistirici`)
+- **Yönlendirme.** `export/pg.py` meal kaynaklarını kayıt modülünden `export/pg_meal.py`'ye gönderir. Tanıklar yüklenmez. Şablonlar: `export/pg_fikstur.py` (taslak `INSERT_UNIT`) ve `export/pg_sure_adlari.py` (`INSERT_REVIEW`); `pg_fikstur`'un fark denetimi kullanılmaz, meal için ayrı denetim yazılır. Var olan advisory lock ve tek işlem korunur. `page_map` yazılmaz (S-15).
+- **Birim kuralları:** K-49 madde 10 ve 11. Hat meal biriminin metnine hiç yazmaz; özeti farklı birim (editör düzeltmesi) `korunan_duzeltilmis` sayacına girer (yeniden kuyruğa giren taslak birim sayılmaz); `tr_stem IS NULL` ise veritabanındaki güncel metinden hesaplanır (`export`'un `normalize`'ı içe aktarması `tests/test_yaprak_kitapliklar.py` ile sınanır; uygun değilse hesap ayrı bir adıma alınır).
+- **İnceleme kuralları:** K-49 madde 9. Hat kaydı `eylem = 'oner'`, `koken = 'hat'`, `oneren = 'hat'`; `onerilen = {metin, content_hash, uyari?: [kod], tanik?: {skor 0..100, kapsam: [ilk, son] ya da null, yontem "rapidfuzz.fuzz.ratio/tr_narrow", yontem_surumu "1", kaynak "elmalili-meal-epub"}}`; uyarı kodları `birlesik_meal`, `ortak_metin`, `numarasiz_parca`, `yinelenen_numara`, `sira_disi`, `besmele_meali`; anahtar `(unit, 'metin', onerilen.content_hash)`; birleşik izleyen birimde `onerilen` NULL; kaynak sürümü değişiminde `onceki` = `{metin, content_hash}`. `pg_meal` açık inceleme açmadan önce sunucunun düzeltme ucuyla aynı `unit-correction:{çapa}` danışma kilidini alır. İlk yüklemede kayıtlar tanık skoruna göre artan sırada eklenir; bu sıra yalnız ilk yükleme için geçerlidir.
+- İlk `export pg`'den önce önlem olarak `scripts/backup-db.ps1` çalıştırılır.
+- **Testler** (`veritabani` işareti, `MUTALAA_DEGISMEZLIK_ZORUNLU=1`): ilk yükleme `taslak` girer ve ikinci koşu 0 değişiklik verir; ret, ilk onay, ikinci onay ve düzeltme UPDATE ile benzetilir, ardından koşu çıkış 0 verir, 0 yeni kayıt açar ve `korunan_duzeltilmis` sayacını gösterir; `tr_stem` dolar; ret sonrası birim yeniden kuyruğa girer; birleşik birimde `onerilen` NULL olur; kilit değişimi ve çıkış 1 ile 2 durumları sınanır.
+- **Bitti sayılır:** yerel veritabanında 2×6.236 birim `taslak`; açık kayıt sayısı 2×6.236 (birleşik izleyenler dahil); ikinci `export pg` 0 değişiklik.
 
-### A16.6 · Yeniden yayın
-- `publish --flavor dev`: `core` mealle yeniden yayımlanır; `attribution` Elmalılı atıf metnini ve aktarım sürümünü taşır ([Elmalılı hazırlığı](../../04-icerik/03-elmalili-hazirligi.md) §9).
-- Veri seti `elmalili-meal` anlamsal sürüm taşır; 1.0.0 ilk onaylı sürümdür. Dondurma ve mağaza yayını A34'tedir.
-- **Bitti sayılır:** `dev` manifestinde yeni `core` sürümü; `verify --flavor dev` 0.
+### A16.5 · API ve editör (`sunucu-gelistirici`, `web-gelistirici`)
+- **API.** `GET /api/v1/reviews` iki isteğe bağlı süzgeç alır: `kaynak` (`unit.source_id`) ve `asama` (ilk ya da ikinci onay bekleyen). Release derlemesiyle `openapi/v1.json` yeniden üretilir, `gen:api` çalışır. `birlesik_ile` taşıyan birimde metin değiştiren karar ve düzeltme 422 verir. "A16'da kalkar" iletileri ve yorumu BÇ-59'a (A20) çekilir; iki ileti de "Ofsetli" ile başlar (editörde `OFFSET_MARKER` eşleşmesi). Dosyalar: `ReviewDecisions.cs`, `UnitEndpoints.Corrections.cs`.
+- **API testleri.** Hat kökenli meal iki onayla `onayli` olur; `onerilen` NULL ile durum onayı çalışır; `onceki` dolu kaynak farkı kaydı onaylanır; hat kaydı açıkken düzeltme 409 verir; süzgeçler çalışır; ileti belirteci yerindedir.
+- **Editör.** `kuyruk/ocr` rotasına kaynak sekmeleri (orijinal ve sadeleştirilmiş) ve "ikinci onay bekleyenler" görünümü eklenir; seçim URL'dedir (`?kaynak=orijinal|sade`, `?asama=ilk|ikinci`) ve liste yükleme sayısı canlı bölgeden duyurulur. Liste öğesinde ve ayrıntıda kaynak adı ve etiket görünür. Ayrıntıya eklenenler: `onerilen.uyari` kutusu (kodlara göre); "tanık uyumu" gösterimi (Güven etiketi kullanılmaz); `AyahSection` içinde `attrs.kapsam`; izleyen birimde baş birime bağlantı ve kapalı Düzelt; besmele notu. `OpenQuestionButton` aşamaları `'S-15'` ve `'A20'` olur; `tr-ocr.ts` `notMapped` metni güncellenir; `screens/baglanti/target.ts` yorumuna "bağlantı hedefi orijinal meal; A18'de gözden geçirilir" yazılır. Vitest ve axe testleri.
+- **Bitti sayılır:** `dotnet test`, `dotnet format`, OpenAPI ve `gen:api` farkı temiz; editör `test`, `lint`, `typecheck` yeşil.
 
-### A16.7 · Hazır metin dalı: kalıcı içe aktarım (yalnız dal (a); K-38)
-- Önkoşul: A09 yol kararı hazır metin; aday kaynak kaydı (`elmalili-meal`) ile revizyon listesi ya da dosya özeti A09'da ve A16.0'da kilitlendi. Dosyalar A16.0'da Claude Code tarafından `data/gelen/elmalili-meal/<YYYY-AA-GG>/` altına indirildi.
-- Hat, kayıtlı dosyayı `ingest register` (komut adı öneri; henüz yoktur) ile `data/raw` altına alır: SHA-256 ve `fetch.json`, dosya değişmez. Kayıtsız ve özeti uyuşmayan dosya işlenmez.
-- Biçim okuyucusu seçilen adayın biçimi içindir ve hazır kitaplığa dayanır: Vikikaynak wikitext'i için `mwparserfromhell` (sürümü A16.0'da sabitlendi), Tanzil biçimi için standart kitaplık; metin katmanlı PDF çıkarsa `pypdf`. Kendi HTML, EPUB ya da PDF okuyucusu yazılmaz. Okuyucu deterministiktir ve çıkarıcı sürümü sabittir.
-- Çıkarılmış metin kaynak dosyanın birebir dilimi değildir; üçüncü bir kanonik metin türüdür (K-38 madde 3; K-26'ya ek). Dönüşüm `shared/test-vectors/` altında ortak vektörle üç dilde tanımlanır; vektör sentetik metinle ya da kaynak dosyadan alınmış parçayla yazılır. Gerçek meal metni vektöre hafızadan girmez.
-- İlk kayıt adımları (K-35) uygulanır; NFC yalnız burada ve yalnız bizim ürettiğimiz çıkarılmış metne uygulanır. `provenance` dosya özetini, dosya içi konumu ve çıkarıcı sürümünü taşır. G-BUT denetimi bu tür için "ham dosya ve çıkarıcıdan metin yeniden üretilebilir" olur.
-- Sadeleştirme taraması ve 6.236 âyet kapsamı denetimi otomatik çalışır; sonuç `data/reports/` altına yazılır. Claude Code metni düzeltmez.
-- **Bitti sayılır:** çıkarılmış metin ham dosyadan yeniden üretiliyor (aynı girdi, aynı çıktı); vektör testleri yeşil; kapsam ve sadeleştirme raporu hazır.
+### A16.6 · Yayınlayıcı ve yeniden yayın (`sunucu-gelistirici`)
+- **Katalog.** `PackCatalog.cs`'te `core`'a `elmalili-meal` ve `elmalili-sade-meal` eklenir (`Content`, `Required: false`). K-47 notu: ilk meal yayınından sonra meal çapa kümesi donar. Başlık "Kur'an ve Elmalılı mealleri".
+- **Testler.** `PackCatalogTests` güncellenir; kapı girdisi meal satırıyla ve meal satırı olmadan sınanır; `PackAssembler`: `dev` ve `internal`'da `approved = 0`, atıf `atif_metni` ve `surum` alanlarını olduğu gibi taşır; `public`'te P-10 süzmesi; `capa-kayboldu` durumu; sentetik meal fikstürüyle uçtan uca test (yalnız test kodunda; depoya yeni `test-` kaydı eklenmez).
+- **İlk `publish --flavor dev`.** Yalnız G-HIZ ve K-49 madde 8 kesinleştikten sonra yapılır. Önce LAN IP ve `Storage:PublicBaseUrl` denetlenir. Ardından `verify --flavor dev` koşar; `internal` ve `public` kuru çalıştırılır.
+- **Bitti sayılır:** `verify` 0; `core` öz denetiminde iki meal için 6.236'şar `unit`; `public` kuru çalıştırmada meal birimleri dışarıda.
 
-### A16.8 · Hazır metin dalı: `taslak` girişi ve bölme (yalnız dal (a); K-38)
-- Çıkarılmış metin A16.3'teki biçimde âyetlere bölünür ve `meal:elmalili:{s}:{a}` birimleri olarak girer. Hazır metnin âyet işaretleri varsa kullanılır; yoksa A16.3 bölme önerisi kuyruğa düşer. Sınır durumları (birleşik meal, besmele) A16.3'tekiyle aynı kararlara bağlanır.
-- Ön ölçüm (1 Kasım 2026, Vikikaynak): 114 sayfa; `kısım` işareti 6.238, benzersiz âyet 6.236; işaret biçimleri `|N` 6.233, `|N-N` 2 (Tekvîr 8-9 ve Mutaffifîn 4-5: iki âyetin tek parçada geldiği birleşik meal adayları) ve numara taşımayan `|,` 3 (Sâd 59/60, Secde 28/29 ve Kasas 47/48 arasında; metin parçasının hangi âyete ait olduğu bu adımda karara bağlanır); Nisâ sayfasında 68 numaralı işaret iki kez geçer; En'âm sayfasında başlıktaki sure sırası notu öteki sayfalardan farklı olduğundan sure sırası sayfa adından okunur; sayfa işareti şablonu yoktur.
-- Başlangıç durumu `metin_durumu = 'taslak'`'tır; `onayli` ile giriş yalnız Tanzil gibi kanonik başvuru kaynakları içindir (K-38 madde 4). Meal ve tefsirde ikinci onay geçerlidir. Böylece P-10 editör onaysız hazır metni `public` derlemeye sokmaz (BÇ-43).
-- Hazır metinden gelen onaysız birimler `dev` ve `internal` derlemede "doğrulanmamış" rozetiyle görünür, `public` derlemeye girmez (K-42 madde 5).
-- `page_map` kaydı özgün baskı görselinden (A16.1) yapılır; hazır metin sayfa bilgisi taşımaz ya da güvenilmezse sayfa eşlemesi baskıdan elle doğrulanır.
-- **Bitti sayılır:** 6.236 âyetin her biri bir meal birimine ya da `birlesik_ile` bağına sahip ya da kuyrukta işaretli; hepsi `taslak`.
-
-### A16.9 · Hazır metin dalı: iki düzeltme turu ve görselle karşılaştırma (İ-11; yalnız dal (a); K-38)
-- Tur 1 (insan): her birim özgün baskı görseliyle karşılaştırılır, düzeltilir ve onaylanır. Dört göz kuralı geçerlidir. Düzeltme çapayı değiştirmez; `content_hash` ve `rev` değişir. Kuyruk A15'in rotasıdır ve OCR dalıyla ortaktır; görev adı öneridir.
-- Tur 2: A16.5'teki ikinci okuma (en az 600 âyet, tabakalı, sabit tohum); ikinci kişi görselle karşılaştırır. Hazır metnin sistematik hatası (sadeleştirme, baskı farkı) bulunursa desen düzeltilir, ilgili bölümler taranır ve yeni örneklem çekilir.
-- Atıf metni "X kaynağından alınmış, Mütâlaa tarafından özgün baskıyla karşılaştırılıp düzeltilmiştir" biçimindedir ([Elmalılı hazırlığı](../../04-icerik/03-elmalili-hazirligi.md) §9).
-- İnsan turu A16.4'tekiyle aynı biçimde yalnız A16.9'un kapanışını bekletir (İ-11 tur 1 ve tur 2 ilerleme dosyasına yazılır).
-- **Bitti sayılır:** birimlerin tamamı `onayli`; açık `review` kaydı 0; QA ve ikinci okuma raporları hazır (A16.5 ölçütleri).
+### A16.7 · Tur araçları ve editör turları (İ-11)
+- `uv run mutalaa qa sample --source <kimlik> --n 600 --seed <sabit>`: sure grubuna göre tabakalı örneklem (cilt S-15'e kalır). İkinci okuma rapor şablonu ve G-INC ölçüm raporu (veritabanını okur).
+- Tur 1 her âyetin iki ayrı kişiyle onayıdır (K-38'deki 60 âyetlik elle ön denetimi karşılar); tur 2 en az 600 âyetlik ikinci okumadır, hedef %95 güvenle hatalı âyet oranı < %0,5 (K-49 madde 12; hiç hata yoksa üst sınır yaklaşık `3 / n`). Hata bulunursa desen düzeltilir, ilgili bölümler taranır, yeni örneklem çekilir. Turlar iki meal için yapılır; Faz 1'i yalnız orijinal mealin turları bağlar (K-49 madde 6).
+- Kod işi bitince A16 `engelli` olur. Not: "A16.0–A16.6 tamam; İ-11 tur 1 ve tur 2 bekleniyor".
+- **Bitti sayılır:** örneklem ve ölçüm araçları hazır; kalan iş insan turlarıdır.
 
 ## Kabul ölçütleri
-- [ ] Tedarik (A16.0): tablodaki adresler açıldı ya da yedeği kullanıldı; dosyalar `data/gelen/<kaynak>/<YYYY-AA-GG>/` altında, SHA-256 kayıtlı; `elmalili-meal` kaydı güncel ve `sources check` 0.
-- [ ] Tarama envanteri cilt başına sayfa sayısını, toplamı ve eksik sayfaları gösteriyor; künye denetimi envanter raporunda.
-- [ ] Dal (b): her meal sayfasının OCR çıktısı var; yapay zekâ çağrıları model, istem özeti ve maliyetle kayıtlı; yapay zekâ ürünü metin onaya kadar "doğrulanmamış" (G-YZ geçti).
-- [ ] G-HIZ: 6.236 âyetin her birinde meal birimi ya da `birlesik_ile` bağı var.
-- [ ] Sınır durumları karar defterinde. G-YZ alanlarının yeri [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) ile yazıldı (26 Ekim 2026).
-- [ ] Tur 1 sonrası `elmalili-meal` birimlerinin tamamı `onayli`; `unit` hedefli açık `review` kaydı 0 (SQL).
-- [ ] Tur 2 örneklemi en az 600 âyet; üst sınır raporda; G-MET ve G-INC "geçti".
-- [ ] `metin-denetcisi` raporu: NFC yalnız ilk kayıtta, Tanzil metnine dokunulmamış, sadeleştirme yok.
-- [ ] `verify --flavor dev` 0 ve `core` paketinde meal birimleri var.
-- [ ] Hazır metin dalı seçildiyse (A09 eşiği geçildiyse): çıkarılmış metin ham dosyadan yeniden üretiliyor; ortak test vektörü üç dilde yeşil; birimler `taslak` girdi ve ikinci onaydan geçti; sadeleştirme taraması ve kapsam raporu temiz; atıf metni "karşılaştırılıp düzeltilmiştir" biçiminde; onaysız hazır metin birimi `public` derlemede yok (P-10).
+**Kod ve veri**
+1. [ ] Tedarik: `SHA256SUMS` geçer, kilit yazılı, `sources check` 0 hata 0 uyarı, ölçüm raporu var.
+2. [ ] G-HIZ: iki meal için 6.236 âyetin her biri bir birime ya da `birlesik_ile` bağına sahip.
+3. [ ] `--force` ile iki `ingest` aynı staged'i üretir; Python vektör testi ve `check.mjs` yeşil.
+4. [ ] G-KAY, G-BUT, G-CAP, G-NOR, G-HIZ geçti (G-BUT sayfa başı ve sonu bölgesi sınırı dahil); G-MET K-49 gereği uygulanmadı. Orijinal mealde 19 baş ve 19 izleyen birleşik birim ile 17 `ortak_metin` uyarısı raporda.
+5. [ ] Veritabanı: 2×6.236 birim `taslak`; inceleme sayısı doğru; ikinci `export pg` 0 değişiklik; benzetilen kararlardan sonra yine 0.
+6. [ ] API ve editör testleri yeşil; OpenAPI ve üretilmiş istemci güncel.
+7. [ ] `dev` `core` iki meali `approved = 0` ile taşır; `verify` 0; `public` kuru çalıştırmada mealler P-10 ile dışarıda.
+8. [ ] `metin-denetcisi`: NFC yalnız ilk kayıtta; Tanzil metnine dokunulmadı; raporlarda, testlerde ve commit'lerde meal metni yok.
+9. [ ] Atıf metinleri K-49 madde 14'e uygun.
+10. [ ] Belgeler: arama ifadeleri temiz, bağlantı denetimi temiz, kit testleri yeşil.
+
+**İ-11'e bağlı**
+
+11. [ ] Tur 1: iki mealde bütün birimler `onayli`; `unit` hedefli açık inceleme 0 (SQL).
+12. [ ] Tur 2: her meal için en az 600 âyet; üst sınır raporda; G-INC geçti.
 
 ## Doğrulama
 ```bash
-# A16.0: indirilen dosyaların SHA-256 değerleri kayıtla aynı olmalı
-sha256sum data/gelen/elmalili-meal/<YYYY-AA-GG>/* data/gelen/elmalili-1935/<YYYY-AA-GG>/*
-# beklenen: "<N> kayit, 0 hata, 0 uyari" (N, o güne dek açılan kayıt sayısıdır)
+sha256sum -c SHA256SUMS                                              # her data/gelen/<kaynak>/<tarih>/ klasöründe
 uv run --directory pipeline mutalaa sources check
-uv run --directory pipeline mutalaa qa run --source elmalili-meal --gate G-HIZ
-uv run --directory pipeline mutalaa qa run --source elmalili-meal
+uv run --directory pipeline mutalaa ingest meal --source elmalili-meal --force      # iki kez; staged özetleri karşılaştırılır
+uv run --directory pipeline mutalaa ingest meal --source elmalili-sade-meal
+uv run --directory pipeline mutalaa ingest meal --source elmalili-meal-epub
+uv run --directory pipeline mutalaa normalize --source elmalili-meal   # ve elmalili-sade-meal
+uv run --directory pipeline mutalaa anchor --source elmalili-meal      # ve elmalili-sade-meal
+uv run --directory pipeline mutalaa qa run --source elmalili-meal      # ve elmalili-sade-meal
+uv run --directory pipeline mutalaa export pg --source elmalili-meal   # ve elmalili-sade-meal; ikinci koşu 0 değişiklik
+uv run --directory pipeline mutalaa qa sample --source elmalili-meal --n 600 --seed 20261111 --dry-run
 uv run --directory pipeline pytest
-uv run --directory pipeline ruff check .
-docker compose exec -T postgres psql -U mutalaa -d mutalaa -c "SELECT metin_durumu, count(*) FROM icerik.unit WHERE source_id = 'elmalili-meal' GROUP BY 1;"
+MUTALAA_DEGISMEZLIK_ZORUNLU=1 uv run --directory pipeline pytest -m veritabani
+uv run --directory pipeline ruff check . && uv run --directory pipeline ruff format --check . && uv run --directory pipeline mypy
+uv run --directory pipeline mutalaa export test-vectors --check
+node shared/test-vectors/scripts/check.mjs
+pnpm lint && pnpm typecheck && pnpm test && pnpm exec prettier --check .
+pnpm --filter @mutalaa/editor gen:api && git diff --exit-code apps/editor/src/api
+dotnet build server/Mutalaa.slnx -c Release && git diff --exit-code server/Mutalaa.Api/openapi
+dotnet test --solution server/Mutalaa.slnx
+dotnet format server/Mutalaa.slnx --verify-no-changes
+docker compose exec -T postgres psql -U mutalaa -d mutalaa -c "SELECT source_id, metin_durumu, count(*) FROM icerik.unit WHERE kind = 'meal' GROUP BY 1,2;"
 docker compose exec -T postgres psql -U mutalaa -d mutalaa -c "SELECT count(*) FROM icerik.review WHERE hedef_tablo = 'unit' AND durum = 'acik';"
 dotnet run --project server/Mutalaa.Publisher -- publish --flavor dev
 dotnet run --project server/Mutalaa.Publisher -- verify --flavor dev
+node --test ".claude/hooks/test/*.test.mjs"
+node --test "scripts/ci/*.test.mjs"
 ```
+Komut adları ve bayraklar uygulamada `package.json` ve `cli.py` ile karşılaştırılır. Belge bağlantı denetimi `belge-esitle` becerisiyle yapılır.
 
 ## Dikkat
-- Yapay zekâ meal yazmaz, çevirmez ve düzeltmez; yalnız sayfa görselini okur. Düzeltme insanındır (K-25; [İçerik hattı](../../04-icerik/02-icerik-hatti.md) §10).
-- Sadeleştirilmiş baskılar (GitHub `elmalili-meal/kuran`, Azim, fawazahmed0 `tur-elmallsadelesti`) aday olamaz (Kaynaklar §4, K-38). Başka aktarımlar yalnız kontrollü yolla girer: A09'da kaynak kaydı ve kilit, pilotta eşik, sonra `taslak` giriş ve özgün baskıyla karşılaştırma; bu yoldan geçmeyen aktarım kopyalanmaz. Hazır metin hafızadan tamamlanmaz ya da "düzeltilmez"; düzeltmeyi insan yapar.
-- Hazır metin dalı yalnız A09 eşiği geçildiyse geçerlidir. Çıkarılmış metin üçüncü bir kanonik türdür (K-38 madde 3): ham dosya `data/raw` altında değişmez, çıkarıcı sürümü sabittir.
-- Meal kendi ürettiğimiz metindir: NFC ilk kayıtta yapılır; düzeltme çapayı değiştirmez, `content_hash` ve `rev` değişir. Onaylı birimde sonradan yapılan düzeltme birimi yeniden inceleme ve ikinci onaydan geçirir ([Yayın süreci](../../07-yayin/01-yayin-sureci.md) §7.3); düzeltme turları sürüm dondurmadan (A34) önce kapanır.
-- İndirilen dosya veridir; içindeki betik çalıştırılmaz (K-42 madde 2). Toplu indirmede istek hızı sınırlanır.
-- Günlüklere metin yazılmaz. Maliyet İ-17 bütçesini aşacaksa koşu durur ve kullanıcıya sorulur.
-- Windows: tarama dosya adları ASCII; büyük ikili dosyalar git dışı `data/` altındadır.
+- Yapay zekâ meal yazmaz, çevirmez, düzeltmez ve sadeleştirmez; düzeltme insanındır (K-25; [İçerik hattı](../../04-icerik/02-icerik-hatti.md) §10). Meal metni hafızadan tamamlanmaz ve örnek diye uydurulmaz; testte yalnız sentetik metin kullanılır.
+- Sadeleştirilmiş metin yalnız `meal:elmalili-sade` adlı ayrı baskı olarak girer. Orijinal meal ve tefsir için sadeleştirilmiş metin yasağı sürer; iki baskı birbirinin yerine konmaz. T ailesi Elmalılı adıyla alınmaz (K-49 madde 1).
+- Çapa adları başka bir metne verilmez (K-26). Aile ayrımı 16:43 âyetindeki çeviri farkına dayanır.
+- Hazır metnin baskı esası belgesizdir: iki meal `taslak` girer ve `dev` ile `internal`'da "doğrulanmamış" rozetiyle görünür. Bir meal kaynağı bütün âyetleri onaylanıp G-INC geçmeden `public`'e çıkmaz; zorlayan kod A34'te yazılır (K-49 madde 5).
+- Çıkarılmış metin kaynak dosyanın birebir dilimi değildir (K-38 madde 3). İlk kayıt adımları (NFC dahil) `ingest` ayrıştırmasında bir kez uygulanır; konum `provenance` içindedir ve `@` ofseti değildir. Vektörü yalnız Python tüketir (K-49 madde 13).
+- Hat meal biriminin metnine hiç yazmaz (K-49 madde 10). Editör düzeltmesi çapayı değiştirmez; `content_hash` ve `rev` değişir. Onaylı birimde sonradan yapılan düzeltme yeniden inceleme ve ikinci onaydan geçer ([Yayın süreci](../../07-yayin/01-yayin-sureci.md) §7.3).
+- Editörler çalışırken meal `export pg` yapılmaz: hat ve API farklı kilit anahtarı kullanır ve açık kayıt tekilliği yoktur. Kısmi tekil dizin önerisi yeni bir BÇ olarak açılır.
+- Çapa kümesi K-47 sürekliliğine girdi: ilk `dev` yayını (2026.11.2; `core` iki meali taşır, `verify` temiz) yapıldı. Sonraki yayınlarda iki mealin 6.236'şar çapasından her biri birim ya da geri çekilme kaydı taşımalıdır, yoksa yayın `capa-kayboldu` ile reddedilir. Meal çapası âyet başınadır; sınır durumu kuralları (K-49 madde 8) metni ve `attrs` değerlerini değiştirir, çapa kümesini değiştirmez. A34'e kadar kısmi meal `public`'e girebilir (yalnız onaylı birimler; P-10); bu yüzden o zamana kadar yayın `dev` ve `internal` derlemelerinde yapılır, G-INC kuralı A34'te yazılır.
+- Dev yayını `Storage:PublicBaseUrl` adresine bağlıdır (12 Kasım 2026'da `scripts/lan-ip.ps1` çıktısına çekildi). LAN IP değişirse değer güncellenir ve `publish` yeniden çalıştırılır; konteynerde `watch` açılırsa `.env` içindeki `DEV_LAN_IP` aynı adrese eşitlenir (İ-29). Sırlar listelenirken değer açılmaz ([Yerel geliştirme](../../02-mimari/04-yerel-gelistirme.md) §4).
+- Toplu indirmede istek hızı sınırlanır; `User-Agent` kişisel bilgi taşımaz. Windows: dosya adları ASCII; indirilen dosyalar `python -I` ile okunur; BOM ve CRLF denetlenir.
+- Günlüklere, raporlara ve commit'lere meal metni yazılmaz. Kuyruk ekranlarının tarayıcıda görülmesi kullanıcıya bırakılır.
 
 ## İnsan adımları
-- İ-09 · Basılı takım: yalnız internetteki taramalar A09.7 ofset sınamasını geçmezse gerekir (durum `gerekmiyor`; koşul gerçekleşirse `bekliyor` olur). Yalnız basılı takımın taranmasını bekletir; A16.1'in öteki işleri sürer.
-- İ-17 · Anthropic API anahtarı ve bütçe: görsel OCR seçildiyse A16.2'den önce gerekir (dal (b)); yalnız A16.2'yi bekletir.
-- İ-11 · Düzeltme turları: OCR dalında tur 1 A16.4'te, tur 2 A16.5'te; hazır metin dalında tur 1 ve 2 A16.9'da. Her tur yalnız kendi alt adımını bekletir; araç, kuyruk ve rapor işleri sürer. Bekleyen adım ilerleme dosyasında ve durum bloğunda görünür. Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
+- İ-11 · Düzeltme turları: iki mealde tur 1 (her âyetin iki ayrı kişiyle onayı) ve tur 2 (en az 600 âyetlik ikinci okuma). Orijinal mealin turları Faz 1'i bağlar; sadeleştirilmiş mealin turları fazı bekletmez. İnsan turu yalnız A16.7'nin kapanışını bekletir; araç, kuyruk ve rapor işleri sürer, öteki aşamalar beklemez. Bekleyen adım ilerleme dosyasında ve durum bloğunda görünür. Ayrıntı: [İnsan adımları](../06-insan-adimlari.md).
 
 ## Çıktılar
-- `pipeline/src/mutalaa_pipeline/ingest/` tarama kaydı, `enrich/` OCR ve bölme modülleri, `qa/checks/elmalili.py`, testler; Yol A ise imlâ sözlüğü
-- Hazır metin dalında ek olarak (planlı, adlar öneri): `ingest register` komutu, seçilen adayın biçim okuyucusu (Vikikaynak için `mwparserfromhell` ile wikitext ayrıştırıcı), çıkarılmış metin test vektörü (`shared/test-vectors/`)
-- `pipeline/sources/elmalili-meal.toml` (güncel kaynak kaydı); `data/gelen/elmalili-meal/`, `data/gelen/elmalili-1935/`, `data/raw/elmalili-1935/`, `data/ocr/`, `data/llm-cache/`, `data/reports/` (git dışı)
-- PostgreSQL'de `meal:elmalili` birimleri, `review` kayıtları, `page_map` satırları
-- Karar defterinde sınır durumları ve ikinci tur tanımı (G-YZ alanları K-37'de); `dev` kanalında yeni `core`
+- `pipeline/src/mutalaa_pipeline/ingest/` altında `meal_kaynaklari.py`, `elmalili_vikikaynak.py`, sadeleştirilmiş meal ve tanık bağdaştırıcıları, `elmalili_meal.lock.json`; `adimlar/meal.py`, `qa/checks/meal.py`, `export/pg_meal.py`, `qa sample`; testler
+- `shared/test-vectors/extract/meal.jsonl` (sentetik)
+- `pipeline/sources/` altında `elmalili-meal.toml` (güncel) ve yeni `elmalili-sade-meal.toml`, `elmalili-meal-epub.toml`; `data/gelen/` altında iki meal ve EPUB tanığı klasörü, `data/reports/` altında ölçüm, kapsam, tanık, sadeleştirme taraması ve G-INC raporları (git dışı)
+- PostgreSQL'de `meal:elmalili` ve `meal:elmalili-sade` birimleri ve `review` kayıtları
+- API süzgeçleri ve 422 kuralı, editörde iki meal sekmesi; `core` kataloğunda iki meal ve `dev` kanalında yeni `core`
 
 ## Elle başlatma istemi
 ```text
@@ -188,3 +229,4 @@ docs/10-claude-code/asamalar/A16-elmalili-meali.md dosyasındaki aşamayı yür�
 
 ## İlgili dosyalar
 - [Aşama haritası](../04-asama-haritasi.md) · [İlerleme](../05-ilerleme.md) · Önceki: [A15](./A15-editor-paneli.md) · Sonraki: [A17](./A17-kelime-katmani.md)
+- [Karar defteri](../../00-ozet/02-karar-defteri.md) · [Elmalılı hazırlığı](../../04-icerik/03-elmalili-hazirligi.md) · [Kaynaklar](../../04-icerik/01-kaynaklar.md) · [Sonra yapılacaklar](../../08-yol-haritasi/02-sonra-yapilacaklar.md) (S-15) · [A09 (ertelendi)](./A09-elmalili-ocr-pilotu.md)

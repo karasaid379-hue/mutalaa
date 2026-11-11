@@ -134,7 +134,7 @@ class QaRaporlari:
                 return rapor.rapor_id
             # basarili kismi (--gate) kosu ya da kapi iddia etmeyen rapor: daha eski rapora bakilir
         gerekli = kaynak_kapilari(source_id)
-        sayi = {2: "iki", 3: "uc", 4: "dort"}[len(gerekli)]
+        sayi = {2: "iki", 3: "uc", 4: "dort", 5: "bes"}[len(gerekli)]
         raise QaKaldi(f"QA raporu {sayi} kapiyi da icermiyor ({', '.join(gerekli)})")
 
     def onayli_mi(self, source_id: str, anchor_run_id: str, units_sha: str) -> bool:

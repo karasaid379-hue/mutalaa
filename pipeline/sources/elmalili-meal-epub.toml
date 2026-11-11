@@ -1,0 +1,14 @@
+# A16.2 (2026-11-11) · kaynak: docs/04-icerik/01-kaynaklar.md §3.3 · karar: K-49
+slug = "elmalili-meal-epub"
+tur = "meal"
+baslik = "Meal-i Şerif (EPUB), orijinal meal tanığı"
+yazar = "Elmalılı Muhammed Hamdi Yazır"
+surum = "sha1-97477fdddf3b-2026-11-11"
+provider = "archive.org"
+kaynak_url = "https://archive.org/details/elmalili-hamdi-yazir-meal-i-serif"
+atif_metni = "Meal: Elmalılı Muhammed Hamdi Yazır. archive.org 'elmalili-hamdi-yazir-meal-i-serif' EPUB dosyası; yalnız QA tanığıdır, yüklenmez."
+notlar = '''
+Yalnız tanıktır (K-49): birim üretmez, export pg ile yüklenmez; çıktısı (sure, âyet) anahtarlı staged tanik.jsonl dosyasıdır ve elmalili-meal için çapraz tanık skorunda kullanılır.
+Orijinal (O) ailesindendir ama ayrı derlemedir; baskı esası ve Vikikaynak ile ortak köken ihtimali bilinmez, skor özgün baskıya sadakat diye sunulmaz.
+Dosya: archive.org öğesi elmalili-hamdi-yazir-meal-i-serif, Elmalili-Hamdi-Yazir-Meal-i-Serif.epub (379.462 bayt, SHA-1 97477fdddf3b14f2f20d90ca380cb6b1ea9a3bc6); kilit: ingest/elmalili_meal.lock.json.
+YEK 2021 neşri tanık olarak kullanılmadı: metin katmanı meal bloklarına ayrılamadı (A16.0 ölçümü).'''

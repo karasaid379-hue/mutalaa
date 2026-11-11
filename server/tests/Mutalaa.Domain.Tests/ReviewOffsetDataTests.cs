@@ -6,7 +6,7 @@ using static Mutalaa.Domain.Tests.Support.ReviewFixtures;
 namespace Mutalaa.Domain.Tests;
 
 /// <summary>
-/// Ofsetli turev alanlar (marks, sentences): metin degisimi A16'da hesaplanana kadar desteklenmez (422 inceleme-desteklenmiyor);
+/// Ofsetli turev alanlar (marks, sentences): ofsetli alanlarin yeniden hesabi BC-59'da (A20) yapilana kadar metin degisimi desteklenmez (422 inceleme-desteklenmiyor);
 /// durum onayi (metin degismez) ve ret serbesttir. Yardimci ve karar kurali, tr-TR dahil.
 /// </summary>
 public class ReviewOffsetDataTests

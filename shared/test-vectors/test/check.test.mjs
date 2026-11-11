@@ -371,6 +371,7 @@ const NT = 'normalize/tr.jsonl';
 const NA = 'normalize/ar.jsonl';
 const NG = 'normalize/tr-govde.jsonl';
 const FQ = 'fts-query/query.jsonl';
+const EM = 'extract/meal.jsonl';
 
 /**
  * @param {string} text
@@ -1881,8 +1882,131 @@ const stemQueryRejected = [
   ['fts-query-duplicate-id', FQ, jsonl(fqRow, fqRow), [[/^duplicate id "fq-0001"/, 2]]],
 ];
 
-fieldAccepted.push(...normalizeAccepted, ...stemQueryAccepted);
-fieldRejected.push(...normalizeRejected, ...stemQueryRejected);
+/** @type {Row} */
+const emRow = {
+  id: 'ex-0001',
+  input: {
+    kaynak: 'vikikaynak',
+    sure: 2,
+    ayet_sayisi: 1,
+    wikitext: '{{kısım||1}}Deneme meal parçası 1\n',
+  },
+  expected: {
+    birimler: [{ ayet: 1, metin: 'Deneme meal parçası 1', attrs: {}, uyari: [] }],
+    on_bolge: false,
+    son_bolge: false,
+  },
+  note: 'sentetik girdi',
+};
+
+/** @type {Row} */
+const emError = { id: 'ex-0002', input: emRow.input, expected: { hata: true } };
+
+/** @type {Row} */
+const emSade = {
+  id: 'ex-0040',
+  input: { kaynak: 'sade', metin: 'Deneme metin' },
+  expected: { metin: 'Deneme metin' },
+};
+
+/** @type {Row} */
+const emEpub = {
+  id: 'ex-0050',
+  input: { kaynak: 'epub', sure: 2, akis: 'Deneme a (1)' },
+  expected: { parcalar: [{ ayet: 1, kapsam: [1, 1], metin: 'Deneme a' }], artik: 0, yinelenen: 0 },
+};
+
+/** @type {[string, string, string][]} */
+const extractMealAccepted = [
+  ['extract-meal-minimal', EM, jsonl(emRow)],
+  ['extract-meal-error-row', EM, jsonl(emRow, emError)],
+  ['extract-meal-sade-row', EM, jsonl(emSade)],
+  ['extract-meal-epub-row', EM, jsonl(emEpub)],
+  [
+    'extract-meal-attrs-and-warnings',
+    EM,
+    jsonl(
+      patch(
+        patch(emRow, 'expected.birimler.0.attrs', { kapsam: 'q:2:1-2' }),
+        'expected.birimler.0.uyari',
+        ['birlesik_meal'],
+      ),
+    ),
+  ],
+];
+
+/** @type {[string, string, string, Expect[]][]} */
+const extractMealRejected = [
+  [
+    'extract-meal-unknown-source',
+    EM,
+    jsonl(patch(emRow, 'input.kaynak', 'json')),
+    [[/^input\.kaynak: must be one of /, 1]],
+  ],
+  [
+    'extract-meal-missing-wikitext',
+    EM,
+    jsonl(patch(emRow, 'input.wikitext', undefined)),
+    [[/^input: missing key "wikitext" \(required for kaynak "vikikaynak"\)$/, 1]],
+  ],
+  [
+    'extract-meal-error-false',
+    EM,
+    jsonl(patch(emError, 'expected.hata', false)),
+    [[/^expected: "hata" must be true and exclude every other key$/, 1]],
+  ],
+  [
+    'extract-meal-error-with-units',
+    EM,
+    jsonl(patch(emError, 'expected.birimler', [])),
+    [[/^expected: "hata" must be true and exclude every other key$/, 1]],
+  ],
+  [
+    'extract-meal-missing-region-flag',
+    EM,
+    jsonl(patch(emRow, 'expected.son_bolge', undefined)),
+    [[/^expected: missing key "son_bolge" \(required unless "hata" is true\)$/, 1]],
+  ],
+  [
+    'extract-meal-unit-ayet-zero',
+    EM,
+    jsonl(patch(emRow, 'expected.birimler.0.ayet', 0)),
+    [[/^expected\.birimler\[0\]\.ayet: must be a positive integer, got 0$/, 1]],
+  ],
+  [
+    'extract-meal-warning-not-string',
+    EM,
+    jsonl(patch(emRow, 'expected.birimler.0.uyari', [1])),
+    [[/^expected\.birimler\[0\]\.uyari\[0\]: must be a string, got 1$/, 1]],
+  ],
+  [
+    'extract-meal-sade-missing-metin',
+    EM,
+    jsonl(patch(emSade, 'input.metin', undefined)),
+    [[/^input: missing key "metin" \(required for kaynak "sade"\)$/, 1]],
+  ],
+  [
+    'extract-meal-epub-missing-parts',
+    EM,
+    jsonl(patch(emEpub, 'expected.parcalar', undefined)),
+    [[/^expected: missing key "parcalar" \(required unless "hata" is true\)$/, 1]],
+  ],
+  [
+    'extract-meal-epub-range-not-pair',
+    EM,
+    jsonl(patch(emEpub, 'expected.parcalar.0.kapsam', [1])),
+    [[/^expected\.parcalar\[0\]\.kapsam: must be an array of 2 positive integers/, 1]],
+  ],
+  [
+    'extract-meal-ids-out-of-order',
+    EM,
+    jsonl(emError, emRow),
+    [[/^id "ex-0001" is out of order/, 2]],
+  ],
+];
+
+fieldAccepted.push(...normalizeAccepted, ...stemQueryAccepted, ...extractMealAccepted);
+fieldRejected.push(...normalizeRejected, ...stemQueryRejected, ...extractMealRejected);
 
 describe('test-vectors field checks (recognized files)', () => {
   const fieldScratch = fileURLToPath(new URL('../../../.tmp/vektor-test-alan/', import.meta.url));
@@ -1934,8 +2058,11 @@ describe('test-vectors field checks (recognized files)', () => {
     rmSync(fieldScratch, { recursive: true, force: true });
   });
 
-  it('recognizes exactly the eleven files of the specification', () => {
-    assert.deepEqual([...VECTOR_KINDS].sort(), [CM, CT, I, RO, V, CH, OF, NT, NA, NG, FQ].sort());
+  it('recognizes exactly the twelve files of the specification', () => {
+    assert.deepEqual(
+      [...VECTOR_KINDS].sort(),
+      [CM, CT, I, RO, V, CH, OF, NT, NA, NG, FQ, EM].sort(),
+    );
   });
 
   for (const [name] of fieldAccepted) {

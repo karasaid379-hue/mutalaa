@@ -1,6 +1,6 @@
 # A32 · Ayarlar, ilk açılış, erişilebilirlik, kaynaklar, öz test
 
-> **Sürüm:** 1.2 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-41](../../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-24](../../00-ozet/02-karar-defteri.md#k-24--tasarım-dili) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları)
+> **Sürüm:** 1.2 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-41](../../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-24](../../00-ozet/02-karar-defteri.md#k-24--tasarım-dili) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-49](../../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
 > **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A24](./A24-okuyucu-mushaf-c.md) · [A29](./A29-kutuphane-ve-depolama.md) · **İnsan adımı:** İ-27
 > **Ajanlar:** `mobil-gelistirici` · `arayuz-denetcisi` · `test-yazari` · `arastirmaci` · `inceleyici` · **Beceriler:** `mobil-ekran` · `test-vektoru` · `metin-butunlugu` · **Tahmini oturum:** 4–5
 > **Başlat:** `/asama A32`
@@ -24,6 +24,7 @@ Ayarlar ağacını 01-urun/03 §6'ya göre tamamlar ve erişilebilirlik kurallar
 ## Kapsam
 **Yapılır**
 - A21'in yer tutucu ayar rotaları doldurulur: `ayarlar/index`, `gorunum`, `okuma`, `mushaf`, `erisilebilirlik`, `kaynaklar`, `hakkinda`; geliştirici menüsüne öz test satırı ve yeni rota `ayarlar/gelistirici/oz-test.tsx` (öneri ad). Başka aşamada dolmuş ekran yeniden yazılmaz, ağaca bağlanır.
+- Meal seçimi ayarı (`ayarlar/okuma`): orijinal ya da "sadeleştirilmiş" Elmalılı meali; iki meal arasında seçim A16'dan bu aşamaya devredildi ([K-49](../../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)); gösterim A24'tedir.
 - Ayar deposu: `theme` içinde `sistem`, `arabicScale` ve `turkishScale` için kademe eşlemesi, Hareketi Azalt ve dokunsal geri bildirim tercihleri, ayar göç testleri.
 - 06-mobil/01 §13'teki erişilebilirlik uygulaması, bütün ekranlarda.
 - Kaynaklar (atıf satırları ve açık kaynak bağımlılık listesi), Hakkında (gizlilik metni dahil), "Verilerimi sil".

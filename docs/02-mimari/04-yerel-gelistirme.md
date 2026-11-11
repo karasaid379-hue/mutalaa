@@ -1,7 +1,7 @@
 # Yerel geliştirme
 
 > **Sürüm:** 1.10 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-48](../00-ozet/02-karar-defteri.md#k-48--editör-api-kuralları-inceleme-kararı-ikinci-onay-eşzamanlılık-yayın-talebi-ve-sayfa-görseli) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları)
+> **Bağlı kararlar:** [K-48](../00-ozet/02-karar-defteri.md#k-48--editör-api-kuralları-inceleme-kararı-ikinci-onay-eşzamanlılık-yayın-talebi-ve-sayfa-görseli) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-11](../00-ozet/02-karar-defteri.md#k-11--veritabanı-postgresql-18) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-21](../00-ozet/02-karar-defteri.md#k-21--i̇çerik-dağıtımı) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
 
 Geliştirme ekibin kendi Windows bilgisayarında yapılır ([K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma)). PostgreSQL ve S3 deposu Docker'da çalışır. API, editör ve Yayınlayıcı isteğe bağlı olarak Docker'da ya da doğrudan ana makinede çalışır. Node, .NET ve Python araçları ana makinededir. Uygulama telefonda ya da Android emülatöründe geliştirme derlemesiyle açılır.
 
@@ -103,7 +103,15 @@ dotnet user-secrets --project server/Mutalaa.Publisher set "Storage:SecretKey" "
 dotnet user-secrets --project server/Mutalaa.Publisher set "Storage:PublicBaseUrl" "http://192.168.1.50:8333/mutalaa"
 ```
 
-`Storage:PublicBaseUrl` manifestteki mutlak paket adreslerinin tabanıdır ([Backend API](./05-backend-api.md) §10.5). Bilgisayarın LAN IP adresi değişirse bu değer güncellenir ve `publish` yeniden çalıştırılır.
+`Storage:PublicBaseUrl` manifestteki mutlak paket adreslerinin tabanıdır ([Backend API](./05-backend-api.md) §10.5). Bilgisayarın LAN IP adresi değişirse bu değer güncellenir ve `publish` yeniden çalıştırılır. Adres `powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/lan-ip.ps1` ile bulunur (varsayılan bağdaştırıcı Wi-Fi; WSL ve Hyper-V sanal bağdaştırıcılarının adresleri telefondan erişilemez). Konteynerdeki `watch` kullanılıyorsa aynı adres `.env` içindeki `DEV_LAN_IP` değerine de yazılmalıdır, yoksa `verify` `url-uyumsuz` verir ([İ-29](../10-claude-code/06-insan-adimlari.md)); ana makinedeki `dotnet run` yayını yalnız kullanıcı sırrını okur.
+
+**Sırları listelerken değer görünmesin.** `dotnet user-secrets list` bağlantı dizesindeki parolayı ve anahtarları açık yazar; çıktısı sohbete, rapora ya da günlüğe girmemelidir ([CLAUDE.md](../../CLAUDE.md) kural 8). Yapılandırmayı denetlemek için yalnız anahtar adları listelenir:
+
+```bash
+dotnet user-secrets list --project server/Mutalaa.Publisher | sed -E 's/ = .*/ = <gizli>/'
+```
+
+`Storage:PublicBaseUrl` gizli değer değildir; değerine bakmak gerekirse tek anahtar için `grep '^Storage:PublicBaseUrl'` kullanılır.
 
 **API'nin öteki kullanıcı sırları (A14).** `Mutalaa:Seed:AdminEmail` ve `Mutalaa:Seed:AdminPassword` bölüm 6 adım 3'tedir. `Mutalaa:Auth:DevAutoLogin` (varsayılan `false`) açılırsa geri döngü adresinden gelen ve Host başlığı `localhost`, `127.0.0.1` ya da `[::1]` olan oturumsuz istek seed yöneticisiyle oturum açar (DNS rebinding koruması, K-48 madde 10); yalnız `Development` ortamında kabul edilir, başka ortamda açılış hata verir. Yol ayarları `Mutalaa:Paths:RawDir`, `SourcesDir`, `PacksDir` ve `TempDir` `appsettings.json` içinde varsayılanlarıyla durur (`data/raw`, `pipeline/sources`, `data/packs`, `.tmp/api`); göreli değerler çalışma dizinine göre çözülür ve değiştirmek gerekirse aynı anahtarlar kullanıcı sırlarıyla ezilir.
 
@@ -406,7 +414,7 @@ PYTHONUTF8=1
 | `editor` ve `admin` rolleri, ilk yönetici | `Mutalaa.Api -- seed` | İdempotent; parola yalnız kullanıcı sırlarında ya da `.env`'de |
 | `source` satırları | Hattın `ingest` adımı, `pipeline/sources/{kimlik}.toml` kayıtlarından | Değerler [Kaynaklar](../04-icerik/01-kaynaklar.md) ile aynıdır; kaynak kaydı olmayan kaynak hatta alınmaz ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 4); `uv run mutalaa sources check` kayıtları denetler |
 | Tanzil metni | `ingest tanzil --variant {uthmani\|simple-clean}`, ardından `normalize`, `anchor`, `qa run`, `export pg` | Metin dağıtıldığı gibi saklanır, NFC bile uygulanmaz; kaynağın kendi bildirimi (`notice_text`) bayt bayt saklanır, atıf satırı ve tanzil.net bağlantısı kaynak kaydından gelir |
-| Elmalılı meali | A09 yol kararına göre hazır metin ya da OCR çıktısı geldiğinde | Uydurma ya da yer tutucu meal metni yazılmaz |
+| Elmalılı mealleri (orijinal ve sadeleştirilmiş) | `ingest meal --source <kimlik>` (A16, planlı), ardından `normalize`, `anchor`, `qa run`, `export pg`; meal dosyaları `data/gelen/` altına A16.0'da iner ([K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)) | Uydurma ya da yer tutucu meal metni yazılmaz |
 | Uçtan uca test fikstürleri: metin paketi `test-kucuk`, ses paketi `ses-test` (kaynağı `test-ses`) | Slug `test-` ile başlar; içerik kendi ürettiğimiz sentetik metin ve tondur | `dev` ve `internal` derlemeye girer (`internal`'a yalnız bu uçtan uca fikstürler girer); Yayınlayıcı `test-` kaynaklarını `public` derlemeye hiçbir durumda almaz ([Backend API](./05-backend-api.md) P-12; [Test stratejisi](../07-yayin/03-test-stratejisi.md) §9) |
 | Arayüz geliştirmek için sentetik eser kaynakları (ör. `test-tefsir-ornek`, `test-risale-ornek`) | Slug `test-` ile başlar; içerik sentetik metindir | Yalnız `dev` derlemesinde görünür; `internal`'a yalnız `test-kucuk` ve `test-ses` girer, `public`'e P-12 ile hiç girmez |
 

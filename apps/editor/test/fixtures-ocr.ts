@@ -24,6 +24,26 @@ export const SCAN_URL_PATH = `/api/v1/scans/${SCAN_ATTRS.baski}/${SCAN_ATTRS.say
 export const MEAL_ANCHOR = 'meal:deneme:1:2';
 export const AYAH_ANCHOR = 'q:1:2';
 
+/**
+ * `onerilen` of a pipeline record in the real shape (export/pg_meal.py `onerilen_kur`): text and hash, warning codes
+ * and the witness agreement (`skor` integer 0..100, `kapsam` `[ilk, son]` or null). Text is made up.
+ */
+export function pipelineProposal(over: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    metin: 'Deneme meal paragrafı 1',
+    content_hash: 'hash-1',
+    uyari: ['numarasiz_parca', 'yinelenen_numara'],
+    tanik: {
+      skor: 97,
+      kapsam: [1, 2],
+      yontem: 'rapidfuzz.fuzz.ratio/tr_narrow',
+      yontem_surumu: '1',
+      kaynak: 'elmalili-meal-epub',
+    },
+    ...over,
+  };
+}
+
 export const DECIDED = {
   id: 1,
   durum: 'onaylandi',

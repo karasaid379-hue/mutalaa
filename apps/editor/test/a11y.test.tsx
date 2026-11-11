@@ -1,5 +1,5 @@
 // axe-core pass over the whole panel (A15.6): the eight routes with empty data, three details (OCR card, surah
-// name card, unit and release detail), the decision form while it shows a 412 difference, the error and loading
+// name card, unit and release detail), the meal queue and its two cards (A16.5: head and follower unit), the decision form while it shows a 412 difference, the error and loading
 // states, the login page and the 403 page, the link candidates card in full (evidence, four missing sections,
 // closed buttons, decision form) and its 10 percent sample panel with the bulk flag injected on. Zero
 // violations are expected everywhere.
@@ -36,6 +36,8 @@ import {
   ocrDetail,
   ocrHandlers,
   ocrItem,
+  ocrUnit,
+  pipelineProposal,
   stubCanvas,
   stubObjectUrls,
   syntheticTiff,
@@ -139,6 +141,73 @@ describe('axe: details', () => {
     const { container } = renderApp(scan, '/kuyruk/ocr?kayit=1');
     await screen.findByTestId('scan-canvas');
     await screen.findByTestId('ocr-unit-text');
+    await screen.findByRole('radio', { name: tr.review.approve });
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the meal queue: source tabs, stage view, source and edition labels on the rows', async () => {
+    ocrHandlers(fake, { detail: (id) => ocrDetail(id) });
+    signedIn(fake);
+    fake.get(
+      '/api/v1/reviews',
+      ok(
+        page([
+          ocrItem(1, { hedef_anahtar: 'meal:elmalili:2:1' }),
+          ocrItem(2, { hedef_anahtar: 'meal:elmalili-sade:2:1', dogrulanmamis: true }),
+        ]),
+      ),
+    );
+    const { container } = renderApp(fake, '/kuyruk/ocr');
+    expect(await screen.findAllByTestId('ocr-source')).toHaveLength(2);
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the meal card: source line, warning, witness agreement, covered range and basmala meal', async () => {
+    const proposal = pipelineProposal({ uyari: ['birlesik_meal', 'kod_bilinmiyor'] });
+    ocrHandlers(fake, {
+      detail: (id) =>
+        ocrDetail(id, {
+          hedef_anahtar: 'meal:elmalili-sade:2:1',
+          onceki: null,
+          onerilen: proposal,
+        }),
+      unit: (anchor) =>
+        ocrUnit(anchor, {
+          attrs: {
+            kapsam: 'q:2:1-2',
+            besmele_meali: { metin: 'Deneme besmele meali', content_hash: 'hash-b' },
+          },
+        }),
+    });
+    signedIn(fake);
+    fake.get(
+      '/api/v1/reviews',
+      ok(page([ocrItem(1, { hedef_anahtar: 'meal:elmalili-sade:2:1', onerilen: proposal })])),
+    );
+    const { container } = renderApp(fake, '/kuyruk/ocr?kayit=1');
+    await screen.findByTestId('ocr-hat-warning');
+    await screen.findByTestId('ocr-witness');
+    await screen.findByTestId('ocr-besmele');
+    await screen.findByTestId('ocr-ayah-scope');
+    await screen.findByRole('radio', { name: tr.review.approve });
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the follower card of a joined meal: head link, closed Düzelt and the decision form', async () => {
+    ocrHandlers(fake, {
+      detail: (id) =>
+        ocrDetail(id, { hedef_anahtar: 'meal:elmalili:2:2', onceki: null, onerilen: null }),
+      unit: (anchor) =>
+        ocrUnit(anchor, { metin: '', attrs: { birlesik_ile: 'meal:elmalili:2:1' } }),
+    });
+    signedIn(fake);
+    fake.get(
+      '/api/v1/reviews',
+      ok(page([ocrItem(1, { hedef_anahtar: 'meal:elmalili:2:2', onerilen: null })])),
+    );
+    const { container } = renderApp(fake, '/kuyruk/ocr?kayit=1');
+    await screen.findByTestId('ocr-follower');
+    await screen.findByTestId('ocr-follower-fix');
     await screen.findByRole('radio', { name: tr.review.approve });
     expect(await violations(container)).toEqual([]);
   });

@@ -28,6 +28,7 @@ from mutalaa_pipeline.adimlar.normalize_tanzil import EK_KAYNAK, KAYNAK
 from mutalaa_pipeline.anchor.ayet_sayilari import AYET_SAYILARI
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest import fikstur, tanzil, tanzil_bicim
+from mutalaa_pipeline.ingest.meal_kaynaklari import meal_mi
 from mutalaa_pipeline.komut_ortak import komutu_yurut
 from mutalaa_pipeline.lineage import NOTICE_ADI
 from mutalaa_pipeline.qa import (
@@ -279,6 +280,10 @@ def komut_qa_run(
         from mutalaa_pipeline.qa.run_sure_adlari import komut_qa_run_sure_adlari
 
         return komut_qa_run_sure_adlari(run=run, gate=gate, config=config, kok=kok)
+    if meal_mi(source):  # iki meal: bes kapi (G-HIZ dahil; A16.3)
+        from mutalaa_pipeline.qa.run_meal import komut_qa_run_meal
+
+        return komut_qa_run_meal(source=source, run=run, gate=gate, config=config, kok=kok)
     if source in fikstur.KAYNAKLAR:  # sentetik fikstur: dort kapi (A13.6)
         from mutalaa_pipeline.qa.run_fikstur import komut_qa_run_fikstur
 

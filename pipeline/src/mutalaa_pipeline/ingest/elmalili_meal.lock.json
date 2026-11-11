@@ -1,0 +1,851 @@
+{
+  "vikikaynak": {
+    "url": "https://tr.wikisource.org/w/api.php",
+    "alinma_tarihi": "2026-11-11",
+    "liste_sha256": "965a6249f61c2921a042694de67471c10034def62e03b05cf8c3393b43cb308a",
+    "dosyalar": [
+      {
+        "ad": "basliklar.tsv",
+        "boyut": 3134,
+        "sha256": "965a6249f61c2921a042694de67471c10034def62e03b05cf8c3393b43cb308a"
+      },
+      {
+        "ad": "vikikaynak-01.json",
+        "boyut": 418146,
+        "sha256": "bfc61a33739acc6b3c2b7238a8e4845b471ec2c8a3466ff0623527bde647ddbb"
+      },
+      {
+        "ad": "vikikaynak-02.json",
+        "boyut": 377183,
+        "sha256": "22c782c86d7b8061c6db79427eae9d6cc6e2ad52dcb0b16ceabe548452242082"
+      },
+      {
+        "ad": "vikikaynak-03.json",
+        "boyut": 206458,
+        "sha256": "9720e13c66413bff2b75c7c515672585e1caa9df48867cab779e00ea0ce5a604"
+      }
+    ],
+    "sayfalar": [
+      {
+        "baslik": "Kur'an/F\u00e2tiha Suresi",
+        "sure": 1,
+        "revid": 74415,
+        "sha1": "8b4771b2f836c2b0e997fe5533d9071622f64337",
+        "wikitext_sha256": "edd6aa15f3b410bf9b3d2e9f0c3fff6ff29c894eec760df00bff65963b43258c"
+      },
+      {
+        "baslik": "Kur'an/Bakara Suresi",
+        "sure": 2,
+        "revid": 74416,
+        "sha1": "4dd0ec52130bfd7a492e78faf8f1f588d316a930",
+        "wikitext_sha256": "7b16ace6a5936b40ee55713840ab8946e751c1f9b1d2b91d0887c981f58b48bf"
+      },
+      {
+        "baslik": "Kur'an/\u00c2l-i \u0130mr\u00e2n Suresi",
+        "sure": 3,
+        "revid": 74417,
+        "sha1": "0b80a08b798bcc7e7fe6c39d3beae0bb740cd29c",
+        "wikitext_sha256": "ed318a2e34b921f33fd66233dab214200b4cbbb204fd7f077a9d13fe3586abe3"
+      },
+      {
+        "baslik": "Kur'an/Nis\u00e2 Suresi",
+        "sure": 4,
+        "revid": 114726,
+        "sha1": "2c9adeab9a341b34514e574439a3cc1b80f6ddbe",
+        "wikitext_sha256": "a76818f8c6aa3099b5169db41f968363cb5b9bf9dbb1d3f39f051efd50550f55"
+      },
+      {
+        "baslik": "Kur'an/M\u00e2ide Suresi",
+        "sure": 5,
+        "revid": 74319,
+        "sha1": "d9434fd9899f14c071d8b17dfaeaf6f930ed3c75",
+        "wikitext_sha256": "d38f099433ed8a1f67d5b1c5988394c656b30ac5375f03132cd2e4b65e4fcdaa"
+      },
+      {
+        "baslik": "Kur'an/En'\u00e2m Suresi",
+        "sure": 6,
+        "revid": 115249,
+        "sha1": "8c2365cad71fc064a2ac9b876e39ee67a45755a3",
+        "wikitext_sha256": "291faede2b223eed3c877ee8e913ca31ed9ca14fc4f8fa53ba4a4eb2e4ec96ff"
+      },
+      {
+        "baslik": "Kur'an/A'r\u00e2f Suresi",
+        "sure": 7,
+        "revid": 74652,
+        "sha1": "875d767ef5acc29184cf91f6dc37b4cb9e97cf4b",
+        "wikitext_sha256": "31a8b87b4a420633414d55fba5047c5e947214a0b36d82d38452c0bba929d550"
+      },
+      {
+        "baslik": "Kur'an/Enf\u00e2l Suresi",
+        "sure": 8,
+        "revid": 74653,
+        "sha1": "6311ff4934a299a7658f3b00251b1a77263d09aa",
+        "wikitext_sha256": "93ca7b929c577183f32f041df492cb15ec70310dadcc69c6647430a17c979370"
+      },
+      {
+        "baslik": "Kur'an/Tevbe Suresi",
+        "sure": 9,
+        "revid": 74654,
+        "sha1": "20a52cb2b86a90afde8a07f2a6336cc11b36ffb6",
+        "wikitext_sha256": "78ed67950ec7cd4fe3a56d5f4e71ce33ee212abbd67f42844bb7e8f50a7ef70f"
+      },
+      {
+        "baslik": "Kur'an/Y\u00fbnus Suresi",
+        "sure": 10,
+        "revid": 74655,
+        "sha1": "adbed9d6243462fd2ecaa127bb9e3352a662b950",
+        "wikitext_sha256": "748dc28456b0fe38598e2e5ced03be6c33212438981ef9d02c22f8ce74757aac"
+      },
+      {
+        "baslik": "Kur'an/H\u00fbd Suresi",
+        "sure": 11,
+        "revid": 74656,
+        "sha1": "19277107d18ca7a98500f1ae0c578cc08ab97968",
+        "wikitext_sha256": "7cc23a98d78f1b741f44fdab4dfdef15031e1770e8f494d7bc3e6ef032805497"
+      },
+      {
+        "baslik": "Kur'an/Y\u00fbsuf Suresi",
+        "sure": 12,
+        "revid": 74657,
+        "sha1": "13504b72369fc2b47ed9ee3a541f36ddadeb599b",
+        "wikitext_sha256": "30350a4d092a3b2fdf05108ca6debf0dd5b723852d669652f458a12c83f06576"
+      },
+      {
+        "baslik": "Kur'an/Ra'd Suresi",
+        "sure": 13,
+        "revid": 74658,
+        "sha1": "494837b7e7e06faa36eeea643833b5cdaaff25a5",
+        "wikitext_sha256": "91da3f139dae58eaf48df93dee5503a02b6b72d787480efc591541e65902e60d"
+      },
+      {
+        "baslik": "Kur'an/\u0130br\u00e2h\u00eem Suresi",
+        "sure": 14,
+        "revid": 74659,
+        "sha1": "0af84533ca48f15c6fa46466a5ce87f813e60357",
+        "wikitext_sha256": "cf6ff002797aa65cbbd2a27965689feea63937a6726989c04aeab2660c1c2d21"
+      },
+      {
+        "baslik": "Kur'an/Hicr Suresi",
+        "sure": 15,
+        "revid": 74660,
+        "sha1": "8e632f8c8fd17849bcd7dcb945325e95c28cdadd",
+        "wikitext_sha256": "e8efa4432c09aabef31d90a534eb198c758724de7bc591b1b1caa8cc4c54cbfb"
+      },
+      {
+        "baslik": "Kur'an/Nahl Suresi",
+        "sure": 16,
+        "revid": 74661,
+        "sha1": "71c7fba1d6d70ff269b7bfa90aa41f75c31111dc",
+        "wikitext_sha256": "44d7ed8cb6ee545bf89cc834843a9bce925b42a947cdda3c7c2c90c0bbcef437"
+      },
+      {
+        "baslik": "Kur'an/\u0130sr\u00e2 Suresi",
+        "sure": 17,
+        "revid": 74662,
+        "sha1": "b1a783dc90000f5230343acf7a226f90c7b7a83c",
+        "wikitext_sha256": "8bc59d52cc4e6efd52c2748e68de089f9fcc52efd9299d27b8fb597396459f6d"
+      },
+      {
+        "baslik": "Kur'an/Kehf Suresi",
+        "sure": 18,
+        "revid": 74663,
+        "sha1": "1f6df197229168b21a124169ec46e4657b341bd3",
+        "wikitext_sha256": "11df2bf33e104d8bccf197371a6695933141fcab3a93adf2bf5fee4c674948be"
+      },
+      {
+        "baslik": "Kur'an/Meryem Suresi",
+        "sure": 19,
+        "revid": 82390,
+        "sha1": "287c3c0435c0a49c486fcbc235f906d39208d660",
+        "wikitext_sha256": "75162bdbcde31ba3ec2f9edcd4e1764ed9b4da547a7ee725f9bde5f6cd50124f"
+      },
+      {
+        "baslik": "Kur'an/T\u00e2h\u00e2 Suresi",
+        "sure": 20,
+        "revid": 150727,
+        "sha1": "5a9b1a38ef4c3839972b8fa17d693939b5a2d418",
+        "wikitext_sha256": "51f4c3ce2a12639edd1ac6dc81d9aca840b78f39fd3f809a4fa3a2141521c4aa"
+      },
+      {
+        "baslik": "Kur'an/Enbiy\u00e2 Suresi",
+        "sure": 21,
+        "revid": 74666,
+        "sha1": "5090b71f48ef1888387500bdbcd2850a49698f6b",
+        "wikitext_sha256": "619ec6d090c3d177fd9f68ef175d2ee7f78937757f70739c43644ad4e3b7bdd4"
+      },
+      {
+        "baslik": "Kur'an/Hac Suresi",
+        "sure": 22,
+        "revid": 74667,
+        "sha1": "c9a83ecd6ee27ba6352def9f8b994c91207748ad",
+        "wikitext_sha256": "800f9ba99eea30e809d34df37c0742395aec5115ccb25a3a88d70cd0798cee4d"
+      },
+      {
+        "baslik": "Kur'an/M\u00fc'min\u00fbn Suresi",
+        "sure": 23,
+        "revid": 74651,
+        "sha1": "0975e60536ec48c5efb6a67b0e25fedb885c6d48",
+        "wikitext_sha256": "1693cfaf14c53279a5a79182e199f5d707c590b186c497b70c64f8dcbfb488bf"
+      },
+      {
+        "baslik": "Kur'an/N\u00fbr Suresi",
+        "sure": 24,
+        "revid": 74650,
+        "sha1": "d19db13fe6e5cc81bdb04dcc29b3ce8f7055c1c6",
+        "wikitext_sha256": "daf3c6f678754a470808c0f109918377d43749752760390edf91cdd24c7cf0b4"
+      },
+      {
+        "baslik": "Kur'an/Furk\u00e2n Suresi",
+        "sure": 25,
+        "revid": 74649,
+        "sha1": "92e885536e3477feb5393adadfdfbc342a8ef2dc",
+        "wikitext_sha256": "390c5226916bcb0100651847a36b7c282c8e1fcff67f8b7501fa0cfd259d339e"
+      },
+      {
+        "baslik": "Kur'an/\u015euar\u00e2 Suresi",
+        "sure": 26,
+        "revid": 150735,
+        "sha1": "c6941cb1d3a8fb4f116631f9a172ca0266d7a4d7",
+        "wikitext_sha256": "c22f649d2854279d3ee454130cb9f4d7cdf15cab1cd50499dad40b358c22d2e6"
+      },
+      {
+        "baslik": "Kur'an/Neml Suresi",
+        "sure": 27,
+        "revid": 158621,
+        "sha1": "69489d1d62a5378f14082f003541633b5181d80a",
+        "wikitext_sha256": "4a0223a2e94c86f7744dbff8c54a3fc1987302f467903480c0f7066061df99aa"
+      },
+      {
+        "baslik": "Kur'an/Kasas Suresi",
+        "sure": 28,
+        "revid": 150717,
+        "sha1": "5b0c52b4814d4528c9c5a04cccabd27782f1c592",
+        "wikitext_sha256": "c646145dc2bf4641e32edea50f508c1ae6fdf924681cbec448381d9c8fb5457e"
+      },
+      {
+        "baslik": "Kur'an/Ankeb\u00fbt Suresi",
+        "sure": 29,
+        "revid": 74731,
+        "sha1": "e4d6d61d21f9751d89067b8f83172f235a7d1e03",
+        "wikitext_sha256": "b897a15e25421f2ab4b2bc7079da62994e3ebeb49f61a94b037676613450e284"
+      },
+      {
+        "baslik": "Kur'an/R\u00fbm Suresi",
+        "sure": 30,
+        "revid": 74730,
+        "sha1": "cfaf0d3579e84e433a8472868d8be67c1b1cf004",
+        "wikitext_sha256": "407d3a3de0103ad7f613ebfcbacd7ac1bde1fa43f5a91bfba6c8c83ab9d87f18"
+      },
+      {
+        "baslik": "Kur'an/Lokm\u00e2n Suresi",
+        "sure": 31,
+        "revid": 74729,
+        "sha1": "3006f245655aee91aef1a6572dc5958670096a9c",
+        "wikitext_sha256": "cd54bfb1880d6e336642c953ac7066da4b6d7b57b785588e525716316130390e"
+      },
+      {
+        "baslik": "Kur'an/Secde Suresi",
+        "sure": 32,
+        "revid": 74728,
+        "sha1": "1fa9c0e03d5a7040fef837525c0cb3f73a25e879",
+        "wikitext_sha256": "c798eb2b0df6360af0e6e480457f3f6114556d050cdd25ac88a7578bb437d83b"
+      },
+      {
+        "baslik": "Kur'an/Ahz\u00e2b Suresi",
+        "sure": 33,
+        "revid": 74727,
+        "sha1": "fc3136b9bb2996da4056f8f087f6f5be09286f64",
+        "wikitext_sha256": "277f2d0a54f5193de063ad317f99247ea2fd1e8eb5f5c344a0e1fc4bd5671ea9"
+      },
+      {
+        "baslik": "Kur'an/Sebe' Suresi",
+        "sure": 34,
+        "revid": 74726,
+        "sha1": "44f469a28bdcda912223be4670f8480d55edde1f",
+        "wikitext_sha256": "4dfdaeccf6ce1056dfbe89f8f7f34442da527f452a04a3a9664bc618083670d3"
+      },
+      {
+        "baslik": "Kur'an/F\u00e2t\u0131r Suresi",
+        "sure": 35,
+        "revid": 74725,
+        "sha1": "600db2fe68b15238385d9f45bd60697473253ec8",
+        "wikitext_sha256": "b24af176f77b689fd0ad4b3dd30efdd0f4930fb50cec6fb3492ca354a29dfd7e"
+      },
+      {
+        "baslik": "Kur'an/Y\u00e2s\u00een Suresi",
+        "sure": 36,
+        "revid": 150714,
+        "sha1": "0a4fbc2bc7a2aad8a45842d6913afddd182856f7",
+        "wikitext_sha256": "6eeadf3672c393fb0d55decbf68714d6f732aec5e20812378740baee2e62050a"
+      },
+      {
+        "baslik": "Kur'an/S\u00e2ff\u00e2t Suresi",
+        "sure": 37,
+        "revid": 74723,
+        "sha1": "501ad78a0205e576b655bb72b8fc37f94069f2bd",
+        "wikitext_sha256": "92015b6e433d2a7bcb69266c739be1acb549ff07f227792958a7fc825f514151"
+      },
+      {
+        "baslik": "Kur'an/S\u00e2d Suresi",
+        "sure": 38,
+        "revid": 74722,
+        "sha1": "5efd4eee9cf17e64f7af0fd5ed556ca436469a93",
+        "wikitext_sha256": "b2a10168fbd6f6888b44ff875b58e615eb863a94c63bc1db7df64649deef04b1"
+      },
+      {
+        "baslik": "Kur'an/Z\u00fcmer Suresi",
+        "sure": 39,
+        "revid": 74721,
+        "sha1": "6f0c6c3b52d861b943fec2c24b04e740de5608dc",
+        "wikitext_sha256": "cd3cce2d8767a7983e2ce6ccea742afd6f3d66d6881d9c55b4dbcf5dc03c66a0"
+      },
+      {
+        "baslik": "Kur'an/M\u00fc'min Suresi",
+        "sure": 40,
+        "revid": 150733,
+        "sha1": "fc872a814f9a6a20d77fcf61db243ac5cba9308a",
+        "wikitext_sha256": "bdcc285fe503bf04bfb32545884ac6edbab68c6ce63cdc38eb83dbe4cf98d189"
+      },
+      {
+        "baslik": "Kur'an/Fussilet Suresi",
+        "sure": 41,
+        "revid": 115252,
+        "sha1": "3d470e304581640bc522f08c97de6e621abcb1d0",
+        "wikitext_sha256": "c4689afac2524f847b090c7d33b8ac7c5204b8a6753d32a85baf66ad774c9b09"
+      },
+      {
+        "baslik": "Kur'an/\u015e\u00fbr\u00e2 Suresi",
+        "sure": 42,
+        "revid": 74718,
+        "sha1": "60dbc34b3d739aee76055734a79cd138d03dd899",
+        "wikitext_sha256": "a8fe40feec7d51cf34654c1c1038b8929f6cb33317196845df7c1627ae7dccd2"
+      },
+      {
+        "baslik": "Kur'an/Zuhruf Suresi",
+        "sure": 43,
+        "revid": 150726,
+        "sha1": "26c9f83641b3a721774e92c858f3c37425c91316",
+        "wikitext_sha256": "a4283f66a38c405facd618bce31454b887e34442d96972919c7b9db8cb38a602"
+      },
+      {
+        "baslik": "Kur'an/Duh\u00e2n Suresi",
+        "sure": 44,
+        "revid": 150741,
+        "sha1": "b300ef31ae188cffaf65de63897cfb19829c75dd",
+        "wikitext_sha256": "f2d50346625aa163a39532694dd9d268cee8e3f27e83afe7e2d00d132117d7b8"
+      },
+      {
+        "baslik": "Kur'an/C\u00e2siye Suresi",
+        "sure": 45,
+        "revid": 74714,
+        "sha1": "e14c58ecc04903c6b86802afffc6c8eeb14c89a0",
+        "wikitext_sha256": "f52180f0b2cb493da76f5452cda748ec950f4f82ae4fa614f2edfee60ccc7469"
+      },
+      {
+        "baslik": "Kur'an/Ahk\u00e2f Suresi",
+        "sure": 46,
+        "revid": 150742,
+        "sha1": "aa51489e5594792f5188912041ad95f2ab27ce24",
+        "wikitext_sha256": "03fef5d5b3f206156a258da3ec858d959c356043467331fd52617afe13f73d72"
+      },
+      {
+        "baslik": "Kur'an/Muhammed Suresi",
+        "sure": 47,
+        "revid": 97199,
+        "sha1": "35e2346b0081c325e0ad1c99f333dd5d8b4d0ac8",
+        "wikitext_sha256": "16a5569331223e480591dcf203503bc1cedbe0b441a8471a81bd775d3264489c"
+      },
+      {
+        "baslik": "Kur'an/Fetih Suresi",
+        "sure": 48,
+        "revid": 74711,
+        "sha1": "fa6a92169320f22c1fc969b48080f723345e4b93",
+        "wikitext_sha256": "4d3d8dc8df26079146c31bf961e3cdcbf76e6901c680494cb8958e84341b649b"
+      },
+      {
+        "baslik": "Kur'an/Hucur\u00e2t Suresi",
+        "sure": 49,
+        "revid": 74710,
+        "sha1": "505ec519dd11958e993c6e027c9261fa172b13d7",
+        "wikitext_sha256": "0ef868bff220d62ec63d4445915ab46b8275d0ae290a244ef69d64d4e5598bd0"
+      },
+      {
+        "baslik": "Kur'an/K\u00e2f Suresi",
+        "sure": 50,
+        "revid": 74709,
+        "sha1": "aa1ff8802fbb1fd4b1e686a146736c6a51568955",
+        "wikitext_sha256": "584c3fb7886b06af0937a35c47ac5f88e9cf1c60ca9e153831fd36323d0fe84d"
+      },
+      {
+        "baslik": "Kur'an/Z\u00e2riy\u00e2t Suresi",
+        "sure": 51,
+        "revid": 74708,
+        "sha1": "7933d8608ee8d90ab0809b0aa7b569731325223b",
+        "wikitext_sha256": "3545dd46d73b8591455679cc99f10d8fbdef1728a10061847f5b4e104e79e9cf"
+      },
+      {
+        "baslik": "Kur'an/T\u00fbr Suresi",
+        "sure": 52,
+        "revid": 74707,
+        "sha1": "16fc73d60af90bcd2c71997fc1affcc4b7d409e4",
+        "wikitext_sha256": "6ad2f8fc6993fe4cca5b29f47fa644be27ecb5346f7d25b5f5f38d7d4dbb58e7"
+      },
+      {
+        "baslik": "Kur'an/Necm Suresi",
+        "sure": 53,
+        "revid": 150740,
+        "sha1": "e49e19846e05581ddf4586561143c44b35e2933a",
+        "wikitext_sha256": "c981ef10f8f354f4b168375a4972804ea3a6ab807f1add66ac18d35049b24da7"
+      },
+      {
+        "baslik": "Kur'an/Kamer Suresi",
+        "sure": 54,
+        "revid": 116881,
+        "sha1": "c9db96a009afe11b048237f1a9152453cc9d6601",
+        "wikitext_sha256": "9b2f385b289fbd3b3002a358d6a33a3ea78133df57609b886e9758d793e7e562"
+      },
+      {
+        "baslik": "Kur'an/Rahm\u00e2n Suresi",
+        "sure": 55,
+        "revid": 114722,
+        "sha1": "80dc331ecac8c2cf35f05648032f0db4a85ff9bb",
+        "wikitext_sha256": "03f2a62420c6f95fa5366dbdb91d082a4d7760df90b47b4c13e9043a8425de2e"
+      },
+      {
+        "baslik": "Kur'an/V\u00e2k\u0131a Suresi",
+        "sure": 56,
+        "revid": 114724,
+        "sha1": "24e906bf2f3b73aaec6ade99967961af6f58bdef",
+        "wikitext_sha256": "621634454071e953efed514233d10c81e1545619a66d077e209236d977d93026"
+      },
+      {
+        "baslik": "Kur'an/Had\u00eed Suresi",
+        "sure": 57,
+        "revid": 74646,
+        "sha1": "9c9603ac21d0cacbfeca286566419eebdda76620",
+        "wikitext_sha256": "eceecf7c6bd09cca9215ab51b1de14596580eef9a7b354aa3fba2cac912e0d0c"
+      },
+      {
+        "baslik": "Kur'an/M\u00fcc\u00e2dele Suresi",
+        "sure": 58,
+        "revid": 74645,
+        "sha1": "fdd82fadd05e7991aa670b56675102f46b687cbb",
+        "wikitext_sha256": "70ed7d5bac07d34e146d07f1183aab3d1ef024cdae3e1fa71c2e8e5214021027"
+      },
+      {
+        "baslik": "Kur'an/Ha\u015fr Suresi",
+        "sure": 59,
+        "revid": 74644,
+        "sha1": "f2dcdfd45a108f66862dffcadbfa8f01cbcc66ac",
+        "wikitext_sha256": "c25aad80f74b48c595f47dbd884a1e7355d98db032177c5bf036901f768834de"
+      },
+      {
+        "baslik": "Kur'an/M\u00fcmtehine Suresi",
+        "sure": 60,
+        "revid": 74643,
+        "sha1": "47c480f445e302b732a7a195d43aa6dd8f8f4f7e",
+        "wikitext_sha256": "15c9c34fb0bb94c0c8981cb796e17f4d14d832a932e11f67d2c776e8c46386d7"
+      },
+      {
+        "baslik": "Kur'an/Saf Suresi",
+        "sure": 61,
+        "revid": 150722,
+        "sha1": "13147f44be8e26de5c2cb7092918df5010fc3465",
+        "wikitext_sha256": "91a805cf9bf2a19e744ebe4a21d21d73e1e9d3b1a82ea3ce91fbd527f3c247eb"
+      },
+      {
+        "baslik": "Kur'an/Cuma Suresi",
+        "sure": 62,
+        "revid": 74420,
+        "sha1": "e76e4c62068bc51409f9eb4b81ff46afb6a3a00e",
+        "wikitext_sha256": "0b480ace69d8fd83cd423786c04917a2e32f51d0ce3fb869e2c13792965505ea"
+      },
+      {
+        "baslik": "Kur'an/M\u00fcn\u00e2fik\u00fbn Suresi",
+        "sure": 63,
+        "revid": 74327,
+        "sha1": "12ce336e04b64e585126eac9d5963268e1106795",
+        "wikitext_sha256": "232a31b6292b315f26d18ad73f1df0cf166634cc1c7263c5b99169e441a4a903"
+      },
+      {
+        "baslik": "Kur'an/Teg\u00e2b\u00fcn Suresi",
+        "sure": 64,
+        "revid": 74329,
+        "sha1": "93641af67e6d2d1ee155afc94055911d3fcf2252",
+        "wikitext_sha256": "840f636b5f11388e346c32a8063c0040fba6255d751fd125ad2bfecaad97112d"
+      },
+      {
+        "baslik": "Kur'an/Tal\u00e2k Suresi",
+        "sure": 65,
+        "revid": 74331,
+        "sha1": "d97e08af469b9989d572c376370a51c0f5cdb8a2",
+        "wikitext_sha256": "10a6cef85398523bcdd3b1f259eb221842e633904bed86526917a14250001d27"
+      },
+      {
+        "baslik": "Kur'an/Tahr\u00eem Suresi",
+        "sure": 66,
+        "revid": 74333,
+        "sha1": "61a9e1b9dcd1663d8d5e0937bec5b4bb36bbd02a",
+        "wikitext_sha256": "64cc62063c073b9ef472f99b09cf44d800f7a70f1e15a03ee1bfa90eef828d92"
+      },
+      {
+        "baslik": "Kur'an/M\u00fclk Suresi",
+        "sure": 67,
+        "revid": 74335,
+        "sha1": "9bbff7bdeb2960fec472ddd1308ab837dcaa4f7c",
+        "wikitext_sha256": "061f1d318809bbcdf46124c0fa03873516413fcb1e31892608e238bfefd16312"
+      },
+      {
+        "baslik": "Kur'an/Kalem Suresi",
+        "sure": 68,
+        "revid": 74337,
+        "sha1": "8f478640a7d2ec236c5c067b045e3290cbc16319",
+        "wikitext_sha256": "c0abc01467f8a752ea9d00560112804f373ff450193fc6d711711ad294f35e0d"
+      },
+      {
+        "baslik": "Kur'an/H\u00e2kka Suresi",
+        "sure": 69,
+        "revid": 74340,
+        "sha1": "12c7cfa5f902ddce65ecb324bbf157980ac06713",
+        "wikitext_sha256": "01c232208da5a801f2188eb30e3f769d97e4cb6b0489ba22c7aee53944ce70ee"
+      },
+      {
+        "baslik": "Kur'an/Me\u00e2ric Suresi",
+        "sure": 70,
+        "revid": 74343,
+        "sha1": "7bd9748895a1c7c0f599cf25494505579f6090ae",
+        "wikitext_sha256": "569c181de8d758b8d8badf8576ca3ce1b37cc389a0f429a714eaa68d109d1963"
+      },
+      {
+        "baslik": "Kur'an/N\u00fbh Suresi",
+        "sure": 71,
+        "revid": 150734,
+        "sha1": "3fe4661db8c7e916b980b6c57452427442302996",
+        "wikitext_sha256": "8755a21029304011310232bbc1460875ee79a8aa69d49435aa5a4a8e5c9e0adb"
+      },
+      {
+        "baslik": "Kur'an/Cin Suresi",
+        "sure": 72,
+        "revid": 126814,
+        "sha1": "67e25d832d5e21f5c1d9f071a0e8947a797f6cc9",
+        "wikitext_sha256": "b3d24f97720351c57e26fcfbc6f91dce44516240b0975a416ecb1c2c5fd55dfc"
+      },
+      {
+        "baslik": "Kur'an/M\u00fczzemmil Suresi",
+        "sure": 73,
+        "revid": 74349,
+        "sha1": "b7556d13289f149aed210cc824d73401be1a308b",
+        "wikitext_sha256": "a3e6cd802414de7052f74a0f04b7c5d88f0c5accd32031046046e6f190124a6f"
+      },
+      {
+        "baslik": "Kur'an/M\u00fcddessir Suresi",
+        "sure": 74,
+        "revid": 74351,
+        "sha1": "9910b11c02155af7bdc4967b80222bfe2bb11591",
+        "wikitext_sha256": "24f82603d13c2a82ea852acbadfe84c0113631aefe2b2a1d0cae4c4e49b7459f"
+      },
+      {
+        "baslik": "Kur'an/K\u0131y\u00e2met Suresi",
+        "sure": 75,
+        "revid": 74353,
+        "sha1": "9d6c9aa3c9c267f936e1b7ed47e79e91c67c4fcc",
+        "wikitext_sha256": "877b0b0bbf0be01ac3a5c12c32a12a94a47eda1dedf8e19ad38842e9fa6bf98c"
+      },
+      {
+        "baslik": "Kur'an/\u0130ns\u00e2n Suresi",
+        "sure": 76,
+        "revid": 74355,
+        "sha1": "b15df8f860f929521dddc8e6bf164f1a9992049b",
+        "wikitext_sha256": "baf57054cf5455e570c5fde00edb43ce55c99f971c08b56de9e3c24f9fb3fd85"
+      },
+      {
+        "baslik": "Kur'an/M\u00fcrsel\u00e2t Suresi",
+        "sure": 77,
+        "revid": 74357,
+        "sha1": "a6fd8229abb137a1c07a46d6539c439214839559",
+        "wikitext_sha256": "125947efdb4af02f0b11e0e4b981a3fcc3fb481700fb21fc7742a4718f17d8f1"
+      },
+      {
+        "baslik": "Kur'an/Nebe Suresi",
+        "sure": 78,
+        "revid": 74359,
+        "sha1": "03215f9837481f94d331ba0b31a39a879a144ffe",
+        "wikitext_sha256": "3f44578747b2ae42679a3a919caa2ef0ef9280ebfe8274b78500cb42faa42546"
+      },
+      {
+        "baslik": "Kur'an/Nazi\u00e2t Suresi",
+        "sure": 79,
+        "revid": 74361,
+        "sha1": "7fecea058be356713b94d47baeb431730a9b8a72",
+        "wikitext_sha256": "5cdbd02c82107dcc3f5e94134c20d005ae9d1f63ecbaf44d75195a07ad14f8c1"
+      },
+      {
+        "baslik": "Kur'an/Abese Suresi",
+        "sure": 80,
+        "revid": 145757,
+        "sha1": "4c8416625409e94b28391c3ea544b4bca8b7850e",
+        "wikitext_sha256": "3a608416f9f2f059ac8c6a45e4668b280d0517dab5760386e4fd2214f77ac18d"
+      },
+      {
+        "baslik": "Kur'an/Tekv\u00eer Suresi",
+        "sure": 81,
+        "revid": 74365,
+        "sha1": "27f1c36038f36d6d879226fc687155ae82f98c33",
+        "wikitext_sha256": "b060cbee85e978a98ed047b5f18f291df0024d9f80588436255caae245738f40"
+      },
+      {
+        "baslik": "Kur'an/\u0130nfit\u00e2r Suresi",
+        "sure": 82,
+        "revid": 109988,
+        "sha1": "456e90649caedd09e01d97e32a4a2694d3142f3a",
+        "wikitext_sha256": "26bb02a8c85f2dd228b9f7b4e3a671ba370cdebffb48978a21670eee5598d59b"
+      },
+      {
+        "baslik": "Kur'an/Mutaffif\u00een Suresi",
+        "sure": 83,
+        "revid": 74369,
+        "sha1": "e690463660bb7c0129a29948fb1ab8f38c60dda6",
+        "wikitext_sha256": "d72f1eb4f54f9057af95e1acaee60a527edf7c6f8117c1c7fae4a5d0a5fa1abd"
+      },
+      {
+        "baslik": "Kur'an/\u0130n\u015fik\u00e2k Suresi",
+        "sure": 84,
+        "revid": 74371,
+        "sha1": "55d8a43999d0dac3e83112d9e34aed96d0c9b329",
+        "wikitext_sha256": "2149eecbcbe3a2409ba992ecb306b59c3a3031af65369d150134ff6f91e2d97d"
+      },
+      {
+        "baslik": "Kur'an/Bur\u00fbc Suresi",
+        "sure": 85,
+        "revid": 74373,
+        "sha1": "5c375e46269a4470e1e67e87d29f0da2b45a0965",
+        "wikitext_sha256": "c9366afe15c4e611898791beaeef44063c8b79c6bd3f99d3cf7222e9ac7c07d0"
+      },
+      {
+        "baslik": "Kur'an/T\u00e2r\u0131k Suresi",
+        "sure": 86,
+        "revid": 74375,
+        "sha1": "c3b6727446f3cd39978c5c0fe5ff3e75e17ca737",
+        "wikitext_sha256": "ea9f34d6772044f862df3947bb56ed7b19d41c160479e263d8e4389da3f6372c"
+      },
+      {
+        "baslik": "Kur'an/A'l\u00e2 Suresi",
+        "sure": 87,
+        "revid": 74377,
+        "sha1": "1db53e27ec9b3bed7fe680e3347fc072892562ed",
+        "wikitext_sha256": "ad9408363efb33c6111c6d3f836d2e670652ffe2fa22b97d67bbc4a5657e46fd"
+      },
+      {
+        "baslik": "Kur'an/G\u00e2\u015fiye Suresi",
+        "sure": 88,
+        "revid": 74379,
+        "sha1": "ef8764fd0d88946a0c2f00cafb60e1cd8a4cfcc0",
+        "wikitext_sha256": "5b231841f489a0ce41efd2334c608373bc5402ae919d37e0af5188951ffb581d"
+      },
+      {
+        "baslik": "Kur'an/Fecr Suresi",
+        "sure": 89,
+        "revid": 74381,
+        "sha1": "3498a6b91985fd3b3eab68fd1f4ff29083d5ca7e",
+        "wikitext_sha256": "1a70eb2b262a22b02d42a0f0b2c0e640ce0e3c4a1f312ca700931246119fae28"
+      },
+      {
+        "baslik": "Kur'an/Beled Suresi",
+        "sure": 90,
+        "revid": 74642,
+        "sha1": "0fd5b1961d9b11744ab32b218e5c588796c6eec8",
+        "wikitext_sha256": "9c6b48ac9cad494da2688c0f325ff5594712cb51355cfe540e8c07ab98bde7b7"
+      },
+      {
+        "baslik": "Kur'an/\u015eems Suresi",
+        "sure": 91,
+        "revid": 74641,
+        "sha1": "95d59ffd5a0c9ee7a08c4423b8f8cdbc147faeab",
+        "wikitext_sha256": "27deecd700508740dad33c63aca870b5e8b3c7abc46e543b2de41fcea75b7d7d"
+      },
+      {
+        "baslik": "Kur'an/Leyl Suresi",
+        "sure": 92,
+        "revid": 74640,
+        "sha1": "5143be58e588b5608d10d7306c14408e14bd8113",
+        "wikitext_sha256": "7bd511c43c23ea150233f03b0cd953961c6479ac44df8f60467e3d34f11323cf"
+      },
+      {
+        "baslik": "Kur'an/Duh\u00e2 Suresi",
+        "sure": 93,
+        "revid": 74639,
+        "sha1": "831710e553bf826c8d704e7d886ba12d29c9aabd",
+        "wikitext_sha256": "69f79b6a72470357fb94e6793fe64b02310c7d0c469338ebbefd1894a3370a1c"
+      },
+      {
+        "baslik": "Kur'an/\u0130n\u015fir\u00e2h Suresi",
+        "sure": 94,
+        "revid": 74383,
+        "sha1": "b0ea879601edb5f765494d6af11305a662955498",
+        "wikitext_sha256": "6e2a98439d29dec7e67a314134ba7e02d258fc51dbc0bc371d58840b52c00130"
+      },
+      {
+        "baslik": "Kur'an/T\u00een Suresi",
+        "sure": 95,
+        "revid": 74637,
+        "sha1": "73578d54821c2341e419038ffdd85e0ef48b9e2a",
+        "wikitext_sha256": "d8f58ad0c8f26f19c3cb30e4ac0a0a28938e83aa491c0ae768b1ac8ed745d27b"
+      },
+      {
+        "baslik": "Kur'an/Alak Suresi",
+        "sure": 96,
+        "revid": 74636,
+        "sha1": "6b16e954663de9ba2ba113809e8d9ad8148f6cfc",
+        "wikitext_sha256": "33ce0450724932d296c3a2fe15f1e8e0275a8550536fcf04911018a63325217c"
+      },
+      {
+        "baslik": "Kur'an/Kadir Suresi",
+        "sure": 97,
+        "revid": 74385,
+        "sha1": "08840b5a4c5a21ef48e94fbf4dc2102de3f14f12",
+        "wikitext_sha256": "fd470e0c921fd3fce7e1eb8b87debcf7a740866ca6b415d185e67ba67797ca86"
+      },
+      {
+        "baslik": "Kur'an/Beyyine Suresi",
+        "sure": 98,
+        "revid": 74388,
+        "sha1": "cc09cc98c467ed7e604c6f17c150938bbcb88450",
+        "wikitext_sha256": "f446de356df6d9a14771fac449abec91e45405b1b91cf57c42d4d2c59244b3ca"
+      },
+      {
+        "baslik": "Kur'an/Zilz\u00e2l Suresi",
+        "sure": 99,
+        "revid": 74635,
+        "sha1": "f0e96a0b0bb79185ea2ce1b57199e3aa78b13801",
+        "wikitext_sha256": "e980555317fcfb53475c41307bd20b1f37d825efb47a3e78998b913e26838466"
+      },
+      {
+        "baslik": "Kur'an/\u00c2diy\u00e2t Suresi",
+        "sure": 100,
+        "revid": 74634,
+        "sha1": "6c5c6f3ce8ca010498d34c3fe9691355ca235242",
+        "wikitext_sha256": "665ccadc666dc6a4408cf1672ed357f68f25e7a06013e834db324fd70585a0eb"
+      },
+      {
+        "baslik": "Kur'an/K\u00e2ria Suresi",
+        "sure": 101,
+        "revid": 74555,
+        "sha1": "12b035a122631a35d60f4e33c9353003cbcb92b6",
+        "wikitext_sha256": "3a09ecc3a17ade1d62eb0ec2f4231bb9d49f9452111bec4d4c5f0c97aa1c474e"
+      },
+      {
+        "baslik": "Kur'an/Tek\u00e2s\u00fcr Suresi",
+        "sure": 102,
+        "revid": 74554,
+        "sha1": "a8c21b0a40c1ed8e73e5c80a57b7a12b40bf8578",
+        "wikitext_sha256": "70554a62dcc930f5a095d806167c8d0e9ca2ad6406a1481217c104c799f67202"
+      },
+      {
+        "baslik": "Kur'an/Asr Suresi",
+        "sure": 103,
+        "revid": 74390,
+        "sha1": "b97e12d1c9021bdb1144fe13ff1cfe9f901cb9f8",
+        "wikitext_sha256": "a4f834d01e766f07f2f021d468ba9a8d22911f4a7433fb6346e2881fba9d2a64"
+      },
+      {
+        "baslik": "Kur'an/H\u00fcmeze Suresi",
+        "sure": 104,
+        "revid": 74392,
+        "sha1": "ff11cd479de0e5dd7d9beca6d0de8ebaa94fe7da",
+        "wikitext_sha256": "2fd374d80fc83f53fe854ceb0c6f266934bd7b1cc678a85adf5f3f01d30b6c5e"
+      },
+      {
+        "baslik": "Kur'an/F\u00eel Suresi",
+        "sure": 105,
+        "revid": 74394,
+        "sha1": "b71e2439dfebef39883f1914b54cb736dbc84409",
+        "wikitext_sha256": "1936160383efcfe7c789d7f6e51770c9c2c423ed1eae45348bc6677e2c83606d"
+      },
+      {
+        "baslik": "Kur'an/Kurey\u015f Suresi",
+        "sure": 106,
+        "revid": 74396,
+        "sha1": "26d950f66d98e0c41603de3b5f178d8756ddc452",
+        "wikitext_sha256": "4ed300d4f8d4b550abfa1eabaad9a7fff535f9478ec6f3862c6af1c56d268beb"
+      },
+      {
+        "baslik": "Kur'an/Ma\u00fbn Suresi",
+        "sure": 107,
+        "revid": 74398,
+        "sha1": "b3be629f017915d82839f46c690c28d7950b5b77",
+        "wikitext_sha256": "71ef9dc34632c3dbb16e0bb16a00da78d0411f8f95058aca08dc96a68b0fac8a"
+      },
+      {
+        "baslik": "Kur'an/Kevser Suresi",
+        "sure": 108,
+        "revid": 74400,
+        "sha1": "8beec737de54c345d0c9c7cd51f3bd649d25e83b",
+        "wikitext_sha256": "7b689bf5889566d835d6008f8a2d0ec8b889b9d5b450cd106582e93fad86c28a"
+      },
+      {
+        "baslik": "Kur'an/K\u00e2fir\u00fbn Suresi",
+        "sure": 109,
+        "revid": 74402,
+        "sha1": "b8a83bae8eb79b1b40b9c16071c5b7955eeeedd9",
+        "wikitext_sha256": "2a70cce891d384c0ba08cda32156d0314ceae5e72cf2d2994bcde0f55da835af"
+      },
+      {
+        "baslik": "Kur'an/Nasr Suresi",
+        "sure": 110,
+        "revid": 74404,
+        "sha1": "c2bdad125107e1e8be97689a4b360a3d3026aaf2",
+        "wikitext_sha256": "b33c09f0a652a442ce94b694c4b6364b89f312355dd30de2fab0c63b992ee708"
+      },
+      {
+        "baslik": "Kur'an/Tebbet Suresi",
+        "sure": 111,
+        "revid": 74406,
+        "sha1": "77fb32e2e8ada70b0191ce7b4e4ce4804673731c",
+        "wikitext_sha256": "c9c443d77538bc1775419221336fc0b8763a9973f6c799c170a1d6f278e77fcc"
+      },
+      {
+        "baslik": "Kur'an/\u0130hl\u00e2s Suresi",
+        "sure": 112,
+        "revid": 74408,
+        "sha1": "e3e111ed4b3ed64e3b2fc8f4b616c45f001d6389",
+        "wikitext_sha256": "62e08e8632af40b7e8571ae16aac685dea6062896aa09f067744606567a72a97"
+      },
+      {
+        "baslik": "Kur'an/Felak Suresi",
+        "sure": 113,
+        "revid": 74410,
+        "sha1": "44e09be73fc830cbe301adb521525ccfd84f51eb",
+        "wikitext_sha256": "cd6d4b5f96c2bca37ba315f4e9991fa7e9120bb18247d6b8a15eeb11922a7df8"
+      },
+      {
+        "baslik": "Kur'an/N\u00e2s Suresi",
+        "sure": 114,
+        "revid": 74412,
+        "sha1": "90427218091933b4f42b43654495162b7169e6ac",
+        "wikitext_sha256": "0a8625ccc20016dea9ad320a229f848d775eb519452370cf7e9d4daa83315bcb"
+      }
+    ]
+  },
+  "sade": {
+    "url": "https://raw.githubusercontent.com/fawazahmed0/quran-api/93e6f64925ae76273520d636fcaaf061129f2316/editions/tur-elmallsadelesti.json",
+    "commit": "93e6f64925ae76273520d636fcaaf061129f2316",
+    "alinma_tarihi": "2026-11-11",
+    "dosya": {
+      "ad": "tur-elmallsadelesti.json",
+      "boyut": 1471811,
+      "sha256": "8b48e4f8557427e0abb3c201fca2dd3a72e0a97d301f914017f6aac7cf6d30a0"
+    }
+  },
+  "tanik_epub": {
+    "oge": "elmalili-hamdi-yazir-meal-i-serif",
+    "uzak_dosya": "Elmalili-Hamdi-Yazir-Meal-i-Serif.epub",
+    "url": "https://archive.org/download/elmalili-hamdi-yazir-meal-i-serif/Elmalili-Hamdi-Yazir-Meal-i-Serif.epub",
+    "alinma_tarihi": "2026-11-11",
+    "sha1": "97477fdddf3b14f2f20d90ca380cb6b1ea9a3bc6",
+    "dosya": {
+      "ad": "meal-i-serif.epub",
+      "boyut": 379462,
+      "sha256": "2b30eb9baa4481f031e201829236aea0c2c2d9fd2e740896cfad967bd4f71225"
+    }
+  }
+}

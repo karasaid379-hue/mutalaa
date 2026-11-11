@@ -9,7 +9,7 @@ namespace Mutalaa.Api.Tests;
 
 /// <summary>
 /// Ofsetli turev alanlari (marks, sentences) olan birimde metin degistiren onay 422 inceleme-desteklenmiyor; durum onayi ve ret serbest;
-/// duzeltme onerisi ucu da ayni kosulda 422 verir (A16'ya kadar). Sentetik veri (Docker'li).
+/// duzeltme onerisi ucu da ayni kosulda 422 verir (yeniden hesap BC-59'da, A20). Sentetik veri (Docker'li).
 /// </summary>
 public class ReviewOffsetFixTests(EditorialDatabase<ReviewOffsetFixTests> fixture)
     : ReviewTestBase<ReviewOffsetFixTests>(fixture), IClassFixture<EditorialDatabase<ReviewOffsetFixTests>>
@@ -195,6 +195,31 @@ public class ReviewOffsetFixTests(EditorialDatabase<ReviewOffsetFixTests> fixtur
 
         await AssertProblemAsync(response, HttpStatusCode.UnprocessableEntity, "inceleme-desteklenmiyor");
         Assert.Equal(0, await Db.ScalarAsync<long>("SELECT count(*) FROM icerik.review", Ct));
+    }
+
+    [Fact]
+    public async Task The_offset_422_messages_of_the_decision_and_the_correction_both_start_with_Ofsetli()
+    {
+        // Editor (apps/editor problem-text.ts OFFSET_MARKER = 'Ofsetli') bu iki iletiyi ayni belirtecle taniyip ozel metin gosterir.
+        await ResetReviewsAsync();
+        string source = await SeedSourceAsync(SourceKind.Risale);
+        string anchor = TestData.UnitAnchor();
+        Unit unit = await SeedOffsetUnitAsync(source, UnitKind.Risale, anchor);
+        Review review = await SeedUnitReviewAsync(unit);
+        using HttpClient client = await ClientAsync();
+
+        using HttpResponseMessage decision = await DecideAsync(client, review.Id, Etag(await XminAsync(review.Id)), Approve());
+        using HttpResponseMessage correction = await client.PostAsJsonAsync(
+            "/api/v1/units/" + Uri.EscapeDataString(anchor) + "/corrections",
+            new { metin = Proposed, gerekce = "Deneme gerekcesi" },
+            Ct);
+
+        foreach (HttpResponseMessage response in new[] { decision, correction })
+        {
+            Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+            JsonElement body = await ApiFactory.ReadJsonAsync(response, Ct);
+            Assert.StartsWith("Ofsetli", body.GetProperty("detail").GetString(), StringComparison.Ordinal);
+        }
     }
 
     [Fact]

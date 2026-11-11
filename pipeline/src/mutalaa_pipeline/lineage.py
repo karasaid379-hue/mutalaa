@@ -30,6 +30,7 @@ SAYFALAR_ADI: Final = "pages.jsonl"  # ust veri anchor adiminda: page_map satirl
 ALIASLAR_ADI: Final = "aliases.jsonl"  # sure adi adaylari (surah_alias + review)
 KELIMELER_ADI: Final = "words.jsonl"  # anchor adiminda units.jsonl'in yaninda (quran_word)
 NOTICE_ADI: Final = "notice.txt"  # kaynagin bildirim blogu, bayt bayt (export pg bu adi bekler)
+TANIK_ADI: Final = "tanik.jsonl"  # meal tanigi (A16.2): birimsiz, (sure, ayet) anahtarli satirlar
 UV_LOCK_YOLU: Final = "pipeline/uv.lock"
 UUID_UZUNLUGU: Final = 36
 RUN_ID_DESENI: Final = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")

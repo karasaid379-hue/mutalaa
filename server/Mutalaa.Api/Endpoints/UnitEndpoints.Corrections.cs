@@ -74,7 +74,7 @@ public static partial class UnitEndpoints
             from u in db.Units.AsNoTracking()
             join s in db.Sources.AsNoTracking() on u.SourceId equals s.Slug
             where u.Anchor == anchorRef
-            select new { u.Kind, u.Metin, u.ContentHash, u.Marks, u.Sentences, SourceKind = s.Tur })
+            select new { u.Kind, u.Metin, u.ContentHash, u.Marks, u.Sentences, u.Attrs, SourceKind = s.Tur })
             .FirstOrDefaultAsync(cancellationToken);
         if (target is null)
         {
@@ -114,14 +114,24 @@ public static partial class UnitEndpoints
             return ApiProblem.Validation(new Dictionary<string, string[]> { ["metin"] = ["Değişiklik yok: metin mevcut metinle aynı."] });
         }
 
-        // Ofsetli turev alanlar (marks, sentences) metin degisimini A16'ya kadar tasimaz: oneri acilip uygulama aninda reddedilmesin,
-        // kullanici simdi 422 ile bilgilensin (karar ucu da ayni kosulda ayni kodu verir).
+        // Birlesik mealin izleyen birimi (attrs.birlesik_ile dolu) kendi metnini tasimaz (K-49 madde 8): metin bas birimde duzeltilir.
+        // Ileti "Ofsetli" ile baslamaz; editorde OFFSET_MARKER eslesmesi yalniz ofset iletisine ozeldir.
+        if (ReviewDecisions.IsMergedFollower(target.Attrs))
+        {
+            return ApiProblem.Create(
+                StatusCodes.Status422UnprocessableEntity,
+                DomainErrorCodes.IncelemeDesteklenmiyor,
+                "Birleşik meal izleyen birimi (birlesik_ile) kendi metnini taşımaz; metni başlangıç birimde düzeltin.");
+        }
+
+        // Ofsetli turev alanlar (marks, sentences) metin degisimini BÇ-59'a (A20) kadar tasimaz: oneri acilip uygulama aninda
+        // reddedilmesin, kullanici simdi 422 ile bilgilensin (karar ucu da ayni kosulda ayni kodu verir).
         if (ReviewDecisions.HasOffsetData(target.Marks, target.Sentences?.Length ?? 0))
         {
             return ApiProblem.Create(
                 StatusCodes.Status422UnprocessableEntity,
                 DomainErrorCodes.IncelemeDesteklenmiyor,
-                "Bu birimin ofsetli alanları (marks, sentences) var; metin değişimi bu alanlar A16'da hesaplanana kadar desteklenmiyor.");
+                "Ofsetli alanların (marks, sentences) yeniden hesabı BÇ-59'da (A20) yapılana kadar bu birimde metin değişimi desteklenmiyor.");
         }
 
         string? proposer = user.Identity?.Name ?? user.FindFirstValue(ClaimTypes.Email);

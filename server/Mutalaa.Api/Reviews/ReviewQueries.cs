@@ -9,6 +9,16 @@ using Mutalaa.Infrastructure.Persistence;
 
 namespace Mutalaa.Api.Reviews;
 
+/// <summary>
+/// Kuyruk asamasi suzgeci (<c>asama</c>): <see cref="Ilk"/> ilk onay bekleyen (acik, inceleyen yok), <see cref="Ikinci"/> ikinci onay
+/// bekleyen (acik, inceleyen dolu, ikinci_inceleyen yok). Etiketler: <c>ilk</c>, <c>ikinci</c>.
+/// </summary>
+internal enum ReviewStage
+{
+    Ilk,
+    Ikinci,
+}
+
 /// <summary>Liste, ayrinti ve istatistik okuma sorgulari: hepsi AsNoTracking ve projeksiyonludur.</summary>
 internal static class ReviewQueries
 {
@@ -44,6 +54,8 @@ internal static class ReviewQueries
         string? hedefTablo,
         string? alan,
         ReviewStatus durum,
+        string? kaynak,
+        ReviewStage? asama,
         (DateTime CreatedAt, long Id)? after,
         int limit,
         CancellationToken cancellationToken)
@@ -57,6 +69,26 @@ internal static class ReviewQueries
         if (alan is not null)
         {
             query = query.Where(r => r.Alan == alan);
+        }
+
+        if (kaynak is not null)
+        {
+            // Kaynak sutunu yalniz birim hedeflerinde anlamlidir: hedef_anahtar birimin capasidir (unit.source_id uzerinden).
+            // Capa sutunu AnchorRef donusturuculu oldugu icin esleme ham SQL alt sorgusuyla (yalniz sutun, tek parametre) yapilir.
+            IQueryable<string> sourceAnchors = db.Database.SqlQuery<string>(
+                $"SELECT anchor AS \"Value\" FROM icerik.unit WHERE source_id = {kaynak}");
+            query = query.Where(r => r.HedefTablo == ReviewTargets.Unit && sourceAnchors.Contains(r.HedefAnahtar));
+        }
+
+        if (asama is ReviewStage.Ilk)
+        {
+            query = query.Where(r => r.Durum == ReviewStatus.Acik && (r.Inceleyen == null || r.Inceleyen == string.Empty));
+        }
+        else if (asama is ReviewStage.Ikinci)
+        {
+            query = query.Where(r => r.Durum == ReviewStatus.Acik
+                && r.Inceleyen != null && r.Inceleyen != string.Empty
+                && (r.IkinciInceleyen == null || r.IkinciInceleyen == string.Empty));
         }
 
         if (after is { } cursor)

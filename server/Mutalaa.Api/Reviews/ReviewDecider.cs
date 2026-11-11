@@ -156,7 +156,8 @@ internal static class ReviewDecider
                         unit.Metin,
                         unit.ContentHash,
                         unit.Rev,
-                        ReviewDecisions.HasOffsetData(unit.Marks, unit.Sentences?.Length ?? 0))));
+                        ReviewDecisions.HasOffsetData(unit.Marks, unit.Sentences?.Length ?? 0),
+                        ReviewDecisions.IsMergedFollower(unit.Attrs))));
                 }
 
             case ReviewTargets.SurahAlias:

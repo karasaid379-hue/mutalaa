@@ -1,7 +1,7 @@
 # Çapa Şeması
 
-> **Sürüm:** 1.5 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-47](../00-ozet/02-karar-defteri.md#k-47--yayın-kapsamı-tutarlılığı-sarkan-bağlantı-ve-çapa-sürekliliği) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
+> **Sürüm:** 1.6 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-47](../00-ozet/02-karar-defteri.md#k-47--yayın-kapsamı-tutarlılığı-sarkan-bağlantı-ve-çapa-sürekliliği) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-07](../00-ozet/02-karar-defteri.md#k-07--mushaf-görünümü-üç-seçenek) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-16](../00-ozet/02-karar-defteri.md#k-16--senkron-çakışma-çözümü) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-43](../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları) · [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
 
 Her metin birimi tek bir gramere göre kalıcı bir adres (çapa) alır. Vurgular, notlar, yer imleri, `xref` bağlantıları, sayfa eşlemeleri, derin bağlantılar ve arama sonuçları bu adresle çalışır. Eski plan aynı içerik için en az beş uyumsuz biçim kullanıyordu (`2:255`, `quran:2:255`, `sozler:32:612`, `risale:sozler:13:para:42`). Bu dosya hepsinin yerini alır (`quran-app-docs/03-veri-modeli/03-polymorphic-content-ref.md`, `quran-app-docs/03-veri-modeli/02-tam-sql-ddl.md`).
 
@@ -13,7 +13,7 @@ Her metin birimi tek bir gramere göre kalıcı bir adres (çapa) alır. Vurgula
 | Kur'an kelimesi | `q:{sure}:{ayet}:{kelime}` | `q:2:255:3` | Âyet metninde `quran_word.char_start`–`char_end` |
 | Kur'an kelime aralığı | `q:{sure}:{ayet}:{ilk}-{son}` | `q:2:255:3-7` | İlk ve son kelime dahil |
 | Kur'an âyet aralığı | `q:{sure}:{ilk}-{son}` | `q:2:255-257` | Ardışık âyetlere başvuru; kendi metni yoktur |
-| Meal | `meal:{meal}:{sure}:{ayet}` | `meal:elmalili:2:255` | Âyetin meal metni |
+| Meal | `meal:{meal}:{sure}:{ayet}` | `meal:elmalili:2:255`, `meal:elmalili-sade:2:255` | Âyetin meal metni; `elmalili` orijinal, `elmalili-sade` sadeleştirilmiş güncel meal ([K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi) madde 1) |
 | Tefsir paragrafı | `tf:{eser}:{sure}-{ilk}-{son}:p{n}` | `tf:elmalili:2-255-257:p3` | Paragraf metni; çapa kapsanan âyetleri de taşır |
 | Âyete bağlı olmayan tefsir bölümü | `tf:{eser}:{bolum}:p{n}` | `tf:elmalili:mukaddime:p4` | Paragraf metni |
 | Risale paragrafı | `rn:{kitap}(:{bolum})*:p{n}` | `rn:sozler:soz-10:hakikat-3:p4` | Paragraf metni |
@@ -151,7 +151,7 @@ k    ^k:(?<yol>SEG(?::SEG)*):p(?<p>SAYI)ARA$
 
 | Olay | Çapa | Yönlendirme |
 |---|---|---|
-| Metin düzeltmesi (yazım, OCR) | Aynı kalır; `content_hash` değişir, `rev` artar | Gerekmez; kullanıcı kayıtları yeniden çapalanır (bölüm 9) |
+| Metin düzeltmesi (yazım, editör düzeltmesi) | Aynı kalır; `content_hash` değişir, `rev` artar | Gerekmez; kullanıcı kayıtları yeniden çapalanır (bölüm 9) |
 | Paragraf bölünmesi | İlk parça eski çapayı tutar; ikinci parça kitaptaki en büyük numaranın bir fazlasını alır | Eski çapanın `[k, son)` aralığı yeni çapaya, `delta = -k` |
 | Paragraf birleşmesi | Öndeki çapa kalır; arkadaki kullanım dışı olur | Arkadakinin tamamı öndekine, `delta = öndekinin eski uzunluğu + ayırıcı` |
 | Silme | Kullanım dışı | Komşu birime gezinme yönlendirmesi; aralık eşlemesi yok |
@@ -180,7 +180,7 @@ Kanonik metin, birimin kelimesi kelimesine düz metnidir. Biçimlendirme, dil i�
 |---|---|---|
 | Kaynaktan alınan metin | Kaynağın dağıttığı hâliyle, bayt bayt saklanır. NFC dahil hiçbir dönüşüm uygulanmaz. Birim metni kaynak dosyanın aynen bir parçasıdır. | Tanzil Uthmani ve Simple Clean, hazır Arapça hadis metinleri |
 | Kendi ürettiğimiz metin | İlk kayıtta bir kez kanonikleştirilir, sonra bir daha değiştirilmez. | Elmalılı ve Risale transkripsiyonları, kelime anlamları, Ahmed Naim çevirisinin aktarımı |
-| Çıkarılmış metin ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme), madde 3) | Ham dosya değişmez, çıkarıcı sürümü sabittir, dönüşüm deterministiktir. Çıkarılan metne aşağıdaki ilk kayıt adımları uygulanır; `provenance` dosya özetini, dosya içi konumu ve çıkarıcı sürümünü taşır. Kod henüz yok (planlı). | HTML, EPUB ya da metin katmanlı PDF'ten alınan hazır metin |
+| Çıkarılmış metin ([K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme), madde 3) | Ham dosya değişmez, çıkarıcı sürümü sabittir, dönüşüm deterministiktir. Çıkarılan metne aşağıdaki ilk kayıt adımları uygulanır; `provenance` dosya özetini, dosya içi konumu ve çıkarıcı sürümünü taşır. Kod A16'da yazılır (`ingest meal`; [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi) madde 7 ve 13): ilk kayıt adımları (NFC dahil) ayrıştırmada bir kez uygulanır; konum `provenance` içindedir ve `@` ofseti değildir; çıkarım vektörünü yalnız Python tüketir. | Elmalılı mealleri (Vikikaynak wikitext, fawazahmed0 JSON); HTML, EPUB ya da metin katmanlı PDF'ten alınan hazır metin |
 
 HTML, EPUB ya da PDF'ten çıkarılan metin kaynak dosyanın birebir dilimi değildir; bu yüzden ilk iki satırın hiçbirine uymaz. İlk iki kural değişmez.
 
@@ -235,7 +235,7 @@ flowchart TD
   H -- Hayır --> N["Durum: konumu bulunamadı"]
 ```
 
-- Benzerlik `1 − düzenleme_uzaklığı / max(uzunluk)` ile kod noktası üzerinde ölçülür. 0,85 başlangıç değeridir; Elmalılı OCR düzeltmeleri üzerinde ölçülerek ayarlanır.
+- Benzerlik `1 − düzenleme_uzaklığı / max(uzunluk)` ile kod noktası üzerinde ölçülür. 0,85 başlangıç değeridir; Elmalılı meal düzeltmeleri üzerinde ölçülerek ayarlanır.
 - Eski ofset, metin uzunluğu oranıyla ölçeklenerek yakınlık için kullanılır.
 - Sonuç yalnız cihazdaki `anchor_resolution` önbelleğine yazılır; senkronlanan kayıt otomatik olarak değişmez. Farklı paket sürümündeki iki cihaz aynı kaydı karşılıklı yeniden yazarsa döngüye girer. Senkronlanan kayıt yalnız kullanıcı eylemiyle güncellenir.
 - "Konumu bulunamadı" durumu Defterim'de rozetle gösterilir. Saklanan alıntı okunur kalır. Eylemler: "Yeniden seç" (yeni çapa, aralık ve özet yazılır), "Birime bağla" (aralık kaldırılır, kayıt paragrafın tamamına bağlanır), "Sil".

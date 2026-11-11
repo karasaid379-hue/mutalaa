@@ -20,6 +20,11 @@ public enum PackSourceRole
 /// Paket-kaynak baglantisi. Required: kaynak bu paketin kapi girdisinde her zaman bulunur (kaydi yoksa P-01); aksi hâlde yalniz editoryal
 /// veritabaninda satiri ya da birimi varsa girer (ornegin hadis-tecrid'te Turkce ceviriler henuz alinmamis olabilir).
 /// PageMapLayout: Structure kaynagin page_map satirlarina yazilan duzen adi.
+/// K-47 notu: core'daki Elmalili mealleri (elmalili-meal, elmalili-sade-meal) Required: false'tur (kaynak kaydi ve birimleri yoksa paket
+/// onlarsiz uretilir); ilk meal yayininden sonra meal capa kumesi donar: onceki yayindaki her meal capasi sonrakinde etkin ya da
+/// yonlendirmeli olmali, kaybolursa yayin <c>capa-kayboldu</c> ile reddedilir.
+/// A34'e kadar kismi meal public'e girebilir (K-49 madde 5): onayli birimleri olan meal kaynagi, butun ayetleri onaylanmadan da
+/// public pakete girer; "G-INC gecmeden public'e cikmaz" kurali A34'te yazilir.
 /// </summary>
 public sealed record PackSourceBinding(string Slug, PackSourceRole Role, bool Required, string? PageMapLayout = null);
 
@@ -76,12 +81,14 @@ public sealed class PackCatalog
     [
         new PackDefinition(
             CorePackId,
-            "Kur'an (Uthmani metin)",
+            "Kur'an ve Elmalılı mealleri",
             Bundled: true,
             DependsOn: [],
             Sources:
             [
                 new PackSourceBinding("tanzil-uthmani", PackSourceRole.Content, Required: true),
+                new PackSourceBinding("elmalili-meal", PackSourceRole.Content, Required: false),
+                new PackSourceBinding("elmalili-sade-meal", PackSourceRole.Content, Required: false),
                 new PackSourceBinding("tanzil-simple-clean", PackSourceRole.Attribution, Required: true),
                 new PackSourceBinding("tanzil-ust-veri", PackSourceRole.Structure, Required: true, PageMapLayout: "medine-604"),
             ],

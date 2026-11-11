@@ -31,10 +31,16 @@ function AyahText({ anchor }: { anchor: string }) {
   );
 }
 
-/** The Tanzil ayah(s) the reviewed unit belongs to (a meal anchor gives its ayah; a joined meal gives two). */
-export function AyahSection({ anchor }: { anchor: string }) {
+/**
+ * The Tanzil ayah(s) the reviewed unit belongs to. A meal anchor gives its ayah; the head unit of a joined meal
+ * carries `attrs.kapsam` (`q:{sure}:{ilk}-{son}`), and then the ayahs of that range are shown (K-49 madde 8).
+ */
+export function AyahSection({ anchor, kapsam }: { anchor: string; kapsam?: string | null }) {
   const headingId = useId();
-  const ayahs = ayahAnchors(anchor);
+  const range = kapsam ? ayahAnchors(kapsam) : null;
+  // A range that cannot be read is ignored: the ayah of the unit's own anchor is shown instead.
+  const scope: string | null = kapsam && range !== null && range.shown.length > 0 ? kapsam : null;
+  const ayahs = scope !== null && range !== null ? range : ayahAnchors(anchor);
   return (
     <section
       aria-labelledby={headingId}
@@ -44,6 +50,11 @@ export function AyahSection({ anchor }: { anchor: string }) {
       <h3 id={headingId} className="text-sm font-medium">
         {trOcr.ayah.heading}
       </h3>
+      {scope !== null ? (
+        <p className="text-xs text-muted-foreground" data-testid="ocr-ayah-scope">
+          {trOcr.merged.scope(scope)}
+        </p>
+      ) : null}
       {ayahs.shown.length === 0 ? (
         <p className="text-sm text-muted-foreground">{trOcr.ayah.none}</p>
       ) : (

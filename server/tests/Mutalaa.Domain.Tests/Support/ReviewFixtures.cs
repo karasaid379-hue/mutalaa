@@ -27,8 +27,9 @@ internal static class ReviewFixtures
         string metin = CurrentText,
         SourceKind sourceKind = SourceKind.Meal,
         int rev = 1,
-        bool hasOffsetData = false) =>
-        new(kind, sourceKind, durum, metin, ContentHash.Compute(metin), rev, hasOffsetData);
+        bool hasOffsetData = false,
+        bool isMergedFollower = false) =>
+        new(kind, sourceKind, durum, metin, ContentHash.Compute(metin), rev, hasOffsetData, isMergedFollower);
 
     /// <summary>Birim metni incelemesi: onceki mevcut metin, onerilen yeni metin.</summary>
     public static Review UnitReview(

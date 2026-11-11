@@ -106,7 +106,7 @@ public class ApiContractTests(EditorialDatabase<ApiContractTests> fixture)
             Ct);
 
         // Bir inceleme kaydi: editor duzeltme onerir (Onceki/Onerilen jsonb dolu). Ofsetli alani (marks) dolu birimde metin degisimi
-        // desteklenmedigi icin (K-48, A16) oneri ofsetsiz ikinci bir birime yapilir.
+        // desteklenmedigi icin (K-48, BC-59) oneri ofsetsiz ikinci bir birime yapilir.
         await SeedUnitAsync(SourceSlug, "rn:sozler:soz-10:p2", "Deneme paragrafı 1");
         using HttpResponseMessage proposal = await editor.PostAsJsonAsync(
             "/api/v1/units/" + Uri.EscapeDataString("rn:sozler:soz-10:p2") + "/corrections",

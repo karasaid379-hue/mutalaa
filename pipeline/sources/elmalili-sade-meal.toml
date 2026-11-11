@@ -1,0 +1,14 @@
+# A16.2 (2026-11-11) · kaynak: docs/04-icerik/01-kaynaklar.md §3.3 · karar: K-49
+slug = "elmalili-sade-meal"
+tur = "meal"
+baslik = "Hak Dini Kur'an Dili, güncel meal (sadeleştirilmiş)"
+yazar = "Elmalılı Muhammed Hamdi Yazır"
+surum = "commit-93e6f64925ae76273520d636fcaaf061129f2316"
+provider = "fawazahmed0/quran-api"
+kaynak_url = "https://github.com/fawazahmed0/quran-api"
+atif_metni = "Meal: Elmalılı Muhammed Hamdi Yazır, sadeleştirilmiş metin (sadeleştiren belirtilmemiş). fawazahmed0/quran-api üzerinden alınmıştır."
+notlar = '''
+Çapa: meal:elmalili-sade:{sure}:{ayet}. Sadeleştirilmiş metin yalnız bu ayrı adlı baskı olarak girer; arayüzde "sadeleştirilmiş" etiketiyle görünür ve orijinal meali değiştirmez (K-49 madde 1). Orijinal meal ve tefsir için sadeleştirilmiş metin yasağı sürer.
+Dosya: fawazahmed0/quran-api editions/tur-elmallsadelesti.json, yukarıdaki commit (kilit: ingest/elmalili_meal.lock.json). Edition kaynağı qurandatabase.org. "Yeni Elmalılı" ailesi (tur-elmalilihamdiya, tur-elmallsadelesti1, Tanzil tr.yazir) bu kayda alınmaz.
+Metin taslak girer, iki editör turundan geçer (K-49 madde 4); Faz 1 çıkışını bu meal bağlamaz.
+Atıf (K-49 madde 14): G-INC geçince sona "Mütâlaa editörlerince denetlenmiştir." eklenir.'''

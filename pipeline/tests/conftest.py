@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 if TYPE_CHECKING:
+    from meal_yardimci import MealKoku
     from sure_adlari_yardimci import SureAdlariZinciri
     from ust_veri_yardimci import UstVeriZinciri
 
@@ -66,3 +67,16 @@ def sure_adlari_zinciri(ust_veri_zinciri: "UstVeriZinciri") -> Iterator["SureAdl
         sz.ortam(mp)
         sz.hepsi()
     yield sz
+
+
+@pytest.fixture(scope="session")
+def meal_sablon(tmp_path_factory: pytest.TempPathFactory) -> Iterator["MealKoku"]:
+    """Tam SENTETIK meal zinciri (A16; ingest x3, normalize x2, anchor x2, qa x2); bir kez kurulur.
+
+    Testler yalniz okur ya da `meal_yardimci.kopya_al` ile kendi kopyasini alir.
+    """
+    from meal_yardimci import tam_zincir_kur
+
+    with pytest.MonkeyPatch.context() as mp:  # yama yalniz kurulum sirasinda gecerlidir
+        kok = tam_zincir_kur(tmp_path_factory.mktemp("meal-sablon"), mp)
+    yield kok

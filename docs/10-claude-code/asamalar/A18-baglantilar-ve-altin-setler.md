@@ -1,7 +1,7 @@
 # A18 · Bağlantılar (`xref`) ve altın setler
 
-> **Sürüm:** 1.2 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması)
-> **Faz:** 1 · İçerik hattı · **Önkoşul:** [A16](./A16-elmalili-meali.md) · [A17](./A17-kelime-katmani.md) · **İnsan adımı:** İ-12 · İ-13
+> **Sürüm:** 1.3 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-49](../../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
+> **Faz:** 1 · İçerik hattı · **Önkoşul:** A16 (A16.4 yeterli: [A16](./A16-elmalili-meali.md) meal birimleri yüklenmiş olmalı; insan turları beklenmez) · [A17](./A17-kelime-katmani.md) · **İnsan adımı:** İ-12 · İ-13
 > **Ajanlar:** `arastirmaci` (A18.0 tedarik) · `hat-gelistirici` · `test-yazari` · `sunucu-gelistirici` (yayın süzgeci) · `inceleyici` · **Beceriler:** `icerik-hatti` · `capa-gramer` · `metin-butunlugu` · `paket-yayini` · **Tahmini oturum:** 4–5 Claude Code oturumu; etiketleme ayrıca
 > **Başlat:** `/asama A18`
 
@@ -20,7 +20,7 @@ Aşama tedarikle başlar (A18.0): Türkçe çözümleme kitaplığı, etimoloji 
 ## Kapsam
 **Yapılır**
 - Tedarik ve indirme (A18.0): kaikki dökümleri, QurSim, NLTK `punkt_tab`, kitaplıklar, kaynak kayıtları.
-- Türkçe kelime → Arapça kök hattı onaylı meal üzerinde; `lemma` (`lang = 'tr'`), `tr_root_index`, `tr_form`.
+- Türkçe kelime → Arapça kök hattı onaylı meal üzerinde; `lemma` (`lang = 'tr'`), `tr_root_index`, `tr_form`. Bağlantılar yalnız onaylı (`metin_durumu = 'onayli'`) meal birimlerinde üretilir; `taslak` birimde üretilmez (K-49 madde 15). Hangi mealin (orijinal ya da sadeleştirilmiş) hedef olduğu A18.1'de yazılır; editördeki bağlantı hedefi bugün orijinal mealdir.
 - Kur'an içi `kok` ve `lemma` bağlantıları; `benzer_ayet` (sözlüksel, kendi indeksimiz; QurSim çiftleri ek aday kaynak).
 - Açık atıf grameri ve iktibas motoru (n-gram, Smith-Waterman, kalıp ve bağlam kuralları, gri bölgede isteğe bağlı dil modeli doğrulaması); hazır araç karşılaştırması.
 - Altın set biçimi, etiketleme görevleri (hazır arayüz), ölçüm ve kapı raporları; tür bazında yayın süzgeci kararı.
@@ -61,6 +61,7 @@ Kendimiz yapacağımız işler: izafet, harf-i tarif ve kesme ön bölmesi (zeyr
 - **Bitti sayılır:** tablodaki adresler açıldı ya da yedeği kullanıldı; dosyalar `data/gelen/<kaynak>/<YYYY-AA-GG>/` altında ve `SHA256SUMS` yazılı; `kaikki-tr` kaydı güncel, `qursim` kaydı yeni ve `sources check` hatasız; kitaplık sürümleri `uv.lock` içinde.
 
 ### A18.1 · Doğrulamalar ve kararlar
+- **İlk madde: [BÇ-58](../07-belge-celiskileri.md#1-karar-bekleyenler) kararı.** Ofsetli tabloların (`tr_root_index`, `tr_form`, `xref` ofsetleri) meal metni düzeltmesinde ve kaynak sürümü değişiminde korunması bu aşamanın başında `/karar` ile yazılır. Karar yazılmadan ofsetli tablo üretilmez.
 - `arastirmaci` doğrular: zeyrek'in `punkt_tab` verisiyle meal sözcükleri üzerindeki çözümleme kapsamı (Python 3.13 ve Windows'ta çalıştığı tedarik ölçümünde görüldü; Kök ve lemma §10 madde 3); kaikki `ety`, `root` ve `etymology_text` alanlarının meal sözcüklerini ne kadar kapsadığı; Tanzil Uthmani ve Simple Clean âyet başı kelime sayısı eşitliği ve imlâî → Uthmani konum eşlemesi (İktibas tespiti §5, §14 madde 3); ijaza, quran-search-in-text ve passim sürümleri (§11).
 - Meal kapsaması planlanan eşiği tutmazsa yedek yol (ZemberekDotNet, zemberek-python ya da simplemma) `/karar` ile seçilir. Birim başına bağlantı sayısı N ve `idf_n < 0,2` eşiği (öneri) planda sorulur.
 - Eşikler: hedefler Kapsam ve fazlar §8 B-03 ve B-04'tür (İ-22 onayına kadar öneri); tür başına kapı eşikleri Test stratejisi §4 tablosundadır ve B-03 ile uyumludur. İktibas tespiti §10 bu ikisine bağlanır.
@@ -143,7 +144,7 @@ dotnet run --project server/Mutalaa.Publisher -- publish --flavor public --dry-r
 ## İnsan adımları
 - İ-13 · Altın set etiketleme: A18.5'te kök ve `benzer_ayet` setleri; atıf ve iktibas seti A37 ve A20'den sonra. Claude Code örneklemi, görev dosyalarını ve ölçümü hazırlar; etiketlemeyi iki kişi yapar. Bekleyen adım yalnız ölçümü ve kapı raporunu bekletir; ilerleme dosyasına yazılır.
 - İ-12 · Türkçe kelime → kök eşlemelerinin editör onayı: A18.2'de; kelime anlamı onayıyla aynı editör işidir ([İnsan adımları](../06-insan-adimlari.md)).
-- İ-17 (API anahtarı) A16 ve A17'de alınmış olmalıdır; anahtar yoksa yalnız dil modeli çağrıları (A18.2 çözülmeyen lemmalar, A18.4 gri bölge) çalışmaz, aşamanın kalanı sürer.
+- İ-17 (API anahtarı) A18'den önce alınmış olmalıdır (A16 artık gerektirmez, K-49); anahtar yoksa yalnız dil modeli çağrıları (A18.2 çözülmeyen lemmalar, A18.4 gri bölge) çalışmaz, aşamanın kalanı sürer.
 
 ## Çıktılar
 - `pipeline/src/mutalaa_pipeline/enrich/` kök hattı, bağlantı üreteçleri, atıf ve iktibas motoru, kalıp listesi; `qa/` altın set ölçümleri; testler
