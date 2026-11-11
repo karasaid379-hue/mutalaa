@@ -17,6 +17,7 @@ Kaynaklar: [Çapa şeması](../../../docs/03-veri/01-capa-semasi.md) §7–§8, 
 |---|---|
 | Kaynaktan alınan (Tanzil Uthmani ve Simple Clean, hazır Arapça hadis metinleri) | Kaynağın dağıttığı hâliyle, bayt bayt saklanır. NFC dahil hiçbir dönüşüm yok. Birim metni kaynak dosyanın aynen bir parçasıdır: `kaynak[başlangıç:bitiş] == unit.text`. |
 | Kendi ürettiğimiz (Elmalılı ve Risale transkripsiyonu, Naim aktarımı, kelime anlamları) | İlk kayıtta bir kez kanonikleştirilir, sonra değişmez. |
+| Çıkarılmış metin (HTML, EPUB, wikitext ya da JSON'dan hat tarafından çıkarılan hazır metin: Elmalılı mealleri; K-38 madde 3, K-49) | Kaynak dosyanın birebir dilimi değildir; üçüncü kanonik türdür. Ham dosya `data/raw` altında değişmez, çıkarıcı sürümü ve dönüşüm sabittir; ilk kayıt adımları ayrıştırmada bir kez uygulanır (NFC yalnız burada); `provenance` ham dosya özetini, dosya içi konumu ve çıkarıcı sürümünü taşır. Konum `@` ofseti değildir. G-BUT: ham dosya ve çıkarıcıdan metin yeniden üretilebilir. |
 
 Neden: NFC şedde ile harekenin sırasını değiştirir (U+0651 U+064E → U+064E U+0651).
 

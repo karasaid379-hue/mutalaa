@@ -30,8 +30,9 @@ Ortak yardımcılar (`config`, `db`, `logs`) hat adımlarına bağlanmaz (yalnı
 |---|---|
 | `uv run mutalaa sources list` · `sources check` | Kaynak kayıtlarını listeler (`slug`, `tur`, `surum`, `kaynak_url`); kaydın biçimini ve zorunlu alanlarını denetler (çıkış `0` ya da `2`) |
 | `uv run mutalaa ingest tanzil --variant {uthmani\|simple-clean}` | `data/gelen/tanzil/` altındaki dosyayı alır (indirmez), SHA-256'sını kilitle karşılaştırır (tutmazsa çıkış `2`), `data/raw`'a yazar, `data/staged` üretir |
-| `uv run mutalaa ingest scans --edition elmalili-1935 --dir data/gelen/elmalili-1935/<YYYY-AA-GG>/c01 --cilt 1` | Bir cildin tarama görsellerini `data/raw` altına kaydeder (taramalar önce `data/gelen/elmalili-1935/<YYYY-AA-GG>/` altına iner) |
-| `uv run mutalaa ocr run --edition elmalili-1935 --engine <motor> --pages c01:1-40` · `ocr eval --edition elmalili-1935 --gold <klasör>` | OCR (sayfa seçimi cilt niteliklidir) ve CER/WER ölçümü |
+| `uv run mutalaa ingest meal --source <elmalili-meal\|elmalili-sade-meal\|elmalili-meal-epub> [--gelen-tarih <YYYY-AA-GG>] [--force] [--dry-run]` | Elmalılı mealini (Vikikaynak, fawazahmed0 JSON; EPUB yalnız tanık) kilitle denetleyip `data/raw`'a alır, çıkarır ve `data/staged` üretir (K-49). `--limit` çıkış 2 verir; `--kilit-oner` kilit önerisini yazdırır, dosya yazmaz |
+| `uv run mutalaa qa sample --source <kimlik> --n 600 --seed <sabit>` | Meal ikinci okuma örneklemi (sure grubuna göre tabakalı, sabit tohum) ve G-INC ölçüm raporu |
+| `ingest scans` · `ocr run` · `ocr eval` | OCR ve tarama komutları: proje sonuna ertelendi (K-49 madde 3; S-15). Şu an yok |
 | `uv run mutalaa normalize --source <kimlik>` · `anchor --source <kimlik>` | Arama metni (Tanzil için `ar_norm`, AR-4); çapa ve özet (`q:` çapası, `content_hash`) |
 | `uv run mutalaa enrich citations …` · `enrich glosses --wave 1` | İktibas adayları; kelime anlamı taslakları |
 | `uv run mutalaa qa run --source <kimlik> [--run <run_id>] [--gate <kapı>]` | QA kapıları (G-KAY, G-BUT, G-CAP, G-NOR); rapor `data/reports/{run_id}.json`; `--gate` kısmi koşu `export pg`ye yetmez |
@@ -45,7 +46,7 @@ Ortak bayraklar: `--dry-run`, `--force`, `--config <dosya>`; `--limit N` yalnız
 - `data/raw/{kaynak}/{YYYY-MM-DD}/` değişmez; aynı baytlar `raw` altında zaten varsa yeni kopya açılmaz, aynı gün farklı SHA-256 çıkış `2` ile durur (yeni bir `data/gelen/<kaynak>/<tarih>/` klasörü kullanılır).
 - `data/staged/{kaynak}/{run_id}/` her çalıştırmada yeniden üretilir; satırlar çapaya göre sıralı; içerik dosyalarına zaman damgası yazılmaz.
 - Her adım parmak izi hesaplar; aynıysa atlanır (`--force` hariç). Her çalıştırma bir manifest yazar.
-- Yükleme çapaya göre upsert; `xref` için yalnız `origin = 'hat'` ve `status = 'aday'`, `unit` için yalnız `metin_durumu = 'taslak'` satırlar güncellenir; `onayli` ve `red` satırlara dokunulmaz. Tanzil istisnası: `onayli` satırda yalnız türetilmiş sütunlar güncellenir, `metin` ve `content_hash` hiç (K-39). `xref` tekillik anahtarı `(type, src_anchor, src_span, dst_anchor, dst_span)`.
+- Yükleme çapaya göre upsert; `xref` için yalnız `origin = 'hat'` ve `status = 'aday'`, `unit` için yalnız `metin_durumu = 'taslak'` satırlar güncellenir; `onayli` ve `red` satırlara dokunulmaz. Tanzil istisnası: `onayli` satırda yalnız türetilmiş sütunlar güncellenir, `metin` ve `content_hash` hiç (K-39). Meal istisnası (K-49 madde 10 ve 11): hat meal biriminin metnine hiç yazmaz; özeti staged'den farklı birim (editör düzeltmesi) `korunan_duzeltilmis` sayılır, kilit değişimi yeni inceleme açar. `xref` tekillik anahtarı `(type, src_anchor, src_span, dst_anchor, dst_span)`.
 - Aynı kaynağa iki yükleme aynı anda yapılmaz (`pg_advisory_lock`); her `export pg` tek işlemdir.
 
 ## QA kapıları
@@ -55,8 +56,8 @@ Ortak bayraklar: `--dry-run`, `--force`, `--config <dosya>`; `--limit N` yalnız
 | G-KAY | Kaynak kaydı geçerli; `atif_metni` dolu; kanonik kaynakta `notice_text` kaynağın kendi bildirimiyle bayt bayt aynı |
 | G-BUT | Beklenen sayılar (114 sure, 6.236 âyet); boş birim yok (istisna: `attrs.birlesik_ile` taşıyan birleşik meal birimi); kontrol karakteri yok; üçüncü taraf metni bayt bayt aynı; kendi metnimiz NFC |
 | G-CAP | Çapa gramere uyar, tekildir, önceki sürümdeki her çapa durur, `content_hash` tutar, aralıklar geçerli |
-| G-HIZ | Her `q:{s}:{a}` için bir `meal:elmalili:{s}:{a}`; tefsir aralıkları âyet sınırında; Tecrîd–Buhârî eşlemesi çelişkisiz |
-| G-MET | OCR ve aktarım: CER eşiği, imlâ tutarlılığı, `⟦?⟧` işareti kalmadı |
+| G-HIZ | Her `q:{s}:{a}` için her meal kaynağında (`meal:elmalili`, `meal:elmalili-sade`) bir birim ya da `birlesik_ile` bağı; tefsir aralıkları âyet sınırında; Tecrîd–Buhârî eşlemesi çelişkisiz. Meal için sert kapı: kalırsa `export pg` yapılmaz |
+| G-MET | OCR ve aktarım: CER eşiği, imlâ tutarlılığı, `⟦?⟧` işareti kalmadı. Hazır metin yolundaki meal için uygulanmaz (K-49 madde 12; OCR ile S-15) |
 | G-INC | Yayına aday birimlerin tamamı onaylı; ikinci okuma örnekleminde hata oranı eşik altında |
 | G-YZ | Her yapay zekâ çıktısı model, istem sürümü ve `dogrulanmis = false` taşır |
 | G-NOR | Normalizasyon vektörleri Python'da geçer |
