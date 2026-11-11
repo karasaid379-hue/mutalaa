@@ -77,6 +77,7 @@ describe('session redirect', () => {
   });
 
   it('shows the user, the roles and the queue counts; there is one live region', async () => {
+    emptyScreens(fake);
     fake.get('/api/v1/auth/me', ok(session(['admin', 'editor'])));
     fake.get(
       '/api/v1/reviews/stats',
@@ -120,6 +121,7 @@ describe('401 in the middle of a page', () => {
 
   it('navigates to the login page first and clears the query cache afterwards', async () => {
     let expired = false;
+    emptyScreens(fake);
     let release: () => void = () => {};
     const gate = new Promise<void>((resolve) => {
       release = resolve;
