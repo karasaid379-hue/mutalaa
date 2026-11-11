@@ -5,7 +5,8 @@ namespace Mutalaa.Api.Tests;
 
 /// <summary>
 /// Depodaki OpenAPI belgesi (server/Mutalaa.Api/openapi/v1.json) gercek yanit govdesini anlatir: ProblemDetails uzantilari,
-/// 400 dogrulama yanitinin errors alani ve limit parametresinin tam sayi araligi. Docker gerekmez.
+/// 400 dogrulama yanitinin errors alani, limit parametresinin tam sayi araligi, sayi dugumlerinin dizgi kabul etmemesi
+/// (NumberHandling.Strict) ve inceleme ogelerinin jsonb alanlari. Docker gerekmez.
 /// </summary>
 public sealed class OpenApiDocumentFixTests : IDisposable
 {
@@ -123,5 +124,76 @@ public sealed class OpenApiDocumentFixTests : IDisposable
         Assert.Equal("integer", schema.GetProperty("type").GetString());
         Assert.Equal(1, schema.GetProperty("minimum").GetDecimal());
         Assert.Equal(200, schema.GetProperty("maximum").GetDecimal());
+    }
+
+    [Fact]
+    public void No_numeric_node_accepts_a_string_or_carries_a_pattern()
+    {
+        int numeric = 0;
+        Visit(_document.RootElement, "#", ref numeric);
+
+        Assert.True(numeric >= 40, $"Sayi dugumu sayisi beklenenden az: {numeric}.");
+    }
+
+    private static void Visit(JsonElement node, string path, ref int numeric)
+    {
+        if (node.ValueKind == JsonValueKind.Object)
+        {
+            if (node.TryGetProperty("type", out JsonElement type) && type.ValueKind is JsonValueKind.String or JsonValueKind.Array)
+            {
+                string[] kinds = type.ValueKind == JsonValueKind.String ? [type.GetString()!] : [.. type.EnumerateArray().Select(t => t.GetString()!)];
+                if (kinds.Contains("integer", StringComparer.Ordinal) || kinds.Contains("number", StringComparer.Ordinal))
+                {
+                    numeric++;
+                    Assert.False(kinds.Contains("string", StringComparer.Ordinal), $"{path}: sayi dugumu string kabul ediyor.");
+                    Assert.False(node.TryGetProperty("pattern", out _), $"{path}: sayi dugumunde pattern var.");
+                }
+            }
+
+            foreach (JsonProperty property in node.EnumerateObject())
+            {
+                Visit(property.Value, path + "/" + property.Name, ref numeric);
+            }
+        }
+        else if (node.ValueKind == JsonValueKind.Array)
+        {
+            int index = 0;
+            foreach (JsonElement item in node.EnumerateArray())
+            {
+                Visit(item, path + "/" + index.ToString(System.Globalization.CultureInfo.InvariantCulture), ref numeric);
+                index++;
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("ReviewItemDto")]
+    [InlineData("ReviewDetailDto")]
+    public void The_review_schemas_carry_onceki_onerilen_and_duzenlenen_as_optional_json(string schemaName)
+    {
+        JsonElement schema = Schemas.GetProperty(schemaName);
+        JsonElement properties = schema.GetProperty("properties");
+        string[] required = schema.TryGetProperty("required", out JsonElement list) ? [.. list.EnumerateArray().Select(r => r.GetString()!)] : [];
+
+        foreach (string name in new[] { "onceki", "onerilen", "duzenlenen" })
+        {
+            Assert.True(properties.TryGetProperty(name, out JsonElement property), $"{schemaName}.{name} yok.");
+            Assert.DoesNotContain(name, required);
+            Assert.Contains("#/components/schemas/JsonElement", property.GetRawText(), StringComparison.Ordinal);
+        }
+    }
+
+    [Theory]
+    [InlineData("DecisionBody")]
+    [InlineData("BulkDecisionItem")]
+    public void The_decision_schemas_make_duzenlenen_optional_and_keep_karar_and_gerekce_required(string schemaName)
+    {
+        JsonElement schema = Schemas.GetProperty(schemaName);
+        string[] required = [.. schema.GetProperty("required").EnumerateArray().Select(r => r.GetString()!)];
+
+        Assert.True(schema.GetProperty("properties").TryGetProperty("duzenlenen", out _), $"{schemaName}.duzenlenen yok.");
+        Assert.DoesNotContain("duzenlenen", required);
+        Assert.Contains("karar", required);
+        Assert.Contains("gerekce", required);
     }
 }

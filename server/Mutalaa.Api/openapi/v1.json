@@ -821,7 +821,6 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
               "type": "integer",
               "format": "int64"
             }
@@ -873,7 +872,6 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
               "type": "integer",
               "format": "int64"
             }
@@ -1218,7 +1216,6 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
               "type": "integer",
               "format": "int32"
             }
@@ -1360,7 +1357,6 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
               "type": "integer",
               "format": "int32"
             }
@@ -1458,7 +1454,6 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
               "type": "integer",
               "format": "int32"
             }
@@ -1570,28 +1565,25 @@
           "id",
           "xmin",
           "karar",
-          "duzenlenen",
           "gerekce"
         ],
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "xmin": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "uint32"
           },
           "karar": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "gerekce": {
             "type": [
               "null",
               "string"
@@ -1605,12 +1597,6 @@
               {
                 "$ref": "#/components/schemas/DecisionEdit"
               }
-            ]
-          },
-          "gerekce": {
-            "type": [
-              "null",
-              "string"
             ]
           }
         },
@@ -1626,11 +1612,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "durum": {
@@ -1640,11 +1622,7 @@
             "type": "string"
           },
           "xmin": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "uint32"
           }
         },
@@ -1689,11 +1667,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "durum": {
@@ -1757,12 +1731,17 @@
       "DecisionBody": {
         "required": [
           "karar",
-          "duzenlenen",
           "gerekce"
         ],
         "type": "object",
         "properties": {
           "karar": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "gerekce": {
             "type": [
               "null",
               "string"
@@ -1776,12 +1755,6 @@
               {
                 "$ref": "#/components/schemas/DecisionEdit"
               }
-            ]
-          },
-          "gerekce": {
-            "type": [
-              "null",
-              "string"
             ]
           }
         },
@@ -1921,11 +1894,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "surum": {
@@ -1965,11 +1934,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "surum": {
@@ -1985,11 +1950,9 @@
             "type": "string"
           },
           "kaynak_release_id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "format": "int32"
           },
@@ -2042,11 +2005,7 @@
             ]
           },
           "xmin": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "uint32"
           }
         },
@@ -2129,11 +2088,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "surum": {
@@ -2149,11 +2104,9 @@
             "type": "string"
           },
           "kaynak_release_id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "format": "int32"
           },
@@ -2181,11 +2134,7 @@
             "format": "date-time"
           },
           "xmin": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "uint32"
           }
         },
@@ -2203,11 +2152,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "durum": {
@@ -2226,11 +2171,7 @@
             ]
           },
           "xmin": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "uint32"
           }
         },
@@ -2254,6 +2195,83 @@
         ],
         "type": "object",
         "properties": {
+          "gerekce": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ikinci_gerekce": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sure_ms": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "hedef": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ReviewTargetSnapshot"
+              }
+            ]
+          },
+          "dogrulanmis": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "hedef_tablo": {
+            "type": "string"
+          },
+          "hedef_anahtar": {
+            "type": "string"
+          },
+          "xref_id": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "alan": {
+            "type": "string"
+          },
+          "eylem": {
+            "type": "string"
+          },
+          "durum": {
+            "type": "string"
+          },
+          "koken": {
+            "type": "string"
+          },
+          "yz_modeli": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "yz_kaydi": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/JsonElement"
+              }
+            ]
+          },
           "onceki": {
             "oneOf": [
               {
@@ -2284,95 +2302,10 @@
               }
             ]
           },
-          "gerekce": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "ikinci_gerekce": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "sure_ms": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "null",
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "hedef": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/components/schemas/ReviewTargetSnapshot"
-              }
-            ]
-          },
-          "dogrulanmis": {
-            "type": "boolean"
-          },
-          "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int64"
-          },
-          "hedef_tablo": {
-            "type": "string"
-          },
-          "hedef_anahtar": {
-            "type": "string"
-          },
-          "xref_id": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "uuid"
-          },
-          "alan": {
-            "type": "string"
-          },
-          "eylem": {
-            "type": "string"
-          },
-          "durum": {
-            "type": "string"
-          },
-          "koken": {
-            "type": "string"
-          },
-          "yz_modeli": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "yz_kaydi": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/components/schemas/JsonElement"
-              }
-            ]
-          },
           "guven": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
             "type": [
               "null",
-              "number",
-              "string"
+              "number"
             ],
             "format": "float"
           },
@@ -2410,11 +2343,7 @@
             "format": "date-time"
           },
           "xmin": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "uint32"
           },
           "dogrulanmamis": {
@@ -2444,11 +2373,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "hedef_tablo": {
@@ -2492,12 +2417,40 @@
               }
             ]
           },
+          "onceki": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/JsonElement"
+              }
+            ]
+          },
+          "onerilen": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/JsonElement"
+              }
+            ]
+          },
+          "duzenlenen": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/JsonElement"
+              }
+            ]
+          },
           "guven": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
             "type": [
               "null",
-              "number",
-              "string"
+              "number"
             ],
             "format": "float"
           },
@@ -2535,11 +2488,7 @@
             "format": "date-time"
           },
           "xmin": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "uint32"
           },
           "dogrulanmamis": {
@@ -2588,11 +2537,7 @@
             "type": "string"
           },
           "acik": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         },
@@ -2612,11 +2557,7 @@
             }
           },
           "toplam_acik": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         },
@@ -2668,20 +2609,16 @@
             ]
           },
           "rev": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "format": "int32"
           },
           "surah_no": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "format": "int32"
           },
@@ -2735,11 +2672,9 @@
             ]
           },
           "lemma_id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "format": "int32"
           },
@@ -2909,11 +2844,7 @@
             "format": "date-time"
           },
           "birim_sayisi": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           }
         },
@@ -2959,11 +2890,7 @@
             "type": "string"
           },
           "ord": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "metin_durumu": {
@@ -2973,11 +2900,7 @@
             "type": "string"
           },
           "rev": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "content_hash": {
@@ -3006,11 +2929,7 @@
             "items": {
               "type": "array",
               "items": {
-                "pattern": "^-?(?:0|[1-9]\\d*)$",
-                "type": [
-                  "integer",
-                  "string"
-                ],
+                "type": "integer",
                 "format": "int32"
               }
             }
@@ -3021,11 +2940,7 @@
               "array"
             ],
             "items": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -3091,11 +3006,7 @@
             "type": "string"
           },
           "ord": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int64"
           },
           "metin_durumu": {
@@ -3105,11 +3016,7 @@
             "type": "string"
           },
           "rev": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "content_hash": {

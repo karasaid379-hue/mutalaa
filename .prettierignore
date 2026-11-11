@@ -27,3 +27,6 @@ docker-compose.yml
 # A13: RFC 8785 test baytlari ve imzali fikstur manifestleri bayt bayt kalir
 packages/content-schema/test/fixtures/jcs/
 packages/content-schema/test/fixtures/imza/
+# A15: written by `pnpm --filter @mutalaa/editor gen:api` (openapi-typescript); CI compares it byte for byte
+# ("Editor API client is current"), so Prettier must not reformat it.
+apps/editor/src/api/schema.d.ts

@@ -1,6 +1,6 @@
 # A17 · Kelime katmanı: `quran_word`, `kelime-kok`, anlam taslakları
 
-> **Sürüm:** 1.3 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-43](../../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
+> **Sürüm:** 1.4 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-43](../../00-ozet/02-karar-defteri.md#k-43--kuran-yapı-verisi-kelime-numarası-işaret-tablosu-ve-aday-satırları)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A10](./A10-tanzil-alimi.md) · [A11](./A11-kuran-yapisi-ve-sayfa-eslemesi.md) (A11.2) · [A15](./A15-editor-paneli.md) · **İnsan adımı:** İ-12 · İ-17
 > **Ajanlar:** `hat-gelistirici` · `arastirmaci` · `sunucu-gelistirici` (paket tanımı gerekirse) · `test-yazari` · `inceleyici` · **Beceriler:** `icerik-hatti` · `capa-gramer` · `metin-butunlugu` · `paket-yayini` · **Tahmini oturum:** 3–4 Claude Code oturumu; insan dalgaları ayrıca
 > **Başlat:** `/asama A17`
@@ -73,7 +73,7 @@ Kendimiz yapacağımız işler: QAC segmentlerini kelimeye toplama; Buckwalter d
 
 ### A17.4 · Düzeltme katmanı
 - `quran_word_fix` önerileri `aday` girer ve `review` (`hedef_tablo = 'quran_word_fix'`) açar. Yayınlayıcı yalnız `onayli` düzeltmeleri uygular (P-09); künye "QAC v0.4 + Mütâlaa düzeltmeleri (N adet)".
-- Panelde ayrı rota yoktur; kayıtlar `kuyruk/lemma` ekranında ya da API karar uçlarıyla işlenir (Açık soru; planda karar).
+- `quran_word_fix` için ayrı rota açılmaz: kayıtlar A15 panelinin `kuyruk/lemma` rotasına bu adımda girer ([BÇ-12](../07-belge-celiskileri.md#1-karar-bekleyenler) çözüldü, K-13; A15 yalnız `lemma_gloss` ve `lemma` sekmelerini kurdu). A15 lemma kartının API'de olmayan bölümleri (kök, tür, sıklık, KWIC, aynı kökün onaylı anlamları, dalga/kök sırası) "Bu bilgi API'de henüz yok (A17)" iletisiyle yer tutuyor ([BÇ-56](../07-belge-celiskileri.md#1-karar-bekleyenler)); A17 bu verileri API'ye ekler ve yer tutucuları kaldırır. Anlam düzenleme, "Uzmana gönder" ve "Yeniden taslak iste" düğmeleri A15'te kapalı "Açık soru: A17" olarak durur.
 - **Bitti sayılır:** onaylı düzeltmenin uygulandığı, adayın uygulanmadığı test yeşil.
 
 ### A17.5 · Lemma envanteri ve dalgalar

@@ -1,5 +1,6 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Mutalaa.Api.Endpoints;
 
@@ -19,6 +20,9 @@ internal static class EditorJson
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         Encoder = Encoder,
+
+        // Sayilar yalniz JSON sayisi olarak okunur ve yazilir (HTTP seceneklerinde de Strict; Program.cs).
+        NumberHandling = JsonNumberHandling.Strict,
     };
 
     /// <summary>jsonb sutun degerini JSON ogesi yapar; deger yoksa null. Veritabani zaten gecerli JSON tutar.</summary>

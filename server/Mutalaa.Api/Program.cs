@@ -37,6 +37,9 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
     options.SerializerOptions.Encoder = EditorJson.Encoder;
     options.SerializerOptions.UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow;
+
+    // Web varsayilani tirnakli sayiyi kabul ediyordu (AllowReadingFromString); artik 400. Belge tamsayiyi yalniz integer yazar.
+    options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;
 });
 
 builder.Services.AddReleaseServices();

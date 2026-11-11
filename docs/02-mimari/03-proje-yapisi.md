@@ -1,6 +1,6 @@
 # Proje yapısı
 
-> **Sürüm:** 1.11 · **Tarih:** 10 Kasım 2026 · **Durum:** Taslak
+> **Sürüm:** 1.12 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-09](../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-14](../00-ozet/02-karar-defteri.md#k-14--web) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform)
 
 Kod tek depoda durur: TypeScript uygulamaları ve paketleri pnpm + Turborepo ile, .NET projeleri `server/` altındaki çözümle, Python içerik hattı `pipeline/` altında uv ile yönetilir. Bu dosya klasörleri, bağımlılık kurallarını, araçları, kod biçimini, Git kurallarını ve CI iş akışlarını tanımlar.
@@ -23,12 +23,18 @@ mutalaa/
 │  │  ├─ scripts/fetch-core.mjs  core paketini kanal manifestinden indirir, sha256 doğrular
 │  │  ├─ e2e/                    Maestro akışları (*.yaml; Test stratejisi §9, A33)
 │  │  └─ app.config.ts · eas.json · metro.config.js
-│  ├─ editor/                    editör paneli (React + Vite)
-│  │  ├─ src/routes/             giris, kuyruk/baglanti, kuyruk/lemma, kuyruk/ocr,
-│  │  │                          kaynaklar, birimler, yayinlar
-│  │  ├─ src/api/                OpenAPI belgesinden üretilen tipler ve istemci
-│  │  ├─ src/components/         shadcn/ui bileşenleri
-│  │  └─ vite.config.ts          /api vekili → http://localhost:5080
+│  ├─ editor/                    editör paneli (React + Vite; A15)
+│  │  ├─ src/app/                yönlendirme (routes.tsx, sekiz rota), oturum, kabuk, QueryClient
+│  │  ├─ src/screens/            rota ekranları: ocr/, lemma/, baglanti/, sure-adi/, catalog/ (kaynaklar,
+│  │  │                          birimler, yayinlar), giriş, yetki-yok ve hata sayfaları
+│  │  ├─ src/review/             ortak inceleme: karar formu, toplu karar, 412 akışı, rozetler, kurallar
+│  │  ├─ src/api/                yalnız client.ts ve schema.d.ts (OpenAPI belgesinden üretilir, elle düzenlenmez)
+│  │  ├─ src/components/         ortak bileşenler; ui/ altında shadcn (Base UI) bileşenleri
+│  │  ├─ src/lib/, src/i18n/     yardımcılar (çalışma anı okuyucuları lib/payload/); Türkçe arayüz metinleri tr*.ts
+│  │  ├─ test/                   Vitest testleri, fake-api.ts, fikstürler
+│  │  ├─ public/fonts/           AmiriQuran-Regular.ttf ve OFL.txt (kaynak kaydı amiri-quran-font)
+│  │  ├─ Dockerfile · nginx.conf · components.json · eslint.config.mjs · vitest.config.ts
+│  │  └─ vite.config.ts          /api vekili → http://127.0.0.1:5080 (changeOrigin: false)
 │  └─ web/                       Next.js 16; Faz 5'te açılır
 ├─ packages/
 │  ├─ anchors/                   çapa ayrıştırma, biçimlendirme, doğrulama; src/generated/ayet-sayilari.ts (üretilir, elle düzenlenmez)
@@ -95,7 +101,7 @@ Mobil özellik klasörlerinin iç düzeni ve rotalar [Mobil mimari](../06-mobil/
 
 Hat paketinde `normalize/` ve `anchor/` yaprak kitaplıktır: TypeScript ve C# karşılıklarıyla aynı rolü taşır ve aynı test vektörlerine bağlıdır. Kaynağa özgü adım kodu (`normalize --source`, `anchor --source`; staged okuma ve yazma, parmak izi, manifest, komut gövdesi) `adimlar/` altındadır ve kitaplıkları kullanır, tersi olmaz. `staged.py` (`units.jsonl` okuma ve yazma) ve `zincir.py` (`ingest → normalize → anchor` zincirini bulma ve doğrulama) `normalize`, `anchor` ve `qa` adımlarının ortak yardımcılarıdır. `qa/` altında `run.py` (`qa run`), `rapor.py` (rapor okuma ve kabul kararı), `vektorler.py` (G-NOR koşucusu) ve `checks/` (kaynağa özgü kapılar), `export/` altında `pg.py`, `test_vectors.py`, `tanzil_ornekleri.py`, `fts_ornekleri.py`, `ayet_sayilari.py` ve `ic_kesme.py` bulunur; modül tablosu İçerik hattı §2'dedir.
 
-Editör rotaları [Backend API](./05-backend-api.md#41-i̇nceleme-kuyrukları) §4.1'deki inceleme kuyruklarını şöyle karşılar: `kuyruk/baglanti` bağlantı adaylarını, `kuyruk/lemma` kelime anlamı taslaklarını ve Türkçe kelime → Arapça kök eşlemelerini (`tr_root_index`, `tr_form`), `kuyruk/ocr` OCR ve metin düzeltmelerini gösterir. `kaynaklar` kuyruk değildir: kaynak kayıtlarını (ad, sürüm, adres, atıf satırı, birim sayısı) salt okunur listeler. `quran_word_fix` ve `surah_alias` için ayrı rota yoktur: kök ve lemma düzeltmeleri `kuyruk/lemma` ekranında ya da API karar uçlarıyla, sure adı varyantları API karar uçlarıyla işlenir; ayrı rota açılıp açılmayacağı Açık soru (A11, A15, A17).
+Editörün sekiz rotası vardır ([K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli); `apps/editor/src/app/routes.tsx` içindeki `ROUTE_PATHS`): `giris`, `kuyruk/ocr`, `kuyruk/lemma`, `kuyruk/baglanti`, `kuyruk/sure-adi`, `kaynaklar`, `birimler` ve `yayinlar`. `giris` dışındakiler oturum ister; oturumsuz istek `/giris?sonraki=…` adresine yönlenir. Ayrıca rol eksikliğini gösteren `/yetki-yok` sayfası vardır (rota sayısına girmez). Kuyruk rotaları [Backend API](./05-backend-api.md#41-i̇nceleme-kuyrukları) §4.1'deki inceleme kuyruklarını şöyle karşılar: `kuyruk/ocr` OCR ve metin düzeltmelerini (`unit` + `metin`), `kuyruk/lemma` kelime anlamı taslaklarını ve lemma durumunu (`lemma_gloss`, `lemma`), `kuyruk/baglanti` bağlantı adaylarını (`xref`), `kuyruk/sure-adi` sure adı adaylarını (`surah_alias`) gösterir. `quran_word_fix` kartları A17'de `kuyruk/lemma` içine girer; Türkçe kelime → Arapça kök eşlemeleri (`tr_root_index`, `tr_form`) A18'dedir. `kaynaklar` kuyruk değildir: kaynak kayıtlarını (ad, sürüm, adres, atıf satırı, birim sayısı) salt okunur listeler; `birimler` birim arama ve ayrıntısı, `yayinlar` kalite kapısı raporu ve yayın eylemleridir. Çözüldü (10 Kasım 2026, [BÇ-12](../10-claude-code/07-belge-celiskileri.md#1-karar-bekleyenler)): `surah_alias` için sekizinci rota `kuyruk/sure-adi` açıldı; `quran_word_fix` ayrı rota almaz. Geliştirmede panel `http://127.0.0.1:5173` adresinden açılır; Vite `/api` isteklerini `http://127.0.0.1:5080` adresindeki API'ye aktarır ve `changeOrigin` kapalıdır (`Host` panelin kendi adresi kalır; API çerezi ve `DevAutoLogin` Host denetimi tarayıcıyla aynı kökeni görür).
 
 ### 1.1 `data/` klasörü
 
@@ -165,6 +171,10 @@ flowchart LR
 6. Hat modülleri veriyi `data/staged/` ve PostgreSQL üzerinden devreder. Ortak yardımcılar (`config`, `db`, `logs`) hat adımlarına bağlanmaz: yalnız yaprak modül `export/ortak.py` (hata türü, depo kökü, katı JSON) içe aktarılır ve `db` ayrıca `config`'e bağlanır. `normalize/` ve `anchor/` yaprak kitaplıktır (kural 3'ün Python karşılığı): kendi paketi dışında hiçbir hat modülünü (`export`, `cli`, `runctx`, `staged`, `zincir`, `adimlar`, `qa` …) içe aktarmaz. İki kural `tests/test_yaprak_kitapliklar.py` ile sınanır. Kaynağa özgü adım kodu `adimlar/` altındadır ve bu kitaplıkları kullanır. `staged.py` ve `zincir.py` yalnız `normalize`, `anchor` ve `qa` adımlarının ortak okuma ve zincir yardımcılarıdır; veritabanına dokunmaz. Ortak sabitler (`units.jsonl` ve `notice.txt` adları, SHA-256 ve `run_id` desenleri) yalnız `lineage.py` içinde tanımlıdır.
 7. Diller arası sözleşmeler dört dosya türüdür: test vektörleri, OpenAPI belgesi (`server/Mutalaa.Api/openapi/v1.json`), manifest şeması (`packages/content-schema/manifest.schema.json`) ve paket DDL'i (`packages/content-schema/sql/`).
 
+Editörün bugünkü bağımlılıkları yalnız `@mutalaa/anchors` ve `@mutalaa/search`'tür (`workspace:*`); diyagramdaki `ui-tokens` kenarı A22'den sonra bağlanır. `apps/editor/test/deps.test.ts` bunu kilitler: yalnız bu iki iç paket, dış paketlerin hepsi tam sürüm (`^` ve `~` yok), platform paketi (`react-native`, `expo`, `next`) ve `react-router-dom` yok, Radix yok (`radix-ui`, `@radix-ui/*`; taban kitaplık `@base-ui/react`), `src/api` altında yalnız `client.ts` ve `schema.d.ts`.
+
+Editör testleri Vitest, Testing Library ve axe-core ile yazılır (jsdom ortamı); ağ taklidi için MSW kullanılmaz: `test/fake-api.ts` tipli `ok` ve `problem` yardımcılarıyla sahte `fetch` kurar ve işlenmemiş istek testi düşürür. Fikstürler üretilmiş API tipleriyle `satisfies` edilir ve metinleri sentetiktir. `color-contrast` ve `target-size` kuralları jsdom'da ölçülemediği için axe'te kapalıdır; kontrast elle denetlenir ([A15](../10-claude-code/asamalar/A15-editor-paneli.md)).
+
 Denetim: TypeScript tarafında ESLint `no-restricted-imports` ve `import/no-restricted-paths` ([Mobil mimari](../06-mobil/01-mobil-mimari.md) aynı kuralı kullanır); .NET tarafında proje başvuruları ve Domain derlemesinin başvuru listesini sınayan bir mimari testi; Python tarafında içe aktarma testleri: `test_normalize_unit.py` (`normalize` paketi `export` ve `cli` içe aktarmaz), `test_export_vectors.py` (vektör üreteci `normalize` ve `anchor` içe aktarmaz) ve `test_tekil_tanimlar.py` (ortak sabitlerin tek tanımı, AST taraması).
 
 ## 3. Paylaşılan ve platforma özgü kod
@@ -186,12 +196,22 @@ Denetim: TypeScript tarafında ESLint `no-restricted-imports` ve `import/no-rest
 ### 4.1 pnpm ve Turborepo
 
 ```yaml
-# pnpm-workspace.yaml
+# pnpm-workspace.yaml (özet)
 packages:
   - apps/*
   - packages/*
   - shared/test-vectors
+
+saveExact: true            # dış bağımlılıklar tam sürümle yazılır (editör testi kilitler)
+peerDependencyRules:
+  allowedVersions:
+    'openapi-typescript>typescript': '6'
+    'eslint-plugin-jsx-a11y>eslint': '10'
+minimumReleaseAgeExclude:
+  - '@testing-library/user-event@14.6.9'
 ```
+
+`saveExact` (A15) `pnpm add` komutunun `^` yazmasını önler; kilit dosyası yine tam sürümleri taşır. `peerDependencyRules.allowedVersions` iki eş bağımlılık uyarısını gerekçeyle kapatır: `openapi-typescript` 7.13.0 `typescript ^5.x` ister, depo `~6.0.3` kullanır (araç yalnız OpenAPI belgesini okur; `gen:api` ve CI "Editor API client is current" adımı sınar); `eslint-plugin-jsx-a11y` 6.10.2 eş bağımlılık olarak ESLint 9'a kadar yazar, depo ESLint 10 kullanır (kurallar A15.1'de ESLint 10'da çalıştı). `minimumReleaseAgeExclude` pnpm 12'nin yeni sürümleri bekleten `minimumReleaseAge` ayarına tek istisnadır: `@testing-library/user-event` 14.6.9'u pnpm kendisi ekledi (A15 Tedarik). Yeni istisna ve kural gerekçesiyle yazılır.
 
 `node_modules` düzeni pnpm'in izole varsayılanıdır ([K-32](../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen)); Expo SDK 54'ten beri izole kurulumu destekler. Metro ile sembolik bağ sorunu çıkarsa yedek, `pnpm-workspace.yaml` içine `nodeLinker: hoisted` yazmaktır ve `/karar` ister. `nodeLinker` ayarı `.npmrc` dosyasından okunmaz. `.npmrc` yalnız kimlik doğrulama, kayıt defteri ya da sertifika gerekirse açılır. Paket adları `@mutalaa/<klasör>` biçimindedir; iç bağımlılıklar `workspace:*` ile yazılır.
 
@@ -205,7 +225,8 @@ pnpm npm ile kurulur, Corepack kullanılmaz. Sürüm kök `package.json` içinde
     "packageManager": { "name": "pnpm", "version": "<kurulu tam sürüm>" }
   },
   "scripts": {
-    "dev:editor": "pnpm --filter @mutalaa/editor dev",
+    "build": "turbo run build",
+    "dev:editor": "turbo run dev --filter=@mutalaa/editor --ui=stream",
     "dev:mobile": "pnpm --filter @mutalaa/mobile start",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
@@ -223,10 +244,12 @@ pnpm npm ile kurulur, Corepack kullanılmaz. Sürüm kök `package.json` içinde
     "typecheck": { "dependsOn": ["^build"] },
     "lint": {},
     "test": { "dependsOn": ["^build"], "env": ["LANG", "LC_ALL"] },
-    "dev": { "cache": false, "persistent": true }
+    "dev": { "dependsOn": ["^build"], "cache": false, "persistent": true }
   }
 }
 ```
+
+`dev` görevi `^build` ister (A15): editör `@mutalaa/anchors` ve `@mutalaa/search` paketlerinin derlenmiş çıktısını kullanır; bu yüzden `pnpm dev:editor` önce bağımlı paketleri derler ve `--ui=stream` ile çıktıyı düz akıtır. Editörün `turbo.json` dosyası kökü genişletir (`"extends": ["//"]`) ve `build` görevine `env: ["VITE_*"]` ekler.
 
 `turbo.json` içindeki `globalDependencies` ile kök yapılandırma dosyaları (`tsconfig.base.json`, `eslint.config.mjs`, `.prettierrc.json`) Turborepo önbelleğine girdi olur; ESLint, tsconfig ya da Prettier kuralı değişince önbellek geçersiz sayılır.
 
@@ -284,6 +307,15 @@ export default defineConfig([
 ```
 
 **Windows tuzağı.** Proje yolundaki "İ" (U+0130, `MEHMET SAİD`) yüzünden kök yapılandırmada `files: ['packages/**/*.ts']` gibi glob'lar Windows'ta eşleşmez (Node `path.relative` sonucu glob ile uyuşmuyor). Bu yüzden kural kökte glob ile değil, her paketin kendi `eslint.config.mjs` dosyasında uygulanır: paket dosyası kökteki `baseConfig` ve `packageImportRules({leaf})` yardımcılarını `files: ['**/*.ts']` ile çağırır. Yeni paket açılırken kendi `eslint.config.mjs` dosyası unutulmamalıdır; yoksa paket kuralsız kalır. Ayrıntı: `windows-sorun` becerisi. Yukarıdaki özet kuralların içeriğini gösterir; `files` değerleri bu nedenle pakette `**/*.ts` olur.
+
+**Uygulama kuralları (A15).** Kök `eslint.config.mjs` `baseConfig` ve `packageImportRules` yanında iki dışa aktarım daha verir; ikisi de mevcut davranışı değiştirmez:
+
+- `localeRestrictedSyntax`: yukarıdaki iki yerel ayar seçicisinin listesi. `no-restricted-syntax` kuralı yenisi gelince eskisini değiştirir (birleştirmez); bu yüzden uygulama yapılandırması listeyi açarak (`...localeRestrictedSyntax`) kendi seçicilerini ekler.
+- `appImportRules({ allow })`: `.ts` ve `.tsx` dosyalarında `react-native`, `expo-*`, `next` ve `react-router-dom` yasaktır; `@mutalaa/*` içinden yalnız `allow` listesindeki paketler alınabilir (editörde `@mutalaa/anchors` ve `@mutalaa/search`). Node modülleri (`node:*`, `fs`, `path` …) yalnız test ve yapılandırma dosyalarında serbesttir.
+
+`apps/editor/eslint.config.mjs` bunlara react-hooks 7, react-refresh (`allowExportNames`: `loader`, `Component`, `ErrorBoundary`, `HydrateFallback`, `handle`) ve jsx-a11y önerilen kümesini ekler. Test ve `src/i18n/` dışındaki `.ts` ve `.tsx` dosyalarında yerel ayar seçicileri, `.normalize(` çağrısı (Kanonik metin istemcide normalize edilmez, K-26) ve `\d` düzenli ifadesi yasaktır (`[0-9]` kullanılır). `.tsx` dosyalarında ayrıca JSX içine sabit metin ile `aria-label`, `title`, `placeholder` ve `alt` içinde sabit metin yazmak yasaktır: görünen metin `src/i18n/tr*.ts` dosyalarından gelir. `src/components/ui/` (shadcn'in yazdığı dosyalar) için `react-refresh/only-export-components` ve `jsx-a11y/label-has-associated-control` kapalıdır.
+
+Windows'taki yol kayması yalnız `files` glob'larını değil, kökteki `ignores: ['**/dist/**', …]` kalıbını da etkiler (A15'te deneyle görüldü): `eslint .` derleme çıktısını da tarardı. Bu yüzden editörün `lint` betiği hedefleri açıkça verir (`eslint src test vite.config.ts vitest.config.ts eslint.config.mjs`). Kuralların kendisi `eslint --stdin --stdin-filename src/a.tsx` ile örnek kodlar üzerinde sınanabilir (A15'te 23 örnek vaka).
 
 Mobil uygulama bu yapılandırmaya Expo'nun ESLint yapılandırmasını ve React Hooks kurallarını ekler. Prettier ayarı: `{ "printWidth": 100, "singleQuote": true, "trailingComma": "all", "endOfLine": "lf" }`.
 
@@ -347,7 +379,7 @@ Python için `pyproject.toml` içinde `[tool.ruff] target-version = "py313"`, `l
 
 | Dosya | Tetikleyici | `paths` özeti | İşler |
 |---|---|---|---|
-| [ci-ts.yml](../../.github/workflows/ci-ts.yml) | `pull_request`, `push` (`main`), elle | `apps/**`, `packages/**`, `shared/test-vectors/**`, `shared/data/**`, `scripts/ci/**`, `server/Mutalaa.Api/openapi/**`, kök TypeScript yapılandırma ve kilit dosyaları, kendi dosyası | Matris `LANG` = `C.UTF-8` ve `tr_TR.UTF-8` (`fail-fast: false`). Her ayakta etkin yerel ayar günlüğe yazılır. `C.UTF-8` ayağı: `turbo run lint typecheck test`, `scripts/ci` testleri, ESLint, `prettier --check .`, pnpm bağımlılık listesi (kapı değil), `expo install --check` (`apps/mobile` varsa), editör API istemcisi güncel mi (`apps/editor` varsa). `tr_TR.UTF-8` ayağı: `turbo run test` |
+| [ci-ts.yml](../../.github/workflows/ci-ts.yml) | `pull_request`, `push` (`main`), elle | `apps/**`, `packages/**`, `shared/test-vectors/**`, `shared/data/**`, `scripts/ci/**`, `server/Mutalaa.Api/openapi/**`, kök TypeScript yapılandırma ve kilit dosyaları, kendi dosyası | Matris `LANG` = `C.UTF-8` ve `tr_TR.UTF-8` (`fail-fast: false`). Her ayakta etkin yerel ayar günlüğe yazılır. `C.UTF-8` ayağı: `turbo run lint typecheck test build` (editör `vite build` dahil), `scripts/ci` testleri, ESLint, `prettier --check .`, pnpm bağımlılık listesi (kapı değil), `expo install --check` (`apps/mobile` varsa), editör API istemcisi güncel mi (`apps/editor` varsa). `tr_TR.UTF-8` ayağı: `turbo run test` |
 | [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml) | `pull_request`, `push` (`main`), elle | `server/**`, `shared/test-vectors/**`, `shared/data/**`, `packages/content-schema/enums.json`, `packages/content-schema/manifest.schema.json`, `packages/content-schema/sql/**`, `packages/content-schema/test/fixtures/manifest-ornek.json`, `docs/03-veri/02-editoryal-veritabani.md`, `global.json`, `.editorconfig`, `.config/dotnet-tools.json`, `scripts/ci/**`, kendi dosyası | `dotnet tool restore`, `restore --locked-mode`, `format --verify-no-changes`, `build -c Release`, `test` (Testcontainers ile PostgreSQL), normalizasyon ortamı günlüğü, OpenAPI belgesi güncel mi (belge varsa), NuGet bağımlılık listesi (kapı değil) |
 | [ci-pipeline.yml](../../.github/workflows/ci-pipeline.yml) | `pull_request`, `push` (`main`), elle | `pipeline/**`, `shared/test-vectors/**`, `shared/data/**`, `packages/content-schema/enums.json`, `packages/content-schema/sql/20-arama.sql`, `docs/03-veri/05-arama-fts5.md`, `pnpm-workspace.yaml`, üretilen kopyalar (`ic-kesme.ts`, `ayet-sayilari.ts`, `IcKesme.g.cs`, `AyetSayilari.g.cs`), sunucunun şema görüntüsü (`editoryal-sema.sql`), kendi dosyası | Matris `ubuntu-24.04` ve `windows-2025` (`fail-fast: false`): `uv sync --locked`, ortam günlüğü, `ruff check`, `ruff format --check`, `mypy`, `pytest`, `mutalaa sources check`. Yalnız Linux: `mutalaa export test-vectors --check` ve bağımlılık listesi (`pip-licenses`; kapı değil). `database` işi (yalnız `ubuntu-24.04`): `postgres:18` servisi, sunucunun şema görüntüsünün yüklenmesi ve `pytest -m veritabani` (`MUTALAA_DEGISMEZLIK_ZORUNLU=1`: veritabanı yoksa test atlanmaz, başarısız olur) |
 | [nightly.yml](../../.github/workflows/nightly.yml) | `schedule` (günlük 02:17 UTC), elle | Yok | `ubuntu-24.04`: `uv sync --locked`, `mutalaa sources check`, `pytest -m degismezlik -rs -q`; pytest çıkış kodu (boş seçimde `5` dahil) ve çıktıda en az bir `N passed` (N ≥ 1) aranır, yalnız atlayan ya da hiçbir şey seçmeyen koşu işi düşürür. Tanzil verisi CI'da indirilmez; yalnız fikstür testleri koşar, gerçek veri koşusu yereldedir (`scripts/nightly.ps1 [-ExportPg]`). Sonraki gece işleri bu dosyaya eklenir ([BÇ-42](../10-claude-code/07-belge-celiskileri.md#1-karar-bekleyenler)) |

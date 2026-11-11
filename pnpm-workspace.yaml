@@ -2,3 +2,18 @@ packages:
   - apps/*
   - packages/*
   - shared/test-vectors
+
+# A15: external dependencies are written with an exact version (the editor panel test locks this).
+saveExact: true
+
+peerDependencyRules:
+  allowedVersions:
+    # openapi-typescript 7.13.0 asks for typescript ^5.x; the repository uses ~6.0.3 (typescript-eslint
+    # 8.72.1 needs <6.1.0). It only reads the OpenAPI document and runs on the TS compiler API; checked by gen:api.
+    'openapi-typescript>typescript': '6'
+    # eslint-plugin-jsx-a11y 6.10.2 lists ESLint up to 9 as peer; the repository uses ESLint 10 (checked in A15.1).
+    'eslint-plugin-jsx-a11y>eslint': '10'
+
+# pnpm 12 holds back versions younger than minimumReleaseAge; user-event 14.6.9 (A15 supply table) was added by pnpm itself.
+minimumReleaseAgeExclude:
+  - '@testing-library/user-event@14.6.9'

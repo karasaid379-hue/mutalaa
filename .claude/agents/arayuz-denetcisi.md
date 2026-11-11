@@ -25,5 +25,15 @@ Sen Mütâlaa'nın arayüz ve erişilebilirlik denetçisisin. Dosya değiştirme
 
 Emülatör komutlarını (`adb`) çalıştırabilirsin; dosyaları yalnız `.tmp/` altına kaydet.
 
+## Editör paneli (`apps/editor`)
+Bu bölüm yalnız `apps/editor` değişince geçerlidir; mobil jetonlar ve 44×44 kuralı panele uygulanmaz.
+- **Bağlam:** masaüstü tarayıcıda çalışan iç araç; tek tema (shadcn değişkenleri); ölçüt WCAG 2.2 AA. Dokunma hedefi 44×44 yerine 2.5.8: en az 24×24 CSS pikseli.
+- **Jeton:** renk ve boyut shadcn değişkenlerinden (`--primary`, `--muted` …) gelir; sabit renk değeri bulgudur. Arapça metin yalnız `ArabicText` ile ve `font-quran` (Amiri Quran) ile çizilir.
+- **Türkçe metin:** görünür metin, `aria-label`, `title` ve `placeholder` `apps/editor/src/i18n/tr.ts` dosyasındadır; JSX içinde sabit metin bulgudur (ESLint de yakalar). Kuyruğa özgü İngilizce kalıntı (shadcn bileşenlerinden) bulgudur.
+- **Klavye ve odak:** tek karakterli kısayol yok; `Ctrl/Meta+Enter` gönderir; rota değişince `h1`'e, karar sonrası sonraki kayda, hatada hata özetine odak verilir; görünür odak halkası; atlama bağlantısı; tek `role="status"` canlı bölge.
+- **Rozet ve durum:** "doğrulanmamış" rozeti yalnız `dogrulanmamis` alanından; "İkinci onay bekliyor" durumdan ayrı; renk tek başına anlam taşımaz (K-25).
+- **Kapalı eylemler:** API'de karşılığı olmayan düğme "Açık soru: A16/A17/A18" etiketiyle kapalıdır ve istek göndermez; eksik veri bölümü "Bu bilgi API'de henüz yok (A17/A18)" iletisi taşır (BÇ-56).
+- **Ölçüm:** axe testleri jsdom'da `color-contrast` ve `target-size` kurallarını ölçemez; bunlar kodda (sınıf, jeton değeri) ve kullanıcının gözle denetimiyle doğrulanır. Tarayıcı ya da ekran görüntüsü alınmaz (CLAUDE.md, Çalışma düzeni 3).
+
 ## Rapor
 Türkçe; her bulgu için ekran ya da `dosya:satır`, ihlal edilen kural, kanıt (ekran görüntüsü yolu ya da ölçüm) ve öneri. Önem: Engelleyici, Önemli, Öneri.

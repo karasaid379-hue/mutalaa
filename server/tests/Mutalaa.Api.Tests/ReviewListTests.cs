@@ -6,6 +6,7 @@ using Mutalaa.Api.Tests.Support;
 using Mutalaa.Domain.Content;
 using Mutalaa.Domain.Links;
 using Mutalaa.Domain.Reviews;
+using Mutalaa.Domain.Text;
 
 namespace Mutalaa.Api.Tests;
 
@@ -41,6 +42,54 @@ public class ReviewListTests(EditorialDatabase<ReviewListTests> fixture)
         Assert.False(item.GetProperty("dogrulanmamis").GetBoolean());
         Assert.False(item.GetProperty("ikinci_onay_bekliyor").GetBoolean());
         Assert.Equal(JsonValueKind.Null, body.GetProperty("next_cursor").ValueKind);
+
+        // jsonb degerler listede de doner (Backend API §4, BÇ-55).
+        JsonElement previous = item.GetProperty("onceki");
+        Assert.Equal(Current, previous.GetProperty("metin").GetString());
+        Assert.Equal(ContentHash.Compute(Current), previous.GetProperty("content_hash").GetString());
+        Assert.Equal(Proposed, item.GetProperty("onerilen").GetProperty("metin").GetString());
+        Assert.True(item.TryGetProperty("duzenlenen", out JsonElement edited), "duzenlenen anahtari yok.");
+        Assert.Equal(JsonValueKind.Null, edited.ValueKind);
+    }
+
+    [Fact]
+    public async Task After_the_first_approval_with_an_edit_the_list_item_carries_the_same_three_values_as_the_detail()
+    {
+        await ResetReviewsAsync();
+        string source = await SeedSourceAsync();
+        Unit unit = await SeedUnitAsync(source, UnitKind.Meal, MealAnchor());
+        Review review = await SeedUnitReviewAsync(unit);
+        using HttpClient client = await ClientAsync();
+        using HttpResponseMessage first = await DecideAsync(client, review.Id, Etag(await XminAsync(review.Id)), Approve(duzenlenen: new { metin = Edited }));
+        Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+
+        JsonElement item = Assert.Single(Items(await ApiFactory.ReadJsonAsync(await client.GetAsync("/api/v1/reviews", Ct), Ct)));
+        JsonElement detail = await ApiFactory.ReadJsonAsync(await client.GetAsync($"/api/v1/reviews/{review.Id}", Ct), Ct);
+
+        Assert.Equal(Edited, item.GetProperty("duzenlenen").GetProperty("metin").GetString());
+        Assert.True(item.GetProperty("ikinci_onay_bekliyor").GetBoolean());
+        foreach (string name in new[] { "onceki", "onerilen", "duzenlenen" })
+        {
+            Assert.True(JsonElement.DeepEquals(detail.GetProperty(name), item.GetProperty(name)), $"{name} liste ve ayrintida ayni olmali.");
+        }
+    }
+
+    [Fact]
+    public async Task A_surah_alias_list_item_carries_the_proposed_fields_as_raw_json_and_a_null_onceki()
+    {
+        await ResetReviewsAsync();
+        const string proposed = "{\"kind\":\"yazim\",\"alias\":\"Deneme-sure\",\"risky\":false,\"kaynaklar\":[{\"dosya\":\"deneme.csv\",\"satir\":1}],\"yazimlar\":[\"Deneme\"]}";
+        (_, Review review) = await SeedAliasReviewAsync(onerilen: proposed);
+        using HttpClient client = await ClientAsync();
+
+        JsonElement item = Assert.Single(Items(await ApiFactory.ReadJsonAsync(await client.GetAsync("/api/v1/reviews?hedef_tablo=surah_alias", Ct), Ct)));
+
+        Assert.Equal(review.Id, item.GetProperty("id").GetInt64());
+        JsonElement onerilen = item.GetProperty("onerilen");
+        Assert.Equal(JsonValueKind.Object, onerilen.ValueKind);
+        using JsonDocument expected = JsonDocument.Parse(proposed);
+        Assert.True(JsonElement.DeepEquals(expected.RootElement, onerilen));
+        Assert.Equal(JsonValueKind.Null, item.GetProperty("onceki").ValueKind);
     }
 
     [Fact]

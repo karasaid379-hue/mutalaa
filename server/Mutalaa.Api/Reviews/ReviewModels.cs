@@ -28,6 +28,15 @@ public record ReviewItemDto
 
     public JsonElement? YzKaydi { get; init; }
 
+    /// <summary>Degisiklikten onceki deger; unit + metin icin {metin, content_hash}, deger yoksa null.</summary>
+    public JsonElement? Onceki { get; init; }
+
+    /// <summary>Onerilen deger; unit + metin icin {metin, content_hash}, surah_alias icin onerilen alanlar, deger yoksa null.</summary>
+    public JsonElement? Onerilen { get; init; }
+
+    /// <summary>Editorun duzenledigi deger; unit + metin icin {metin, content_hash}, deger yoksa null.</summary>
+    public JsonElement? Duzenlenen { get; init; }
+
     public float? Guven { get; init; }
 
     public required string Oneren { get; init; }
@@ -56,12 +65,6 @@ public sealed record ReviewListResponse(IReadOnlyList<ReviewItemDto> Items, stri
 
 public sealed record ReviewDetailDto : ReviewItemDto
 {
-    public JsonElement? Onceki { get; init; }
-
-    public JsonElement? Onerilen { get; init; }
-
-    public JsonElement? Duzenlenen { get; init; }
-
     public string? Gerekce { get; init; }
 
     public string? IkinciGerekce { get; init; }
@@ -158,9 +161,9 @@ public sealed record ReviewStatsResponse(IReadOnlyList<ReviewQueueCount> Kuyrukl
 public sealed record DecisionEdit(string? Metin);
 
 /// <summary>Tekil karar govdesi. karar: onaylandi ya da reddedildi.</summary>
-public sealed record DecisionBody(string? Karar, DecisionEdit? Duzenlenen, string? Gerekce);
+public sealed record DecisionBody(string? Karar, string? Gerekce, DecisionEdit? Duzenlenen = null);
 
-public sealed record BulkDecisionItem(long Id, uint Xmin, string? Karar, DecisionEdit? Duzenlenen, string? Gerekce);
+public sealed record BulkDecisionItem(long Id, uint Xmin, string? Karar, string? Gerekce, DecisionEdit? Duzenlenen = null);
 
 public sealed record BulkDecisionBody(IReadOnlyList<BulkDecisionItem>? Kararlar);
 

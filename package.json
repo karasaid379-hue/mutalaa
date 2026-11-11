@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "dev:editor": "pnpm --filter @mutalaa/editor dev",
+    "dev:editor": "turbo run dev --filter=@mutalaa/editor --ui=stream",
     "dev:mobile": "pnpm --filter @mutalaa/mobile start",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
