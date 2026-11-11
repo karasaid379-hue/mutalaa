@@ -8,6 +8,8 @@ Kapilar `qa/checks/` altindadir; `qa/run.py` zinciri okur, kapilari calistirir v
 
 from typing import Final
 
+from mutalaa_pipeline.ingest.meal_kaynaklari import MEAL_KAPILARI, meal_mi
+
 KAPILAR: Final = ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
 # Ust veri (yapi) kaynaginda normalizasyon yoktur: ar_norm/search_text uretilmez, G-NOR uygulanmaz.
 UST_VERI_KAYNAGI: Final = "tanzil-ust-veri"
@@ -21,7 +23,12 @@ QA_KOMUTU: Final = "qa run"
 
 
 def kaynak_kapilari(source_id: object) -> tuple[str, ...]:
-    """Bir kaynagin `export pg` icin gecmesi gereken kapilar (varsayilan dort kapi)."""
+    """Bir kaynagin `export pg` icin gecmesi gereken kapilar (varsayilan dort kapi).
+
+    Meal kaynaklarinda bes kapi: G-HIZ sert kapidir (K-49 madde 12); G-MET uygulanmaz.
+    """
+    if meal_mi(source_id):
+        return MEAL_KAPILARI
     if source_id == UST_VERI_KAYNAGI:
         return YAPI_KAPILARI
     if source_id == SURE_ADI_KAYNAGI:

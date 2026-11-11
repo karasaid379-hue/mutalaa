@@ -9,6 +9,7 @@ import typer
 from mutalaa_pipeline import cikis, sources
 from mutalaa_pipeline.export import ayet_sayilari, ic_kesme, test_vectors
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kok_coz
+from mutalaa_pipeline.ingest import meal_kaynaklari
 
 app = typer.Typer(
     name="mutalaa",
@@ -36,7 +37,8 @@ ingest_app = typer.Typer(
 app.add_typer(ingest_app, name="ingest")
 
 qa_app = typer.Typer(
-    no_args_is_help=True, help="QA kapilari (G-KAY, G-BUT, G-CAP, G-NOR) ve olcumler."
+    no_args_is_help=True,
+    help="QA kapilari (G-KAY..G-NOR; meal: + G-HIZ), `sample` ornekleme ve G-INC olcumu.",
 )
 app.add_typer(qa_app, name="qa")
 
@@ -352,6 +354,76 @@ def ingest_sure_adlari(
         raise typer.Exit(code=kod)
 
 
+@ingest_app.command("meal")
+def ingest_meal(
+    source: Annotated[
+        str,
+        typer.Option(
+            "--source",
+            help="Meal kaynagi: elmalili-meal, elmalili-sade-meal ya da tanik elmalili-meal-epub.",
+        ),
+    ],
+    gelen_tarih: Annotated[
+        str | None,
+        typer.Option(
+            "--gelen-tarih",
+            help=("data/gelen/<kaynak> altindaki tarih klasoru, YYYY-AA-GG; verilmezse en yenisi."),
+        ),
+    ] = None,
+    kilit_oner: Annotated[
+        bool,
+        typer.Option(
+            "--kilit-oner",
+            help="Kilit bolumunun ilk degerlerini gelen dosyadan hesaplayip yazdirir; yazmaz.",
+        ),
+    ] = False,
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="raw ve staged'e yazmaz; kilit yine denetlenir.")
+    ] = False,
+    force: Annotated[
+        bool, typer.Option("--force", help="Parmak izi ayni olsa da calistirir.")
+    ] = False,
+    limit: Annotated[
+        int | None,
+        typer.Option(
+            "--limit", help="Meal alimi icin reddedilir (kismi alim kilidi ve G-HIZ'i bozar)."
+        ),
+    ] = None,
+    config: Annotated[Path | None, typer.Option("--config", help="Baska bir mutalaa.toml.")] = None,
+    kok: KokSecenegi = None,
+) -> None:
+    """Gelen meal dosyasini kilitle karsilastirir, raw'a alir, staged uretir. Cikis 0 ya da 2."""
+    # Ice aktarma: yapilandirma ve ayristiricilar yalniz bu komutta yuklenir.
+    from mutalaa_pipeline.config import ayarlar_yukle
+    from mutalaa_pipeline.ingest import meal_kilit_oner, meal_ortak
+
+    try:
+        if limit is not None:
+            raise GirdiHatasi("--limit meal alimi icin desteklenmez (kismi alim G-HIZ'i bozar)")
+        if kilit_oner:
+            if dry_run or force:
+                raise GirdiHatasi("--kilit-oner ile --dry-run ve --force verilmez")
+            depo = kok_coz(kok)
+            ayarlar = ayarlar_yukle(config)
+            typer.echo(
+                meal_kilit_oner.kilit_oner_metni(depo, ayarlar.veri_kok, source, gelen_tarih),
+                nl=False,
+            )
+            return
+    except GirdiHatasi as hata:
+        raise _hata(hata) from hata
+    kod = meal_ortak.komut_ingest_meal(
+        source=source,
+        gelen_tarih=gelen_tarih,
+        dry_run=dry_run,
+        force=force,
+        config=config,
+        kok=kok,
+    )
+    if kod != cikis.BASARILI:
+        raise typer.Exit(code=kod)
+
+
 @ingest_app.command("fikstur")
 def ingest_fikstur(
     source: Annotated[
@@ -431,6 +503,12 @@ def normalize_komutu(
         kod = fikstur_adimlari.komut_normalize(
             source=source, dry_run=dry_run, force=force, config=config, kok=kok
         )
+    elif meal_kaynaklari.kayitli_mi(source):  # iki meal: Turkce arama anahtarlari (A16.3)
+        from mutalaa_pipeline.adimlar import meal as meal_adimlari
+
+        kod = meal_adimlari.komut_normalize(
+            source=source, dry_run=dry_run, force=force, config=config, kok=kok
+        )
     else:
         kod = normalize_tanzil.komut_normalize(
             source=source, dry_run=dry_run, force=force, config=config, kok=kok
@@ -478,6 +556,12 @@ def anchor_komutu(
         kod = fikstur_adimlari.komut_anchor(
             source=source, dry_run=dry_run, force=force, config=config, kok=kok
         )
+    elif meal_kaynaklari.kayitli_mi(source):  # iki meal: capa, ord, tanik skoru (A16.3)
+        from mutalaa_pipeline.adimlar import meal as meal_adimlari
+
+        kod = meal_adimlari.komut_anchor(
+            source=source, dry_run=dry_run, force=force, config=config, kok=kok
+        )
     else:
         kod = anchor_tanzil.komut_anchor(
             source=source, dry_run=dry_run, force=force, config=config, kok=kok
@@ -498,8 +582,8 @@ def qa_run(
         typer.Option(
             "--gate",
             help=(
-                "Yalniz bu kapi(lar)i kosar (G-KAY, G-BUT, G-CAP, G-NOR);"
-                " eksik rapor export pg'ye yetmez."
+                "Yalniz bu kapi(lar)i kosar (G-KAY, G-BUT, G-CAP, G-NOR; meal kaynaklarinda"
+                " ayrica G-HIZ); eksik rapor export pg'ye yetmez."
             ),
         ),
     ] = None,
@@ -510,6 +594,58 @@ def qa_run(
     from mutalaa_pipeline.qa import run as qa_calistir
 
     kod = qa_calistir.komut_qa_run(source=source, run=run, gate=gate, config=config, kok=kok)
+    if kod != cikis.BASARILI:
+        raise typer.Exit(code=kod)
+
+
+@qa_app.command("sample")
+def qa_sample(
+    source: Annotated[
+        str, typer.Option("--source", help="Meal kaynagi: elmalili-meal ya da elmalili-sade-meal.")
+    ],
+    n: Annotated[int, typer.Option("--n", help="Ornek buyuklugu (tur 2: en az 600).")] = 600,
+    seed: Annotated[
+        int, typer.Option("--seed", help="Sabit tohum; ayni tohum ayni capa listesini verir.")
+    ] = 20261111,
+    dry_run: Annotated[
+        bool, typer.Option("--dry-run", help="Ornek raporu ve sablonu yazmaz; ozeti yazdirir.")
+    ] = False,
+    onayli: Annotated[
+        bool, typer.Option("--onayli", help="Evreni yalniz onayli birimlerle sinirlar.")
+    ] = False,
+    okunan: Annotated[
+        int | None, typer.Option("--okunan", help="Tur 2: ikinci okuyucunun okudugu ayet sayisi.")
+    ] = None,
+    hatali: Annotated[
+        int | None, typer.Option("--hatali", help="Tur 2: okunanlar arasinda hatali ayet sayisi.")
+    ] = None,
+    sablon: Annotated[
+        Path | None,
+        typer.Option(
+            "--sablon", help="Doldurulmus ikinci okuma sablonu (okunan ve hatali sayilir)."
+        ),
+    ] = None,
+    config: Annotated[Path | None, typer.Option("--config", help="Baska bir mutalaa.toml.")] = None,
+    kok: KokSecenegi = None,
+) -> None:
+    """Ikinci okuma orneklemi (sure grubuna gore tabakali) ve G-INC olcum raporu. Cikis 0 ya da 2.
+
+    Veritabanindan yalniz okur; G-INC `qa run` kapisi degildir, sonuc yalniz rapora yazilir.
+    """
+    from mutalaa_pipeline.qa import ornekleme
+
+    kod = ornekleme.komut_qa_sample(
+        source=source,
+        n=n,
+        seed=seed,
+        dry_run=dry_run,
+        yalniz_onayli=onayli,
+        okunan=okunan,
+        hatali=hatali,
+        sablon=sablon,
+        config=config,
+        kok=kok,
+    )
     if kod != cikis.BASARILI:
         raise typer.Exit(code=kod)
 

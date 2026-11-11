@@ -33,6 +33,13 @@ def content_hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def silinecekleri_sil(text: str) -> str:
+    """Ilk kayit adim 1: U+FEFF, U+00AD, U+200E/F, U+202A-E, U+2066-9, U+061C silinir (U+200C ve
+    U+200D korunur). Satir sonu ve bosluk islemlerinden ONCE cagrilmalidir (K-35 madde 7 sirasi).
+    """
+    return "".join(harf for harf in text if harf not in _SILINECEK)
+
+
 def kanonik_metin(text: str) -> str:
     """Kendi urettigimiz metin icin ilk kayit kanonik hale getirme (K-35 madde 7).
 
@@ -41,7 +48,7 @@ def kanonik_metin(text: str) -> str:
     kullanilmaz: U+00A0'i da keser.
     """
     text.encode("utf-8")  # tek basina vekilde UnicodeEncodeError (sonuc atilir; C# ile ayni hata)
-    silinmis = "".join(harf for harf in text if harf not in _SILINECEK)
+    silinmis = silinecekleri_sil(text)
     nfc = unicodedata.normalize("NFC", silinmis)
     satir = nfc.replace("\r\n", "\n").replace("\r", "\n")
     # Varsayilan strip() U+00A0'i da keser; bu yuzden acik karakter kumesi kullanilir.
