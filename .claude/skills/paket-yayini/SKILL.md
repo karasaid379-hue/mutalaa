@@ -88,6 +88,8 @@ curl -s http://localhost:8333/mutalaa/dev/manifest.json
 MANIFEST_URL=http://localhost:8333/mutalaa/dev/manifest.json pnpm --filter @mutalaa/mobile exec node scripts/fetch-core.mjs
 ```
 
+İlk `publish` öncesi `Storage:PublicBaseUrl` yer tutucu (`YENI-IP`) ya da eski IP olmamalıdır: adres `scripts/lan-ip.ps1` ile bulunur ve `dotnet user-secrets --project server/Mutalaa.Publisher set` ile yazılır. Sırları listelerken değer açılmaz: `dotnet user-secrets list --project server/Mutalaa.Publisher | sed -E 's/ = .*/ = <gizli>/'` (çıplak `list` bağlantı dizesindeki parolayı gösterir; çıktı sohbete yazılmaz).
+
 PowerShell'de elle: `$env:MANIFEST_URL = "http://localhost:8333/mutalaa/dev/manifest.json"`. `fetch-core.mjs` manifest imzasını ve paketin sha256 değerini doğrular, paketi `apps/mobile/assets/db/` klasörüne yazar.
 
 ## Sık hatalar
