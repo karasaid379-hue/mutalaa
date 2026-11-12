@@ -54,6 +54,23 @@ internal static class ReviewDecider
         }
     }
 
+    /// <summary>Zorunlu <c>gerekce</c> (karar disi uclar: itiraz, etimolojik isaret): bos olamaz, en cok 2000 kod noktasi, NUL ve eslesmemis vekil yok.</summary>
+    public static void CheckRequiredGerekce(IDictionary<string, string[]> errors, string? gerekce)
+    {
+        if (string.IsNullOrWhiteSpace(gerekce))
+        {
+            errors["gerekce"] = ["gerekce boş olamaz."];
+        }
+        else if (!WritableText.TryCountCodePoints(gerekce, out int length))
+        {
+            errors["gerekce"] = [WritableText.Message("gerekce")];
+        }
+        else if (length > ReviewDecisions.MaxGerekceLength)
+        {
+            errors["gerekce"] = ["gerekce en çok 2000 karakter olabilir."];
+        }
+    }
+
     public static async Task<PreparedDecision> ApplyAsync(
         IcerikDbContext db,
         Review review,
@@ -70,13 +87,14 @@ internal static class ReviewDecider
         }
 
         ReviewTarget target = ReviewTargets.Parse(review.HedefTablo, review.HedefAnahtar);
-        (object entity, ReviewTargetState state) = await LoadTargetAsync(db, target, cancellationToken);
+        string? edited = BuildEdited(input.Edit, review);
+        (object entity, ReviewTargetState state) = await LoadTargetAsync(db, target, review, edited, cancellationToken);
 
         ReviewDecisionRequest request = new()
         {
             Actor = actor,
             Gerekce = input.Gerekce,
-            Duzenlenen = BuildEdited(input.Edit, review.HedefTablo),
+            Duzenlenen = edited,
             Now = now,
         };
 
@@ -109,11 +127,34 @@ internal static class ReviewDecider
     /// Duzenlenen deger jsonb olur: birim metninde <c>{"metin", "content_hash"}</c> (ozet kanonik metinden hesaplanir),
     /// lemma_gloss'ta <c>{"anlam_kisa"}</c> (kanonik deger; bos, yalniz bosluk ya da 200 karakterden uzun 400).
     /// </summary>
-    private static string? BuildEdited(DecisionEdit? edit, string hedefTablo)
+    private static string? BuildEdited(DecisionEdit? edit, Review review)
     {
         if (edit is null)
         {
             return null;
+        }
+
+        string hedefTablo = review.HedefTablo;
+        bool hasRootFields = edit.RootId is not null || edit.ArLemmaId is not null || edit.EtymologicalOnly is not null;
+        if (ReviewDecisions.IsRootMappingTarget(review.HedefTablo, review.Alan))
+        {
+            // Kok eslemesi (K-51 madde 9): yalniz root_id, ar_lemma_id (yoksa Arapca karsilik yok) ve etymological_only.
+            if (edit.Metin is not null || edit.AnlamKisa is not null)
+            {
+                throw new DomainException(DomainErrorCodes.Dogrulama, "Kok eslemesi icin duzenlenen.root_id, ar_lemma_id ve etymological_only verilmeli; metin ve anlam_kisa kabul edilmez.");
+            }
+
+            if (edit.RootId is not { } rootId || edit.EtymologicalOnly is not { } etymological)
+            {
+                throw new DomainException(DomainErrorCodes.Dogrulama, "duzenlenen.root_id ve duzenlenen.etymological_only zorunludur.");
+            }
+
+            return LemmaMappingPayload.ToPayload(new RootMappingValue(rootId, edit.ArLemmaId, etymological));
+        }
+
+        if (hasRootFields)
+        {
+            throw new DomainException(DomainErrorCodes.Dogrulama, "duzenlenen.root_id, ar_lemma_id ve etymological_only yalniz lemma + kok_eslemesi incelemesinde verilir.");
         }
 
         if (string.Equals(hedefTablo, ReviewTargets.LemmaGloss, StringComparison.Ordinal))
@@ -148,9 +189,15 @@ internal static class ReviewDecider
         });
     }
 
+    /// <summary>
+    /// Hedefi yukler. Kok eslemesi (lemma + kok_eslemesi) icin uygulanacak degerin (duzenlenen, yoksa onerilen) dogrulama olgulari da yuklenir:
+    /// kok var mi, Arapca karsilik var mi, dili ve koku. Deger okunamiyorsa olgu verilmez ve Domain bozuk degeri 400 ile reddeder.
+    /// </summary>
     private static async Task<(object Entity, ReviewTargetState State)> LoadTargetAsync(
         IcerikDbContext db,
         ReviewTarget target,
+        Review review,
+        string? edited,
         CancellationToken cancellationToken)
     {
         switch (target.Table)
@@ -201,7 +248,14 @@ internal static class ReviewDecider
                 {
                     int id = target.LemmaId!.Value;
                     Lemma row = await db.Lemmas.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ?? throw Missing();
-                    return (row, ReviewTargetState.ForStatus(row.Status));
+                    LemmaReviewState lemma = new(row.Lang, row.RootId, row.ArLemmaId, row.EtymologicalOnly, row.Origin, row.OnayYolu);
+                    if (ReviewDecisions.IsRootMappingTarget(review.HedefTablo, review.Alan)
+                        && LemmaMappingPayload.TryRead(edited ?? review.Onerilen, out RootMappingValue value))
+                    {
+                        lemma = lemma with { Facts = await LoadFactsAsync(db, value, cancellationToken) };
+                    }
+
+                    return (row, ReviewTargetState.ForLemma(row.Status, lemma));
                 }
 
             case ReviewTargets.LemmaGloss:
@@ -216,8 +270,37 @@ internal static class ReviewDecider
         }
     }
 
+    /// <summary>Kok eslemesi degerinin alan dogrulamasi icin olgular: kok var mi; Arapca karsilik varsa dili ve koku.</summary>
+    internal static async Task<RootMappingFacts> LoadFactsAsync(IcerikDbContext db, RootMappingValue value, CancellationToken cancellationToken)
+    {
+        int rootId = value.RootId;
+        bool rootExists = await db.Roots.AsNoTracking().AnyAsync(r => r.Id == rootId, cancellationToken);
+        if (value.ArLemmaId is not { } arId)
+        {
+            return new RootMappingFacts(rootExists, false, null, null);
+        }
+
+        var ar = await db.Lemmas.AsNoTracking()
+            .Where(l => l.Id == arId)
+            .Select(l => new { l.Lang, l.RootId })
+            .SingleOrDefaultAsync(cancellationToken);
+        return ar is null
+            ? new RootMappingFacts(rootExists, false, null, null)
+            : new RootMappingFacts(rootExists, true, ar.Lang, ar.RootId);
+    }
+
     private static DomainException Missing() =>
         new(DomainErrorCodes.Bulunamadi, "Incelemenin hedef kaydi bulunamadi.");
+
+    /// <summary>Kok eslemesi alanlarini lemma satirina yazar (kanit dokunulmaz: otomatik onayin denetim izi).</summary>
+    internal static void ApplyMapping(Lemma lemma, LemmaMappingUpdate mapping)
+    {
+        lemma.RootId = mapping.RootId;
+        lemma.ArLemmaId = mapping.ArLemmaId;
+        lemma.EtymologicalOnly = mapping.EtymologicalOnly;
+        lemma.Origin = mapping.Origin;
+        lemma.OnayYolu = mapping.OnayYolu;
+    }
 
     private static void ApplyToTarget(object entity, ReviewOutcome outcome)
     {
@@ -252,6 +335,11 @@ internal static class ReviewDecider
                 break;
             case Lemma lemma when outcome.TargetStatus is { } status:
                 lemma.Status = status;
+                if (outcome.LemmaMapping is { } mapping)
+                {
+                    ApplyMapping(lemma, mapping);
+                }
+
                 break;
             case LemmaGloss gloss when outcome.TargetStatus is { } status:
                 gloss.Status = status;

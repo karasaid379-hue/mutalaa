@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using Mutalaa.Api.Lemmas;
 using Mutalaa.Domain;
 using Mutalaa.Domain.Anchors;
 using Mutalaa.Domain.Content;
@@ -667,26 +668,40 @@ internal static class ReviewQueries
                     int id = target.LemmaId!.Value;
                     var row = await db.Lemmas.AsNoTracking()
                         .Where(x => x.Id == id)
-                        .Select(x => new { x.Id, x.Lang, x.Text, x.RootId, x.Occurrences, x.EtymologicalOnly, x.Origin, x.Status })
+                        .Select(x => new { x.Id, x.Lang, x.Text, x.RootId, x.Occurrences, x.EtymologicalOnly, x.Origin, x.Status, x.OnayYolu, x.ArLemmaId, x.Freq, x.Kanit })
                         .SingleOrDefaultAsync(cancellationToken);
-                    return row is null
-                        ? TargetView.Empty
-                        : new TargetView(
-                            new ReviewTargetSnapshot
-                            {
-                                Tablo = target.Table,
-                                LemmaId = row.Id,
-                                Lang = row.Lang,
-                                Text = row.Text,
-                                RootId = row.RootId,
-                                Occurrences = row.Occurrences,
-                                EtymologicalOnly = row.EtymologicalOnly,
-                                Origin = row.Origin,
-                                Status = row.Status.ToLabel(),
-                            },
-                            row.Status,
-                            null,
-                            null);
+                    if (row is null)
+                    {
+                        return TargetView.Empty;
+                    }
+
+                    // Turkce lemma (K-51 madde 9): onay yolu, kanit ozeti, kok harfleri, Arapca karsilik, siklik ve ilk uc ornek.
+                    TrLemmaExtras? tr = string.Equals(row.Lang, LemmaLangs.Turkish, StringComparison.Ordinal)
+                        ? await TrLemmaQueries.ExtrasAsync(db, row.Id, row.RootId, row.ArLemmaId, row.Kanit, cancellationToken)
+                        : null;
+                    return new TargetView(
+                        new ReviewTargetSnapshot
+                        {
+                            Tablo = target.Table,
+                            LemmaId = row.Id,
+                            Lang = row.Lang,
+                            Text = row.Text,
+                            RootId = row.RootId,
+                            Occurrences = row.Occurrences,
+                            EtymologicalOnly = row.EtymologicalOnly,
+                            Origin = row.Origin,
+                            Status = row.Status.ToLabel(),
+                            OnayYolu = row.OnayYolu,
+                            ArLemmaId = row.ArLemmaId,
+                            Freq = row.Freq,
+                            KanitOzeti = tr?.KanitOzeti,
+                            RootLetters = tr?.RootLetters,
+                            ArLemmaText = tr?.ArLemmaText,
+                            Kwic = tr?.Kwic,
+                        },
+                        row.Status,
+                        null,
+                        null);
                 }
 
             case ReviewTargets.LemmaGloss:

@@ -1,5 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Mutalaa.Api.Lemmas;
+using Mutalaa.Domain.Reviews;
 
 namespace Mutalaa.Api.Reviews;
 
@@ -189,6 +191,35 @@ public sealed record ReviewTargetSnapshot
     /// <summary>Durum sutunlu hedeflerde status (aday, onayli, red); birimde unit.status (etkin, kullanim_disi).</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Status { get; init; }
+
+    // lemma (yalniz lang = 'tr'; K-51 madde 9)
+
+    /// <summary>Turkce lemma: onay yolu (editor, otomatik); aday ya da redde yok.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? OnayYolu { get; init; }
+
+    /// <summary>Turkce lemma: otomatik onay kaniti ozeti (kaynak sayisi, QAC eslesme turu, karar, neden); kanit yoksa yazilmaz.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LemmaKanitSummary? KanitOzeti { get; init; }
+
+    /// <summary>Turkce lemma: eslenen kokun harfleri (root.letters).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? RootLetters { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? ArLemmaId { get; init; }
+
+    /// <summary>Turkce lemma: Arapca karsiligin metni (ar_lemma.text).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ArLemmaText { get; init; }
+
+    /// <summary>Turkce lemma: kulliyat sikligi (lemma.freq).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? Freq { get; init; }
+
+    /// <summary>Turkce lemma: tr_root_index uzerinden en cok 3 ornek (birim metninden +/-40 kod noktasi); tablo bossa bos liste.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<TrKwicItem>? Kwic { get; init; }
 }
 
 public sealed record ReviewQueueCount(string HedefTablo, string Alan, int Acik);
@@ -196,10 +227,17 @@ public sealed record ReviewQueueCount(string HedefTablo, string Alan, int Acik);
 public sealed record ReviewStatsResponse(IReadOnlyList<ReviewQueueCount> Kuyruklar, int ToplamAcik);
 
 /// <summary>
-/// Editorun duzenledigi deger: birim metni onayinda <c>metin</c>, lemma_gloss onayinda <c>anlam_kisa</c> (K-50 madde 6);
-/// hedefe gore yalniz biri verilir, ote hedeflerde duzenlenen deger 422 <c>inceleme-desteklenmiyor</c> alir.
+/// Editorun duzenledigi deger: birim metni onayinda <c>metin</c>, lemma_gloss onayinda <c>anlam_kisa</c> (K-50 madde 6),
+/// Turkce lemma kok eslemesi onayinda <c>root_id</c>, <c>ar_lemma_id</c> ve <c>etymological_only</c> (K-51 madde 9);
+/// hedefe gore yalniz o hedefin alanlari verilir (baska alan 400), ote hedeflerde duzenlenen deger 422 <c>inceleme-desteklenmiyor</c> alir.
+/// Kok eslemesinde <c>root_id</c> ve <c>etymological_only</c> zorunludur; <c>ar_lemma_id</c> yoksa ya da null ise Arapca karsilik yoktur.
 /// </summary>
-public sealed record DecisionEdit(string? Metin = null, string? AnlamKisa = null);
+public sealed record DecisionEdit(
+    string? Metin = null,
+    string? AnlamKisa = null,
+    int? RootId = null,
+    int? ArLemmaId = null,
+    bool? EtymologicalOnly = null);
 
 /// <summary>Tekil karar govdesi. karar: onaylandi ya da reddedildi.</summary>
 public sealed record DecisionBody(string? Karar, string? Gerekce, DecisionEdit? Duzenlenen = null);

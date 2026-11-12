@@ -1143,6 +1143,200 @@
         }
       }
     },
+    "/api/v1/lemmas/{id}/itiraz": {
+      "post": {
+        "tags": [
+          "lemmas"
+        ],
+        "summary": "Otomatik onaylı Türkçe lemma eşlemesine itiraz eder (editör incelemesi açar; başka bir editör onaylarsa lemma adaya döner).",
+        "operationId": "objectToLemmaApproval",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LemmaObjectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LemmaObjectionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lemmas/{id}/etimolojik-isaret": {
+      "post": {
+        "tags": [
+          "lemmas"
+        ],
+        "summary": "Onaylı Türkçe lemmanın 'yalnızca etimolojik' işaretini editör kararıyla değiştirir (otomatik onaylıda onay yolu editör olur).",
+        "operationId": "markLemmaEtymological",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EtymologyMarkRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EtymologyMarkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Precondition Failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/releases": {
       "get": {
         "tags": [
@@ -1847,6 +2041,73 @@
               "null",
               "string"
             ]
+          },
+          "root_id": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "ar_lemma_id": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "etymological_only": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "EtymologyMarkRequest": {
+        "required": [
+          "etymological_only",
+          "gerekce"
+        ],
+        "type": "object",
+        "properties": {
+          "etymological_only": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "gerekce": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "EtymologyMarkResponse": {
+        "required": [
+          "review_id",
+          "etymological_only",
+          "onay_yolu",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "review_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "etymological_only": {
+            "type": "boolean"
+          },
+          "onay_yolu": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -1907,6 +2168,16 @@
             "items": {
               "$ref": "#/components/schemas/LemmaKwicItem"
             }
+          },
+          "tr": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TrLemmaExtras"
+              }
+            ]
           }
         },
         "additionalProperties": false
@@ -1981,6 +2252,63 @@
           },
           "etymological_only": {
             "type": "boolean"
+          },
+          "onay_yolu": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ar_lemma_id": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "freq": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LemmaKanitSummary": {
+        "type": "object",
+        "properties": {
+          "kaynak_sayisi": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "qac_eslesme": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "karar": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "neden": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "politika_surumu": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "additionalProperties": false
@@ -2048,6 +2376,38 @@
             "type": "string"
           },
           "metin_durumu": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LemmaObjectionRequest": {
+        "required": [
+          "gerekce"
+        ],
+        "type": "object",
+        "properties": {
+          "gerekce": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "LemmaObjectionResponse": {
+        "required": [
+          "id",
+          "durum"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "durum": {
             "type": "string"
           }
         },
@@ -3157,6 +3517,57 @@
               "null",
               "string"
             ]
+          },
+          "onay_yolu": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "kanit_ozeti": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/LemmaKanitSummary"
+              }
+            ]
+          },
+          "root_letters": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ar_lemma_id": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "ar_lemma_text": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "freq": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "kwic": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/TrKwicItem"
+            }
           }
         },
         "additionalProperties": false
@@ -3302,6 +3713,79 @@
           "birim_sayisi": {
             "type": "integer",
             "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TrKwicItem": {
+        "required": [
+          "capa",
+          "sol",
+          "kelime",
+          "sag"
+        ],
+        "type": "object",
+        "properties": {
+          "capa": {
+            "type": "string"
+          },
+          "sol": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "kelime": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sag": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "TrLemmaExtras": {
+        "required": [
+          "kanit_ozeti",
+          "root_letters",
+          "ar_lemma_text",
+          "kwic"
+        ],
+        "type": "object",
+        "properties": {
+          "kanit_ozeti": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/LemmaKanitSummary"
+              }
+            ]
+          },
+          "root_letters": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ar_lemma_text": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "kwic": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrKwicItem"
+            }
           }
         },
         "additionalProperties": false
