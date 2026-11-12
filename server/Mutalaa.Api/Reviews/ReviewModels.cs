@@ -135,6 +135,14 @@ public sealed record ReviewTargetSnapshot
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? NewValue { get; init; }
 
+    /// <summary>quran_word_fix: duzeltmenin gerekcesi.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Reason { get; init; }
+
+    /// <summary>quran_word_fix: duzeltmeyi yazan editor.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Editor { get; init; }
+
     // lemma, lemma_gloss
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? LemmaId { get; init; }
@@ -148,6 +156,36 @@ public sealed record ReviewTargetSnapshot
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? AnlamKisa { get; init; }
 
+    /// <summary>lemma: kok kimligi (kokusuz lemmada ve lemma_gloss'ta yok).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? RootId { get; init; }
+
+    /// <summary>lemma: kelime duzeyinde gecis sayisi.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? Occurrences { get; init; }
+
+    /// <summary>lemma: yalnizca etimolojik lemma (lemma.etymological_only).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? EtymologicalOnly { get; init; }
+
+    /// <summary>lemma: lemma.origin ('qac' ...); lemma_gloss: lemma_gloss.origin ('kaynak:quranwbw-tr', 'editor', 'yz:{model}').</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Origin { get; init; }
+
+    /// <summary>lemma_gloss: en cok 3 maddelik Kur'an anlamlari (jsonb dizisi).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? KuranAnlamlari { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TurkceEsKelime { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? YalnizcaEtimolojik { get; init; }
+
+    /// <summary>lemma_gloss: icerik surumu ('1', her duzenlemede +1).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Version { get; init; }
+
     /// <summary>Durum sutunlu hedeflerde status (aday, onayli, red); birimde unit.status (etkin, kullanim_disi).</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Status { get; init; }
@@ -157,8 +195,11 @@ public sealed record ReviewQueueCount(string HedefTablo, string Alan, int Acik);
 
 public sealed record ReviewStatsResponse(IReadOnlyList<ReviewQueueCount> Kuyruklar, int ToplamAcik);
 
-/// <summary>Editorun duzenledigi deger: yalniz birim metni onayinda.</summary>
-public sealed record DecisionEdit(string? Metin);
+/// <summary>
+/// Editorun duzenledigi deger: birim metni onayinda <c>metin</c>, lemma_gloss onayinda <c>anlam_kisa</c> (K-50 madde 6);
+/// hedefe gore yalniz biri verilir, ote hedeflerde duzenlenen deger 422 <c>inceleme-desteklenmiyor</c> alir.
+/// </summary>
+public sealed record DecisionEdit(string? Metin = null, string? AnlamKisa = null);
 
 /// <summary>Tekil karar govdesi. karar: onaylandi ya da reddedildi.</summary>
 public sealed record DecisionBody(string? Karar, string? Gerekce, DecisionEdit? Duzenlenen = null);

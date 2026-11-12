@@ -742,6 +742,13 @@
             }
           },
           {
+            "name": "sira",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "cursor",
             "in": "query",
             "schema": {
@@ -1073,6 +1080,58 @@
           },
           "422": {
             "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lemmas/{id}": {
+      "get": {
+        "tags": [
+          "lemmas"
+        ],
+        "summary": "Lemma kartı: kök, sözcük türü dağılımı, sıklık, dalga ve sıra, aynı kökün onaylı anlamları ve KWIC örnekleri.",
+        "operationId": "getLemma",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LemmaDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1775,12 +1834,15 @@
         "additionalProperties": false
       },
       "DecisionEdit": {
-        "required": [
-          "metin"
-        ],
         "type": "object",
         "properties": {
           "metin": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "anlam_kisa": {
             "type": [
               "null",
               "string"
@@ -1790,6 +1852,320 @@
         "additionalProperties": false
       },
       "JsonElement": { },
+      "LemmaDetailResponse": {
+        "required": [
+          "lemma",
+          "kok",
+          "tur_dagilimi",
+          "siklik",
+          "dalga",
+          "ayni_kok_anlamlari",
+          "kwic"
+        ],
+        "type": "object",
+        "properties": {
+          "lemma": {
+            "$ref": "#/components/schemas/LemmaInfo"
+          },
+          "kok": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/LemmaRootInfo"
+              }
+            ]
+          },
+          "tur_dagilimi": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LemmaPosCount"
+            }
+          },
+          "siklik": {
+            "$ref": "#/components/schemas/LemmaFrequency"
+          },
+          "dalga": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/LemmaWaveInfo"
+              }
+            ]
+          },
+          "ayni_kok_anlamlari": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LemmaSiblingGloss"
+            }
+          },
+          "kwic": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LemmaKwicItem"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "LemmaFrequency": {
+        "required": [
+          "kelime",
+          "ayet"
+        ],
+        "type": "object",
+        "properties": {
+          "kelime": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ayet": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LemmaInfo": {
+        "required": [
+          "id",
+          "text",
+          "lang",
+          "status",
+          "origin",
+          "occurrences",
+          "root_id",
+          "qac_ref",
+          "etymological_only"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "text": {
+            "type": "string"
+          },
+          "lang": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "origin": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "occurrences": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "root_id": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "qac_ref": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "etymological_only": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LemmaKwicItem": {
+        "required": [
+          "kelime_capa",
+          "ayet_capa",
+          "sol",
+          "kelime",
+          "sag",
+          "meal"
+        ],
+        "type": "object",
+        "properties": {
+          "kelime_capa": {
+            "type": "string"
+          },
+          "ayet_capa": {
+            "type": "string"
+          },
+          "sol": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "kelime": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sag": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "meal": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/LemmaKwicMeal"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "LemmaKwicMeal": {
+        "required": [
+          "capa",
+          "metin",
+          "metin_durumu"
+        ],
+        "type": "object",
+        "properties": {
+          "capa": {
+            "type": "string"
+          },
+          "metin": {
+            "type": "string"
+          },
+          "metin_durumu": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LemmaPosCount": {
+        "required": [
+          "pos",
+          "sayi"
+        ],
+        "type": "object",
+        "properties": {
+          "pos": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sayi": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LemmaRootInfo": {
+        "required": [
+          "id",
+          "letters",
+          "letters_bw",
+          "occurrences",
+          "ayah_count",
+          "idf_q",
+          "kok_anlami"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "letters": {
+            "type": "string"
+          },
+          "letters_bw": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "occurrences": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ayah_count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "idf_q": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "float"
+          },
+          "kok_anlami": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "LemmaSiblingGloss": {
+        "required": [
+          "lemma_id",
+          "text",
+          "anlam_kisa",
+          "occurrences"
+        ],
+        "type": "object",
+        "properties": {
+          "lemma_id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "text": {
+            "type": "string"
+          },
+          "anlam_kisa": {
+            "type": "string"
+          },
+          "occurrences": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LemmaWaveInfo": {
+        "required": [
+          "dalga",
+          "sira"
+        ],
+        "type": "object",
+        "properties": {
+          "dalga": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sira": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "LoginRequest": {
         "required": [
           "email",
@@ -2685,6 +3061,18 @@
               "string"
             ]
           },
+          "reason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "editor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
           "lemma_id": {
             "type": [
               "null",
@@ -2705,6 +3093,60 @@
             ]
           },
           "anlam_kisa": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "root_id": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "occurrences": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "etymological_only": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "origin": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "kuran_anlamlari": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/JsonElement"
+              }
+            ]
+          },
+          "turkce_es_kelime": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "yalnizca_etimolojik": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "version": {
             "type": [
               "null",
               "string"
@@ -3153,6 +3595,9 @@
     },
     {
       "name": "reviews"
+    },
+    {
+      "name": "lemmas"
     },
     {
       "name": "releases"

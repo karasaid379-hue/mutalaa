@@ -59,14 +59,31 @@ public readonly record struct UnitReviewState(
     bool HasOffsetData = false,
     bool IsMergedFollower = false);
 
-/// <summary>Hedefin karar anindaki durumu: durum sutunlu hedeflerde Status, birimde Unit.</summary>
+/// <summary>
+/// <c>lemma_gloss</c> hedefinin karar anindaki satiri: guncel anlam, surum ve kokeni (Duzenle ve onayla, K-50 madde 6).
+/// </summary>
+public readonly record struct GlossReviewState(string AnlamKisa, string Version, string Origin);
+
+/// <summary>
+/// Hedefin karar anindaki durumu: durum sutunlu hedeflerde Status, birimde Unit. <c>quran_word_fix</c> icin <see cref="Field"/>
+/// (duzeltmenin alani; review.alan ile eslesmeli), <c>lemma_gloss</c> icin <see cref="Gloss"/> dolu olmalidir.
+/// </summary>
 public readonly record struct ReviewTargetState
 {
     public XrefStatus? Status { get; init; }
 
     public UnitReviewState? Unit { get; init; }
 
+    /// <summary>quran_word_fix.field.</summary>
+    public string? Field { get; init; }
+
+    public GlossReviewState? Gloss { get; init; }
+
     public static ReviewTargetState ForStatus(XrefStatus status) => new() { Status = status };
+
+    public static ReviewTargetState ForFix(XrefStatus status, string field) => new() { Status = status, Field = field };
+
+    public static ReviewTargetState ForGloss(XrefStatus status, GlossReviewState gloss) => new() { Status = status, Gloss = gloss };
 
     public static ReviewTargetState ForUnit(UnitReviewState unit) => new() { Unit = unit };
 }
@@ -77,6 +94,12 @@ public readonly record struct UnitTextUpdate(string Metin, string ContentHash, i
     /// <summary>Her zaman null: tr_stem hatta yeniden hesaplanir.</summary>
     public string? TrStem => null;
 }
+
+/// <summary>
+/// lemma_gloss satirinin onaydan sonraki degerleri (Duzenle ve onayla): kanonik anlam, <c>sha256(anlam_kisa)</c>, surum ve koken.
+/// Metin degismediyse surum ayni kalir.
+/// </summary>
+public readonly record struct LemmaGlossUpdate(string AnlamKisa, string ContentHash, string Version, string Origin);
 
 /// <summary>
 /// Kararin sonucu: review satirinin yeni alanlari ve hedefe yazilacak degisiklikler. Hedef degisikligi olmayan alan null'dir
@@ -110,6 +133,9 @@ public readonly record struct ReviewOutcome
 
     /// <summary>Birimin yeni metni ve turevleri; null ise metin degismez.</summary>
     public UnitTextUpdate? UnitText { get; init; }
+
+    /// <summary>lemma_gloss'un duzenlenmis degerleri; null ise anlam degismez (durum onayi ya da ret).</summary>
+    public LemmaGlossUpdate? Gloss { get; init; }
 
     /// <summary>Review satirinin karar alanlarini yazar (hedef degisiklikleri yazilmaz).</summary>
     public void ApplyTo(Review review)
@@ -189,6 +215,7 @@ public static class ReviewDecisions
             };
         }
 
+        RequireFieldMatch(review, target);
         RequireCandidate(target);
         return Rejected(review, request, actor, gerekce, secondStage: false) with { TargetStatus = XrefStatus.Red };
     }
@@ -337,22 +364,74 @@ public static class ReviewDecisions
 
     private static ReviewOutcome ApproveStatus(Review review, ReviewDecisionRequest request, ReviewTargetState target, string actor, string gerekce)
     {
-        if (request.Duzenlenen is not null)
+        bool isGloss = string.Equals(review.HedefTablo, ReviewTargets.LemmaGloss, StringComparison.Ordinal);
+        if (request.Duzenlenen is not null && !isGloss)
         {
             throw new DomainException(DomainErrorCodes.IncelemeDesteklenmiyor, "Bu hedefte editor degeri duzenlenemez; onayla ya da reddet.");
         }
 
+        RequireFieldMatch(review, target);
         RequireCandidate(target);
+
+        LemmaGlossUpdate? gloss = null;
+        string? stored = review.Duzenlenen;
+        if (request.Duzenlenen is not null)
+        {
+            (gloss, stored) = ResolveGlossEdit(review, request.Duzenlenen, target);
+        }
+
         return new ReviewOutcome
         {
             Durum = ReviewStatus.Onaylandi,
-            Eylem = ReviewActions.Onayla,
+            Eylem = gloss is null ? ReviewActions.Onayla : ReviewActions.DuzenleOnayla,
             Inceleyen = actor,
             IncelendiAt = request.Now,
             Gerekce = gerekce,
-            Duzenlenen = review.Duzenlenen,
+            Duzenlenen = stored,
             TargetStatus = XrefStatus.Onayli,
+            Gloss = gloss,
         };
+    }
+
+    /// <summary>
+    /// Duzenle ve onayla (lemma_gloss, K-50 madde 6): editor degeri kanonikilestirilir (NFC), ozet <c>sha256(kanonik anlam_kisa)</c> olur,
+    /// metin satirdakinden farkliysa surum bir artar; deger onerilen.anlam_kisa'dan farkliysa koken <c>editor</c> olur, ayniysa degismez.
+    /// <c>onerilen.dagilim</c> ve <c>baskin_pay</c> hedefe uygulanmaz. Donen ikinci deger review.duzenlenen jsonb'sidir.
+    /// </summary>
+    private static (LemmaGlossUpdate Update, string Stored) ResolveGlossEdit(Review review, string duzenlenen, ReviewTargetState target)
+    {
+        GlossReviewState row = target.Gloss
+            ?? throw new InvalidOperationException("lemma_gloss hedefi icin satir durumu verilmeli.");
+
+        string canonical = LemmaGlossText.Normalize(ReviewPayload.ReadAnlamKisa(duzenlenen, "duzenlenen"), "duzenlenen.anlam_kisa");
+        string? proposed = ReviewPayload.ReadAnlamKisa(review.Onerilen, "onerilen");
+
+        bool textChanged = !string.Equals(canonical, row.AnlamKisa, StringComparison.Ordinal);
+        string version = textChanged ? LemmaGlossText.NextVersion(row.Version) : row.Version;
+        string origin = string.Equals(canonical, proposed, StringComparison.Ordinal) ? row.Origin : LemmaGlossText.EditorOrigin;
+
+        return (new LemmaGlossUpdate(canonical, ContentHash.Compute(canonical), version, origin), LemmaGlossText.ToPayload(canonical));
+    }
+
+    /// <summary>
+    /// <c>quran_word_fix</c> incelemesinde review.alan duzeltmenin <c>field</c> degeriyle eslesmeli (root_id, lemma_id, pos, features);
+    /// eslesmeyen karar 422 <c>inceleme-desteklenmiyor</c>. Alan degeri desteklenen dort alandan degilse zaten eslesemez.
+    /// </summary>
+    private static void RequireFieldMatch(Review review, ReviewTargetState target)
+    {
+        if (!string.Equals(review.HedefTablo, ReviewTargets.QuranWordFix, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        string field = target.Field
+            ?? throw new InvalidOperationException("quran_word_fix hedefi icin duzeltmenin alani verilmeli.");
+        if (!string.Equals(field, review.Alan, StringComparison.Ordinal))
+        {
+            throw new DomainException(
+                DomainErrorCodes.IncelemeDesteklenmiyor,
+                $"Inceleme alani '{review.Alan}' duzeltmenin alaniyla ('{field}') eslesmiyor.");
+        }
     }
 
     private static ReviewOutcome ApproveUnitText(Review review, ReviewDecisionRequest request, ReviewTargetState target, string actor, string gerekce)

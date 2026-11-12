@@ -26,6 +26,16 @@ internal static class ReviewPayload
         return metin;
     }
 
+    /// <summary>
+    /// "anlam_kisa" alani (<c>lemma_gloss</c> onerilen ve duzenlenen degeri); nesne ya da alan yoksa null. Alan varsa dizgi olmali.
+    /// Onerilen deger <c>{anlam_kisa, dagilim, baskin_pay}</c> tasir; yalniz <c>anlam_kisa</c> okunur.
+    /// </summary>
+    public static string? ReadAnlamKisa(string? json, string name)
+    {
+        using JsonDocument? document = Parse(json, name);
+        return document is null ? null : ReadString(document.RootElement, "anlam_kisa", name);
+    }
+
     /// <summary>"content_hash" alani; deger (nesnenin kendisi) yoksa null. Nesne var ama alan yoksa hata.</summary>
     public static string? ReadContentHash(string? json, string name)
     {

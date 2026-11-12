@@ -50,6 +50,7 @@ internal static class ReviewDecider
         if (edit is not null)
         {
             WritableText.Check(errors, prefix + "duzenlenen.metin", edit.Metin);
+            WritableText.Check(errors, prefix + "duzenlenen.anlam_kisa", edit.AnlamKisa);
         }
     }
 
@@ -75,7 +76,7 @@ internal static class ReviewDecider
         {
             Actor = actor,
             Gerekce = input.Gerekce,
-            Duzenlenen = BuildEdited(input.Edit),
+            Duzenlenen = BuildEdited(input.Edit, review.HedefTablo),
             Now = now,
         };
 
@@ -104,12 +105,25 @@ internal static class ReviewDecider
     public static bool IsSecondApprovalPending(PreparedDecision prepared) =>
         prepared.Target is Unit unit && ReviewVerification.IsSecondApprovalPending(prepared.Review, unit.Kind);
 
-    /// <summary>Duzenlenen deger <c>{"metin", "content_hash"}</c> jsonb'si olur; ozet kanonik metinden hesaplanir.</summary>
-    private static string? BuildEdited(DecisionEdit? edit)
+    /// <summary>
+    /// Duzenlenen deger jsonb olur: birim metninde <c>{"metin", "content_hash"}</c> (ozet kanonik metinden hesaplanir),
+    /// lemma_gloss'ta <c>{"anlam_kisa"}</c> (kanonik deger; bos, yalniz bosluk ya da 200 karakterden uzun 400).
+    /// </summary>
+    private static string? BuildEdited(DecisionEdit? edit, string hedefTablo)
     {
         if (edit is null)
         {
             return null;
+        }
+
+        if (string.Equals(hedefTablo, ReviewTargets.LemmaGloss, StringComparison.Ordinal))
+        {
+            if (edit.Metin is not null)
+            {
+                throw new DomainException(DomainErrorCodes.Dogrulama, "lemma_gloss icin duzenlenen.anlam_kisa verilmeli; duzenlenen.metin kabul edilmez.");
+            }
+
+            return LemmaGlossText.ToPayload(LemmaGlossText.Normalize(edit.AnlamKisa, "duzenlenen.anlam_kisa"));
         }
 
         if (string.IsNullOrEmpty(edit.Metin))
@@ -180,7 +194,7 @@ internal static class ReviewDecider
                 {
                     Guid id = target.Id!.Value;
                     QuranWordFix row = await db.QuranWordFixes.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ?? throw Missing();
-                    return (row, ReviewTargetState.ForStatus(row.Status));
+                    return (row, ReviewTargetState.ForFix(row.Status, row.Field));
                 }
 
             case ReviewTargets.Lemma:
@@ -194,7 +208,7 @@ internal static class ReviewDecider
                 {
                     int id = target.LemmaId!.Value;
                     LemmaGloss row = await db.LemmaGlosses.SingleOrDefaultAsync(x => x.LemmaId == id, cancellationToken) ?? throw Missing();
-                    return (row, ReviewTargetState.ForStatus(row.Status));
+                    return (row, ReviewTargetState.ForGloss(row.Status, new GlossReviewState(row.AnlamKisa, row.Version, row.Origin)));
                 }
 
             default:
@@ -241,6 +255,14 @@ internal static class ReviewDecider
                 break;
             case LemmaGloss gloss when outcome.TargetStatus is { } status:
                 gloss.Status = status;
+                if (outcome.Gloss is { } edited)
+                {
+                    gloss.AnlamKisa = edited.AnlamKisa;
+                    gloss.ContentHash = edited.ContentHash;
+                    gloss.Version = edited.Version;
+                    gloss.Origin = edited.Origin;
+                }
+
                 break;
             default:
                 break;

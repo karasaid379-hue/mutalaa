@@ -23,6 +23,7 @@ public static class EditorEndpoints
         editor.MapUnitEndpoints();
         editor.MapScanEndpoints();
         editor.MapReviewEndpoints();
+        editor.MapLemmaEndpoints();
         editor.MapReleaseEndpoints();
 
         return editor;

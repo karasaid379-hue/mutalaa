@@ -19,11 +19,21 @@ internal enum ReviewStage
     Ikinci,
 }
 
+/// <summary>Kuyruk siralamasi (<c>sira</c>): olusturma (varsayilan, created_at ve id) ya da kelime anlami dalgasi (K-50 madde 7).</summary>
+internal enum ReviewSort
+{
+    Olusturma,
+    Dalga,
+}
+
 /// <summary>Liste, ayrinti ve istatistik okuma sorgulari: hepsi AsNoTracking ve projeksiyonludur.</summary>
 internal static class ReviewQueries
 {
     public const int DefaultLimit = 50;
     public const int MaxLimit = 200;
+
+    /// <summary>lemma_dalga satiri olmayan kayitlarin dalga anahtari: gercek dalgalarin (0..4) hepsinden sonra gelir.</summary>
+    public const int NoWave = 5;
 
     /// <summary>Listede gereken alanlar; jsonb degerler (onceki, onerilen, duzenlenen) listede de doner (Backend API §4, BÇ-55).</summary>
     private sealed record Row(
@@ -56,7 +66,9 @@ internal static class ReviewQueries
         ReviewStatus durum,
         string? kaynak,
         ReviewStage? asama,
+        ReviewSort sira,
         (DateTime CreatedAt, long Id)? after,
+        WaveCursor? waveAfter,
         int limit,
         CancellationToken cancellationToken)
     {
@@ -91,53 +103,138 @@ internal static class ReviewQueries
                 && (r.IkinciInceleyen == null || r.IkinciInceleyen == string.Empty));
         }
 
-        if (after is { } cursor)
-        {
-            DateTime at = cursor.CreatedAt;
-            long id = cursor.Id;
-            query = query.Where(r => r.CreatedAt > at || (r.CreatedAt == at && r.Id > id));
-        }
-
-        List<Row> rows = await query
-            .OrderBy(r => r.CreatedAt)
-            .ThenBy(r => r.Id)
-            .Take(limit + 1)
-            .Select(r => new Row(
-                r.Id,
-                r.HedefTablo,
-                r.HedefAnahtar,
-                r.XrefId,
-                r.Alan,
-                r.Eylem,
-                r.Durum,
-                r.Koken,
-                r.YzModeli,
-                r.YzKaydi,
-                r.Onceki,
-                r.Onerilen,
-                r.Duzenlenen,
-                r.Guven,
-                r.Oneren,
-                r.Inceleyen,
-                r.IkinciInceleyen,
-                r.IkinciIncelendiAt,
-                r.CreatedAt,
-                r.IncelendiAt,
-                EF.Property<uint>(r, RowVersion.Name)))
-            .ToListAsync(cancellationToken);
-
+        List<Row> rows;
         string? next = null;
-        if (rows.Count > limit)
+        if (sira == ReviewSort.Dalga)
         {
-            rows.RemoveAt(rows.Count - 1);
-            Row last = rows[^1];
-            next = ReviewCursor.Encode(last.CreatedAt, last.Id);
+            (rows, next) = await ListByWaveAsync(db, query, waveAfter, limit, cancellationToken);
+        }
+        else
+        {
+            if (after is { } cursor)
+            {
+                DateTime at = cursor.CreatedAt;
+                long id = cursor.Id;
+                query = query.Where(r => r.CreatedAt > at || (r.CreatedAt == at && r.Id > id));
+            }
+
+            rows = await ProjectRows(query
+                .OrderBy(r => r.CreatedAt)
+                .ThenBy(r => r.Id)
+                .Take(limit + 1))
+                .ToListAsync(cancellationToken);
+
+            if (rows.Count > limit)
+            {
+                rows.RemoveAt(rows.Count - 1);
+                Row last = rows[^1];
+                next = ReviewCursor.Encode(last.CreatedAt, last.Id);
+            }
         }
 
         Dictionary<string, UnitKind> kinds = await UnitKindsForPendingAsync(db, rows, cancellationToken);
         HashSet<long> verifiedTargets = await VerifiedTargetsOfApprovedAiRowsAsync(db, rows, cancellationToken);
         List<ReviewItemDto> items = [.. rows.Select(r => ToItem(r, kinds, verifiedTargets.Contains(r.Id)))];
         return new ReviewListResponse(items, next);
+    }
+
+    /// <summary>lemma_dalga satiri ve metin birlesim anahtari (ham SQL projeksiyonu).</summary>
+    private sealed class WaveRow
+    {
+        public required string LemmaKey { get; init; }
+
+        public int LemmaId { get; init; }
+
+        public int Dalga { get; init; }
+
+        public int Sira { get; init; }
+    }
+
+    private static IQueryable<Row> ProjectRows(IQueryable<Review> query) =>
+        query.Select(r => new Row(
+            r.Id,
+            r.HedefTablo,
+            r.HedefAnahtar,
+            r.XrefId,
+            r.Alan,
+            r.Eylem,
+            r.Durum,
+            r.Koken,
+            r.YzModeli,
+            r.YzKaydi,
+            r.Onceki,
+            r.Onerilen,
+            r.Duzenlenen,
+            r.Guven,
+            r.Oneren,
+            r.Inceleyen,
+            r.IkinciInceleyen,
+            r.IkinciIncelendiAt,
+            r.CreatedAt,
+            r.IncelendiAt,
+            EF.Property<uint>(r, RowVersion.Name)));
+
+    /// <summary>
+    /// Dalga sirasi (K-50 madde 7): (dalga, lemma_dalga.sira, lemma_id, review.id) artan; lemma_dalga satiri olmayanlar en sonda
+    /// (dalga <see cref="NoWave"/>, sira en buyuk, lemma 0, kendi aralarinda review.id). Birlesim metin karsilastirmasidir
+    /// (<c>lemma_dalga.lemma_id::text = review.hedef_anahtar</c>): hedef_anahtar'i tamsayiya cevirmek bozuk anahtarda listeyi 500 yapardi.
+    /// Anahtarlar once (kimlik, sira anahtari) ile sayfalanir, sonra satirlar tek sorguyla okunup bu sirada dizilir.
+    /// </summary>
+    private static async Task<(List<Row> Rows, string? Next)> ListByWaveAsync(
+        IcerikDbContext db,
+        IQueryable<Review> query,
+        WaveCursor? after,
+        int limit,
+        CancellationToken cancellationToken)
+    {
+        // Birlesim anahtari metin olarak SQL'de uretilir (lemma_id::text); LINQ'te int.ToString() kultur uyarisi (CA1305) verir.
+        IQueryable<WaveRow> waves = db.Database.SqlQuery<WaveRow>(
+            $"SELECT lemma_id::text AS lemma_key, lemma_id, dalga::integer AS dalga, sira FROM icerik.lemma_dalga");
+        var keyed =
+            from r in query
+            join d in waves on r.HedefAnahtar equals d.LemmaKey into joined
+            from d in joined.DefaultIfEmpty()
+            select new
+            {
+                r.Id,
+                Dalga = (int?)d.Dalga ?? NoWave,
+                Sira = (int?)d.Sira ?? int.MaxValue,
+                Lemma = (int?)d.LemmaId ?? 0,
+            };
+
+        if (after is { } cursor)
+        {
+            int cd = cursor.Dalga;
+            int cs = cursor.Sira;
+            int cl = cursor.LemmaId;
+            long ci = cursor.Id;
+            keyed = keyed.Where(k => k.Dalga > cd
+                || (k.Dalga == cd && (k.Sira > cs
+                    || (k.Sira == cs && (k.Lemma > cl
+                        || (k.Lemma == cl && k.Id > ci))))));
+        }
+
+        var page = await keyed
+            .OrderBy(k => k.Dalga)
+            .ThenBy(k => k.Sira)
+            .ThenBy(k => k.Lemma)
+            .ThenBy(k => k.Id)
+            .Take(limit + 1)
+            .ToListAsync(cancellationToken);
+
+        string? next = null;
+        if (page.Count > limit)
+        {
+            page.RemoveAt(page.Count - 1);
+            var last = page[^1];
+            next = ReviewCursor.EncodeWave(new WaveCursor(last.Dalga, last.Sira, last.Lemma, last.Id));
+        }
+
+        long[] ids = [.. page.Select(p => p.Id)];
+        Dictionary<long, Row> byId = (await ProjectRows(db.Reviews.AsNoTracking().Where(r => ids.Contains(r.Id)))
+            .ToListAsync(cancellationToken))
+            .ToDictionary(r => r.Id);
+        return ([.. ids.Where(byId.ContainsKey).Select(i => byId[i])], next);
     }
 
     public static async Task<ReviewStatsResponse> StatsAsync(IcerikDbContext db, CancellationToken cancellationToken)
@@ -543,7 +640,7 @@ internal static class ReviewQueries
                     Guid id = target.Id!.Value;
                     var row = await db.QuranWordFixes.AsNoTracking()
                         .Where(x => x.Id == id)
-                        .Select(x => new { x.Id, x.Anchor, x.Field, x.QacValue, x.NewValue, x.Status })
+                        .Select(x => new { x.Id, x.Anchor, x.Field, x.QacValue, x.NewValue, x.Reason, x.Editor, x.Status })
                         .SingleOrDefaultAsync(cancellationToken);
                     return row is null
                         ? TargetView.Empty
@@ -556,6 +653,8 @@ internal static class ReviewQueries
                                 Field = row.Field,
                                 QacValue = row.QacValue,
                                 NewValue = row.NewValue,
+                                Reason = row.Reason,
+                                Editor = row.Editor,
                                 Status = row.Status.ToLabel(),
                             },
                             row.Status,
@@ -568,7 +667,7 @@ internal static class ReviewQueries
                     int id = target.LemmaId!.Value;
                     var row = await db.Lemmas.AsNoTracking()
                         .Where(x => x.Id == id)
-                        .Select(x => new { x.Id, x.Lang, x.Text, x.Status })
+                        .Select(x => new { x.Id, x.Lang, x.Text, x.RootId, x.Occurrences, x.EtymologicalOnly, x.Origin, x.Status })
                         .SingleOrDefaultAsync(cancellationToken);
                     return row is null
                         ? TargetView.Empty
@@ -579,6 +678,10 @@ internal static class ReviewQueries
                                 LemmaId = row.Id,
                                 Lang = row.Lang,
                                 Text = row.Text,
+                                RootId = row.RootId,
+                                Occurrences = row.Occurrences,
+                                EtymologicalOnly = row.EtymologicalOnly,
+                                Origin = row.Origin,
                                 Status = row.Status.ToLabel(),
                             },
                             row.Status,
@@ -591,7 +694,7 @@ internal static class ReviewQueries
                     int id = target.LemmaId!.Value;
                     var row = await db.LemmaGlosses.AsNoTracking()
                         .Where(x => x.LemmaId == id)
-                        .Select(x => new { x.LemmaId, x.AnlamKisa, x.Status })
+                        .Select(x => new { x.LemmaId, x.AnlamKisa, x.Origin, x.KuranAnlamlari, x.TurkceEsKelime, x.YalnizcaEtimolojik, x.Version, x.Status })
                         .SingleOrDefaultAsync(cancellationToken);
                     return row is null
                         ? TargetView.Empty
@@ -601,6 +704,11 @@ internal static class ReviewQueries
                                 Tablo = target.Table,
                                 LemmaId = row.LemmaId,
                                 AnlamKisa = row.AnlamKisa,
+                                Origin = row.Origin,
+                                KuranAnlamlari = ReviewJson.Parse(row.KuranAnlamlari),
+                                TurkceEsKelime = row.TurkceEsKelime,
+                                YalnizcaEtimolojik = row.YalnizcaEtimolojik,
+                                Version = row.Version,
                                 Status = row.Status.ToLabel(),
                             },
                             row.Status,
