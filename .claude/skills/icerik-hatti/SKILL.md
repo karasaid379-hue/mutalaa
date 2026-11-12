@@ -18,7 +18,7 @@ Kaynak: [İçerik hattı](../../../docs/04-icerik/02-icerik-hatti.md); kaynak li
 | `ingest` | İndirme ya da tarama kaydı, SHA-256, kaynağa özgü ayrıştırma | `data/raw`, `data/staged` |
 | `normalize` | `search_text`, Türkçe ve Arapça arama anahtarları | `data/staged` |
 | `anchor` | Çapa ataması, `content_hash`, önceki sürümle karşılaştırma | `data/staged` |
-| `enrich` | Morfoloji, iktibas ve atıf adayları, kelime anlamı taslakları, OCR | `data/staged`, `data/llm-cache` |
+| `enrich` | Morfoloji, iktibas ve atıf adayları, hazır kaynaktan kelime anlamı adayları, OCR | `data/staged`, `data/llm-cache` |
 | `qa` | Kapılar ve ölçümler | `data/reports` |
 | `export` | PostgreSQL'e yükleme, inceleme kuyruğu, test vektörleri | PostgreSQL, depo |
 
@@ -34,10 +34,11 @@ Ortak yardımcılar (`config`, `db`, `logs`) hat adımlarına bağlanmaz (yalnı
 | `uv run mutalaa qa sample --source <kimlik> --n 600 --seed <sabit>` | Meal ikinci okuma örneklemi (sure grubuna göre tabakalı, sabit tohum) ve G-INC ölçüm raporu |
 | `ingest scans` · `ocr run` · `ocr eval` | OCR ve tarama komutları: proje sonuna ertelendi (K-49 madde 3; S-15). Şu an yok |
 | `uv run mutalaa normalize --source <kimlik>` · `anchor --source <kimlik>` | Arama metni (Tanzil için `ar_norm`, AR-4); çapa ve özet (`q:` çapası, `content_hash`) |
-| `uv run mutalaa enrich citations …` · `enrich glosses --wave 1` | İktibas adayları; kelime anlamı taslakları |
+| `uv run mutalaa enrich citations …` · `enrich morphology` · `enrich glosses --wave N` | İktibas adayları; QAC morfolojisi; hazır kaynaktan (QuranWBW) kelime anlamı adayları (yapay zekâ yok, K-50) |
+| `uv run mutalaa ingest qac` · `ingest quranwbw-tr` | QAC morfolojisi ve hazır Türkçe kelime anlamı alımı; `quran_word`'ün QAC sütunlarını yalnız `export pg --source qac-morfoloji` yazar |
 | `uv run mutalaa qa run --source <kimlik> [--run <run_id>] [--gate <kapı>]` | QA kapıları (G-KAY, G-BUT, G-CAP, G-NOR); rapor `data/reports/{run_id}.json`; `--gate` kısmi koşu `export pg`ye yetmez |
 | `uv run mutalaa export pg --source <kimlik> [--dry-run]` · `export review-queue …` · `export test-vectors` | Yükleme, kuyruk, vektörler |
-| `uv run mutalaa llm estimate --task glosses --sample 50` | Maliyet tahmini |
+| `uv run mutalaa llm estimate --task glosses --sample 50` | Maliyet tahmini (S-16'ya ertelendi, K-50; henüz yok) |
 
 Ortak bayraklar: `--dry-run`, `--force`, `--config <dosya>`; `--limit N` yalnız sınırlanabilir adımlarda geçerlidir (Tanzil `ingest`, `normalize` ve `anchor` onu çıkış `2` ile reddeder). `qa run` `--source`, `--run`, `--gate` ve `--config` alır; `--dry-run`, `--force` ve `--limit` almaz. Çıkış kodları: `0` başarılı, `1` QA kapısı kaldı, `2` girdi ya da yapılandırma hatası (kayıtsız ya da geçersiz kaynak kaydı dahil).
 
@@ -59,7 +60,7 @@ Ortak bayraklar: `--dry-run`, `--force`, `--config <dosya>`; `--limit N` yalnız
 | G-HIZ | Her `q:{s}:{a}` için her meal kaynağında (`meal:elmalili`, `meal:elmalili-sade`) bir birim ya da `birlesik_ile` bağı; tefsir aralıkları âyet sınırında; Tecrîd–Buhârî eşlemesi çelişkisiz. Meal için sert kapı: kalırsa `export pg` yapılmaz |
 | G-MET | OCR ve aktarım: CER eşiği, imlâ tutarlılığı, `⟦?⟧` işareti kalmadı. Hazır metin yolundaki meal için uygulanmaz (K-49 madde 12; OCR ile S-15) |
 | G-INC | Yayına aday birimlerin tamamı onaylı; ikinci okuma örnekleminde hata oranı eşik altında |
-| G-YZ | Her yapay zekâ çıktısı model, istem sürümü ve `dogrulanmis = false` taşır |
+| G-YZ | Her yapay zekâ çıktısı model, istem sürümü ve `dogrulanmis = false` taşır (S-16'ya kadar kullanılmaz) |
 | G-NOR | Normalizasyon vektörleri Python'da geçer |
 
 ## Yeni kaynak ve tedarik
@@ -88,6 +89,7 @@ Her aşama, dosyasındaki `## Tedarik` bölümüyle başlar (`asama` becerisi, 2
 
 ## Yapay zekâ politikası
 
+- **K-50: yapay zekâ işleri S-16'ya ertelendi.** Hat Anthropic çağrısı yapmaz; kelime anlamı adayları hazır kaynaktan (QuranWBW) gelir ve İ-17 gerekmez. Aşağıdaki kurallar S-16 açılınca geçerlidir ([K-50](../../../docs/00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü)).
 - Yapay zekâ taslak üretir, insan karar verir: `status = 'aday'`, `dogrulanmis = false`.
 - Meal, tefsir, hadis çevirisi ve Risale özeti üretilmez. Yapay zekâ kullanımı yalnız bu içerik etiği kurallarıyla sınırlıdır.
 - İstemler `pipeline/prompts/<iş>/v<n>.md`, model kimliği yapılandırmada sabit, sıcaklık 0, çıktı JSON şemasıyla doğrulanır; yanıtlar `(model, prompt_sha256, input_sha256)` anahtarıyla önbelleğe yazılır ve `--regenerate` olmadan yeniden üretilmez.
