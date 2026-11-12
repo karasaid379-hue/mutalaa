@@ -145,7 +145,7 @@ Kendimiz yapacağımız işler: QAC segmentlerini kelimeye toplama; Buckwalter e
   - `PackCatalog`: `kelime-kok`, `DependsOn [core]`; `qac-morfoloji` sözlük rolüyle `Required`; `quranwbw-tr` atıf, `Required: false`. Satır ve içerik tipleri `PackRows` ve `PackContent`'tedir.
   - İçerik: `word_morph` (QAC sütunları + onaylı `quran_word_fix`), `root` ve `lemma` (`lang = 'ar'`, onaylı), `lemma_gloss` (yeni `origin` sütunuyla), `tr_form` ve `tr_root_index` (A18'e kadar boş).
   - Görünürlük (K-50 madde 8, P-09): `GateEvaluator.DecideLexical` derleme türünü alır (`FlavorPolicy`, `GateReasons`). `lemma_gloss` `onayli` her derlemeye girer; `aday` yalnız `dev` ve `internal`'a `status = 'aday'` ile girer; `red` hiçbirine girmez; `public` pakette `aday` anlam bulunmaz. `quran_word_fix` her derlemede yalnız `onayli` ile uygulanır. `GateInputBuilder.HasContent` ve `ReleaseDigests` sözlük verisini kapsar.
-  - Künye: `pack_meta` yeni anahtarı onaylı düzeltme sayısını taşır (`SqlitePackWriter.ExpectedMeta`); `attribution` kaynağıyla bayt bayt aynı kalır (P-11).
+  - Künye: `pack_meta` `word_fix_count` anahtarı uygulanan onaylı düzeltme sayısını taşır (`SqlitePackWriter.ExpectedMeta`); `attribution` kaynağıyla bayt bayt aynı kalır (P-11).
   - DDL: `40-kelime-kok.sql` `origin` sütunu; `ddl.test.ts` ve `PackDdlSmokeTests` güncellenir. Sözlük satırlarında `test-` kaynak için P-12 testi.
 - API (BÇ-56'nın A17 yarısı; `sunucu-gelistirici`):
   - `GET /api/v1/lemmas/{id:int}`: kök, tür dağılımı, sıklık, dalga ve sıra, aynı kökün onaylı anlamları, KWIC (Tanzil Arapçası ve `meal:elmalili`, `metin_durumu` ile; sık lemmada örneklem).
