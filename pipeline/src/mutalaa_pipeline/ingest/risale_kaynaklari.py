@@ -8,7 +8,9 @@ kitaplik): `qa` paketi onu ice aktarabilir.
                         `data/staged` altinda kalir; `export pg` ile veritabanina YUKLENMEZ
                         (K-51 madde 2: birincil metin RNK'dir).
 
-`risale-rnk-metin` (RNK, birincil metin) ayri bir adimdir (A20.1b) ve bu kayda eklenmez.
+    risale-rnk-metin    RNK Neşriyat `txt` + `json` (A20.1b): BIRINCIL metin; bagdastirici
+                        `risale_rnk_kaynaklari`. `data/staged` birimleri `export pg` ile
+                        yuklenir (G-KAY, G-BUT, G-NOR).
 """
 
 import importlib
@@ -16,8 +18,11 @@ from dataclasses import dataclass
 from typing import Final
 
 KAYNAK_DIYANET: Final = "risale-asil-nusha"
+KAYNAK_RNK: Final = "risale-rnk-metin"
 # A20.1 kapilari: G-CAP yalniz A20.2b'de yazilir (cap yeniden numaralanmaz denetimi).
 RISALE_KAPILARI: Final = ("G-KAY", "G-BUT")
+# A20.1b: RNK metni (ingest asamasi); G-CAP A20.2b'de eklenir.
+RNK_KAPILARI: Final = ("G-KAY", "G-BUT", "G-NOR")
 
 
 @dataclass(frozen=True)
@@ -34,6 +39,12 @@ KAYNAKLAR: Final[dict[str, RisaleKaynagi]] = {
         modul="mutalaa_pipeline.ingest.risale_diyanet",
         yukleme=False,
         kapilar=RISALE_KAPILARI,
+    ),
+    KAYNAK_RNK: RisaleKaynagi(
+        slug=KAYNAK_RNK,
+        modul="mutalaa_pipeline.ingest.risale_rnk_kaynaklari",
+        yukleme=True,
+        kapilar=RNK_KAPILARI,
     ),
 }
 

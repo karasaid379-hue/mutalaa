@@ -39,7 +39,8 @@ from mutalaa_pipeline.anchor.capa import (
 HataKodu = Literal["BICIM", "UZUNLUK", "AYRILMIS", "KALIP", "DERINLIK"]
 Dil = Literal["tr", "ota", "ar"]
 Yon = Literal["ltr", "rtl"]
-MetinKaynagi = Literal["diyanet", "derleme", "rnk"]
+MetinKaynagi = Literal["rnk"]
+DiyanetKarsiligi = Literal["diyanet", "derleme", "rnk"]
 
 DIZIN: Final = "dizin"
 PAKET_ONEKI: Final = "risale-"
@@ -71,7 +72,11 @@ _KANONIK_SAYI: Final = re.compile("[1-9][0-9]*")
 
 DILLER: Final = ("tr", "ota", "ar")
 YONLER: Final = ("ltr", "rtl")
-METIN_KAYNAKLARI: Final = ("diyanet", "derleme", "rnk")
+# K-51 madde 2: butun kitaplarin metni RNK'dandir (13 Kasim 2026); Diyanet yalniz karsilastirmadir.
+METIN_KAYNAKLARI: Final = ("rnk",)
+# Eski siniflama: kitabin Diyanet'teki karsiligi (diyanet: ayni ad; derleme: bolum derlemesi;
+# rnk: Diyanet'te yok). Karsilastirma ve rapor icin saklanir; metin kaynagini belirlemez.
+DIYANET_KARSILIKLARI: Final = ("diyanet", "derleme", "rnk")
 RNK_RAFLARI: Final = ("tr", "tr_k", "osm", "ar", "ar_k")
 # Dil -> RNK rafi (K-51 madde 1) ve slug eki.
 _DIL_RAFLARI: Final[dict[str, tuple[str, ...]]] = {
@@ -350,6 +355,7 @@ class Kitap:
     dil: Dil
     yon: Yon
     metin_kaynagi: MetinKaynagi
+    diyanet_karsiligi: DiyanetKarsiligi
     diyanet: Diyanet | None
     rnk: RnkBaglanti | None
     dogrulandi: bool
@@ -455,12 +461,28 @@ def _kitap(deger: object, nerede: str) -> Kitap:
     nesne = _nesne(
         deger,
         nerede,
-        ("slug", "baslik", "dil", "yon", "metin_kaynagi", "diyanet", "rnk", "dogrulandi"),
+        (
+            "slug",
+            "baslik",
+            "dil",
+            "yon",
+            "metin_kaynagi",
+            "diyanet_karsiligi",
+            "diyanet",
+            "rnk",
+            "dogrulandi",
+        ),
     )
     slug = kitap_slug_denetle(_metin(nesne["slug"], f"{nerede}.slug"))
     dil, yon, kaynak = nesne["dil"], nesne["yon"], nesne["metin_kaynagi"]
-    if dil not in DILLER or yon not in YONLER or kaynak not in METIN_KAYNAKLARI:
-        raise _hata(f"{nerede}: dil, yon ya da metin_kaynagi gecersiz")
+    karsilik = nesne["diyanet_karsiligi"]
+    if (
+        dil not in DILLER
+        or yon not in YONLER
+        or kaynak not in METIN_KAYNAKLARI
+        or karsilik not in DIYANET_KARSILIKLARI
+    ):
+        raise _hata(f"{nerede}: dil, yon, metin_kaynagi ya da diyanet_karsiligi gecersiz")
     if not isinstance(nesne["dogrulandi"], bool):
         raise _hata(f"{nerede}.dogrulandi: mantiksal deger bekleniyor")
     diyanet = None if nesne["diyanet"] is None else _diyanet(nesne["diyanet"], f"{nerede}.diyanet")
@@ -471,6 +493,7 @@ def _kitap(deger: object, nerede: str) -> Kitap:
         dil,
         yon,
         kaynak,
+        karsilik,
         diyanet,
         rnk,
         nesne["dogrulandi"],
@@ -487,10 +510,12 @@ def _tutarlilik(kitap: Kitap, nerede: str) -> None:
         raise _hata(f"{nerede}: dil {kitap.dil} icin yon {beklenen_yon} olmali")
     if (kitap.dil == "ota") != ek_osmanlica or (kitap.dil == "ar") != ek_arapca:
         raise _hata(f"{nerede}: slug eki dille uyusmuyor (K-51 madde 4)")
-    if kitap.dil != "tr" and (kitap.metin_kaynagi != "rnk" or kitap.diyanet is not None):
-        raise _hata(f"{nerede}: Osmanlica ve Arapca kitap yalniz RNK metnidir")
-    if (kitap.metin_kaynagi == "diyanet") != (kitap.diyanet is not None):
-        raise _hata(f"{nerede}: diyanet alani yalniz metin_kaynagi=diyanet olan kitapta dolu olur")
+    if kitap.dil != "tr" and (kitap.diyanet_karsiligi != "rnk" or kitap.diyanet is not None):
+        raise _hata(f"{nerede}: Osmanlica ve Arapca kitabin Diyanet karsiligi yoktur")
+    if (kitap.diyanet_karsiligi == "diyanet") != (kitap.diyanet is not None):
+        raise _hata(
+            f"{nerede}: diyanet alani yalniz diyanet_karsiligi=diyanet olan kitapta dolu olur"
+        )
     if kitap.rnk is None:
         raise _hata(f"{nerede}: her kitap bir RNK kitabina baglidir (K-51 madde 1)")
     if kitap.rnk.raf not in _DIL_RAFLARI[kitap.dil]:

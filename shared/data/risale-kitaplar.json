@@ -6,7 +6,8 @@
       "baslik": "Sözler",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "01 Sözler",
         "dosyalar": [
@@ -60,7 +61,8 @@
       "baslik": "Mektubat",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "02 Mektubat",
         "dosyalar": [
@@ -117,7 +119,8 @@
       "baslik": "Lem'alar",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "03 Lem'alar",
         "dosyalar": [
@@ -171,7 +174,8 @@
       "baslik": "Şualar",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "04 Şuâlar",
         "dosyalar": [
@@ -207,7 +211,8 @@
       "baslik": "Tarihçe-i Hayat",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "05 Tarihçe-i Hayat",
         "dosyalar": [
@@ -239,7 +244,8 @@
       "baslik": "Mesnevi-i Nuriye",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "06 Mesnevî-i Nuriye",
         "dosyalar": [
@@ -273,7 +279,8 @@
       "baslik": "İşârâtü'l-İ'caz",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "07 İşaratü'l-i'caz",
         "dosyalar": [
@@ -318,7 +325,8 @@
       "baslik": "Sikke-i Tasdik-i Gaybî",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "08 Sikke-i Tasdik-i Gaybî",
         "dosyalar": [
@@ -344,7 +352,8 @@
       "baslik": "Barla Lâhikası",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "09 Barla Lâhikası",
         "dosyalar": [
@@ -382,7 +391,8 @@
       "baslik": "Kastamonu Lâhikası",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "10 Kastamonu Lâhikası",
         "dosyalar": [
@@ -413,7 +423,8 @@
       "baslik": "Emirdağ Lâhikası 1",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "11 Emirdağ Lâhikası 1",
         "dosyalar": [
@@ -446,7 +457,8 @@
       "baslik": "Emirdağ Lâhikası 2",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "12 Emirdağ Lâhikası 2",
         "dosyalar": [
@@ -477,7 +489,8 @@
       "baslik": "Asâ-yı Musa",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "13 Asâ-yı Musa",
         "dosyalar": [
@@ -521,7 +534,8 @@
       "baslik": "Muhakemat",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "15 Muhakemat",
         "dosyalar": [
@@ -545,7 +559,8 @@
       "baslik": "Divan-ı Harb-i Örfî",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "14 Küçük Kitaplar",
         "dosyalar": [
@@ -564,7 +579,8 @@
       "baslik": "Gençlik Rehberi",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "14 Küçük Kitaplar",
         "dosyalar": [
@@ -583,7 +599,8 @@
       "baslik": "Hanımlar Rehberi",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "14 Küçük Kitaplar",
         "dosyalar": [
@@ -602,7 +619,8 @@
       "baslik": "Hutbe-i Şamiye",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "14 Küçük Kitaplar",
         "dosyalar": [
@@ -621,7 +639,8 @@
       "baslik": "İşarat",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "14 Küçük Kitaplar",
         "dosyalar": [
@@ -657,7 +676,8 @@
       "baslik": "Konferans",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "14 Küçük Kitaplar",
         "dosyalar": [
@@ -676,7 +696,8 @@
       "baslik": "Münâzarat",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "14 Küçük Kitaplar",
         "dosyalar": [
@@ -695,7 +716,8 @@
       "baslik": "Nur Çeşmesi",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "14 Küçük Kitaplar",
         "dosyalar": [
@@ -714,7 +736,8 @@
       "baslik": "Nur'un İlk Kapısı",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "14 Küçük Kitaplar",
         "dosyalar": [
@@ -733,7 +756,8 @@
       "baslik": "Sünuhat",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "14 Küçük Kitaplar",
         "dosyalar": [
@@ -769,7 +793,8 @@
       "baslik": "Tulûat",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "diyanet",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
       "diyanet": {
         "klasor": "14 Küçük Kitaplar",
         "dosyalar": [
@@ -805,7 +830,8 @@
       "baslik": "İman ve Küfür Muvazeneleri",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr",
@@ -820,6 +846,7 @@
       "dil": "tr",
       "yon": "ltr",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "tr",
@@ -833,7 +860,8 @@
       "baslik": "İlk Eserler",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr",
@@ -847,7 +875,8 @@
       "baslik": "Âyetü'l-Kübra",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -861,7 +890,8 @@
       "baslik": "Bediüzzaman Cevap Veriyor",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -875,7 +905,8 @@
       "baslik": "Elhüccetüzzehra",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -889,7 +920,8 @@
       "baslik": "Ene ve Zerre",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -903,7 +935,8 @@
       "baslik": "Hakikat Nurları",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -917,7 +950,8 @@
       "baslik": "Haşir Risalesi",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -931,7 +965,8 @@
       "baslik": "Hastalar Risalesi",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -945,7 +980,8 @@
       "baslik": "Hizmet Rehberi",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -959,7 +995,8 @@
       "baslik": "İhlas Risaleleri",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -973,7 +1010,8 @@
       "baslik": "İhtiyarlar Risalesi",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -987,7 +1025,8 @@
       "baslik": "İkinci Şua",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1001,7 +1040,8 @@
       "baslik": "İman Hakikatleri",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1015,7 +1055,8 @@
       "baslik": "Küçük Sözler",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1030,6 +1071,7 @@
       "dil": "tr",
       "yon": "ltr",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1043,7 +1085,8 @@
       "baslik": "Meyve Risalesi",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1057,7 +1100,8 @@
       "baslik": "Miftahu'l-İman",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1071,7 +1115,8 @@
       "baslik": "Mirac ve Şakk-ı Kamer",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1085,7 +1130,8 @@
       "baslik": "Mirkatü's-Sünnet",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1099,7 +1145,8 @@
       "baslik": "Mu'cizât-ı Ahmediye",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1113,7 +1160,8 @@
       "baslik": "Mu'cizat-ı Kur'âniye",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1127,7 +1175,8 @@
       "baslik": "Münâcat",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1141,7 +1190,8 @@
       "baslik": "Nur Aleminin bir Anahtarı",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1155,7 +1205,8 @@
       "baslik": "On Üçüncü Şua",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1169,7 +1220,8 @@
       "baslik": "Otuzuncu Lem'a",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1183,7 +1235,8 @@
       "baslik": "Otuz Üç Pencere",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1197,7 +1250,8 @@
       "baslik": "Rahmet ve Şefkat İlaçları",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1211,7 +1265,8 @@
       "baslik": "Ramazan İktisat Şükür",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1225,7 +1280,8 @@
       "baslik": "Tabiat Risalesi",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1239,7 +1295,8 @@
       "baslik": "Uhuvvet Risalesi",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1253,7 +1310,8 @@
       "baslik": "Vesvese ve Hikmetü'l-İstiâze",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1267,7 +1325,8 @@
       "baslik": "Yirmi Dördüncü Mektup",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1281,7 +1340,8 @@
       "baslik": "Yirmi Üçüncü Söz",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1295,7 +1355,8 @@
       "baslik": "Zühretü'n-Nur",
       "dil": "tr",
       "yon": "ltr",
-      "metin_kaynagi": "derleme",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
       "diyanet": null,
       "rnk": {
         "raf": "tr_k",
@@ -1310,6 +1371,7 @@
       "dil": "ota",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "osm",
@@ -1324,6 +1386,7 @@
       "dil": "ota",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "osm",
@@ -1338,6 +1401,7 @@
       "dil": "ota",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "osm",
@@ -1352,6 +1416,7 @@
       "dil": "ota",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "osm",
@@ -1366,6 +1431,7 @@
       "dil": "ota",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "osm",
@@ -1380,6 +1446,7 @@
       "dil": "ota",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "osm",
@@ -1394,6 +1461,7 @@
       "dil": "ota",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "osm",
@@ -1408,6 +1476,7 @@
       "dil": "ota",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "osm",
@@ -1422,6 +1491,7 @@
       "dil": "ota",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "osm",
@@ -1436,6 +1506,7 @@
       "dil": "ota",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "osm",
@@ -1450,6 +1521,7 @@
       "dil": "ota",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "osm",
@@ -1464,6 +1536,7 @@
       "dil": "ota",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "osm",
@@ -1478,6 +1551,7 @@
       "dil": "ar",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "ar",
@@ -1492,6 +1566,7 @@
       "dil": "ar",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "ar",
@@ -1506,6 +1581,7 @@
       "dil": "ar",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "ar",
@@ -1520,6 +1596,7 @@
       "dil": "ar",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "ar",
@@ -1534,6 +1611,7 @@
       "dil": "ar",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "ar",
@@ -1548,6 +1626,7 @@
       "dil": "ar",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "ar",
@@ -1562,6 +1641,7 @@
       "dil": "ar",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "ar",
@@ -1576,6 +1656,7 @@
       "dil": "ar",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "ar",
@@ -1590,6 +1671,7 @@
       "dil": "ar",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "ar",
@@ -1604,6 +1686,7 @@
       "dil": "ar",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "ar",
@@ -1618,6 +1701,7 @@
       "dil": "ar",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "ar_k",
@@ -1632,6 +1716,7 @@
       "dil": "ar",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "ar_k",
@@ -1646,6 +1731,7 @@
       "dil": "ar",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "ar_k",
@@ -1660,6 +1746,7 @@
       "dil": "ar",
       "yon": "rtl",
       "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
       "diyanet": null,
       "rnk": {
         "raf": "ar_k",

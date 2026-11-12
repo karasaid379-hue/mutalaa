@@ -119,7 +119,8 @@ def test_dosya_bicimi_ve_kanonik_yazim() -> None:
 
 def test_87_kitap_ve_dagilim() -> None:
     assert len(TUM) == 87
-    assert Counter(k.metin_kaynagi for k in TUM) == {"diyanet": 25, "derleme": 34, "rnk": 28}
+    assert Counter(k.metin_kaynagi for k in TUM) == {"rnk": 87}  # K-51 madde 2: RNK birincil
+    assert Counter(k.diyanet_karsiligi for k in TUM) == {"diyanet": 25, "derleme": 34, "rnk": 28}
     assert Counter(k.dil for k in TUM) == {"tr": 61, "ota": 12, "ar": 14}
     assert Counter(k.yon for k in TUM) == {"ltr": 61, "rtl": 26}
 
@@ -184,7 +185,7 @@ def test_sunuhat_tuluat_isarat_uc_slug_tek_rnk_kitabi() -> None:
     assert [p.slug for p in bolunme.parcalar] == ["sunuhat", "tuluat", "isarat"]
     assert [p.baslangic_sayfasi for p in bolunme.parcalar] == [5, 71, 95]
     assert bolunme.son_sayfa == 111
-    assert all(k.dil == "tr" and k.metin_kaynagi == "diyanet" for k in uc)
+    assert all(k.dil == "tr" and k.diyanet_karsiligi == "diyanet" for k in uc)
 
 
 def test_isarat_tuzagi_rnk_isarat_isaratul_icaz_dir() -> None:
@@ -196,9 +197,9 @@ def test_isarat_tuzagi_rnk_isarat_isaratul_icaz_dir() -> None:
 
 
 def test_ilkeserler_ve_abed_rnk_katalogundadir() -> None:
-    assert HARITA["ilk-eserler"].metin_kaynagi == "derleme"
-    assert HARITA["asar-i-bediiyye"].metin_kaynagi == "rnk"
-    assert HARITA["latif-nukteler"].metin_kaynagi == "rnk"
+    assert HARITA["ilk-eserler"].diyanet_karsiligi == "derleme"
+    assert HARITA["asar-i-bediiyye"].diyanet_karsiligi == "rnk"
+    assert HARITA["latif-nukteler"].diyanet_karsiligi == "rnk"
     assert _rnk(HARITA["ilk-eserler"]) == ("tr", "ilkeserler")
     assert _rnk(HARITA["asar-i-bediiyye"]) == ("tr", "abed")
 
@@ -214,7 +215,7 @@ def test_emirdag_iki_kitap_belge_tablosuna_gore() -> None:
 
 
 def test_diyanet_kitaplari_14_buyuk_ve_11_kucuk() -> None:
-    diyanet = [k for k in TUM if k.metin_kaynagi == "diyanet"]
+    diyanet = [k for k in TUM if k.diyanet_karsiligi == "diyanet"]
     assert {k.slug for k in diyanet} == set(DIYANET_BUYUK) | set(DIYANET_KUCUK)
     assert all(k.diyanet is not None for k in diyanet)
     assert all(k.dil == "tr" for k in diyanet)
@@ -222,14 +223,15 @@ def test_diyanet_kitaplari_14_buyuk_ve_11_kucuk() -> None:
 
 def test_derleme_ve_rnk_kitaplarinin_diyanet_alani_bos() -> None:
     for k in TUM:
-        assert (k.diyanet is not None) == (k.metin_kaynagi == "diyanet")
+        assert (k.diyanet is not None) == (k.diyanet_karsiligi == "diyanet")
+        assert k.metin_kaynagi == "rnk"
 
 
 def test_rnk_metin_kaynagi_osmanlica_arapca_ve_iki_turkce() -> None:
-    rnk = {k.slug for k in TUM if k.metin_kaynagi == "rnk"}
+    rnk = {k.slug for k in TUM if k.diyanet_karsiligi == "rnk"}
     assert set(RNK_ONCELIKLI) <= rnk
     assert {k.slug for k in TUM if k.dil != "tr"} == rnk - set(RNK_ONCELIKLI)
-    derleme = [k for k in TUM if k.metin_kaynagi == "derleme"]
+    derleme = [k for k in TUM if k.diyanet_karsiligi == "derleme"]
     assert len(derleme) == 34
     assert all(k.dil == "tr" for k in derleme)
 
@@ -347,7 +349,7 @@ def test_belge_tablosundaki_slug_listesi_tabloda() -> None:
 
 def test_uretilen_slug_ornekleri() -> None:
     assert HARITA["iman-ve-kufur-muvazeneleri"].dil == "tr"
-    assert HARITA["hasir-risalesi"].metin_kaynagi == "derleme"
+    assert HARITA["hasir-risalesi"].diyanet_karsiligi == "derleme"
     assert HARITA["hasir-risalesi-arapca"].rnk is not None
 
 
@@ -361,7 +363,8 @@ def _satir(**degisen: Any) -> dict[str, Any]:
         "baslik": "Deneme Kitap",
         "dil": "tr",
         "yon": "ltr",
-        "metin_kaynagi": "derleme",
+        "metin_kaynagi": "rnk",
+        "diyanet_karsiligi": "derleme",
         "diyanet": None,
         "rnk": {"raf": "tr_k", "uid": "deneme", "ad": "Deneme Kitap"},
         "dogrulandi": False,
@@ -406,9 +409,11 @@ def test_yukleyici_depo_disi_yolu_reddeder(tmp_path: Path) -> None:
         ("yon", {"yon": "rtl"}),
         ("dil", {"dil": "fr"}),
         ("kaynak", {"metin_kaynagi": "baska"}),
-        ("ek-eksik", {"dil": "ota", "yon": "rtl", "metin_kaynagi": "rnk"}),
-        ("ota-diyanet-kaynakli", {"slug": "x-osmanlica", "dil": "ota", "yon": "rtl"}),
-        ("diyanet-alani-yok", {"metin_kaynagi": "diyanet"}),
+        ("kaynak-diyanet", {"metin_kaynagi": "diyanet"}),
+        ("karsilik", {"diyanet_karsiligi": "baska"}),
+        ("ek-eksik", {"dil": "ota", "yon": "rtl", "diyanet_karsiligi": "rnk"}),
+        ("ota-diyanet-karsilikli", {"slug": "x-osmanlica", "dil": "ota", "yon": "rtl"}),
+        ("diyanet-alani-yok", {"diyanet_karsiligi": "diyanet"}),
         ("diyanet-alani-fazla", {"diyanet": {"klasor": "01 K", "dosyalar": ["a.txt"]}}),
         ("rnk-yok", {"rnk": None}),
         ("raf-bilinmiyor", {"rnk": {"raf": "evr", "uid": "kuran", "ad": "x"}}),
@@ -430,7 +435,7 @@ def test_yukleyici_guvensiz_diyanet_adini_reddeder(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     for kotu in ("../x.txt", "a/b.txt", "C:x.txt", "/mutlak.txt"):
-        satir = _satir(metin_kaynagi="diyanet", diyanet={"klasor": "01 K", "dosyalar": [kotu]})
+        satir = _satir(diyanet_karsiligi="diyanet", diyanet={"klasor": "01 K", "dosyalar": [kotu]})
         assert "guvensiz" in str(_hata(tmp_path, monkeypatch, {"surum": 1, "kitaplar": [satir]}))
 
 

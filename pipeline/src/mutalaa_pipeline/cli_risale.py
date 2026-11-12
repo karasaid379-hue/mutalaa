@@ -1,4 +1,4 @@
-"""Risale komutlari (A20.1): `ingest risale`; `cli.py` yalniz `kaydet` cagirir."""
+"""Risale komutlari (A20.1, A20.1b): `ingest risale`; `cli.py` yalniz `kaydet` cagirir."""
 
 import sys
 from pathlib import Path
@@ -25,7 +25,10 @@ def kaydet(ingest_app: typer.Typer) -> None:
             str,
             typer.Option(
                 "--source",
-                help="Risale kaynagi: risale-asil-nusha (Diyanet, karsilastirma verisi).",
+                help=(
+                    "Risale kaynagi: risale-rnk-metin (RNK, birincil metin) ya da"
+                    " risale-asil-nusha (Diyanet, karsilastirma verisi)."
+                ),
             ),
         ],
         gelen_tarih: Annotated[
@@ -39,7 +42,7 @@ def kaydet(ingest_app: typer.Typer) -> None:
             bool,
             typer.Option(
                 "--kilit-oner",
-                help="Kilidin ilk degerlerini gelen zip'ten yazdirir; hicbir sey yazmaz.",
+                help="Kilidin ilk degerlerini gelen dosyalardan yazdirir; hicbir sey yazmaz.",
             ),
         ] = False,
         dry_run: Annotated[
@@ -57,13 +60,18 @@ def kaydet(ingest_app: typer.Typer) -> None:
         ] = None,
         kok: KokSecenegi = None,
     ) -> None:
-        """Gelen Diyanet zip'ini kilitle karsilastirir, raw'a alir, staged uretir (cikis 0, 2)."""
+        """Gelen Risale dosyalarini kilitle karsilastirir, raw'a alir, staged uretir (cikis 0, 2).
+
+        `risale-rnk-metin`: RNK txt + json (85 kitap). `risale-asil-nusha`: Diyanet zip'i.
+        """
         from mutalaa_pipeline.config import ayarlar_yukle
-        from mutalaa_pipeline.ingest import risale_diyanet
+        from mutalaa_pipeline.ingest import risale_diyanet, risale_rnk_kaynaklari
 
         try:
             if not risale_kaynaklari.risale_mi(source):
-                raise GirdiHatasi("ingest risale: bilinmeyen Risale kaynagi (risale-asil-nusha)")
+                raise GirdiHatasi(
+                    "ingest risale: bilinmeyen Risale kaynagi (risale-rnk-metin, risale-asil-nusha)"
+                )
             if limit is not None:
                 raise GirdiHatasi(
                     "--limit Risale alimi icin desteklenmez (kismi alim kilidi bozar)"
@@ -71,17 +79,25 @@ def kaydet(ingest_app: typer.Typer) -> None:
             if kilit_oner:
                 if dry_run or force:
                     raise GirdiHatasi("--kilit-oner ile --dry-run ve --force verilmez")
-                metin = risale_diyanet.kilit_oner_metni(
-                    ayarlar_yukle(config).veri_kok, kok_coz(kok), gelen_tarih
-                )
+                if source == risale_kaynaklari.KAYNAK_RNK:
+                    metin = risale_rnk_kaynaklari.kilit_oner_metni(
+                        ayarlar_yukle(config).veri_kok, gelen_tarih
+                    )
+                else:
+                    metin = risale_diyanet.kilit_oner_metni(
+                        ayarlar_yukle(config).veri_kok, kok_coz(kok), gelen_tarih
+                    )
                 sys.stdout.buffer.write(metin.encode("utf-8"))  # LF (Windows CRLF yazar)
                 sys.stdout.buffer.flush()
                 return
         except GirdiHatasi as hata:
             typer.echo(f"hata: {hata}", err=True)
             raise typer.Exit(code=cikis.GIRDI_HATASI) from hata
-        kod = risale_diyanet.komut_ingest_risale(
-            gelen_tarih=gelen_tarih, dry_run=dry_run, force=force, config=config, kok=kok
+        komut = (
+            risale_rnk_kaynaklari.komut_ingest_rnk
+            if source == risale_kaynaklari.KAYNAK_RNK
+            else risale_diyanet.komut_ingest_risale
         )
+        kod = komut(gelen_tarih=gelen_tarih, dry_run=dry_run, force=force, config=config, kok=kok)
         if kod != cikis.BASARILI:
             raise typer.Exit(code=kod)
