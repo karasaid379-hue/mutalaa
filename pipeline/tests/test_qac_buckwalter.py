@@ -88,3 +88,22 @@ def test_bozuk_sayfa_reddedilir() -> None:
     assert ikiz != parca
     with pytest.raises(BuckwalterHatasi):  # ayni ASCII karakter iki satirda
         tablo_ayristir(ikiz)
+
+
+# Arapca yazi bloklari: Arapca, Arapca Ek, Sunum Bicimleri-A ve -B.
+ARAPCA_ARALIKLARI = (
+    range(0x0600, 0x0700),
+    range(0x0750, 0x0780),
+    range(0xFB50, 0xFE00),
+    range(0xFE70, 0xFF00),
+)
+
+
+def test_enrich_kaynaklarinda_arapca_harf_kod_noktasi_yok() -> None:
+    """`enrich/*.py` kaynaginda dogrudan Arapca harf bulunmaz (ornekler dahil)."""
+    dosyalar = sorted((PAKET_KOKU / "enrich").glob("*.py"))
+    assert dosyalar
+    for dosya in dosyalar:
+        kaynak = dosya.read_bytes().decode("utf-8")
+        bulunan = [c for c in kaynak if any(ord(c) in aralik for aralik in ARAPCA_ARALIKLARI)]
+        assert not bulunan, f"{dosya.name}: {len(bulunan)} Arapca kod noktasi"

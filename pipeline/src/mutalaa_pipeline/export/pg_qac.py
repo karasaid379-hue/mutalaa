@@ -304,9 +304,10 @@ def dalga_satirlarini_oku(veri: bytes) -> list[DalgaSatiri]:
 def kelime_satirlarini_oku(veri: bytes) -> list[QacKelimesi]:
     satirlar: list[QacKelimesi] = []
     gorulen: set[str] = set()
+    surum = ""
     for s in satirlari_oku(veri, KELIMELER_ADI):
         _alan_kumesi(s, KELIME_ALANLARI)
-        _sabitler(s, "")
+        surum = _sabitler(s, surum)
         capa = s.metin("anchor")
         try:
             ref = anchor_parse(capa)

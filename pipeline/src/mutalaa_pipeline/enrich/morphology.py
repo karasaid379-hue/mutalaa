@@ -247,8 +247,8 @@ def lemma_metni(qac_ref: str, sira: int) -> tuple[str, str, int | None]:
 
 
 def kok_harfleri(letters_bw: str, sira: int) -> str:
-    """Kok harfleri: her Buckwalter harfi Arapcaya cevrilir, aralarina U+0020 konur ('ص ب ر');
-    `kanonik_metin` bir kez uygulanir."""
+    """Kok harfleri: her Buckwalter harfi Arapcaya cevrilir, aralarina U+0020 konur (ornek girdi
+    "bkt": uc harf, aralarinda iki bosluk); `kanonik_metin` bir kez uygulanir."""
     try:
         return kanonik_metin(" ".join(bw_arapca(h) for h in letters_bw))
     except BuckwalterHatasi:

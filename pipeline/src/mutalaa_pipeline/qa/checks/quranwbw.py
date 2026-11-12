@@ -43,6 +43,7 @@ from mutalaa_pipeline.qa.checks.qac import (
     _g,
     _kelime_konumu,
     _satir_farki,
+    ayet_capalari,
 )
 from mutalaa_pipeline.qa.checks.tanzil import KapiSonucu
 from mutalaa_pipeline.sources.kayit import Kaynak
@@ -158,8 +159,8 @@ def g_but(g: QuranwbwGirdisi) -> KapiSonucu:
     ]
     if sure_farki or set(sure_ayet) - set(range(1, SURE_SAYISI + 1)):
         bulgular.append(f"sure basina ayet sayisi tablodan farkli: {len(sure_farki)} sure")
-    kelime_farki = sorted(
-        f"q:{s}:{a}"
+    kelime_farki = ayet_capalari(
+        (s, a)
         for (s, a) in ayetler.keys() | qac_ayetler.keys()
         if ayetler.get((s, a)) != qac_ayetler.get((s, a))
     )

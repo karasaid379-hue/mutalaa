@@ -23,14 +23,14 @@ G-NOR bu kaynakta YOKTUR (arama metni uretilmez; gerekli kapilar `qa/__init__.py
 """
 
 from collections import Counter
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 from typing import Final
 
 from mutalaa_pipeline import lineage
-from mutalaa_pipeline.anchor import AnchorError, Q, parse, sort_key
+from mutalaa_pipeline.anchor import AnchorError, AnchorRef, Q, parse, sort_key
 from mutalaa_pipeline.anchor import format as anchor_format
 from mutalaa_pipeline.anchor.ayet_sayilari import AYET_SAYILARI
 from mutalaa_pipeline.enrich.morphology import (
@@ -115,6 +115,24 @@ def _capalar(capalar: Sequence[str]) -> str:
     gosterilen = ", ".join(_g(c) for c in capalar[:ORNEK_CAPA])
     fazla = len(capalar) - ORNEK_CAPA
     return gosterilen + (f" (+{fazla})" if fazla > 0 else "")
+
+
+def ayet_capalari(ciftler: Iterable[tuple[int, int]]) -> list[str]:
+    """`(sure, ayet)` ciftlerinin okuma sirasinda (sayisal: `q:10:1`, `q:2:1`den sonra).
+
+    Bicimleme yalniz `mutalaa_pipeline.anchor` ile; gecersiz cift (aralik disi sure/ayet) capa
+    uretemez ve `gecersiz:{sure}:{ayet}` etiketiyle sona yazilir.
+    """
+    gecerli: list[str] = []
+    gecersiz: list[str] = []
+    for sure, ayet in sorted(set(ciftler)):
+        try:
+            capa = anchor_format(AnchorRef(Q(sure, ayet)))
+            parse(capa)  # aralik denetimi (bicimleyici sure/ayet araligini sinamaz)
+            gecerli.append(capa)
+        except (AnchorError, ValueError):
+            gecersiz.append(f"gecersiz:{sure}:{ayet}")
+    return gecerli + gecersiz
 
 
 def _bos(metin: str) -> bool:
@@ -274,8 +292,8 @@ def g_but(g: QacGirdisi) -> KapiSonucu:
     ]
     if sure_farki or set(sure_ayet) - set(range(1, sure_sayisi + 1)):
         bulgular.append(f"sure basina ayet sayisi tablodan farkli: {len(sure_farki)} sure")
-    kelime_farki = sorted(
-        f"q:{s}:{a}"
+    kelime_farki = ayet_capalari(
+        (s, a)
         for (s, a) in qac_ayetler.keys() | tanzil_ayetler.keys()
         if qac_ayetler.get((s, a)) != tanzil_ayetler.get((s, a))
     )
@@ -321,8 +339,8 @@ def _bosluklu_ayetler(g: QacGirdisi) -> list[str]:
         sure, ayet, kelime = s.veri.get("surah"), s.veri.get("ayah"), s.veri.get("word")
         if isinstance(sure, int) and isinstance(ayet, int) and isinstance(kelime, int):
             numaralar.setdefault((sure, ayet), []).append(kelime)
-    return sorted(
-        f"q:{s}:{a}" for (s, a), n in numaralar.items() if sorted(n) != list(range(1, len(n) + 1))
+    return ayet_capalari(
+        (s, a) for (s, a), n in numaralar.items() if sorted(n) != list(range(1, len(n) + 1))
     )
 
 
