@@ -30,6 +30,7 @@ shared/test-vectors/
                                `uv run mutalaa export test-vectors --fts-ornekleri` ile Arama §3 tablosundan üretilir
   arama/olcum.jsonl            arama ölçüm kümesi (id, kategori, sorgu, beklenen); A28, A33; koşucular atlar
   extract/meal.jsonl           çıkarılmış metin (Elmalılı meal) dönüşümü: sentetik wikitext/JSON → âyet parçaları; yalnız Python koşar (K-49 madde 13)
+  extract/risale-cumle.jsonl   Risale cümle ayırıcı (rc-): sentetik paragraf (+ isteğe bağlı Arapça `ar` aralıkları) → kod noktası, yarı açık cümle aralıkları; yalnız Python koşar (K-51 madde 8)
 ```
 
 ## Biçim
@@ -59,6 +60,8 @@ Vektörler hattın `uv run mutalaa export test-vectors` komutuyla üretilebilir;
 **İstisna (K-44):** `fts-query/query.jsonl` yalnız TypeScript'te, `normalize/tr-govde.jsonl` TypeScript ve Python'da koşar (C#'ta gövdeleyici ve sorgu kurucusu yoktur). Python ve C# koşucuları bu dosyaları açıkça atlar; her vektör dosyasının ya koşulan ya atlanan listede olduğunu `pipeline/tests/test_vektor_dosyalari.py` ve `server/tests/Mutalaa.Domain.Tests/VectorCoverageTests.cs` sınar. Sorgu kurucusu `stem` işlevine DAR sözcüğü verir; `stems` eşlemesi dar sözcükle anahtarlanır.
 
 **İstisna (K-49 madde 13):** `extract/meal.jsonl` çıkarılmış metin dönüşümünü tanımlar; çıkarımı yalnız hat yaptığı için vektörü yalnız Python koşar, TypeScript ve C# koşucuları dosyayı açıkça atlar (aynı kapsam testleri sınar). Girdiler açıkça sentetiktir ("Deneme meal parçası 1" gibi); gerçek meal metni vektöre girmez. İlk kayıt adımları (NFC, `content_hash`) üç dilde `content-hash/hash.jsonl` ile sınanmaya devam eder.
+
+**İstisna (K-51 madde 8):** `extract/risale-cumle.jsonl` Risale cümle ayırıcısını (`anchor/cumle.py`, `CUMLE_SURUMU`) tanımlar; cümle sınırlarını yalnız hat hesaplar (cihaz `sentences` alanını paketten okur), bu yüzden vektörü yalnız Python koşar; C# `VectorCoverageTests` dosyayı açıkça atlar, TypeScript koşucusu yoktur. Girdiler sentetiktir ("Deneme cümlesi 1." ve Arap alfabe harfleri, `\u` kaçışlı); aralıklar kod noktasıdır ve yarı açıktır `[bas, son)`; satır biçimi `{metin, ar?}` → `{cumleler: [[bas, son], …]}` (`shared/test-vectors/scripts/check-lib.mjs` denetler).
 
 ## Koşucular
 

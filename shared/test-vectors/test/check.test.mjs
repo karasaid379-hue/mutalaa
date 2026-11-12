@@ -372,6 +372,7 @@ const NA = 'normalize/ar.jsonl';
 const NG = 'normalize/tr-govde.jsonl';
 const FQ = 'fts-query/query.jsonl';
 const EM = 'extract/meal.jsonl';
+const RC = 'extract/risale-cumle.jsonl';
 
 /**
  * @param {string} text
@@ -2005,8 +2006,141 @@ const extractMealRejected = [
   ],
 ];
 
-fieldAccepted.push(...normalizeAccepted, ...stemQueryAccepted, ...extractMealAccepted);
-fieldRejected.push(...normalizeRejected, ...stemQueryRejected, ...extractMealRejected);
+// extract/risale-cumle.jsonl (K-51 item 8): synthetic paragraph, code point ranges, half open.
+// The file must carry Arabic and BMP-external characters as escapes (escapes rule), so the
+// accepted cases write every non-ASCII UTF-16 code unit as \uXXXX.
+/**
+ * @param {...Row} rows
+ * @returns {string} JSONL text with every non-ASCII code unit escaped
+ */
+function jsonlEsc(...rows) {
+  return jsonl(...rows).replace(
+    /[\u0080-￿]/g,
+    (unit) => `\\u${unit.charCodeAt(0).toString(16).padStart(4, '0')}`,
+  );
+}
+
+/** @type {Row} */
+const rcRow = {
+  id: 'rc-0001',
+  input: { metin: 'Deneme 1. Deneme 2.' },
+  expected: {
+    cumleler: [
+      [0, 9],
+      [10, 19],
+    ],
+  },
+  note: 'sentetik girdi',
+};
+
+/** @type {Row} */
+const rcArabic = {
+  id: 'rc-0002',
+  input: { metin: 'Deneme \u0627\u0628. \u062a\u062b sonu.', ar: [[7, 13]] },
+  expected: { cumleler: [[0, 19]] },
+};
+
+/** @type {[string, string, string][]} */
+const risaleSentenceAccepted = [
+  ['risale-cumle-minimal', RC, jsonlEsc(rcRow)],
+  ['risale-cumle-with-ar-ranges', RC, jsonlEsc(rcRow, rcArabic)],
+  [
+    'risale-cumle-no-sentences',
+    RC,
+    jsonlEsc(patch(patch(rcRow, 'input.metin', ''), 'expected.cumleler', [])),
+  ],
+  [
+    'risale-cumle-astral-counts-code-points',
+    RC,
+    jsonlEsc(patch(patch(rcRow, 'input.metin', 'a \u{1D400}.'), 'expected.cumleler', [[0, 4]])),
+  ],
+];
+
+/** @type {[string, string, string, Expect[]][]} */
+const risaleSentenceRejected = [
+  [
+    'risale-cumle-missing-text',
+    RC,
+    jsonlEsc(patch(rcRow, 'input.metin', undefined)),
+    [[/^input: missing key "metin"$/, 1]],
+  ],
+  [
+    'risale-cumle-missing-ranges',
+    RC,
+    jsonlEsc(patch(rcRow, 'expected.cumleler', undefined)),
+    [[/^expected: missing key "cumleler"$/, 1]],
+  ],
+  [
+    'risale-cumle-range-not-pair',
+    RC,
+    jsonlEsc(patch(rcRow, 'expected.cumleler', [[0, 9], [10]])),
+    [[/^expected\.cumleler\[1\]: must be an array of 2 non-negative integers/, 1]],
+  ],
+  [
+    'risale-cumle-empty-range',
+    RC,
+    jsonlEsc(
+      patch(rcRow, 'expected.cumleler', [
+        [0, 9],
+        [10, 10],
+      ]),
+    ),
+    [[/^expected\.cumleler\[1\]: must satisfy start < end <= 19/, 1]],
+  ],
+  [
+    'risale-cumle-end-past-text',
+    RC,
+    jsonlEsc(
+      patch(rcRow, 'expected.cumleler', [
+        [0, 9],
+        [10, 20],
+      ]),
+    ),
+    [[/^expected\.cumleler\[1\]: must satisfy start < end <= 19/, 1]],
+  ],
+  [
+    'risale-cumle-overlap',
+    RC,
+    jsonlEsc(
+      patch(rcRow, 'expected.cumleler', [
+        [0, 9],
+        [8, 19],
+      ]),
+    ),
+    [[/^expected\.cumleler\[1\]: must start at or after the end of the previous range/, 1]],
+  ],
+  [
+    'risale-cumle-ar-past-text',
+    RC,
+    jsonlEsc(patch(rcArabic, 'input.ar', [[7, 40]])),
+    [[/^input\.ar\[0\]: must satisfy start < end <= 19/, 1]],
+  ],
+  [
+    'risale-cumle-raw-arabic',
+    RC,
+    jsonl(patch(patch(rcRow, 'input.metin', 'a \u0627'), 'expected.cumleler', [[0, 3]])),
+    [[/^raw U\+0627 \(Arabic block\) must be written as \\u0627$/, 1]],
+  ],
+  [
+    'risale-cumle-ids-out-of-order',
+    RC,
+    jsonlEsc(rcArabic, rcRow),
+    [[/^id "rc-0001" is out of order/, 2]],
+  ],
+];
+
+fieldAccepted.push(
+  ...normalizeAccepted,
+  ...stemQueryAccepted,
+  ...extractMealAccepted,
+  ...risaleSentenceAccepted,
+);
+fieldRejected.push(
+  ...normalizeRejected,
+  ...stemQueryRejected,
+  ...extractMealRejected,
+  ...risaleSentenceRejected,
+);
 
 describe('test-vectors field checks (recognized files)', () => {
   const fieldScratch = fileURLToPath(new URL('../../../.tmp/vektor-test-alan/', import.meta.url));
@@ -2058,10 +2192,10 @@ describe('test-vectors field checks (recognized files)', () => {
     rmSync(fieldScratch, { recursive: true, force: true });
   });
 
-  it('recognizes exactly the twelve files of the specification', () => {
+  it('recognizes exactly the thirteen files of the specification', () => {
     assert.deepEqual(
       [...VECTOR_KINDS].sort(),
-      [CM, CT, I, RO, V, CH, OF, NT, NA, NG, FQ, EM].sort(),
+      [CM, CT, I, RO, V, CH, OF, NT, NA, NG, FQ, EM, RC].sort(),
     );
   });
 

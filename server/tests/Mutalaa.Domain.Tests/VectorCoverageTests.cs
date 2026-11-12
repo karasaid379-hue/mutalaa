@@ -30,6 +30,8 @@ public class VectorCoverageTests
         ["normalize/tr-govde.jsonl"] = "C#'ta govdeleyici yok",
         // Cikarilmis metin (Elmalili meali) donusumunu yalniz hat yapar; vektoru yalniz Python kosar (K-49 madde 13).
         ["extract/meal.jsonl"] = "yalniz Python kosar (cikarim yalniz hatta)",
+        // Risale cumle ayirici (K-51 madde 8) yalniz hatta yazilir; vektoru yalniz Python kosar.
+        ["extract/risale-cumle.jsonl"] = "yalniz Python kosar (cumle sinirlari yalniz hatta hesaplanir)",
     };
 
     // Acikca atlanan klasorler (on ek). arama/ olcum kumesidir (basari olcusu); dosyalari henuz yok, kural ileriye donuktur.
