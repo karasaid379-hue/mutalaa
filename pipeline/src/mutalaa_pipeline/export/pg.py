@@ -54,6 +54,7 @@ from mutalaa_pipeline.anchor import parse as anchor_parse
 from mutalaa_pipeline.config import Ayarlar
 from mutalaa_pipeline.db import VeritabaniHatasi, baglan
 from mutalaa_pipeline.enums import SourceKind
+from mutalaa_pipeline.export import pg_kelime
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kati_json
 from mutalaa_pipeline.ingest import fikstur as fikstur_uretec
 from mutalaa_pipeline.ingest.meal_kaynaklari import MEAL_KAYNAKLARI, meal_mi
@@ -81,6 +82,8 @@ EK_KAYNAKLAR: Final[Mapping[str, tuple[str, ...]]] = {
     "tanzil-uthmani": ("tanzil-simple-clean",),
     "tanzil-ust-veri": (),  # yapi verisi: quran_marker ve page_map (export/pg_yapi.py)
     "sure-adlari-vikipedi": (),  # sure adi adaylari: surah_alias ve review (pg_sure_adlari.py)
+    "qac-morfoloji": (),  # A17.3: root, lemma, lemma_dalga, quran_word QAC sutunlari (pg_qac.py)
+    "quranwbw-tr": (),  # A17.6: lemma_gloss adaylari ve review (pg_glosses.py)
     "test-kucuk": (),  # sentetik kitap fiksturu (A13.6; pg_fikstur.py)
     "test-tefsir-ornek": (),  # sentetik tefsir fiksturu (A13.6; pg_fikstur.py)
     "test-ses": (),  # sentetik ses fiksturu: yalniz source satiri (A13.6)
@@ -709,6 +712,8 @@ def hazirla(
     ctx: RunContext, source_id: str, run: str | None, ek_kaynaklar: Sequence[str]
 ) -> Hazirlik:
     """Veritabanina dokunmadan tum dosya onkosullarini denetler."""
+    if (ozel := pg_kelime.hazirla(ctx, source_id, run, ek_kaynaklar)) is not None:  # A17
+        return ozel
     if source_id in YAPI_KAYNAKLARI:
         from mutalaa_pipeline.export import pg_yapi
 
@@ -1099,7 +1104,9 @@ def _yukle(conn: psycopg.Connection, ctx: RunContext, h: Hazirlik) -> dict[str, 
     manifest = _manifest_kur(h)
     _pipeline_run_yaz(conn, ctx, h, "calisiyor", manifest)
     sayilar = _source_satirlari(conn, h)
-    if h.yapi:
+    if pg_kelime.ozel_mi(h):  # A17: qac-morfoloji ve quranwbw-tr (kaynak satiri yukarida yazildi)
+        sayilar.update(pg_kelime.yukle(conn, ctx, h))
+    elif h.yapi:
         from mutalaa_pipeline.export import pg_yapi
 
         sayilar.update(pg_yapi.yukle(conn, h))

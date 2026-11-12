@@ -31,6 +31,9 @@ def kaydet(app: typer.Typer, ingest_app: typer.Typer) -> None:
     """`ingest qac` komutunu ve `enrich` grubunu (`enrich morphology`) uygulamaya ekler."""
     enrich_app = typer.Typer(no_args_is_help=True, help="Zenginlestirme: QAC morfolojisi.")
     app.add_typer(enrich_app, name="enrich")
+    from mutalaa_pipeline import cli_quranwbw  # dairesel ice aktarma olmasin: islev icinde
+
+    cli_quranwbw.kaydet(ingest_app, enrich_app)  # A17.6: ingest quranwbw-tr, enrich glosses
 
     @ingest_app.command("qac")
     def ingest_qac(

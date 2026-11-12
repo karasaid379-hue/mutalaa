@@ -208,7 +208,7 @@ def test_qa_ikinci_kosu_ayni_ozet(qz: QacZinciri) -> None:
         for r in sorted((qz.z.veri_kok / "reports").glob("*.json"))
         if not r.name.endswith("-capraz.json")
     ]
-    qa = [r for r in raporlar if r["komut"] == "qa run" and r.get("kaynak") == KAYNAK]
+    qa = [r for r in raporlar if r.get("komut") == "qa run" and r.get("kaynak") == KAYNAK]
     assert len(qa) == 2
     anahtarlar = ("kapilar", "kapi_bulgulari", "kapi_sayilari", "olcumler", "anchor_run_id")
     assert all(qa[0][a] == qa[1][a] for a in anahtarlar)

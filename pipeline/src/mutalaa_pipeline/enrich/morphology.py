@@ -532,16 +532,20 @@ def uret(segmentler: Sequence[Segment], cuz_basi: tuple[int, int], surum: str) -
 # --- kimlik ------------------------------------------------------------------------------
 
 
-def kimlik_ata(mevcut: Mapping[str, int], siralanmis_anahtarlar: Sequence[str]) -> dict[str, int]:
+def kimlik_ata(
+    mevcut: Mapping[str, int], siralanmis_anahtarlar: Sequence[str], taban: int = 0
+) -> dict[str, int]:
     """Kalici kimlik atamasi (DB'siz): var olan anahtarin kimligi korunur; yeni anahtara
     `max(id) + 1`'den baslayarak, verilen (ilk gecis) sirasiyla ardisik kimlik verilir.
+    `taban`: tablodaki oteki satirlarin (ornegin Turkce lemmalar) en buyuk kimligi; yeni kimlik
+    onu da asar.
 
     Ayni girdi ayni sonucu verir: bos mevcutta kimlikler 1'den ilk gecis sirasiyla, ikinci
     calistirmada (mevcut = onceki sonuc) hicbir kimlik degismez. Yinelenen anahtar `ValueError`.
     """
     if len(set(siralanmis_anahtarlar)) != len(siralanmis_anahtarlar):
         raise ValueError("yinelenen anahtar")
-    siradaki = max(mevcut.values(), default=0) + 1
+    siradaki = max(max(mevcut.values(), default=0), taban) + 1
     sonuc: dict[str, int] = {}
     for anahtar in siralanmis_anahtarlar:
         if anahtar in mevcut:

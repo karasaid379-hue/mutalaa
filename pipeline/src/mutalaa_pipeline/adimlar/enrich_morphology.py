@@ -29,11 +29,13 @@ from pathlib import Path
 from typing import Final
 
 from mutalaa_pipeline import cikis, lineage
+from mutalaa_pipeline.enrich.dalga_raporu import dalga_raporu
 from mutalaa_pipeline.enrich.morphology import (
     DALGA0_ETIKETLERI,
     cuz_baslangici,
     uret,
 )
+from mutalaa_pipeline.enrich.rapor import yan_rapor_yaz
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest import tanzil_ust_veri
 from mutalaa_pipeline.ingest.qac import KAYNAK, ayristir
@@ -147,6 +149,8 @@ def run_enrich_morphology(ctx: RunContext) -> EnrichSonucu:
             "sayilar": sayilar,
         },
     )
+    # A17.5: dalga tablosu raporu (yalniz sayi; data/reports/{run_id}-dalga.json)
+    yan_rapor_yaz(ctx, "dalga", dalga_raporu(envanter, dalgalar, cuz_basi, KAYNAK, surum))
     ctx.gunluk.yaz("INFO", "enrich_morphology_bitti", source_id=KAYNAK)
     return EnrichSonucu(ctx.run_id, False, envanter.kelime_sayisi, klasor)
 

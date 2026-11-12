@@ -37,6 +37,7 @@ from mutalaa_pipeline.qa import (
     KAPILAR,
     QA_KOMUTU,
     QAC_KAYNAGI,
+    QURANWBW_KAYNAGI,
     SURE_ADI_KAYNAGI,
     UST_VERI_KAYNAGI,
 )
@@ -285,6 +286,10 @@ def komut_qa_run(
         from mutalaa_pipeline.qa.run_qac import komut_qa_run_qac
 
         return komut_qa_run_qac(run=run, gate=gate, config=config, kok=kok)
+    if source == QURANWBW_KAYNAGI:  # QuranWBW kelime anlami: G-KAY, G-BUT, G-CAP (A17.6)
+        from mutalaa_pipeline.qa.run_quranwbw import komut_qa_run_quranwbw
+
+        return komut_qa_run_quranwbw(run=run, gate=gate, config=config, kok=kok)
     if meal_mi(source):  # iki meal: bes kapi (G-HIZ dahil; A16.3)
         from mutalaa_pipeline.qa.run_meal import komut_qa_run_meal
 
