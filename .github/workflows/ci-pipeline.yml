@@ -56,7 +56,8 @@ env:
 
 jobs:
   python:
-    timeout-minutes: 15
+    # 3203 tests: pytest alone takes ~11.5 min on Linux and more on Windows (A17 run hit 15).
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -97,7 +98,7 @@ jobs:
     # The `veritabani` tests (export pg against the editorial schema) need PostgreSQL; the schema is
     # the snapshot the .NET tests keep equal to the EF model. A missing database fails the run
     # (MUTALAA_DEGISMEZLIK_ZORUNLU) instead of skipping. Service containers need a Linux runner.
-    timeout-minutes: 10
+    timeout-minutes: 20
     runs-on: ubuntu-24.04
     services:
       postgres:
