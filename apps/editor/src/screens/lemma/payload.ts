@@ -1,6 +1,6 @@
 import { tryParse } from '@mutalaa/anchors';
 import { isRecord, readArray, readBoolean, readNumber, readString } from '@/lib/payload';
-import type { ReviewItem } from '@/review/types';
+import type { ReviewDetail, ReviewItem } from '@/review/types';
 
 // Readers of the opaque JSON of a word meaning review (`onceki`, `onerilen`, `duzenlenen`, `yz_kaydi`).
 // The API types these `unknown`, and the lemma payload shape is not fixed by the contract yet; the fields
@@ -171,4 +171,13 @@ export function isReadyCandidate(review: CandidateSource): boolean {
 /** Whether a text has Arabic letters (the four Arabic blocks); other values are shown as technical left to right text. */
 export function hasArabicLetters(text: string): boolean {
   return /[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]/u.test(text);
+}
+
+/** The lemma id of the review's target: the snapshot's `lemma_id`, else the numeric target key; null when neither is one. */
+export function readLemmaId(review: ReviewDetail): number | null {
+  const fromTarget = review.hedef?.lemma_id;
+  if (typeof fromTarget === 'number') return fromTarget;
+  return /^[0-9]+$/.test(review.hedef_anahtar) && Number.isSafeInteger(Number(review.hedef_anahtar))
+    ? Number(review.hedef_anahtar)
+    : null;
 }

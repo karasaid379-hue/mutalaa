@@ -43,6 +43,13 @@ export interface QueueLayoutProps {
    * is added (for queues whose filter changes under the user's hands; a decision's own message is not replaced).
    */
   announceCount?: boolean;
+  /**
+   * Screen-side filter of the loaded records (for a criterion the API cannot filter by). Only the loaded pages are
+   * filtered; `filteredEmpty` is shown when records are loaded but none passes.
+   */
+  itemFilter?: (item: ReviewItem) => boolean;
+  /** Shown when `itemFilter` leaves no record of the loaded ones. */
+  filteredEmpty?: ReactNode;
   /** Extra content inside the link of a row, under the badges (for example the source of the record). */
   renderItemMeta?: (item: ReviewItem) => ReactNode;
   /** Extra content after the link of a row (for example a selection checkbox); it is not inside the link. */
@@ -53,6 +60,8 @@ export interface QueueLayoutProps {
    */
   renderListHeader?: (context: {
     items: readonly ReviewItem[];
+    /** How many records are loaded before `itemFilter` (equal to `items.length` without a filter). */
+    loadedCount: number;
     focusList: () => void;
   }) => ReactNode;
   /** The detail of the selected record. */
@@ -77,6 +86,8 @@ export function QueueLayout({
   pageSize,
   loadAll = false,
   announceCount = false,
+  itemFilter,
+  filteredEmpty,
   renderItem,
   renderItemMeta,
   renderListHeader,
@@ -95,7 +106,14 @@ export function QueueLayout({
     reviewListOptions,
   );
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = list;
-  const items = useMemo(() => list.data?.pages.flatMap((page) => page.items) ?? [], [list.data]);
+  const loadedItems = useMemo(
+    () => list.data?.pages.flatMap((page) => page.items) ?? [],
+    [list.data],
+  );
+  const items = useMemo(
+    () => (itemFilter ? loadedItems.filter(itemFilter) : loadedItems),
+    [loadedItems, itemFilter],
+  );
 
   const detail = api.$api.useQuery('get', REVIEW_PATH, reviewDetailInit(selectedId ?? 0), {
     enabled: selectedId !== null,
@@ -112,7 +130,7 @@ export function QueueLayout({
   // The count is spoken when the filter changes or a page arrives, not on every change of the list (a decision
   // removes a row and has its own announcement).
   const announce = useAnnounce();
-  const announceLoaded = useEffectEvent(() => announce(tr.queue.loadedCount(items.length)));
+  const announceLoaded = useEffectEvent(() => announce(tr.queue.loadedCount(loadedItems.length)));
   const settled = !list.isPending && !list.isError;
   const filterKey = JSON.stringify(filter);
   useEffect(() => {
@@ -151,7 +169,11 @@ export function QueueLayout({
           aria-label={tr.queue.listLabel}
           className="flex flex-col gap-3 outline-none"
         >
-          {renderListHeader?.({ items, focusList: () => listEl?.focus() })}
+          {renderListHeader?.({
+            items,
+            loadedCount: loadedItems.length,
+            focusList: () => listEl?.focus(),
+          })}
           {list.isPending ? (
             <div className="flex flex-col gap-2" data-testid="queue-loading">
               <Skeleton className="h-12" />
@@ -166,6 +188,10 @@ export function QueueLayout({
                 {tr.ui.retry}
               </Button>
             </div>
+          ) : loadedItems.length > 0 && items.length === 0 ? (
+            <p className="text-sm text-muted-foreground" data-testid="queue-filtered-empty">
+              {filteredEmpty}
+            </p>
           ) : items.length === 0 ? (
             <Empty data-testid="queue-empty">
               <EmptyHeader>
@@ -207,8 +233,10 @@ export function QueueLayout({
               {isFetchingNextPage ? tr.ui.loadingMore : tr.ui.loadMore}
             </Button>
           ) : null}
-          {!list.isPending && !list.isError && items.length > 0 ? (
-            <p className="text-xs text-muted-foreground">{tr.queue.loadedCount(items.length)}</p>
+          {!list.isPending && !list.isError && loadedItems.length > 0 ? (
+            <p className="text-xs text-muted-foreground">
+              {tr.queue.loadedCount(loadedItems.length)}
+            </p>
           ) : null}
         </section>
 

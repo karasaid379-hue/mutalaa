@@ -3,7 +3,7 @@
 // not Quran text.
 import type { components } from '@/api/schema';
 import { ok, type FakeApi } from './fake-api';
-import { reviewDetail, reviewItem } from './fixtures';
+import { OTHER_EMAIL, reviewDetail, reviewItem } from './fixtures';
 
 type S = components['schemas'];
 
@@ -214,4 +214,91 @@ export function lemmaHandlers(fake: FakeApi, info: S['LemmaDetailResponse'] = le
     return ok(id >= 200 ? fixDetail(id) : id >= 100 ? lemmaDetail(id) : glossDetail(id));
   });
   fake.get('/api/v1/lemmas/{id}', ok(info));
+}
+
+// --- Turkish lemma root mapping reviews (A18.2): made-up Turkish words, ids and Arabic letter sequences. ---
+
+/** The editor who proposed an objection (not the signed-in test editor). */
+const OBJECTOR = OTHER_EMAIL;
+
+export const TR_KWIC = [
+  { capa: 'meal:deneme:1:1@0-10', sol: 'Deneme sol ', kelime: 'kelime', sag: ' sağ bir' },
+  { capa: 'meal:deneme:1:2@4-9', sol: 'ikinci sol ', kelime: 'kelime', sag: ' sağ iki' },
+  { capa: 'meal:deneme:1:3@7-12', sol: null, kelime: null, sag: null },
+] satisfies S['TrKwicItem'][];
+
+export const TR_EVIDENCE = {
+  kaynak_sayisi: 3,
+  qac_eslesme: 'harfler',
+  karar: 'otomatik_onay',
+  neden: 'yapisal_kanit',
+  politika_surumu: 'deneme-politika-1',
+} satisfies S['LemmaKanitSummary'];
+
+/** An open candidate mapping review (`lemma` + `kok_eslemesi`); the key is the Turkish lemma id. */
+export function kokItem(id: number, over: Partial<S['ReviewItemDto']> = {}): S['ReviewItemDto'] {
+  return reviewItem({
+    id,
+    hedef_tablo: 'lemma',
+    hedef_anahtar: String(3000 + id),
+    alan: 'kok_eslemesi',
+    onceki: null,
+    onerilen: { root_id: 7, ar_lemma_id: 1001, etymological_only: false },
+    xmin: 600 + id,
+    ...over,
+  });
+}
+
+/** The lemma row of a Turkish mapping as the snapshot shows it. */
+export function trTarget(
+  id: number,
+  over: Partial<NonNullable<S['ReviewDetailDto']['hedef']>> = {},
+): NonNullable<S['ReviewDetailDto']['hedef']> {
+  return {
+    tablo: 'lemma',
+    lemma_id: 3000 + id,
+    lang: 'tr',
+    text: `deneme-kelime-${id}`,
+    status: 'aday',
+    onay_yolu: null,
+    root_id: 7,
+    ar_lemma_id: 1001,
+    ar_lemma_text: LEMMA_ARABIC,
+    root_letters: ROOT_ARABIC,
+    freq: 12,
+    etymological_only: false,
+    kanit_ozeti: TR_EVIDENCE,
+    kwic: TR_KWIC,
+    ...over,
+  };
+}
+
+export function kokDetail(
+  id: number,
+  over: Partial<S['ReviewDetailDto']> = {},
+): S['ReviewDetailDto'] {
+  return reviewDetail({ ...kokItem(id), hedef: trTarget(id), ...over });
+}
+
+/** An objection to an automatic approval: the target is approved with the `otomatik` path. */
+export function objectionItem(
+  id: number,
+  path: 'otomatik' | 'editor' | null = 'otomatik',
+): S['ReviewItemDto'] {
+  return kokItem(id, {
+    koken: 'editor',
+    oneren: OBJECTOR,
+    onceki: { root_id: 7, ar_lemma_id: 1001, etymological_only: false, onay_yolu: path },
+    onerilen: { itiraz: true, gerekce: 'Deneme itiraz gerekçesi' },
+  });
+}
+
+export function objectionDetail(
+  id: number,
+  path: 'otomatik' | 'editor' | null = 'otomatik',
+): S['ReviewDetailDto'] {
+  return reviewDetail({
+    ...objectionItem(id, path),
+    hedef: trTarget(id, { status: 'onayli', onay_yolu: path }),
+  });
 }

@@ -283,6 +283,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/lemmas/{id}/itiraz": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Otomatik onaylı Türkçe lemma eşlemesine itiraz eder (editör incelemesi açar; başka bir editör onaylarsa lemma adaya döner). */
+        post: operations["objectToLemmaApproval"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lemmas/{id}/etimolojik-isaret": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Onaylı Türkçe lemmanın 'yalnızca etimolojik' işaretini editör kararıyla değiştirir (otomatik onaylıda onay yolu editör olur). */
+        post: operations["markLemmaEtymological"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/releases": {
         parameters: {
             query?: never;
@@ -417,6 +451,22 @@ export interface components {
         DecisionEdit: {
             metin?: null | string;
             anlam_kisa?: null | string;
+            /** Format: int32 */
+            root_id?: null | number;
+            /** Format: int32 */
+            ar_lemma_id?: null | number;
+            etymological_only?: null | boolean;
+        };
+        EtymologyMarkRequest: {
+            etymological_only: null | boolean;
+            gerekce: null | string;
+        };
+        EtymologyMarkResponse: {
+            /** Format: int64 */
+            review_id: number;
+            etymological_only: boolean;
+            onay_yolu: string;
+            status: string;
         };
         JsonElement: unknown;
         LemmaDetailResponse: {
@@ -427,6 +477,7 @@ export interface components {
             dalga: null | components["schemas"]["LemmaWaveInfo"];
             ayni_kok_anlamlari: components["schemas"]["LemmaSiblingGloss"][];
             kwic: components["schemas"]["LemmaKwicItem"][];
+            tr?: null | components["schemas"]["TrLemmaExtras"];
         };
         LemmaFrequency: {
             /** Format: int32 */
@@ -447,6 +498,19 @@ export interface components {
             root_id: null | number;
             qac_ref: null | string;
             etymological_only: boolean;
+            onay_yolu?: null | string;
+            /** Format: int32 */
+            ar_lemma_id?: null | number;
+            /** Format: int32 */
+            freq?: null | number;
+        };
+        LemmaKanitSummary: {
+            /** Format: int32 */
+            kaynak_sayisi?: null | number;
+            qac_eslesme?: null | string;
+            karar?: null | string;
+            neden?: null | string;
+            politika_surumu?: null | string;
         };
         LemmaKwicItem: {
             kelime_capa: string;
@@ -460,6 +524,14 @@ export interface components {
             capa: string;
             metin: string;
             metin_durumu: string;
+        };
+        LemmaObjectionRequest: {
+            gerekce: null | string;
+        };
+        LemmaObjectionResponse: {
+            /** Format: int64 */
+            id: number;
+            durum: string;
         };
         LemmaPosCount: {
             pos: null | string;
@@ -731,6 +803,15 @@ export interface components {
             yalnizca_etimolojik?: null | boolean;
             version?: null | string;
             status?: null | string;
+            onay_yolu?: null | string;
+            kanit_ozeti?: null | components["schemas"]["LemmaKanitSummary"];
+            root_letters?: null | string;
+            /** Format: int32 */
+            ar_lemma_id?: null | number;
+            ar_lemma_text?: null | string;
+            /** Format: int32 */
+            freq?: null | number;
+            kwic?: null | components["schemas"]["TrKwicItem"][];
         };
         SessionResponse: {
             kullanici: components["schemas"]["UserSummary"];
@@ -761,6 +842,18 @@ export interface components {
             updated_at: string;
             /** Format: int64 */
             birim_sayisi: number;
+        };
+        TrKwicItem: {
+            capa: string;
+            sol: null | string;
+            kelime: null | string;
+            sag: null | string;
+        };
+        TrLemmaExtras: {
+            kanit_ozeti: null | components["schemas"]["LemmaKanitSummary"];
+            root_letters: null | string;
+            ar_lemma_text: null | string;
+            kwic: components["schemas"]["TrKwicItem"][];
         };
         UnitDetail: {
             anchor: string;
@@ -1709,6 +1802,157 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    objectToLemmaApproval: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LemmaObjectionRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LemmaObjectionResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    markLemmaEtymological: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EtymologyMarkRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EtymologyMarkResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -8,3 +8,9 @@ export {
   type WitnessScore,
 } from './meal-payload';
 export { readTextPayload, type TextPayload } from './text-payload';
+export {
+  isObjectionPayload,
+  readObjectionReason,
+  readRootMapping,
+  type RootMapping,
+} from './root-mapping';

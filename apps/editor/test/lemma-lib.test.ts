@@ -207,6 +207,8 @@ describe('lemmaFilter', () => {
     });
     expect(lemmaFilter('duzeltme', 'dalga')).toEqual({ hedef_tablo: 'quran_word_fix' });
     expect(hasWaveOrder('duzeltme')).toBe(false);
+    expect(lemmaFilter('kok', 'dalga')).toEqual({ hedef_tablo: 'lemma', alan: 'kok_eslemesi' });
+    expect(hasWaveOrder('kok')).toBe(false);
     expect(isQueueOrder('dalga')).toBe(true);
     expect(isQueueOrder('baska')).toBe(false);
   });
@@ -232,8 +234,9 @@ describe('tabs', () => {
     expect(lemma?.filters).toEqual(LEMMA_TAB_IDS.map((id) => LEMMA_FILTERS[id]));
   });
 
-  it('knows its three ids only, in this order', () => {
-    expect(LEMMA_TAB_IDS).toEqual(['anlam', 'durum', 'duzeltme']);
+  it('knows its four ids only, in this order', () => {
+    expect(LEMMA_TAB_IDS).toEqual(['anlam', 'durum', 'duzeltme', 'kok']);
+    expect(isLemmaTab('kok')).toBe(true);
     expect(isLemmaTab('anlam')).toBe(true);
     expect(isLemmaTab('durum')).toBe(true);
     expect(isLemmaTab('duzeltme')).toBe(true);

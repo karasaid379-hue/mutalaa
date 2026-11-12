@@ -21,6 +21,7 @@ import {
   isShare,
   readConfidence,
   readDistribution,
+  readLemmaId,
   readLemmaValue,
   readYzRecord,
   type LemmaValue,
@@ -36,15 +37,6 @@ function glossOriginLabel(origin: string): string {
 
 function yesNo(value: boolean): string {
   return value ? trLemma.snapshot.yes : trLemma.snapshot.no;
-}
-
-/** The lemma id of the review's target: the snapshot's `lemma_id`, else the numeric target key; null when neither is one. */
-function readLemmaId(review: ReviewDetail): number | null {
-  const fromTarget = review.hedef?.lemma_id;
-  if (typeof fromTarget === 'number') return fromTarget;
-  return /^[0-9]+$/.test(review.hedef_anahtar) && Number.isSafeInteger(Number(review.hedef_anahtar))
-    ? Number(review.hedef_anahtar)
-    : null;
 }
 
 function Row({ label, children }: { label: string; children: ReactNode }) {

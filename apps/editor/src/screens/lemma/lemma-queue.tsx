@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -9,7 +9,16 @@ import { trLemma } from '@/i18n/tr-lemma';
 import { formatPercent } from '@/lib/format';
 import type { QueueOrder } from '@/review/queries';
 import { QueueLayout } from '@/review/queue-layout';
+import { isRootMappingReview } from '@/review/rules';
 import type { ReviewItem } from '@/review/types';
+import {
+  APPROVAL_FILTERS,
+  isApprovalFilter,
+  itemApproval,
+  matchesApprovalFilter,
+  type ApprovalFilter,
+} from './approval';
+import { ApprovalBadge } from './approval-badge';
 import {
   DEFAULT_LEMMA_ORDER,
   LEMMA_ORDERS,
@@ -22,6 +31,7 @@ import {
 } from './config';
 import { LemmaCard } from './lemma-card';
 import { consistencyOf, isReadyCandidate, isShare, readConfidence } from './payload';
+import { TrLemmaCard } from './tr-lemma-card';
 import { WordFixCard } from './word-fix-card';
 
 interface LemmaTabsProps {
@@ -93,8 +103,64 @@ function OrderControl({ value, onChange }: OrderControlProps) {
   );
 }
 
+interface ApprovalControlProps {
+  value: ApprovalFilter;
+  onChange: (value: ApprovalFilter) => void;
+  shown: number;
+  loaded: number;
+}
+
+/**
+ * "Onay yolu: Hepsi | Otomatik onaylı | Editör onaylı | Aday" of the Turkish mapping tab. The API has no such
+ * filter, so it filters the loaded records only; the note says so and the count says how many are shown.
+ */
+function ApprovalControl({ value, onChange, shown, loaded }: ApprovalControlProps) {
+  const hintId = useId();
+  return (
+    <div className="flex flex-col gap-1" data-testid="lemma-approval-filter">
+      <RadioGroup
+        aria-label={trLemma.approvalFilter.label}
+        aria-describedby={hintId}
+        value={value}
+        className="flex flex-wrap items-center gap-x-4 gap-y-1"
+        onValueChange={(next) => {
+          if (isApprovalFilter(next)) onChange(next);
+        }}
+      >
+        <span className="text-sm font-medium" aria-hidden="true">
+          {trLemma.approvalFilter.label}
+        </span>
+        {APPROVAL_FILTERS.map((filter) => (
+          <Label key={filter} className="min-h-6 gap-2 font-normal">
+            <RadioGroupItem value={filter} />
+            {trLemma.approvalFilter[filter]}
+          </Label>
+        ))}
+      </RadioGroup>
+      <p id={hintId} className="text-xs text-muted-foreground">
+        {trLemma.approvalFilter.note}
+        {value !== 'hepsi' ? ` ${trLemma.approvalFilter.shown(shown, loaded)}.` : ''}
+      </p>
+    </div>
+  );
+}
+
+/** Under a Turkish mapping in the list: the approval path (an automatic one is never drawn as an editor approval). */
+function MappingMeta({ item }: { item: ReviewItem }) {
+  const approval = itemApproval(item);
+  return (
+    <span className="flex flex-wrap items-center gap-1" data-testid="lemma-item-approval">
+      {approval === 'otomatik' || approval === 'editor' ? <ApprovalBadge path={approval} /> : null}
+      <span className="text-xs text-muted-foreground">
+        {approval === 'aday' ? trLemma.approvalFilter.itemAday : trLemma.approval.objection}
+      </span>
+    </span>
+  );
+}
+
 /** Under a word meaning candidate in the list: the consistent or inconsistent mark of its dominant share. */
 function GlossMeta({ item }: { item: ReviewItem }) {
+  if (isRootMappingReview(item)) return <MappingMeta item={item} />;
   if (item.hedef_tablo === 'quran_word_fix') {
     return (
       <span className="text-xs text-muted-foreground">
@@ -117,29 +183,49 @@ function GlossMeta({ item }: { item: ReviewItem }) {
 
 /**
  * Route `kuyruk/lemma` (Kelime anlamları §6, K-13): the word meaning drafts (`lemma_gloss` + `anlam_kisa`),
- * the lemma status (`lemma` + `status`) and the root and lemma corrections (`quran_word_fix`, every field) on
- * three tabs; the filter is screen state. The first two are listed in wave order (`sira=dalga`, the default)
+ * the lemma status (`lemma` + `status`), the root and lemma corrections (`quran_word_fix`, every field) and the
+ * Turkish lemma root mappings (`lemma` + `kok_eslemesi`, A18.2) on four tabs; the filter is screen state. The first two are listed in wave order (`sira=dalga`, the default)
  * or in creation order; changing the order is a new query, so the cursor starts over (the API's cursors are
  * typed by order). The correction tab has no order (the API answers 400).
  */
 export function LemmaQueue() {
   const [tab, setTab] = useState<LemmaTabId>('anlam');
   const [order, setOrder] = useState<QueueOrder>(DEFAULT_LEMMA_ORDER);
+  const [approval, setApproval] = useState<ApprovalFilter>('hepsi');
+  const itemFilter = useMemo(
+    () =>
+      tab === 'kok' && approval !== 'hepsi'
+        ? (item: ReviewItem) => matchesApprovalFilter(item, approval)
+        : undefined,
+    [tab, approval],
+  );
   return (
     <QueueLayout
       title={tr.nav.queueLemma}
       filter={lemmaFilter(tab, order)}
       announceCount
-      renderListHeader={() => (
+      itemFilter={itemFilter}
+      filteredEmpty={trLemma.approvalFilter.noMatch}
+      renderListHeader={({ items, loadedCount }) => (
         <div className="flex flex-col gap-3">
           <LemmaTabs value={tab} onChange={setTab} />
           {hasWaveOrder(tab) ? <OrderControl value={order} onChange={setOrder} /> : null}
+          {tab === 'kok' ? (
+            <ApprovalControl
+              value={approval}
+              onChange={setApproval}
+              shown={items.length}
+              loaded={loadedCount}
+            />
+          ) : null}
         </div>
       )}
       renderItemMeta={(item) => <GlossMeta item={item} />}
       renderDetail={({ review, onDecided }) =>
         review.hedef_tablo === 'quran_word_fix' ? (
           <WordFixCard key={review.id} review={review} onDecided={onDecided} />
+        ) : isRootMappingReview(review) ? (
+          <TrLemmaCard key={review.id} review={review} onDecided={onDecided} />
         ) : (
           <LemmaCard key={review.id} review={review} onDecided={onDecided} />
         )

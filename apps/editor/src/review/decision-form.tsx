@@ -23,6 +23,7 @@ import { problemCode, problemStatus, toProblem } from '@/lib/problem';
 import { canDecide } from '@/lib/roles';
 import { fieldA11y, type FieldProblem } from './field-errors';
 import { ProblemList } from './problem-list';
+import { RootMappingFields } from './root-mapping-fields';
 import { MAX_GLOSS_LENGTH, MAX_REASON_LENGTH } from './limits';
 import {
   ME_PATH,
@@ -41,7 +42,10 @@ import {
   canEditValue,
   isFirstStageUnitText,
   isGlossEditable,
+  isRootMappingEditable,
+  parseIdInput,
   proposedGloss,
+  proposedMapping,
   proposedText,
   type UnitEditInfo,
 } from './rules';
@@ -93,6 +97,19 @@ function glossProblemMessage(problem: ReturnType<typeof toProblem>): string | nu
 }
 
 /**
+ * The Turkish message of a server rejection of an edited root mapping: a 400 `dogrulama` that is not about the
+ * reason (root or Arabic lemma missing, the lemma is not Arabic, its root differs). The server's own message is
+ * kept next to it. null for everything else.
+ */
+function mappingProblemMessage(problem: ReturnType<typeof toProblem>): string | null {
+  if (problemStatus(problem) !== 400 || problemCode(problem) !== 'dogrulama') return null;
+  if (problem.errors !== undefined && Object.hasOwn(problem.errors, 'gerekce')) return null;
+  return problem.detail
+    ? `${trLemma.kok.edit.serverInvalid} ${tr.problem.detail}: ${problem.detail}`
+    : trLemma.kok.edit.serverInvalid;
+}
+
+/**
  * Decision form of one review (K-48): approve or reject must be chosen explicitly; `gerekce` is required
  * (at most 2.000 code points); the edited-text field exists only when `canEditValue` is true; NUL and lone
  * surrogates are reported and cleaned only by the button. The request carries `If-Match: "{xmin}"` and always
@@ -122,12 +139,18 @@ export function DecisionForm({
     decision: useId(),
     summary: useId(),
     approveClosed: useId(),
+    mapRoot: useId(),
+    mapAr: useId(),
   };
 
   const [karar, setKarar] = useState<DecisionKind | ''>('');
   const [gerekce, setGerekce] = useState('');
   const [edited, setEdited] = useState<string | null>(null);
   const [gloss, setGloss] = useState<string | null>(null);
+  // A Turkish lemma mapping (K-51 madde 9): the typed root id, Arabic lemma id and switch; null = untouched.
+  const [mapRoot, setMapRoot] = useState<string | null>(null);
+  const [mapAr, setMapAr] = useState<string | null>(null);
+  const [mapEtym, setMapEtym] = useState<boolean | null>(null);
   const [problems, setProblems] = useState<FieldProblem[]>([]);
   const [error, setError] = useState<unknown>(null);
   const [stale, setStale] = useState<Stale | null>(null);
@@ -170,6 +193,19 @@ export function DecisionForm({
   const glossChanged = showGloss && trimGloss(glossValue) !== trimGloss(glossBaseline);
   const glossCount = glossLength(glossValue);
   const glossProblems = problems.filter((problem) => problem.fieldId === ids.gloss);
+  // An open candidate mapping review: approval may carry an edited mapping; an edit equal to the proposal is not sent.
+  const baseMap = proposedMapping(current);
+  const rootText = mapRoot ?? (baseMap.rootId !== null ? String(baseMap.rootId) : '');
+  const arText = mapAr ?? (baseMap.arLemmaId !== null ? String(baseMap.arLemmaId) : '');
+  const etymValue = mapEtym ?? baseMap.etymologicalOnly ?? false;
+  const showMapping = isRootMappingEditable(current) && !closed && selected === 'onaylandi';
+  const parsedRoot = parseIdInput(rootText);
+  const parsedAr = parseIdInput(arText);
+  const mappingChanged =
+    showMapping &&
+    (parsedRoot !== baseMap.rootId ||
+      parsedAr !== baseMap.arLemmaId ||
+      etymValue !== (baseMap.etymologicalOnly ?? false));
 
   const unwritable = {
     gerekce: findUnwritable(gerekce),
@@ -218,6 +254,11 @@ export function DecisionForm({
         add(ids.gloss, trLemma.edit.unwritable);
       }
     }
+    if (showMapping) {
+      if (parsedRoot === 'invalid') add(ids.mapRoot, trLemma.kok.edit.rootInvalid);
+      else if (parsedRoot === null) add(ids.mapRoot, trLemma.kok.edit.rootRequired);
+      if (parsedAr === 'invalid') add(ids.mapAr, trLemma.kok.edit.arInvalid);
+    }
     return found;
   }
 
@@ -250,6 +291,7 @@ export function DecisionForm({
     setStale(null);
     const sendEdit = canEdit && selected === 'onaylandi' && editedValue !== baseline;
     const sendGloss = glossChanged;
+    const sendMapping = mappingChanged && typeof parsedRoot === 'number' && parsedAr !== 'invalid';
     const snapshot = current;
     try {
       const result = await decide.mutateAsync({
@@ -260,7 +302,9 @@ export function DecisionForm({
             ? { metin: editedValue }
             : sendGloss
               ? { anlam_kisa: glossValue }
-              : null,
+              : sendMapping
+                ? { root_id: parsedRoot, ar_lemma_id: parsedAr, etymological_only: etymValue }
+                : null,
           gerekce,
         },
       });
@@ -279,8 +323,12 @@ export function DecisionForm({
       const problem = toProblem(thrown);
       // A rejected edited meaning is shown next to its field (400 on the field, 409 for a target that is not a candidate).
       const glossMessage = sendGloss ? glossProblemMessage(problem) : null;
+      const mappingMessage = sendMapping ? mappingProblemMessage(problem) : null;
       if (glossMessage !== null) {
         setProblems([{ fieldId: ids.gloss, message: glossMessage }]);
+        setError(null);
+      } else if (mappingMessage !== null) {
+        setProblems([{ fieldId: ids.mapRoot, message: mappingMessage }]);
         setError(null);
       } else {
         setError(problem);
@@ -430,6 +478,22 @@ export function DecisionForm({
               </div>
             ) : null}
           </div>
+        ) : null}
+
+        {showMapping ? (
+          <RootMappingFields
+            rootFieldId={ids.mapRoot}
+            arFieldId={ids.mapAr}
+            summaryId={ids.summary}
+            problems={problems}
+            root={rootText}
+            arLemma={arText}
+            etymologicalOnly={etymValue}
+            onRoot={setMapRoot}
+            onArLemma={setMapAr}
+            onEtymologicalOnly={setMapEtym}
+            onKeyDown={onKeyDown}
+          />
         ) : null}
 
         {showEdit ? (

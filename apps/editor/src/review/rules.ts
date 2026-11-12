@@ -1,5 +1,12 @@
-import { readMealAttrs, readString, readTextPayload } from '@/lib/payload';
-import type { ReviewItem, UnitDetail } from './types';
+import {
+  isObjectionPayload,
+  readMealAttrs,
+  readRootMapping,
+  readString,
+  readTextPayload,
+  type RootMapping,
+} from '@/lib/payload';
+import type { ReviewDetail, ReviewItem, UnitDetail } from './types';
 
 // Pre-checks of the decision form. They only close controls early; the API has the last word (K-48),
 // and a 409/422 answer is always shown with its own code.
@@ -96,4 +103,50 @@ export function isGlossEditable(review: ReviewItem): boolean {
  */
 export function proposedGloss(review: ReviewItem): string | null {
   return readString(review.duzenlenen, 'anlam_kisa') ?? readString(review.onerilen, 'anlam_kisa');
+}
+
+/** A Turkish lemma root mapping review (`lemma` + `kok_eslemesi`, K-51 madde 9): a candidate or an objection. */
+export function isRootMappingReview(review: Pick<ReviewItem, 'hedef_tablo' | 'alan'>): boolean {
+  return review.hedef_tablo === 'lemma' && review.alan === 'kok_eslemesi';
+}
+
+/** An objection to an automatic approval (`onerilen.itiraz = true`): approval returns the lemma to a candidate. */
+export function isObjectionReview(review: Pick<ReviewItem, 'onerilen'>): boolean {
+  return isObjectionPayload(review.onerilen);
+}
+
+/** An open candidate mapping review: approval may carry an edited mapping (`root_id`, `ar_lemma_id`, `etymological_only`). */
+export function isRootMappingEditable(review: ReviewItem): boolean {
+  return isRootMappingReview(review) && review.durum === 'acik' && !isObjectionReview(review);
+}
+
+/**
+ * The mapping an approval would apply: the editor's `duzenlenen`, else the proposal `onerilen`, else the
+ * lemma row as the snapshot shows it. Missing parts are null (the proposal may carry no Arabic lemma).
+ */
+export function proposedMapping(
+  review: Pick<ReviewDetail, 'duzenlenen' | 'onerilen' | 'hedef'>,
+): RootMapping {
+  const written = readRootMapping(review.duzenlenen) ?? readRootMapping(review.onerilen);
+  if (written) return written;
+  const target = review.hedef;
+  return {
+    rootId: target?.root_id ?? null,
+    arLemmaId: target?.ar_lemma_id ?? null,
+    etymologicalOnly: target?.etymological_only ?? null,
+  };
+}
+
+/** Largest id the API reads (a 32 bit integer). */
+const MAX_ID = 2_147_483_647;
+
+/**
+ * An id typed into a field: '' is "none" (null), a positive integer in plain digits is its number, anything
+ * else (sign, space, decimal point, too large) is 'invalid'.
+ */
+export function parseIdInput(text: string): number | null | 'invalid' {
+  if (text === '') return null;
+  if (!/^[0-9]+$/.test(text)) return 'invalid';
+  const value = Number(text);
+  return Number.isSafeInteger(value) && value >= 1 && value <= MAX_ID ? value : 'invalid';
 }
