@@ -112,11 +112,18 @@ public static class WordMorphFixes
 
             return Encoding.UTF8.GetString(Rfc8785JsonCanonicalizer.Canonicalize(bytes));
         }
-        catch (JsonException)
+        catch (Exception ex) when (ex is JsonException or JsonCanonicalizationException)
         {
+            // RFC 8785 kanonikleme yinelenen anahtar, -0 ve temsil edilemeyen buyuk/sonsuz sayi icin JsonCanonicalizationException atar.
             return null;
         }
     }
+
+    /// <summary>
+    /// <see cref="CanonicalJson"/> sonucu; kanonikleme basarisizsa (jsonb'de bile gorulebilen temsil edilemeyen sayi) ham metin. Belirlenimcidir: paket satiri ve kaynak
+    /// ozeti ayni islevi kullanir, bu yuzden ayni jsonb degeri her gosterimde (<c>["a", "b"]</c> ya da <c>["a","b"]</c>) ayni baytlari verir.
+    /// </summary>
+    public static string CanonicalJsonOrRaw(string json) => CanonicalJson(json) ?? json;
 
     private static bool TryParseId(string text, out int id) =>
         int.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out id) && id > 0;

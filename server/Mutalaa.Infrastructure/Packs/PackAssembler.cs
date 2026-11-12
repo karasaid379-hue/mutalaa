@@ -273,12 +273,8 @@ public static class PackAssembler
                 continue;
             }
 
-            string? features = null;
-            if (word.Features is not null)
-            {
-                features = WordMorphFixes.CanonicalJson(word.Features)
-                    ?? throw new PackAssemblyException($"quran_word.features gecerli JSON degil: {word.Anchor}");
-            }
+            // Taban features jsonb'dir (gecerli JSON); kanonikleme basarisizsa (temsil edilemeyen sayi) ham metin kalir, birlestirici cokmez.
+            string? features = word.Features is null ? null : WordMorphFixes.CanonicalJsonOrRaw(word.Features);
 
             morph[word.Anchor] = new MorphState(word.RootId, word.LemmaId, word.Pos, features);
             withRows.Add(word.MorphSource);
@@ -319,7 +315,7 @@ public static class PackAssembler
                 glosses.Add(new PackLemmaGlossRow(
                     gloss.LemmaId,
                     gloss.AnlamKisa,
-                    gloss.KuranAnlamlari,
+                    WordMorphFixes.CanonicalJsonOrRaw(gloss.KuranAnlamlari),
                     gloss.TurkceEsKelime,
                     gloss.YalnizcaEtimolojik ? 1 : 0,
                     gloss.Status,

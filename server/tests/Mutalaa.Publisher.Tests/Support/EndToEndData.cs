@@ -305,12 +305,17 @@ internal static class EndToEndData
         // --- Sozluk duzeltmeleri (P-09): iki onayli (biri pos, biri root_id), bir aday, bir red.
         await Exec(
             """
-            INSERT INTO icerik.quran_word_fix (anchor, field, new_value, reason, status) VALUES
-              (@a1, 'pos', 'N', 'deneme', 'onayli'::icerik.xref_status),
-              (@a2, 'root_id', '2', 'deneme', 'onayli'::icerik.xref_status),
-              (@a3, 'pos', 'N', 'deneme', 'aday'::icerik.xref_status),
-              (@a4, 'pos', 'N', 'deneme', 'red'::icerik.xref_status)
+            INSERT INTO icerik.quran_word_fix (id, anchor, field, new_value, reason, status) VALUES
+              (@i1, @a1, 'pos', 'N', 'deneme', 'onayli'::icerik.xref_status),
+              (@i2, @a2, 'root_id', '2', 'deneme', 'onayli'::icerik.xref_status),
+              (@i3, @a3, 'pos', 'N', 'deneme', 'aday'::icerik.xref_status),
+              (@i4, @a4, 'pos', 'N', 'deneme', 'red'::icerik.xref_status)
             """,
+            // Kimlikler sabit: kaynak ozeti quran_word_fix satirlarini kimlikle ozetler, ayni veri her veritabaninda ayni ozeti vermeli.
+            ("i1", FixId(1)),
+            ("i2", FixId(2)),
+            ("i3", FixId(3)),
+            ("i4", FixId(4)),
             ("a1", FixApprovedPos),
             ("a2", FixApprovedRoot),
             ("a3", FixCandidate),
@@ -326,6 +331,8 @@ internal static class EndToEndData
 
     public static void RegisterSource(string sourcesDir, string slug) =>
         File.WriteAllText(Path.Combine(sourcesDir, slug + ".toml"), "slug = \"" + slug + "\"\n");
+
+    private static Guid FixId(int n) => Guid.Parse(string.Create(CultureInfo.InvariantCulture, $"00000000-0000-7000-8001-{n:D12}"));
 
     private static Guid XrefId(int n) => Guid.Parse(string.Create(CultureInfo.InvariantCulture, $"00000000-0000-7000-8000-{n:D12}"));
 

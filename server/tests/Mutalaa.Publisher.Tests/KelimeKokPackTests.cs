@@ -244,6 +244,9 @@ public class KelimeKokPackTests
     [InlineData("pos", "  ", "deger-gecersiz")]
     [InlineData("features", "{bozuk", "deger-gecersiz")]
     [InlineData("features", "null", "deger-gecersiz")]
+    [InlineData("features", "{\"a\":1,\"a\":2}", "deger-gecersiz")] // yinelenen anahtar: RFC 8785 kanonikleme atar
+    [InlineData("features", "{\"a\":-0}", "deger-gecersiz")]
+    [InlineData("features", "{\"a\":1e999}", "deger-gecersiz")]
     public void An_approved_fix_that_cannot_be_applied_rejects_the_release_and_is_skipped_by_the_assembler(string field, string value, string defect)
     {
         QuranWordFixRow[] fixes = [Fix(FixPos, "q:1:1:1", field, value)];
@@ -264,6 +267,93 @@ public class KelimeKokPackTests
             Assert.Equal(0, pack.WordFixCount);
             Assert.Equal("V", pack.WordMorph.Single(w => w.Anchor == "q:1:1:1").Pos);
         }
+    }
+
+    [Fact]
+    public void Non_canonicalizable_json_never_crashes_the_gate_input_the_assembler_or_the_source_digest()
+    {
+        string[] bad = ["{\"a\":1,\"a\":2}", "{\"a\":-0}", "{\"a\":1e999}"];
+        foreach (string json in bad)
+        {
+            Assert.Null(WordMorphFixes.CanonicalJson(json));
+            Assert.Equal(json, WordMorphFixes.CanonicalJsonOrRaw(json));
+
+            // Taban features ve anlam alani temsil edilemeyen JSON tasisa da (bellek ici anlik goruntu) kapi, birlestirici ve ozet cokmez.
+            EditorialSnapshot snapshot = Snapshot([Fix(FixFeatures, "q:1:1:1", "features", json)]);
+            EditorialSnapshot withBad = With(
+                snapshot,
+                words: [.. snapshot.QuranWords.Select(w => w.Anchor == "q:1:2:1" ? w with { Features = json } : w)],
+                glosses: [.. snapshot.LemmaGlosses.Select(g => g.LemmaId == 1 ? g with { KuranAnlamlari = json } : g)]);
+
+            GateResult gate = PackTestData.Evaluate(BuildFlavor.Dev, withBad);
+            Assert.Equal("duzeltme-uygulanamaz:deger-gecersiz", Assert.Single(gate.Report.Violations).Reason);
+            PackContent pack = PackAssembler.Assemble(PackCatalog.Default.Get("kelime-kok"), BuildFlavor.Dev, withBad, gate, PackCatalog.Default);
+            Assert.Equal(json, pack.WordMorph.Single(w => w.Anchor == "q:1:2:1").Features);
+            Assert.Equal(json, pack.LemmaGlosses.Single(g => g.LemmaId == 1).KuranAnlamlari);
+            Assert.Equal(SourceDigests.Compute(withBad, [Qac, Wbw]), SourceDigests.Compute(withBad, [Qac, Wbw]));
+        }
+    }
+
+    [Fact]
+    public void The_same_jsonb_value_in_two_textual_forms_gives_the_same_pack_row_and_source_digest()
+    {
+        EditorialSnapshot spaced = Snapshot();
+        EditorialSnapshot compact = With(
+            spaced,
+            words: [.. spaced.QuranWords.Select(w => w.Anchor == "q:1:1:1" ? w with { Features = "{\"a\":1,\"b\":2}" } : w)],
+            glosses: [.. spaced.LemmaGlosses.Select(g => g.LemmaId == 4 ? g with { KuranAnlamlari = "[\"deneme\",\"b\"]" } : g)]);
+        EditorialSnapshot spacedGloss = With(
+            spaced,
+            glosses: [.. spaced.LemmaGlosses.Select(g => g.LemmaId == 4 ? g with { KuranAnlamlari = "[\"deneme\", \"b\"]" } : g)]);
+
+        PackContent a = Assemble(BuildFlavor.Dev, spacedGloss);
+        PackContent b = Assemble(BuildFlavor.Dev, compact);
+
+        Assert.Equal("[\"deneme\",\"b\"]", a.LemmaGlosses.Single(g => g.LemmaId == 4).KuranAnlamlari);
+        Assert.Equal(a.LemmaGlosses, b.LemmaGlosses);
+        Assert.Equal(a.WordMorph, b.WordMorph);
+        Assert.Equal(PackDigest.Compute(a), PackDigest.Compute(b));
+        Assert.Equal(SourceDigests.Compute(spacedGloss, [Qac, Wbw]), SourceDigests.Compute(compact, [Qac, Wbw]));
+    }
+
+    // ---------------------------------------------------------------- kaynak ozeti: quran_word_fix (P-14)
+
+    [Fact]
+    public void Quran_word_fixes_of_every_status_enter_the_qac_source_digest_and_a_status_change_alters_it()
+    {
+        EditorialSnapshot none = Snapshot();
+        EditorialSnapshot candidate = Snapshot([Fix(FixCandidate, "q:1:1:1", "pos", "N", "aday")]);
+        EditorialSnapshot approved = Snapshot([Fix(FixCandidate, "q:1:1:1", "pos", "N", "onayli")]);
+        EditorialSnapshot rejected = Snapshot([Fix(FixCandidate, "q:1:1:1", "pos", "N", "red")]);
+
+        string Qd(EditorialSnapshot s) => SourceDigests.Compute(s, [Qac, Wbw])[Qac];
+
+        string[] digests = [Qd(none), Qd(candidate), Qd(approved), Qd(rejected)];
+        Assert.Equal(4, digests.Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(Qd(approved), Qd(Snapshot([Fix(FixCandidate, "q:1:1:1", "pos", "N", "onayli")])));
+        Assert.Equal(SourceDigests.Compute(none, [Qac, Wbw])[Wbw], SourceDigests.Compute(approved, [Qac, Wbw])[Wbw]);
+
+        // Girdi sirasi onemsiz; deger degisirse ozet degisir.
+        QuranWordFixRow a = Fix(FixPos, "q:1:1:1", "pos", "N");
+        QuranWordFixRow b = Fix(FixRoot, "q:1:2:1", "root_id", "1");
+        Assert.Equal(Qd(Snapshot([a, b])), Qd(Snapshot([b, a])));
+        Assert.NotEqual(Qd(Snapshot([a, b])), Qd(Snapshot([a, b with { NewValue = "2" }])));
+    }
+
+    [Fact]
+    public void A_candidate_to_approved_fix_transition_makes_the_p14_comparison_fail()
+    {
+        EditorialSnapshot atInternal = Snapshot([Fix(FixCandidate, "q:1:1:1", "pos", "N", "aday")]);
+        EditorialSnapshot atPromote = Snapshot([Fix(FixCandidate, "q:1:1:1", "pos", "N", "onayli")]);
+
+        IReadOnlyDictionary<string, string> internalDigests = SourceDigests.Compute(atInternal, [Qac, Wbw]);
+        IReadOnlyDictionary<string, string> promoteDigests = SourceDigests.Compute(atPromote, [Qac, Wbw]);
+
+        IReadOnlyList<GateViolation> violations = GateEvaluator.EvaluateP14(internalDigests, promoteDigests);
+
+        GateViolation violation = Assert.Single(violations);
+        Assert.Equal((GateRule.P14, Qac, "ozet-uyusmuyor"), (violation.Rule, violation.Subject, violation.Reason));
+        Assert.Empty(GateEvaluator.EvaluateP14(internalDigests, SourceDigests.Compute(atInternal, [Qac, Wbw])));
     }
 
     [Fact]

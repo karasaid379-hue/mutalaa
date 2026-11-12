@@ -274,6 +274,32 @@ public class LemmaEndpointTests(EditorialDatabase<LemmaEndpointTests> fixture)
     }
 
     [Fact]
+    public async Task A_context_boundary_on_a_combining_mark_widens_the_context_so_that_no_letter_is_split_from_its_mark()
+    {
+        (string morph, string quran, _) = await SeedSourcesAsync();
+        Lemma lemma = await SeedLemmaAsync(morph, occurrences: 1);
+
+        // Sentetik harf (U+0628) ve fetha (U+064E, Mn); kelime kod noktasi 41..42 (iki sentetik harf).
+        // Sol sinir 41 - 40 = 1 bir Mn uzerine duser: geriye 0'a kayar (sol baglam 41 kod nokta).
+        // Sag sinir 43 + 40 = 83 bir Mn'nin onune duser: ileriye 84'e kayar (sag baglam 41 kod nokta).
+        const string letter = "\u0628";
+        const string mark = "\u064E";
+        string left = letter + mark + string.Concat(Enumerable.Repeat(letter, 39));
+        string right = string.Concat(Enumerable.Repeat(letter, 40)) + mark;
+        await SeedWordAsync(morph, "q:3:12:1", 112, 41, 43, lemma.Id);
+        await SeedUnitAsync(quran, UnitKind.Ayet, "q:3:12", left + letter + "\u062A" + right);
+        using HttpClient client = await ClientAsync();
+
+        JsonElement item = (await GetAsync(client, lemma.Id)).GetProperty("kwic")[0];
+
+        Assert.Equal(letter + "\u062A", item.GetProperty("kelime").GetString());
+        Assert.Equal(left, item.GetProperty("sol").GetString());
+        Assert.Equal(right, item.GetProperty("sag").GetString());
+        Assert.StartsWith(letter + mark, item.GetProperty("sol").GetString(), StringComparison.Ordinal);
+        Assert.EndsWith(mark, item.GetProperty("sag").GetString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task A_follower_meal_with_an_empty_text_is_not_returned_as_the_meal()
     {
         (string morph, string quran, string meal) = await SeedSourcesAsync();

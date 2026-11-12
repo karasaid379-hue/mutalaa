@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -98,12 +99,13 @@ public sealed class ReleaseDigests
 /// <summary>
 /// Kaynak ozeti hesabi (K-46 madde 1, Yayin sureci 2.2): kaynagin etkin birimleri <see cref="ContentDigest"/> kuraliyla; birimi olmayan kaynakta
 /// (tanzil-ust-veri) page_map ve quran_marker satirlari kanonik JSON satirlari (UTF-8 bayt sirasinda, LF'li) olarak ozetlenir; sozluk kaynaklarinda
-/// (K-46 madde 1) qac-morfoloji icin root, lemma ve quran_word'un QAC sutunlari, quranwbw-tr icin lemma_gloss satirlari (butun durumlar, status ve origin
-/// dahil) ayni bicimde ozetlenir; hicbiri yoksa girdisiz SHA-256. Derleme turunden bagimsizdir: butun anlik goruntuden hesaplanir.
+/// (K-46 madde 1) qac-morfoloji icin root, lemma, quran_word'un QAC sutunlari ve quran_word_fix satirlari (butun durumlar), quranwbw-tr icin lemma_gloss
+/// satirlari (butun durumlar, status ve origin dahil; kuran_anlamlari RFC 8785 kanonik bicimiyle) ayni bicimde ozetlenir; hicbiri yoksa girdisiz SHA-256. Derleme turunden bagimsizdir: butun anlik goruntuden hesaplanir.
 /// </summary>
 public static class SourceDigests
 {
     private const string ActiveStatus = "etkin";
+    private const string QuranWordFixTable = "quran_word_fix";
 
     public static IReadOnlyDictionary<string, string> Compute(EditorialSnapshot snapshot, IEnumerable<string> slugs)
     {
@@ -207,6 +209,12 @@ public static class SourceDigests
                     lines.Add(Line(PackTables.QuranWord, slug, word.Anchor, word.RootId, word.LemmaId, word.Pos, features, word.MorphSource));
                 }
             }
+
+            // quran_word_fix satirlari (butun durumlar; K-46 madde 1): aday -> onayli gecisi ve onayli duzeltmenin degeri ozeti degistirir; P-14 terfide yakalar.
+            foreach (QuranWordFixRow fix in snapshot.WordFixes)
+            {
+                lines.Add(Line(QuranWordFixTable, slug, fix.Id.ToString("D", CultureInfo.InvariantCulture), fix.Anchor, fix.Field, fix.NewValue, fix.Status));
+            }
         }
         else if (string.Equals(slug, PackCatalog.GlossSourceSlug, StringComparison.Ordinal))
         {
@@ -217,7 +225,7 @@ public static class SourceDigests
                     slug,
                     gloss.LemmaId,
                     gloss.AnlamKisa,
-                    gloss.KuranAnlamlari,
+                    WordMorphFixes.CanonicalJsonOrRaw(gloss.KuranAnlamlari),
                     gloss.TurkceEsKelime,
                     gloss.YalnizcaEtimolojik ? 1L : 0L,
                     gloss.Status,

@@ -378,6 +378,33 @@ public class ReleaseEndToEndFlowTests(PostgresFixture postgres, SeaweedFixture s
         Assert.Equal(0, (await harness.RunCliAsync("verify", "--flavor", "public")).Code);
     }
 
+    [Fact]
+    public async Task P14_promotion_is_rejected_when_a_word_fix_is_approved_after_the_internal_release()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using EndToEndHarness harness = await NewHarnessAsync();
+        Assert.Equal(0, (await harness.RunCliAsync("publish", "--flavor", "internal")).Code);
+        await harness.ChangeUnitAsync(EndToEndData.SentetikApproved, ApprovedText, ct);
+
+        // Internal yayindan sonra aday duzeltme onaylanir: public paketi internal'da test edilenden farkli olurdu.
+        await harness.Database.ExecuteAsync(
+            "UPDATE icerik.quran_word_fix SET status = 'onayli'::icerik.xref_status WHERE anchor = @a",
+            ct,
+            ("a", EndToEndData.FixCandidate));
+        CliResult rejected = await harness.RunCliAsync("promote", "--from", "internal", "--to", "public");
+
+        Assert.Equal(2, rejected.Code);
+        Release failed = (await harness.Releases.GetAsync(2, ct))!;
+        Assert.Contains(EndToEndHarness.Violations(failed), v => v is { Rule: "P-14", Subject: EndToEndData.Qac, Reason: "ozet-uyusmuyor" });
+
+        // Duzeltme eski haline donunce ozetler tutar ve terfi basarir.
+        await harness.Database.ExecuteAsync(
+            "UPDATE icerik.quran_word_fix SET status = 'aday'::icerik.xref_status WHERE anchor = @a",
+            ct,
+            ("a", EndToEndData.FixCandidate));
+        Assert.Equal(0, (await harness.RunCliAsync("promote", "--from", "internal", "--to", "public")).Code);
+    }
+
     // ---------------------------------------------------------------- rollback
 
     [Fact]

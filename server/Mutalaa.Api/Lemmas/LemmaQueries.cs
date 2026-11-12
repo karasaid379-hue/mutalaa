@@ -18,7 +18,10 @@ internal static class LemmaQueries
 {
     public const int MaxSiblingGlosses = 20;
 
-    /// <summary>KWIC baglami: kelimenin her iki yaninda en cok bu kadar kod noktasi.</summary>
+    /// <summary>
+    /// KWIC baglami: kelimenin her iki yaninda yaklasik bu kadar kod noktasi. Sinir bir Mn (hareke) uzerine dusuyorsa harf butunlugu icin genisler
+    /// (<see cref="CodePointOffsets.SnapSpan"/>): baglam 40 kod noktasini asabilir (her yanda en cok birkac hareke kadar).
+    /// </summary>
     public const int ContextCodePoints = 40;
 
     /// <summary>Meal kimligi (meal:elmalili:{sure}:{ayet}); kartta yalniz bu meal gosterilir.</summary>
