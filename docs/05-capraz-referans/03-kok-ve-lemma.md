@@ -1,7 +1,7 @@
 # Kök ve Lemma Katmanı
 
-> **Sürüm:** 1.4 · **Tarih:** 12 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü)
+> **Sürüm:** 1.5 · **Tarih:** 13 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) · [K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü)
 
 Bu dosya Kur'an kelimelerinin kök ve lemma verisini, Türkçe kelimeyi Arapça köke bağlayan hattı ve kelime kartıyla kök gezgininin ihtiyaç duyduğu veriyi tanımlar. Bağlantı türleri `kok` ve `lemma`, puanlama ve panel kuralları [bağlantı modelindedir](./01-baglanti-modeli.md). Türkçe kelime anlamlarının yazımı [kelime anlamları](../04-icerik/06-kelime-anlamlari.md) dosyasındadır (K-19).
 
@@ -32,7 +32,7 @@ Bu katmanın ihtiyaç duyduğu alanlar (kesin DDL [editoryal veritabanında](../
 | Tablo | Alanlar |
 |---|---|
 | `root` | `id`, `letters` ('ص ب ر'), `letters_bw` (QAC Buckwalter), `occurrences` (kelime), `ayah_count`, `idf_q` |
-| `lemma` | `id`, `lang` ('ar' / 'tr'), `text`, `text_clean`, `root_id`, `occurrences`, `qac_ref`; Türkçe satırda ek olarak `ar_lemma_id`, `etymological_only`, `origin` (`kaikki`/`llm`/`editor`; `llm` S-16'ya kadar kullanılmaz), `status`, `freq` |
+| `lemma` | `id`, `lang` ('ar' / 'tr'), `text`, `text_clean`, `root_id`, `occurrences`, `qac_ref`; Türkçe satırda ek olarak `ar_lemma_id`, `etymological_only`, `origin` (`kaikki`/`llm`/`editor`; `llm` S-16'ya kadar kullanılmaz), `status`, `onay_yolu` (`editor`/`otomatik`), `kanit` (jsonb; otomatik onayda zorunlu), `freq` |
 | `quran_word` | `anchor`, `surah`, `ayah`, `word`, `text_uthmani`, `root_id`, `lemma_id`, `pos`, `features` (jsonb), `source_id` |
 
 `root.id` ve `lemma.id` çapalar gibi kalıcıdır ve yeniden numaralanmaz. Türkçe anlamlar (K-19), `xref.evidence` ve v1.x kelime defteri (`vocab`) bu kimliklere bağlıdır. `qac_ref` ileride QAC Version 2'ye geçişte eşleme sağlar.
@@ -68,7 +68,7 @@ flowchart LR
   Z --> K["kaikki etimolojisi"]
   K --> Q["QAC kök envanterine eşleme"]
   Q -->|"çözülmeyen"| L["Dil modeli, QAC kökleriyle sınırlı (S-16)"]
-  Q --> H["Editör onayı"]
+  Q --> H["Otomatik onay (kanıtlı) ya da editör onayı"]
   L --> H
   H --> I["tr_root_index ve tr_form"]
 ```
@@ -126,13 +126,13 @@ Kesme işaretinde iki durum ayrılır. "Kur'ân", "Mü'min" gibi iç kesmeli kel
 - Protokoldeki gibi üç model ya da istem çeşitlemesi oy verir. Üçü ayrışırsa öğe editör kuyruğunun başına gider ([protocols.io](https://www.protocols.io/view/llm-assisted-expert-annotation-for-systematic-lite-4r3l2dw5jg1y/v1.pdf)).
 - Maliyet tahmini: Claude Haiku 5.5 ile (girdi 0,10 $/M, çıktı 0,50 $/M) 15 bin lemma × 600 girdi ve 80 çıktı tokenı tek geçişte yaklaşık 1,5 $ eder. Lemma sayısı varsayımdır; diğer modellerin fiyatı burada yok.
 
-**7. Editör onayı.** Kuyruk külliyattaki sıklığa göre dizilir: sabır, şükür, rahmet, tevhid, nur, hikmet gibi yüksek sıklıklı lemmalar önce gelir. Zipf yasası gereği birkaç bin lemma token'ların çoğunu kapsar (araştırma notu). Kart üç KWIC satırı, önerilen kökü ve Arapça lemmayı, o kökün Kur'an'daki örneklerini Elmalılı mealiyle ve "yalnızca etimolojik" anahtarını gösterir. Kararlar `review` tablosuna yazılır.
+**7. Otomatik ya da editör onayı ([K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 9).** Bir Türkçe lemma eşlemesi şu koşulların hepsi sağlanırsa `status = 'onayli'` ve `onay_yolu = 'otomatik'` ile girer: (a) lemmatizasyon tek lemmaya iner ve sözcük kapalı sınıftan (zamir, bağlaç, edat, yardımcı fiil) değildir; (b) yapısal sözlük kanıtı vardır (kaikki'de Türkçe → Arapça `root` şablonu, kaynak dili `ar` olan `bor`/`der`/`inh` şablonu ya da `ety`/`etymon` ağaç şablonunda `ar:` etimonu; Türkçe → Osmanlıca → Arapça zinciri de yapısal kanıttır, serbest metindeki "Arabic" sözcüğü kanıt sayılmaz); (c) QAC eşleşmesi kesin ve tektir (kök harfleri `root.letters` ile tutar ya da etimon QAC lemmasıyla tutar ve QAC adayı tektir); (d) kaynaklar çelişmez (zeyrek sözcük türü kaikki türüyle eşleşir, aynı lemma ve türdeki bütün kaikki maddeleri aynı köke gider); (e) dil modeli kullanılmaz. Güvenilir kanıtı olmayan sözcüğe kök atanmaz ve satır açılmaz. Belirsiz, çelişkili, çok adaylı ya da yalnız serbest metin kanıtlı eşleme `aday` kalır, `review` açar ve editör kuyruğuna gider; kuyruk yalnız aday kalanlardır. Otomatik onaylılar için editör işi yoktur; editör isterse "İtiraz et" ile `review` açar. Kanıt `lemma.kanit` içinde saklanır; hat yalnız `onay_yolu = 'otomatik'` satırları yeniden değerlendirir, `onay_yolu = 'editor'` satırlara dokunmaz. Aday kalan eşlemelerde kuyruk külliyattaki sıklığa göre dizilir: sabır, şükür, rahmet, tevhid, nur, hikmet gibi yüksek sıklıklı lemmalar önce gelir. Zipf yasası gereği birkaç bin lemma token'ların çoğunu kapsar (araştırma notu). Kart üç KWIC satırı, önerilen kökü ve Arapça lemmayı, o kökün Kur'an'daki örneklerini Elmalılı mealiyle ve "yalnızca etimolojik" anahtarını gösterir. Kararlar `review` tablosuna yazılır.
 
-**8. İndeks üretimi.** Onaylı bir köke bağlanan her Türkçe token için `tr_root_index(root_id, anchor, span_start, span_end, tr_lemma_id, etymological_only)` satırı yazılır. Ofsetler NFC kod noktasıdır. Biçim sözlüğü `tr_form(key_wide, key_narrow, tr_lemma_id, freq)` cihazda dokunulan kelimenin lemmasını bulur ([01 §9](./01-baglanti-modeli.md)).
+**8. İndeks üretimi ve yeniden üretim.** Otomatik ya da editör onaylı bir köke bağlanan her Türkçe token için `tr_root_index(root_id, anchor, span_start, span_end, tr_lemma_id, etymological_only, unit_hash)` satırı yazılır. Ofsetler NFC kod noktasıdır. `unit_hash` satır üretilirken birimin `content_hash` değerinin ilk 16 hanesidir. Hat tabloyu her koşuda onaylı eşlemelerden ve veritabanındaki güncel metinden yeniden üretir; Yayınlayıcı özeti tutmayan satırı pakete almaz (`ozet-tutmadi`; K-51 madde 1). İki meal (`elmalili-meal` ve `elmalili-sade-meal`) birlikte işlenir; editördeki bağlantı hedefi orijinal meal kalır (madde 7). Biçim sözlüğü `tr_form(key_wide, key_narrow, tr_lemma_id, freq, data_version)` cihazda dokunulan kelimenin lemmasını bulur ([01 §9](./01-baglanti-modeli.md)).
 
 ## 6. "Yalnızca etimolojik" işareti
 
-Türkçedeki anlamı Kur'an'daki anlamından kaymış kelimeler "yalnızca etimolojik" diye ayrıca etiketlenir (rapor). İşaret `(tr_lemma, kök)` çiftindedir. Editör gerekirse tek bir geçişi `tr_root_index` satırında değiştirir. Örnekleri editör doğrular:
+Türkçedeki anlamı Kur'an'daki anlamından kaymış kelimeler "yalnızca etimolojik" diye ayrıca etiketlenir (rapor). İşaret `(tr_lemma, kök)` çiftindedir. Editör gerekirse tek bir geçişi `tr_root_index` satırında değiştirir. Anlam kayması otomatik tespit edilemez: otomatik eşleme `etymological_only = false` başlar ve ayırma editör onaylı listededir ([K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 9). Tohum olarak şu örnekler kullanılır, editör doğrular:
 - **hayvan:** Türkçede canlı varlık; kök ح ي ي, Kur'an'daki الحيوان hayat anlamında kullanılır.
 - **ihtiyar:** Türkçede yaşlı; Arapça ihtiyâr "seçme", kök خ ي ر.
 - **rahat:** kök ر و ح, rûh ile aynı kök.
@@ -141,9 +141,9 @@ Panelde bu sonuçlar "aynı kök … · yalnızca etimolojik" çipiyle katlı al
 
 ## 7. Kalite ölçümü ve IDF
 
-- **Altın set:** 300–500 Türkçe lemma → kök çifti, sıklık bandına (yüksek, orta, düşük) ve kaynağa (meal, tefsir, Risale) göre tabakalı (rapor).
-- **Ölçütler:** atanan kökün kesinliği; duyarlılık, yani Arapça kökenli lemmaların kök alan payı; iki editör arasında ve model ile editör arasında Cohen's κ; "yalnızca etimolojik" etiketinde uyum.
-- **Kural:** model-insan uyumu insan-insan düzeyine (protokolde κ ≈ 0,6) ulaşmadan otomatik etiketleme denetimsiz çalışmaz. Protokolde insan-insan κ 0,60 ± 0,24, model çoğunluğu-insan κ 0,57 ± 0,08 çıktı ([protocols.io](https://www.protocols.io/view/llm-assisted-expert-annotation-for-systematic-lite-4r3l2dw5jg1y/v1.pdf)).
+- **Değerlendirme setleri ([K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 10 ve 11).** Kullanıcı veri seti hazırlamaz. Her set ve örnek `sinif` (`altin`, `silver`, `sentetik`), `kaynak`, `dogrulama_yontemi` ve `uretim_komutu` taşır. Döngüsellik yasağı: bir set ölçtüğü üretimin girdisi olan kaynaktan kurulamaz; kaikki ile onaylanan eşleme kaikki'den kurulmuş setle ölçülmez ve `qa gold` kesişim varsa ölçüm yerine hata verir. QAC kök ve lemma etiketleri `kok`/`lemma` tutarlılık testinde `altin`dır (deterministik). Sınıflar ve kapıya etkisi [Test stratejisi](../07-yayin/03-test-stratejisi.md#4-i̇çerik-hattı-değerlendirme-setleri) §4'tedir.
+- **Ölçütler:** atanan kökün kesinliği; duyarlılık, yani Arapça kökenli lemmaların kök alan payı; Cohen's κ yalnız iki bağımsız etiket kaynağı varsa; "yalnızca etimolojik" etiketinde uyum (editör onaylı liste).
+- **Kural:** otomatik onaylı eşlemeler için kök kapısı Test stratejisi §4'teki eşiği (kesinlik ≥ 0,95) tutmazsa bu eşlemeler `public`'e girmez; `dev` ve `internal`'da kalır ve rapor politikanın hangi koşulunun daraltılacağını önerir. Dil modeli–insan uyumu (protokolde insan-insan κ 0,60 ± 0,24, model çoğunluğu-insan κ 0,57 ± 0,08; [protocols.io](https://www.protocols.io/view/llm-assisted-expert-annotation-for-systematic-lite-4r3l2dw5jg1y/v1.pdf)) yalnız S-16 için geçerlidir.
 
 IDF, ق و ل gibi çok yaygın köklerin nadir köklerin önüne geçmesini önler (rapor):
 
@@ -151,7 +151,7 @@ IDF, ق و ل gibi çok yaygın köklerin nadir köklerin önüne geçmesini ön
 idf_q(r)  = ln(6236 / ayah_count(r))       root.idf_q; lemma için aynı formül
 idf_n(r)  = idf_q(r) / ln(6236)            0–1 arası; birim-birim kok skoru ve "Kökler" sırası
 df_p(r)   = r kökünü taşıyan paket birimi sayısı (paket üst verisi); hedef birim sırasında tf·idf
-idf_n(r) < 0,2 olan kökler birim-birim kok satırı üretmez (öneri; altın setle ayarlanır)
+idf_n(r) < 0,3 olan kökler birim-birim kok satırı üretmez; birim başına tür başına en çok N = 5 satır (K-51 madde 6)
 ```
 
 ## 8. Cihaz verisi, kelime kartı ve kök gezgini
@@ -159,7 +159,7 @@ idf_n(r) < 0,2 olan kökler birim-birim kok satırı üretmez (öneri; altın se
 | Paket | Tablolar | Boyut |
 |---|---|---|
 | `core` | `quran_word` (Tanzil'den kelime bölmesi ve metin) | Kelime tablosu 77,4 bin satır (boyut tahmini için araştırma notu) |
-| `kelime-kok` (bütün derlemelerde; ayrı ve isteğe bağlı paket) | QAC kaynaklı `root`, `lemma`, kelime–kök/lemma eşlemesi (`word_morph`); Türkçe kelime anlamları (`lemma_gloss`; `public`'te yalnız onaylılar); `tr_form`; Elmalılı meali için `tr_root_index` | Morfoloji verisi ~2–4 MB (tahmin, araştırma notu) |
+| `kelime-kok` (bütün derlemelerde; ayrı ve isteğe bağlı paket) | QAC kaynaklı `root`, `lemma`, kelime–kök/lemma eşlemesi (`word_morph`); Türkçe kelime anlamları (`lemma_gloss`; `public`'te yalnız onaylılar); `tr_form`; Elmalılı mealleri için `tr_root_index`; QAC'den türeyen `kok` ve `lemma` bağlantıları için `xref_idx` ([K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 3) | Morfoloji verisi ~2–4 MB (tahmin, araştırma notu) |
 | `tefsir-elmalili`, `risale-dizin` | Kendi birimleri için `tr_root_index`; Risale kitap paketleri bu tabloyu taşımaz | Risale ~1,9 milyon kelime (7.550 sayfa × ~250 kelime, tahmin); Arapça kökenli payı ölçülmeden boyut verilemez |
 
 Tabloların kesin şeması [İçerik paketleri §3.2–§3.3](../03-veri/03-icerik-paketleri.md#33-kelime-kok)'tedir. `kelime-kok` kurulu değilse kelime kartı Arapça kelimeyi, konumunu ve eylemleri gösterir; Türkçe anlam, kök ve lemma bu paketle gelir.

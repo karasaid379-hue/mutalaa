@@ -1,7 +1,7 @@
 # İktibas ve Atıf Tespiti
 
-> **Sürüm:** 1.3 · **Tarih:** 12 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü)
+> **Sürüm:** 1.4 · **Tarih:** 13 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü)
 
 Bu dosya Risale-i Nur ve tefsir metinlerindeki âyet iktibaslarının ve açık atıfların bulunmasını tanımlar. Çıktı `xref` tablosuna `type = 'atif'` ve `type = 'iktibas'` satırlarıdır ([bağlantı modeli](./01-baglanti-modeli.md)). İş Python 3.13 içerik hattında, `pipeline/enrich/` altında, çevrimdışı çalışır (K-12). Her satır editör panelinde onaylanmadan mağazaya çıkmaz (K-13). Metni verilmeden yapılan imalar sözlüksel tespitle bulunamaz; onları editör `ima` olarak girer.
 
@@ -172,7 +172,7 @@ Kalıp listesi `pipeline/enrich/` altında editör onaylı bir dosyadır; girdil
 | Ters ipucu | Yakında "hadîs", "hadîs-i şerif", "duâ", "münâcât" | −0,20 |
 | Konum | Başlık ya da süs parantezi | +0,10 |
 
-İpucu listeleri adaydır ve altın sette ölçülür. İlk ölçümden sonra elle verilen etkiler bir lojistik regresyonla değişir: özellikler n, kapsama, kimlik, log f ve sinyallerdir; çıktı kalibre `confidence` olur. Risale'de âyetlerin başlık olarak kullanılması bilinen bir özelliktir ([RİNAP](https://rinap.uskudar.edu.tr/uploads/site/6/content/files/risale-i-nurun-tefsirdeki-yeri-compressed.pdf)).
+İpucu listeleri adaydır ve değerlendirme setinde ölçülür. İlk ölçümden sonra elle verilen etkiler bir lojistik regresyonla değişir: özellikler n, kapsama, kimlik, log f ve sinyallerdir; çıktı kalibre `confidence` olur. Risale'de âyetlerin başlık olarak kullanılması bilinen bir özelliktir ([RİNAP](https://rinap.uskudar.edu.tr/uploads/site/6/content/files/risale-i-nurun-tefsirdeki-yeri-compressed.pdf)).
 
 ## 9. İsteğe bağlı dil modeli doğrulaması
 
@@ -189,22 +189,28 @@ NeurIPS 2025'te sunulan karma yaklaşımda bir dil modeli kasıtlı referanslar�
 - Sonuç `evidence.llm` alanına yazılır; durum `aday` kalır ve kararı editör verir.
 - Maliyet tahmini: Claude Haiku 5.5 milyon girdi tokenı 0,10 $, çıktı 0,50 $ ([fiyat](https://platform.claude.com/docs/en/about-claude/pricing)). 20 bin aday × 1.000 girdi ve 80 çıktı tokenı yaklaşık 2,8 $ eder. Aday sayısı varsayımdır.
 
-## 10. Altın set ve ölçüm
+## 10. Değerlendirme setleri ve ölçüm
 
-- **Örneklem:** 300–500 paragraf, tabakalı (rapor). Öneri: Sözler, Mektubat, Lem'alar, Şuâlar, Mesnevî-i Nuriye ve İşârâtü'l-İ'câz'dan 70'er, Elmalılı'dan 60 paragraf (toplam 480). Her kitapta Arapçasız (yanlış pozitif ölçümü), kısa Arapçalı ve uzun Arapçalı paragraflar ile başlık paragrafları yer alır.
+Kullanıcı veri seti hazırlamaz ([K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 10). Setler üç sınıftan biridir ve her örnek `sinif`, `kaynak`, `dogrulama_yontemi` ve `uretim_komutu` taşır ([Test stratejisi](../07-yayin/03-test-stratejisi.md#4-i̇çerik-hattı-değerlendirme-setleri) §4):
+
+- **`altin`:** hazır, bağımsız insan etiketli ya da âlim kaynaklı ve yöntemi belgelenmiş veri.
+- **`silver`:** otomatik üretilmiş ya da bağımsız doğrulanmamış veri. IslamicEval 2025 dev seti (`qcri/IslamicEval-2025-Subtask-1`, Apache-2.0) insan etiketlidir ama LLM çıktısı üzerindedir ve test seti kapalıdır; iktibas ölçümü için `silver` sayılır (K-51 madde 12).
+- **`sentetik`:** betikle kurulan test verisi (sentetik Türkçe paragraflar ve Tanzil'den betikle alınan Arapça diziler). Kapı açmaz, yalnız motor testidir.
+- **Döngüsellik yasağı:** set, ölçtüğü üretimin girdisi olan kaynaktan kurulamaz; `qa gold` set manifestindeki kaynaklarla üretim kaynaklarının kesişimini denetler ve kesişim varsa ölçüm yerine hata verir.
+- **Örneklem (hedef):** tabakalı örneklem; Risale ve Elmalılı tefsir paragrafları A20 ve A37'den sonra gelir. Her kitapta Arapçasız (yanlış pozitif ölçümü), kısa Arapçalı ve uzun Arapçalı paragraflar ile başlık paragrafları yer alır.
 - **Tohum:** Sözler'in sonundaki basılı fihrist (s. 827 ve 836). Fihrist kaydı her zaman bir âyete karşılık gelmez; bir kayıt için "Kur'an'da bu metinle herhangi bir âyet bulunamamıştır" notu düşülmüştür ([RİNAP](https://rinap.uskudar.edu.tr/uploads/site/6/content/files/risale-i-nurun-tefsirdeki-yeri-compressed.pdf)).
-- **Etiketleme:** iki kişi bağımsız etiketler: dizi sınırı, sınıf (`iktibas_tam`, `iktibas_kismi`, `iktibas_uyarlanmis`, `atif`, `ima`, `hadis`, `dua_kalip`, `diger_arapca`), hedef âyet ve kelime aralığı. Üçüncü kişi ayrışmaları çözer. Sınıf ve hedef için Cohen's κ raporlanır.
+- **Etiket sınıfları:** dizi sınırı, sınıf (`iktibas_tam`, `iktibas_kismi`, `iktibas_uyarlanmis`, `atif`, `ima`, `hadis`, `dua_kalip`, `diger_arapca`), hedef âyet ve kelime aralığı. İki kişilik etiketleme yoktur; Cohen's κ yalnız iki bağımsız etiket kaynağı varsa raporlanır (yapay zekâ ile etiketleme S-16'dadır).
 - **Bölme:** %40 geliştirme (ayar), %60 test (dondurulmuş).
 - **Ölçütler:** dizi düzeyinde (aynı hedef âyet ve ofset IoU ≥ 0,5) ve âyet düzeyinde ((paragraf, âyet) çiftleri) kesinlik, duyarlılık, F1. Uzun (≥ 4 kelime) ve kısa (< 4 kelime) iktibaslar ve atıflar ayrı raporlanır (rapor).
 
-| Kesit | Altın | Bulunan | DP | YP | YN | Kesinlik | Duyarlılık | F1 |
+| Kesit | Set (referans) | Bulunan | DP | YP | YN | Kesinlik | Duyarlılık | F1 |
 |---|---|---|---|---|---|---|---|---|
 | Uzun iktibas, dizi düzeyi | | | | | | | | |
 | Kısa iktibas, dizi düzeyi | | | | | | | | |
 | Atıf | | | | | | | | |
 | Âyet düzeyi, kitap kitap | | | | | | | | |
 
-Hedefler [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md#8-v1-başarı-ölçütleri) §8'deki B-03'tür (İ-22 onayına kadar öneri); tür başına kapı eşikleri [Test stratejisi](../07-yayin/03-test-stratejisi.md#4-i̇çerik-hattı-altın-set-değerlendirmesi) §4'tedir. Hedef tutmazsa toplu onay açılmaz. Rapor `data/reports/` altında JSON üretilir ([Test stratejisi](../07-yayin/03-test-stratejisi.md) §4) ve yayın notuna eklenir.
+Hedefler [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md#8-v1-başarı-ölçütleri) §8'deki B-03'tür (İ-22 onayına kadar öneri); tür başına kapı eşikleri [Test stratejisi](../07-yayin/03-test-stratejisi.md#4-i̇çerik-hattı-değerlendirme-setleri) §4'tedir. Hedef tutmazsa toplu onay açılmaz. Rapor `data/reports/` altında JSON üretilir ([Test stratejisi](../07-yayin/03-test-stratejisi.md) §4) ve yayın notuna eklenir.
 
 ## 11. Hazır araçlar
 
@@ -216,7 +222,7 @@ Hedefler [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md#8-v1-başarı-öl�
 | [quran-search-in-text](https://pypi.org/project/quran-search-in-text/0.0.9/) | 0.0.9 (Kas 2024); 0.1.3 mevcut | Paragraf paragraf tarar, âyet adresi ve HTML bağlantı üretir | Hızlı taban çizgisi |
 | [quran-verse-detection](https://github.com/topics/quran-verse-detection) | A18.0'da sabitlenir | Âyet metninden sure ve âyet | Tam âyet tanıma |
 
-Hiçbiri Osmanlıca-Türkçe bir ana metin için tasarlanmadı (rapor). Karar kuralı: ijaza ve quran-search-in-text geliştirme bölümünde bizim çıkardığımız dizilerle koşulur. ijaza hedefleri tutarsa `pipeline/enrich/` içinde sarılır ve normalizasyon, bağlam ve kalıp katmanları bizde kalır. Tutmazsa §5–6'daki eşleştirici yazılır ve gerekirse ijaza'nın normalizasyonu kullanılır.
+ijaza etiketli test verisi taşımaz: bu araçlar yalnız karşılaştırma aracıdır, değerlendirme seti değildir ([K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 12). Hiçbiri Osmanlıca-Türkçe bir ana metin için tasarlanmadı (rapor). Karar kuralı: ijaza ve quran-search-in-text geliştirme bölümünde bizim çıkardığımız dizilerle koşulur. ijaza hedefleri tutarsa `pipeline/enrich/` içinde sarılır ve normalizasyon, bağlam ve kalıp katmanları bizde kalır. Tutmazsa §5–6'daki eşleştirici yazılır ve gerekirse ijaza'nın normalizasyonu kullanılır.
 
 ## 12. Editör iş akışı
 
@@ -235,7 +241,7 @@ Aynı gramer motoru `collection_alias` tablosuyla hadis atıflarını ayrıştı
 ## 14. Açık sorular
 
 1. Risale kaynağındaki açık atıflar müellif metninde mi, yayıncı dipnotunda mı? Yayıncı dipnotu ayrıca korunabilir; bu yüzden `position = 'dipnot'` ayrı tutulur.
-2. Risale'deki Arapça ibarelerin yazımı Uthmani'ye mi imlâî'ye mi yakın? Altın sette `index` dağılımıyla ölçülür.
+2. Risale'deki Arapça ibarelerin yazımı Uthmani'ye mi imlâî'ye mi yakın? Değerlendirme setinde `index` dağılımıyla ölçülür.
 3. Tanzil Uthmani ve Simple Clean metinlerinde âyet başına kelime sayısı eşit mi?
 4. Elmalılı'nın âyet numaralandırması Tanzil ile aynı mı?
 5. Tek başına hemzenin silinmesi arama normalizasyonuna da alınsın mı? [Arama](../03-veri/05-arama-fts5.md) dosyasıyla ortak karar gerekir.

@@ -1,7 +1,7 @@
 # Bağlantı Modeli
 
-> **Sürüm:** 1.5 · **Tarih:** 9 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-47](../00-ozet/02-karar-defteri.md#k-47--yayın-kapsamı-tutarlılığı-sarkan-bağlantı-ve-çapa-sürekliliği) · [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Sürüm:** 1.6 · **Tarih:** 13 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) · [K-47](../00-ozet/02-karar-defteri.md#k-47--yayın-kapsamı-tutarlılığı-sarkan-bağlantı-ve-çapa-sürekliliği) · [K-46](../00-ozet/02-karar-defteri.md#k-46--yayın-kaydı-içerik-özetleri-ve-fikstürler) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
 
 Bu dosya bağlantıların veri modelini, puanlamasını, yayın kuralını, seçim çözümleme akışlarını, **Bağlantılar** panelinin sözleşmesini ve geri dönüş yığınını tanımlar. Ayrıntılar: [iktibas tespiti](./02-iktibas-tespiti.md), [kök ve lemma](./03-kok-ve-lemma.md), [anlamsal katman](./04-anlamsal-katman.md).
 
@@ -80,9 +80,9 @@ CREATE INDEX xref_queue ON xref (type, confidence DESC) WHERE status = 'aday';
        data_version = EXCLUDED.data_version
    WHERE x.origin = 'hat' AND x.status = 'aday';
    ```
-   Yeni çalışmada üretilmeyen `aday` satır silinir; `onayli` satır silinmez, "yeniden doğrula" kaydıyla `review` kuyruğuna düşer.
-4. **Yön.** `atif`, `iktibas`, `ima` atıf yapan metinden âyete ya da hadise gider; "Bu âyet Risale'de nerede geçiyor?" `dst_anchor` indeksiyle çözülür. `kok`, `lemma`, `anlamsal` kaynak birimden komşuya, birim başına ilk N satırdır. Simetrik `benzer_ayet` kaynakları (QurSim) tek satırdır, sorgu iki sütuna bakar. `konu` birimden konu düğümüne gider.
-5. **Uç metni değişirse** satır yeniden doğrulanır. `evidence.src_hash`/`dst_hash` uç birimin `content_hash` değerinin ilk 16 hanesidir. Özet değişince hat eski aralık metnini yeni metinde arar; tek eşleşmede ofseti kaydırır, yoksa satırı kuyruğa düşürüp yayından çıkarır.
+   Yeni çalışmada üretilmeyen `aday` satır silinir; `onayli` satır silinmez, "yeniden doğrula" kaydıyla `review` kuyruğuna düşer ([K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 8): `hedef_tablo = 'xref'`, `alan = 'status'`, `eylem = 'oner'`, `onerilen = {"yeniden_dogrula": true, "neden": "uretilmedi" | "uc_metni_degisti"}`; aynı `xref_id` için açık kayıt varsa yenisi açılmaz. Hat yalnız insan onayı isteyen türler (`atif`, `iktibas`) ve yeniden doğrulama için `review` açar; otomatik türler (`kok`, `lemma`, `benzer_ayet`) `review` açmaz (§8).
+4. **Yön.** `atif`, `iktibas`, `ima` atıf yapan metinden âyete ya da hadise gider; "Bu âyet Risale'de nerede geçiyor?" `dst_anchor` indeksiyle çözülür. `kok`, `lemma`, `anlamsal` kaynak birimden komşuya, birim başına ilk N satırdır; `kok` ve `lemma` için tür başına N = 5 ve `idf_n < 0,3` olan kökler birim-birim satır üretmez ([K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 6). Simetrik `benzer_ayet` kaynakları (QurSim) tek satırdır, sorgu iki sütuna bakar. `konu` birimden konu düğümüne gider.
+5. **Uç metni değişirse** satır yeniden doğrulanır. `evidence.src_hash`/`dst_hash` uç birimin `content_hash` değerinin ilk 16 hanesidir. Özet değişince hat eski aralık metnini yeni metinde arar; tek eşleşmede ofseti kaydırır, yoksa satırı kuyruğa düşürüp yayından çıkarır ([K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 1). Yayınlayıcı özeti güncel özetle tutmayan satırı pakete almaz (P-07, gerekçe `uc-ozeti-tutmadi`).
 
 Başlıca `evidence` anahtarları: `iktibas` → `matched_words`, `coverage`, `identity`, `phrase_freq`, `context`, `index`, `alternatives`, `position`; `kok`/`lemma` → `shared` [{`root`, `idf`, `src_word`, `dst_word`}], `etymological_only`, `lexicon_status`; `benzer_ayet` → `subtype` (`sozluksel`/`alim`/`mutesabih`); `anlamsal` → `model`, `cosine`, `calibrated`; hepsi → `src_hash`, `dst_hash`, `source_id`.
 
@@ -115,7 +115,7 @@ kok         idf_n(r) = ln(6236/df(r)) / ln(6236)      df: r kökünü taşıyan 
             birim-birim  score(A,B) = Σ idf_n(r ∈ K(A)∩K(B)) / Σ idf_n(r ∈ K(A))
             tek kelime   score = idf_n(r) · (aynı lemma ? 1 : 0,8) · (yalnızca etimolojik ? 0,5 : 1)
 lemma       kok ile aynı, lemma sıklığıyla
-benzer_ayet sözlüksel min(1, ortak/7)·(0,5 + 0,5·kapsama); QurSim derecesi 0–1'e (ölçek Doğrulanacak); yedek QUL biçimli kopyada score/100
+benzer_ayet sözlüksel min(1, ortak/7)·(0,5 + 0,5·kapsama); QurSim: Label anlamı doğrulanamadı, Label'a bağlı eşik yok (çiftin varlığı aday kanıtıdır; K-51 madde 12); yedek QUL biçimli kopyada score/100
 konu        score(A,B|T) = w(A,T)·w(B,T)·idf_n(T)     w: 1,0 doğrudan, 0,5 dolaylı
 anlamsal    score = confidence = kalibre(kosinüs), grup çifti başına izotonik eşleme (04 §5)
 ```
@@ -148,13 +148,15 @@ Kural, Yayınlayıcı'nın P-07 kontrolüdür ([Yayın süreci](../07-yayin/01-y
 | Tür | `onayli` | `aday` | `red` |
 |---|---|---|---|
 | `atif`, `iktibas`, `ima`, `konu` (insan onayı ister) | her derlemeye girer | yalnız `dev` ve `internal` (orada "Aday" rozetiyle, `approved = 0`) | hiçbirine |
-| `kok`, `lemma`, `benzer_ayet` (otomatik) | her derlemeye girer | `confidence ≥ 0,50` ise her derlemeye, değilse hiçbirine (§6: "gösterilmez") | hiçbirine |
+| `kok`, `lemma`, `benzer_ayet` (otomatik) | her derlemeye girer | `confidence ≥ 0,50` ve türün `xref_gate` kapısı geçilmişse her derlemeye; kapı kalmış ya da ölçülmemişse yalnız `dev` ve `internal`; `confidence < 0,50` ise hiçbirine (§6: "gösterilmez") | hiçbirine |
 | `anlamsal` (otomatik) | `public` dışında her derlemeye; `public` v1'de hiçbir satırı almaz | `public` dışında otomatik tür kuralı; `public` v1'de hiçbir satırı almaz | hiçbirine |
 
 Her türde ek koşullar:
 
 - Kaynak ucun eseri o derlemede görünür olmalıdır; hedef ucun eseri de görünür olmalıdır. Hedef kaynak kaydı olan ayrı bir dizindeyse (`risale-atif-dizini`) hedefin görünürlüğü aranmaz.
 - **Uç birimler derlemenin kapsamında olmalıdır** ([K-47](../00-ozet/02-karar-defteri.md#k-47--yayın-kapsamı-tutarlılığı-sarkan-bağlantı-ve-çapa-sürekliliği) madde 1). İki ucun çapası birime indirilir (`:3-7` ve `@0-5` sonekleri atılır); birim satırı varsa ve P-08, P-10 ya da kullanım dışı olduğu için derlemeye girmiyorsa bağlantı da girmez (P-07, gerekçe `uc-birim-girmedi`; rapor hangi ucun hangi nedenle dışarıda kaldığını yazar). Böylece pakette hedefsiz bağlantı kalmaz. Onaysız birim `dev` ve `internal`'da kapsamdadır; orada bağlantı düşmez. Birim satırı olmayan uçlar (ör. `konu:`) etkilenmez.
+- **Tür bazında kapı** ([K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 5 ve 11). `xref_gate` tablosunu `qa gold` yazar, Yayınlayıcı okur. Kapıdan kalan ya da henüz ölçülmemiş otomatik türün (`kok`, `lemma`, `benzer_ayet`) `aday` satırları `public`'e girmez; `dev` ve `internal`'a girer. `onayli` satırlar her derlemeye girer. `silver` ya da `altin` setle geçilen kapı `public`'i açar ve paket üst verisi sınıfı yazar ("silver ile ölçüldü"); `sentetik` set kapı açmaz. Kök kapısı kalırsa otomatik onaylı Türkçe eşlemeler de `public`'e girmez.
+- **`review` açma kuralı** (K-51 madde 8; [BÇ-63](../10-claude-code/07-belge-celiskileri.md)). Hat yalnız insan onayı isteyen türler (`atif`, `iktibas`) ve yeniden doğrulama için `review` açar; otomatik türler `review` açmaz. Aksi hâlde aşağıdaki "açık `review` yoksa" koşulu `kok`, `lemma` ve `benzer_ayet` satırlarını `public`'ten dışarıda bırakırdı.
 - `public` için ayrıca: bağlantıda açık `review` yoktur; `kok` ve `lemma` için `evidence.lexicon_status` onaylıdır (alan yoksa onaylı sayılır, çünkü Türkçe taraftaki sözlük girdisi onaylıdır); `anlamsal` v1'de yoktur, v1.x derlemesinde `confidence ≥ 0,50` ile ve "Makine önerisi" rozetiyle gelir.
 - İç derlemeler (`dev`, `internal`) `red` dışındaki satırı, yukarıdaki tabloya göre görür; onay isteyen türdeki `aday` satır orada "Aday" rozetiyle durur ve `public`'e girmez ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) madde 5).
 
@@ -261,7 +263,7 @@ Oy hesap ister ve v1.x'te gelir (K-15). Menü "Yararlı", "Yararsız" ve nedenli
 
 ## 13. Paketleme ve cihazda sorgu
 
-Satır yerleşimi [İçerik paketleri §4](../03-veri/03-icerik-paketleri.md#4-bağlantıların-paketlere-dağılımı)'tedir: iki ucu `core` içindeyse `core`; bir ucu Risale ise `risale-dizin` (kitap paketi silinse de bağlantı kalır, ATTACH sınırı); bir ucu `core`, öbür ucu isteğe bağlı P'deyse P; iki ucu farklı isteğe bağlı paketlerdeyse bağımlı (`depends_on`) olan paket, bağımlılık yoksa `pack_id` değeri alfabetik olarak sonra gelen paket.
+Satır yerleşimi [İçerik paketleri §4](../03-veri/03-icerik-paketleri.md#4-bağlantıların-paketlere-dağılımı)'tedir. QAC'den türeyen `kok` ve `lemma` bağlantıları `kelime-kok` paketine girer ve pakete `xref_idx` tablosu eklenir; `benzer_ayet` (Tanzil n-gram ve QurSim) `core`'a girer ([K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 3). Öteki türlerde: iki ucu `core` içindeyse `core`; bir ucu Risale ise `risale-dizin` (kitap paketi silinse de bağlantı kalır, ATTACH sınırı); bir ucu `core`, öbür ucu isteğe bağlı P'deyse P; iki ucu farklı isteğe bağlı paketlerdeyse bağımlı (`depends_on`) olan paket, bağımlılık yoksa `pack_id` değeri alfabetik olarak sonra gelen paket.
 
 ```sql
 -- Cihazdaki paket tablosu (İçerik paketleri §3.2); yayıncı görünüm kuralını önceden hesaplar

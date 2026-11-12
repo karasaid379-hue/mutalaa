@@ -61,6 +61,7 @@ Tablo `pipeline/sources/` altındaki 31 kaydı listeler; kimlik ve tür sütunla
 | `lugat-redhouse-1890` | `sozluk` | §3.6 | A20 | archive.org `aturkishandenglishlexicon1` | `_djvu.txt` 8.447.120 bayt |
 | `lugat-kamus-i-turki` | `sozluk` | §3.6 | A20 | archive.org `kamus-i-turki-semseddin-sami-bey` | `_djvu.txt` 5.969.007 bayt |
 | `lugat-naci` | `sozluk` | §3.6 | A20 | archive.org `lugati-naci` | `_djvu.txt` 2.585.323 bayt |
+| `lugat-yegin` | `sozluk` | §3.6 | A18, A20 | açık dijital kopya bulunamadı (öncelikli lügat) | veri indirilmedi |
 | `ses-kfgqpc-meal` | `ses` | §3.7 | sonra (S-13) | — | Türkçe sürüm doğrulanmadı |
 | `kaikki-tr` | `sozluk` | §3.8 | A18 | kaikki dökümü, 30 Ekim 2026 | Türkçe 46.254 madde, Osmanlıca 10.016 madde |
 | `test-kucuk` | `kitap` | §3.8 | A13 | 1 (üreteç sürümü) | belirlenimci üreteç; 12 birim (2 bölüm × 6 paragraf) |
@@ -358,7 +359,7 @@ Her kart kaynağın adını, adresini, sürümünü ya da commit'ini, biçimini,
 
 ### 3.6 Lügat
 
-Lügat kaynakları madde kartının köken ve Osmanlıca yazım başvurusudur (A20.6). OCR metni başvuru içindir; maddedeki Türkçe tanımlar bizim yazdığımız ya da hazır anlam taslağından editörce onaylanan metindir (İ-28). Kelime sıklığı ve anlam taslağı kaynağı `risale-kelime-frekans` kartı §3.5'tedir; atıf satırı: "Kelime sıklıkları: Risale-i-Nur-Kelime-Frekans deposu."
+Lügat sırası: önce Abdullah Yeğin (`lugat-yegin`, proje sahibinin önceliği, 13 Kasım 2026; açık dijital kopya henüz bulunamadı, bulununca A18'de ikinci sözlük kanıtı ve A20.6'da öncelikli başvuru olur), sonra Redhouse, Kâmûs-ı Türkî ve Lugat-ı Nâci. Lügat kaynakları madde kartının köken ve Osmanlıca yazım başvurusudur (A20.6). OCR metni başvuru içindir; maddedeki Türkçe tanımlar bizim yazdığımız ya da hazır anlam taslağından editörce onaylanan metindir (İ-28). Kelime sıklığı ve anlam taslağı kaynağı `risale-kelime-frekans` kartı §3.5'tedir; atıf satırı: "Kelime sıklıkları: Risale-i-Nur-Kelime-Frekans deposu."
 
 **`lugat-redhouse-1890` · Redhouse, *A Turkish and English Lexicon*, 1890.**
 - **Adres ve sürüm:** James W. Redhouse (1811–1892), *A Turkish and English Lexicon*, 1890. Seçilen kopya: Internet Archive `aturkishandenglishlexicon1` (`https://archive.org/download/<kimlik>/<dosya>`; boyut ve SHA-1 `https://archive.org/metadata/aturkishandenglishlexicon1` kaydından); son güncelleme 14 Aralık 2024, öğe 5.097.608.269 bayt. Aynı eserin ikinci öğesi `aturkishandenglishlexicon_201907`. HathiTrust kaydı [001771732](https://catalog.hathitrust.org/Record/001771732) iki cilttir ("Full view", kaynak kurum Michigan State University, sayısallaştırma Google; [API](https://catalog.hathitrust.org/api/volumes/full/recordnumber/001771732.json)).

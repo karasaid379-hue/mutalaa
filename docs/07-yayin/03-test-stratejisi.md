@@ -1,7 +1,7 @@
 # Test stratejisi
 
-> **Sürüm:** 1.14 · **Tarih:** 12 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
+> **Sürüm:** 1.15 · **Tarih:** 13 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) · [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
 
 Bu dosya neyin, hangi araçla, ne zaman test edildiğini tanımlar. Eşik değerlerinin çoğu bu dosyanın önerisidir; ilk ölçümden sonra kalibre edilir ve öyle işaretlidir.
 
@@ -11,7 +11,7 @@ Bu dosya neyin, hangi araçla, ne zaman test edildiğini tanımlar. Eşik değer
 |---|---|---|
 | Ortak test vektörleri | pytest, Vitest, xUnit | `shared/test-vectors/` |
 | Birim | pytest (`pipeline/`), Vitest (`packages/`, `apps/editor`), Jest + jest-expo (`apps/mobile`), xUnit (`server/`) | Her PR |
-| İçerik kalitesi | Altın set değerlendirmesi, değişmezlik testleri | Gece ve sürüm |
+| İçerik kalitesi | Değerlendirme setleri (altın, silver, sentetik), değişmezlik testleri | Gece ve sürüm |
 | Veritabanı | Göç testleri (Testcontainers, `postgres:18`); Python hattının `veritabani` testleri (`postgres:18` servisi, `ci-pipeline` `database` işi) | Her PR |
 | Kalite kapısı | Publisher birim, bütünleşik ve yapıt taraması | Her PR ve sürüm |
 | Mobil | React Native Testing Library, Maestro | PR ve gece |
@@ -111,16 +111,26 @@ test('âyet ×3 tekrardan sonra sonraki âyete geçer', async () => {
 });
 ```
 
-## 4. İçerik hattı: altın set değerlendirmesi
+## 4. İçerik hattı: değerlendirme setleri
 
-| Altın set | Büyüklük | Tabakalama |
+Kullanıcı veri seti hazırlamaz ([K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 10). Her set ve her örnek `sinif`, `kaynak` (source_id, sürüm, madde ya da satır), `dogrulama_yontemi` ve `uretim_komutu` taşır. Üç sınıf vardır:
+
+| Sınıf | Anlamı | Kapıya etkisi |
 |---|---|---|
-| Atıf ve iktibas | 300–500 paragraf | Sözler, Mektubat, Lem'alar, Şuâlar, Mesnevî-i Nuriye, İşârâtü'l-İ'câz ve Elmalılı tefsir örneklemi |
-| Kök (Türkçe lemma → Arapça kök) | 300–500 çift | Sıklık bandı ve kaynak (meal, tefsir, Risale) |
-| Benzer âyet | Örneklem | QUL kaydı |
+| `altin` | Hazır, bağımsız insan etiketli ya da âlim kaynaklı ve yöntemi belgelenmiş veri | Geçilen kapı `public`'i açar |
+| `silver` | Otomatik üretilmiş ya da bağımsız doğrulanmamış veri | Otomatik türlerde geçilen kapı `public`'i açar; rapor ve paket üst verisi "silver ile ölçüldü" yazar |
+| `sentetik` | Betikle kurulan test verisi | Kapı açmaz; yalnız motor testidir |
+
+| Değerlendirme seti | Kaynak ve sınıf | Not |
+|---|---|---|
+| Atıf ve iktibas | IslamicEval 2025 dev seti (`silver`: insan etiketli ama LLM çıktısı üzerinde, test seti kapalı); sentetik paragraflar (`sentetik`) | ijaza etiketli test verisi taşımaz, yalnız karşılaştırma aracıdır. Risale ve Elmalılı tefsir örneklemi A20 ve A37'den sonra |
+| Kök (Türkçe lemma → Arapça kök) | Kaynaklar ve sınıf A18.5'te manifestle yazılır; sınıf `xref_gate.set_sinifi` ve rapora geçer | QAC kök ve lemma etiketleri `kok`/`lemma` tutarlılık testinde `altin`dır (deterministik) |
+| Benzer âyet | QurSim (âlim kaynaklı çift listesi, `altin` adayı); `arriqaaq/ilm` `qul/matching-ayah.json` (hesaplamalı, `silver`) | QurSim `Label` anlamı doğrulanamadı; Label'a bağlı eşik ya da puan kodlanmaz |
 | Anlamsal (v1.x) | Alan içi sorgu seti | Türkçe sorgu → paragraf; Arapça ve Türkçe → âyet |
 
-Büyüklük ve tabakalar rapordan gelir. Altın setler `data/gold/` altında (git dışı, insan emeği, yedeklenir) tutulur ve hiçbir pakete girmez. Risale altın seti Risale metni hatta alındıktan sonra kurulur (A20); Elmalılı ve Tanzil üzerindeki iktibas setleri bunu beklemez. Basılı fihristler başlangıç noktasıdır; bir fihrist kaydının Kur'an'da karşılığı bulunmadığı not edilmiştir ([RİNAP](https://rinap.uskudar.edu.tr/uploads/site/6/content/files/risale-i-nurun-tefsirdeki-yeri-compressed.pdf)).
+**Döngüsellik yasağı** (K-51 madde 10). Bir set, ölçtüğü üretimin girdisi olan kaynaktan kurulamaz: kaikki ile onaylanan eşleme kaikki'den kurulmuş setle, QurSim kaynaklı `benzer_ayet` satırı QurSim ile ölçülmez. `qa gold` set manifestindeki kaynaklarla üretim kaynaklarının kesişimini denetler; kesişim varsa ölçüm yerine hata verir.
+
+Setler `data/gold/` altında (git dışı, yedeklenir) tutulur ve hiçbir pakete girmez; `data/gold/` tüm değerlendirme setlerini taşır. İki kişilik etiketleme yoktur; κ yalnız iki bağımsız etiket kaynağı varsa raporlanır. Altın düzeyi kanıt için isteğe bağlı örneklem denetimi İ-13'tedir ve hiçbir aşamayı ya da yayını bekletmez. Basılı fihristler başlangıç noktasıdır; bir fihrist kaydının Kur'an'da karşılığı bulunmadığı not edilmiştir ([RİNAP](https://rinap.uskudar.edu.tr/uploads/site/6/content/files/risale-i-nurun-tefsirdeki-yeri-compressed.pdf)).
 
 Ölçüler âyet düzeyinde ve açıklık (span) düzeyinde kesinlik, duyarlılık ve F1'dir; uzun ve kısa iktibas ayrı raporlanır. Açıklık eşleşmesi aynı hedef çapa ve en az 0,5 örtüşme oranı ister (öneri).
 
@@ -131,13 +141,13 @@ Başarı hedefleri [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md#8-v1-ba�
 | `atif` | Kesinlik ≥ 0,98; duyarlılık ≥ 0,90 (B-03) | O türün `aday` bağlantıları pakete girmez |
 | `iktibas`, 4 kelime ve üstü | Kesinlik ≥ 0,95 (B-03), duyarlılık ≥ 0,85 | Aynı |
 | `iktibas`, 4 kelimeden kısa | Kesinlik ≥ 0,85 (B-03) | Yalnız `onayli` bağlantılar girer |
-| `kok` | Kesinlik ≥ 0,95 (B-04), duyarlılık ≥ 0,80, dil modeli–insan κ ≥ 0,6 (κ eşiği S-16'ya kadar uygulanmaz; [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü)) | Toplu etiketleme denetimsiz çalışmaz |
+| `kok` | Kesinlik ≥ 0,95 (B-04), duyarlılık ≥ 0,80, dil modeli–insan κ ≥ 0,6 (κ eşiği S-16'ya kadar uygulanmaz; [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü)) | Otomatik onaylı Türkçe eşlemeler ve `aday` satırlar `public`'e girmez, `dev` ve `internal`'da kalır; rapor politikanın hangi koşulunun daraltılacağını önerir ([K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 11). Toplu etiketleme denetimsiz çalışmaz |
 | `lemma` | QAC'den türetme %100 tutarlı (`xref` satırı için) | Derleme durur |
 | `benzer_ayet` | Örneklem kesinliği ≥ 0,90 | Yalnız `onayli` |
 | `anlamsal` (v1.x) | Kesinlik@10 ≥ 0,70 ve "makine önerisi" rozeti | Yayımlanmaz |
 | `ima`, `konu` | Otomatik yayın yok | Yalnız editör onayı |
 
-Yukarıdaki `lemma` eşiği `xref` içindir. A17.3'ün `quran_word.lemma_id` ölçütü ayrıdır: her `quran_word.lemma_id` QAC gövde LEM'inden türetilir ve tutarlılık %100'dür (SQL ve test). Kök için "dil modeli–insan κ" eşiği, dil modeli işleri proje sonuna ertelendiği için S-16'ya kadar uygulanmaz; kök kesinlik ve duyarlılık ölçüleri insan altın setiyle sürer ([K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü) madde 1).
+Yukarıdaki `lemma` eşiği `xref` içindir. A17.3'ün `quran_word.lemma_id` ölçütü ayrıdır: her `quran_word.lemma_id` QAC gövde LEM'inden türetilir ve tutarlılık %100'dür (SQL ve test). Kök için "dil modeli–insan κ" eşiği, dil modeli işleri proje sonuna ertelendiği için S-16'ya kadar uygulanmaz; kök kesinlik ve duyarlılık ölçüleri değerlendirme setleriyle sürer ([K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü) madde 1).
 
 κ eşiği rapordaki protokolden gelir: insanlar arası uyum 0,60, üç dil modelinin çoğunluk oyu ile insan arası uyum 0,57 ([protocols.io](https://www.protocols.io/view/llm-assisted-expert-annotation-for-systematic-lite-4r3l2dw5jg1y/v1.pdf)). Bir koşuda herhangi bir ölçü önceki kabul edilmiş koşuya göre 0,02'den fazla düşerse koşu eşiği geçse de kırılır (öneri). Her koşu `data/reports/{data_version}.json` dosyasına (git dışı; [İçerik hattı](../04-icerik/02-icerik-hatti.md) §7) tür, set sürümü, örnek sayısı, ölçüler, eşik ve sonuç yazar.
 
@@ -327,7 +337,7 @@ VoiceOver ve TalkBack'in harekeli Kur'an Arapçasıyla davranışı hakkında ka
 ## 13. Sürüm kontrol listesi
 
 - [ ] CI'nın bütün işleri yeşil; sürüm numarası ve değişiklik notu hazır.
-- [ ] Altın set kapıları geçti; değerlendirme raporu `release` kaydına bağlı.
+- [ ] Her otomatik tür için kapı raporu ve `xref_gate` satırı var ve kapılar geçti; set sınıfı raporda yazılı; değerlendirme raporu `release` kaydına bağlı.
 - [ ] Değişmezlik testleri yeşil (gerçek veriyle yerel koşu `scripts/nightly.ps1 -ExportPg` dahil).
 - [ ] Kapı raporu okundu; `public` kuru çalıştırması 0 ile bitti; public yapıt taraması yeşil; public manifest imzalı ve imza uygulamadaki açık anahtarla doğrulanıyor.
 - [ ] Terfide `public` içerik özetleri iç kanalda test edilen yayınla aynı (P-14).
