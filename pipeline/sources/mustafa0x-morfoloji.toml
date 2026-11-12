@@ -1,0 +1,11 @@
+# A17.0 (2026-11-12) · kaynak: docs/10-claude-code/asamalar/A17-kelime-katmani.md Tedarik · karar: K-50
+slug = "mustafa0x-morfoloji"
+tur = "morfoloji"
+baslik = "mustafa0x/quran-morphology (QAC'den türetilmiş kopya)"
+surum = "8f38b39016824284f9ed16ae15069ff9102c4acf"
+provider = "github-mustafa0x"
+kaynak_url = "https://raw.githubusercontent.com/mustafa0x/quran-morphology/8f38b39016824284f9ed16ae15069ff9102c4acf/quran-morphology.txt"
+atif_metni = "Çapraz sayım: mustafa0x/quran-morphology (Quranic Arabic Corpus'tan türetilmiş)."
+atif_url = "https://github.com/mustafa0x/quran-morphology"
+notlar = '''
+Aşama: A17. Yalnız iç çapraz sayım ve Arapça kök ve lemma yazımının karşılaştırması içindir; pakete girmez ve veritabanında source satırı açılmaz (quran-meta emsali). Dosya yalnız okunur; içindeki betik çalıştırılmaz. Dosya özeti data/gelen/mustafa0x-morfoloji/<tarih>/SHA256SUMS içindedir.'''

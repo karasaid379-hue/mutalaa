@@ -1,11 +1,66 @@
-# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3
+# A06 (2026-10-26); A17.0 (2026-11-12) güncellendi · kaynak: docs/04-icerik/01-kaynaklar.md §3.2 · karar: K-50
 slug = "qac-morfoloji"
 tur = "morfoloji"
 baslik = "Quranic Arabic Corpus v0.4"
 surum = "0.4"
 provider = "qac"
-kaynak_url = "https://corpus.quran.com/download/"
+kaynak_url = "https://raw.githubusercontent.com/q-ran/quran/bb97fe4b03e5a923aab0491f3d917c3c5f94f1fc/sources/1.0/quranic-corpus-morphology-0.4.txt"
 atif_metni = "Morfoloji: Quranic Arabic Corpus (corpus.quran.com)."
 atif_url = "https://corpus.quran.com/"
+notice_text = '''# PLEASE DO NOT REMOVE OR CHANGE THIS COPYRIGHT BLOCK
+#====================================================================
+#
+#  Quranic Arabic Corpus (morphology, version 0.4)
+#  Copyright (C) 2011 Kais Dukes
+#  License: GNU General Public License
+#
+#  The Quranic Arabic Corpus includes syntactic and morphological
+#  annotation of the Quran, and builds on the verified Arabic text
+#  distributed by the Tanzil project.
+#
+#  TERMS OF USE:
+#
+#  - Permission is granted to copy and distribute verbatim copies
+#    of this file, but CHANGING IT IS NOT ALLOWED.
+#
+#  - This annotation can be used in any website or application,
+#    provided its source (the Quranic Arabic Corpus) is clearly
+#    indicated, and a link is made to http://corpus.quran.com to enable
+#    users to keep track of changes.
+#
+#  - This copyright notice shall be included in all verbatim copies
+#    of the text, and shall be reproduced appropriately in all works
+#    derived from or containing substantial portion of this file.
+#
+#  Please check updates at: http://corpus.quran.com/download
+
+# PLEASE DO NOT REMOVE OR CHANGE THIS COPYRIGHT BLOCK
+#====================================================================
+#
+#  Tanzil Quran Text (Uthmani, version 1.0.2)
+#  Copyright (C) 2008-2009 Tanzil.info
+#  License: Creative Commons BY-ND 3.0 Unported
+#
+#  This copy of quran text is carefully produced, highly
+#  verified and continuously monitored by a group of specialists
+#  at Tanzil project.
+#
+#  TERMS OF USE:
+#
+#  - Permission is granted to copy and distribute verbatim copies
+#    of this text, but CHANGING IT IS NOT ALLOWED.
+#
+#  - This quran text can be used in any website or application,
+#    provided its source (Tanzil.info) is clearly indicated, and
+#    a link is made to http://tanzil.info to enable users to keep
+#    track of changes.
+#
+#  - This copyright notice shall be included in all verbatim copies
+#    of the text, and shall be reproduced appropriately in all files
+#    derived from or containing substantial portion of this text.
+#
+#  Please check updates at: http://tanzil.info/updates/
+#
+#===================================================================='''
 notlar = '''
-Aşama: A17. Ayrı paket: kelime-kok.'''
+Aşama: A17. Ayrı paket: kelime-kok. Dosya GitHub q-ran/quran deposundan commit bb97fe4b03e5a923aab0491f3d917c3c5f94f1fc (2025-10-10, sources/1.0/) sabitlenerek alındı; resmî indirme sayfasındaki sürüm bildirimi aynıdır (0.4). notice_text dosyanın başındaki bildirim bloğudur (iki blok; dosyanın CRLF satır sonları LF yazıldı, başka dönüşüm yok). Dosya özeti data/gelen/qac-morfoloji/<tarih>/SHA256SUMS içindedir.'''

@@ -1,0 +1,11 @@
+# A17.0 (2026-11-12) · kaynak: docs/10-claude-code/asamalar/A17-kelime-katmani.md Tedarik · karar: K-50
+slug = "qac-belge"
+tur = "morfoloji"
+baslik = "QAC belge sayfaları (Buckwalter tablosu, etiket kümesi, morfolojik özellikler)"
+surum = "2026-11-12"
+provider = "qac"
+kaynak_url = "https://corpus.quran.com/java/buckwalter.jsp"
+atif_metni = "Belge: Quranic Arabic Corpus (corpus.quran.com)."
+atif_url = "https://corpus.quran.com/"
+notlar = '''
+Aşama: A17. Üç sayfa: java/buckwalter.jsp, documentation/tagset.jsp, documentation/morphologicalfeatures.jsp. Sayfalar sürüm taşımaz; sürüm alma tarihidir. Buckwalter eşleme tablosunun ve dalga 0 etiket kümesinin kaynağıdır; pakete girmez ve veritabanında source satırı açılmaz. Sayfa tarihi yok.'''
