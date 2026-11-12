@@ -29,6 +29,7 @@ from mutalaa_pipeline.anchor.ayet_sayilari import AYET_SAYILARI
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest import fikstur, tanzil, tanzil_bicim
 from mutalaa_pipeline.ingest.meal_kaynaklari import meal_mi
+from mutalaa_pipeline.ingest.risale_kaynaklari import risale_mi
 from mutalaa_pipeline.komut_ortak import komutu_yurut
 from mutalaa_pipeline.lineage import NOTICE_ADI
 from mutalaa_pipeline.qa import (
@@ -290,6 +291,10 @@ def komut_qa_run(
         from mutalaa_pipeline.qa.run_quranwbw import komut_qa_run_quranwbw
 
         return komut_qa_run_quranwbw(run=run, gate=gate, config=config, kok=kok)
+    if risale_mi(source):  # Diyanet Risale (karsilastirma verisi): G-KAY, G-BUT (A20.1)
+        from mutalaa_pipeline.qa.run_risale import komut_qa_run_risale
+
+        return komut_qa_run_risale(run=run, gate=gate, config=config, kok=kok)
     if meal_mi(source):  # iki meal: bes kapi (G-HIZ dahil; A16.3)
         from mutalaa_pipeline.qa.run_meal import komut_qa_run_meal
 
