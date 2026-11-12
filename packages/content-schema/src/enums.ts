@@ -61,7 +61,7 @@ export type UnitStatus = (typeof UNIT_STATUS)[number];
 export const METIN_DURUMU = ['taslak', 'incelemede', 'onayli'] as const;
 export type MetinDurumu = (typeof METIN_DURUMU)[number];
 
-export const INCELEME_DURUMU = ['acik', 'onaylandi', 'reddedildi', 'geri_alindi'] as const;
+export const INCELEME_DURUMU = ['acik', 'onaylandi', 'reddedildi', 'geri_alindi', 'uzmanda'] as const;
 export type IncelemeDurumu = (typeof INCELEME_DURUMU)[number];
 
 export const SURUM_DURUMU = [

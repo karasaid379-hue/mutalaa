@@ -27,7 +27,7 @@
     "unit_kind": ["ayet", "meal", "tefsir", "risale", "hadis", "hadis_ceviri", "kitap"],
     "unit_status": ["etkin", "kullanim_disi"],
     "metin_durumu": ["taslak", "incelemede", "onayli"],
-    "inceleme_durumu": ["acik", "onaylandi", "reddedildi", "geri_alindi"],
+    "inceleme_durumu": ["acik", "onaylandi", "reddedildi", "geri_alindi", "uzmanda"],
     "surum_durumu": ["hazirlaniyor", "dogrulandi", "yayinlandi", "basarisiz", "geri_cekildi"]
   }
 }

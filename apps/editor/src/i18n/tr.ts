@@ -99,6 +99,7 @@ export const tr = {
       onaylandi: 'Onaylandı',
       reddedildi: 'Reddedildi',
       geri_alindi: 'Geri alındı',
+      uzmanda: 'Uzmanda',
     },
     action: {
       oner: 'Öner',
