@@ -46,11 +46,11 @@ CREATE TYPE metin_durumu   AS ENUM ('taslak','incelemede','onayli');
 CREATE TYPE xref_type      AS ENUM ('atif','iktibas','ima','kok','lemma','konu','benzer_ayet','anlamsal');
 CREATE TYPE xref_status    AS ENUM ('aday','onayli','red');
 CREATE TYPE xref_origin    AS ENUM ('hat','editor','kullanici_oyu');
-CREATE TYPE inceleme_durumu AS ENUM ('acik','onaylandi','reddedildi','geri_alindi');  -- 'uzmanda' A18'de eklenir (K-51 madde 2)
+CREATE TYPE inceleme_durumu AS ENUM ('acik','onaylandi','reddedildi','geri_alindi','uzmanda');  -- 'uzmanda' A18 göçüyle eklendi (K-51 madde 2)
 CREATE TYPE surum_durumu   AS ENUM ('hazirlaniyor','dogrulandi','yayinlandi','basarisiz','geri_cekildi');
 ```
 
-Türler 10'dur ve `packages/content-schema/enums.json` ile aynı etiketleri aynı sırayla taşır (`inceleme_durumu.uzmanda` A18 göçüyle eklenir ve `enums.json` aynı değişiklikte eşitlenir; [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) madde 2). `xref_type`, `xref_status` ve `xref_origin` adları [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) DDL'iyle; `inceleme_durumu`, `derleme_turu`, `surum_durumu` ve `metin_durumu` adları [Backend API](../02-mimari/05-backend-api.md) ile aynıdır. Backend API de `xref_status` adını kullanır (ED-7 çözüldü).
+Türler 10'dur ve `packages/content-schema/enums.json` ile aynı etiketleri aynı sırayla taşır (`inceleme_durumu.uzmanda` A18 göçüyle eklendi ve `enums.json` aynı değişiklikte eşitlendi; [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) madde 2). `xref_type`, `xref_status` ve `xref_origin` adları [Bağlantı modeli](../05-capraz-referans/01-baglanti-modeli.md) DDL'iyle; `inceleme_durumu`, `derleme_turu`, `surum_durumu` ve `metin_durumu` adları [Backend API](../02-mimari/05-backend-api.md) ile aynıdır. Backend API de `xref_status` adını kullanır (ED-7 çözüldü).
 
 ## 3. `source`
 
@@ -175,13 +175,17 @@ CREATE TABLE lemma (
   etymological_only  boolean NOT NULL DEFAULT false,
   origin             text,                          -- 'qac' | 'kaikki' | 'llm' | 'editor'; 'llm' S-16'ya kadar kullanılmaz (K-50)
   status             xref_status NOT NULL DEFAULT 'aday',
-  onay_yolu          text CHECK (onay_yolu IN ('editor','otomatik')),  -- A18'de eklenir (K-51 madde 9): 'tr' ve status = 'onayli' iken dolu
-  kanit              jsonb,                         -- A18'de eklenir: onay_yolu = 'otomatik' iken zorunlu
+  onay_yolu          text,                          -- A18 (K-51 madde 9): 'editor' | 'otomatik'; lang = 'tr' ve status = 'onayli' iken dolu
+  kanit              jsonb,                         -- A18: onay_yolu = 'otomatik' iken zorunlu (nesne)
   freq               integer,                       -- 'tr' satırında külliyat sıklığı
   source_id          text NOT NULL REFERENCES source(slug),
-  data_version       text NOT NULL
+  data_version       text NOT NULL,
+  CONSTRAINT lemma_onay_yolu_check CHECK (onay_yolu IS NULL OR onay_yolu IN ('editor','otomatik')),
+  CONSTRAINT lemma_tr_onayli_onay_yolu_check CHECK (NOT (lang = 'tr' AND status = 'onayli') OR onay_yolu IS NOT NULL),
+  CONSTRAINT lemma_otomatik_kanit_check CHECK (onay_yolu IS DISTINCT FROM 'otomatik' OR (kanit IS NOT NULL AND jsonb_typeof(kanit) = 'object'))
 );
 CREATE UNIQUE INDEX lemma_qac_ref_key ON lemma (qac_ref) WHERE lang = 'ar';
+CREATE UNIQUE INDEX lemma_tr_text_clean_key ON lemma (lang, text_clean) WHERE lang = 'tr';
 CREATE UNIQUE INDEX root_letters_bw_key ON root (letters_bw);   -- letters_bw NULL olabilir; NULL'lar tekilliği bozmaz
 
 CREATE TABLE lemma_gloss (                         -- K-19 Türkçe anlamları; kendi verimiz
@@ -279,7 +283,8 @@ CREATE TABLE tr_root_index (                       -- onaylı köke bağlanan he
   unit_hash          char(16) NOT NULL,            -- A18'de eklenir (K-51 madde 1): birimin content_hash değerinin ilk 16 hanesi
   data_version       text NOT NULL,
   PRIMARY KEY (anchor, span_start),
-  CHECK (span_start < span_end)
+  CHECK (span_start < span_end),
+  CONSTRAINT tr_root_index_unit_hash_check CHECK (unit_hash ~ '^[0-9a-f]{16}$')
 );
 CREATE INDEX tr_root_index_root ON tr_root_index (root_id, anchor);
 
@@ -331,15 +336,19 @@ CREATE INDEX xref_src   ON xref (src_anchor, type);
 CREATE INDEX xref_dst   ON xref (dst_anchor, type);
 CREATE INDEX xref_queue ON xref (type, confidence DESC) WHERE status = 'aday';
 
-CREATE TABLE xref_gate (                           -- A18'de eklenir (K-51 madde 5); `qa gold` yazar, Yayınlayıcı okur. Sütun adları A18 göçünde kesinleşir
-  tur             xref_type PRIMARY KEY,             -- tür başına tek satır
-  sonuc           text NOT NULL CHECK (sonuc IN ('gecti','kaldi')),
-  set_sinifi      text NOT NULL CHECK (set_sinifi IN ('altin','silver','sentetik')),
+CREATE TABLE xref_gate (                           -- A18 (K-51 madde 5); `qa gold` yazar, Yayınlayıcı okur
+  tur             xref_type NOT NULL,
+  set_sinifi      text NOT NULL,                  -- 'altin' | 'silver' | 'sentetik'; tür başına her sınıf için tek satır
   set_surumu      text NOT NULL,
-  set_kaynaklari  jsonb NOT NULL,                    -- setin kurulduğu kaynaklar (source_id, sürüm)
-  rapor_sha256    char(64) NOT NULL CHECK (rapor_sha256 ~ '^[0-9a-f]{64}$'),
+  sonuc           text NOT NULL,                  -- 'gecti' | 'kaldi'
+  set_kaynaklari  text[] NOT NULL,                -- setin kurulduğu kaynaklar (source_id@sürüm)
+  rapor_sha256    char(64) NOT NULL,
   data_version    text NOT NULL,
-  olculdu_at      timestamptz NOT NULL
+  olculdu_at      timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (tur, set_sinifi),
+  CONSTRAINT xref_gate_set_sinifi_check CHECK (set_sinifi IN ('altin','silver','sentetik')),
+  CONSTRAINT xref_gate_sonuc_check CHECK (sonuc IN ('gecti','kaldi')),
+  CONSTRAINT xref_gate_rapor_sha256_check CHECK (rapor_sha256 ~ '^[0-9a-f]{64}$')
 );
 
 CREATE TABLE xref_vote (                           -- v1.x; canlıda genel kip veritabanında
