@@ -34,6 +34,9 @@ def kaydet(app: typer.Typer, ingest_app: typer.Typer) -> None:
     from mutalaa_pipeline import cli_quranwbw  # dairesel ice aktarma olmasin: islev icinde
 
     cli_quranwbw.kaydet(ingest_app, enrich_app)  # A17.6: ingest quranwbw-tr, enrich glosses
+    from mutalaa_pipeline import cli_tr_roots
+
+    cli_tr_roots.kaydet(enrich_app)  # A18.2: enrich tr-roots
 
     @ingest_app.command("qac")
     def ingest_qac(

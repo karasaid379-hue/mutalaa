@@ -28,6 +28,8 @@ public class VectorCoverageTests
         ["fts-query/query.jsonl"] = "yalniz TypeScript kosar",
         // Turkce govdeleyici (stemTr) yalniz TypeScript'te; C#'ta govdeleyici yok (K-44 madde 1).
         ["normalize/tr-govde.jsonl"] = "C#'ta govdeleyici yok",
+        // On bolme (izafet, harf-i tarif, kesme) yalniz hatta; vektoru yalniz Python kosar (A18.2).
+        ["enrich/tr-bolme.jsonl"] = "yalniz Python kosar",
         // Cikarilmis metin (Elmalili meali) donusumunu yalniz hat yapar; vektoru yalniz Python kosar (K-49 madde 13).
         ["extract/meal.jsonl"] = "yalniz Python kosar (cikarim yalniz hatta)",
     };

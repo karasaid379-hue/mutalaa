@@ -589,11 +589,18 @@ def qa_run(
     ] = None,
     config: Annotated[Path | None, typer.Option("--config", help="Baska bir mutalaa.toml.")] = None,
     kok: KokSecenegi = None,
+    db: Annotated[
+        bool,
+        typer.Option(
+            "--db",
+            help="Yalniz kaikki-tr: G-CAP'a veritabani uzantisini (tr_root_index) ekler.",
+        ),
+    ] = False,
 ) -> None:
     """QA kapilarini kosar ve data/reports/{run_id}.json raporunu yazar. Cikis 0, 1 ya da 2."""
     from mutalaa_pipeline.qa import run as qa_calistir
 
-    kod = qa_calistir.komut_qa_run(source=source, run=run, gate=gate, config=config, kok=kok)
+    kod = qa_calistir.komut_qa_run(source=source, run=run, gate=gate, config=config, kok=kok, db=db)
     if kod != cikis.BASARILI:
         raise typer.Exit(code=kod)
 

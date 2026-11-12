@@ -1,0 +1,18 @@
+{"id":"tr-bolme-0001","input":"kalem-i Deneme","expected":{"parcalar":[["kalem",0,5],["Deneme",8,14]],"atlananlar":[["i",6,7,"izafet"]]},"note":"izafet eki -i: kalem + i(izafet)"}
+{"id":"tr-bolme-0002","input":"mal-\u0131 Deneme","expected":{"parcalar":[["mal",0,3],["Deneme",6,12]],"atlananlar":[["\u0131",4,5,"izafet"]]},"note":"izafet eki -\u0131 (noktas\u0131z)"}
+{"id":"tr-bolme-0003","input":"kalem-yi","expected":{"parcalar":[["kalem",0,5]],"atlananlar":[["yi",6,8,"izafet"]]},"note":"izafet eki -yi (\u00fcnl\u00fc ile biten s\u00f6z)"}
+{"id":"tr-bolme-0004","input":"el-Deneme","expected":{"parcalar":[["Deneme",3,9]],"atlananlar":[["el",0,2,"tarif"]]},"note":"harf-i tarif el-: her harfle"}
+{"id":"tr-bolme-0005","input":"er-Rana","expected":{"parcalar":[["Rana",3,7]],"atlananlar":[["er",0,2,"tarif"]]},"note":"er- yaln\u0131z r ile ba\u015flayan s\u00f6zden \u00f6nce"}
+{"id":"tr-bolme-0006","input":"er-Dana","expected":{"parcalar":[["er",0,2],["Dana",3,7]],"atlananlar":[]},"note":"er- uyum yok: iki s\u00f6zc\u00fck"}
+{"id":"tr-bolme-0007","input":"Et-yemek","expected":{"parcalar":[["Et",0,2],["yemek",3,8]],"atlananlar":[]},"note":"et- uyum yok: T\u00fcrk\u00e7e s\u00f6zc\u00fck korunur"}
+{"id":"tr-bolme-0008","input":"\u00c2yet\u00fc'l-Deneme","expected":{"parcalar":[["\u00c2yet",0,4],["Deneme",8,14]],"atlananlar":[["\u00fc'l",4,7,"tarif"]]},"note":"\u00fc'l-: \u00c2yet + \u00fc'l (tarif) + Deneme"}
+{"id":"tr-bolme-0009","input":"Beyt-\u00fcl-Deneme","expected":{"parcalar":[["Beyt",0,4],["Deneme",8,14]],"atlananlar":[["\u00fcl",5,7,"tarif"]]},"note":"-\u00fcl- son eki"}
+{"id":"tr-bolme-0010","input":"Deneme'nin","expected":{"parcalar":[["Deneme",0,6]],"atlananlar":[["'nin",6,10,"ek"]]},"note":"kesmeden sonras\u0131 ek"}
+{"id":"tr-bolme-0011","input":"Kur'\u00e2n'\u0131n","expected":{"parcalar":[["Kur'\u00e2n",0,6]],"atlananlar":[["'\u0131n",6,9,"ek"]]},"note":"i\u00e7 kesme listesi: Kur'\u00e2n korunur, '\u0131n ek"}
+{"id":"tr-bolme-0012","input":"Ma'na'da Deneme","expected":{"parcalar":[["Ma'na",0,5],["Deneme",9,15]],"atlananlar":[["'da",5,8,"ek"]]},"note":"i\u00e7 kesme listesi: ma'na"}
+{"id":"tr-bolme-0013","input":"Deneme\u2019nin","expected":{"parcalar":[["Deneme",0,6]],"atlananlar":[["\u2019nin",6,10,"ek"]]},"note":"tipografik kesme U+2019 ek ay\u0131r\u0131r"}
+{"id":"tr-bolme-0014","input":"Kur\u2019\u00e2n\u2019\u0131n","expected":{"parcalar":[["Kur\u2019\u00e2n",0,6]],"atlananlar":[["\u2019\u0131n",6,9,"ek"]]},"note":"tipografik kesme ile i\u00e7 kesme listesi"}
+{"id":"tr-bolme-0015","input":"Deneme \u2019 Deneme","expected":{"parcalar":[["Deneme",0,6],["Deneme",9,15]],"atlananlar":[]},"note":"tek ba\u015f\u0131na kesme s\u00f6zc\u00fck de\u011fildir"}
+{"id":"tr-bolme-0016","input":"\ud835\udc00 kalem-i","expected":{"parcalar":[["\ud835\udc00",0,1],["kalem",2,7]],"atlananlar":[["i",8,9,"izafet"]]},"note":"BMP d\u0131\u015f\u0131 harf: aral\u0131klar kod noktas\u0131d\u0131r"}
+{"id":"tr-bolme-0017","input":"\u0130nce I\u015f\u0131k \u0131nce","expected":{"parcalar":[["\u0130nce",0,4],["I\u015f\u0131k",5,9],["\u0131nce",10,14]],"atlananlar":[]},"note":"\u0130 ve \u0131 harfleri ayr\u0131 s\u00f6zc\u00fck olarak korunur"}
+{"id":"tr-bolme-0018","input":"Deneme, 12 Deneme.","expected":{"parcalar":[["Deneme",0,6],["Deneme",11,17]],"atlananlar":[]},"note":"rakam ve noktalama s\u00f6zc\u00fck de\u011fildir"}
