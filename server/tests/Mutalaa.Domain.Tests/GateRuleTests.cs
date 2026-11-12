@@ -332,7 +332,7 @@ public class GateRuleTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void P09_only_approved_word_fixes_and_glosses_apply(bool turkish) => CultureScope.For(turkish, () =>
+    public void P09_word_fixes_apply_only_approved_in_every_flavor_and_glosses_follow_the_flavor(bool turkish) => CultureScope.For(turkish, () =>
     {
         GateInput input = new()
         {
@@ -343,6 +343,7 @@ public class GateRuleTests
                 new GateLexical(LexicalKind.QuranWordFix, "fix-red", XrefStatus.Red, false),
                 new GateLexical(LexicalKind.LemmaGloss, "gloss-ok", XrefStatus.Onayli, false),
                 new GateLexical(LexicalKind.LemmaGloss, "gloss-aday", XrefStatus.Aday, false),
+                new GateLexical(LexicalKind.LemmaGloss, "gloss-red", XrefStatus.Red, false),
                 new GateLexical(LexicalKind.LemmaGloss, "gloss-yok", null, false),
             ],
         };
@@ -351,7 +352,11 @@ public class GateRuleTests
         {
             GateResult result = GateEvaluator.Evaluate(flavor, input);
 
-            Assert.Equal(["lemma_gloss:gloss-ok", "quran_word_fix:fix-ok"], result.IncludedLexicals.Order(StringComparer.Ordinal));
+            // quran_word_fix her derlemede yalniz onayli; lemma_gloss aday yalniz dev ve internal'da (K-50 madde 8).
+            string[] expected = flavor == BuildFlavor.Public
+                ? ["lemma_gloss:gloss-ok", "quran_word_fix:fix-ok"]
+                : ["lemma_gloss:gloss-aday", "lemma_gloss:gloss-ok", "quran_word_fix:fix-ok"];
+            Assert.Equal(expected, result.IncludedLexicals.Order(StringComparer.Ordinal));
             Assert.Contains(result.Report.Rows, r => r.Kind == GateSubjectKind.Sozluk && r.Rule == GateRule.P09 && r.Id == "quran_word_fix" && r.Count == 2);
             Assert.False(result.Rejected);
         }

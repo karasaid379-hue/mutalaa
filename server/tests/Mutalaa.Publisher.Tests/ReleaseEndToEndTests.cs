@@ -6,6 +6,7 @@ using Mutalaa.Domain.Releases;
 using Mutalaa.Domain.Releases.Gate;
 using Mutalaa.Domain.Text;
 using Mutalaa.Infrastructure.Manifests;
+using Mutalaa.Infrastructure.Packs;
 using Mutalaa.Infrastructure.Releases;
 using Mutalaa.Infrastructure.Storage;
 using Mutalaa.Publisher.Pipeline;
@@ -36,9 +37,9 @@ public class ReleaseEndToEndTests(PublishedWorld world, PostgresFixture postgres
 
     private static string[] ExpectedPacks(BuildFlavor flavor) => flavor switch
     {
-        BuildFlavor.Dev => ["core", "hadis-sentetik", "tefsir-test-ornek", "test-kucuk"],
-        BuildFlavor.Internal => ["core", "hadis-sentetik", "test-kucuk"],
-        _ => ["core", "hadis-sentetik"],
+        BuildFlavor.Dev => ["core", "hadis-sentetik", "kelime-kok", "tefsir-test-ornek", "test-kucuk"],
+        BuildFlavor.Internal => ["core", "hadis-sentetik", "kelime-kok", "test-kucuk"],
+        _ => ["core", "hadis-sentetik", "kelime-kok"],
     };
 
     private async Task<Release> ReleaseOfAsync(BuildFlavor flavor, CancellationToken ct) =>
@@ -185,6 +186,11 @@ public class ReleaseEndToEndTests(PublishedWorld world, PostgresFixture postgres
         List<string> everywhere = [];
         foreach (ManifestPack pack in manifest.Packs)
         {
+            if (pack.PackId == EndToEndData.KelimeKokPack)
+            {
+                continue; // kelime-kok baglanti (xref_idx) tasimaz; baglantilar A18 ile core ve metin paketlerindedir.
+            }
+
             using PackDb db = await Harness.OpenPackAsync(flavor, pack.PackId, ct);
             string[] actual = [.. db.Column("SELECT id FROM xref_idx").Order(StringComparer.Ordinal)];
             string[] expected = [.. expectedNames[pack.PackId].Select(n => AnyId(content, n)).Order(StringComparer.Ordinal)];
@@ -258,11 +264,78 @@ public class ReleaseEndToEndTests(PublishedWorld world, PostgresFixture postgres
         CancellationToken ct = TestContext.Current.CancellationToken;
         IReadOnlyList<GateRow> rows = EndToEndHarness.GateRows(await ReleaseOfAsync(flavor, ct));
 
-        GateRow[] lexical = [.. rows.Where(r => r.Kind == "sozluk")];
+        GateRow[] fixes = [.. RowsOf(rows, "sozluk", "quran_word_fix")];
 
-        Assert.Equal(2, lexical.Length);
-        Assert.Single(lexical, r => r.Decision == "girdi" && r.Reason == GateReasons.Uygun && r.Count == 1);
-        Assert.Single(lexical, r => r.Decision == "girmedi" && r.Rule == "P-09" && r.Reason == GateReasons.OnaysizSatir && r.Count == 1);
+        // Her derlemede yalniz onayli duzeltme uygulanir (iki onayli, bir aday, bir red).
+        Assert.Equal(2, fixes.Length);
+        Assert.Single(fixes, r => r.Decision == "girdi" && r.Reason == GateReasons.Uygun && r.Count == 2);
+        Assert.Single(fixes, r => r.Decision == "girmedi" && r.Rule == "P-09" && r.Reason == GateReasons.OnaysizSatir && r.Count == 2);
+
+        using PackDb db = await Harness.OpenPackAsync(flavor, EndToEndData.KelimeKokPack, ct);
+        Assert.Equal("2", db.Meta()[PackMetaKeys.WordFixCount]);
+        Assert.Equal("N", db.Scalar<string>("SELECT pos FROM word_morph WHERE anchor = $a", ("$a", EndToEndData.FixApprovedPos)));
+        Assert.Equal(2, db.Scalar<int>("SELECT root_id FROM word_morph WHERE anchor = $a", ("$a", EndToEndData.FixApprovedRoot)));
+        Assert.Equal(1, db.Scalar<int>("SELECT root_id FROM word_morph WHERE anchor = $a", ("$a", EndToEndData.FixCandidate)));
+        Assert.Equal("V", db.Scalar<string>("SELECT pos FROM word_morph WHERE anchor = $a", ("$a", EndToEndData.FixCandidate)));
+        Assert.Equal("V", db.Scalar<string>("SELECT pos FROM word_morph WHERE anchor = $a", ("$a", EndToEndData.FixRejected)));
+        Assert.Equal("{\"deneme\":\"1\"}", db.Scalar<string>("SELECT features FROM word_morph WHERE anchor = $a", ("$a", EndToEndData.FixApprovedPos)));
+    }
+
+    [Theory]
+    [MemberData(nameof(Flavors))]
+    public async Task P09_candidate_glosses_enter_only_dev_and_internal_with_status_aday_and_the_public_pack_has_none(BuildFlavor flavor)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        bool inner = flavor != BuildFlavor.Public;
+        IReadOnlyList<GateRow> rows = EndToEndHarness.GateRows(await ReleaseOfAsync(flavor, ct));
+
+        GateRow[] glosses = [.. RowsOf(rows, "sozluk", "lemma_gloss")];
+
+        // red hicbir derlemeye girmez; aday yalniz dev ve internal'a girer (public'te dista kalan anlam sayisi = aday sayisi).
+        Assert.Single(glosses, r => r.Decision == "girdi" && r.Reason == GateReasons.Uygun && r.Count == 1);
+        Assert.Single(glosses, r => r.Decision == "girmedi" && r.Rule == "P-09" && r.Reason == GateReasons.Red && r.Count == 1);
+        if (inner)
+        {
+            Assert.Equal(3, glosses.Length);
+            Assert.Single(glosses, r => r.Decision == "girdi" && r.Reason == GateReasons.Aday && r.Count == 2);
+        }
+        else
+        {
+            Assert.Equal(3, glosses.Length);
+            Assert.Single(glosses, r => r.Decision == "girmedi" && r.Rule == "P-09" && r.Reason == GateReasons.AdayPublic && r.Count == 2);
+        }
+
+        using PackDb db = await Harness.OpenPackAsync(flavor, EndToEndData.KelimeKokPack, ct);
+        Assert.Equal(inner ? 2 : 0, db.Scalar<int>("SELECT count(*) FROM lemma_gloss WHERE status = 'aday'"));
+        Assert.Equal(1, db.Scalar<int>("SELECT count(*) FROM lemma_gloss WHERE status = 'onayli'"));
+        Assert.Equal(inner ? 3 : 1, db.Scalar<int>("SELECT count(*) FROM lemma_gloss"));
+        Assert.Equal(0, db.Scalar<int>("SELECT count(*) FROM lemma_gloss WHERE lemma_id = $id", ("$id", EndToEndData.LemmaRejected)));
+        Assert.Equal(0, db.Scalar<int>("SELECT count(*) FROM lemma_gloss WHERE origin = ''"));
+        Assert.Equal("editor", db.Scalar<string>("SELECT origin FROM lemma_gloss WHERE lemma_id = $id", ("$id", EndToEndData.LemmaApproved)));
+        Assert.Empty(EndToEndHarness.Violations(await ReleaseOfAsync(flavor, ct)));
+    }
+
+    [Theory]
+    [MemberData(nameof(Flavors))]
+    public async Task The_kelime_kok_pack_carries_the_qac_dictionary_with_its_sources_and_an_untouched_attribution(BuildFlavor flavor)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        IReadOnlyList<GateRow> rows = EndToEndHarness.GateRows(await ReleaseOfAsync(flavor, ct));
+        using PackDb db = await Harness.OpenPackAsync(flavor, EndToEndData.KelimeKokPack, ct);
+
+        GateRow pack = Assert.Single(RowsOf(rows, "paket", EndToEndData.KelimeKokPack));
+        Assert.Equal("girdi", pack.Decision);
+        Assert.Equal(2, db.Scalar<int>("SELECT count(*) FROM root"));
+        Assert.Equal(5, db.Scalar<int>("SELECT count(*) FROM lemma WHERE lang = 'ar'"));
+        Assert.Equal(0, db.Scalar<int>("SELECT count(*) FROM lemma WHERE lang <> 'ar'"));
+        int morphWords = Harness.Content.Uthmani.Verses.Take(2).Sum(v => v.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length);
+        Assert.Equal(morphWords, db.Scalar<int>("SELECT count(*) FROM word_morph"));
+        Assert.Equal(0, db.Scalar<int>("SELECT count(*) FROM tr_form"));
+        Assert.Equal(0, db.Scalar<int>("SELECT count(*) FROM tr_root_index"));
+        Assert.Equal([EndToEndData.Qac, EndToEndData.Wbw], db.Column("SELECT source_id FROM pack_source ORDER BY source_id"));
+        Assert.Equal([EndToEndData.Qac, EndToEndData.Wbw], db.Column("SELECT source_id FROM attribution ORDER BY source_id"));
+        Assert.Equal("Sentetik test verisi (Mutalaa).", db.Scalar<string>("SELECT required_credit FROM attribution WHERE source_id = $s", ("$s", EndToEndData.Qac)));
+        Assert.Equal("0", db.Meta()["unit_count"]);
     }
 
     [Theory]

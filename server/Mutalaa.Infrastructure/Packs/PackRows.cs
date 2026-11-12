@@ -22,10 +22,15 @@ public static class PackTables
     public const string PageMap = "page_map";
     public const string Sure = "sure";
     public const string TrRootIndex = "tr_root_index";
+    public const string WordMorph = "word_morph";
+    public const string Root = "root";
+    public const string Lemma = "lemma";
+    public const string LemmaGloss = "lemma_gloss";
+    public const string TrForm = "tr_form";
 
-    /// <summary>Ozet ve yazim sirasi.</summary>
+    /// <summary>Ozet ve yazim sirasi (K-46 madde 1: kelime-kok tablolari tr_root_index'ten sonra gelir; Icerik paketleri 6).</summary>
     public static IReadOnlyList<string> Order { get; } =
-        [PackSource, Attribution, Unit, UnitSearch, XrefIdx, QuranWord, QuranMarker, PageMap, Sure, TrRootIndex];
+        [PackSource, Attribution, Unit, UnitSearch, XrefIdx, QuranWord, QuranMarker, PageMap, Sure, TrRootIndex, WordMorph, Root, Lemma, LemmaGloss, TrForm];
 
     private static readonly Dictionary<string, string[]> ColumnMap = new(StringComparer.Ordinal)
     {
@@ -39,6 +44,11 @@ public static class PackTables
         [PageMap] = ["layout", "volume", "page", "line", "start_anchor", "start_offset", "end_anchor", "end_offset"],
         [Sure] = ["no", "name", "name_ar", "ayah_count", "variants"],
         [TrRootIndex] = ["anchor", "span_start", "span_end", "root_id", "tr_lemma_id", "etymological_only"],
+        [WordMorph] = ["anchor", "root_id", "lemma_id", "pos", "features"],
+        [Root] = ["id", "letters", "occurrences", "ayah_count", "idf_q", "kok_anlami"],
+        [Lemma] = ["id", "lang", "text", "text_clean", "root_id", "occurrences", "ar_lemma_id", "etymological_only"],
+        [LemmaGloss] = ["lemma_id", "anlam_kisa", "kuran_anlamlari", "turkce_es_kelime", "yalnizca_etimolojik", "status", "origin"],
+        [TrForm] = ["key_wide", "key_narrow", "tr_lemma_id", "freq"],
     };
 
     /// <summary>Tablonun satir degeri sutunlari (unit'te rowid yok; unit_search'te ilk sutun capa).</summary>
@@ -53,7 +63,7 @@ public readonly record struct PackRow(string Table, object?[] Values);
 /// Tek kanonik satir sayici. Hem <see cref="PackDigest"/> hem <see cref="SqlitePackWriter"/> bu akisi kullanir: tablolar <see cref="PackTables.Order"/> sirasinda,
 /// satirlar tablonun anahtarina gore UTF-8 bayt sirasinda (giris listesinin sirasi onemsizdir) akar. Anahtarlar: pack_source ve attribution source_id;
 /// unit, unit_search ve quran_word anchor; xref_idx id; quran_marker (kind, no); page_map (layout, volume, page, line, start_anchor, end_anchor);
-/// sure no; tr_root_index (anchor, span_start).
+/// sure no; tr_root_index (anchor, span_start); word_morph anchor; root id; lemma id; lemma_gloss lemma_id; tr_form (key_narrow, tr_lemma_id).
 /// </summary>
 public static class PackRows
 {
@@ -136,6 +146,31 @@ public static class PackRows
         {
             yield return new PackRow(PackTables.TrRootIndex, [r.Anchor, r.SpanStart, r.SpanEnd, r.RootId, r.TrLemmaId, r.EtymologicalOnly]);
         }
+
+        foreach (PackWordMorphRow r in content.WordMorph.OrderBy(r => r.Anchor, Utf8Order.Instance))
+        {
+            yield return new PackRow(PackTables.WordMorph, [r.Anchor, r.RootId, r.LemmaId, r.Pos, r.Features]);
+        }
+
+        foreach (PackRootRow r in content.Roots.OrderBy(r => r.Id))
+        {
+            yield return new PackRow(PackTables.Root, [r.Id, r.Letters, r.Occurrences, r.AyahCount, r.IdfQ, r.KokAnlami]);
+        }
+
+        foreach (PackLemmaRow r in content.Lemmas.OrderBy(r => r.Id))
+        {
+            yield return new PackRow(PackTables.Lemma, [r.Id, r.Lang, r.Text, r.TextClean, r.RootId, r.Occurrences, r.ArLemmaId, r.EtymologicalOnly]);
+        }
+
+        foreach (PackLemmaGlossRow r in content.LemmaGlosses.OrderBy(r => r.LemmaId))
+        {
+            yield return new PackRow(PackTables.LemmaGloss, [r.LemmaId, r.AnlamKisa, r.KuranAnlamlari, r.TurkceEsKelime, r.YalnizcaEtimolojik, r.Status, r.Origin]);
+        }
+
+        foreach (PackTrFormRow r in content.TrForms.OrderBy(r => r.KeyNarrow, Utf8Order.Instance).ThenBy(r => r.TrLemmaId))
+        {
+            yield return new PackRow(PackTables.TrForm, [r.KeyWide, r.KeyNarrow, r.TrLemmaId, r.Freq]);
+        }
     }
 
     /// <summary>Tablo basina satir sayisi (satirsiz tablolar 0 ile yer alir; PackTables.Order sirasinda).</summary>
@@ -155,6 +190,11 @@ public static class PackRows
             [PackTables.PageMap] = content.PageMaps.Count,
             [PackTables.Sure] = content.Sures.Count,
             [PackTables.TrRootIndex] = content.TrRootIndex.Count,
+            [PackTables.WordMorph] = content.WordMorph.Count,
+            [PackTables.Root] = content.Roots.Count,
+            [PackTables.Lemma] = content.Lemmas.Count,
+            [PackTables.LemmaGloss] = content.LemmaGlosses.Count,
+            [PackTables.TrForm] = content.TrForms.Count,
         };
     }
 

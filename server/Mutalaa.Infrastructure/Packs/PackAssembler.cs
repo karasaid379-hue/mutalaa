@@ -11,10 +11,15 @@ namespace Mutalaa.Infrastructure.Packs;
 /// kaynaklar (IncludedSources) ve baglantilar (XrefVerdict.Included) girer; metin aynen aktarilir (Tanzil bayt bayt). Kur'an ayeti etiketi
 /// "{sure}:{ayet}"dir (sure adlari onaylanana kadar), digerlerinde capa metnidir. sure tablosu bos kalir: adlar onayli degildir, ad uydurulmaz.
 /// Satir sirasi PackRows'a aittir (capa bayt sirasi); burada siralama yapilmaz.
+/// kelime-kok (CarriesLexicon, K-50 madde 9): word_morph = quran_word'un QAC sutunlari (yalniz Dictionary rolundeki kaynaklarin morph_source'u) uzerine
+/// kapidan gecen (IncludedLexicals) onayli quran_word_fix; root ve lemma yalniz Dictionary kaynaklarindan (kaynak kapidan girmis olmali: P-12) ve lemma
+/// yalniz lang = 'ar' ve onayli; lemma_gloss kapidan gecenler (onayli, ve dev/internal'da aday: status satirda 'aday' kalir) ve yalniz pakete giren lemmalara
+/// bagli. Uygulanamayan onayli duzeltme (WordMorphFixes) atlanir; kapi bunu zaten yayin reddi sayar. tr_form ve tr_root_index A18'e kadar bostur.
 /// </summary>
 public static class PackAssembler
 {
     private const string ApprovedLabel = "onayli";
+    private const string ArabicLang = "ar";
 
     /// <exception cref="PackAssemblyException">Paket kapidan girmediyse ya da girdi tutarsizsa.</exception>
     public static PackContent Assemble(
@@ -41,6 +46,7 @@ public static class PackAssembler
         }
 
         HashSet<string> contentSlugs = new(StringComparer.Ordinal);
+        HashSet<string> dictionarySlugs = new(StringComparer.Ordinal);
         Dictionary<string, string> layouts = new(StringComparer.Ordinal);
         foreach (PackSourceBinding binding in pack.Sources)
         {
@@ -52,6 +58,10 @@ public static class PackAssembler
             if (binding.Role == PackSourceRole.Content)
             {
                 contentSlugs.Add(binding.Slug);
+            }
+            else if (binding.Role == PackSourceRole.Dictionary)
+            {
+                dictionarySlugs.Add(binding.Slug);
             }
             else if (binding.Role == PackSourceRole.Structure)
             {
@@ -105,6 +115,17 @@ public static class PackAssembler
                     pages.Add(new PackPageMapRow(layout, page.Volume, page.Page, page.Line, page.StartAnchor, page.StartOffset, page.EndAnchor, page.EndOffset));
                     sourcesWithRows.Add(page.SourceId);
                 }
+            }
+        }
+
+        Lexicon lexicon = pack.CarriesLexicon ? AssembleLexicon(snapshot, gate, dictionarySlugs) : Lexicon.Empty;
+        sourcesWithRows.UnionWith(lexicon.SourcesWithRows);
+        if (lexicon.GlossRows > 0)
+        {
+            // Hazir anlam kaynagi (atif rolu, Required: false): anlam satiri varsa kunye ve atif satiri listelenir (P-01, P-11).
+            foreach (PackSourceBinding binding in pack.Sources.Where(b => b.Role == PackSourceRole.Attribution && !b.Required))
+            {
+                sourcesWithRows.Add(binding.Slug);
             }
         }
 
@@ -178,8 +199,138 @@ public static class PackAssembler
             PageMaps = pages,
             Sures = [],
             TrRootIndex = [],
+            WordMorph = lexicon.WordMorph,
+            Roots = lexicon.Roots,
+            Lemmas = lexicon.Lemmas,
+            LemmaGlosses = lexicon.LemmaGlosses,
+            TrForms = [],
+            WordFixCount = pack.CarriesLexicon ? lexicon.AppliedFixes : null,
         };
     }
+
+    private sealed record Lexicon(
+        IReadOnlyList<PackWordMorphRow> WordMorph,
+        IReadOnlyList<PackRootRow> Roots,
+        IReadOnlyList<PackLemmaRow> Lemmas,
+        IReadOnlyList<PackLemmaGlossRow> LemmaGlosses,
+        int AppliedFixes,
+        ISet<string> SourcesWithRows)
+    {
+        public static Lexicon Empty { get; } = new([], [], [], [], 0, new HashSet<string>(StringComparer.Ordinal));
+
+        public int GlossRows => LemmaGlosses.Count;
+    }
+
+    private static Lexicon AssembleLexicon(EditorialSnapshot snapshot, GateResult gate, HashSet<string> dictionarySlugs)
+    {
+        HashSet<string> withRows = new(StringComparer.Ordinal);
+
+        List<PackRootRow> roots = [];
+        HashSet<int> rootIds = [];
+        foreach (RootRow root in snapshot.Roots)
+        {
+            if (dictionarySlugs.Contains(root.SourceId))
+            {
+                roots.Add(new PackRootRow(root.Id, root.Letters, root.Occurrences, root.AyahCount, root.IdfQ is { } idf ? PackRows.FromSingle(idf) : null, root.KokAnlami));
+                rootIds.Add(root.Id);
+                withRows.Add(root.SourceId);
+            }
+        }
+
+        List<PackLemmaRow> lemmas = [];
+        HashSet<int> lemmaIds = [];
+        foreach (LemmaRow lemma in snapshot.Lemmas)
+        {
+            if (dictionarySlugs.Contains(lemma.SourceId) && string.Equals(lemma.Status, ApprovedLabel, StringComparison.Ordinal))
+            {
+                lemmas.Add(new PackLemmaRow(
+                    lemma.Id,
+                    ArabicLang,
+                    lemma.Text,
+                    lemma.TextClean,
+                    lemma.RootId,
+                    lemma.Occurrences,
+                    lemma.ArLemmaId,
+                    lemma.EtymologicalOnly ? 1 : 0));
+                lemmaIds.Add(lemma.Id);
+                withRows.Add(lemma.SourceId);
+            }
+        }
+
+        // Ayeti bu derlemenin kapsamina girmeyen kelime (birim biliniyor ve girmedi) word_morph'a yazilmaz.
+        HashSet<string> knownAyahs = new(snapshot.Units.Select(u => u.Anchor), StringComparer.Ordinal);
+        Dictionary<string, MorphState> morph = new(StringComparer.Ordinal);
+        foreach (QuranWordRow word in snapshot.QuranWords)
+        {
+            if (word.MorphSource is null || !dictionarySlugs.Contains(word.MorphSource))
+            {
+                continue;
+            }
+
+            string ayah = AyahAnchorOfWord(word.Anchor);
+            if (knownAyahs.Contains(ayah) && !gate.IncludedUnits.Contains(ayah))
+            {
+                continue;
+            }
+
+            string? features = null;
+            if (word.Features is not null)
+            {
+                features = WordMorphFixes.CanonicalJson(word.Features)
+                    ?? throw new PackAssemblyException($"quran_word.features gecerli JSON degil: {word.Anchor}");
+            }
+
+            morph[word.Anchor] = new MorphState(word.RootId, word.LemmaId, word.Pos, features);
+            withRows.Add(word.MorphSource);
+        }
+
+        int applied = 0;
+        foreach (QuranWordFixRow fix in snapshot.WordFixes.OrderBy(f => f.Anchor, Utf8Order.Instance).ThenBy(f => f.Field, Utf8Order.Instance))
+        {
+            if (!gate.IncludedLexicals.Contains("quran_word_fix:" + fix.Id.ToString("D", CultureInfo.InvariantCulture)))
+            {
+                continue;
+            }
+
+            bool hasWord = morph.TryGetValue(fix.Anchor, out MorphState? state);
+            string? defect = WordMorphFixes.Check(fix.Field, fix.NewValue, hasWord, rootIds.Contains, lemmaIds.Contains, out WordFixValue value);
+            if (defect is not null || state is null)
+            {
+                continue;
+            }
+
+            morph[fix.Anchor] = fix.Field switch
+            {
+                WordMorphFixes.RootId => state with { RootId = value.Id },
+                WordMorphFixes.LemmaId => state with { LemmaId = value.Id },
+                WordMorphFixes.Pos => state with { Pos = value.Text },
+                _ => state with { Features = value.Text },
+            };
+            applied++;
+        }
+
+        List<PackWordMorphRow> wordMorph = [.. morph.Select(p => new PackWordMorphRow(p.Key, p.Value.RootId, p.Value.LemmaId, p.Value.Pos, p.Value.Features))];
+
+        List<PackLemmaGlossRow> glosses = [];
+        foreach (LemmaGlossRow gloss in snapshot.LemmaGlosses)
+        {
+            if (gate.IncludedLexicals.Contains("lemma_gloss:" + gloss.LemmaId.ToString(CultureInfo.InvariantCulture)) && lemmaIds.Contains(gloss.LemmaId))
+            {
+                glosses.Add(new PackLemmaGlossRow(
+                    gloss.LemmaId,
+                    gloss.AnlamKisa,
+                    gloss.KuranAnlamlari,
+                    gloss.TurkceEsKelime,
+                    gloss.YalnizcaEtimolojik ? 1 : 0,
+                    gloss.Status,
+                    gloss.Origin));
+            }
+        }
+
+        return new Lexicon(wordMorph, roots, lemmas, glosses, applied, withRows);
+    }
+
+    private sealed record MorphState(int? RootId, int? LemmaId, string? Pos, string? Features);
 
     /// <summary>Kur'an ayeti icin "{sure}:{ayet}", digerleri icin capa metni.</summary>
     public static string LabelOf(string kind, string anchor)

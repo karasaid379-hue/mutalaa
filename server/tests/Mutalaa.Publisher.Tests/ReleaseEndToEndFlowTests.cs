@@ -365,7 +365,7 @@ public class ReleaseEndToEndFlowTests(PostgresFixture postgres, SeaweedFixture s
         Assert.Equal(0, promoted.Code);
         Manifest publicManifest = await harness.ReadManifestAsync(BuildFlavor.Public, ct);
         Assert.Equal("2026.11.0", publicManifest.Release);
-        Assert.Equal(["core", "hadis-sentetik"], PackIds(publicManifest));
+        Assert.Equal(["core", "hadis-sentetik", "kelime-kok"], PackIds(publicManifest));
         Release row = await harness.GetReleaseAsync(BuildFlavor.Public, "2026.11.0", ct);
         Assert.Equal((ReleaseStatus.Yayinlandi, ReleaseRequests.Terfi, internalRow.Id), (row.Durum, row.Talep, row.KaynakReleaseId));
         ReleaseDigests internalDigests = ReleaseDigests.Parse(internalRow.Ozetler);
@@ -451,7 +451,7 @@ public class ReleaseEndToEndFlowTests(PostgresFixture postgres, SeaweedFixture s
         Assert.Equal(ReleaseStatus.Yayinlandi, (await harness.Releases.GetAsync(promotion.Id, ct))!.Durum);
         Manifest promoted = await harness.ReadManifestAsync(BuildFlavor.Public, ct);
         Assert.Equal(source.Surum, promoted.Release);
-        Assert.Equal(["core", "hadis-sentetik"], PackIds(promoted));
+        Assert.Equal(["core", "hadis-sentetik", "kelime-kok"], PackIds(promoted));
 
         // geri alma: dev'in ilk yayinina.
         await harness.ChangeUnitAsync(EndToEndData.SentetikApproved, "Deneme paragrafi 1 (duzeltildi).", ct);

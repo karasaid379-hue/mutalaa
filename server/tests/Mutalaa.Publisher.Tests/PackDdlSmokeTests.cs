@@ -280,6 +280,19 @@ public class PackDdlSmokeTests
         });
     }
 
+    [Fact]
+    public void Kelime_kok_lemma_gloss_carries_a_not_null_origin_column()
+    {
+        // K-50 madde 9: paket tablosundaki origin sutunu editoryal lemma_gloss.origin degerini tasir ve bos olamaz.
+        WithPack("kelime-kok", applyAfter: true, conn =>
+        {
+            Assert.Equal(
+                ["lemma_id", "anlam_kisa", "kuran_anlamlari", "turkce_es_kelime", "yalnizca_etimolojik", "status", "origin"],
+                Strings(conn, "SELECT name FROM pragma_table_info('lemma_gloss') ORDER BY cid"));
+            Assert.Equal(1, Scalar<int>(conn, "SELECT \"notnull\" FROM pragma_table_info('lemma_gloss') WHERE name = 'origin'"));
+        });
+    }
+
     [Theory]
     [MemberData(nameof(Turler))]
     public void Trigram_table_exists_only_where_expected_and_substring_search_works(string tur)

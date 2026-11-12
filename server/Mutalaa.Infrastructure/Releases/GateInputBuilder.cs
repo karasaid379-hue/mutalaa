@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Mutalaa.Domain.Content;
 using Mutalaa.Domain.Links;
@@ -12,9 +13,11 @@ namespace Mutalaa.Infrastructure.Releases;
 /// <list type="bullet">
 /// <item>Kaynak kaydi = source tablosunda satir VE <c>{sourcesDir}/{slug}.toml</c> dosyasi (dosya yoksa kayitsiz sayilir; icerigi okunmaz).
 /// Kapiya giren kaynaklar: butun source satirlari + icerigi olan paketlerin zorunlu kaynaklari (satiri yoksa kayitsiz, P-01).</item>
-/// <item>Paket: icerigi (birim ya da yapi satiri) yoksa HasContent = false ("icerik-yok"; kaynaklari kapiya sokulmaz). Zorunlu olmayan kaynak yalniz
+/// <item>Paket: icerigi (birim, yapi satiri ya da sozluk verisi: kok, lemma, anlam, QAC kelime morfolojisi) yoksa HasContent = false ("icerik-yok"; kaynaklari kapiya sokulmaz). Zorunlu olmayan kaynak yalniz
 /// satiri varsa pakete bagli sayilir.</item>
 /// <item>Birim: IsAiDraft = onaysiz birimin yz_modeli dolu review satiri var; HasSuccessors = successors en az bir ogeli dizi ('[]' ve JSON null bos sayilir).</item>
+/// <item>Sozluk (P-09): quran_word_fix satirinda ApplyDefect, duzeltmenin uygulanamama nedenidir (WordMorphFixes; deger cevrilemiyor, kelimenin QAC satiri yok,
+/// gosterdigi root_id ya da lemma_id yok); kapi onayli ve kusurlu duzeltmeyi yayin reddi sayar.</item>
 /// <item>Baglanti: uclarin kaynagi uc capanin birim satirindan; bulunamayan uc kaynaksiz ("") sayilir (gorunmez). DstIsSeparateIndex: hedef birimin
 /// kaynaginin turu <c>baglanti_verisi</c> (risale-atif-dizini). LexiconApproved: evidence.lexicon_status yok ya da <c>onayli</c>.</item>
 /// <item>PreviousAnchors ve CarriedPackIds cagiran tarafindan verilir (onceki yayinin paket dosyalarindan ve manifestinden gelir).</item>
@@ -104,9 +107,15 @@ public static class GateInputBuilder
         }
 
         List<GateLexical> lexicals = [];
+        FixChecker fixes = new(snapshot, catalog);
         foreach (LexicalRow row in snapshot.Lexicals)
         {
-            lexicals.Add(new GateLexical(row.Kind, row.Id, ParseStatus(row.Status), row.LinkedLemmaApproved));
+            lexicals.Add(new GateLexical(
+                row.Kind,
+                row.Id,
+                ParseStatus(row.Status),
+                row.LinkedLemmaApproved,
+                row.Kind == LexicalKind.QuranWordFix ? fixes.Defect(row.Id) : null));
         }
 
         return new GateInput
@@ -143,8 +152,55 @@ public static class GateInputBuilder
             return true;
         }
 
-        // Kur'an yapisi (kelime, isaret, sayfa) birimsiz de paket icerigidir.
-        return HasStructure(pack, snapshot);
+        // Kur'an yapisi (kelime, isaret, sayfa) birimsiz de paket icerigidir; sozluk verisi de (kok, lemma, anlam, QAC kelime morfolojisi).
+        return HasStructure(pack, snapshot) || HasLexicon(pack, snapshot);
+    }
+
+    private static bool HasLexicon(PackDefinition pack, EditorialSnapshot snapshot) =>
+        pack.CarriesLexicon
+        && (snapshot.Roots.Count > 0
+            || snapshot.Lemmas.Count > 0
+            || snapshot.LemmaGlosses.Count > 0
+            || snapshot.QuranWords.Any(w => w.MorphSource is not null));
+
+    // quran_word_fix uygulanabilirlik denetimi (WordMorphFixes.Check): kapi girdisi ile birlestirici ayni kurali kullanir.
+    private sealed class FixChecker
+    {
+        private readonly Dictionary<string, QuranWordFixRow> _byId = new(StringComparer.Ordinal);
+        private readonly HashSet<string> _morphWords = new(StringComparer.Ordinal);
+        private readonly HashSet<int> _rootIds;
+        private readonly HashSet<int> _lemmaIds;
+
+        public FixChecker(EditorialSnapshot snapshot, PackCatalog catalog)
+        {
+            foreach (QuranWordFixRow fix in snapshot.WordFixes)
+            {
+                _byId[fix.Id.ToString("D", CultureInfo.InvariantCulture)] = fix;
+            }
+
+            if (_byId.Count > 0)
+            {
+                foreach (QuranWordRow word in snapshot.QuranWords)
+                {
+                    if (word.MorphSource is not null)
+                    {
+                        _morphWords.Add(word.Anchor);
+                    }
+                }
+            }
+
+            // Hedef kimlik, sozluk paketinin Dictionary kaynaklarindan gelen kok ya da onayli lemma olmalidir (birlestirici ayni kumeyi kullanir).
+            HashSet<string> dictionary = new(
+                catalog.All.Where(p => p.CarriesLexicon).SelectMany(p => p.Sources).Where(b => b.Role == PackSourceRole.Dictionary).Select(b => b.Slug),
+                StringComparer.Ordinal);
+            _rootIds = [.. snapshot.Roots.Where(r => dictionary.Contains(r.SourceId)).Select(r => r.Id)];
+            _lemmaIds = [.. snapshot.Lemmas.Where(l => dictionary.Contains(l.SourceId) && string.Equals(l.Status, ApprovedLabel, StringComparison.Ordinal)).Select(l => l.Id)];
+        }
+
+        public string? Defect(string fixId) =>
+            _byId.TryGetValue(fixId, out QuranWordFixRow? fix)
+                ? WordMorphFixes.Check(fix.Field, fix.NewValue, _morphWords.Contains(fix.Anchor), _rootIds.Contains, _lemmaIds.Contains, out _)
+                : null;
     }
 
     private static GateUnit ToGateUnit(UnitRow unit)

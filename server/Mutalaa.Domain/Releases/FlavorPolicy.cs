@@ -54,4 +54,10 @@ public static class FlavorPolicy
 
     /// <summary>P-08 ve P-10: onaysiz birimler yalniz dev ve internal'a girer ("dogrulanmamis" isaretiyle).</summary>
     public static bool AllowsUnapprovedUnits(BuildFlavor flavor) => Normalize(flavor) != BuildFlavor.Public;
+
+    /// <summary>
+    /// P-09 (K-50 madde 8): aday kelime anlami (lemma_gloss status = aday) yalniz dev ve internal'a, status = aday ile girer. public'e onayli girer;
+    /// red hicbirine girmez. quran_word_fix bu kurala baglanmaz: her derlemede yalniz onayli uygulanir.
+    /// </summary>
+    public static bool AllowsCandidateGlosses(BuildFlavor flavor) => Normalize(flavor) != BuildFlavor.Public;
 }

@@ -14,6 +14,9 @@ public enum PackSourceRole
 
     /// <summary>Yapi verisi: page_map ve quran_marker satirlarini verir (core'da tanzil-ust-veri).</summary>
     Structure = 2,
+
+    /// <summary>Sozluk verisi: root, lemma ve quran_word'un QAC sutunlarini verir (kelime-kok'te qac-morfoloji; K-50 madde 3 ve 4).</summary>
+    Dictionary = 3,
 }
 
 /// <summary>
@@ -31,6 +34,7 @@ public sealed record PackSourceBinding(string Slug, PackSourceRole Role, bool Re
 /// <summary>
 /// Katalogdaki bir paket (manifest satirinin kaynagi: Icerik paketleri 5). SchemaVersion her zaman <see cref="PackFormat.SchemaVersion"/>'dur.
 /// CarriesQuranStructure: paket quran_word, quran_marker ve page_map tablolarini doldurur (yalniz core).
+/// CarriesLexicon: paket word_morph, root, lemma ve lemma_gloss tablolarini doldurur (yalniz kelime-kok; tr_form ve tr_root_index A18'e kadar bos).
 /// </summary>
 public sealed record PackDefinition(
     string PackId,
@@ -38,7 +42,8 @@ public sealed record PackDefinition(
     bool Bundled,
     IReadOnlyList<string> DependsOn,
     IReadOnlyList<PackSourceBinding> Sources,
-    bool CarriesQuranStructure = false)
+    bool CarriesQuranStructure = false,
+    bool CarriesLexicon = false)
 {
     public int SchemaVersion => PackFormat.SchemaVersion;
 
@@ -49,11 +54,26 @@ public sealed record PackDefinition(
 /// <summary>
 /// A13'teki paket kimlikleri ve kaynak eslemesi (A13.3). Verisi olmayan paket (hadis, tefsir-elmalili) tabloda durur ama aday sayilmaz:
 /// kapi girdisini kuran GateInputBuilder icerigi olmayan paketi HasContent = false verir (Domain: "girmedi · icerik-yok").
-/// kelime-kok ve ses paketleri bu asamada kataloga alinmaz.
+/// kelime-kok (A17.7; sozluk verisi yoksa aday sayilmaz) katalogdadir; ses paketleri bu asamada kataloga alinmaz.
 /// </summary>
 public sealed class PackCatalog
 {
     public const string CorePackId = "core";
+
+    /// <summary>QAC kok, lemma ve kelime morfolojisi paketi (K-50 madde 9).</summary>
+    public const string KelimeKokPackId = "kelime-kok";
+
+    /// <summary>QAC morfoloji kaynagi: root, lemma ve quran_word'un QAC sutunlari (kelime-kok'te Dictionary rolu).</summary>
+    public const string QacMorphologySlug = "qac-morfoloji";
+
+    /// <summary>Hazir kelime anlami kaynagi (QuranWBW): lemma_gloss adaylarinin kaynagi; kelime-kok'te atif rolu, Required: false.</summary>
+    public const string GlossSourceSlug = "quranwbw-tr";
+
+    /// <summary>
+    /// Sozluk verisi kaynaklari (K-46 madde 1 ve K-50 madde 3): anlik goruntu okuyucusu root, lemma, lemma_gloss ve quran_word'un QAC
+    /// sutunlarini yalniz bu kaynaklar icin okur; kaynak ozeti de bunlar icin sozluk satirlarini ozetler.
+    /// </summary>
+    public static IReadOnlyList<string> LexiconSourceSlugs { get; } = [QacMorphologySlug, GlossSourceSlug];
 
     /// <summary>Risale uclu baglantilarin gittigi paket (Icerik paketleri 4 madde 2); A20'ye kadar katalogda degildir.</summary>
     public const string RisaleIndexPackId = "risale-dizin";
@@ -93,6 +113,17 @@ public sealed class PackCatalog
                 new PackSourceBinding("tanzil-ust-veri", PackSourceRole.Structure, Required: true, PageMapLayout: "medine-604"),
             ],
             CarriesQuranStructure: true),
+        new PackDefinition(
+            KelimeKokPackId,
+            "Kelime, kök ve lemma (QAC)",
+            Bundled: false,
+            DependsOn: [CorePackId],
+            Sources:
+            [
+                new PackSourceBinding(QacMorphologySlug, PackSourceRole.Dictionary, Required: true),
+                new PackSourceBinding(GlossSourceSlug, PackSourceRole.Attribution, Required: false),
+            ],
+            CarriesLexicon: true),
         new PackDefinition(
             "test-kucuk",
             "Sentetik küçük kitap (test)",

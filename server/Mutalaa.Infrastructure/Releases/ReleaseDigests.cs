@@ -97,8 +97,9 @@ public sealed class ReleaseDigests
 
 /// <summary>
 /// Kaynak ozeti hesabi (K-46 madde 1, Yayin sureci 2.2): kaynagin etkin birimleri <see cref="ContentDigest"/> kuraliyla; birimi olmayan kaynakta
-/// (tanzil-ust-veri) page_map ve quran_marker satirlari kanonik JSON satirlari (UTF-8 bayt sirasinda, LF'li) olarak ozetlenir; ikisi de yoksa
-/// girdisiz SHA-256. Derleme turunden bagimsizdir: butun anlik goruntuden hesaplanir.
+/// (tanzil-ust-veri) page_map ve quran_marker satirlari kanonik JSON satirlari (UTF-8 bayt sirasinda, LF'li) olarak ozetlenir; sozluk kaynaklarinda
+/// (K-46 madde 1) qac-morfoloji icin root, lemma ve quran_word'un QAC sutunlari, quranwbw-tr icin lemma_gloss satirlari (butun durumlar, status ve origin
+/// dahil) ayni bicimde ozetlenir; hicbiri yoksa girdisiz SHA-256. Derleme turunden bagimsizdir: butun anlik goruntuden hesaplanir.
 /// </summary>
 public static class SourceDigests
 {
@@ -155,6 +156,8 @@ public static class SourceDigests
             }
         }
 
+        AddLexiconLines(snapshot, slug, lines);
+
         lines.Sort(Utf8Order.Instance);
         using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         foreach (string line in lines)
@@ -164,6 +167,64 @@ public static class SourceDigests
         }
 
         return Convert.ToHexStringLower(hash.GetHashAndReset());
+    }
+
+    private static void AddLexiconLines(EditorialSnapshot snapshot, string slug, List<string> lines)
+    {
+        if (string.Equals(slug, PackCatalog.QacMorphologySlug, StringComparison.Ordinal))
+        {
+            foreach (RootRow root in snapshot.Roots)
+            {
+                if (string.Equals(root.SourceId, slug, StringComparison.Ordinal))
+                {
+                    lines.Add(Line(PackTables.Root, slug, root.Id, root.Letters, root.Occurrences, root.AyahCount, root.IdfQ is { } idf ? PackRows.FromSingle(idf) : null, root.KokAnlami));
+                }
+            }
+
+            foreach (LemmaRow lemma in snapshot.Lemmas)
+            {
+                if (string.Equals(lemma.SourceId, slug, StringComparison.Ordinal))
+                {
+                    lines.Add(Line(
+                        PackTables.Lemma,
+                        slug,
+                        lemma.Id,
+                        lemma.Text,
+                        lemma.TextClean,
+                        lemma.RootId,
+                        lemma.Occurrences,
+                        lemma.ArLemmaId,
+                        lemma.EtymologicalOnly ? 1L : 0L,
+                        lemma.Status));
+                }
+            }
+
+            foreach (QuranWordRow word in snapshot.QuranWords)
+            {
+                if (string.Equals(word.MorphSource, slug, StringComparison.Ordinal))
+                {
+                    string? features = word.Features is null ? null : WordMorphFixes.CanonicalJson(word.Features) ?? word.Features;
+                    lines.Add(Line(PackTables.QuranWord, slug, word.Anchor, word.RootId, word.LemmaId, word.Pos, features, word.MorphSource));
+                }
+            }
+        }
+        else if (string.Equals(slug, PackCatalog.GlossSourceSlug, StringComparison.Ordinal))
+        {
+            foreach (LemmaGlossRow gloss in snapshot.LemmaGlosses)
+            {
+                lines.Add(Line(
+                    PackTables.LemmaGloss,
+                    slug,
+                    gloss.LemmaId,
+                    gloss.AnlamKisa,
+                    gloss.KuranAnlamlari,
+                    gloss.TurkceEsKelime,
+                    gloss.YalnizcaEtimolojik ? 1L : 0L,
+                    gloss.Status,
+                    gloss.Origin,
+                    gloss.Version));
+            }
+        }
     }
 
     private static long? Wide(int? value) => value;

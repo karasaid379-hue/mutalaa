@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Mutalaa.Api.Tests.Support;
 using Mutalaa.Domain.Releases;
 using Mutalaa.Domain.Releases.Gate;
+using Mutalaa.Infrastructure.Packs;
 using Mutalaa.Infrastructure.Releases;
 
 namespace Mutalaa.Publisher.Tests;
@@ -286,6 +287,137 @@ public partial class EditorialSnapshotReaderTests(EditorialDatabase<EditorialSna
             [(1, "q:1:1", "q:1:2"), (2, "q:1:2", "q:1:3")],
             pages.Where(p => p.SourceId == slug).Select(p => (p.Page, p.StartAnchor, p.EndAnchor)));
         Assert.All(pages.Where(p => p.SourceId == slug), p => Assert.Null(p.Volume));
+    }
+
+    [Fact]
+    public async Task It_reads_the_dictionary_rows_and_qac_word_columns_only_for_the_lexicon_sources()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        string other = Unique("test-sozluk-");
+        await InsertSourceAsync(PackCatalog.QacMorphologySlug, "morfoloji", ct: ct);
+        await InsertSourceAsync(PackCatalog.GlossSourceSlug, "kelime_anlami", ct: ct);
+        await InsertSourceAsync(other, "sozluk", ct: ct);
+        int rootId = 96000 + Random.Shared.Next(0, 1000);
+        int lemmaId = rootId + 1000;
+        int trLemmaId = rootId + 2000;
+        int otherLemmaId = rootId + 3000;
+        string letters = string.Create(CultureInfo.InvariantCulture, $"بت{rootId}");
+        await Db.ExecuteAsync(
+            "INSERT INTO icerik.root (id, letters, occurrences, ayah_count, idf_q, kok_anlami, source_id, data_version) VALUES (@id, @l, 7, 3, 0.25, 'deneme kok', @s, 'test'), (@id2, @l2, 1, 1, NULL, NULL, @o, 'test')",
+            ct,
+            ("id", rootId),
+            ("l", letters),
+            ("s", PackCatalog.QacMorphologySlug),
+            ("id2", rootId + 1),
+            ("l2", letters + "x"),
+            ("o", other));
+        const string lemmaSql =
+            "INSERT INTO icerik.lemma (id, lang, text, text_clean, root_id, occurrences, qac_ref, etymological_only, origin, status, source_id, data_version) VALUES (@id, @lang, 'deneme', 'deneme', @root, 2, @ref, true, 'qac', @st::icerik.xref_status, @s, 'test')";
+        await Db.ExecuteAsync(lemmaSql, ct, ("id", lemmaId), ("lang", "ar"), ("root", rootId), ("ref", "deneme-" + lemmaId), ("st", "onayli"), ("s", PackCatalog.QacMorphologySlug));
+        await Db.ExecuteAsync(lemmaSql, ct, ("id", trLemmaId), ("lang", "tr"), ("root", null), ("ref", null), ("st", "onayli"), ("s", PackCatalog.QacMorphologySlug));
+        await Db.ExecuteAsync(lemmaSql, ct, ("id", otherLemmaId), ("lang", "ar"), ("root", null), ("ref", "deneme-" + otherLemmaId), ("st", "aday"), ("s", other));
+        const string glossSql =
+            "INSERT INTO icerik.lemma_gloss (lemma_id, anlam_kisa, kuran_anlamlari, turkce_es_kelime, yalnizca_etimolojik, origin, version, content_hash, status) VALUES (@id, 'Deneme anlam', '[\"a\"]'::jsonb, 'es', true, 'kaynak:quranwbw-tr', '1', @h, 'aday'::icerik.xref_status)";
+        await Db.ExecuteAsync(glossSql, ct, ("id", lemmaId), ("h", HashA));
+        await Db.ExecuteAsync(glossSql, ct, ("id", trLemmaId), ("h", HashB));
+        await Db.ExecuteAsync(glossSql, ct, ("id", otherLemmaId), ("h", HashB));
+        int surah = 60 + Random.Shared.Next(0, 50);
+        await Db.ExecuteAsync(
+            """
+            INSERT INTO icerik.quran_word (anchor, surah, ayah, word, ayah_index, text_uthmani, norm, char_start, char_end, root_id, lemma_id, pos, features, source_id, morph_source, data_version)
+            VALUES (@a1, @sur, 1, 1, 1, 'deneme', 'deneme', 0, 6, @root, @lemma, 'V', '{"b": 2, "a": 1}'::jsonb, @s, @qac, 'test'),
+                   (@a2, @sur, 1, 2, 1, 'deneme', 'deneme', 7, 13, @root, @lemma, 'N', '{"c": 3}'::jsonb, @s, @o, 'test'),
+                   (@a3, @sur, 1, 3, 1, 'deneme', 'deneme', 14, 20, NULL, NULL, NULL, NULL, @s, NULL, 'test')
+            """,
+            ct,
+            ("a1", $"q:{surah}:1:1"),
+            ("a2", $"q:{surah}:1:2"),
+            ("a3", $"q:{surah}:1:3"),
+            ("sur", surah),
+            ("root", rootId),
+            ("lemma", lemmaId),
+            ("s", PackCatalog.QacMorphologySlug),
+            ("qac", PackCatalog.QacMorphologySlug),
+            ("o", other));
+        Guid fixId = Guid.CreateVersion7();
+        await Db.ExecuteAsync(
+            "INSERT INTO icerik.quran_word_fix (id, anchor, field, new_value, reason, status) VALUES (@id, @a, 'features', '{\"z\": 1}', 'deneme', 'onayli'::icerik.xref_status)",
+            ct,
+            ("id", fixId),
+            ("a", $"q:{surah}:1:1"));
+
+        try
+        {
+            await using EditorialSnapshotReader reader = await EditorialSnapshotReader.OpenAsync(Db.ConnectionString, ct);
+            List<QuranWordRow> words = [];
+            await foreach (QuranWordRow word in reader.ReadQuranWordsAsync(ct))
+            {
+                if (word.Surah == surah)
+                {
+                    words.Add(word);
+                }
+            }
+
+            IReadOnlyList<RootRow> roots = await reader.ReadRootsAsync(ct);
+            IReadOnlyList<LemmaRow> lemmas = await reader.ReadLemmasAsync(ct);
+            IReadOnlyList<LemmaGlossRow> glosses = await reader.ReadLemmaGlossesAsync(ct);
+            IReadOnlyList<QuranWordFixRow> fixes = await reader.ReadWordFixesAsync(ct);
+
+            // QAC sutunlari yalniz morph_source sozluk kaynagiysa okunur; digerinde (ve kaynaksiz satirda) bostur.
+            Assert.Equal(
+                [(rootId, lemmaId, "V", PackCatalog.QacMorphologySlug), ((int?)null, (int?)null, (string?)null, (string?)null), (null, null, null, null)],
+                words.OrderBy(w => w.Word).Select(w => (w.RootId, w.LemmaId, w.Pos, w.MorphSource)));
+            Assert.Equal("{\"a\": 1, \"b\": 2}", words.Single(w => w.Word == 1).Features);
+            Assert.All(words.Where(w => w.Word != 1), w => Assert.Null(w.Features));
+
+            RootRow root = Assert.Single(roots, r => r.Id == rootId);
+            Assert.Equal((letters, 7, 3, 0.25f, "deneme kok", PackCatalog.QacMorphologySlug), (root.Letters, root.Occurrences, root.AyahCount, root.IdfQ, root.KokAnlami, root.SourceId));
+            Assert.DoesNotContain(roots, r => r.Id == rootId + 1);
+            Assert.All(roots, r => Assert.Contains(r.SourceId, PackCatalog.LexiconSourceSlugs));
+
+            // Yalniz lang = 'ar' ve sozluk kaynagi; durum metni okunur (pakete yalniz onayli girer).
+            LemmaRow lemma = Assert.Single(lemmas, l => l.Id == lemmaId);
+            Assert.Equal((rootId, 2, true, "onayli"), (lemma.RootId, lemma.Occurrences, lemma.EtymologicalOnly, lemma.Status));
+            Assert.DoesNotContain(lemmas, l => l.Id == trLemmaId || l.Id == otherLemmaId);
+
+            LemmaGlossRow gloss = Assert.Single(glosses, g => g.LemmaId == lemmaId);
+            Assert.Equal(("Deneme anlam", "[\"a\"]", "es", true, "aday", "kaynak:quranwbw-tr", "1"), (gloss.AnlamKisa, gloss.KuranAnlamlari, gloss.TurkceEsKelime, gloss.YalnizcaEtimolojik, gloss.Status, gloss.Origin, gloss.Version));
+            Assert.DoesNotContain(glosses, g => g.LemmaId == trLemmaId || g.LemmaId == otherLemmaId);
+
+            QuranWordFixRow fix = Assert.Single(fixes, f => f.Id == fixId);
+            Assert.Equal(($"q:{surah}:1:1", "features", "{\"z\": 1}", "onayli"), (fix.Anchor, fix.Field, fix.NewValue, fix.Status));
+
+            // Anlik goruntu hepsini tek islemde toplar.
+            EditorialSnapshot snapshot = await reader.LoadAsync(BuildFlavor.Dev, ct);
+            Assert.Contains(snapshot.Roots, r => r.Id == rootId);
+            Assert.Contains(snapshot.Lemmas, l => l.Id == lemmaId);
+            Assert.Contains(snapshot.LemmaGlosses, g => g.LemmaId == lemmaId);
+            Assert.Contains(snapshot.WordFixes, f => f.Id == fixId);
+        }
+        finally
+        {
+            // Bu sinifin baska testi (P-09 durum satirlari) quran_word_fix tablosunda tek satir bekler: kendi satirimizi kaldiririz.
+            await Db.ExecuteAsync("DELETE FROM icerik.quran_word_fix WHERE id = @id", CancellationToken.None, ("id", fixId));
+        }
+    }
+
+    [Fact]
+    public async Task It_returns_no_dictionary_rows_when_the_lexicon_tables_hold_none_of_the_lexicon_sources()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        string other = Unique("test-bos-");
+        await InsertSourceAsync(other, "sozluk", ct: ct);
+        int rootId = 97000 + Random.Shared.Next(0, 1000);
+        await Db.ExecuteAsync(
+            "INSERT INTO icerik.root (id, letters, source_id, data_version) VALUES (@id, @l, @s, 'test')",
+            ct,
+            ("id", rootId),
+            ("l", string.Create(CultureInfo.InvariantCulture, $"جح{rootId}")),
+            ("s", other));
+
+        await using EditorialSnapshotReader reader = await EditorialSnapshotReader.OpenAsync(Db.ConnectionString, ct);
+
+        Assert.DoesNotContain(await reader.ReadRootsAsync(ct), r => r.SourceId == other);
     }
 
     [Fact]

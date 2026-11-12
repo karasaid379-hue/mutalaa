@@ -72,8 +72,10 @@ public static class LexicalKindLabels
 /// <summary>
 /// P-09 satiri. quran_word_fix ve lemma_gloss durum sutunu tasir (Status). tr_root_index ve tr_form durum sutunu tasimaz,
 /// yalniz onayli veri tasir; bagli Turkce lemma onayliysa girer (LinkedLemmaApproved).
+/// ApplyDefect: yalniz quran_word_fix icin; duzeltme uygulanamiyorsa (deger alan turune cevrilemiyor, gosterdigi root_id ya da lemma_id yok,
+/// kelime yok) kisa ASCII neden. Duzeltme bu derlemede uygulanacaksa (onayli) ve ApplyDefect doluysa yayin reddedilir (kural kodu yok).
 /// </summary>
-public sealed record GateLexical(LexicalKind Kind, string Id, XrefStatus? Status, bool LinkedLemmaApproved);
+public sealed record GateLexical(LexicalKind Kind, string Id, XrefStatus? Status, bool LinkedLemmaApproved, string? ApplyDefect = null);
 
 /// <summary>Kapi girdisi (Yayin sureci 2). Tum liste alanlari varsayilan bostur.</summary>
 public sealed record GateInput

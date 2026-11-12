@@ -49,14 +49,22 @@ public class PackCatalogTests
     }
 
     [Fact]
-    public void Future_packs_are_listed_but_kelime_kok_and_audio_are_not()
+    public void Future_packs_are_listed_and_kelime_kok_is_in_the_catalog_but_audio_is_not()
     {
         Assert.Equal(["elmalili-tefsir"], Catalog.Get("tefsir-elmalili").Sources.Select(s => s.Slug));
         Assert.Equal(
             ["tecrid-ar", "tecrid-miras", "tecrid-naim"],
             Catalog.Get("hadis-tecrid").Sources.Select(s => s.Slug).Order(StringComparer.Ordinal));
         Assert.Equal(["hadis-fawaz-ar"], Catalog.Get("hadis-kutub-i-sitte").Sources.Select(s => s.Slug));
-        Assert.False(Catalog.TryGet("kelime-kok", out _));
+        Assert.True(Catalog.TryGet("kelime-kok", out PackDefinition? kelimeKok));
+        Assert.Equal(["core"], kelimeKok.DependsOn);
+        Assert.False(kelimeKok.Bundled);
+        Assert.True(kelimeKok.CarriesLexicon);
+        Assert.False(kelimeKok.CarriesQuranStructure);
+        Assert.Equal(
+            [("qac-morfoloji", PackSourceRole.Dictionary, true), ("quranwbw-tr", PackSourceRole.Attribution, false)],
+            kelimeKok.Sources.Select(s => (s.Slug, s.Role, s.Required)));
+        Assert.Equal(["qac-morfoloji", "quranwbw-tr"], PackCatalog.LexiconSourceSlugs);
         Assert.DoesNotContain(Catalog.All, p => p.PackId.StartsWith("ses-", StringComparison.Ordinal));
         Assert.False(Catalog.TryGet(null, out _));
         Assert.Throws<KeyNotFoundException>(() => Catalog.Get("yok"));
