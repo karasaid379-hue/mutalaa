@@ -312,6 +312,19 @@ def parca_slug(n: int) -> str:
     return sira_adi("parca", n)
 
 
+LAHIKA_SONEKI: Final = "-lahikasi"
+
+
+def lahika_mi(kitap_slug: str) -> bool:
+    """Kitap bir Lahika mi (Barla, Kastamonu, Emirdag 1 ve 2; Osmanlica karsiliklari dahil).
+
+    Kitap slug'i `-lahikasi` ile biter ya da `-lahikasi-{n}` / `-osmanlica` / `-arapca` ekleri
+    sonrasinda `-lahikasi` ile bitiyorsa (`shared/data/risale-kitaplar.json` slug'lari).
+    """
+    govde = kitap_slug.removesuffix(OSMANLICA_EKI).removesuffix(ARAPCA_EKI)
+    return govde.endswith(LAHIKA_SONEKI) or re.fullmatch(r".*-lahikasi-[0-9]+", govde) is not None
+
+
 def kardes_slug(slug: str, mevcut: Collection[str]) -> str:
     """Kardes cakismasinda `-2` (sonra `-3` ...) eki; sonuc 64 karakteri asmaz.
 

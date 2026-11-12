@@ -6,8 +6,11 @@
   dugumleriyle `title`/`textInBook` normalize eslesmesi ve `pageNo` ile eslesir; eslesen baslik
   o bolumun `p1` birimidir. Bolum adi sayili kalibi izler (A20.2b; `anchor.risale.baslik_bolum_adi`:
   "Yirmi Besinci Soz" -> `soz-25`, `mukaddime`, `zeyl`, `hatime`); kaliba uymayan baslik
-  basliktan turetilir (`slug_turet`, en cok 40 karakter), kardes cakismasinda `-2` eki alir
-  (kalip adlari kalip disi bir adin eki olarak uretilmez). Kitabin ilk duzey dugumu kitap
+  basliktan turetilir (`slug_turet`, en cok 64 karakter), kardes cakismasinda `-2` eki alir
+  (kalip adlari kalip disi bir adin eki olarak uretilmez). Slug turetilemeyen (Arap harfli ya
+  da harfsiz) baslik `bolum-{n}` olur; Lahika kitaplarinda kalip disi her bolum `parca-{n}`
+  olur (kaynakta numara varsa o, yoksa kardesler arasi sira; baslik slug'i kullanilmaz). Kitabin
+  ilk duzey dugumu kitap
   slug'iyla ayni adi tasiyorsa (Sunuhat, Tuluat, Isarat) o duzey daraltilir. Eslesmeyen baslik
   satiri duzeysiz baslik olarak o anki bolumde kalir (uyari). Ilk eslesmeden onceki birimler
   kitap kokundedir (`rn:{kitap}:p{n}`).
@@ -28,6 +31,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Final
 
+from mutalaa_pipeline.anchor.capa import MAX_SLUG
 from mutalaa_pipeline.anchor.risale import (
     Kitap,
     RisaleHatasi,
@@ -36,6 +40,8 @@ from mutalaa_pipeline.anchor.risale import (
     bolum_kalibi,
     hasiye_yolu,
     kardes_slug,
+    lahika_mi,
+    parca_slug,
     rn_capa,
     slug_turet,
 )
@@ -49,7 +55,7 @@ from mutalaa_pipeline.ingest.risale_rnk import (
 )
 from mutalaa_pipeline.normalize import search_keys
 
-MAKS_BOLUM_SLUG: Final = 40
+MAKS_BOLUM_SLUG: Final = MAX_SLUG  # Capa semasi bolum 5: en cok 64 karakter
 ESLESME_PENCERESI: Final = 80
 SAYFA_UYUMSUZ_PENCERE: Final = 5
 BOLUM_ONEKI: Final = "bolum-"
@@ -153,8 +159,8 @@ class BolumAgaci:
 
     `yollar[j]`: dugumun slug yolu (kok `()`; daraltilan dugum ustunun yolunu tasir);
     `basliklar[j]`: kokten dugume gorunen baslik zinciri (kok ve daraltilan dugum yok);
-    `istatistik`: `kalip_{tur}`, `baslik_turetilen`, `baslik_bos`, `kesildi_{40}`, `bolum_onekli`,
-    `kardes_eki`, `daraltildi` sayaclari (metin tasimaz).
+    `istatistik`: `kalip_{tur}`, `baslik_turetilen`, `bolum_n` (slug turetilemeyen), `parca`
+    (Lahika), `kesildi_64`, `bolum_onekli`, `kardes_eki`, `daraltildi` sayaclari (metin tasimaz).
     """
 
     yollar: tuple[tuple[str, ...], ...]
@@ -162,22 +168,34 @@ class BolumAgaci:
     istatistik: Counter[str]
 
 
-def _baslik_slug(ad: str, istatistik: Counter[str]) -> str:
-    """Kalip disi baslikta slug: `slug_turet`, en cok 40 karakter; gecersizse `bolum-` oneki."""
+def _baslik_slug(ad: str, istatistik: Counter[str]) -> str | None:
+    """Kalip disi baslikta slug: `slug_turet` (en cok 64 karakter); gecersizse `bolum-` oneki.
+
+    Slug turetilemezse (Arap harfli ya da harfsiz baslik) `None`; cagiran `bolum-{n}` verir.
+    """
     try:
         tam = slug_turet(ad, kes=False)
     except RisaleHatasi:
-        istatistik["baslik_bos"] += 1
-        return "bolum"
+        return None
     istatistik["baslik_turetilen"] += 1
-    ham = tam[:MAKS_BOLUM_SLUG].rstrip("-")
+    ham = tam
     if len(tam) > MAKS_BOLUM_SLUG:
+        ham = slug_turet(ad)  # son tire sinirinda (yoksa sert) 64 karaktere kesilir
         istatistik[f"kesildi_{MAKS_BOLUM_SLUG}"] += 1
     if _kalip_disi_uygun(ham):
         return ham
     istatistik["bolum_onekli"] += 1
     onekli = (BOLUM_ONEKI + ham)[:MAKS_BOLUM_SLUG].rstrip("-")
-    return onekli if _kalip_disi_uygun(onekli) else "bolum"
+    return onekli if _kalip_disi_uygun(onekli) else None
+
+
+def _kaynak_numarasi(ad: str) -> int | None:
+    """Basligin tamami kanonik bir sayi ise ("12", "12.") o sayi; degilse `None`."""
+    try:
+        ham = slug_turet(ad, kes=False)
+    except RisaleHatasi:
+        return None
+    return int(ham) if ham.isascii() and ham.isdigit() and ham[0] != "0" else None
 
 
 def _kalip_disi_uygun(ad: str) -> bool:
@@ -214,6 +232,8 @@ def bolum_agaci(
     basliklar: list[tuple[str, ...]] = []
     etkin: list[int] = []  # en yakin daraltilmamis atanin sirasi (kendisi dahil)
     kardesler: dict[tuple[int, str], set[str]] = {}
+    bolum_n: Counter[tuple[int, str]] = Counter()  # slug turetilemeyen kardes sirasi
+    parca_n: Counter[tuple[int, str]] = Counter()  # Lahika parcasi kardes sirasi
     for d in dugumler:
         if d.ust is None:
             yollar.append(())
@@ -222,21 +242,44 @@ def bolum_agaci(
             continue
         gorunen = d.baslik or d.metin_kitapta
         parca = parca_adi(d.sayfa) if parca_adi is not None else ""
+        lahika = lahika_mi(parca)
+        anahtar = (etkin[d.ust], parca)
         kalip = baslik_bolum_adi(gorunen)
-        if kalip is not None:
-            ham = kalip
-            kalip_turu = bolum_kalibi(kalip)
-            assert kalip_turu is not None
-            istatistik[f"kalip_{kalip_turu.tur}"] += 1
-        else:
-            ham = _baslik_slug(gorunen, istatistik)
-        if d.ust == 0 and parca_adi is not None and kalip is None and ham == parca:
+        # Baslikten turetilen slug; daraltma ve (Lahika disinda) ad icin. Lahikada yalniz
+        # daraltma sinamasi icin hesaplanir, sayaclari kirletmez.
+        baslik_slugu = (
+            None
+            if kalip is not None
+            else _baslik_slug(gorunen, Counter() if lahika else istatistik)
+        )
+        if (
+            d.ust == 0
+            and parca_adi is not None
+            and baslik_slugu is not None
+            and baslik_slugu == parca
+        ):
             istatistik["daraltildi"] += 1
             yollar.append(yollar[d.ust])
             basliklar.append(basliklar[d.ust])
             etkin.append(etkin[d.ust])
             continue
-        mevcut = kardesler.setdefault((etkin[d.ust], parca), set())
+        if kalip is not None:
+            ham = kalip
+            kalip_turu = bolum_kalibi(kalip)
+            assert kalip_turu is not None
+            istatistik[f"kalip_{kalip_turu.tur}"] += 1
+        elif lahika:
+            parca_n[anahtar] += 1
+            numara = _kaynak_numarasi(gorunen)
+            ham = parca_slug(numara if numara is not None else parca_n[anahtar])
+            istatistik["parca"] += 1
+        elif baslik_slugu is not None:
+            ham = baslik_slugu
+        else:
+            bolum_n[anahtar] += 1
+            ham = f"{BOLUM_ONEKI}{bolum_n[anahtar]}"
+            istatistik["bolum_n"] += 1
+        mevcut = kardesler.setdefault(anahtar, set())
         ad, ekli = _benzersiz(ham, mevcut)
         mevcut.add(ad)
         if ekli:

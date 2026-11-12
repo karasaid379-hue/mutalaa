@@ -17,6 +17,8 @@ from mutalaa_pipeline.anchor.risale import (
     BolunmeParcasi,
     baslik_bolum_adi,
     bolum_kalibi,
+    kitaplar,
+    lahika_mi,
     sira_sayisi,
 )
 from mutalaa_pipeline.ingest import risale_rnk_staged as S
@@ -177,20 +179,146 @@ def test_bolum_agaci_tur_sozcugu_ve_hasiye_kalip_adiyla_karismaz() -> None:
     assert [bolum_kalibi(a) is not None for a in adlar] == [False, False, True, False]
 
 
-def test_bolum_agaci_basliksiz_ve_gecersiz_baslik() -> None:
-    agac = _agac([_dugum("???"), _dugum("???"), _dugum("1"), _dugum("Soz 03")])
+def test_bolum_agaci_basliksiz_baslik_bolum_n_olur() -> None:
+    """Slug turetilemeyen baslik `bolum-{n}` (n kardes sirasi, 1'den); `bolum` yalin olmaz."""
+    agac = _agac([_dugum("???"), _dugum("ابتث"), _dugum("Soz 03"), _dugum("ابتث")])
     adlar = [y[0] for y in agac.yollar[1:]]
-    assert adlar == ["bolum", "bolum-2", "bolum-1", "bolum-soz-03"]
-    assert agac.istatistik["baslik_bos"] == 2
-    assert agac.istatistik["bolum_onekli"] == 2
+    assert adlar == ["bolum-1", "bolum-2", "bolum-soz-03", "bolum-3"]
+    assert agac.istatistik["bolum_n"] == 3
+    assert agac.istatistik["bolum_onekli"] == 1 and agac.istatistik["kardes_eki"] == 0
 
 
-def test_bolum_agaci_baslik_en_cok_40_karakter() -> None:
+def test_bolum_agaci_bolum_n_her_ustun_altinda_birden_baslar() -> None:
+    agac = _agac(
+        [
+            _dugum("ابتث", 4, [_dugum("ابتث"), _dugum("ابتث")]),
+            _dugum("ابتث", 6, [_dugum("ابتث")]),
+        ]
+    )
+    # dugumler: 0 kok, 1 bolum-1, 2 bolum-1/bolum-1, 3 bolum-1/bolum-2, 4 bolum-2, 5 bolum-2/bolum-1
+    assert agac.yollar[1:] == (
+        ("bolum-1",),
+        ("bolum-1", "bolum-1"),
+        ("bolum-1", "bolum-2"),
+        ("bolum-2",),
+        ("bolum-2", "bolum-1"),
+    )
+
+
+def test_bolum_agaci_rakam_basligi_ile_bolum_n_cakismasinda_ek() -> None:
+    agac = _agac([_dugum("???"), _dugum("1")])  # "1" -> bolum-1 (onekli), ilk basliksiz de bolum-1
+    assert [y[0] for y in agac.yollar[1:]] == ["bolum-1", "bolum-1-2"]
+
+
+def test_bolum_agaci_baslik_en_cok_64_karakter_40ta_kesilmez() -> None:
+    orta = " ".join(["deneme"] * 8)  # 8 * 6 + 7 = 55 karakter: kesilmez
     uzun = " ".join(["deneme"] * 12)  # 12 * 6 + 11 = 83 karakter
-    agac = _agac([_dugum(uzun)])
-    ad = agac.yollar[1][0]
-    assert len(ad) <= 40 and not ad.endswith("-")
-    assert agac.istatistik["kesildi_40"] == 1
+    agac = _agac([_dugum(orta), _dugum(uzun)])
+    ad1, ad2 = agac.yollar[1][0], agac.yollar[2][0]
+    assert ad1 == "-".join(["deneme"] * 8) and len(ad1) == 55
+    assert len(ad2) <= 64 and not ad2.endswith("-")
+    assert len(ad2) > 40  # eski 40 sinirinda kesilmiyor
+    assert ad2 == "-".join(["deneme"] * 9)  # son tire sinirinda (9 * 6 + 8 = 62)
+    assert agac.istatistik["kesildi_64"] == 1 and "kesildi_40" not in agac.istatistik
+
+
+def test_bolum_agaci_64te_cakisma_eki_de_64_icinde_kalir() -> None:
+    uzun = " ".join(["deneme"] * 12)
+    agac = _agac([_dugum(uzun), _dugum(uzun), _dugum(uzun)])
+    adlar = [y[0] for y in agac.yollar[1:]]
+    assert len(set(adlar)) == 3 and all(len(a) <= 64 for a in adlar)
+    assert adlar[1].endswith("-2") and adlar[2].endswith("-3")
+    # taban 64 karakter dolu olsa da ek 64 icinde kalir
+    tam = "a" * 64
+    agac = _agac([_dugum(tam), _dugum(tam)])
+    assert [len(y[0]) for y in agac.yollar[1:]] == [64, 64]
+    assert agac.yollar[2][0].endswith("-2") and agac.yollar[1][0] != agac.yollar[2][0]
+
+
+def test_bolum_agaci_ayrilmis_p_ve_s_adlari_onek_alir() -> None:
+    agac = _agac([_dugum("p12"), _dugum("S3")])
+    assert [y[0] for y in agac.yollar[1:]] == ["bolum-p12", "bolum-s3"]
+
+
+def test_lahika_kitap_tanima() -> None:
+    for slug in (
+        "barla-lahikasi",
+        "kastamonu-lahikasi",
+        "emirdag-lahikasi-1",
+        "emirdag-lahikasi-2",
+        "barla-lahikasi-osmanlica",
+        "emirdag-lahikasi-2-osmanlica",
+        "kastamonu-lahikasi-arapca",
+    ):
+        assert lahika_mi(slug), slug
+    for slug in ("sozler", "mektubat-osmanlica", "lahika", "lahikasi-sozler"):
+        assert not lahika_mi(slug), slug
+
+
+def test_lahika_tablo_kitaplari_tam_yedi() -> None:
+    """Lahika kitaplari tablodan tanir: 4 Turkce + 3 Osmanlica (uydurma yok)."""
+    bulunan = sorted(k.slug for k in kitaplar() if lahika_mi(k.slug))
+    assert bulunan == [
+        "barla-lahikasi",
+        "barla-lahikasi-osmanlica",
+        "emirdag-lahikasi-1",
+        "emirdag-lahikasi-1-osmanlica",
+        "emirdag-lahikasi-2",
+        "emirdag-lahikasi-2-osmanlica",
+        "kastamonu-lahikasi",
+        "kastamonu-lahikasi-osmanlica",
+    ]
+
+
+def _lahika_agac(cocuklar: list[dict[str, Any]], slug: str = "deneme-lahikasi") -> S.BolumAgaci:
+    bilgi = S.json_oku(_json(_dugum("Deneme Kitap", 4, cocuklar)))
+    return S.bolum_agaci(bilgi.dugumler, parca_adi=lambda _sayfa: slug)
+
+
+def test_lahika_kalip_disi_bolum_parca_n_olur_baslik_slugi_kullanilmaz() -> None:
+    agac = _lahika_agac(
+        [
+            _dugum("Deneme Mektup A", 4, [_dugum("Deneme Alt"), _dugum("Başka Başlık")]),
+            _dugum("Deneme Mektup B", 5),
+            _dugum("Birinci Nükte", 6),  # sayili kalip korunur
+            _dugum("Mukaddime", 6),
+            _dugum("ابتث", 7),  # slug turetilemeyen de parca
+        ]
+    )
+    assert agac.yollar[1:] == (
+        ("parca-1",),
+        ("parca-1", "parca-1"),
+        ("parca-1", "parca-2"),
+        ("parca-2",),
+        ("nukte-1",),
+        ("mukaddime",),
+        ("parca-3",),
+    )
+    assert agac.istatistik["parca"] == 5
+    assert "baslik_turetilen" not in agac.istatistik and "bolum_n" not in agac.istatistik
+    assert agac.basliklar[1] == ("Deneme Mektup A",)  # gorunen baslik zinciri korunur
+
+
+def test_lahika_kaynakta_numara_varsa_o_numara() -> None:
+    agac = _lahika_agac([_dugum("12."), _dugum("Deneme"), _dugum("7")])
+    assert [y[0] for y in agac.yollar[1:]] == ["parca-12", "parca-2", "parca-7"]
+
+
+def test_lahika_numara_cakismasinda_ek() -> None:
+    agac = _lahika_agac([_dugum("2"), _dugum("Deneme")])  # kaynak 2 ve kardes sirasi 2
+    assert [y[0] for y in agac.yollar[1:]] == ["parca-2", "parca-2-2"]
+
+
+def test_lahika_disi_kitapta_parca_n_uretilmez() -> None:
+    bilgi = S.json_oku(_json(_dugum("Deneme Kitap", 4, [_dugum("Deneme Bölüm")])))
+    agac = S.bolum_agaci(bilgi.dugumler, parca_adi=lambda _s: "deneme-kitap")
+    assert agac.yollar[1] == ("deneme-bolum",) and "parca" not in agac.istatistik
+
+
+def test_lahika_ilk_duzey_kitap_slugiyla_ayniysa_yine_daraltilir() -> None:
+    agac = _lahika_agac([_dugum("Deneme Lahikası", 4, [_dugum("Deneme")])])
+    assert agac.yollar[1:] == ((), ("parca-1",))
+    assert agac.istatistik["daraltildi"] == 1
 
 
 def test_bolum_agaci_baslik_zinciri_kok_ve_daraltilan_yok() -> None:
@@ -341,3 +469,36 @@ def test_kitap_donustur_bolunmus_kitapta_ilk_duzey_adi_daraltilir() -> None:
     assert not any(c.startswith("rn:deneme-a:deneme-a") for c in capalar)
     assert not any(c.startswith("rn:deneme-b:deneme-b") for c in capalar)
     assert sonuc.kitap["bolum_adlari"]["daraltildi"] == 2  # type: ignore[index]
+
+
+def test_kitap_donustur_lahika_parca_capalari_ve_ikinci_kosu() -> None:
+    satirlar = [
+        "#4",
+        "<Deneme Kitap>",
+        "&Deneme Mektup A>",
+        "   Deneme paragrafı 1.",
+        "&Deneme Mektup B>",
+        "   Deneme paragrafı 2 {(*)|Deneme dipnotu 1.} devam.",
+        "&Birinci Nükte>",
+        "   Deneme paragrafı 3.",
+    ]
+    kok = _dugum(
+        "Deneme Kitap",
+        4,
+        [_dugum("Deneme Mektup A"), _dugum("Deneme Mektup B"), _dugum("Birinci Nükte")],
+    )
+
+    def calistir() -> S.KitapSonucu:
+        return donustur(sentetik_txt(satirlar), _json(kok, 4), [kitap_kaydi("deneme-lahikasi")])
+
+    sonuc = calistir()
+    capalar = {b.anchor: b for b in sonuc.birimler}
+    assert capalar["rn:deneme-lahikasi:parca-1:p1"].attrs["kind"] == "baslik"
+    assert capalar["rn:deneme-lahikasi:parca-1:p2"].text == "Deneme paragrafı 1."
+    assert capalar["rn:deneme-lahikasi:parca-2:p2"].text.startswith("Deneme paragrafı 2")
+    assert "rn:deneme-lahikasi:parca-2:hasiye-1:p1" in capalar
+    assert "rn:deneme-lahikasi:nukte-1:p2" in capalar
+    assert not any("mektup" in c for c in capalar)  # baslik slug'i kullanilmaz
+    assert sonuc.kitap["bolum_adlari"]["parca"] == 2  # type: ignore[index]
+    # ikinci kosuda ayni capalar
+    assert [b.anchor for b in calistir().birimler] == [b.anchor for b in sonuc.birimler]
