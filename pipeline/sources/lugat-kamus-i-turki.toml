@@ -1,9 +1,12 @@
-# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3 · A20.0 (2026-11-12)
 slug = "lugat-kamus-i-turki"
 tur = "sozluk"
 baslik = "Kâmûs-ı Türkî"
 yazar = "Şemseddin Sâmi"
+provider = "archive.org"
+kaynak_url = "https://archive.org/details/kamus-i-turki-semseddin-sami-bey"
 atif_metni = "Şemseddin Sâmi, Kâmûs-ı Türkî."
 notlar = '''
 Taramalı kopya var: archive.org kamusitrki00emse (Toronto kopyası, Internet Archive'ın kendi Scribe taraması, 500 ppi, 1594 görüntü, İkdam Matbaası 1899). Mevcut OCR katmanı kullanılamaz. Kaynak ve baskı seçimi Doğrulanacak.
+Alınan dosya: archive.org kamus-i-turki-semseddin-sami-bey (Latin harfli kopya), OCR metni (_djvu.txt, 5.969.007 bayt; SHA-1 arşiv kaydıyla eşleşti). Osmanlıca başlıklar bozuk okunur, Latin açıklamalar okunabilir (A20.6'da örneklemle ölçülür). Alma: data/gelen/lugat-kamus-i-turki/2026-11-12/.
 Çağdaş Sözlük (turki.cagdassozluk.com; 29.859 madde başı, ayna ottomanlexicons.com 29.881): Osmanlıca başlık, Latin aktarım, tanım ve sayfa konumu var.'''

@@ -1,7 +1,10 @@
-# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3
+# A06 (2026-10-26) · A20.0 (2026-11-12) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3
 slug = "risale-atif-dizini"
 tur = "baglanti_verisi"
 baslik = "Risale âyet atıf dizini (âyet ↔ Risale yeri, baskı sayfası, parça metni)"
+surum = "mutalaa-a20-2026-11-12"
+provider = "mutalaa"
 atif_metni = "Risale-i Nur âyet atıf dizini: Mütâlaa."
 notlar = '''
-Dizin bağlantıya ek olarak parça metinlerini de verir; metin kaynağı A20 tedarikinde seçilir.'''
+Dizin bağlantıya ek olarak parça metinlerini de verir; metin kaynağı A20 tedarikinde seçildi (K-51: risale-asil-nusha ve risale-rnk-metin).
+Bağlantılar bu hattın ürettiği adaylardır (origin = hat, status = aday); public derlemeye girmez (A20.7).'''

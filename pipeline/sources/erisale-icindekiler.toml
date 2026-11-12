@@ -1,0 +1,12 @@
+# A20.0 (2026-11-12) · kaynak: docs/04-icerik/01-kaynaklar.md §3.5 · karar: K-51
+slug = "erisale-icindekiler"
+tur = "risale"
+baslik = "eRisale içindekiler dosyası (karşılaştırma)"
+surum = "etag-6ae5ff4c-2729f2-sha256-0bc7674110e8-2026-11-12"
+provider = "erisale.com"
+kaynak_url = "https://www.erisale.com/book-content/toc-tr.json"
+atif_metni = "Risale-i Nur içindekiler yapısı: eRisale (erisale.com) toc-tr.json; yalnız karşılaştırma."
+notlar = '''
+Yalnız içindekiler karşılaştırması için kullanılır; metin ve birim taşımaz. 2.566.642 bayt, 5.354 kayıt; alanlar bookId, level, isSection, blockIndex, parentPath, urlSegment, sectionIndex, globalSectionIndex, title.
+eRisale blok içerikleri şifreli biçimdedir ve alınmaz.
+Alma: data/gelen/erisale-icindekiler/2026-11-12/toc-tr.json (SHA256SUMS).'''
