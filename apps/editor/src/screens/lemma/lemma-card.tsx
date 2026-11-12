@@ -17,6 +17,8 @@ import {
   CONSISTENT_SHARE_THRESHOLD,
   consistencyOf,
   isAnchor,
+  isReadyCandidate,
+  isShare,
   readConfidence,
   readDistribution,
   readLemmaValue,
@@ -58,6 +60,8 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 function Snapshot({ review }: { review: ReviewDetail }) {
   const headingId = useId();
   const target = review.hedef;
+  // A lemma row carries `etymological_only`, a meaning row `yalnizca_etimolojik`: one row, whichever is there.
+  const etymological = target?.etymological_only ?? target?.yalnizca_etimolojik ?? null;
   return (
     <section
       aria-labelledby={headingId}
@@ -73,7 +77,11 @@ function Snapshot({ review }: { review: ReviewDetail }) {
           {target.lemma_id !== null && target.lemma_id !== undefined ? (
             <Row label={trLemma.snapshot.lemmaId}>{String(target.lemma_id)}</Row>
           ) : null}
-          {target.lang ? <Row label={trLemma.snapshot.lang}>{target.lang}</Row> : null}
+          {target.lang ? (
+            <Row label={trLemma.snapshot.lang}>
+              {labelOf(trLemma.snapshot.langNames, target.lang)}
+            </Row>
+          ) : null}
           {target.text ? (
             <Row label={trLemma.snapshot.lemma}>
               {target.lang === 'ar' ? (
@@ -98,11 +106,8 @@ function Snapshot({ review }: { review: ReviewDetail }) {
           {target.occurrences !== null && target.occurrences !== undefined ? (
             <Row label={trLemma.snapshot.occurrences}>{formatNumber(target.occurrences)}</Row>
           ) : null}
-          {target.etymological_only !== null && target.etymological_only !== undefined ? (
-            <Row label={trLemma.snapshot.etymologicalOnly}>{yesNo(target.etymological_only)}</Row>
-          ) : null}
-          {target.yalnizca_etimolojik !== null && target.yalnizca_etimolojik !== undefined ? (
-            <Row label={trLemma.snapshot.etymologicalOnly}>{yesNo(target.yalnizca_etimolojik)}</Row>
+          {etymological !== null ? (
+            <Row label={trLemma.snapshot.etymologicalOnly}>{yesNo(etymological)}</Row>
           ) : null}
           {target.status ? (
             <Row label={trLemma.snapshot.status}>
@@ -241,6 +246,8 @@ function Origin({ review }: { review: ReviewDetail }) {
   const distributionId = useId();
   const yz = readYzRecord(review.yz_kaydi);
   const confidence = readConfidence(review);
+  const ready = isReadyCandidate(review);
+  const readable = confidence !== null && isShare(confidence);
   const distribution = readDistribution(review.onerilen);
   return (
     <div className="flex flex-col gap-3">
@@ -267,11 +274,17 @@ function Origin({ review }: { review: ReviewDetail }) {
               <span className="break-all">{yz.inputSha256}</span>
             </Row>
           ) : null}
-          {confidence !== null ? (
-            <Row label={trLemma.origin.confidence}>{formatPercent(confidence)}</Row>
+          {confidence !== null && readable ? (
+            <Row label={ready ? trLemma.origin.dominantShare : trLemma.origin.confidence}>
+              {formatPercent(confidence)}
+            </Row>
           ) : null}
         </dl>
-        {confidence !== null ? (
+        {confidence !== null && !readable ? (
+          <p className="text-sm text-muted-foreground" data-testid="lemma-confidence-unreadable">
+            {trLemma.origin.shareUnreadable}
+          </p>
+        ) : confidence !== null && ready ? (
           <p className="flex flex-wrap items-center gap-2 text-sm" data-testid="lemma-consistency">
             <Badge variant={consistencyOf(confidence) === 'tutarli' ? 'secondary' : 'outline'}>
               {consistencyOf(confidence) === 'tutarli'
@@ -285,11 +298,11 @@ function Origin({ review }: { review: ReviewDetail }) {
               )}
             </span>
           </p>
-        ) : (
+        ) : confidence === null ? (
           <p className="text-sm text-muted-foreground" data-testid="lemma-confidence-none">
             {trLemma.origin.confidenceNone}
           </p>
-        )}
+        ) : null}
         {review.dogrulanmamis ? <p className="text-sm">{trLemma.origin.unverifiedNote}</p> : null}
         {review.yz_kaydi !== null && review.yz_kaydi !== undefined ? (
           <JsonBlock title={trLemma.origin.yzRaw} value={review.yz_kaydi} />

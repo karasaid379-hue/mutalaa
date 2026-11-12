@@ -12,7 +12,13 @@ import { useApi } from '@/app/api-context';
 import { tr } from '@/i18n/tr';
 import { trLemma } from '@/i18n/tr-lemma';
 import { formatIfMatch } from '@/lib/etag';
-import { codePointCount, findUnwritable, stripUnwritable } from '@/lib/text';
+import {
+  codePointCount,
+  findUnwritable,
+  glossLength,
+  stripUnwritable,
+  trimGloss,
+} from '@/lib/text';
 import { problemCode, problemStatus, toProblem } from '@/lib/problem';
 import { canDecide } from '@/lib/roles';
 import { fieldA11y, type FieldProblem } from './field-errors';
@@ -112,6 +118,7 @@ export function DecisionForm({
     editedHint: useId(),
     gloss: useId(),
     glossHint: useId(),
+    glossError: useId(),
     decision: useId(),
     summary: useId(),
     approveClosed: useId(),
@@ -159,7 +166,10 @@ export function DecisionForm({
   const selected: DecisionKind | '' = approveClosed && karar === 'onaylandi' ? '' : karar;
   const pending = decide.isPending;
   const showGloss = glossAllowed && selected === 'onaylandi';
-  const glossChanged = showGloss && glossValue.trim() !== glossBaseline.trim();
+  // The server measures and compares the meaning trimmed (space, tab, line feed) and in NFC; the sent value stays as typed.
+  const glossChanged = showGloss && trimGloss(glossValue) !== trimGloss(glossBaseline);
+  const glossCount = glossLength(glossValue);
+  const glossProblems = problems.filter((problem) => problem.fieldId === ids.gloss);
 
   const unwritable = {
     gerekce: findUnwritable(gerekce),
@@ -200,10 +210,9 @@ export function DecisionForm({
       }
     }
     if (glossChanged) {
-      const glossLength = codePointCount(glossValue);
-      if (glossValue.trim() === '') add(ids.gloss, trLemma.edit.empty);
-      else if (glossLength > MAX_GLOSS_LENGTH) {
-        add(ids.gloss, trLemma.edit.tooLong(glossLength, MAX_GLOSS_LENGTH));
+      if (trimGloss(glossValue) === '') add(ids.gloss, trLemma.edit.empty);
+      else if (glossCount > MAX_GLOSS_LENGTH) {
+        add(ids.gloss, trLemma.edit.tooLong(glossCount, MAX_GLOSS_LENGTH));
       }
       if (unwritable.gloss.nul || unwritable.gloss.loneSurrogate) {
         add(ids.gloss, trLemma.edit.unwritable);
@@ -403,18 +412,23 @@ export function DecisionForm({
               value={glossValue}
               onChange={(event) => setGloss(event.target.value)}
               onKeyDown={onKeyDown}
-              {...fieldA11y(problems, ids.gloss, ids.summary, ids.glossHint)}
+              aria-invalid={glossProblems.length > 0 ? true : undefined}
+              aria-describedby={
+                glossProblems.length > 0 ? `${ids.glossHint} ${ids.glossError}` : ids.glossHint
+              }
             />
             <p id={ids.glossHint} className="text-xs text-muted-foreground">
-              {`${trLemma.edit.hint} ${trLemma.edit.count(codePointCount(glossValue), MAX_GLOSS_LENGTH)}`}
+              {`${trLemma.edit.hint} ${trLemma.edit.count(glossCount, MAX_GLOSS_LENGTH)}`}
             </p>
-            {problems
-              .filter((problem) => problem.fieldId === ids.gloss)
-              .map((problem) => (
-                <p key={problem.message} className="text-xs font-medium text-destructive">
-                  {problem.message}
-                </p>
-              ))}
+            {glossProblems.length > 0 ? (
+              <div id={ids.glossError} className="flex flex-col gap-0.5">
+                {glossProblems.map((problem) => (
+                  <p key={problem.message} className="text-xs font-medium text-destructive">
+                    {problem.message}
+                  </p>
+                ))}
+              </div>
+            ) : null}
           </div>
         ) : null}
 

@@ -14,13 +14,17 @@ import {
 import {
   CONSISTENT_SHARE_THRESHOLD,
   consistencyOf,
+  hasArabicLetters,
   isAnchor,
+  isReadyCandidate,
+  isShare,
   readConfidence,
   readDistribution,
   readLemmaValue,
   readYzRecord,
 } from '@/screens/lemma/payload';
 import { formatPercent } from '@/lib/format';
+import { glossLength, trimGloss } from '@/lib/text';
 import { SHA_A, SHA_B, YZ_KAYDI } from './fixtures-lemma';
 
 describe('readLemmaValue', () => {
@@ -242,5 +246,66 @@ describe('tabs', () => {
       expect(trLemma.tabs[id]).not.toBe('');
       expect(trLemma.tabHints[id]).not.toBe('');
     }
+  });
+});
+
+describe('formatPercent never rounds up over a threshold', () => {
+  it('cuts to one decimal: 0,7996 is %79,9, not %80', () => {
+    expect(formatPercent(0.7996)).toBe('%79,9');
+    expect(formatPercent(0.8)).toBe('%80');
+    expect(formatPercent(0.29)).toBe('%29');
+    expect(consistencyOf(0.7996)).toBe('tutarsiz');
+  });
+});
+
+describe('isShare', () => {
+  it('accepts 0 to 1 inclusive only', () => {
+    expect(isShare(0)).toBe(true);
+    expect(isShare(1)).toBe(true);
+    expect(isShare(1.5)).toBe(false);
+    expect(isShare(-0.1)).toBe(false);
+  });
+});
+
+describe('isReadyCandidate', () => {
+  it('is true for a kaynak: origin or a dominant share, and false when an AI model is set', () => {
+    expect(isReadyCandidate({ yz_modeli: null, hedef: { origin: 'kaynak:deneme' } })).toBe(true);
+    expect(isReadyCandidate({ yz_modeli: null, onerilen: { baskin_pay: 0.9 } })).toBe(true);
+    expect(isReadyCandidate({ yz_modeli: 'deneme-model', onerilen: { baskin_pay: 0.9 } })).toBe(
+      false,
+    );
+    expect(isReadyCandidate({ yz_modeli: 'deneme-model', hedef: { origin: 'kaynak:x' } })).toBe(
+      false,
+    );
+    expect(isReadyCandidate({ yz_modeli: null, onerilen: { anlam_kisa: 'x' } })).toBe(false);
+    expect(isReadyCandidate({ yz_modeli: null, hedef: { origin: 'editor' } })).toBe(false);
+  });
+});
+
+describe('hasArabicLetters', () => {
+  it('finds letters of the four Arabic blocks and nothing else', () => {
+    for (const code of [0x0633, 0x0750, 0xfb50, 0xfe70]) {
+      expect(hasArabicLetters(`1${String.fromCodePoint(code)}`)).toBe(true);
+    }
+    expect(hasArabicLetters('1001')).toBe(false);
+    expect(hasArabicLetters('pos:N')).toBe(false);
+    expect(hasArabicLetters('')).toBe(false);
+  });
+});
+
+describe('trimGloss and glossLength', () => {
+  it('trims only space, tab and line feed', () => {
+    const nbsp = String.fromCodePoint(0xa0);
+    expect(trimGloss(` \tDeneme\n `)).toBe('Deneme');
+    expect(trimGloss(`${nbsp}Deneme`)).toBe(`${nbsp}Deneme`);
+  });
+
+  it('measures the trimmed NFC text in code points', () => {
+    expect(glossLength(`${'a'.repeat(200)} `)).toBe(200);
+    expect(glossLength((String.fromCodePoint(0x65) + String.fromCodePoint(0x301)).repeat(3))).toBe(
+      3,
+    );
+    expect(glossLength(String.fromCodePoint(0x1d7d8).repeat(5))).toBe(5);
+    expect(glossLength('')).toBe(0);
   });
 });

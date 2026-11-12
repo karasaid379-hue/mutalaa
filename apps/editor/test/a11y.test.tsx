@@ -38,6 +38,7 @@ import {
   fixItem,
   glossDetail,
   glossItem,
+  lemmaDetail,
   lemmaHandlers,
   lemmaInfo,
   readyGlossDetail,
@@ -499,6 +500,47 @@ describe('axe: the lemma queue (A17.7)', () => {
     await waitFor(() =>
       expect(screen.getByTestId('gloss-edit')).toHaveTextContent(trLemma.edit.serverInvalid),
     );
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the lemma status card with its Arabic lemma and the lemma sections', async () => {
+    const { container } = setupLemma('/kuyruk/lemma?kayit=101', lemmaDetail(101));
+    await screen.findByTestId('lemma-kwic');
+    expect(screen.getByTestId('lemma-snapshot')).toHaveTextContent(trLemma.snapshot.langNames.ar);
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the ready candidate with an inconsistent mark and its distribution', async () => {
+    const { container } = setupLemma('/kuyruk/lemma?kayit=1', readyGlossDetail(1, {}, 0.5));
+    await screen.findByTestId('lemma-distribution');
+    expect(screen.getByTestId('lemma-consistency')).toHaveTextContent(trLemma.origin.inconsistent);
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the lemma card while it loads (aria-busy, skeleton) and when it failed (problem, retry)', async () => {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const { container } = setupLemma('/kuyruk/lemma?kayit=1');
+    fake.get('/api/v1/lemmas/{id}', async () => {
+      await gate;
+      return problem(500, 'sunucu-hatasi');
+    });
+    await screen.findByTestId('lemma-info-loading');
+    expect(await violations(container)).toEqual([]);
+    release();
+    await screen.findByText(trLemma.info.failed);
+    expect(screen.getByRole('button', { name: tr.ui.retry })).toBeInTheDocument();
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the card of a review without a lemma id (note instead of the sections)', async () => {
+    const { container } = setupLemma(
+      '/kuyruk/lemma?kayit=1',
+      glossDetail(1, { hedef: null, hedef_anahtar: 'bozuk' }),
+    );
+    await screen.findByText(trLemma.info.noId);
     expect(await violations(container)).toEqual([]);
   });
 

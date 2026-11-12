@@ -36,6 +36,10 @@ export const trLemma = {
     table: 'Hedef',
     lemmaId: 'Lemma kimliği',
     lang: 'Dil',
+    langNames: {
+      ar: 'Arapça',
+      tr: 'Türkçe',
+    },
     lemma: 'Lemma',
     anlamKisa: 'Kısa anlam',
     status: 'Hedef durumu',
@@ -80,7 +84,9 @@ export const trLemma = {
     promptSha: 'İstem özeti',
     inputSha: 'Girdi özeti',
     yzRaw: 'Yapay zekâ kaydı (ham)',
-    confidence: 'Baskın pay',
+    confidence: 'Güven',
+    dominantShare: 'Baskın pay',
+    shareUnreadable: 'Güven değeri okunamadı (0 ile 1 arasında değil).',
     confidenceNone: 'Bu kayıtta güven ya da baskın pay değeri yok.',
     consistent: 'Tutarlı hazır anlam',
     inconsistent: 'Tutarsız hazır anlam',
@@ -89,7 +95,6 @@ export const trLemma = {
     distribution: 'Hazır kaynak dağılımı',
     distributionNote: 'Yalnızca bilgi içindir; hedefe uygulanmaz.',
     distributionEntry: (count: number) => `${count} kelime`,
-    distributionNone: 'Bu kayıtta hazır kaynak dağılımı yok.',
     unverifiedNote: 'Yapay zekâ taslağı: insan onayına kadar doğrulanmamıştır.',
   },
   info: {
@@ -97,6 +102,7 @@ export const trLemma = {
     loading: 'Lemma bilgisi yükleniyor',
     failed: 'Lemma bilgisi yüklenemedi.',
     noData: 'Veri yok',
+    noId: 'Lemma kimliği okunamadı; lemma kartı açılamıyor.',
     root: {
       heading: 'Kök',
       letters: 'Harfler',
@@ -130,6 +136,7 @@ export const trLemma = {
       note: 'Âyet metni Tanzil kaynağından, oldukları gibi gösterilir.',
       ayah: 'Âyet',
       word: 'Kelime',
+      noMeal: 'Bu örnek için meal yok.',
       textMissing: 'Âyet metni bu örnek için okunamadı.',
       meal: 'Meal',
       mealStatus: {
@@ -141,7 +148,6 @@ export const trLemma = {
     },
   },
   edit: {
-    legend: 'Anlam',
     label: 'Kısa anlam (düzenle ve onayla)',
     hint: 'Değiştirmezseniz öneri olduğu gibi onaylanır; değiştirirseniz yeni anlam kaydedilir ve köken "Editör" olur.',
     count: (count: number, max: number) => `${count} / ${max} karakter`,

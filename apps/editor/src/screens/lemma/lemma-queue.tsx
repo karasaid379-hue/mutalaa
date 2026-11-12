@@ -21,7 +21,7 @@ import {
   type LemmaTabId,
 } from './config';
 import { LemmaCard } from './lemma-card';
-import { consistencyOf, readConfidence } from './payload';
+import { consistencyOf, isReadyCandidate, isShare, readConfidence } from './payload';
 import { WordFixCard } from './word-fix-card';
 
 interface LemmaTabsProps {
@@ -102,8 +102,9 @@ function GlossMeta({ item }: { item: ReviewItem }) {
       </span>
     );
   }
-  const share = item.hedef_tablo === 'lemma_gloss' ? readConfidence(item) : null;
-  if (share === null) return null;
+  const share =
+    item.hedef_tablo === 'lemma_gloss' && isReadyCandidate(item) ? readConfidence(item) : null;
+  if (share === null || !isShare(share)) return null;
   return (
     <span className="text-xs text-muted-foreground" data-testid="lemma-item-consistency">
       {trLemma.list.line(

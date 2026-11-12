@@ -64,3 +64,18 @@ export function stripUnwritable(text: string): string {
   }
   return out;
 }
+
+/** Trims only U+0020, U+0009 and U+000A from both ends (the narrow trim of the server for a word meaning). */
+export function trimGloss(text: string): string {
+  return text.replace(/^[\u0020\u0009\u000A]+|[\u0020\u0009\u000A]+$/gu, '');
+}
+
+/**
+ * Length of a word meaning as the server measures it: trimmed (`trimGloss`), NFC, in code points. Used only to
+ * measure; the value that is sent is never changed here (K-26: the server normalizes our own text).
+ */
+export function glossLength(text: string): number {
+  // Measurement only: the NFC form is counted and thrown away, the text itself is never rewritten (K-26).
+  // eslint-disable-next-line no-restricted-syntax -- the server limit is on the NFC form of the trimmed text
+  return codePointCount(trimGloss(text).normalize('NFC'));
+}

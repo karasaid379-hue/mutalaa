@@ -87,20 +87,29 @@ export function lemmaDetail(
   });
 }
 
+/** A list item of a ready-source candidate: the dominant share is `guven` and `onerilen.baskin_pay`. */
+export function readyGlossItem(id: number, share: number): S['ReviewItemDto'] {
+  return glossItem(id, {
+    guven: share,
+    onerilen: { anlam_kisa: `Deneme anlam ${id}`, baskin_pay: share },
+  });
+}
+
 /** A ready-source candidate (K-50 madde 5): the dominant share is `guven`, the distribution is not applied. */
 export function readyGlossDetail(
   id: number,
   over: Partial<S['ReviewDetailDto']> = {},
+  share = 0.85,
 ): S['ReviewDetailDto'] {
   return glossDetail(id, {
-    guven: 0.85,
+    guven: share,
     onerilen: {
       anlam_kisa: `Deneme anlam ${id}`,
       dagilim: [
         { anlam: `Deneme anlam ${id}`, sayi: 17 },
         { anlam: 'Deneme öteki anlam', sayi: 3 },
       ],
-      baskin_pay: 0.85,
+      baskin_pay: share,
     },
     hedef: {
       tablo: 'lemma_gloss',

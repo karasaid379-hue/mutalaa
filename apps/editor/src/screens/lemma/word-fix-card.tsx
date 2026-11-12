@@ -2,10 +2,12 @@ import { useId, useState, type ReactNode } from 'react';
 import { fieldLabel, labelOf } from '@/i18n/labels';
 import { tr } from '@/i18n/tr';
 import { trLemma } from '@/i18n/tr-lemma';
+import { ArabicText } from '@/components/arabic-text';
 import { ReviewBadges } from '@/review/badges';
 import { DecisionForm } from '@/review/decision-form';
 import type { QueueDetailProps } from '@/review/queue-layout';
 import type { ReviewDetail } from '@/review/types';
+import { hasArabicLetters } from './payload';
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -17,10 +19,23 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 }
 
 /**
+ * A QAC or proposed value: Arabic letters are Arabic text (`ArabicText`: `lang="ar"`, right to left, the Quran
+ * font); anything else (ids, tags, feature strings) is technical and reads left to right. Shown as given.
+ */
+function FixValue({ value, testId }: { value: string; testId: string }) {
+  return hasArabicLetters(value) ? (
+    <ArabicText text={value} className="text-xl break-all" data-testid={testId} />
+  ) : (
+    <code dir="ltr" className="break-all" data-testid={testId}>
+      {value}
+    </code>
+  );
+}
+
+/**
  * The correction the review is about (`hedef` of a `quran_word_fix`): the word anchor, the corrected field,
  * the QAC value and the proposed value, the reason and the proposing editor. Anchors and technical values
- * read left to right; a value that may be Arabic text or a tag takes its own direction (`dir="auto"`); the
- * reason is Turkish. Nothing is recomputed: the values are shown as the API gave them.
+ * read left to right and Arabic values are Arabic text; the reason is Turkish. Nothing is recomputed: the values are shown as the API gave them.
  */
 function Fix({ review }: { review: ReviewDetail }) {
   const headingId = useId();
@@ -54,16 +69,12 @@ function Fix({ review }: { review: ReviewDetail }) {
           ) : null}
           {target.qac_value !== null && target.qac_value !== undefined ? (
             <Row label={trLemma.fix.qacValue}>
-              <span dir="auto" className="break-all" data-testid="fix-qac-value">
-                {target.qac_value}
-              </span>
+              <FixValue value={target.qac_value} testId="fix-qac-value" />
             </Row>
           ) : null}
           {target.new_value !== null && target.new_value !== undefined ? (
             <Row label={trLemma.fix.newValue}>
-              <span dir="auto" className="break-all" data-testid="fix-new-value">
-                {target.new_value}
-              </span>
+              <FixValue value={target.new_value} testId="fix-new-value" />
             </Row>
           ) : null}
           {target.reason ? (

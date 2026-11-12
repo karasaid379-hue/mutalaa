@@ -143,3 +143,32 @@ export function readDistribution(value: unknown): DistributionEntry[] {
     return anlam !== null && sayi !== null ? [{ anlam, sayi }] : [];
   });
 }
+
+/** Whether a number can be a share or a confidence (0 to 1 inclusive). */
+export function isShare(value: number): boolean {
+  return value >= 0 && value <= 1;
+}
+
+type CandidateSource = Pick<ReviewItem, 'yz_modeli' | 'onerilen'> & {
+  hedef?: { origin?: string | null } | null;
+};
+
+/**
+ * Whether the record is a ready-source candidate (K-50 madde 5), as opposed to an AI draft: no AI model, and
+ * either the target's origin is `kaynak:<slug>` or the proposal carries a `baskin_pay`. Only a ready-source
+ * candidate has a dominant share and a consistent or inconsistent mark; the confidence of an AI draft is a
+ * plain "Güven".
+ */
+export function isReadyCandidate(review: CandidateSource): boolean {
+  if (typeof review.yz_modeli === 'string' && review.yz_modeli !== '') return false;
+  const origin = review.hedef?.origin;
+  return (
+    (typeof origin === 'string' && origin.startsWith('kaynak:')) ||
+    readNumber(review.onerilen, 'baskin_pay') !== null
+  );
+}
+
+/** Whether a text has Arabic letters (the four Arabic blocks); other values are shown as technical left to right text. */
+export function hasArabicLetters(text: string): boolean {
+  return /[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]/u.test(text);
+}

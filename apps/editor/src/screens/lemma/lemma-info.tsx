@@ -4,8 +4,10 @@ import { useApi } from '@/app/api-context';
 import { ArabicText } from '@/components/arabic-text';
 import { ProblemMessage } from '@/components/problem-message';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { labelOf } from '@/i18n/labels';
+import { tr } from '@/i18n/tr';
 import { trLemma } from '@/i18n/tr-lemma';
 import { formatDecimal, formatNumber } from '@/lib/format';
 
@@ -199,7 +201,11 @@ function KwicRow({ item }: { item: Kwic }) {
           </span>
           <p lang="tr">{meal.metin}</p>
         </div>
-      ) : null}
+      ) : (
+        <p className="text-sm text-muted-foreground" data-testid="lemma-kwic-no-meal">
+          {trLemma.info.kwic.noMeal}
+        </p>
+      )}
     </li>
   );
 }
@@ -243,7 +249,16 @@ export function LemmaInfo({ lemmaId }: LemmaInfoProps) {
     { params: { path: { id: lemmaId ?? 0 } } },
     { enabled: lemmaId !== null, retry: false },
   );
-  if (lemmaId === null) return null;
+  if (lemmaId === null) {
+    return (
+      <section aria-labelledby={headingId} className="flex flex-col gap-1" data-testid="lemma-info">
+        <h3 id={headingId} className="text-sm font-medium">
+          {trLemma.info.heading}
+        </h3>
+        <NoData text={trLemma.info.noId} />
+      </section>
+    );
+  }
   return (
     <section
       aria-labelledby={headingId}
@@ -256,9 +271,7 @@ export function LemmaInfo({ lemmaId }: LemmaInfoProps) {
       </h3>
       {query.isPending ? (
         <div className="flex flex-col gap-2" data-testid="lemma-info-loading">
-          <span className="sr-only" role="status">
-            {trLemma.info.loading}
-          </span>
+          <span className="sr-only">{trLemma.info.loading}</span>
           <Skeleton className="h-16" />
           <Skeleton className="h-16" />
         </div>
@@ -266,6 +279,15 @@ export function LemmaInfo({ lemmaId }: LemmaInfoProps) {
         <div className="flex flex-col gap-1">
           <p className="text-sm font-medium">{trLemma.info.failed}</p>
           <ProblemMessage error={query.error} />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="self-start"
+            onClick={() => void query.refetch()}
+          >
+            {tr.ui.retry}
+          </Button>
         </div>
       ) : (
         <>

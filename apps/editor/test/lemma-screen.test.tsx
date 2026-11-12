@@ -24,6 +24,7 @@ import {
   lemmaInfo,
   lemmaItem,
   readyGlossDetail,
+  readyGlossItem,
 } from './fixtures-lemma';
 import { renderApp, renderInRouter } from './render-app';
 
@@ -162,7 +163,17 @@ describe('LemmaQueue', () => {
 
     it('marks the consistency of a ready candidate in the list (threshold 0,8)', async () => {
       setup({
-        glosses: [glossItem(1, { guven: 0.85 }), glossItem(2, { guven: 0.5 }), glossItem(3)],
+        glosses: [
+          readyGlossItem(1, 0.85),
+          readyGlossItem(2, 0.5),
+          glossItem(3),
+          // An AI draft has a confidence, not a dominant share: no mark in the list.
+          glossItem(4, {
+            guven: 0.9,
+            yz_modeli: 'deneme-model',
+            onerilen: { anlam_kisa: 'Deneme' },
+          }),
+        ],
       });
       const list = await screen.findByRole('region', { name: tr.queue.listLabel });
       await within(list).findAllByRole('listitem');
@@ -289,7 +300,10 @@ describe('LemmaQueue', () => {
       expect(origin).toHaveTextContent('deneme-istem-v1');
       expect(origin).toHaveTextContent(SHA_A);
       expect(origin).toHaveTextContent(SHA_B);
+      // An AI draft carries a plain "Güven": no dominant share label and no consistency mark.
       expect(origin).toHaveTextContent(`${trLemma.origin.confidence}%87`);
+      expect(origin).not.toHaveTextContent(trLemma.origin.dominantShare);
+      expect(within(root).queryByTestId('lemma-consistency')).not.toBeInTheDocument();
       expect(origin).toHaveTextContent(trLemma.origin.unverifiedNote);
       // The confidence is present, so no "no confidence" note.
       expect(within(root).queryByTestId('lemma-confidence-none')).not.toBeInTheDocument();
@@ -329,6 +343,16 @@ describe('LemmaQueue', () => {
       );
       expect(root.textContent).not.toContain("API'de henüz yok");
       expect(within(root).queryByTestId('lemma-consistency')).not.toBeInTheDocument();
+    });
+
+    it('says the confidence is unreadable when it is not between 0 and 1, with no consistency mark', async () => {
+      setup({ route: '/?kayit=1', detail: readyGlossDetail(1, {}, 1.5) });
+      const root = await card();
+      expect(within(root).getByTestId('lemma-confidence-unreadable')).toHaveTextContent(
+        trLemma.origin.shareUnreadable,
+      );
+      expect(within(root).queryByTestId('lemma-consistency')).not.toBeInTheDocument();
+      expect(within(root).getByTestId('lemma-origin')).not.toHaveTextContent('%150');
     });
 
     it('reads the confidence from the G-YZ record or the payload when the field is empty', async () => {
@@ -382,7 +406,7 @@ describe('LemmaQueue', () => {
         `${trLemma.snapshot.version}1`,
       );
       const origin = within(root).getByTestId('lemma-origin');
-      expect(origin).toHaveTextContent(`${trLemma.origin.confidence}%85`);
+      expect(origin).toHaveTextContent(`${trLemma.origin.dominantShare}%85`);
       const mark = within(root).getByTestId('lemma-consistency');
       expect(mark).toHaveTextContent(trLemma.origin.consistent);
       expect(mark).toHaveTextContent('%80 ve üstü tutarlı sayılır');
@@ -400,7 +424,7 @@ describe('LemmaQueue', () => {
     });
 
     it('marks a share under the threshold as an inconsistent ready meaning', async () => {
-      setup({ route: '/?kayit=1', detail: readyGlossDetail(1, { guven: 0.5 }) });
+      setup({ route: '/?kayit=1', detail: readyGlossDetail(1, {}, 0.5) });
       const mark = await screen.findByTestId('lemma-consistency');
       expect(mark).toHaveTextContent(trLemma.origin.inconsistent);
       expect(mark).not.toHaveTextContent(`${trLemma.origin.consistent}`);
@@ -509,6 +533,9 @@ describe('LemmaQueue', () => {
       });
       const item = await screen.findByTestId('lemma-kwic-item');
       expect(within(item).queryByTestId('lemma-kwic-meal')).not.toBeInTheDocument();
+      expect(within(item).getByTestId('lemma-kwic-no-meal')).toHaveTextContent(
+        trLemma.info.kwic.noMeal,
+      );
       expect(item.querySelector('[lang="ar"]')).toBeNull();
       expect(item).toHaveTextContent(trLemma.info.kwic.textMissing);
     });
@@ -550,8 +577,37 @@ describe('LemmaQueue', () => {
         detail: glossDetail(1, { hedef: null, hedef_anahtar: 'bozuk' }),
       });
       const root = await card();
-      expect(within(root).queryByTestId('lemma-info')).not.toBeInTheDocument();
+      expect(within(root).getByTestId('lemma-info')).toHaveTextContent(trLemma.info.noId);
       expect(fake.callsTo('get', '/api/v1/lemmas/{id}')).toHaveLength(0);
+    });
+
+    it('offers a retry on a failed lemma card and loads it again', async () => {
+      const { user } = setup({ route: '/?kayit=1' });
+      fake.get('/api/v1/lemmas/{id}', problem(500, 'sunucu-hatasi'));
+      const root = await card();
+      await within(root).findByText(trLemma.info.failed);
+      fake.get('/api/v1/lemmas/{id}', ok(lemmaInfo()));
+      await user.click(within(root).getByRole('button', { name: tr.ui.retry }));
+      await within(root).findByTestId('lemma-root');
+      expect(within(root).queryByText(trLemma.info.failed)).not.toBeInTheDocument();
+    });
+
+    it('marks the loading card busy without a second live region', async () => {
+      let release: () => void = () => {};
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      setup({ route: '/?kayit=1' });
+      fake.get('/api/v1/lemmas/{id}', async () => {
+        await gate;
+        return ok(lemmaInfo());
+      });
+      const info = await screen.findByTestId('lemma-info');
+      expect(info).toHaveAttribute('aria-busy', 'true');
+      expect(within(info).getByTestId('lemma-info-loading').querySelector('[role]')).toBeNull();
+      release();
+      await within(info).findByTestId('lemma-root');
+      expect(info).toHaveAttribute('aria-busy', 'false');
     });
 
     it('has no placeholder left on the card', async () => {
@@ -727,6 +783,71 @@ describe('LemmaQueue', () => {
       expect(screen.getByText(trLemma.decisionNote.durum)).toBeInTheDocument();
     });
 
+    it('measures the meaning as the server does: trailing space ignored, NFC counted, the sent text unchanged', async () => {
+      const { user } = setup({ route: '/?kayit=2' });
+      await approve(user);
+      // 200 letters and a trailing space: 200 after the trim, so it passes; it is sent as typed.
+      const padded = 'a'.repeat(200) + ' ';
+      fireEvent.change(field(), { target: { value: padded } });
+      reason();
+      expect(screen.getByText(new RegExp(trLemma.edit.count(200, 200)))).toBeInTheDocument();
+      await submit(user);
+      await waitFor(() => expect(decisionCalls()).toHaveLength(1));
+      expect(decisionCalls()[0]!.json).toMatchObject({ duzenlenen: { anlam_kisa: padded } });
+    });
+
+    it('counts a decomposed (NFD) meaning in NFC: 150 letter + combining mark pairs are 150, not 300', async () => {
+      const decomposed = (String.fromCodePoint(0x65) + String.fromCodePoint(0x301)).repeat(150);
+      expect(decomposed.length).toBe(300);
+      const { user } = setup({ route: '/?kayit=2' });
+      await approve(user);
+      fireEvent.change(field(), { target: { value: decomposed } });
+      reason();
+      expect(screen.getByText(new RegExp(trLemma.edit.count(150, 200)))).toBeInTheDocument();
+      await submit(user);
+      await waitFor(() => expect(decisionCalls()).toHaveLength(1));
+      // No client normalization: the value goes out in the form it was typed.
+      expect(decisionCalls()[0]!.json).toMatchObject({ duzenlenen: { anlam_kisa: decomposed } });
+    });
+
+    it('refuses 201 NFC code points even when a trailing space is added', async () => {
+      const { user } = setup({ route: '/?kayit=2' });
+      await approve(user);
+      fireEvent.change(field(), { target: { value: 'a'.repeat(201) + ' ' } });
+      reason();
+      await submit(user);
+      expect(decisionCalls()).toHaveLength(0);
+      expect(screen.getByTestId('gloss-edit')).toHaveTextContent(trLemma.edit.tooLong(201, 200));
+    });
+
+    it('treats a text that differs from the proposal only by tab or line feed at the ends as unchanged', async () => {
+      const { user } = setup({ route: '/?kayit=2' });
+      await approve(user);
+      const edited = String.fromCodePoint(9) + 'Deneme anlam 2' + String.fromCodePoint(10);
+      fireEvent.change(field(), { target: { value: edited } });
+      reason();
+      await submit(user);
+      await waitFor(() => expect(decisionCalls()).toHaveLength(1));
+      expect(decisionCalls()[0]!.json).toMatchObject({ duzenlenen: null });
+    });
+
+    it('ties the inline error to the field (aria-describedby) once, and keeps the summary link', async () => {
+      const { user } = setup({ route: '/?kayit=2' });
+      await approve(user);
+      fireEvent.change(field(), { target: { value: '   ' } });
+      reason();
+      await submit(user);
+      const inline = screen.getByTestId('gloss-edit').querySelector('div[id]')!;
+      expect(inline).toHaveTextContent(trLemma.edit.empty);
+      const described = field().getAttribute('aria-describedby')!.split(' ');
+      expect(described).toContain(inline.id);
+      // The summary ids are not repeated on the field; the summary still links to it.
+      const summary = screen.getByTestId('decision-summary');
+      for (const li of summary.querySelectorAll('li[id]')) expect(described).not.toContain(li.id);
+      await user.click(within(summary).getByRole('link', { name: trLemma.edit.empty }));
+      expect(field()).toHaveFocus();
+    });
+
     it('sends the keyboard shortcut from the meaning field too', async () => {
       const { user } = setup({ route: '/?kayit=2' });
       await approve(user);
@@ -747,9 +868,15 @@ describe('LemmaQueue', () => {
       const snap = within(root).getByTestId('fix-snapshot');
       expect(within(snap).getByText('q:1:1:1')).toHaveAttribute('dir', 'ltr');
       expect(snap).toHaveTextContent(`${trLemma.fix.field}${tr.labels.field.lemma_id}`);
-      expect(within(snap).getByTestId('fix-qac-value')).toHaveTextContent('1001');
+      // A technical value (an id) reads left to right; Arabic letters are Arabic text in the Quran font.
+      const qac = within(snap).getByTestId('fix-qac-value');
+      expect(qac).toHaveTextContent('1001');
+      expect(qac).toHaveAttribute('dir', 'ltr');
+      expect(qac).not.toHaveAttribute('lang', 'ar');
       const newValue = within(snap).getByTestId('fix-new-value');
-      expect(newValue).toHaveAttribute('dir', 'auto');
+      expect(newValue).toHaveAttribute('lang', 'ar');
+      expect(newValue).toHaveAttribute('dir', 'rtl');
+      expect(newValue).toHaveClass('font-quran');
       expect(newValue.textContent).toBe(LEMMA_ARABIC);
       expect(within(snap).getByText('Deneme düzeltme gerekçesi')).toHaveAttribute('lang', 'tr');
       expect(snap).toHaveTextContent(`${trLemma.fix.editor}editor@deneme.test`);
