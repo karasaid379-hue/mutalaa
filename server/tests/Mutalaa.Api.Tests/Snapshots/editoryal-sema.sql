@@ -266,6 +266,19 @@ CREATE TABLE icerik.lemma (
 
 
 --
+-- Name: lemma_dalga; Type: TABLE; Schema: icerik; Owner: -
+--
+
+CREATE TABLE icerik.lemma_dalga (
+    lemma_id integer NOT NULL,
+    dalga smallint NOT NULL,
+    sira integer NOT NULL,
+    data_version text NOT NULL,
+    CONSTRAINT lemma_dalga_dalga_check CHECK (((dalga >= 0) AND (dalga <= 4)))
+);
+
+
+--
 -- Name: lemma_gloss; Type: TABLE; Schema: icerik; Owner: -
 --
 
@@ -800,6 +813,14 @@ ALTER TABLE ONLY icerik.hadith_number_map
 
 
 --
+-- Name: lemma_dalga lemma_dalga_pkey; Type: CONSTRAINT; Schema: icerik; Owner: -
+--
+
+ALTER TABLE ONLY icerik.lemma_dalga
+    ADD CONSTRAINT lemma_dalga_pkey PRIMARY KEY (lemma_id);
+
+
+--
 -- Name: lemma_gloss lemma_gloss_pkey; Type: CONSTRAINT; Schema: icerik; Owner: -
 --
 
@@ -1000,6 +1021,20 @@ ALTER TABLE ONLY kimlik.users
 
 
 --
+-- Name: lemma_dalga_dalga_sira; Type: INDEX; Schema: icerik; Owner: -
+--
+
+CREATE INDEX lemma_dalga_dalga_sira ON icerik.lemma_dalga USING btree (dalga, sira);
+
+
+--
+-- Name: lemma_qac_ref_key; Type: INDEX; Schema: icerik; Owner: -
+--
+
+CREATE UNIQUE INDEX lemma_qac_ref_key ON icerik.lemma USING btree (qac_ref) WHERE (lang = 'ar'::text);
+
+
+--
 -- Name: page_map_source_id_volume_page_line_key; Type: INDEX; Schema: icerik; Owner: -
 --
 
@@ -1074,6 +1109,13 @@ CREATE INDEX review_queue ON icerik.review USING btree (hedef_tablo, created_at)
 --
 
 CREATE INDEX review_xref ON icerik.review USING btree (xref_id) WHERE (xref_id IS NOT NULL);
+
+
+--
+-- Name: root_letters_bw_key; Type: INDEX; Schema: icerik; Owner: -
+--
+
+CREATE UNIQUE INDEX root_letters_bw_key ON icerik.root USING btree (letters_bw);
 
 
 --
@@ -1231,6 +1273,14 @@ ALTER TABLE ONLY icerik.ayah_box
 
 ALTER TABLE ONLY icerik.lemma
     ADD CONSTRAINT lemma_ar_lemma_id_fkey FOREIGN KEY (ar_lemma_id) REFERENCES icerik.lemma(id);
+
+
+--
+-- Name: lemma_dalga lemma_dalga_lemma_id_fkey; Type: FK CONSTRAINT; Schema: icerik; Owner: -
+--
+
+ALTER TABLE ONLY icerik.lemma_dalga
+    ADD CONSTRAINT lemma_dalga_lemma_id_fkey FOREIGN KEY (lemma_id) REFERENCES icerik.lemma(id);
 
 
 --

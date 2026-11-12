@@ -542,6 +542,8 @@ public class ConstraintTests(EditorialDatabase<ConstraintTests> fixture) : IClas
         { "source_dosya_sha256_check", "INSERT INTO icerik.source (slug, tur, baslik, surum, atif_metni, dosya_sha256) VALUES (@s || '-d', 'meal', 'Deneme kaynagi', '1', 'Deneme atfi', <v>)", "repeat('a', 63)", "NULL" },
         { "audio_timing_file_sha256_check", "INSERT INTO icerik.audio_timing (source_id, anchor, file, file_sha256, start_ms, end_ms, timing_source, data_version) VALUES (@s, 'q:1:1', '001.mp3', <v>, 10, 11, 'editor', 'test')", "repeat('g', 64)", "repeat('0', 64)" },
         { "lemma_gloss_content_hash_check", "INSERT INTO icerik.lemma_gloss (lemma_id, anlam_kisa, origin, version, content_hash) VALUES (1, 'deneme', 'editor', '1', <v>)", "'xyz'", "repeat('f', 64)" },
+        { "lemma_dalga_dalga_check", "INSERT INTO icerik.lemma_dalga (lemma_id, dalga, sira, data_version) VALUES (1, <v>, 1, 'test')", "5", "4" },
+        { "lemma_dalga_dalga_check", "INSERT INTO icerik.lemma_dalga (lemma_id, dalga, sira, data_version) VALUES (1, <v>, 1, 'test')", "-1", "0" },
         { "quran_marker_kind_check", "INSERT INTO icerik.quran_marker (kind, no, anchor, secde_turu, source_id, data_version) VALUES ('<v>', 1, 'q:2:142', NULL, @s, 'test')", "yok", "rub" },
         { "quran_marker_secde_turu_check", "INSERT INTO icerik.quran_marker (kind, no, anchor, secde_turu, source_id, data_version) VALUES ('secde', 1, 'q:7:206', '<v>', @s, 'test')", "yok", "obligatory" },
         { "quran_marker_check", "INSERT INTO icerik.quran_marker (kind, no, anchor, secde_turu, source_id, data_version) VALUES ('cuz', 1, 'q:1:1', <v>, @s, 'test')", "'recommended'", "NULL" },

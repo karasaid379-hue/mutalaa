@@ -463,9 +463,51 @@ namespace Mutalaa.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("lemma_pkey");
 
+                    b.HasIndex("QacRef")
+                        .IsUnique()
+                        .HasDatabaseName("lemma_qac_ref_key")
+                        .HasFilter("lang = 'ar'");
+
                     b.ToTable("lemma", "icerik", t =>
                         {
                             t.HasCheckConstraint("lemma_lang_check", "lang IN ('ar','tr')");
+                        });
+                });
+
+            modelBuilder.Entity("Mutalaa.Domain.Content.LemmaDalga", b =>
+                {
+                    b.Property<int>("LemmaId")
+                        .HasColumnType("integer")
+                        .HasColumnName("lemma_id");
+
+                    b.Property<short>("Dalga")
+                        .HasColumnType("smallint")
+                        .HasColumnName("dalga");
+
+                    b.Property<string>("DataVersion")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("data_version");
+
+                    b.Property<int>("Sira")
+                        .HasColumnType("integer")
+                        .HasColumnName("sira");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("LemmaId")
+                        .HasName("lemma_dalga_pkey");
+
+                    b.HasIndex("Dalga", "Sira")
+                        .HasDatabaseName("lemma_dalga_dalga_sira");
+
+                    b.ToTable("lemma_dalga", "icerik", t =>
+                        {
+                            t.HasCheckConstraint("lemma_dalga_dalga_check", "dalga BETWEEN 0 AND 4");
                         });
                 });
 
@@ -901,6 +943,10 @@ namespace Mutalaa.Infrastructure.Migrations
                     b.HasIndex("Letters")
                         .IsUnique()
                         .HasDatabaseName("root_letters_key");
+
+                    b.HasIndex("LettersBw")
+                        .IsUnique()
+                        .HasDatabaseName("root_letters_bw_key");
 
                     b.ToTable("root", "icerik");
                 });
@@ -1872,6 +1918,16 @@ namespace Mutalaa.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("lemma_source_id_fkey");
+                });
+
+            modelBuilder.Entity("Mutalaa.Domain.Content.LemmaDalga", b =>
+                {
+                    b.HasOne("Mutalaa.Domain.Content.Lemma", null)
+                        .WithOne()
+                        .HasForeignKey("Mutalaa.Domain.Content.LemmaDalga", "LemmaId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("lemma_dalga_lemma_id_fkey");
                 });
 
             modelBuilder.Entity("Mutalaa.Domain.Content.LemmaGloss", b =>

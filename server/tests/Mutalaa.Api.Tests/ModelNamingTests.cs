@@ -43,17 +43,17 @@ public partial class ModelNamingTests
         model.GetEntityTypes().Where(e => e.GetTableName() is not null && string.Equals(Schema(e, model), schema, StringComparison.Ordinal));
 
     [Fact]
-    public void Content_schema_has_20_tables_and_identity_schema_7()
+    public void Content_schema_has_21_tables_and_identity_schema_7()
     {
         OnAllModels(model =>
         {
             string[] content = [.. TableEntities(model, ContentSchema).Select(e => e.GetTableName()!).Order(StringComparer.Ordinal)];
             string[] identity = [.. TableEntities(model, IdentitySchema).Select(e => e.GetTableName()!).Order(StringComparer.Ordinal)];
 
-            Assert.Equal(20, content.Length);
+            Assert.Equal(21, content.Length);
             Assert.Equal(content.Length, content.Distinct(StringComparer.Ordinal).Count());
             Assert.Equal(IdentityTables, identity);
-            Assert.Equal(27, model.GetEntityTypes().Count());
+            Assert.Equal(28, model.GetEntityTypes().Count());
         });
     }
 
@@ -169,7 +169,7 @@ public partial class ModelNamingTests
             "review_hedef_tablo_check", "page_map_line_type_check", "pipeline_run_durum_check",
             "unit_check", "quran_word_check", "tr_root_index_check", "ayah_box_check", "audio_timing_check",
             "review_yz_kaydi_check", "quran_marker_kind_check", "quran_marker_secde_turu_check", "quran_marker_check",
-            "release_talep_check", "source_dosya_sha256_check", "audio_timing_file_sha256_check", "lemma_gloss_content_hash_check",
+            "release_talep_check", "source_dosya_sha256_check", "audio_timing_file_sha256_check", "lemma_gloss_content_hash_check", "lemma_dalga_dalga_check",
         ];
 
         OnAllModels(model =>
@@ -187,7 +187,7 @@ public partial class ModelNamingTests
         string[] expected =
         [
             "unit_anchor_key", "unit_source_ord", "unit_parent", "unit_ayah", "unit_tsv_tr", "unit_tsv_ar",
-            "root_letters_key", "quran_word_surah_ayah_word_key", "quran_word_root", "quran_word_lemma", "quran_word_ayah",
+            "root_letters_key", "root_letters_bw_key", "lemma_qac_ref_key", "lemma_dalga_dalga_sira", "quran_word_surah_ayah_word_key", "quran_word_root", "quran_word_lemma", "quran_word_ayah",
             "quran_word_fix_anchor_field_key", "tr_root_index_root", "tr_form_wide",
             "xref_src", "xref_dst", "xref_queue", "review_queue", "review_xref",
             "page_map_start", "page_map_source_id_volume_page_line_key", "release_surum_derleme_key", "quran_marker_anchor",
