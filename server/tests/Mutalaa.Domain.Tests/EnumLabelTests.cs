@@ -71,7 +71,7 @@ public class EnumLabelTests
         Assert.Throws<ArgumentOutOfRangeException>(() => ((UnitKind)7).ToLabel());
         Assert.Throws<ArgumentOutOfRangeException>(() => ((UnitStatus)2).ToLabel());
         Assert.Throws<ArgumentOutOfRangeException>(() => ((TextStatus)3).ToLabel());
-        Assert.Throws<ArgumentOutOfRangeException>(() => ((ReviewStatus)4).ToLabel());
+        Assert.Throws<ArgumentOutOfRangeException>(() => ((ReviewStatus)5).ToLabel());
         Assert.Throws<ArgumentOutOfRangeException>(() => ((ReleaseStatus)5).ToLabel());
     }
 

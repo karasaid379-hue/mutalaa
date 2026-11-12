@@ -5,4 +5,7 @@ public static class Roles
 {
     public const string Editor = "editor";
     public const string Admin = "admin";
+
+    /// <summary>Uzmana gonderilen incelemelerin karar vericisi (K-51 madde 2); editorden ayri denetim izi.</summary>
+    public const string Uzman = "uzman";
 }

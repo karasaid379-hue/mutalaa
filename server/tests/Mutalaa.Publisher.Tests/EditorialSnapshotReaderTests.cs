@@ -312,7 +312,7 @@ public partial class EditorialSnapshotReaderTests(EditorialDatabase<EditorialSna
             ("l2", letters + "x"),
             ("o", other));
         const string lemmaSql =
-            "INSERT INTO icerik.lemma (id, lang, text, text_clean, root_id, occurrences, qac_ref, etymological_only, origin, status, source_id, data_version) VALUES (@id, @lang, 'deneme', 'deneme', @root, 2, @ref, true, 'qac', @st::icerik.xref_status, @s, 'test')";
+            "INSERT INTO icerik.lemma (id, lang, text, text_clean, root_id, occurrences, qac_ref, etymological_only, origin, status, source_id, data_version, onay_yolu) VALUES (@id, @lang, 'deneme', 'deneme-' || @id, @root, 2, @ref, true, 'qac', @st::icerik.xref_status, @s, 'test', CASE WHEN @lang = 'tr' AND @st = 'onayli' THEN 'editor' END)";
         await Db.ExecuteAsync(lemmaSql, ct, ("id", lemmaId), ("lang", "ar"), ("root", rootId), ("ref", "deneme-" + lemmaId), ("st", "onayli"), ("s", PackCatalog.QacMorphologySlug));
         await Db.ExecuteAsync(lemmaSql, ct, ("id", trLemmaId), ("lang", "tr"), ("root", null), ("ref", null), ("st", "onayli"), ("s", PackCatalog.QacMorphologySlug));
         await Db.ExecuteAsync(lemmaSql, ct, ("id", otherLemmaId), ("lang", "ar"), ("root", null), ("ref", "deneme-" + otherLemmaId), ("st", "aday"), ("s", other));
@@ -428,7 +428,7 @@ public partial class EditorialSnapshotReaderTests(EditorialDatabase<EditorialSna
         await InsertSourceAsync(slug, "kelime_anlami", ct: ct);
         int approvedLemma = 91000 + Random.Shared.Next(0, 1000);
         int candidateLemma = approvedLemma + 1000;
-        const string lemmaSql = "INSERT INTO icerik.lemma (id, lang, text, text_clean, source_id, data_version, status) VALUES (@id, 'tr', 'deneme', 'deneme', @s, 'test', @st::icerik.xref_status)";
+        const string lemmaSql = "INSERT INTO icerik.lemma (id, lang, text, text_clean, source_id, data_version, status, onay_yolu) VALUES (@id, 'tr', 'deneme', 'deneme-' || @id, @s, 'test', @st::icerik.xref_status, CASE WHEN @st = 'onayli' THEN 'editor' END)";
         await Db.ExecuteAsync(lemmaSql, ct, ("id", approvedLemma), ("s", slug), ("st", "onayli"));
         await Db.ExecuteAsync(lemmaSql, ct, ("id", candidateLemma), ("s", slug), ("st", "aday"));
         await Db.ExecuteAsync(
@@ -441,7 +441,7 @@ public partial class EditorialSnapshotReaderTests(EditorialDatabase<EditorialSna
             ct,
             ("a", $"q:1:{approvedLemma % 100 + 1}:1"));
         await Db.ExecuteAsync(
-            "INSERT INTO icerik.tr_form (key_wide, key_narrow, tr_lemma_id, freq) VALUES (@w, @n, @id, 1), (@w, @n, @id2, 1)",
+            "INSERT INTO icerik.tr_form (key_wide, key_narrow, tr_lemma_id, freq, data_version) VALUES (@w, @n, @id, 1, 'test'), (@w, @n, @id2, 1, 'test')",
             ct,
             ("w", slug),
             ("n", slug),

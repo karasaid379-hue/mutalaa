@@ -50,7 +50,7 @@ public class SeedTests(EditorialDatabase<SeedTests> fixture) : IClassFixture<Edi
         await Db.ScalarAsync<long>($"SELECT count(*) FROM kimlik.{table}", ct);
 
     [Fact]
-    public async Task Running_the_seed_twice_creates_two_roles_one_user_and_puts_the_user_in_the_admin_role()
+    public async Task Running_the_seed_twice_creates_three_roles_one_user_and_puts_the_user_in_the_admin_role()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
         CapturingLoggerProvider logs = new();
@@ -61,10 +61,10 @@ public class SeedTests(EditorialDatabase<SeedTests> fixture) : IClassFixture<Edi
 
         Assert.Equal(IdentitySeeder.ExitOk, first);
         Assert.Equal(IdentitySeeder.ExitOk, second);
-        Assert.Equal(2L, await CountAsync("roles", ct));
+        Assert.Equal(3L, await CountAsync("roles", ct));
         Assert.Equal(1L, await CountAsync("users", ct));
         Assert.Equal(1L, await CountAsync("user_roles", ct));
-        Assert.Equal(["admin", "editor"], await Db.ColumnAsync("SELECT name FROM kimlik.roles ORDER BY name", ct));
+        Assert.Equal(["admin", "editor", "uzman"], await Db.ColumnAsync("SELECT name FROM kimlik.roles ORDER BY name", ct));
         Assert.Equal(
             ["admin"],
             await Db.ColumnAsync(
@@ -90,7 +90,7 @@ public class SeedTests(EditorialDatabase<SeedTests> fixture) : IClassFixture<Edi
 
         Assert.Equal(IdentitySeeder.ExitOk, await IdentitySeeder.RunAsync(provider, ct));
 
-        Assert.Equal(2L, await CountAsync("roles", ct));
+        Assert.Equal(3L, await CountAsync("roles", ct));
         Assert.Equal(1L, await CountAsync("users", ct));
         Assert.Equal(1L, await CountAsync("user_roles", ct));
         Assert.Equal(
@@ -142,11 +142,11 @@ public class SeedTests(EditorialDatabase<SeedTests> fixture) : IClassFixture<Edi
         });
 
         Assert.Equal(1L, await CountAsync("users", ct));
-        Assert.Equal(2L, await CountAsync("roles", ct));
+        Assert.Equal(3L, await CountAsync("roles", ct));
         Assert.Equal(1L, await CountAsync("user_roles", ct));
         Assert.Equal("YONETICI@EXAMPLE.TEST", await Db.ScalarAsync<string>("SELECT normalized_user_name FROM kimlik.users", ct));
         Assert.Equal("YONETICI@EXAMPLE.TEST", await Db.ScalarAsync<string>("SELECT normalized_email FROM kimlik.users", ct));
-        Assert.Equal(["ADMIN", "EDITOR"], await Db.ColumnAsync("SELECT normalized_name FROM kimlik.roles ORDER BY normalized_name", ct));
+        Assert.Equal(["ADMIN", "EDITOR", "UZMAN"], await Db.ColumnAsync("SELECT normalized_name FROM kimlik.roles ORDER BY normalized_name", ct));
     }
 
     [Fact]

@@ -7,6 +7,7 @@ public enum ReviewStatus
     Onaylandi = 1,
     Reddedildi = 2,
     GeriAlindi = 3,
+    Uzmanda = 4,
 }
 
 /// <summary>ReviewStatus icin ortak enum JSON etiketi eslemesi. Acik switch; yansima, Enum.ToString ve kulturlu donusum yok.</summary>
@@ -19,6 +20,7 @@ public static class ReviewStatusLabels
         ReviewStatus.Onaylandi => "onaylandi",
         ReviewStatus.Reddedildi => "reddedildi",
         ReviewStatus.GeriAlindi => "geri_alindi",
+        ReviewStatus.Uzmanda => "uzmanda",
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
     };
 
@@ -38,6 +40,9 @@ public static class ReviewStatusLabels
                 return true;
             case "geri_alindi":
                 value = ReviewStatus.GeriAlindi;
+                return true;
+            case "uzmanda":
+                value = ReviewStatus.Uzmanda;
                 return true;
             default:
                 value = default;

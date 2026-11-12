@@ -92,7 +92,7 @@ public class SeedProcessTests(EditorialDatabase<SeedProcessTests> fixture) : ICl
         Assert.Equal(IdentitySeeder.ExitOk, first);
         Assert.Equal(IdentitySeeder.ExitOk, second);
         Assert.Equal(1L, await Db.ScalarAsync<long>("SELECT count(*) FROM kimlik.users", ct));
-        Assert.Equal(["admin", "editor"], await Db.ColumnAsync("SELECT name FROM kimlik.roles ORDER BY name", ct));
+        Assert.Equal(["admin", "editor", "uzman"], await Db.ColumnAsync("SELECT name FROM kimlik.roles ORDER BY name", ct));
         Assert.Equal(["admin"], await Db.ColumnAsync("SELECT r.name FROM kimlik.user_roles ur JOIN kimlik.roles r ON r.id = ur.role_id", ct));
         foreach (string output in new[] { firstOutput, secondOutput })
         {

@@ -16,6 +16,16 @@ public static class ReviewActions
     public const string EtimolojikIsaretle = "etimolojik_isaretle";
 }
 
+/// <summary>Inceleme kararinda yetkili rol adlari (K-51 madde 2); Identity rol adlariyla ayni dizgilerdir. Karar akisi bu sabitleri sonraki adimda kullanir.</summary>
+public static class ReviewRoles
+{
+    public const string Editor = "editor";
+    public const string Admin = "admin";
+
+    /// <summary>Yalniz <c>uzmanda</c> durumundaki incelemenin kararini verir.</summary>
+    public const string Uzman = "uzman";
+}
+
 /// <summary>review.alan degerleri (Backend API 4.1 kuyruk tablosu).</summary>
 public static class ReviewFields
 {

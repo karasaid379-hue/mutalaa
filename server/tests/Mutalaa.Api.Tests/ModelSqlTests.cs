@@ -44,7 +44,7 @@ public partial class ModelSqlTests
     [Fact]
     public void Xmin_is_never_created_as_a_column()
     {
-        Assert.Equal(21 + 7, GeneratedSql.All.Count(s => s.StartsWith("CREATE TABLE ", StringComparison.Ordinal)));
+        Assert.Equal(22 + 7, GeneratedSql.All.Count(s => s.StartsWith("CREATE TABLE ", StringComparison.Ordinal)));
         Assert.DoesNotMatch(XminWord(), Sql);
     }
 

@@ -31,6 +31,12 @@ public sealed class Lemma
 
     public int? Freq { get; set; }
 
+    /// <summary>Yalniz tr satirinda: onayin yolu, editor ya da otomatik (K-51 madde 9). tr ve onayli satirda zorunludur.</summary>
+    public string? OnayYolu { get; set; }
+
+    /// <summary>onay_yolu otomatik ise zorunlu, denetlenebilir kanit nesnesi (jsonb): politika, yontem, kaynaklar, qac, karar.</summary>
+    public string? Kanit { get; set; }
+
     public required string SourceId { get; set; }
 
     public required string DataVersion { get; set; }

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace Mutalaa.Infrastructure.Identity;
 
 /// <summary>
-/// "seed" komutu: editor ve admin rollerini ve ilk yonetici kullanicisini olusturur. Idempotenttir.
+/// "seed" komutu: editor, admin ve uzman rollerini ve ilk yonetici kullanicisini olusturur. Idempotenttir.
 /// Ayarlar IConfiguration'dan gelir (dotnet user-secrets): ConnectionStrings:Editorial, Mutalaa:Seed:AdminEmail, Mutalaa:Seed:AdminPassword.
 /// Gunluge parola ve e-posta yazilmaz; yalniz ayar adlari ve Identity hata kodlari yazilir.
 /// Cikis kodlari: 0 basari, 1 beklenmeyen hata, 2 eksik ayar, 3 Identity reddetti.
@@ -61,7 +61,7 @@ public static class IdentitySeeder
             RoleManager<IdentityRole> roles = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             UserManager<EditorUser> users = scope.ServiceProvider.GetRequiredService<UserManager<EditorUser>>();
 
-            foreach (string roleName in new[] { Roles.Editor, Roles.Admin })
+            foreach (string roleName in new[] { Roles.Editor, Roles.Admin, Roles.Uzman })
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 if (await roles.RoleExistsAsync(roleName))
