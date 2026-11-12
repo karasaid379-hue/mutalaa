@@ -1,0 +1,11 @@
+{
+  "url": "https://raw.githubusercontent.com/q-ran/quran/bb97fe4b03e5a923aab0491f3d917c3c5f94f1fc/sources/1.0/quranic-corpus-morphology-0.4.txt",
+  "surum": "0.4",
+  "alinma_tarihi": "2026-11-12",
+  "dosya": "quranic-corpus-morphology-0.4.txt",
+  "boyut": 6309503,
+  "sha256": "a1d12923815341face765083805d2148ed2d9f5cc3f7d6665219d887675d8c46",
+  "bildirim_bayt": 2165,
+  "bildirim_sha256": "460da614043906383aa12dd1a546839fc7d2ca787916d5d8f7aaa5172a15a3b7",
+  "bildirim_satir": 55
+}

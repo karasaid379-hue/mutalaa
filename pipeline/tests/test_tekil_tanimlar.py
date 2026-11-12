@@ -25,6 +25,9 @@ TEKIL_DIZGELER = {
     "aliases.jsonl",
     "notice.txt",
     "tanik.jsonl",
+    "lemmas.jsonl",
+    "roots.jsonl",
+    "waves.jsonl",
 }
 TEKIL_DESENLER = {
     r"[0-9a-f]{64}",  # SHA-256 (64 kucuk harfli onaltilik)
@@ -71,6 +74,9 @@ def test_lineage_tanimlari_beklenen_degerleri_tasir() -> None:
     assert lineage.ALIASLAR_ADI == "aliases.jsonl"
     assert lineage.NOTICE_ADI == "notice.txt"
     assert lineage.TANIK_ADI == "tanik.jsonl"
+    assert lineage.LEMMALAR_ADI == "lemmas.jsonl"
+    assert lineage.KOKLER_ADI == "roots.jsonl"
+    assert lineage.DALGALAR_ADI == "waves.jsonl"
     assert lineage.OZET_DESENI.fullmatch("a" * 64) is not None
     assert lineage.OZET_DESENI.fullmatch("A" * 64) is None
     assert lineage.OZET_DESENI.fullmatch("a" * 63) is None

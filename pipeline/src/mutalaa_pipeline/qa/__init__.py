@@ -17,6 +17,8 @@ YAPI_KAPILARI: Final = ("G-KAY", "G-BUT", "G-CAP")
 # Sure adi adaylari (A11.3): capa uretilmez (G-CAP yok), arama metni uretilmez (G-NOR yok).
 SURE_ADI_KAYNAGI: Final = "sure-adlari-vikipedi"
 SURE_ADI_KAPILARI: Final = ("G-KAY", "G-BUT")
+# QAC morfolojisi (A17.3): kelime/lemma/kok satirlari; arama metni yok (G-NOR yok).
+QAC_KAYNAGI: Final = "qac-morfoloji"
 GECTI: Final = "gecti"
 KALDI: Final = "kaldi"
 QA_KOMUTU: Final = "qa run"
@@ -29,7 +31,7 @@ def kaynak_kapilari(source_id: object) -> tuple[str, ...]:
     """
     if meal_mi(source_id):
         return MEAL_KAPILARI
-    if source_id == UST_VERI_KAYNAGI:
+    if source_id in (UST_VERI_KAYNAGI, QAC_KAYNAGI):
         return YAPI_KAPILARI
     if source_id == SURE_ADI_KAYNAGI:
         return SURE_ADI_KAPILARI

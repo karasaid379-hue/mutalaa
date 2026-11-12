@@ -36,6 +36,7 @@ from mutalaa_pipeline.qa import (
     KALDI,
     KAPILAR,
     QA_KOMUTU,
+    QAC_KAYNAGI,
     SURE_ADI_KAYNAGI,
     UST_VERI_KAYNAGI,
 )
@@ -280,6 +281,10 @@ def komut_qa_run(
         from mutalaa_pipeline.qa.run_sure_adlari import komut_qa_run_sure_adlari
 
         return komut_qa_run_sure_adlari(run=run, gate=gate, config=config, kok=kok)
+    if source == QAC_KAYNAGI:  # QAC morfolojisi: G-KAY, G-BUT, G-CAP (A17.3)
+        from mutalaa_pipeline.qa.run_qac import komut_qa_run_qac
+
+        return komut_qa_run_qac(run=run, gate=gate, config=config, kok=kok)
     if meal_mi(source):  # iki meal: bes kapi (G-HIZ dahil; A16.3)
         from mutalaa_pipeline.qa.run_meal import komut_qa_run_meal
 
