@@ -1,19 +1,49 @@
 import { useId, useState, type ReactNode } from 'react';
 import { ArabicText } from '@/components/arabic-text';
-import { MissingSection } from '@/components/missing-section';
 import { OpenQuestionButton } from '@/components/open-question-button';
 import { TextDiff } from '@/components/text-diff';
 import { Badge } from '@/components/ui/badge';
 import { labelOf, originLabel, targetLabel } from '@/i18n/labels';
 import { tr } from '@/i18n/tr';
 import { trLemma } from '@/i18n/tr-lemma';
-import { formatNumber } from '@/lib/format';
+import { formatNumber, formatPercent } from '@/lib/format';
 import { ReviewBadges } from '@/review/badges';
 import { DecisionForm } from '@/review/decision-form';
 import type { QueueDetailProps } from '@/review/queue-layout';
 import type { ReviewDetail } from '@/review/types';
 import { JsonBlock } from '@/screens/catalog/json-block';
-import { isAnchor, readConfidence, readLemmaValue, readYzRecord, type LemmaValue } from './payload';
+import { LemmaInfo } from './lemma-info';
+import {
+  CONSISTENT_SHARE_THRESHOLD,
+  consistencyOf,
+  isAnchor,
+  readConfidence,
+  readDistribution,
+  readLemmaValue,
+  readYzRecord,
+  type LemmaValue,
+} from './payload';
+
+/** The source of a meaning or lemma: `kaynak:<slug>` is a ready source; an unknown origin is shown raw. */
+function glossOriginLabel(origin: string): string {
+  const prefix = 'kaynak:';
+  return origin.startsWith(prefix)
+    ? trLemma.snapshot.readySource(origin.slice(prefix.length))
+    : labelOf(trLemma.snapshot.originNames, origin);
+}
+
+function yesNo(value: boolean): string {
+  return value ? trLemma.snapshot.yes : trLemma.snapshot.no;
+}
+
+/** The lemma id of the review's target: the snapshot's `lemma_id`, else the numeric target key; null when neither is one. */
+function readLemmaId(review: ReviewDetail): number | null {
+  const fromTarget = review.hedef?.lemma_id;
+  if (typeof fromTarget === 'number') return fromTarget;
+  return /^[0-9]+$/.test(review.hedef_anahtar) && Number.isSafeInteger(Number(review.hedef_anahtar))
+    ? Number(review.hedef_anahtar)
+    : null;
+}
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -57,6 +87,22 @@ function Snapshot({ review }: { review: ReviewDetail }) {
             <Row label={trLemma.snapshot.anlamKisa}>
               <span lang="tr">{target.anlam_kisa}</span>
             </Row>
+          ) : null}
+          {target.origin ? (
+            <Row label={trLemma.snapshot.origin}>{glossOriginLabel(target.origin)}</Row>
+          ) : null}
+          {target.version ? <Row label={trLemma.snapshot.version}>{target.version}</Row> : null}
+          {target.root_id !== null && target.root_id !== undefined ? (
+            <Row label={trLemma.snapshot.root}>{String(target.root_id)}</Row>
+          ) : null}
+          {target.occurrences !== null && target.occurrences !== undefined ? (
+            <Row label={trLemma.snapshot.occurrences}>{formatNumber(target.occurrences)}</Row>
+          ) : null}
+          {target.etymological_only !== null && target.etymological_only !== undefined ? (
+            <Row label={trLemma.snapshot.etymologicalOnly}>{yesNo(target.etymological_only)}</Row>
+          ) : null}
+          {target.yalnizca_etimolojik !== null && target.yalnizca_etimolojik !== undefined ? (
+            <Row label={trLemma.snapshot.etymologicalOnly}>{yesNo(target.yalnizca_etimolojik)}</Row>
           ) : null}
           {target.status ? (
             <Row label={trLemma.snapshot.status}>
@@ -185,11 +231,17 @@ function Values({ review }: { review: ReviewDetail }) {
   );
 }
 
-/** Origin of the draft, the G-YZ record of an AI draft and the confidence when the record carries one. */
+/**
+ * Origin of the draft, the G-YZ record of an AI draft and the dominant share of a ready-source candidate:
+ * as a percentage, with the consistent or inconsistent mark (threshold `CONSISTENT_SHARE_THRESHOLD`) and the
+ * distribution of the ready meanings, which is shown but never applied (K-50 madde 5).
+ */
 function Origin({ review }: { review: ReviewDetail }) {
   const headingId = useId();
+  const distributionId = useId();
   const yz = readYzRecord(review.yz_kaydi);
   const confidence = readConfidence(review);
+  const distribution = readDistribution(review.onerilen);
   return (
     <div className="flex flex-col gap-3">
       <section
@@ -216,16 +268,54 @@ function Origin({ review }: { review: ReviewDetail }) {
             </Row>
           ) : null}
           {confidence !== null ? (
-            <Row label={trLemma.origin.confidence}>{formatNumber(confidence)}</Row>
+            <Row label={trLemma.origin.confidence}>{formatPercent(confidence)}</Row>
           ) : null}
         </dl>
+        {confidence !== null ? (
+          <p className="flex flex-wrap items-center gap-2 text-sm" data-testid="lemma-consistency">
+            <Badge variant={consistencyOf(confidence) === 'tutarli' ? 'secondary' : 'outline'}>
+              {consistencyOf(confidence) === 'tutarli'
+                ? trLemma.origin.consistent
+                : trLemma.origin.inconsistent}
+            </Badge>
+            <span className="text-muted-foreground">
+              {trLemma.origin.consistentHint(
+                formatPercent(confidence),
+                formatPercent(CONSISTENT_SHARE_THRESHOLD),
+              )}
+            </span>
+          </p>
+        ) : (
+          <p className="text-sm text-muted-foreground" data-testid="lemma-confidence-none">
+            {trLemma.origin.confidenceNone}
+          </p>
+        )}
         {review.dogrulanmamis ? <p className="text-sm">{trLemma.origin.unverifiedNote}</p> : null}
         {review.yz_kaydi !== null && review.yz_kaydi !== undefined ? (
           <JsonBlock title={trLemma.origin.yzRaw} value={review.yz_kaydi} />
         ) : null}
       </section>
-      {confidence === null ? (
-        <MissingSection title={trLemma.missing.confidence} phase="A17" />
+      {distribution.length > 0 ? (
+        <section
+          aria-labelledby={distributionId}
+          className="flex flex-col gap-1 rounded-lg border p-3"
+          data-testid="lemma-distribution"
+        >
+          <h3 id={distributionId} className="text-sm font-medium">
+            {trLemma.origin.distribution}
+          </h3>
+          <p className="text-xs text-muted-foreground">{trLemma.origin.distributionNote}</p>
+          <ul className="text-sm">
+            {distribution.map((entry, index) => (
+              <li key={`${index}:${entry.anlam}`} className="flex flex-wrap gap-x-2">
+                <span lang="tr">{entry.anlam}</span>
+                <span className="text-muted-foreground">
+                  {trLemma.origin.distributionEntry(entry.sayi)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
       ) : null}
     </div>
   );
@@ -233,9 +323,9 @@ function Origin({ review }: { review: ReviewDetail }) {
 
 /**
  * The card of one lemma review: the target's snapshot, the values the API gives (previous, proposed, edited),
- * origin and confidence, the four sections the API does not give yet (A17, marked, nothing invented), the
- * closed actions and the decision form. The decision is a status approval or a rejection only; the meaning is
- * not edited here (K-48, A17).
+ * origin and confidence, the lemma card of `GET /lemmas/{id}` (root, frequency, wave, same-root meanings,
+ * KWIC), the closed actions and the decision form. A word meaning review (`lemma_gloss`) can be approved with
+ * an edited meaning (the form shows the field); a lemma status review is a status approval or a rejection only.
  */
 export function LemmaCard({ review, onDecided }: QueueDetailProps) {
   // After a 412 the form hands over the fresh record; it is shown until the parent gives a new object.
@@ -251,19 +341,18 @@ export function LemmaCard({ review, onDecided }: QueueDetailProps) {
       <Snapshot review={shown} />
       <Values review={shown} />
       <Origin review={shown} />
-      <div className="grid gap-3 sm:grid-cols-2">
-        <MissingSection title={trLemma.missing.rootPosFrequency} phase="A17" />
-        <MissingSection title={trLemma.missing.kwic} phase="A17" />
-        <MissingSection title={trLemma.missing.sameRoot} phase="A17" />
-        <MissingSection title={trLemma.missing.waveOrder} phase="A17" />
-      </div>
-      <section aria-label={trLemma.closedActions} className="flex flex-wrap gap-2">
-        <OpenQuestionButton label={trLemma.closed.editApprove} phase="A17" />
-        <OpenQuestionButton label={trLemma.closed.sendExpert} phase="A17" />
-        <OpenQuestionButton label={trLemma.closed.redraft} phase="A17" />
-        <OpenQuestionButton label={trLemma.closed.etymologicalOnly} phase="A18" />
+      <LemmaInfo lemmaId={readLemmaId(shown)} />
+      <section aria-label={trLemma.closedActions} className="flex flex-col gap-1">
+        <div className="flex flex-wrap gap-2">
+          <OpenQuestionButton label={trLemma.closed.sendExpert} phase="A18" />
+          <OpenQuestionButton label={trLemma.closed.redraft} phase="S-16" />
+          <OpenQuestionButton label={trLemma.closed.etymologicalOnly} phase="A18" />
+        </div>
+        <p className="text-xs text-muted-foreground">{trLemma.closedNote}</p>
       </section>
-      <p className="text-sm text-muted-foreground">{trLemma.decisionNote}</p>
+      <p className="text-sm text-muted-foreground">
+        {shown.hedef_tablo === 'lemma' ? trLemma.decisionNote.durum : trLemma.decisionNote.anlam}
+      </p>
       <DecisionForm
         review={review}
         onDecided={onDecided}

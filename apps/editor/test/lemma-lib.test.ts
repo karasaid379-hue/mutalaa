@@ -1,8 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { trLemma } from '@/i18n/tr-lemma';
+import { reviewListInit } from '@/review/queries';
 import { QUEUES } from '@/review/queues';
-import { LEMMA_FILTERS, LEMMA_TAB_IDS, isLemmaTab } from '@/screens/lemma/config';
-import { isAnchor, readConfidence, readLemmaValue, readYzRecord } from '@/screens/lemma/payload';
+import {
+  DEFAULT_LEMMA_ORDER,
+  LEMMA_FILTERS,
+  LEMMA_TAB_IDS,
+  hasWaveOrder,
+  isLemmaTab,
+  isQueueOrder,
+  lemmaFilter,
+} from '@/screens/lemma/config';
+import {
+  CONSISTENT_SHARE_THRESHOLD,
+  consistencyOf,
+  isAnchor,
+  readConfidence,
+  readDistribution,
+  readLemmaValue,
+  readYzRecord,
+} from '@/screens/lemma/payload';
+import { formatPercent } from '@/lib/format';
 import { SHA_A, SHA_B, YZ_KAYDI } from './fixtures-lemma';
 
 describe('readLemmaValue', () => {
@@ -132,16 +150,89 @@ describe('isAnchor', () => {
   });
 });
 
+describe('readConfidence (ready-source candidate)', () => {
+  it('reads the dominant share of onerilen after the API field', () => {
+    expect(readConfidence({ guven: 0.9, onerilen: { baskin_pay: 0.5 } })).toBe(0.9);
+    expect(readConfidence({ guven: null, onerilen: { baskin_pay: 0.5, guven: 0.1 } })).toBe(0.5);
+  });
+});
+
+describe('consistencyOf', () => {
+  it('uses the named threshold 0,8: at and above is consistent, below is inconsistent', () => {
+    expect(CONSISTENT_SHARE_THRESHOLD).toBe(0.8);
+    expect(consistencyOf(0.8)).toBe('tutarli');
+    expect(consistencyOf(1)).toBe('tutarli');
+    expect(consistencyOf(0.79)).toBe('tutarsiz');
+    expect(consistencyOf(0)).toBe('tutarsiz');
+  });
+
+  it('is shown as a Turkish percentage that cannot round up over the threshold', () => {
+    expect(formatPercent(0.87)).toBe('%87');
+    expect(formatPercent(0.795)).toBe('%79,5');
+  });
+});
+
+describe('readDistribution', () => {
+  it('reads the meaning and the count of each entry and drops unreadable ones', () => {
+    expect(
+      readDistribution({
+        dagilim: [{ anlam: 'Deneme anlam 1', sayi: 5 }, { anlam: 3, sayi: 1 }, { anlam: 'x' }, 'x'],
+      }),
+    ).toEqual([{ anlam: 'Deneme anlam 1', sayi: 5 }]);
+  });
+
+  it('is empty when there is no distribution', () => {
+    expect(readDistribution(null)).toEqual([]);
+    expect(readDistribution({ dagilim: 'x' })).toEqual([]);
+    expect(readDistribution({})).toEqual([]);
+  });
+});
+
+describe('lemmaFilter', () => {
+  it('adds the order to the meaning and status tabs and leaves the correction tab without one', () => {
+    expect(DEFAULT_LEMMA_ORDER).toBe('dalga');
+    expect(lemmaFilter('anlam', 'dalga')).toEqual({
+      hedef_tablo: 'lemma_gloss',
+      alan: 'anlam_kisa',
+      sira: 'dalga',
+    });
+    expect(lemmaFilter('durum', 'olusturma')).toEqual({
+      hedef_tablo: 'lemma',
+      alan: 'status',
+      sira: 'olusturma',
+    });
+    expect(lemmaFilter('duzeltme', 'dalga')).toEqual({ hedef_tablo: 'quran_word_fix' });
+    expect(hasWaveOrder('duzeltme')).toBe(false);
+    expect(isQueueOrder('dalga')).toBe(true);
+    expect(isQueueOrder('baska')).toBe(false);
+  });
+
+  it('makes a list request with and without alan and sira', () => {
+    expect(reviewListInit(lemmaFilter('anlam', 'dalga')).params.query).toEqual({
+      hedef_tablo: 'lemma_gloss',
+      alan: 'anlam_kisa',
+      durum: 'acik',
+      sira: 'dalga',
+      limit: 50,
+    });
+    const fix = reviewListInit(lemmaFilter('duzeltme', 'dalga')).params.query;
+    expect(fix).toEqual({ hedef_tablo: 'quran_word_fix', durum: 'acik', limit: 50 });
+    expect('alan' in fix).toBe(false);
+    expect('sira' in fix).toBe(false);
+  });
+});
+
 describe('tabs', () => {
   it('match the lemma queue of queues.ts, in the same order', () => {
     const lemma = QUEUES.find((queue) => queue.id === 'lemma');
     expect(lemma?.filters).toEqual(LEMMA_TAB_IDS.map((id) => LEMMA_FILTERS[id]));
   });
 
-  it('knows its two ids only', () => {
-    expect(LEMMA_TAB_IDS).toEqual(['anlam', 'durum']);
+  it('knows its three ids only, in this order', () => {
+    expect(LEMMA_TAB_IDS).toEqual(['anlam', 'durum', 'duzeltme']);
     expect(isLemmaTab('anlam')).toBe(true);
     expect(isLemmaTab('durum')).toBe(true);
+    expect(isLemmaTab('duzeltme')).toBe(true);
     expect(isLemmaTab('baska')).toBe(false);
     expect(isLemmaTab(null)).toBe(false);
   });

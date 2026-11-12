@@ -4,7 +4,7 @@ import type { ReviewItem } from '@/review/types';
 
 // Readers of the opaque JSON of a word meaning review (`onceki`, `onerilen`, `duzenlenen`, `yz_kaydi`).
 // The API types these `unknown`, and the lemma payload shape is not fixed by the contract yet; the fields
-// below follow the draft output of Kelime anlamları §5. Nothing is trusted: a reader returns null or an
+// below follow the draft output of Kelime anlamları §5 and the ready-source candidate of K-50 madde 5. Nothing is trusted: a reader returns null or an
 // empty list instead of throwing, and the screen always offers the raw value next to the readable one.
 
 /** The readable fields of a lemma payload; every field is optional. */
@@ -98,15 +98,48 @@ export function readYzRecord(value: unknown): YzRecord | null {
 type ConfidenceSource = Pick<ReviewItem, 'guven' | 'onerilen' | 'yz_kaydi'>;
 
 /**
- * The confidence of a draft: the API's `guven` field first, then a `guven` number inside `onerilen`, then
- * inside `yz_kaydi`. null when none of them has one (the screen then marks the section as missing).
+ * The confidence of a draft: the API's `guven` field first (for a ready-source candidate it is the dominant
+ * share, K-50 madde 5), then `baskin_pay` or `guven` inside `onerilen`, then `guven` inside `yz_kaydi`. null
+ * when none of them has one (the screen then says the record carries no confidence).
  */
 export function readConfidence(review: ConfidenceSource): number | null {
   if (typeof review.guven === 'number' && Number.isFinite(review.guven)) return review.guven;
-  return readNumber(review.onerilen, 'guven') ?? readNumber(review.yz_kaydi, 'guven');
+  return (
+    readNumber(review.onerilen, 'baskin_pay') ??
+    readNumber(review.onerilen, 'guven') ??
+    readNumber(review.yz_kaydi, 'guven')
+  );
 }
 
 /** Whether a supporting ayah entry is a valid anchor; parsing is done by `@mutalaa/anchors` only. */
 export function isAnchor(text: string): boolean {
   return tryParse(text) !== null;
+}
+
+/**
+ * Share of the dominant ready meaning at and above which a lemma counts as consistent ("tutarlı"); below it
+ * it is a "tutarsız hazır anlam" (K-50 madde 5; the threshold never changes the candidate set).
+ */
+export const CONSISTENT_SHARE_THRESHOLD = 0.8;
+
+export type Consistency = 'tutarli' | 'tutarsiz';
+
+/** Consistency mark of a dominant share. */
+export function consistencyOf(share: number): Consistency {
+  return share >= CONSISTENT_SHARE_THRESHOLD ? 'tutarli' : 'tutarsiz';
+}
+
+/** One entry of the ready-source distribution (`onerilen.dagilim`): the meaning and how many words carry it. */
+export interface DistributionEntry {
+  anlam: string;
+  sayi: number;
+}
+
+/** The ready-source distribution of a candidate; an unreadable entry is dropped. It is never applied to the target. */
+export function readDistribution(value: unknown): DistributionEntry[] {
+  return (readArray(value, 'dagilim') ?? []).flatMap((entry) => {
+    const anlam = readString(entry, 'anlam');
+    const sayi = readNumber(entry, 'sayi');
+    return anlam !== null && sayi !== null ? [{ anlam, sayi }] : [];
+  });
 }

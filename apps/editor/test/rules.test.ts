@@ -2,7 +2,14 @@
 import { describe, expect, it } from 'vitest';
 import { tr } from '@/i18n/tr';
 import { labelOf } from '@/i18n/labels';
-import { approveBlockReason, canEditValue, hasOffsetData, proposedText } from '@/review/rules';
+import {
+  approveBlockReason,
+  canEditValue,
+  hasOffsetData,
+  isGlossEditable,
+  proposedGloss,
+  proposedText,
+} from '@/review/rules';
 import { describeChanges } from '@/review/stale';
 import { QUEUES, openCount } from '@/review/queues';
 import { reviewDetail, reviewItem, stats, unitDetail } from './fixtures';
@@ -164,15 +171,47 @@ describe('describeChanges (the 412 view)', () => {
 });
 
 describe('queue counts', () => {
-  it('sums the stats entries of a screen (lemma has two)', () => {
+  it('sums the stats entries of a screen (lemma has three tabs; quran_word_fix counts every field)', () => {
     const data = stats([
       ['unit', 'metin', 4],
       ['lemma_gloss', 'anlam_kisa', 2],
       ['lemma', 'status', 3],
+      ['quran_word_fix', 'lemma_id', 4],
+      ['quran_word_fix', 'pos', 1],
+      ['quran_word_fix', 'root_id', 2],
+      ['quran_word_fix', 'features', 3],
       ['xref', 'status', 9],
     ]);
     const byId = Object.fromEntries(QUEUES.map((queue) => [queue.id, openCount(data, queue)]));
-    expect(byId).toEqual({ ocr: 4, lemma: 5, baglanti: 9, 'sure-adi': 0 });
+    expect(byId).toEqual({ ocr: 4, lemma: 15, baglanti: 9, 'sure-adi': 0 });
     expect(openCount(undefined, QUEUES[0]!)).toBeUndefined();
+  });
+});
+
+describe('isGlossEditable and proposedGloss', () => {
+  it('is true only for an open lemma_gloss + anlam_kisa review', () => {
+    const gloss = reviewItem({ hedef_tablo: 'lemma_gloss', alan: 'anlam_kisa' });
+    expect(isGlossEditable(gloss)).toBe(true);
+    expect(isGlossEditable({ ...gloss, durum: 'onaylandi' })).toBe(false);
+    expect(isGlossEditable({ ...gloss, hedef_tablo: 'lemma', alan: 'status' })).toBe(false);
+    expect(isGlossEditable({ ...gloss, hedef_tablo: 'quran_word_fix', alan: 'lemma_id' })).toBe(
+      false,
+    );
+    expect(isGlossEditable(reviewItem())).toBe(false);
+  });
+
+  it('proposes the editor value first, then the candidate, else null', () => {
+    expect(
+      proposedGloss(
+        reviewItem({
+          onerilen: { anlam_kisa: 'Deneme öneri' },
+          duzenlenen: { anlam_kisa: 'Deneme editör' },
+        }),
+      ),
+    ).toBe('Deneme editör');
+    expect(proposedGloss(reviewItem({ onerilen: { anlam_kisa: 'Deneme öneri' } }))).toBe(
+      'Deneme öneri',
+    );
+    expect(proposedGloss(reviewItem({ onerilen: { baska: 1 }, duzenlenen: null }))).toBeNull();
   });
 });
