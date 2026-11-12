@@ -33,12 +33,31 @@ internal static class EndToEndData
     public const string Tefsir = "test-tefsir-ornek";
     public const string Ses = "test-ses";
     public const string Sentetik = "hadis-sentetik";
+    public const string Qac = "qac-morfoloji";
+    public const string Wbw = "quranwbw-tr";
+
+    /// <summary>Sentetik kok harfleri (gercek kok degil; \u kacisli, uydurma harf dizileri). Kelime ya da ayet metni degildir.</summary>
+    public const string SyntheticRoot1 = "\u0628\u062A\u062B";
+    public const string SyntheticRoot2 = "\u062C\u062D\u062E";
 
     public const string TanzilDate = "2026-11-02";
 
     public const string KucukPack = "test-kucuk";
     public const string TefsirPack = "tefsir-test-ornek";
     public const string SentetikPack = "hadis-sentetik";
+    public const string KelimeKokPack = "kelime-kok";
+
+    /// <summary>Sozluk fiksturu: lemma 1 onayli anlam, 2 ve 3 aday anlam, 4 red anlam tasir; 5. lemmanin anlami yoktur.</summary>
+    public const int LemmaApproved = 1;
+    public const int LemmaCandidate1 = 2;
+    public const int LemmaCandidate2 = 3;
+    public const int LemmaRejected = 4;
+
+    /// <summary>Tohumlanan quran_word_fix satirlari: iki onayli (uygulanir), bir aday ve bir red (uygulanmaz).</summary>
+    public const string FixApprovedPos = "q:1:1:1";
+    public const string FixApprovedRoot = "q:1:1:2";
+    public const string FixCandidate = "q:1:1:3";
+    public const string FixRejected = "q:1:2:1";
 
     public const string SentetikApproved = "k:hadis-sentetik:bolum-1:p1";
     public const string SentetikDraft = "k:hadis-sentetik:bolum-1:p2";
@@ -81,7 +100,7 @@ internal static class EndToEndData
         PlaceRaw(rawDir, Uthmani, "quran-uthmani.txt", uthmaniBytes);
         PlaceRaw(rawDir, SimpleClean, "quran-simple-clean.txt", simpleBytes);
         Directory.CreateDirectory(sourcesDir);
-        foreach (string slug in new[] { Uthmani, SimpleClean, UstVeri, Kucuk, Tefsir, Ses, Sentetik })
+        foreach (string slug in new[] { Uthmani, SimpleClean, UstVeri, Kucuk, Tefsir, Ses, Sentetik, Qac, Wbw })
         {
             RegisterSource(sourcesDir, slug);
         }
@@ -109,6 +128,8 @@ internal static class EndToEndData
         await Exec(insertSource, ("slug", Tefsir), ("tur", "tefsir"), ("date", null), ("sha", null), ("notice", null));
         await Exec(insertSource, ("slug", Ses), ("tur", "ses"), ("date", null), ("sha", null), ("notice", null));
         await Exec(insertSource, ("slug", Sentetik), ("tur", "kitap"), ("date", null), ("sha", null), ("notice", null));
+        await Exec(insertSource, ("slug", Qac), ("tur", "morfoloji"), ("date", null), ("sha", null), ("notice", null));
+        await Exec(insertSource, ("slug", Wbw), ("tur", "kelime_anlami"), ("date", null), ("sha", null), ("notice", null));
 
         // --- Tanzil birimleri: her satir content_hash ile; ar_norm tanzil-simple-clean metninden (K-44 madde 2); hepsi onayli.
         Dictionary<(int, int), string> simpleText = simple.Verses.ToDictionary(v => (v.Sure, v.Ayet), v => v.Text);
@@ -229,9 +250,76 @@ internal static class EndToEndData
                 ("status", xref.Status));
         }
 
-        // --- Sozluk duzeltmeleri (P-09): biri onayli, biri aday.
+        // --- Sozluk (K-50): sentetik QAC kokleri, lemmalari ve kelime morfolojisi; hepsi uydurma harf dizisi ve etikettir (gercek kok ya da lemma degildir).
+        const string insertRoot =
+            """
+            INSERT INTO icerik.root (id, letters, occurrences, ayah_count, idf_q, source_id, data_version)
+            VALUES (@id, @letters, 3, 2, 0.5, @source, 'test')
+            """;
+        await Exec(insertRoot, ("id", 1), ("letters", SyntheticRoot1), ("source", Qac));
+        await Exec(insertRoot, ("id", 2), ("letters", SyntheticRoot2), ("source", Qac));
+        const string insertLemma =
+            """
+            INSERT INTO icerik.lemma (id, lang, text, text_clean, root_id, occurrences, qac_ref, origin, status, source_id, data_version)
+            VALUES (@id, 'ar', @text, @text, @root, 3, @ref, 'qac', 'onayli'::icerik.xref_status, @source, 'test')
+            """;
+        for (int lemma = 1; lemma <= 5; lemma++)
+        {
+            await Exec(
+                insertLemma,
+                ("id", lemma),
+                ("text", lemma % 2 == 0 ? SyntheticRoot2 : SyntheticRoot1),
+                ("root", lemma % 2 == 0 ? 2 : 1),
+                ("ref", string.Create(CultureInfo.InvariantCulture, $"deneme-{lemma}")),
+                ("source", Qac));
+        }
+
+        // QAC sutunlari (yalniz ilk iki ayetin kelimeleri): pos 'V' ve features sentetiktir; Tanzil sutunlarina dokunulmaz.
         await Exec(
-            "INSERT INTO icerik.quran_word_fix (anchor, field, new_value, reason, status) VALUES ('q:1:1:1', 'pos', 'N', 'deneme', 'onayli'::icerik.xref_status), ('q:1:1:2', 'pos', 'N', 'deneme', 'aday'::icerik.xref_status)");
+            """
+            UPDATE icerik.quran_word
+               SET root_id = 1, lemma_id = 1, pos = 'V', features = '{"deneme": "1"}'::jsonb, morph_source = @source
+             WHERE ayah_index IN (1, 2)
+            """,
+            ("source", Qac));
+
+        // --- Anlamlar (K-50 madde 5 ve 8): onayli, iki aday ve bir red; content_hash anlam_kisa'dan.
+        const string insertGloss =
+            """
+            INSERT INTO icerik.lemma_gloss (lemma_id, anlam_kisa, origin, version, content_hash, status)
+            VALUES (@id, @anlam, @origin, '1', @hash, @status::icerik.xref_status)
+            """;
+        (int Lemma, string Status, string Origin)[] glosses =
+        [
+            (LemmaApproved, "onayli", "editor"),
+            (LemmaCandidate1, "aday", "kaynak:quranwbw-tr"),
+            (LemmaCandidate2, "aday", "kaynak:quranwbw-tr"),
+            (LemmaRejected, "red", "kaynak:quranwbw-tr"),
+        ];
+        foreach ((int lemma, string status, string origin) in glosses)
+        {
+            string anlam = string.Create(CultureInfo.InvariantCulture, $"Deneme anlam {lemma}");
+            await Exec(insertGloss, ("id", lemma), ("anlam", anlam), ("origin", origin), ("hash", Hash(anlam)), ("status", status));
+        }
+
+        // --- Sozluk duzeltmeleri (P-09): iki onayli (biri pos, biri root_id), bir aday, bir red.
+        await Exec(
+            """
+            INSERT INTO icerik.quran_word_fix (id, anchor, field, new_value, reason, status) VALUES
+              (@i1, @a1, 'pos', 'N', 'deneme', 'onayli'::icerik.xref_status),
+              (@i2, @a2, 'root_id', '2', 'deneme', 'onayli'::icerik.xref_status),
+              (@i3, @a3, 'pos', 'N', 'deneme', 'aday'::icerik.xref_status),
+              (@i4, @a4, 'pos', 'N', 'deneme', 'red'::icerik.xref_status)
+            """,
+            // Kimlikler sabit: kaynak ozeti quran_word_fix satirlarini kimlikle ozetler, ayni veri her veritabaninda ayni ozeti vermeli.
+            ("i1", FixId(1)),
+            ("i2", FixId(2)),
+            ("i3", FixId(3)),
+            ("i4", FixId(4)),
+            ("a1", FixApprovedPos),
+            ("a2", FixApprovedRoot),
+            ("a3", FixCandidate),
+            ("a4", FixRejected));
 
         return new SeededContent(
             xrefs.ToDictionary(x => x.Name, x => x, StringComparer.Ordinal),
@@ -243,6 +331,8 @@ internal static class EndToEndData
 
     public static void RegisterSource(string sourcesDir, string slug) =>
         File.WriteAllText(Path.Combine(sourcesDir, slug + ".toml"), "slug = \"" + slug + "\"\n");
+
+    private static Guid FixId(int n) => Guid.Parse(string.Create(CultureInfo.InvariantCulture, $"00000000-0000-7000-8001-{n:D12}"));
 
     private static Guid XrefId(int n) => Guid.Parse(string.Create(CultureInfo.InvariantCulture, $"00000000-0000-7000-8000-{n:D12}"));
 

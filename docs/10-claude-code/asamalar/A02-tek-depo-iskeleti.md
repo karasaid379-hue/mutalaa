@@ -1,6 +1,6 @@
 # A02 · Tek depo iskeleti (pnpm + Turborepo, .NET çözümü, uv)
 
-> **Sürüm:** 1.3 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-34](../../00-ozet/02-karar-defteri.md#k-34--typescript-tek-sürüm-60x) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)
+> **Sürüm:** 1.4 · **Tarih:** 12 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-09](../../00-ozet/02-karar-defteri.md#k-09--mobil-teknoloji) · [K-10](../../00-ozet/02-karar-defteri.md#k-10--arka-uç) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-32](../../00-ozet/02-karar-defteri.md#k-32--pnpm-kurulumu-sürüm-sabitleme-ve-düzen) · [K-33](../../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-34](../../00-ozet/02-karar-defteri.md#k-34--typescript-tek-sürüm-60x) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-50](../../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü)
 > **Faz:** 0 · Hazırlık · **Önkoşul:** [A00](./A00-ortam-ve-depo.md) · **İnsan adımı:** —
 > **Ajanlar:** `web-gelistirici` · `sunucu-gelistirici` · `hat-gelistirici` · `arastirmaci` · `inceleyici` · **Beceriler:** `windows-sorun` · **Tahmini oturum:** 2–3
 > **Başlat:** `/asama A02`
@@ -74,7 +74,7 @@
 ### A02.5 · Python içerik hattı (`hat-gelistirici`)
 - `pipeline/pyproject.toml` İçerik hattı §3'teki gibi: ad, `requires-python = ">=3.13,<3.14"`, bağımlılıklar, `arapca`, `turkce`, `gomme` grupları, `mutalaa = "mutalaa_pipeline.cli:app"`, hatchling. Geliştirme araçları: `uv add --dev pytest ruff mypy`. Ruff ayarı Proje yapısı §5'teki gibi (`py313`, `line-length = 100`, kural seçimi, `line-ending = "lf"`).
 - `uv python pin 3.13`, `uv lock`, `uv sync`. Python 3.13 yoksa `uv python install 3.13` çalışır.
-- `pipeline/mutalaa.toml` İçerik hattı §3'teki gibi; `[llm] model` yer tutucu kalır (model kimliği Doğrulanacak; ilk yapay zekâ işinde doğrulanır).
+- `pipeline/mutalaa.toml` İçerik hattı §3'teki gibi; `[llm] model` yer tutucu kalır (model kimliği Doğrulanacak; S-16'da doğrulanır).
 - `src/mutalaa_pipeline/cli.py` (Typer uygulaması `app`) ve alt paketler `ingest`, `normalize`, `anchor`, `enrich`, `qa`, `export` (`__init__.py`). Yardımcı modüller (`config.py`, `runctx.py` …) onları kullanan aşamada eklenir. `sources/` ve `prompts/` klasörleri (boşken `.gitkeep` ile).
 - Yer tutucu test: `pipeline/tests/test_cli.py`, `mutalaa --help` çıkış kodu 0.
 - **Bitti sayılır:** `uv run pytest`, `uv run ruff check .`, `uv run ruff format --check .` ve `uv run mypy src` yeşil; `uv run mutalaa --help` çalışıyor.

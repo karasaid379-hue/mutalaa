@@ -1,7 +1,7 @@
 # İktibas ve Atıf Tespiti
 
-> **Sürüm:** 1.2 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Sürüm:** 1.3 · **Tarih:** 12 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü)
 
 Bu dosya Risale-i Nur ve tefsir metinlerindeki âyet iktibaslarının ve açık atıfların bulunmasını tanımlar. Çıktı `xref` tablosuna `type = 'atif'` ve `type = 'iktibas'` satırlarıdır ([bağlantı modeli](./01-baglanti-modeli.md)). İş Python 3.13 içerik hattında, `pipeline/enrich/` altında, çevrimdışı çalışır (K-12). Her satır editör panelinde onaylanmadan mağazaya çıkmaz (K-13). Metni verilmeden yapılan imalar sözlüksel tespitle bulunamaz; onları editör `ima` olarak girer.
 
@@ -19,7 +19,7 @@ flowchart LR
   W --> K["Kalıp ve kısa ifade kuralları"]
   R --> B["Bağlam sinyalleri"]
   K --> B
-  B --> L["İsteğe bağlı dil modeli doğrulaması"]
+  B --> L["İsteğe bağlı dil modeli doğrulaması (S-16)"]
   L --> Q["xref aday + editör kuyruğu"]
 ```
 
@@ -175,6 +175,8 @@ Kalıp listesi `pipeline/enrich/` altında editör onaylı bir dosyadır; girdil
 İpucu listeleri adaydır ve altın sette ölçülür. İlk ölçümden sonra elle verilen etkiler bir lojistik regresyonla değişir: özellikler n, kapsama, kimlik, log f ve sinyallerdir; çıktı kalibre `confidence` olur. Risale'de âyetlerin başlık olarak kullanılması bilinen bir özelliktir ([RİNAP](https://rinap.uskudar.edu.tr/uploads/site/6/content/files/risale-i-nurun-tefsirdeki-yeri-compressed.pdf)).
 
 ## 9. İsteğe bağlı dil modeli doğrulaması
+
+> **S-16'ya kadar kullanılmaz.** Yapay zekâ işleri proje sonuna ertelendi ([K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü) madde 1; [Sonra yapılacaklar](../08-yol-haritasi/02-sonra-yapilacaklar.md) S-16); A18.4 (gri bölge doğrulaması) bu ertelemeye girer. Bu bölüm S-16 için korunur. Gri bölgedeki adaylar S-16'ya kadar dil modelsiz kalır ve editör kuyruğuna düşer.
 
 NeurIPS 2025'te sunulan karma yaklaşımda bir dil modeli kasıtlı referansları işaretler, kurallar doğrular. Hedef, kasıtlı referansı tesadüfi sözcük örtüşmesinden ayırmaktır ([NeurIPS 2025](https://neurips.cc/virtual/2025/133031)). Burada model yalnız gri bölgede çalışır: `0,40 ≤ confidence < 0,80` adaylar ve sinyalli kısa diziler.
 

@@ -1,7 +1,7 @@
 # Fazlar
 
-> **Sürüm:** 1.6 · **Tarih:** 12 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
+> **Sürüm:** 1.7 · **Tarih:** 12 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-15](../00-ozet/02-karar-defteri.md#k-15--hesap-ve-senkron-v1xte) · [K-30](../00-ozet/02-karar-defteri.md#k-30--eski-plandan-çıkarılanlar) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi) · [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü)
 
 Claude Code ile yürütmek için fazlar A00–A40 aşamalarına bölündü: [Aşama haritası](../10-claude-code/04-asama-haritasi.md) ([K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code)).
 
@@ -75,7 +75,7 @@ flowchart LR
 **İşler**
 - Tanzil Uthmani ve Simple Clean alımı; değişmezlik testleri.
 - Elmalılı mealleri (A16, K-49): orijinal (`meal:elmalili`) ve sadeleştirilmiş (`meal:elmalili-sade`, arayüzde "sadeleştirilmiş" etiketli) meal hazır metinle alınır, `taslak` girer ve iki düzeltme turundan geçer ([Elmalılı hazırlığı](../04-icerik/03-elmalili-hazirligi.md)). Özgün baskıyla karşılaştırma S-15'tedir.
-- `quran_word`: QAC'den türeyen kök ve lemma (`qac-morfoloji`) ayrı ve isteğe bağlı `kelime-kok` paketindedir ve bütün derlemelerde yer alır ([Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)); Türkçe lemma anlamları için önce hazır Türkçe kelime anlamı kaynağı aranır, bulunamazsa yapay zekâ taslağı ve insan onayı kullanılır ([K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları)).
+- `quran_word`: QAC'den türeyen kök ve lemma (`qac-morfoloji`) ayrı ve isteğe bağlı `kelime-kok` paketindedir ve bütün derlemelerde yer alır ([Kök ve lemma](../05-capraz-referans/03-kok-ve-lemma.md)); Türkçe lemma anlamları için hazır kaynak (QuranWBW) her lemmaya aday verir ve editör düzeltip onaylar; yapay zekâ taslağı v1'de yoktur, [S-16](../08-yol-haritasi/02-sonra-yapilacaklar.md#s-16--yapay-zekâ-ile-taslak-üretimi-kelime-anlamı-türkçe-lemma--kök-gri-bölge-doğrulaması-lügat-kök-anlamı)'dadır ([K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları), [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü)).
 - `page_map` (Medine 604 sayfa); Mushaf A için cüz başına QPC font paketleri (yazı tipleri ve düzen verisi GitHub ya da QUL'dan alınır).
 - `xref`: âyet ↔ meal, Kur'an içi kök ve lemma, benzer âyet.
 - Arama: `search_text`, FTS5, önek indeksi, trigram tablosu ([Arama](../03-veri/05-arama-fts5.md)).

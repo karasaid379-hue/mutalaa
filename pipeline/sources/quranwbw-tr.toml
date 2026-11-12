@@ -1,0 +1,11 @@
+# A17.0 (2026-11-12) · kaynak: docs/10-claude-code/asamalar/A17-kelime-katmani.md Tedarik · karar: K-19, K-50
+slug = "quranwbw-tr"
+tur = "kelime_anlami"
+baslik = "QuranWBW Türkçe kelime kelime anlamları (çeviri kimliği 6)"
+surum = "v4-version-1"
+provider = "quranwbw"
+kaynak_url = "https://static.quranwbw.com/data/v4/words-data/translations/6.json?version=1"
+atif_metni = "Kelime kelime Türkçe anlam: QuranWBW (quranwbw.com)."
+atif_url = "https://quranwbw.com/"
+notlar = '''
+Aşama: A17. Biçim: sure → âyet → [[kelime anlamları]] (JSON). Adres örüntüsü marwan/quranwbw deposundan (commit 078e978e66ac7258d2d17f997095915d4b7a7223); uygulama çevirmen adı vermiyor, atıf kaynağın adıyla yazılır. Hazır anlam onay görene kadar doğrulanmamış adaydır (K-50 madde 5). Dosya özeti data/gelen/quranwbw-tr/<tarih>/SHA256SUMS içindedir.'''

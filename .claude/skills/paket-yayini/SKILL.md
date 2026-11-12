@@ -23,7 +23,7 @@ Görünürlük editoryal kaliteye bağlıdır. Süzme kaynak ve birim düzeyinde
 | İçerik | `dev` (ekip) | `internal` (davetli test) | `public` (mağaza) |
 |---|---|---|---|
 | Onaylı birim, onaylı bağlantı | var | var | var |
-| Onaysız birim, onaysız yapay zekâ taslağı | "doğrulanmamış" rozetiyle | "doğrulanmamış" rozetiyle | yok |
+| Onaysız birim, onaysız yapay zekâ taslağı, onaysız kelime anlamı (hazır kaynak adayı) | "doğrulanmamış" rozetiyle | "doğrulanmamış" rozetiyle | yok |
 | Aday bağlantı (onay isteyen tür) | var | var | yok |
 | `red` bağlantı | yok | yok | yok |
 | `test-` önekli kaynak | var | yalnız uçtan uca fikstürler (`test-kucuk`, `test-ses`) | yok |
@@ -37,7 +37,7 @@ Manifest her derleme türünde imzalıdır (Manifest bölümü).
 | P-01 | Kaynak kaydı olmayan içerik hiçbir pakete girmez | Hepsi |
 | P-07 | Bağlantı: kaynak eser görünür; hedef eser görünür ya da ayrı kayıtlı bir dizine ait; `red` hiç girmez; insan onayı isteyen türün (`atif`, `iktibas`, `ima`, `konu`) `aday` satırı yalnız `dev` ve `internal`'a girer, otomatik türler (`kok`, `lemma`, `benzer_ayet`, `anlamsal`) `confidence ≥ 0,50` ile her derlemeye girer; uç birimler derlemenin kapsamında olmalı (`uc-birim-girmedi`, K-47) | Hepsi |
 | P-08 | Onaysız yapay zekâ taslağı `public`'e girmez; iç derlemelere "doğrulanmamış" işaretiyle girer | public |
-| P-09 | `quran_word_fix`, `tr_root_index` ve `tr_form` satırlarından yalnız onaylılar uygulanır | Hepsi |
+| P-09 | `quran_word_fix`, `tr_root_index` ve `tr_form` satırlarından yalnız onaylılar uygulanır; `lemma_gloss` `onayli` ile her derlemeye, `aday` ile yalnız `dev` ve `internal`'a girer, `red` hiçbirine ([K-50](../../../docs/00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü) madde 8) | Hepsi |
 | P-10 | Yalnız `metin_durumu = onayli` birimler `public`'e girer | public |
 | P-11 | Tanzil birimlerinin `content_hash` değeri ham dosyadan yeniden hesaplananla aynı; her kaynağın `atif_metni` ve `atif_url` değeri pakete aynen yazılır | Hepsi |
 | P-12 | Slug'ı `test-` ile başlayan kaynak `public`'e girmez; `internal`'a yalnız uçtan uca fikstürler (`test-kucuk`, `test-ses`) girer | public, internal |

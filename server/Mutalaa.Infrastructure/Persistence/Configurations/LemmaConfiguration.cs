@@ -18,6 +18,7 @@ internal sealed class LemmaConfiguration : IEntityTypeConfiguration<Lemma>
         b.References<Lemma, Root>(x => x.RootId);
         b.References<Lemma, Lemma>(x => x.ArLemmaId);
         b.References<Lemma, Source>(x => x.SourceId);
+        b.HasIndex(x => x.QacRef).IsUnique().HasFilter("lang = 'ar'").HasDatabaseName("lemma_qac_ref_key");
         b.UseXmin();
     }
 }

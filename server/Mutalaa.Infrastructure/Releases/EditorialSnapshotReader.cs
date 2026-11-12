@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Mutalaa.Domain.Releases;
 using Mutalaa.Domain.Releases.Gate;
+using Mutalaa.Infrastructure.Packs;
 using Npgsql;
 
 namespace Mutalaa.Infrastructure.Releases;
@@ -56,6 +57,10 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
         List<XrefRow> xrefs = await ToListAsync(ReadXrefsAsync(cancellationToken), cancellationToken);
         IReadOnlySet<Guid> reviews = await ReadOpenReviewXrefIdsAsync(cancellationToken);
         IReadOnlyList<LexicalRow> lexicals = await ReadLexicalsAsync(cancellationToken);
+        IReadOnlyList<RootRow> roots = await ReadRootsAsync(cancellationToken);
+        IReadOnlyList<LemmaRow> lemmas = await ReadLemmasAsync(cancellationToken);
+        IReadOnlyList<LemmaGlossRow> glosses = await ReadLemmaGlossesAsync(cancellationToken);
+        IReadOnlyList<QuranWordFixRow> fixes = await ReadWordFixesAsync(cancellationToken);
         PreviousReleaseRow? previous = await ReadPreviousReleaseAsync(flavor, cancellationToken);
 
         return new EditorialSnapshot
@@ -68,6 +73,10 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
             Xrefs = xrefs,
             OpenReviewXrefIds = reviews,
             Lexicals = lexicals,
+            Roots = roots,
+            Lemmas = lemmas,
+            LemmaGlosses = glosses,
+            WordFixes = fixes,
             PreviousRelease = previous,
         };
     }
@@ -161,16 +170,25 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
         }
     }
 
-    /// <summary>Kelimeler capa bayt sirasiyla akar.</summary>
+    /// <summary>
+    /// Kelimeler capa bayt sirasiyla akar. QAC sutunlari (root_id, lemma_id, pos, features, morph_source) yalniz morph_source
+    /// <see cref="PackCatalog.LexiconSourceSlugs"/> icindeyse okunur; baska satirda bostur (K-50 madde 3).
+    /// </summary>
     public async IAsyncEnumerable<QuranWordRow> ReadQuranWordsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {
         const string sql = $"""
-            SELECT anchor, surah::int, ayah::int, word::int, ayah_index::int, text_uthmani, norm, char_start, char_end, source_id
+            SELECT anchor, surah::int, ayah::int, word::int, ayah_index::int, text_uthmani, norm, char_start, char_end, source_id,
+                   CASE WHEN morph_source = ANY(@lex) THEN root_id END,
+                   CASE WHEN morph_source = ANY(@lex) THEN lemma_id END,
+                   CASE WHEN morph_source = ANY(@lex) THEN pos END,
+                   CASE WHEN morph_source = ANY(@lex) THEN features::text END,
+                   CASE WHEN morph_source = ANY(@lex) THEN morph_source END
             FROM {Schema}.quran_word
             ORDER BY anchor COLLATE "C"
             """;
 
         await using NpgsqlCommand command = new(sql, _connection);
+        command.Parameters.AddWithValue("lex", PackCatalog.LexiconSourceSlugs.ToArray());
         await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))
         {
@@ -184,8 +202,120 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
                 reader.GetString(6),
                 reader.GetInt32(7),
                 reader.GetInt32(8),
-                reader.GetString(9));
+                reader.GetString(9),
+                Int(reader, 10),
+                Int(reader, 11),
+                Str(reader, 12),
+                Str(reader, 13),
+                Str(reader, 14));
         }
+    }
+
+    /// <summary>QAC kokleri (source_id sozluk kaynagi; id sirali). Tablo bossa satir uretmez.</summary>
+    public async Task<IReadOnlyList<RootRow>> ReadRootsAsync(CancellationToken cancellationToken)
+    {
+        const string sql = $"""
+            SELECT id, letters, occurrences, ayah_count, idf_q, kok_anlami, source_id
+            FROM {Schema}.root
+            WHERE source_id = ANY(@lex)
+            ORDER BY id
+            """;
+
+        List<RootRow> rows = [];
+        await using NpgsqlCommand command = new(sql, _connection);
+        command.Parameters.AddWithValue("lex", PackCatalog.LexiconSourceSlugs.ToArray());
+        await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            rows.Add(new RootRow(
+                reader.GetInt32(0),
+                reader.GetString(1),
+                reader.GetInt32(2),
+                reader.GetInt32(3),
+                reader.IsDBNull(4) ? null : reader.GetFloat(4),
+                Str(reader, 5),
+                reader.GetString(6)));
+        }
+
+        return rows;
+    }
+
+    /// <summary>Arapca lemmalar (lang = 'ar', source_id sozluk kaynagi; id sirali). Tablo bossa satir uretmez.</summary>
+    public async Task<IReadOnlyList<LemmaRow>> ReadLemmasAsync(CancellationToken cancellationToken)
+    {
+        const string sql = $"""
+            SELECT id, text, text_clean, root_id, occurrences, ar_lemma_id, etymological_only, status::text, source_id
+            FROM {Schema}.lemma
+            WHERE lang = 'ar' AND source_id = ANY(@lex)
+            ORDER BY id
+            """;
+
+        List<LemmaRow> rows = [];
+        await using NpgsqlCommand command = new(sql, _connection);
+        command.Parameters.AddWithValue("lex", PackCatalog.LexiconSourceSlugs.ToArray());
+        await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            rows.Add(new LemmaRow(
+                reader.GetInt32(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                Int(reader, 3),
+                reader.GetInt32(4),
+                Int(reader, 5),
+                reader.GetBoolean(6),
+                reader.GetString(7),
+                reader.GetString(8)));
+        }
+
+        return rows;
+    }
+
+    /// <summary>Arapca sozluk lemmalarina bagli anlamlar (butun durumlar; lemma_id sirali). Tablo bossa satir uretmez.</summary>
+    public async Task<IReadOnlyList<LemmaGlossRow>> ReadLemmaGlossesAsync(CancellationToken cancellationToken)
+    {
+        const string sql = $"""
+            SELECT g.lemma_id, g.anlam_kisa, g.kuran_anlamlari::text, g.turkce_es_kelime, g.yalnizca_etimolojik, g.status::text, g.origin, g.version
+            FROM {Schema}.lemma_gloss g
+            JOIN {Schema}.lemma l ON l.id = g.lemma_id
+            WHERE l.lang = 'ar' AND l.source_id = ANY(@lex)
+            ORDER BY g.lemma_id
+            """;
+
+        List<LemmaGlossRow> rows = [];
+        await using NpgsqlCommand command = new(sql, _connection);
+        command.Parameters.AddWithValue("lex", PackCatalog.LexiconSourceSlugs.ToArray());
+        await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            rows.Add(new LemmaGlossRow(
+                reader.GetInt32(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                Str(reader, 3),
+                reader.GetBoolean(4),
+                reader.GetString(5),
+                reader.GetString(6),
+                reader.GetString(7)));
+        }
+
+        return rows;
+    }
+
+    /// <summary>quran_word_fix satirlari (butun durumlar; id sirali). Tablo bossa satir uretmez.</summary>
+    public async Task<IReadOnlyList<QuranWordFixRow>> ReadWordFixesAsync(CancellationToken cancellationToken)
+    {
+        const string sql = $"SELECT id, anchor, field, new_value, status::text FROM {Schema}.quran_word_fix ORDER BY id";
+
+        List<QuranWordFixRow> rows = [];
+        await using NpgsqlCommand command = new(sql, _connection);
+        await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            rows.Add(new QuranWordFixRow(reader.GetGuid(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4)));
+        }
+
+        return rows;
     }
 
     public async Task<IReadOnlyList<QuranMarkerRow>> ReadQuranMarkersAsync(CancellationToken cancellationToken)

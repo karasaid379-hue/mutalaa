@@ -49,7 +49,10 @@ public sealed record UnitRow(
     string? ArNorm,
     bool IsAiDraft);
 
-/// <summary>quran_word satiri (Tanzil kelime bolmesi; QAC sutunlari paket core'unda yoktur, okunmaz).</summary>
+/// <summary>
+/// quran_word satiri (Tanzil kelime bolmesi). RootId, LemmaId, Pos, Features (jsonb metni) ve MorphSource QAC sutunlaridir (K-50 madde 3); yalniz
+/// morph_source sozluk kaynaklarindan biriyse (PackCatalog.LexiconSourceSlugs) okunur, aksi halde bostur. core paketi bu sutunlari kullanmaz.
+/// </summary>
 public sealed record QuranWordRow(
     string Anchor,
     int Surah,
@@ -60,7 +63,41 @@ public sealed record QuranWordRow(
     string Norm,
     int CharStart,
     int CharEnd,
+    string SourceId,
+    int? RootId = null,
+    int? LemmaId = null,
+    string? Pos = null,
+    string? Features = null,
+    string? MorphSource = null);
+
+/// <summary>root satiri (QAC koku; durum ve koken sutunu yoktur, K-50 madde 4). IdfQ real (float) sutundur.</summary>
+public sealed record RootRow(int Id, string Letters, int Occurrences, int AyahCount, float? IdfQ, string? KokAnlami, string SourceId);
+
+/// <summary>lemma satiri (lang = 'ar' okunur). Status onayli/aday/red metnidir; pakete yalniz onayli girer.</summary>
+public sealed record LemmaRow(
+    int Id,
+    string Text,
+    string TextClean,
+    int? RootId,
+    int Occurrences,
+    int? ArLemmaId,
+    bool EtymologicalOnly,
+    string Status,
     string SourceId);
+
+/// <summary>lemma_gloss satiri (Arapca lemmaya bagli, sozluk kaynakli). KuranAnlamlari jsonb metnidir.</summary>
+public sealed record LemmaGlossRow(
+    int LemmaId,
+    string AnlamKisa,
+    string KuranAnlamlari,
+    string? TurkceEsKelime,
+    bool YalnizcaEtimolojik,
+    string Status,
+    string Origin,
+    string Version);
+
+/// <summary>quran_word_fix satiri (K-50 madde 4 ve 6): Field root_id, lemma_id, pos ya da features; NewValue metindir (alan turune cevrilir).</summary>
+public sealed record QuranWordFixRow(Guid Id, string Anchor, string Field, string NewValue, string Status);
 
 /// <summary>quran_marker satiri.</summary>
 public sealed record QuranMarkerRow(string Kind, int No, string Anchor, string? SecdeTuru, string SourceId);
@@ -128,6 +165,18 @@ public sealed class EditorialSnapshot
     public IReadOnlySet<Guid> OpenReviewXrefIds { get; init; } = new HashSet<Guid>();
 
     public IReadOnlyList<LexicalRow> Lexicals { get; init; } = [];
+
+    /// <summary>QAC kokleri (yalniz sozluk kaynaklari; kelime-kok paketi).</summary>
+    public IReadOnlyList<RootRow> Roots { get; init; } = [];
+
+    /// <summary>Arapca lemmalar (lang = 'ar'; yalniz sozluk kaynaklari).</summary>
+    public IReadOnlyList<LemmaRow> Lemmas { get; init; } = [];
+
+    /// <summary>Arapca sozluk lemmalarina bagli kelime anlamlari (butun durumlar; kapi derleme turune gore secer).</summary>
+    public IReadOnlyList<LemmaGlossRow> LemmaGlosses { get; init; } = [];
+
+    /// <summary>Butun quran_word_fix satirlari (durum ne olursa olsun; kapi yalniz onayliyi uygular).</summary>
+    public IReadOnlyList<QuranWordFixRow> WordFixes { get; init; } = [];
 
     /// <summary>Istenen derleme turunun en son yayinlandi yayini; yoksa null.</summary>
     public PreviousReleaseRow? PreviousRelease { get; init; }

@@ -42,6 +42,14 @@ public class ReviewStatusDecisionTests
 
     private static ReviewTargetState Candidate => ReviewTargetState.ForStatus(XrefStatus.Aday);
 
+    /// <summary>Hedef tablosuna uygun aday durumu: quran_word_fix alani review.alan ile ayni, lemma_gloss satiri dolu.</summary>
+    private static ReviewTargetState CandidateFor(string table, string alan) => table switch
+    {
+        "quran_word_fix" => ReviewTargetState.ForFix(XrefStatus.Aday, alan),
+        "lemma_gloss" => ReviewTargetState.ForGloss(XrefStatus.Aday, new GlossReviewState("deneme anlami", "1", "kaynak:quranwbw-tr")),
+        _ => Candidate,
+    };
+
     [Fact]
     public void IsSupported_lists_exactly_the_documented_pairs()
     {
@@ -64,7 +72,7 @@ public class ReviewStatusDecisionTests
         {
             Review review = StatusReview(table, alan);
 
-            ReviewOutcome outcome = ReviewDecisions.Approve(review, Request("test-editor-1", "Deneme gerekcesi"), Candidate);
+            ReviewOutcome outcome = ReviewDecisions.Approve(review, Request("test-editor-1", "Deneme gerekcesi"), CandidateFor(table, alan));
 
             Assert.Equal(ReviewStatus.Onaylandi, outcome.Durum);
             Assert.Equal("onayla", outcome.Eylem);
@@ -86,7 +94,7 @@ public class ReviewStatusDecisionTests
         {
             Review review = StatusReview(table, alan);
 
-            ReviewOutcome outcome = ReviewDecisions.Reject(review, Request(), Candidate);
+            ReviewOutcome outcome = ReviewDecisions.Reject(review, Request(), CandidateFor(table, alan));
 
             Assert.Equal(ReviewStatus.Reddedildi, outcome.Durum);
             Assert.Equal("reddet", outcome.Eylem);

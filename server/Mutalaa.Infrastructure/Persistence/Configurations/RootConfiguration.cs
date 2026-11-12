@@ -15,6 +15,7 @@ internal sealed class RootConfiguration : IEntityTypeConfiguration<Root>
         b.Property(x => x.AyahCount).HasAlwaysWrittenDefault(0);
         b.References<Root, Source>(x => x.SourceId);
         b.HasIndex(x => x.Letters).IsUnique().HasDatabaseName("root_letters_key");
+        b.HasIndex(x => x.LettersBw).IsUnique().HasDatabaseName("root_letters_bw_key");
         b.UseXmin();
     }
 }

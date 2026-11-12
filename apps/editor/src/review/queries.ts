@@ -22,13 +22,19 @@ export const SESSION_QUERY_OPTIONS = {
   refetchOnWindowFocus: true,
 } as const;
 
+/** Order of a queue list (`sira`): `dalga` is the word wave order, only for `lemma` and `lemma_gloss` targets. */
+export type QueueOrder = 'olusturma' | 'dalga';
+
 export interface QueueFilter {
   hedef_tablo: string;
-  alan: string;
+  /** Field of the review; optional (a queue of every field of the target, e.g. `quran_word_fix`). */
+  alan?: string;
   /** Source slug of the unit (`unit` targets only), e.g. `elmalili-meal`. */
   kaynak?: string;
   /** Approval stage: `ilk` (open, no reviewer yet) or `ikinci` (open, waiting for the second approval). */
   asama?: 'ilk' | 'ikinci';
+  /** List order; left out for the API default (`olusturma`). A change gives a new query, so the cursor starts over. */
+  sira?: QueueOrder;
 }
 
 /** Init of the queue list: open records of one target and field, optionally of one source and stage. */
@@ -37,10 +43,11 @@ export function reviewListInit(filter: QueueFilter, limit: number = QUEUE_PAGE_S
     params: {
       query: {
         hedef_tablo: filter.hedef_tablo,
-        alan: filter.alan,
+        ...(filter.alan !== undefined ? { alan: filter.alan } : {}),
         durum: 'acik',
         ...(filter.kaynak !== undefined ? { kaynak: filter.kaynak } : {}),
         ...(filter.asama !== undefined ? { asama: filter.asama } : {}),
+        ...(filter.sira !== undefined ? { sira: filter.sira } : {}),
         limit,
       },
     },

@@ -7,11 +7,11 @@ gosterdigini sinar. Gercek meal metni yoktur.
 """
 
 import json
-import re
 from collections.abc import Callable
 from typing import Any
 
 import pytest
+from hat_yardimci import ansisiz
 from typer.testing import CliRunner
 
 from mutalaa_pipeline import cli, qa, sources
@@ -96,8 +96,7 @@ def test_cli_yalniz_kayitli_kaynaklari_alir() -> None:
         assert sonuc.exit_code == 2
     sonuc = runner.invoke(cli.app, ["ingest", "meal", "--help"])
     assert sonuc.exit_code == 0
-    # CI renkli cikti uretir (FORCE_COLOR): kacis dizileri secenek adini boler, once temizlenir.
-    assert "--kilit-oner" in re.sub(r"\x1b\[[0-9;]*m", "", sonuc.stdout)
+    assert "--kilit-oner" in ansisiz(sonuc.stdout)
 
 
 def test_qa_yardim_metni_bes_kapiyi_soyler() -> None:

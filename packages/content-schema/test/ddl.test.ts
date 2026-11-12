@@ -161,6 +161,7 @@ const BEKLENEN_SUTUNLAR: Record<string, string[]> = {
     'turkce_es_kelime',
     'yalnizca_etimolojik',
     'status',
+    'origin',
   ],
   tr_form: ['key_wide', 'key_narrow', 'tr_lemma_id', 'freq'],
   unit_ref: ['rowid', 'anchor', 'pack_id', 'ord', 'label'],

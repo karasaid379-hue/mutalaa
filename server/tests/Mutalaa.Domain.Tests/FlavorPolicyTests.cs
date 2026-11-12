@@ -77,6 +77,15 @@ public class FlavorPolicyTests
     }
 
     [Fact]
+    public void Candidate_glosses_are_allowed_only_outside_public()
+    {
+        Assert.True(FlavorPolicy.AllowsCandidateGlosses(BuildFlavor.Dev));
+        Assert.True(FlavorPolicy.AllowsCandidateGlosses(BuildFlavor.Internal));
+        Assert.False(FlavorPolicy.AllowsCandidateGlosses(BuildFlavor.Public));
+        Assert.False(FlavorPolicy.AllowsCandidateGlosses((BuildFlavor)77));
+    }
+
+    [Fact]
     public void Release_request_constants_match_the_documented_values()
     {
         Assert.Equal(["yayin", "terfi", "geri_alma"], ReleaseRequests.All);

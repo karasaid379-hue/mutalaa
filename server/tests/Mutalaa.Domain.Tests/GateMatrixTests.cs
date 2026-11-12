@@ -64,6 +64,98 @@ public class GateMatrixTests
         }
     }
 
+    // ---- Sozluk (P-09, K-50 madde 8): derleme turu x tablo x durum ----
+
+    // tablo, durum, devIn, internalIn, publicIn, girmeyen hucrenin gerekcesi
+    public static TheoryData<LexicalKind, XrefStatus, bool, bool, bool, string> LexicalCells() => new()
+    {
+        { LexicalKind.LemmaGloss, XrefStatus.Onayli, true, true, true, GateReasons.Uygun },
+        { LexicalKind.LemmaGloss, XrefStatus.Aday, true, true, false, GateReasons.AdayPublic },
+        { LexicalKind.LemmaGloss, XrefStatus.Red, false, false, false, GateReasons.Red },
+        { LexicalKind.QuranWordFix, XrefStatus.Onayli, true, true, true, GateReasons.Uygun },
+        { LexicalKind.QuranWordFix, XrefStatus.Aday, false, false, false, GateReasons.OnaysizSatir },
+        { LexicalKind.QuranWordFix, XrefStatus.Red, false, false, false, GateReasons.OnaysizSatir },
+    };
+
+    [Theory]
+    [MemberData(nameof(LexicalCells))]
+    public void Lexical_matrix_under_invariant_culture(LexicalKind kind, XrefStatus status, bool dev, bool internalIn, bool publicIn, string reason) =>
+        CultureScope.Invariant(() => AssertLexicalCell(kind, status, dev, internalIn, publicIn, reason));
+
+    [Theory]
+    [MemberData(nameof(LexicalCells))]
+    public void Lexical_matrix_under_turkish_culture(LexicalKind kind, XrefStatus status, bool dev, bool internalIn, bool publicIn, string reason) =>
+        CultureScope.Turkish(() => AssertLexicalCell(kind, status, dev, internalIn, publicIn, reason));
+
+    private static void AssertLexicalCell(LexicalKind kind, XrefStatus status, bool dev, bool internalIn, bool publicIn, string reason)
+    {
+        (BuildFlavor Flavor, bool Expected)[] cells =
+        [
+            (BuildFlavor.Dev, dev),
+            (BuildFlavor.Internal, internalIn),
+            (BuildFlavor.Public, publicIn),
+            ((BuildFlavor)77, publicIn), // ayristirilamayan derleme turu public gibi davranir
+        ];
+
+        foreach ((BuildFlavor flavor, bool expected) in cells)
+        {
+            GateInput input = WithRegularSource(lexicals: [new GateLexical(kind, "1", status, false)]);
+
+            GateResult result = GateEvaluator.Evaluate(flavor, input);
+
+            string label = kind.ToLabel();
+            Assert.True(expected == result.IncludedLexicals.Contains(label + ":1"), $"{flavor} {label} {status.ToLabel()}: beklenen giris={expected}");
+            GateReportRow row = Single(result, GateSubjectKind.Sozluk);
+            Assert.Equal(label, row.Id);
+            Assert.Equal(expected ? GateDecision.Girdi : GateDecision.Girmedi, row.Decision);
+            Assert.Equal(expected ? null : GateRule.P09, row.Rule);
+            Assert.Equal(expected ? (status == XrefStatus.Aday ? GateReasons.Aday : GateReasons.Uygun) : reason, row.Reason);
+            Assert.False(result.Rejected);
+        }
+    }
+
+    [Fact]
+    public void Candidate_gloss_rows_report_the_candidate_count_in_inner_flavors_and_the_exclusion_count_in_public()
+    {
+        GateInput input = WithRegularSource(lexicals:
+        [
+            new GateLexical(LexicalKind.LemmaGloss, "1", XrefStatus.Aday, false),
+            new GateLexical(LexicalKind.LemmaGloss, "2", XrefStatus.Aday, false),
+            new GateLexical(LexicalKind.LemmaGloss, "3", XrefStatus.Onayli, false),
+        ]);
+
+        foreach (BuildFlavor inner in new[] { BuildFlavor.Dev, BuildFlavor.Internal })
+        {
+            GateResult result = GateEvaluator.Evaluate(inner, input);
+            Assert.Contains(result.Report.Rows, r => r.Kind == GateSubjectKind.Sozluk && r.Decision == GateDecision.Girdi && r.Reason == GateReasons.Aday && r.Count == 2);
+        }
+
+        GateResult publicResult = GateEvaluator.Evaluate(BuildFlavor.Public, input);
+        Assert.Contains(publicResult.Report.Rows, r => r.Kind == GateSubjectKind.Sozluk && r.Decision == GateDecision.Girmedi && r.Rule == GateRule.P09 && r.Reason == GateReasons.AdayPublic && r.Count == 2);
+        Assert.DoesNotContain(publicResult.Report.Rows, r => r.Kind == GateSubjectKind.Sozluk && r.Reason == GateReasons.Aday);
+    }
+
+    [Fact]
+    public void Approved_word_fix_that_cannot_be_applied_rejects_the_release_but_a_candidate_one_does_not()
+    {
+        GateInput input = WithRegularSource(lexicals:
+        [
+            new GateLexical(LexicalKind.QuranWordFix, "bozuk", XrefStatus.Onayli, false, ApplyDefect: "hedef-kimlik-yok"),
+            new GateLexical(LexicalKind.QuranWordFix, "aday-bozuk", XrefStatus.Aday, false, ApplyDefect: "hedef-kimlik-yok"),
+        ]);
+
+        foreach (BuildFlavor flavor in Enum.GetValues<BuildFlavor>())
+        {
+            GateResult result = GateEvaluator.Evaluate(flavor, input);
+
+            Assert.True(result.Rejected);
+            GateViolation violation = Assert.Single(result.Report.Violations);
+            Assert.Null(violation.Rule);
+            Assert.Equal("quran_word_fix:bozuk", violation.Subject);
+            Assert.Equal("duzeltme-uygulanamaz:hedef-kimlik-yok", violation.Reason);
+        }
+    }
+
     // ---- Baglanti: derleme turu x tur x durum x confidence ----
 
     // devIn, internalIn, publicIn: beklenen giris; girmeyen hucrede kural P-07'dir.

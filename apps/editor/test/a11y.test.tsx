@@ -12,6 +12,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ROUTE_PATHS, type RoutePath } from '@/app/routes';
 import { tr } from '@/i18n/tr';
 import { trc } from '@/i18n/tr-catalog';
+import { trLemma } from '@/i18n/tr-lemma';
 import { DecisionForm } from '@/review/decision-form';
 import { BaglantiQueue } from '@/screens/baglanti/baglanti-queue';
 import { ok, problem, useFakeApi } from './fake-api';
@@ -32,6 +33,16 @@ import {
   releasePage,
   source,
 } from './fixtures-catalog';
+import {
+  fixDetail,
+  fixItem,
+  glossDetail,
+  glossItem,
+  lemmaDetail,
+  lemmaHandlers,
+  lemmaInfo,
+  readyGlossDetail,
+} from './fixtures-lemma';
 import {
   ocrDetail,
   ocrHandlers,
@@ -423,6 +434,119 @@ describe('axe: login and 403 pages', () => {
     signedIn(fake);
     const { container } = renderApp(fake, '/yok-boyle-bir-sayfa');
     await screen.findByRole('heading', { level: 1, name: tr.ui.notFoundTitle });
+    expect(await violations(container)).toEqual([]);
+  });
+});
+
+describe('axe: the lemma queue (A17.7)', () => {
+  const fake = useFakeApi();
+
+  function setupLemma(route: string, detail = readyGlossDetail(1), info = lemmaInfo()) {
+    lemmaHandlers(fake, info);
+    // The detail handler comes after lemmaHandlers so it wins; signedIn comes first for its /reviews/stats answer.
+    fake.get('/api/v1/reviews/{id}', ok(detail));
+    fake.get('/api/v1/auth/me', ok(session()));
+    fake.get('/api/v1/reviews/stats', ok({ kuyruklar: [], toplam_acik: 0 }));
+    fake.get('/api/v1/reviews', (call) =>
+      ok(
+        page(
+          call.search.get('hedef_tablo') === 'quran_word_fix'
+            ? [fixItem(201)]
+            : [glossItem(1, { guven: 0.85 }), glossItem(2, { guven: 0.5 })],
+        ),
+      ),
+    );
+    return renderApp(fake, route);
+  }
+
+  it('the word meaning card with the lemma sections, the order control and the consistency marks', async () => {
+    const { container } = setupLemma('/kuyruk/lemma?kayit=1');
+    await screen.findByTestId('lemma-kwic');
+    await screen.findByTestId('lemma-distribution');
+    expect(screen.getByRole('radiogroup', { name: trLemma.order.label })).toBeInTheDocument();
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the card with null and empty lemma data ("Veri yok")', async () => {
+    const { container } = setupLemma(
+      '/kuyruk/lemma?kayit=1',
+      glossDetail(1),
+      lemmaInfo({ kok: null, tur_dagilimi: [], dalga: null, ayni_kok_anlamlari: [], kwic: [] }),
+    );
+    await screen.findByTestId('lemma-kwic');
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the decision form with the meaning field open and its client and server errors', async () => {
+    const { container, user } = setupLemma('/kuyruk/lemma?kayit=1');
+    await screen.findByTestId('lemma-kwic');
+    await user.click(await screen.findByRole('radio', { name: tr.review.approve }));
+    const field = screen.getByLabelText(trLemma.edit.label);
+    expect(await violations(container)).toEqual([]);
+    // Client error: an empty meaning.
+    fireEvent.change(field, { target: { value: '' } });
+    await user.type(screen.getByLabelText(tr.review.reason), 'Deneme gerekçe');
+    await user.click(screen.getByRole('button', { name: tr.review.submit }));
+    await screen.findByTestId('decision-summary');
+    expect(field).toHaveAttribute('aria-invalid', 'true');
+    expect(await violations(container)).toEqual([]);
+    // Server error: a 400 on the field.
+    fireEvent.change(field, { target: { value: 'Deneme yeni anlam' } });
+    fake.post(
+      '/api/v1/reviews/{id}/decision',
+      problem(400, 'dogrulama', { errors: { 'duzenlenen.anlam_kisa': ['x'] } }),
+    );
+    await user.click(screen.getByRole('button', { name: tr.review.submit }));
+    await waitFor(() =>
+      expect(screen.getByTestId('gloss-edit')).toHaveTextContent(trLemma.edit.serverInvalid),
+    );
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the lemma status card with its Arabic lemma and the lemma sections', async () => {
+    const { container } = setupLemma('/kuyruk/lemma?kayit=101', lemmaDetail(101));
+    await screen.findByTestId('lemma-kwic');
+    expect(screen.getByTestId('lemma-snapshot')).toHaveTextContent(trLemma.snapshot.langNames.ar);
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the ready candidate with an inconsistent mark and its distribution', async () => {
+    const { container } = setupLemma('/kuyruk/lemma?kayit=1', readyGlossDetail(1, {}, 0.5));
+    await screen.findByTestId('lemma-distribution');
+    expect(screen.getByTestId('lemma-consistency')).toHaveTextContent(trLemma.origin.inconsistent);
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the lemma card while it loads (aria-busy, skeleton) and when it failed (problem, retry)', async () => {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const { container } = setupLemma('/kuyruk/lemma?kayit=1');
+    fake.get('/api/v1/lemmas/{id}', async () => {
+      await gate;
+      return problem(500, 'sunucu-hatasi');
+    });
+    await screen.findByTestId('lemma-info-loading');
+    expect(await violations(container)).toEqual([]);
+    release();
+    await screen.findByText(trLemma.info.failed);
+    expect(screen.getByRole('button', { name: tr.ui.retry })).toBeInTheDocument();
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the card of a review without a lemma id (note instead of the sections)', async () => {
+    const { container } = setupLemma(
+      '/kuyruk/lemma?kayit=1',
+      glossDetail(1, { hedef: null, hedef_anahtar: 'bozuk' }),
+    );
+    await screen.findByText(trLemma.info.noId);
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the correction tab and its card', async () => {
+    const { container } = setupLemma('/kuyruk/lemma?kayit=201', fixDetail(201));
+    await screen.findByTestId('fix-card');
     expect(await violations(container)).toEqual([]);
   });
 });

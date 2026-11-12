@@ -1,6 +1,6 @@
 # A25 · Seçim, kelime kartı, Bağlantılar paneli, geri dönüş
 
-> **Sürüm:** 1.1 · **Tarih:** 1 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-29](../../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler)
+> **Sürüm:** 1.2 · **Tarih:** 12 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-27](../../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-19](../../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları) · [K-29](../../00-ozet/02-karar-defteri.md#k-29--mobil-arayüz-kitaplıkları) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-50](../../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü)
 > **Faz:** 2 · Mobil v1 (iç test) · **Önkoşul:** [A24](./A24-okuyucu-mushaf-c.md) · **İnsan adımı:** —
 > **Ajanlar:** `mobil-gelistirici` · `test-yazari` · `arayuz-denetcisi` · `arastirmaci` · `inceleyici` · **Beceriler:** `mobil-ekran` · `capa-gramer` · **Tahmini oturum:** 3–4
 > **Başlat:** `/asama A25`
@@ -69,11 +69,11 @@ Kendimiz yapacağımız işler: seçim modeli ve çapaya çeviri (`packages/read
 ### A25.3 · Kelime kartı
 - `WordCard` tek `SheetHost` içinde %40'ta açılır; okuyucu, kelime kartın üstünde kalacak biçimde kayar. Satırlar Okuma deneyimi §7'deki gibidir: Arapça kelime (`quran_word.text_uthmani`) ve "Bakara 255 · 3. kelime" biçiminde konum; Türkçe anlam; kök harfleri ve "Bu kök Kur'an'da N yerde geçer"; lemma ve kısa morfoloji. Kelime sesi satırı gizlidir (Açık soru).
 - Sure adı gösteren her etiket (kelime kartındaki konum, kırıntı izi, `BackChip`) adı `core`'daki `sure` tablosundan alır. Tablo boşsa (sure adları A11.3'te `core`'a girer; A24 onları beklemeden ilerler) sayısal biçim kullanılır: "2:255 · 3. kelime", "↩ Okuduğun yere dön (2:255)". Ad elle yazılmaz.
-- Anlam, kök ve lemma `kelime-kok` paketinden okunur (İçerik paketleri §3.3). Paket bağlı değilse bu satırlar ve "Kökü incele" boşluk bırakmadan gizlenir, uyarı gösterilmez. Paket var ama anlam onaysızsa "Anlam henüz onaylanmadı"; `dev` ve `internal`'da taslak `UnverifiedBadge` ("doğrulanmamış") ile görünür (K-25, K-42).
+- Anlam, kök ve lemma `kelime-kok` paketinden okunur (İçerik paketleri §3.3). Paket bağlı değilse bu satırlar ve "Kökü incele" boşluk bırakmadan gizlenir, uyarı gösterilmez. Paket var ama anlam onaysızsa "Anlam henüz onaylanmadı"; `dev` ve `internal`'da onaysız (`aday`) anlam, durumdan türeyen `UnverifiedBadge` ("doğrulanmamış") ile görünür ([K-50](../../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü) madde 8; K-25, K-42).
 - Eylemler: Kökü incele (paket varsa), Bu kelime nerede geçiyor?, Âyetin tefsiri, Kopyala. Not ve Vurgu A30'da eklenir.
 - Kart yukarı çekilince ya da "Bu kelime nerede geçiyor?" seçilince aynı alt sayfa Bağlantılar paneline büyür (%90); ikinci sayfa açılmaz. "Kapat" ve Android geri tuşu kartı kapatır. Açılış bütçesi 100 ms'dir (öneri); süre geliştirme günlüğüne yazılır.
 - `testID`: `kelime-karti`.
-- **Bitti sayılır:** RNTL testleri yeşil: `kelime-kok` varken ve yokken satırlar; paket var ama anlam onaysızken `dev` ve `internal` bayraklarında taslak "doğrulanmamış" rozetiyle görünür, `public` bayrağında "Anlam henüz onaylanmadı" yazar (Test stratejisi §8).
+- **Bitti sayılır:** RNTL testleri yeşil: `kelime-kok` varken ve yokken satırlar; paket var ama anlam onaysızken `dev` ve `internal` bayraklarında onaysız anlam durumdan türeyen "doğrulanmamış" rozetiyle görünür, `public` bayrağında "Anlam henüz onaylanmadı" yazar (Test stratejisi §8).
 
 ### A25.4 · Bağlantılar paneli
 - Çözümleyici `packages/reader-core/src/links/` altında Bağlantı modeli §9 tablosunu uygular. Bu aşamadaki girişler: Kur'an kelimesi, Kur'an ifadesi, meal içindeki Türkçe kelime ve ifade. Risale ve tefsirdeki Arapça ibare A31'dedir.
@@ -139,7 +139,7 @@ adb exec-out screencap -p > .tmp/a25/panel.png
 - Çapa ayrıştırma ve biçimleme yalnız `packages/anchors` ile yapılır; elle dizgi birleştirilmez (`capa-gramer`).
 - Kopyalama yalnız Tanzil Unicode metnini ve okunur adresi kopyalar; `search_text` ve glif kodu asla kopyalanmaz.
 - `kelime-kok` her derlemede yer alır ama ayrı ve isteğe bağlı pakettir: cihazda yoksa kök, lemma ve anlam satırları ile "Kökü incele" görünmez ve eksiklik uyarısı gösterilmez.
-- Yapay zekâ taslağı anlamlar "doğrulanmamış" rozetiyle görünür (K-25); onaysız taslak `public`'e girmez (P-08).
+- Onaysız anlamlar dev ve internal'da durumdan türeyen "doğrulanmamış" işaretiyle görünür ([K-50](../../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü) madde 8; K-25); onaysız anlam `public`'e girmez (P-09).
 - Panel sonuç parçaları paketteki kanonik metinden gelir; testlerde sentetik metin "Deneme" diye başlar. Kur'an, meal ya da Risale metni test için elle yazılmaz.
 - Alt sayfalar üst üste açılmaz; her sayfada görünür "Kapat" vardır; her jestin düğme karşılığı vardır (Tasarım sistemi §9).
 - `@gorhom/bottom-sheet` Android donanım geri tuşunu işlemez; geri tuşu sırası A25.5'teki gibi uygulamada kayıtlı tek `BackHandler` dinleyicisindedir.

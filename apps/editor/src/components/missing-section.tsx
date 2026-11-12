@@ -4,7 +4,7 @@ import { tr } from '@/i18n/tr';
 export interface MissingSectionProps {
   /** Section title (Turkish, from tr.ts). */
   title: string;
-  /** Stage(s) that will add the data to the API, e.g. 'A17' or 'A17/A18'. */
+  /** Stage(s) that will add the data to the API, e.g. 'A18' or 'A18/A20'. */
   phase: string;
 }
 

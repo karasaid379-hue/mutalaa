@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,13 +10,20 @@ import { ProblemMessage } from '@/components/problem-message';
 import { useAnnounce } from '@/app/announce-context';
 import { useApi } from '@/app/api-context';
 import { tr } from '@/i18n/tr';
+import { trLemma } from '@/i18n/tr-lemma';
 import { formatIfMatch } from '@/lib/etag';
-import { codePointCount, findUnwritable, stripUnwritable } from '@/lib/text';
+import {
+  codePointCount,
+  findUnwritable,
+  glossLength,
+  stripUnwritable,
+  trimGloss,
+} from '@/lib/text';
 import { problemCode, problemStatus, toProblem } from '@/lib/problem';
 import { canDecide } from '@/lib/roles';
 import { fieldA11y, type FieldProblem } from './field-errors';
 import { ProblemList } from './problem-list';
-import { MAX_REASON_LENGTH } from './limits';
+import { MAX_GLOSS_LENGTH, MAX_REASON_LENGTH } from './limits';
 import {
   ME_PATH,
   REVIEWS_PATH,
@@ -32,6 +40,8 @@ import {
   approveBlockReason,
   canEditValue,
   isFirstStageUnitText,
+  isGlossEditable,
+  proposedGloss,
   proposedText,
   type UnitEditInfo,
 } from './rules';
@@ -65,6 +75,24 @@ interface Stale {
 }
 
 /**
+ * The Turkish message of a server rejection that belongs to the edited meaning: a 400 `dogrulama` with an error
+ * on `duzenlenen.anlam_kisa`, or a 409 (the target is not a candidate or the decision rule is broken). null for
+ * everything else (it is shown as a normal problem).
+ */
+function glossProblemMessage(problem: ReturnType<typeof toProblem>): string | null {
+  const status = problemStatus(problem);
+  if (status === 409) return trLemma.edit.notCandidate;
+  if (
+    status === 400 &&
+    problem.errors !== undefined &&
+    Object.hasOwn(problem.errors, 'duzenlenen.anlam_kisa')
+  ) {
+    return trLemma.edit.serverInvalid;
+  }
+  return null;
+}
+
+/**
  * Decision form of one review (K-48): approve or reject must be chosen explicitly; `gerekce` is required
  * (at most 2.000 code points); the edited-text field exists only when `canEditValue` is true; NUL and lone
  * surrogates are reported and cleaned only by the button. The request carries `If-Match: "{xmin}"` and always
@@ -88,6 +116,9 @@ export function DecisionForm({
     reasonHint: useId(),
     edited: useId(),
     editedHint: useId(),
+    gloss: useId(),
+    glossHint: useId(),
+    glossError: useId(),
     decision: useId(),
     summary: useId(),
     approveClosed: useId(),
@@ -96,6 +127,7 @@ export function DecisionForm({
   const [karar, setKarar] = useState<DecisionKind | ''>('');
   const [gerekce, setGerekce] = useState('');
   const [edited, setEdited] = useState<string | null>(null);
+  const [gloss, setGloss] = useState<string | null>(null);
   const [problems, setProblems] = useState<FieldProblem[]>([]);
   const [error, setError] = useState<unknown>(null);
   const [stale, setStale] = useState<Stale | null>(null);
@@ -125,10 +157,19 @@ export function DecisionForm({
   const canEdit = canEditValue(current, unitInfo) && !closed;
   const baseline = proposedText(current) ?? unitInfo?.metin ?? '';
   const editedValue = edited ?? baseline;
+  // A word meaning review (K-50 madde 6): approval may carry an edited meaning; an edit equal to the proposal is not sent.
+  const glossBaseline = proposedGloss(current) ?? '';
+  const glossValue = gloss ?? glossBaseline;
+  const glossAllowed = isGlossEditable(current) && !closed;
   const approveClosed = block === 'own-proposal' || block === 'same-first-approver';
   // A closed "Onayla" cannot stay selected.
   const selected: DecisionKind | '' = approveClosed && karar === 'onaylandi' ? '' : karar;
   const pending = decide.isPending;
+  const showGloss = glossAllowed && selected === 'onaylandi';
+  // The server measures and compares the meaning trimmed (space, tab, line feed) and in NFC; the sent value stays as typed.
+  const glossChanged = showGloss && trimGloss(glossValue) !== trimGloss(glossBaseline);
+  const glossCount = glossLength(glossValue);
+  const glossProblems = problems.filter((problem) => problem.fieldId === ids.gloss);
 
   const unwritable = {
     gerekce: findUnwritable(gerekce),
@@ -136,12 +177,15 @@ export function DecisionForm({
       canEdit && selected === 'onaylandi'
         ? findUnwritable(editedValue)
         : { nul: false, loneSurrogate: false },
+    gloss: showGloss ? findUnwritable(glossValue) : { nul: false, loneSurrogate: false },
   };
   const hasUnwritable =
     unwritable.gerekce.nul ||
     unwritable.gerekce.loneSurrogate ||
     unwritable.edited.nul ||
-    unwritable.edited.loneSurrogate;
+    unwritable.edited.loneSurrogate ||
+    unwritable.gloss.nul ||
+    unwritable.gloss.loneSurrogate;
 
   useEffect(() => {
     if (focusTick > 0) summaryRef.current?.focus();
@@ -163,6 +207,15 @@ export function DecisionForm({
       if (editedValue.trim() === '') add(ids.edited, tr.review.editedEmpty);
       if (unwritable.edited.nul || unwritable.edited.loneSurrogate) {
         add(ids.edited, `${tr.review.editedText}: ${tr.review.unwritable}`);
+      }
+    }
+    if (glossChanged) {
+      if (trimGloss(glossValue) === '') add(ids.gloss, trLemma.edit.empty);
+      else if (glossCount > MAX_GLOSS_LENGTH) {
+        add(ids.gloss, trLemma.edit.tooLong(glossCount, MAX_GLOSS_LENGTH));
+      }
+      if (unwritable.gloss.nul || unwritable.gloss.loneSurrogate) {
+        add(ids.gloss, trLemma.edit.unwritable);
       }
     }
     return found;
@@ -196,11 +249,20 @@ export function DecisionForm({
     }
     setStale(null);
     const sendEdit = canEdit && selected === 'onaylandi' && editedValue !== baseline;
+    const sendGloss = glossChanged;
     const snapshot = current;
     try {
       const result = await decide.mutateAsync({
         params: { path: { id: snapshot.id }, header: { 'If-Match': formatIfMatch(snapshot.xmin) } },
-        body: { karar: selected, duzenlenen: sendEdit ? { metin: editedValue } : null, gerekce },
+        body: {
+          karar: selected,
+          duzenlenen: sendEdit
+            ? { metin: editedValue }
+            : sendGloss
+              ? { anlam_kisa: glossValue }
+              : null,
+          gerekce,
+        },
       });
       setDone({ kind: selected, result });
       announce(
@@ -215,7 +277,14 @@ export function DecisionForm({
       onDecided?.(result, selected);
     } catch (thrown) {
       const problem = toProblem(thrown);
-      setError(problem);
+      // A rejected edited meaning is shown next to its field (400 on the field, 409 for a target that is not a candidate).
+      const glossMessage = sendGloss ? glossProblemMessage(problem) : null;
+      if (glossMessage !== null) {
+        setProblems([{ fieldId: ids.gloss, message: glossMessage }]);
+        setError(null);
+      } else {
+        setError(problem);
+      }
       setFocusTick((tick) => tick + 1);
       if (problemStatus(problem) === 412 && problemCode(problem) === 'surum-uyusmazligi') {
         await refresh(snapshot);
@@ -233,6 +302,7 @@ export function DecisionForm({
   function clean() {
     setGerekce((value) => stripUnwritable(value));
     if (canEdit) setEdited(stripUnwritable(editedValue));
+    if (showGloss) setGloss(stripUnwritable(glossValue));
   }
 
   if (roleMissing) {
@@ -332,6 +402,35 @@ export function DecisionForm({
             {tr.review.reject}
           </Label>
         </RadioGroup>
+
+        {showGloss ? (
+          <div className="flex flex-col gap-1" data-testid="gloss-edit">
+            <Label htmlFor={ids.gloss}>{trLemma.edit.label}</Label>
+            <Input
+              id={ids.gloss}
+              lang="tr"
+              value={glossValue}
+              onChange={(event) => setGloss(event.target.value)}
+              onKeyDown={onKeyDown}
+              aria-invalid={glossProblems.length > 0 ? true : undefined}
+              aria-describedby={
+                glossProblems.length > 0 ? `${ids.glossHint} ${ids.glossError}` : ids.glossHint
+              }
+            />
+            <p id={ids.glossHint} className="text-xs text-muted-foreground">
+              {`${trLemma.edit.hint} ${trLemma.edit.count(glossCount, MAX_GLOSS_LENGTH)}`}
+            </p>
+            {glossProblems.length > 0 ? (
+              <div id={ids.glossError} className="flex flex-col gap-0.5">
+                {glossProblems.map((problem) => (
+                  <p key={problem.message} className="text-xs font-medium text-destructive">
+                    {problem.message}
+                  </p>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         {showEdit ? (
           <div className="flex flex-col gap-1">

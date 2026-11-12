@@ -70,6 +70,52 @@ internal static class ReviewCursor
         Base64Url.EncodeToString(Encoding.ASCII.GetBytes(
             createdAt.Ticks.ToString(CultureInfo.InvariantCulture) + ":" + id.ToString(CultureInfo.InvariantCulture)));
 
+    private const string WavePrefix = "dalga:";
+
+    /// <summary>Dalga imleci (turu etiketli): <c>dalga:{dalga}:{sira}:{lemma_id}:{id}</c>, base64url. Olusturma imleci bununla cozulmez.</summary>
+    public static string EncodeWave(WaveCursor cursor) =>
+        Base64Url.EncodeToString(Encoding.ASCII.GetBytes(string.Create(
+            CultureInfo.InvariantCulture,
+            $"{WavePrefix}{cursor.Dalga}:{cursor.Sira}:{cursor.LemmaId}:{cursor.Id}")));
+
+    public static bool TryDecodeWave(string? text, out WaveCursor cursor)
+    {
+        cursor = default;
+        if (string.IsNullOrEmpty(text) || text.Length > 128)
+        {
+            return false;
+        }
+
+        string decoded;
+        try
+        {
+            decoded = Encoding.ASCII.GetString(Base64Url.DecodeFromChars(text));
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+
+        if (!decoded.StartsWith(WavePrefix, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        string[] parts = decoded[WavePrefix.Length..].Split(':');
+        if (parts.Length != 4
+            || !int.TryParse(parts[0], NumberStyles.None, CultureInfo.InvariantCulture, out int dalga)
+            || !int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out int sira)
+            || !int.TryParse(parts[2], NumberStyles.None, CultureInfo.InvariantCulture, out int lemma)
+            || !long.TryParse(parts[3], NumberStyles.None, CultureInfo.InvariantCulture, out long id)
+            || dalga > ReviewQueries.NoWave)
+        {
+            return false;
+        }
+
+        cursor = new WaveCursor(dalga, sira, lemma, id);
+        return true;
+    }
+
     public static bool TryDecode(string? text, out DateTime createdAt, out long id)
     {
         createdAt = default;
@@ -102,6 +148,9 @@ internal static class ReviewCursor
         return true;
     }
 }
+
+/// <summary>Dalga sirasinin anahtar kumesi: (dalga, sira, lemma_id, review.id); dalgasiz kayitta dalga 5, sira en buyuk, lemma 0.</summary>
+internal readonly record struct WaveCursor(int Dalga, int Sira, int LemmaId, long Id);
 
 internal static class ReviewJson
 {

@@ -59,6 +59,36 @@ public sealed record PackSureRow(long No, string Name, string NameAr, long AyahC
 
 public sealed record PackTrRootIndexRow(string Anchor, long SpanStart, long SpanEnd, long RootId, long TrLemmaId, long EtymologicalOnly);
 
+/// <summary>word_morph satiri (kelime-kok): QAC tabani uzerine onayli quran_word_fix duzeltmeleri uygulanmis hali. Features kanonik (RFC 8785) JSON metnidir.</summary>
+public sealed record PackWordMorphRow(string Anchor, long? RootId, long? LemmaId, string? Pos, string? Features);
+
+/// <summary>root satiri (kelime-kok). IdfQ editoryal real (float) sutunun kisa onlu gosterimidir (PackRows.FromSingle).</summary>
+public sealed record PackRootRow(long Id, string Letters, long Occurrences, long AyahCount, double? IdfQ, string? KokAnlami);
+
+/// <summary>lemma satiri (kelime-kok; lang = 'ar').</summary>
+public sealed record PackLemmaRow(
+    long Id,
+    string Lang,
+    string Text,
+    string TextClean,
+    long? RootId,
+    long Occurrences,
+    long? ArLemmaId,
+    long EtymologicalOnly);
+
+/// <summary>lemma_gloss satiri (kelime-kok). Status 'onayli' ya da 'aday' (aday yalniz dev ve internal'da); Origin editoryal lemma_gloss.origin degeridir.</summary>
+public sealed record PackLemmaGlossRow(
+    long LemmaId,
+    string AnlamKisa,
+    string KuranAnlamlari,
+    string? TurkceEsKelime,
+    long YalnizcaEtimolojik,
+    string Status,
+    string Origin);
+
+/// <summary>tr_form satiri (kelime-kok; A18'e kadar bos).</summary>
+public sealed record PackTrFormRow(string KeyWide, string KeyNarrow, long TrLemmaId, long Freq);
+
 /// <summary>
 /// Bir paketin yazilacak butun satirlari ve ozet basliklari. Liste sirasi onemsizdir: PackRows satirlari kanonik sirada (anahtar bayt sirasi) sayar;
 /// ozet de yazici da onu kullanir. version, built_at, data_version ve content_digest icerik degildir (ozete girmez).
@@ -90,4 +120,20 @@ public sealed class PackContent
     public IReadOnlyList<PackSureRow> Sures { get; init; } = [];
 
     public IReadOnlyList<PackTrRootIndexRow> TrRootIndex { get; init; } = [];
+
+    public IReadOnlyList<PackWordMorphRow> WordMorph { get; init; } = [];
+
+    public IReadOnlyList<PackRootRow> Roots { get; init; } = [];
+
+    public IReadOnlyList<PackLemmaRow> Lemmas { get; init; } = [];
+
+    public IReadOnlyList<PackLemmaGlossRow> LemmaGlosses { get; init; } = [];
+
+    public IReadOnlyList<PackTrFormRow> TrForms { get; init; } = [];
+
+    /// <summary>
+    /// Uygulanan onayli quran_word_fix sayisi (yalniz kelime-kok; diger paketlerde null). pack_meta'da <see cref="PackMetaKeys.WordFixCount"/>
+    /// anahtariyla tasinir; paket ozetine girmez (ozet satirlardan turer, duzeltme sayisi word_morph satirlarinda zaten gorunur).
+    /// </summary>
+    public int? WordFixCount { get; init; }
 }

@@ -1,4 +1,4 @@
-import { readMealAttrs, readTextPayload } from '@/lib/payload';
+import { readMealAttrs, readString, readTextPayload } from '@/lib/payload';
 import type { ReviewItem, UnitDetail } from './types';
 
 // Pre-checks of the decision form. They only close controls early; the API has the last word (K-48),
@@ -81,4 +81,19 @@ export function approveBlockReason(
   if (review.ikinci_onay_bekliyor && sameUser(review.inceleyen, userName))
     return 'same-first-approver';
   return null;
+}
+
+/** An open word meaning review (`lemma_gloss` + `anlam_kisa`): approval may carry an edited meaning (K-50 madde 6). */
+export function isGlossEditable(review: ReviewItem): boolean {
+  return (
+    review.hedef_tablo === 'lemma_gloss' && review.alan === 'anlam_kisa' && review.durum === 'acik'
+  );
+}
+
+/**
+ * Meaning the approval would apply: the editor's `duzenlenen.anlam_kisa`, else the candidate's
+ * `onerilen.anlam_kisa`; null when there is none. An edit equal to it is not sent (a plain approval).
+ */
+export function proposedGloss(review: ReviewItem): string | null {
+  return readString(review.duzenlenen, 'anlam_kisa') ?? readString(review.onerilen, 'anlam_kisa');
 }

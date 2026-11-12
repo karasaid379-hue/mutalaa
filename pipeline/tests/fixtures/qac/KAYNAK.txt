@@ -1,0 +1,14 @@
+Kaynak notu (A17.1, K-50)
+
+buckwalter-tablo.html: Quranic Arabic Corpus, "Java API - Buckwalter Transliteration" sayfasinin
+Fig 1 tablosu (`<table class="u1"` ... `</table>`), sayfadan oldugu gibi alinmistir.
+
+Adres:    https://corpus.quran.com/java/buckwalter.jsp
+Alinma:   2026-11-12 (data/gelen/qac-belge/2026-11-12/buckwalter.html)
+Sayfa SHA-256 (24.018 bayt): 5de168205dad216f001c95e6f760541b7798aef60548f235229aa8c3e6c2c972
+Parca SHA-256 (13.844 bayt, LF, sonda bir LF): e1d34268ce396a249019b1cf61e6be80a52803e35f5d85415395712c75397852
+
+Degisiklik: yalnizca parca sinirlari (tablo disi sayfa kesildi) ve satir sonu (CR LF -> LF); hucre
+icerikleri degismedi. Parca ASCII'dir; Glyph sutunu gorsel baglantisidir, Arapca karakter icermez.
+Kullanim: tests/test_qac_buckwalter.py tabloyu bu parcadan `tablo_ayristir` ile yeniden turetir ve
+enrich/buckwalter.py icindeki TABLO ile karsilastirir.

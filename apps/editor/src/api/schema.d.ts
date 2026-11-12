@@ -266,6 +266,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/lemmas/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lemma kartı: kök, sözcük türü dağılımı, sıklık, dalga ve sıra, aynı kökün onaylı anlamları ve KWIC örnekleri. */
+        get: operations["getLemma"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/releases": {
         parameters: {
             query?: never;
@@ -398,9 +415,84 @@ export interface components {
             duzenlenen?: null | components["schemas"]["DecisionEdit"];
         };
         DecisionEdit: {
-            metin: null | string;
+            metin?: null | string;
+            anlam_kisa?: null | string;
         };
         JsonElement: unknown;
+        LemmaDetailResponse: {
+            lemma: components["schemas"]["LemmaInfo"];
+            kok: null | components["schemas"]["LemmaRootInfo"];
+            tur_dagilimi: components["schemas"]["LemmaPosCount"][];
+            siklik: components["schemas"]["LemmaFrequency"];
+            dalga: null | components["schemas"]["LemmaWaveInfo"];
+            ayni_kok_anlamlari: components["schemas"]["LemmaSiblingGloss"][];
+            kwic: components["schemas"]["LemmaKwicItem"][];
+        };
+        LemmaFrequency: {
+            /** Format: int32 */
+            kelime: number;
+            /** Format: int32 */
+            ayet: number;
+        };
+        LemmaInfo: {
+            /** Format: int32 */
+            id: number;
+            text: string;
+            lang: string;
+            status: string;
+            origin: null | string;
+            /** Format: int32 */
+            occurrences: number;
+            /** Format: int32 */
+            root_id: null | number;
+            qac_ref: null | string;
+            etymological_only: boolean;
+        };
+        LemmaKwicItem: {
+            kelime_capa: string;
+            ayet_capa: string;
+            sol: null | string;
+            kelime: null | string;
+            sag: null | string;
+            meal: null | components["schemas"]["LemmaKwicMeal"];
+        };
+        LemmaKwicMeal: {
+            capa: string;
+            metin: string;
+            metin_durumu: string;
+        };
+        LemmaPosCount: {
+            pos: null | string;
+            /** Format: int32 */
+            sayi: number;
+        };
+        LemmaRootInfo: {
+            /** Format: int32 */
+            id: number;
+            letters: string;
+            letters_bw: null | string;
+            /** Format: int32 */
+            occurrences: number;
+            /** Format: int32 */
+            ayah_count: number;
+            /** Format: float */
+            idf_q: null | number;
+            kok_anlami: null | string;
+        };
+        LemmaSiblingGloss: {
+            /** Format: int32 */
+            lemma_id: number;
+            text: string;
+            anlam_kisa: string;
+            /** Format: int32 */
+            occurrences: number;
+        };
+        LemmaWaveInfo: {
+            /** Format: int32 */
+            dalga: number;
+            /** Format: int32 */
+            sira: number;
+        };
         LoginRequest: {
             email: string;
             parola: string;
@@ -621,11 +713,23 @@ export interface components {
             field?: null | string;
             qac_value?: null | string;
             new_value?: null | string;
+            reason?: null | string;
+            editor?: null | string;
             /** Format: int32 */
             lemma_id?: null | number;
             lang?: null | string;
             text?: null | string;
             anlam_kisa?: null | string;
+            /** Format: int32 */
+            root_id?: null | number;
+            /** Format: int32 */
+            occurrences?: null | number;
+            etymological_only?: null | boolean;
+            origin?: null | string;
+            kuran_anlamlari?: null | components["schemas"]["JsonElement"];
+            turkce_es_kelime?: null | string;
+            yalnizca_etimolojik?: null | boolean;
+            version?: null | string;
             status?: null | string;
         };
         SessionResponse: {
@@ -1296,6 +1400,7 @@ export interface operations {
                 durum?: string;
                 kaynak?: string;
                 asama?: string;
+                sira?: string;
                 cursor?: string;
                 limit?: number;
             };
@@ -1564,6 +1669,46 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    getLemma: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LemmaDetailResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

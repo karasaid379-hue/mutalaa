@@ -140,11 +140,15 @@ public static partial class GateEvaluator
         foreach (GateLexical lexical in input.Lexicals)
         {
             string label = lexical.Kind.ToLabel();
-            (bool ok, string reason) = DecideLexical(lexical);
+            (bool ok, string reason) = DecideLexical(f, lexical);
             if (ok)
             {
                 includedLexicals.Add(label + ":" + lexical.Id);
-                Count(groups, GateSubjectKind.Sozluk, label, GateDecision.Girdi, null, GateReasons.Uygun);
+                Count(groups, GateSubjectKind.Sozluk, label, GateDecision.Girdi, null, reason);
+                if (lexical.Kind == LexicalKind.QuranWordFix && lexical.ApplyDefect is { Length: > 0 } defect)
+                {
+                    violations.Add(new GateViolation(null, label + ":" + lexical.Id, GateReasons.DuzeltmeUygulanamaz + ":" + defect));
+                }
             }
             else
             {
@@ -360,13 +364,26 @@ public static partial class GateEvaluator
         return (GateDecision.Girmedi, firstExcluded!.Value.Rule, GateReasons.KaynakGirmedi + firstExcluded.Value.Slug);
     }
 
-    private static (bool Included, string Reason) DecideLexical(GateLexical lexical)
+    /// <summary>
+    /// P-09 (K-50 madde 8, K-46 madde 7). quran_word_fix her derlemede yalniz onayli ile girer. lemma_gloss: onayli her derlemeye ("uygun"), aday yalniz
+    /// dev ve internal'a ("aday"; public'te "aday-public" ile girmez), red hicbirine girmez ("red"). tr_root_index ve tr_form bagli Turkce lemma
+    /// onayliysa girer. Sonuc gerekcesi rapor satirinin gerekcesidir.
+    /// </summary>
+    private static (bool Included, string Reason) DecideLexical(BuildFlavor flavor, GateLexical lexical)
     {
         switch (lexical.Kind)
         {
             case LexicalKind.QuranWordFix:
-            case LexicalKind.LemmaGloss:
                 return lexical.Status == XrefStatus.Onayli ? (true, GateReasons.Uygun) : (false, GateReasons.OnaysizSatir);
+            case LexicalKind.LemmaGloss:
+                return lexical.Status switch
+                {
+                    XrefStatus.Onayli => (true, GateReasons.Uygun),
+                    XrefStatus.Aday when FlavorPolicy.AllowsCandidateGlosses(flavor) => (true, GateReasons.Aday),
+                    XrefStatus.Aday => (false, GateReasons.AdayPublic),
+                    XrefStatus.Red => (false, GateReasons.Red),
+                    _ => (false, GateReasons.OnaysizSatir),
+                };
             case LexicalKind.TrRootIndex:
             case LexicalKind.TrForm:
                 return lexical.LinkedLemmaApproved ? (true, GateReasons.Uygun) : (false, GateReasons.LemmaOnaysiz);

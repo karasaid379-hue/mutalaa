@@ -1,8 +1,30 @@
 import { describe, expect, it } from 'vitest';
 import { trLemma } from '@/i18n/tr-lemma';
+import { reviewListInit } from '@/review/queries';
 import { QUEUES } from '@/review/queues';
-import { LEMMA_FILTERS, LEMMA_TAB_IDS, isLemmaTab } from '@/screens/lemma/config';
-import { isAnchor, readConfidence, readLemmaValue, readYzRecord } from '@/screens/lemma/payload';
+import {
+  DEFAULT_LEMMA_ORDER,
+  LEMMA_FILTERS,
+  LEMMA_TAB_IDS,
+  hasWaveOrder,
+  isLemmaTab,
+  isQueueOrder,
+  lemmaFilter,
+} from '@/screens/lemma/config';
+import {
+  CONSISTENT_SHARE_THRESHOLD,
+  consistencyOf,
+  hasArabicLetters,
+  isAnchor,
+  isReadyCandidate,
+  isShare,
+  readConfidence,
+  readDistribution,
+  readLemmaValue,
+  readYzRecord,
+} from '@/screens/lemma/payload';
+import { formatPercent } from '@/lib/format';
+import { glossLength, trimGloss } from '@/lib/text';
 import { SHA_A, SHA_B, YZ_KAYDI } from './fixtures-lemma';
 
 describe('readLemmaValue', () => {
@@ -132,16 +154,89 @@ describe('isAnchor', () => {
   });
 });
 
+describe('readConfidence (ready-source candidate)', () => {
+  it('reads the dominant share of onerilen after the API field', () => {
+    expect(readConfidence({ guven: 0.9, onerilen: { baskin_pay: 0.5 } })).toBe(0.9);
+    expect(readConfidence({ guven: null, onerilen: { baskin_pay: 0.5, guven: 0.1 } })).toBe(0.5);
+  });
+});
+
+describe('consistencyOf', () => {
+  it('uses the named threshold 0,8: at and above is consistent, below is inconsistent', () => {
+    expect(CONSISTENT_SHARE_THRESHOLD).toBe(0.8);
+    expect(consistencyOf(0.8)).toBe('tutarli');
+    expect(consistencyOf(1)).toBe('tutarli');
+    expect(consistencyOf(0.79)).toBe('tutarsiz');
+    expect(consistencyOf(0)).toBe('tutarsiz');
+  });
+
+  it('is shown as a Turkish percentage that cannot round up over the threshold', () => {
+    expect(formatPercent(0.87)).toBe('%87');
+    expect(formatPercent(0.795)).toBe('%79,5');
+  });
+});
+
+describe('readDistribution', () => {
+  it('reads the meaning and the count of each entry and drops unreadable ones', () => {
+    expect(
+      readDistribution({
+        dagilim: [{ anlam: 'Deneme anlam 1', sayi: 5 }, { anlam: 3, sayi: 1 }, { anlam: 'x' }, 'x'],
+      }),
+    ).toEqual([{ anlam: 'Deneme anlam 1', sayi: 5 }]);
+  });
+
+  it('is empty when there is no distribution', () => {
+    expect(readDistribution(null)).toEqual([]);
+    expect(readDistribution({ dagilim: 'x' })).toEqual([]);
+    expect(readDistribution({})).toEqual([]);
+  });
+});
+
+describe('lemmaFilter', () => {
+  it('adds the order to the meaning and status tabs and leaves the correction tab without one', () => {
+    expect(DEFAULT_LEMMA_ORDER).toBe('dalga');
+    expect(lemmaFilter('anlam', 'dalga')).toEqual({
+      hedef_tablo: 'lemma_gloss',
+      alan: 'anlam_kisa',
+      sira: 'dalga',
+    });
+    expect(lemmaFilter('durum', 'olusturma')).toEqual({
+      hedef_tablo: 'lemma',
+      alan: 'status',
+      sira: 'olusturma',
+    });
+    expect(lemmaFilter('duzeltme', 'dalga')).toEqual({ hedef_tablo: 'quran_word_fix' });
+    expect(hasWaveOrder('duzeltme')).toBe(false);
+    expect(isQueueOrder('dalga')).toBe(true);
+    expect(isQueueOrder('baska')).toBe(false);
+  });
+
+  it('makes a list request with and without alan and sira', () => {
+    expect(reviewListInit(lemmaFilter('anlam', 'dalga')).params.query).toEqual({
+      hedef_tablo: 'lemma_gloss',
+      alan: 'anlam_kisa',
+      durum: 'acik',
+      sira: 'dalga',
+      limit: 50,
+    });
+    const fix = reviewListInit(lemmaFilter('duzeltme', 'dalga')).params.query;
+    expect(fix).toEqual({ hedef_tablo: 'quran_word_fix', durum: 'acik', limit: 50 });
+    expect('alan' in fix).toBe(false);
+    expect('sira' in fix).toBe(false);
+  });
+});
+
 describe('tabs', () => {
   it('match the lemma queue of queues.ts, in the same order', () => {
     const lemma = QUEUES.find((queue) => queue.id === 'lemma');
     expect(lemma?.filters).toEqual(LEMMA_TAB_IDS.map((id) => LEMMA_FILTERS[id]));
   });
 
-  it('knows its two ids only', () => {
-    expect(LEMMA_TAB_IDS).toEqual(['anlam', 'durum']);
+  it('knows its three ids only, in this order', () => {
+    expect(LEMMA_TAB_IDS).toEqual(['anlam', 'durum', 'duzeltme']);
     expect(isLemmaTab('anlam')).toBe(true);
     expect(isLemmaTab('durum')).toBe(true);
+    expect(isLemmaTab('duzeltme')).toBe(true);
     expect(isLemmaTab('baska')).toBe(false);
     expect(isLemmaTab(null)).toBe(false);
   });
@@ -151,5 +246,66 @@ describe('tabs', () => {
       expect(trLemma.tabs[id]).not.toBe('');
       expect(trLemma.tabHints[id]).not.toBe('');
     }
+  });
+});
+
+describe('formatPercent never rounds up over a threshold', () => {
+  it('cuts to one decimal: 0,7996 is %79,9, not %80', () => {
+    expect(formatPercent(0.7996)).toBe('%79,9');
+    expect(formatPercent(0.8)).toBe('%80');
+    expect(formatPercent(0.29)).toBe('%29');
+    expect(consistencyOf(0.7996)).toBe('tutarsiz');
+  });
+});
+
+describe('isShare', () => {
+  it('accepts 0 to 1 inclusive only', () => {
+    expect(isShare(0)).toBe(true);
+    expect(isShare(1)).toBe(true);
+    expect(isShare(1.5)).toBe(false);
+    expect(isShare(-0.1)).toBe(false);
+  });
+});
+
+describe('isReadyCandidate', () => {
+  it('is true for a kaynak: origin or a dominant share, and false when an AI model is set', () => {
+    expect(isReadyCandidate({ yz_modeli: null, hedef: { origin: 'kaynak:deneme' } })).toBe(true);
+    expect(isReadyCandidate({ yz_modeli: null, onerilen: { baskin_pay: 0.9 } })).toBe(true);
+    expect(isReadyCandidate({ yz_modeli: 'deneme-model', onerilen: { baskin_pay: 0.9 } })).toBe(
+      false,
+    );
+    expect(isReadyCandidate({ yz_modeli: 'deneme-model', hedef: { origin: 'kaynak:x' } })).toBe(
+      false,
+    );
+    expect(isReadyCandidate({ yz_modeli: null, onerilen: { anlam_kisa: 'x' } })).toBe(false);
+    expect(isReadyCandidate({ yz_modeli: null, hedef: { origin: 'editor' } })).toBe(false);
+  });
+});
+
+describe('hasArabicLetters', () => {
+  it('finds letters of the four Arabic blocks and nothing else', () => {
+    for (const code of [0x0633, 0x0750, 0xfb50, 0xfe70]) {
+      expect(hasArabicLetters(`1${String.fromCodePoint(code)}`)).toBe(true);
+    }
+    expect(hasArabicLetters('1001')).toBe(false);
+    expect(hasArabicLetters('pos:N')).toBe(false);
+    expect(hasArabicLetters('')).toBe(false);
+  });
+});
+
+describe('trimGloss and glossLength', () => {
+  it('trims only space, tab and line feed', () => {
+    const nbsp = String.fromCodePoint(0xa0);
+    expect(trimGloss(` \tDeneme\n `)).toBe('Deneme');
+    expect(trimGloss(`${nbsp}Deneme`)).toBe(`${nbsp}Deneme`);
+  });
+
+  it('measures the trimmed NFC text in code points', () => {
+    expect(glossLength(`${'a'.repeat(200)} `)).toBe(200);
+    expect(glossLength((String.fromCodePoint(0x65) + String.fromCodePoint(0x301)).repeat(3))).toBe(
+      3,
+    );
+    expect(glossLength(String.fromCodePoint(0x1d7d8).repeat(5))).toBe(5);
+    expect(glossLength('')).toBe(0);
   });
 });

@@ -83,6 +83,7 @@ public static class ReviewEndpoints
         string? durum,
         string? kaynak,
         string? asama,
+        string? sira,
         string? cursor,
         int? limit,
         IcerikDbContext db,
@@ -129,6 +130,23 @@ public static class ReviewEndpoints
             }
         }
 
+        ReviewSort sort = ReviewSort.Olusturma;
+        if (sira is not null)
+        {
+            if (string.Equals(sira, "dalga", StringComparison.Ordinal))
+            {
+                sort = ReviewSort.Dalga;
+                if (hedefTablo is not (ReviewTargets.Lemma or ReviewTargets.LemmaGloss))
+                {
+                    errors["sira"] = ["sira=dalga yalnız hedef_tablo lemma ya da lemma_gloss iken geçerlidir."];
+                }
+            }
+            else if (!string.Equals(sira, "olusturma", StringComparison.Ordinal))
+            {
+                errors["sira"] = ["Geçersiz sira. İzin verilenler: olusturma, dalga."];
+            }
+        }
+
         int take = limit ?? ReviewQueries.DefaultLimit;
         if (take is < 1 or > ReviewQueries.MaxLimit)
         {
@@ -136,9 +154,22 @@ public static class ReviewEndpoints
         }
 
         (DateTime CreatedAt, long Id)? after = null;
+        WaveCursor? waveAfter = null;
         if (cursor is not null)
         {
-            if (ReviewCursor.TryDecode(cursor, out DateTime createdAt, out long id))
+            if (sort == ReviewSort.Dalga)
+            {
+                // Imlec turu etiketlidir: olusturma imleci dalga sirasinda (ve dalga imleci olusturma sirasinda) gecersizdir.
+                if (ReviewCursor.TryDecodeWave(cursor, out WaveCursor wave))
+                {
+                    waveAfter = wave;
+                }
+                else
+                {
+                    errors["cursor"] = ["İmleç geçersiz."];
+                }
+            }
+            else if (ReviewCursor.TryDecode(cursor, out DateTime createdAt, out long id))
             {
                 after = (createdAt, id);
             }
@@ -153,7 +184,7 @@ public static class ReviewEndpoints
             return ApiProblem.Validation(errors);
         }
 
-        return TypedResults.Ok(await ReviewQueries.ListAsync(db, hedefTablo, alan, status, kaynak, stage, after, take, cancellationToken));
+        return TypedResults.Ok(await ReviewQueries.ListAsync(db, hedefTablo, alan, status, kaynak, stage, sort, after, waveAfter, take, cancellationToken));
     }
 
     private static async Task<IResult> StatsAsync(IcerikDbContext db, CancellationToken cancellationToken) =>

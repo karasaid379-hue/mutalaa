@@ -7,6 +7,16 @@ using Mutalaa.Infrastructure.Releases;
 
 namespace Mutalaa.Infrastructure.Packs;
 
+/// <summary>pack_meta anahtarlari (Icerik paketleri 3.1). Ortak anahtarlar SqlitePackWriter.ExpectedMeta'dadir; burada yalniz pakete ozgu olanlar.</summary>
+public static class PackMetaKeys
+{
+    /// <summary>
+    /// kelime-kok kunyesi: pakete uygulanan onayli quran_word_fix sayisi (tamsayi metni). Kunye "QAC v0.4 + Mutalaa duzeltmeleri (N adet)" bu degerden
+    /// yazilir; attribution satiri bundan etkilenmez (P-11). Diger paketlerde anahtar yoktur.
+    /// </summary>
+    public const string WordFixCount = "word_fix_count";
+}
+
 /// <summary>
 /// Yazilan paket dosyasi. SelfCheck her zaman yesildir (kirmizi oz denetim PackWriteException atar ve dosya olusmaz).
 /// ContentDigest paketin pack_meta.content_digest degeridir (PackDigest).
@@ -278,8 +288,9 @@ public sealed class SqlitePackWriter
         return command;
     }
 
-    private static Dictionary<string, string> ExpectedMeta(PackContent content, PackWriteRequest request, string flavor, string digest) =>
-        new(StringComparer.Ordinal)
+    private static Dictionary<string, string> ExpectedMeta(PackContent content, PackWriteRequest request, string flavor, string digest)
+    {
+        Dictionary<string, string> meta = new(StringComparer.Ordinal)
         {
             ["pack_id"] = content.PackId,
             ["version"] = request.Version,
@@ -291,6 +302,15 @@ public sealed class SqlitePackWriter
             ["data_version"] = request.DataVersion,
             ["unit_count"] = content.Units.Count.ToString(CultureInfo.InvariantCulture),
         };
+
+        // Kunye (K-50 madde 9): yalniz kelime-kok; "QAC v0.4 + Mutalaa duzeltmeleri (N adet)" cihazda bu degerden yazilir.
+        if (content.WordFixCount is { } fixes)
+        {
+            meta[PackMetaKeys.WordFixCount] = fixes.ToString(CultureInfo.InvariantCulture);
+        }
+
+        return meta;
+    }
 
     private void WriteMeta(SqliteConnection connection, PackContent content, PackWriteRequest request, string flavor, string digest)
     {

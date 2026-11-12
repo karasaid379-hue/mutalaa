@@ -129,7 +129,7 @@ describe('OpenQuestionButton', () => {
     expect(fake.calls).toHaveLength(0);
   });
 
-  it.each(['S-15', 'A17', 'A18', 'A20'] as const)('names the stage %s', (phase) => {
+  it.each(['S-15', 'S-16', 'A18', 'A20'] as const)('names the stage %s', (phase) => {
     render(<OpenQuestionButton label="Eylem" phase={phase} />);
     expect(screen.getByRole('button')).toHaveTextContent(`Açık soru: ${phase}`);
   });
@@ -137,9 +137,9 @@ describe('OpenQuestionButton', () => {
 
 describe('MissingSection', () => {
   it('shows a heading and the note that the API does not have the data yet', () => {
-    render(<MissingSection title="Kök, tür, sıklık" phase="A17/A18" />);
+    render(<MissingSection title="Kök, tür, sıklık" phase="A18/A20" />);
     expect(screen.getByRole('heading', { level: 3, name: 'Kök, tür, sıklık' })).toBeInTheDocument();
-    expect(screen.getByText("Bu bilgi API'de henüz yok (A17/A18)")).toBeInTheDocument();
+    expect(screen.getByText("Bu bilgi API'de henüz yok (A18/A20)")).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Kök, tür, sıklık' })).toBeInTheDocument();
   });
 });

@@ -23,6 +23,71 @@ public static class CodePointOffsets
         return count;
     }
 
+    /// <summary>
+    /// Metnin <c>[start, end)</c> kod noktasi araligini dilimler (UTF-16 ofseti degil). Vekil cift tek kod noktasidir ve bolunmez.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">0 &lt;= start &lt;= end &lt;= kod noktasi sayisi degilse.</exception>
+    public static string Slice(string text, int start, int end)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        if (!TrySlice(text, start, end, out string slice))
+        {
+            throw new ArgumentOutOfRangeException(nameof(start), "Aralik metnin kod noktasi sinirlari disinda.");
+        }
+
+        return slice;
+    }
+
+    /// <summary>Slice icin hata firlatmayan surum: aralik gecersizse false ve bos dizgi doner.</summary>
+    public static bool TrySlice(string text, int start, int end, out string slice)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        slice = string.Empty;
+        if (start < 0 || start > end)
+        {
+            return false;
+        }
+
+        int seen = 0;
+        int startUtf16 = -1;
+        int endUtf16 = -1;
+        int utf16 = 0;
+        foreach (Rune rune in text.EnumerateRunes())
+        {
+            if (seen == start)
+            {
+                startUtf16 = utf16;
+            }
+
+            if (seen == end)
+            {
+                endUtf16 = utf16;
+                break;
+            }
+
+            seen++;
+            utf16 += rune.Utf16SequenceLength;
+        }
+
+        if (startUtf16 < 0 && seen == start)
+        {
+            startUtf16 = utf16;
+        }
+
+        if (endUtf16 < 0 && seen == end)
+        {
+            endUtf16 = utf16;
+        }
+
+        if (startUtf16 < 0 || endUtf16 < 0)
+        {
+            return false;
+        }
+
+        slice = text.Substring(startUtf16, endUtf16 - startUtf16);
+        return true;
+    }
+
     /// <summary>Kod noktasi ofsetini UTF-16 ofsetine cevirir.</summary>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="cp"/> [0, kod noktasi sayisi] disindaysa.</exception>
     public static int CpToUtf16(string text, int cp)

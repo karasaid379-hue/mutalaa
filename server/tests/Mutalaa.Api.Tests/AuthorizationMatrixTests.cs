@@ -63,6 +63,7 @@ internal static class ExpectedEndpoints
         new("GET", "/api/v1/reviews/{id:long}", Access.Editor, "/api/v1/reviews/1"),
         new("POST", "/api/v1/reviews/{id:long}/decision", Access.Editor, "/api/v1/reviews/1/decision", """{"karar":"yanlis"}"""),
         new("POST", "/api/v1/reviews/decisions", Access.Editor, "/api/v1/reviews/decisions", """{"kararlar":[]}"""),
+        new("GET", "/api/v1/lemmas/{id:int}", Access.Editor, "/api/v1/lemmas/1"),
         new("GET", "/api/v1/releases", Access.Editor, "/api/v1/releases"),
         new("GET", "/api/v1/releases/{id:int}", Access.Editor, "/api/v1/releases/1"),
 
