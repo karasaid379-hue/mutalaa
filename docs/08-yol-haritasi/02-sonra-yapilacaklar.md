@@ -1,9 +1,9 @@
 # Sonra yapılacaklar
 
-> **Sürüm:** 1.4 · **Tarih:** 11 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-01](../00-ozet/02-karar-defteri.md#k-01--ad-mütâlaa) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
+> **Sürüm:** 1.5 · **Tarih:** 12 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-22](../00-ozet/02-karar-defteri.md#k-22--gelir-modeli) · [K-01](../00-ozet/02-karar-defteri.md#k-01--ad-mütâlaa) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-20](../00-ozet/02-karar-defteri.md#k-20--barındırma) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi) · [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü)
 
-Bu liste park alanıdır. Bir faza girmeyen ama unutulmaması gereken işler burada durur. Her madde neden önemli olduğunu, ne zaman yeniden açılacağını, ilk somut adımı ve ilgili kararı yazar. Bir madde ele alınınca karar defterine yeni bir karar olarak işlenir ve burada "Kapandı" diye işaretlenir. S-01 ile S-10 brifteki listeden, S-13 ile S-14 bu dosyanın ve koordinasyon notlarının eklediği maddelerdir; S-15 K-49 ile eklendi (11 Kasım 2026). Madde numaraları sabittir; yeniden kullanılmaz ve yeniden numaralandırılmaz.
+Bu liste park alanıdır. Bir faza girmeyen ama unutulmaması gereken işler burada durur. Her madde neden önemli olduğunu, ne zaman yeniden açılacağını, ilk somut adımı ve ilgili kararı yazar. Bir madde ele alınınca karar defterine yeni bir karar olarak işlenir ve burada "Kapandı" diye işaretlenir. S-01 ile S-10 brifteki listeden, S-13 ile S-14 bu dosyanın ve koordinasyon notlarının eklediği maddelerdir; S-15 K-49 ile eklendi (11 Kasım 2026); S-16 K-50 ile eklendi (12 Kasım 2026). Madde numaraları sabittir; yeniden kullanılmaz ve yeniden numaralandırılmaz.
 
 ## Özet
 
@@ -19,6 +19,7 @@ Bu liste park alanıdır. Bir faza girmeyen ama unutulmaması gereken işler bur
 | S-13 | Sesli meal | Faz 3'ten sonra | K-28, K-03, K-41, K-42 |
 | S-14 | Okuma planları ve paylaşım kartları | Faz 4 | K-25 |
 | S-15 | OCR ve özgün baskı taraması (hazır metni olmayan kitaplar, Elmalılı özgün baskıyla karşılaştırma) | A34'ten sonra (Faz 6) | K-49, K-38 |
+| S-16 | Yapay zekâ ile taslak üretimi (kelime anlamı, Türkçe lemma → kök, gri bölge doğrulaması, lügat, kök anlamı) | A34'ten sonra (Faz 6) | K-50, K-19, K-25 |
 
 ## S-01 · Fiyatlandırma ve gelir modeli
 
@@ -102,6 +103,22 @@ Proje sahibi bu maddenin kayda geçmesini özellikle istedi. [K-22](../00-ozet/0
   - Tecrîd-i Sarîh Türkçesi (A19): `_djvu.txt` katmanı uygun değilse ilgili ciltlerin OCR'ı.
   - Risale-i Nur (A20): hazır metin yetmezse; Osmanlıca harfli metin ve sözlük taramaları zaten ayrı iştir.
 - **İlgili karar.** K-49, [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme).
+
+## S-16 · Yapay zekâ ile taslak üretimi (kelime anlamı, Türkçe lemma → kök, gri bölge doğrulaması, lügat, kök anlamı)
+
+- **Neden önemli.** [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü) bütün yapay zekâ işlerini proje sonuna bıraktı; hat Anthropic çağrısı yapmaz ve v1'de yapay zekâ ürünü içerik yoktur. Kelime anlamında her lemma QuranWBW'den aday alır ve editör düzeltir ([K-19](../00-ozet/02-karar-defteri.md#k-19--kuran-kelime-anlamları)). Yapay zekâ yedek yoldur: hazır anlamı yetmeyen lemma, çözülmeyen Türkçe lemma ve gri bölge bağlantıları için editör yükünü azaltabilir. Yapay zekâ ürünü her metin insan onayına kadar "doğrulanmamış" rozeti taşır ([K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler), P-08).
+- **Tetik.** A34'ten sonra (Faz 6), v1 yayımlandıktan ve proje sahibi isteyince.
+- **İlk somut adım.** Model, fiyat ve örnekleme ayarlarının yeniden araştırılması: güncel API'de sıcaklık parametresi reddedilebilir; Haiku 5.5 en erken 7 Ekim 2027'de kullanımdan kalkabilir. Sonra `llm estimate` pilotu (tahmini maliyet kullanıcıya gösterilir). İ-17 (Anthropic anahtarı ve bütçe) bu madde açılınca gerekir. `mutalaa.toml` içindeki `[llm]` bölümü bu maddeye bağlıdır.
+- **Kapsadığı işler.**
+  - A17: anlam taslağı istemi (`pipeline/prompts/kelime-anlami/v1.md`), JSON şeması, Batch çağrıları, G-YZ kaydı ve `kok_anlami_onerisi`.
+  - A18.2: hazır yolla çözülmeyen Türkçe lemma.
+  - A18.4: gri bölge bağlantılarının doğrulaması.
+  - A20: lügat maddesi taslağı (hazır karşılığı olmayan kelime).
+  - B-04: κ etiketlemesi.
+  - Test stratejisi: kök eşiği.
+  - Panelde "Yeniden taslak iste".
+- **Açık soru.** Hazır adayı ya da reddi olan lemmaya yapay zekâ taslağı nasıl girer: `review.onerilen` içinde mi, yoksa `lemma_gloss` satır sürümü olarak mı? Karar S-16 açılırken `/karar` ile verilir.
+- **İlgili karar.** K-50, K-19, K-25.
 
 ## İlgili dosyalar
 
