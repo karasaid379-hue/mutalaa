@@ -169,6 +169,114 @@ def bolum_denetle(ad: str) -> str:
     return ad
 
 
+# Basliktan sayili kalip (A20.2b): "{sira} {tur}" -> `{tur}-{n}`; tur sozcugu ASCII'ye katlanmis
+# (`slug_turet`) haliyle aranir. `hasiye` ve `parca` basliktan uretilmez (hasiye bolumu dipnot
+# sirasindan, lahika parcasi kaynaktaki numaradan ya da `parca-{n}`den gelir).
+_TUR_SOZCUKLERI: Final[dict[str, str]] = {
+    "soz": "soz",
+    "mektup": "mektup",
+    "mektub": "mektup",
+    "lema": "lema",
+    "sua": "sua",
+    "makam": "makam",
+    "hakikat": "hakikat",
+    "nukte": "nukte",
+    "mesele": "mesele",
+    "isaret": "isaret",
+}
+# Turkce sira sayilari (ASCII'ye katlanmis): birler, onlar ve onluk siralari.
+_SIRA_BIRLER: Final[dict[str, int]] = {
+    "birinci": 1,
+    "ikinci": 2,
+    "ucuncu": 3,
+    "dorduncu": 4,
+    "besinci": 5,
+    "altinci": 6,
+    "yedinci": 7,
+    "sekizinci": 8,
+    "dokuzuncu": 9,
+}
+_SIRA_ONLUK: Final[dict[str, int]] = {
+    "onuncu": 10,
+    "yirminci": 20,
+    "otuzuncu": 30,
+    "kirkinci": 40,
+    "ellinci": 50,
+    "altmisinci": 60,
+    "yetmisinci": 70,
+    "sekseninci": 80,
+    "doksaninci": 90,
+}
+_ONLAR: Final[dict[str, int]] = {
+    "on": 10,
+    "yirmi": 20,
+    "otuz": 30,
+    "kirk": 40,
+    "elli": 50,
+    "altmis": 60,
+    "yetmis": 70,
+    "seksen": 80,
+    "doksan": 90,
+}
+
+
+def sira_sayisi(ad: str) -> int | None:
+    """ASCII katlanmis Turkce sira sayisini (`besinci`, `yirmi-besinci`, `otuzuncu`) cevirir.
+
+    Tireler ve bosluklar yok sayilir (`yirmibesinci` de tanir); 1..99. Taninmazsa `None`.
+    """
+    s = ad.replace("-", "")
+    if s in _SIRA_ONLUK:
+        return _SIRA_ONLUK[s]
+    if s in _SIRA_BIRLER:
+        return _SIRA_BIRLER[s]
+    for onlar, deger in _ONLAR.items():
+        if s.startswith(onlar) and s[len(onlar) :] in _SIRA_BIRLER:
+            return deger + _SIRA_BIRLER[s[len(onlar) :]]
+    return None
+
+
+def baslik_bolum_adi(baslik: str) -> str | None:
+    """Baslik sayili ya da sabit kaliba uyuyorsa bolum adi (`soz-10`, `mukaddime`), yoksa `None`.
+
+    Taninan bicimler: `{sira sozcugu} {tur}` (ornegin "Yirmi Besinci Soz"), `{n}. {tur}` ve
+    `{tur} {n}` (n kanonik pozitif tam sayi) ile tek basina `Mukaddime`, `Zeyl`, `Hatime`. Tur:
+    soz, mektup, lema, sua, makam, hakikat, nukte, mesele, isaret. Harf buyuklugu, sapkali harf
+    ve kesme isareti `slug_turet` ile katlanir. Basligin ardindan baska sozcuk gelen
+    ("Birinci Soz'un Zeyli") ya da turu olmayan baslik kalibi tanimaz; slug basliktan turetilir.
+    """
+    try:
+        ham = slug_turet(baslik, kes=False)
+    except RisaleHatasi:
+        return None
+    if ham in SABIT_BOLUMLER:
+        return ham
+    parcalar = ham.split("-")
+    if len(parcalar) < 2:
+        return None
+    tur_ilk, tur_son = _TUR_SOZCUKLERI.get(parcalar[0]), _TUR_SOZCUKLERI.get(parcalar[-1])
+    if tur_son is not None:
+        n = _sira_ya_da_sayi(parcalar[:-1])
+        tur = tur_son
+    elif tur_ilk is not None:
+        n = _sira_ya_da_sayi(parcalar[1:])
+        tur = tur_ilk
+    else:
+        return None
+    if n is None or not 1 <= n <= MAX_SAYI:
+        return None
+    return sira_adi(tur, n)
+
+
+def _sira_ya_da_sayi(parcalar: Sequence[str]) -> int | None:
+    """Sira sozcugu dizisi ya da tek kanonik sayi belirteci; degilse `None`."""
+    if not parcalar:
+        return None
+    if len(parcalar) == 1 and _KANONIK_SAYI.fullmatch(parcalar[0]) is not None:
+        return int(parcalar[0])
+    return sira_sayisi("".join(parcalar))
+
+
 def yol_denetle(yol: Sequence[str]) -> tuple[str, ...]:
     """`yol[0]` kitap, gerisi bolum; derinlik (kitap dahil) en cok 8."""
     if not yol:

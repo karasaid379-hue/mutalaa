@@ -291,7 +291,7 @@ def komut_qa_run(
         from mutalaa_pipeline.qa.run_quranwbw import komut_qa_run_quranwbw
 
         return komut_qa_run_quranwbw(run=run, gate=gate, config=config, kok=kok)
-    if source == KAYNAK_RNK:  # RNK Risale metni: G-KAY, G-BUT, G-NOR (A20.1b)
+    if source == KAYNAK_RNK:  # RNK Risale metni: G-KAY, G-BUT, G-CAP, G-NOR (A20.1b, A20.2b)
         from mutalaa_pipeline.qa.run_risale_rnk import komut_qa_run_risale_rnk
 
         return komut_qa_run_risale_rnk(run=run, gate=gate, config=config, kok=kok)

@@ -1,4 +1,4 @@
-"""RNK metin QA kapilari (A20.1b, K-51 madde 2 ve 5): G-KAY, G-BUT, G-NOR (`risale-rnk-metin`).
+"""RNK metin QA kapilari (A20.1b, A20.2b; K-51): G-KAY, G-BUT, G-CAP, G-NOR (`risale-rnk-metin`).
 
 Kapi islevleri bellekteki `RnkGirdisi` uzerinde calisir; yukleyici `girdi_yukle` staged klasorunu
 ve ham dosyalari okur. Bulgular ASCII ve kisadir: yalniz dosya (`raf/uid`), capa, sayi ve alan
@@ -14,22 +14,45 @@ adi tasir, metin asla.
   segmentine ya da birlestirme bosluguna (`t: "satir"`) aittir; birim metni + isaretler + yapi
   ile kaynak dosya BAYT BAYT yeniden kurulur; dipnot ek noktalari ve sayfa konumlari gecerli
   capaya isaret eder.
-* G-NOR: normalizasyon vektorleri gecer; Osmanlica ve Arapca birimlerde yalniz `ar_norm` vardir
-  (`tr_*` bos), `ar_norm` metinden `normalize_ar` ile yeniden uretilince ayni (ingest asamasinda
-  alan yoksa yalniz uretilebilirlik denetlenir).
+* G-CAP (anchor ciktisi; A20.2b): capa gramere uyar, kanoniktir ve tekildir; `rn:` capasi
+  `anchor/risale.py` dogrulayicisindan gecer (slug, derinlik, kalip) ve kitabi tabloda vardir;
+  oz yinelenen capa yok (ilk bolum adi kitap slug'iyla ayni degil); paket
+  kimligi `risale-{kitap}` ve `risale-dizin` degil; `parent_path`, `kind`, `role`, `ord` (kitap
+  icinde 1..N okuma sirasi), `data_version`, `metin_durumu` capayla ve kayitla tutarli;
+  `content_hash` metnin SHA-256'si; `marks` ve `sentences` araliklari yari acik ve metne sigar,
+  cumle sinirlari ayiriciyla yeniden uretilince ayni ve `ar` isaretinde bolunmez; onceki
+  (kapilari gecmis) anchor calismasindaki her capa durur ve ayni `content_hash`i tasir (onceki
+  calisma yoksa atlanir; kaynak kilidi degistiyse yalniz `content_hash` farki kabul edilir).
+* G-NOR: normalizasyon vektorleri gecer; Turkce kitapta `tr_narrow`, `tr_wide`, `tr_stem` dolu ve
+  `search_keys` ile yeniden uretilince ayni; Osmanlica ve Arapca birimlerde yalniz `ar_norm` vardir
+  (`tr_*` bos), `ar_norm` metinden `normalize_ar` ile yeniden uretilince ayni ve Arapca harfli
+  birimde bos degil (anchor ciktisi yoksa yalniz ingest birimlerinde uretilebilirlik denetlenir).
 """
 
 import hashlib
 import unicodedata
 from collections import Counter, defaultdict
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from itertools import pairwise
 from pathlib import Path
 from typing import Final
 
 from mutalaa_pipeline import lineage
-from mutalaa_pipeline.anchor.risale import Kitap
+from mutalaa_pipeline.adimlar.risale import (
+    ANCHOR_ALANLARI,
+    KIND,
+    METIN_DURUMU,
+    ROLLER,
+    cumle_araliklari,
+    hasiye_bolumu_mu,
+    ord_anahtari_degerleri,
+    parent_yolu,
+    rn_yolu,
+)
+from mutalaa_pipeline.anchor import SortKey, content_hash, parse, sort_key
+from mutalaa_pipeline.anchor.cumle import CUMLE_SURUMU
+from mutalaa_pipeline.anchor.risale import DIZIN, DIZIN_PAKETI, PAKET_ONEKI, Kitap, paket_kimligi
 from mutalaa_pipeline.enums import SourceKind
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest.risale_rnk import (
@@ -43,13 +66,13 @@ from mutalaa_pipeline.ingest.risale_rnk_kilit import (
     kilit_ozeti,
     kitap_istatistigi,
 )
-from mutalaa_pipeline.normalize import normalize_ar
-from mutalaa_pipeline.qa.checks.tanzil import KapiSonucu
+from mutalaa_pipeline.normalize import NORMALIZER_VERSION, normalize_ar, search_keys
+from mutalaa_pipeline.qa.checks.tanzil import KapiSonucu, Onceki
 from mutalaa_pipeline.qa.vektorler import vektorleri_calistir
 from mutalaa_pipeline.sources.kayit import Kaynak
 from mutalaa_pipeline.staged import satirlari_oku
 
-RNK_KAPILARI: Final = ("G-KAY", "G-BUT", "G-NOR")
+RNK_KAPILARI: Final = ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
 YER_TUTUCU: Final = "{surum}"
 EN_COK_ORNEK: Final = 5
 ISTATISTIK_ALANLARI: Final = (
@@ -86,6 +109,11 @@ class RnkGirdisi:
     kitaplar: Sequence[Satir]  # kitaplar.jsonl
     tablo: tuple[Kitap, ...]
     depo_kok: Path
+    # anchor ciktisi (A20.2b): her cagrida yeni bir satir akisi; yoksa G-CAP ve G-NOR'un anchor
+    # denetimleri kosulamaz (G-CAP kalir). Bellek icin liste degil akistir.
+    anchor: Callable[[], Iterator[Satir]] | None = None
+    onceki: Onceki | None = None  # G-CAP tabani (kapilari gecmis onceki anchor calismasi)
+    onceki_kilit_ozeti: str | None = None  # o calismanin ingest'indeki kilit ozeti
 
 
 def girdi_yukle(klasor: Path) -> tuple[list[Satir], list[Satir], list[Satir], list[Satir]]:
@@ -339,6 +367,232 @@ def g_but(g: RnkGirdisi) -> KapiSonucu:
     return KapiSonucu("G-BUT", tuple(bulgular), sayilar)
 
 
+# --- G-CAP -------------------------------------------------------------------------------
+
+
+def _oz_yineleme(yol: Sequence[str]) -> bool:
+    """Ilk bolum kitap slug'iyla ayni mi (`rn:tuluat:tuluat:p1`); bu duzey daraltilmalidir."""
+    return len(yol) > 1 and yol[1] == yol[0]
+
+
+def _araliklar_gecerli(deger: object, uzunluk: int) -> bool:
+    """`[[bas, son], ...]`: tam sayi, `0 <= bas < son <= uzunluk`, artan ve ayrik (yari acik)."""
+    if not isinstance(deger, list):
+        return False
+    onceki_son = 0
+    for oge in deger:
+        if (
+            not isinstance(oge, list)
+            or len(oge) != 2
+            or any(isinstance(v, bool) or not isinstance(v, int) for v in oge)
+        ):
+            return False
+        bas, son = oge
+        if not 0 <= bas < son <= uzunluk or bas < onceki_son:
+            return False
+        onceki_son = son
+    return True
+
+
+def _isaretler_gecerli(marks: Sequence[object], uzunluk: int) -> bool:
+    """Her isaret `t` ve tam sayi `s` tasir; `e` varsa `0 <= s <= e <= uzunluk` (yari acik)."""
+    for m in marks:
+        if not isinstance(m, dict) or not isinstance(m.get("t"), str):
+            return False
+        bas = m.get("s")
+        son = m.get("e", bas)
+        if (
+            isinstance(bas, bool)
+            or isinstance(son, bool)
+            or not isinstance(bas, int)
+            or not isinstance(son, int)
+            or not 0 <= bas <= son <= uzunluk
+        ):
+            return False
+    return True
+
+
+def _ar_icinde_boler(sentences: Sequence[object], marks: Sequence[object]) -> bool:
+    """Ardisik iki cumle arasindaki sinir bir `ar` isaretli araligin icine dusuyor mu.
+
+    Sinir, bir onceki cumlenin bitisi ile sonrakinin baslangicidir; aralik ikisini de kapsiyorsa
+    cumle `ar` isaretinde bolunmustur. Son cumlenin sondaki bosluk kirpmasi bolme sayilmaz.
+    """
+    araliklar = [
+        (_tam(m["s"]), _tam(m["e"]))
+        for m in marks
+        if isinstance(m, dict) and m.get("t") == "ar" and "e" in m
+    ]
+    sinirlar = [(_tam(_liste(a)[1]), _tam(_liste(b)[0])) for a, b in pairwise(sentences)]
+    return any(bas < son and sonraki < bit for son, sonraki in sinirlar for bas, bit in araliklar)
+
+
+def _hash_bicimi(ozet: str) -> bool:
+    return len(ozet) == 64 and all(c in "0123456789abcdef" for c in ozet)
+
+
+def g_cap(g: RnkGirdisi) -> KapiSonucu:
+    if g.anchor is None:
+        return KapiSonucu("G-CAP", ("anchor ciktisi yok (once normalize ve anchor)",), {"capa": 0})
+    bulgular: list[str] = []
+    tablo = {k.slug: k for k in g.tablo}
+    gorulen: set[str] = set()
+    adet = 0
+    listeler: dict[str, list[str]] = defaultdict(list)
+    anahtarlar: list[tuple[SortKey, str]] = []
+    siralar: dict[str, list[tuple[object, int]]] = defaultdict(list)
+    simdiki: dict[str, str] = {}
+    kitap_kumesi: set[str] = set()
+    derinlik: Counter[int] = Counter()
+    data_version = f"{KAYNAK}@{g.kayit.surum}"
+    for b in g.anchor():
+        adet += 1
+        capa = _metin(b["anchor"])
+        if capa in gorulen:
+            listeler["yinelenen capa"].append(capa)
+        gorulen.add(capa)
+        if set(b) != ANCHOR_ALANLARI:
+            listeler["alan kumesi"].append(capa)
+            continue
+        parcalar = capa.split(":")
+        if capa.startswith("rn:") and len(parcalar) > 1 and parcalar[1] == DIZIN:
+            listeler["paket kimligi risale-dizin"].append(capa)
+            continue
+        try:
+            yol = rn_yolu(capa)
+        except GirdiHatasi:
+            listeler["gecersiz capa"].append(capa)
+            continue
+        derinlik[len(yol)] += 1
+        kitap = yol[0]
+        kitap_kumesi.add(kitap)
+        if _oz_yineleme(yol):
+            listeler["oz yinelenen capa"].append(capa)
+        kayit = tablo.get(kitap)
+        if kayit is None:
+            listeler["kitap tabloda yok"].append(capa)
+        else:
+            paket = paket_kimligi(kitap)
+            if not paket.startswith(PAKET_ONEKI) or paket == DIZIN_PAKETI:
+                listeler["paket kimligi"].append(capa)
+            attrs = _nesne(b["attrs"])
+            if attrs.get("dil") != kayit.dil or attrs.get("yon") != kayit.yon:
+                listeler["dil ve yon kitap tablosuyla ayni degil"].append(capa)
+        hasiye = hasiye_bolumu_mu(yol)
+        rol = b.get("role")
+        if rol not in ROLLER.values() or (rol == ROLLER["hasiye"]) != hasiye:
+            listeler["role"].append(capa)
+        if (
+            b.get("kind") != KIND
+            or b.get("metin_durumu") != METIN_DURUMU
+            or b.get("source_id") != KAYNAK
+            or b.get("data_version") != data_version
+            or b.get("ayah_lo") is not None
+            or b.get("ayah_hi") is not None
+        ):
+            listeler["sabit alan"].append(capa)
+        if b.get("parent_path") != parent_yolu(yol):
+            listeler["parent_path"].append(capa)
+        ozet, metin = _metin(b["content_hash"]), _metin(b["text"])
+        if not _hash_bicimi(ozet):
+            listeler["content_hash biciminde"].append(capa)
+        elif ozet != content_hash(metin):
+            listeler["content_hash"].append(capa)
+        marks = _liste(b["marks"])
+        sentences = b["sentences"]
+        if not _isaretler_gecerli(marks, len(metin)):
+            listeler["marks araligi"].append(capa)
+        if not _araliklar_gecerli(sentences, len(metin)):
+            listeler["sentences araligi"].append(capa)
+        elif rol == ROLLER["baslik"]:
+            if sentences:
+                listeler["baslik biriminde cumle"].append(capa)
+        elif _isaretler_gecerli(marks, len(metin)):
+            try:
+                beklenen = cumle_araliklari(capa, metin, [_nesne(m) for m in marks])
+            except GirdiHatasi:
+                beklenen = []
+            if beklenen != sentences:
+                listeler["sentences ayiriciyla yeniden uretilemedi"].append(capa)
+            if _ar_icinde_boler(_liste(sentences), marks):
+                listeler["ar isaretinde cumle siniri"].append(capa)
+        saglayici = _nesne(b["provenance"])
+        if _nesne(saglayici.get("cumle", {})).get("surum") != CUMLE_SURUMU:
+            listeler["provenance.cumle.surum"].append(capa)
+        try:
+            ord_anahtari = ord_anahtari_degerleri(capa, saglayici)
+        except GirdiHatasi:
+            listeler["provenance.konum"].append(capa)
+        else:
+            siralar[kitap].append((ord_anahtari, _tam(b["ord"])))
+        anahtarlar.append((sort_key(parse(capa)), capa))
+        simdiki[capa] = ozet
+    siralama = [c for (a, _), (bb, c) in pairwise(anahtarlar) if not a < bb]
+    ord_hatasi: list[str] = []
+    for kitap, liste in siralar.items():
+        liste.sort(key=lambda cift: cift[0])  # type: ignore[arg-type, return-value]
+        if [o for _, o in liste] != list(range(1, len(liste) + 1)):
+            ord_hatasi.append(kitap)
+    eksik_kitap = sorted(set(tablo) - kitap_kumesi)
+    for ad, neden in (
+        ("alan kumesi", "anchor cikisinin alan kumesi degil"),
+        ("yinelenen capa", "capa birden fazla satirda"),
+        ("gecersiz capa", "gramere, rn: dogrulayicisina ya da kanonik bicime uymuyor"),
+        ("kitap tabloda yok", "kitap slug'i risale-kitaplar.json'da yok"),
+        ("oz yinelenen capa", "ilk bolum adi kitap slug'iyla ayni (duzey daraltilmali)"),
+        ("paket kimligi risale-dizin", "dizin kitap slug'i olamaz"),
+        ("paket kimligi", "risale-{kitap} paket kimligi uretilemiyor"),
+        ("dil ve yon kitap tablosuyla ayni degil", "attrs.dil ya da attrs.yon tabloyla farkli"),
+        ("role", "role baslik/dipnot/govde kuralina uymuyor"),
+        ("sabit alan", "kind, metin_durumu, source_id, data_version ya da ayah_lo/hi"),
+        ("parent_path", "capanin bolum yoluyla ayni degil"),
+        ("content_hash biciminde", "64 haneli kucuk harfli onaltilik degil"),
+        ("content_hash", "metnin SHA-256'siyla tutmuyor"),
+        ("marks araligi", "yari acik aralik metne sigmiyor"),
+        ("sentences araligi", "yari acik, artan, ayrik aralik metne sigmiyor"),
+        ("baslik biriminde cumle", "baslik birimi cumle tasimaz"),
+        ("sentences ayiriciyla yeniden uretilemedi", "cumle ayirici surumuyle farkli"),
+        ("ar isaretinde cumle siniri", "ar isaretli aralik icinde bolunmus"),
+        ("provenance.cumle.surum", "cumle ayirici surumu yok ya da farkli"),
+        ("provenance.konum", "okuma sirasi icin satir konumu yok"),
+    ):
+        _bulgu(bulgular, ad, listeler.get(ad, []), neden)
+    _bulgu(bulgular, "okuma sirasi", siralama, "satir onceki capadan sonra gelmiyor")
+    _bulgu(bulgular, "ord", ord_hatasi, "kitapta ord 1..N okuma sirasi degil")
+    _bulgu(bulgular, "capasiz kitap", eksik_kitap, "kitap tablosunda var, birimi yok")
+    sayilar: dict[str, int] = {
+        "capa": adet,
+        "kitap": len(kitap_kumesi),
+        "onceki_run": 0,
+        "hash_degisen": 0,
+        "kilit_degisti": 0,
+        **{f"derinlik_{d}": n for d, n in sorted(derinlik.items())},
+    }
+    if g.onceki is not None:
+        sayilar["onceki_run"] = 1
+        kayip = sorted(c for c in g.onceki.ozetler if c not in simdiki)
+        degisen = sorted(
+            c for c, ozet in g.onceki.ozetler.items() if c in simdiki and simdiki[c] != ozet
+        )
+        kilit_degisti = (
+            g.onceki_kilit_ozeti is None or g.onceki_kilit_ozeti != g.kilit_ozeti_manifest
+        )
+        sayilar.update(
+            onceki_capa=len(g.onceki.ozetler),
+            hash_degisen=len(degisen),
+            kilit_degisti=1 if kilit_degisti else 0,
+        )
+        _bulgu(bulgular, "onceki surumde olup kaybolan capa", kayip, "capa kullanim disi olamaz")
+        if not kilit_degisti:  # content_hash yalniz kaynak kilidi degisince degisebilir
+            _bulgu(
+                bulgular,
+                "onceki surumle content_hash farkli",
+                degisen,
+                "kilit ayni iken metin degismis",
+            )
+    return KapiSonucu("G-CAP", tuple(bulgular), sayilar)
+
+
 # --- G-NOR -------------------------------------------------------------------------------
 
 TR_ALANLARI: Final = ("tr_narrow", "tr_wide", "tr_stem")
@@ -348,6 +602,51 @@ def _arapca_harf_var(metin: str) -> bool:
     return any("؀" <= c <= "ۿ" and unicodedata.category(c).startswith("L") for c in metin)
 
 
+def _anchor_normu(g: RnkGirdisi, bulgular: list[str]) -> dict[str, int]:
+    """Anchor ciktisinda arama sutunlari: doluluk ve yeniden uretim (`search_keys`)."""
+    assert g.anchor is not None
+    listeler: dict[str, list[str]] = defaultdict(list)
+    sayac: Counter[str] = Counter()
+    for b in g.anchor():
+        capa = _metin(b["anchor"])
+        dil = _nesne(b["attrs"]).get("dil")
+        metin = _metin(b["text"])
+        sayac[f"birim_{dil}"] += 1
+        arama = _nesne(_nesne(b["provenance"]).get("arama", {}))
+        if arama.get("normalizer_version") != NORMALIZER_VERSION:
+            listeler["normalizer_version"].append(capa)
+        if dil == "tr":
+            k = search_keys(metin)
+            for alan, deger in zip(TR_ALANLARI, (k.tr_narrow, k.tr_wide, k.tr_stem), strict=True):
+                if b.get(alan) is None:
+                    listeler["tr_* bos (null)"].append(capa)
+                elif b[alan] != deger:
+                    listeler["tr_*"].append(capa)
+            ar_beklenen = k.ar_norm or None
+            sayac["tr_denetlenen"] += 1
+        else:
+            if any(b.get(a) is not None for a in TR_ALANLARI):
+                listeler["ota/ar tr_*"].append(capa)
+            ar_beklenen = normalize_ar(metin) or None
+            if _arapca_harf_var(metin) and ar_beklenen is None:
+                listeler["ar_norm uretilemedi"].append(capa)
+        if "ar_norm" not in b or b["ar_norm"] != ar_beklenen:
+            listeler["ar_norm"].append(capa)
+        sayac["ar_norm_denetlenen"] += 1
+        if b.get("ar_norm") is not None:
+            sayac["ar_norm_dolu"] += 1
+    for ad, neden in (
+        ("normalizer_version", "provenance.arama.normalizer_version guncel degil"),
+        ("tr_* bos (null)", "Turkce kitapta tr_narrow, tr_wide ya da tr_stem null"),
+        ("tr_*", "Turkce kitapta search_keys ile yeniden uretilen degerle ayni degil"),
+        ("ota/ar tr_*", "Osmanlica/Arapca birimde tr_* dolu (yalniz ar_norm)"),
+        ("ar_norm uretilemedi", "Arapca harfli birimde ar_norm uretilemedi"),
+        ("ar_norm", "metinden normalize_ar ile uretilen degerle ayni degil"),
+    ):
+        _bulgu(bulgular, ad, listeler.get(ad, []), neden)
+    return dict(sayac)
+
+
 def g_nor(g: RnkGirdisi) -> KapiSonucu:
     bulgular: list[str] = []
     vektor = vektorleri_calistir(g.depo_kok)
@@ -355,6 +654,12 @@ def g_nor(g: RnkGirdisi) -> KapiSonucu:
         bulgular.append(f"normalizasyon vektoru: {len(vektor.kalan)}/{vektor.toplam} kaldi")
     if vektor.hizasiz:
         bulgular.append(f"tr_wide/tr_stem sozcuk hizasi: {len(vektor.hizasiz)} vektor")
+    sayilar: dict[str, int] = {"vektor": vektor.toplam, "vektor_kalan": len(vektor.kalan)}
+    if g.anchor is not None:
+        sayilar.update(_anchor_normu(g, bulgular))
+        sayilar["ota_ar_birim"] = sayilar.get("birim_ota", 0) + sayilar.get("birim_ar", 0)
+        return KapiSonucu("G-NOR", tuple(bulgular), sayilar)
+    # Anchor ciktisi yoksa (yalniz ingest birimleri): Osmanlica/Arapca uretilebilirlik.
     tr_dolu: list[str] = []
     farkli: list[str] = []
     bos_anahtar: list[str] = []
@@ -382,18 +687,14 @@ def g_nor(g: RnkGirdisi) -> KapiSonucu:
     )
     _bulgu(bulgular, "ar_norm", farkli, "metinden normalize_ar ile uretilen degerle ayni degil")
     _bulgu(bulgular, "ar_norm", bos_anahtar, "Arapca harfli birimde ar_norm uretilemedi")
-    sayilar = {
-        "vektor": vektor.toplam,
-        "vektor_kalan": len(vektor.kalan),
-        "ar_norm_denetlenen": kontrol,
-        "ota_ar_birim": sayac["ota"] + sayac["ar"],
-    }
+    sayilar.update(ar_norm_denetlenen=kontrol, ota_ar_birim=sayac["ota"] + sayac["ar"])
     return KapiSonucu("G-NOR", tuple(bulgular), sayilar)
 
 
 KAPI_ISLEVLERI: Final[dict[str, Callable[[RnkGirdisi], KapiSonucu]]] = {
     "G-KAY": g_kay,
     "G-BUT": g_but,
+    "G-CAP": g_cap,
     "G-NOR": g_nor,
 }
 

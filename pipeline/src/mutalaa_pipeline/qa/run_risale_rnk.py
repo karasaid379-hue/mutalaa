@@ -1,16 +1,19 @@
-"""`risale-rnk-metin` QA girdisinin yuklenmesi ve kapilarin kosulmasi (A20.1b).
+"""`risale-rnk-metin` QA girdisinin yuklenmesi ve kapilarin kosulmasi (A20.1b, A20.2b).
 
-Ingest asamasinda kosar (normalize ve anchor adimlari A20.2b'ye aittir): son `ingest`
-calismasini (ya da `--run`) zincir denetimiyle okur, manifestteki `raw/risale-rnk-metin/...`
-girdilerini ozetle dogrulayarak yukler ve `qa/checks/risale_rnk.py` kapilarini calistirir.
-`qa run` yonlendirmesi, rapor alanlari (`kaynak`, `kapilar`, `kapi_bulgulari` ...) ve cikis
-kodlari `qa/run.py` ile ayni bicimdedir: 0 kapilar gecti, 1 bir kapi kaldi, 2 girdi ya da
-zincir hatasi. Rapor `data/reports/{run_id}.json`: `kaynak`, `ingest_run_id`, `units_sha256`,
-`kapilar`, `kapi_bulgulari`, `kapi_sayilari`, `zincir`; rapor ve bulgular metin tasimaz.
+Zincir `anchor -> normalize -> ingest` (`qa/run.py` gibi): son `anchor` calismasini (ya da
+`--run`) okur, her halkanin ciktilari saglam ve girdi ozeti ust halkanin ciktisiyla ayni olmali.
+G-KAY ve G-BUT ingest birimlerini ve manifestteki `raw/risale-rnk-metin/...` ham dosyalarini
+(ozetle dogrulanarak), G-CAP ve G-NOR anchor ciktisini (satir satir akitilir) kullanir; G-CAP
+tabani kapilarini gecmis en yeni onceki anchor calismasidir. Rapor alanlari (`kaynak`,
+`anchor_run_id`, `units_sha256`, `onceki_anchor_run_id`, `kapilar`, `kapi_bulgulari`,
+`kapi_sayilari`, `zincir`, `ingest_run_id`) ve cikis kodlari `qa/run.py` ile ayni bicimdedir:
+0 kapilar gecti, 1 bir kapi kaldi, 2 girdi ya da zincir hatasi. Rapor `data/reports/{run_id}.json`;
+rapor ve bulgular metin tasimaz.
 """
 
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Iterator, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
@@ -24,23 +27,29 @@ from mutalaa_pipeline.ingest.risale_rnk_kaynaklari import (
 )
 from mutalaa_pipeline.ingest.risale_rnk_kilit import KAYNAK, kilit_yukle
 from mutalaa_pipeline.komut_ortak import komutu_yurut
-from mutalaa_pipeline.lineage import OZET_DESENI
+from mutalaa_pipeline.lineage import OZET_DESENI, UNITS_ADI
 from mutalaa_pipeline.qa import GECTI, KALDI, QA_KOMUTU
 from mutalaa_pipeline.qa.checks.risale_rnk import KAPI_ISLEVLERI, RNK_KAPILARI, RnkGirdisi
-from mutalaa_pipeline.qa.checks.tanzil import KapiSonucu
+from mutalaa_pipeline.qa.checks.tanzil import KapiSonucu, Onceki
+from mutalaa_pipeline.qa.rapor import QaRaporlari
 from mutalaa_pipeline.runctx import QaKaldi, RunContext
 from mutalaa_pipeline.sources.kayit import SLUG_DESENI
+from mutalaa_pipeline.staged import Satir, satirlari_akit
 from mutalaa_pipeline.zincir import (
+    ANCHOR_ADIMI,
     INGEST_ADIMI,
+    NORMALIZE_ADIMI,
     RAW_ONEK,
     YOL_PARCASI,
     Calisma,
     calisma_bul,
     dosya_oku,
     girdiler,
+    onceki_calisma,
     saglam_olmali,
     son_calisma,
     units_oku,
+    ust_calismalar,
 )
 
 QA_ADIMI: Final = "qa"
@@ -48,7 +57,7 @@ EN_COK_BULGU: Final = 20
 
 
 def kapilari_sec(gate: Sequence[str] | None) -> tuple[str, ...]:
-    """`--gate` degerleri; verilmezse uc kapi. Bilinmeyen kapi `GirdiHatasi`."""
+    """`--gate` degerleri; verilmezse dort kapi. Bilinmeyen kapi `GirdiHatasi`."""
     if not gate:
         return RNK_KAPILARI
     if any(g not in RNK_KAPILARI for g in gate):
@@ -83,20 +92,88 @@ def _ham_dosyalar(ctx: RunContext, ingest: Calisma) -> dict[str, bytes]:
     return sonuc
 
 
-def yukle(ctx: RunContext, *, run: str | None = None) -> tuple[RnkGirdisi, Calisma]:
-    """Son (ya da `--run`) ingest calismasini yukler; bozuk zincir `GirdiHatasi` (cikis 2)."""
+@dataclass(frozen=True)
+class Yuklenen:
+    girdi: RnkGirdisi
+    anchor: Calisma
+    normalize: Calisma
+    ingest: Calisma
+
+
+def _ust(ctx: RunContext, calisma: Calisma, adim: str) -> Calisma:
+    """Halkanin tek ust calismasi: `risale-rnk-metin`in `adim` calismasi, ciktilari saglam."""
+    ustler = ust_calismalar(ctx, calisma)
+    if len(ustler) != 1 or ustler[0].adim != adim or ustler[0].source_id != KAYNAK:
+        raise GirdiHatasi(
+            f"zincir bozuk: {calisma.adim} calistirmasi bir {adim} calistirmasina bagli olmali"
+        )
+    saglam_olmali(ctx, ustler[0])
+    return ustler[0]
+
+
+def _anchor_akisi(calisma: Calisma, etiket: str) -> Callable[[], Iterator[dict[str, object]]]:
+    """Anchor ciktisinin her cagrida yeni satir akisi (ozet `saglam_olmali` ile dogrulanmistir)."""
+    yol = calisma.klasor / UNITS_ADI
+
+    def akis() -> Iterator[dict[str, object]]:
+        satir: Satir
+        for satir in satirlari_akit(yol, etiket):
+            yield satir.veri
+
+    return akis
+
+
+def _onceki(ctx: RunContext, once: str) -> tuple[Onceki | None, str | None]:
+    """G-CAP tabani: `once` kimliginden onceki, kapilarini gecmis en yeni anchor calismasi.
+
+    Donus: capa ozetleri ve o calismanin ingest'indeki kilit ozeti (okunamazsa `(None, None)`).
+    """
+    raporlar = QaRaporlari(ctx.veri_kok)
+
+    def onayli(calisma: Calisma) -> bool:
+        ozet = calisma.cikti_ozeti()
+        return ozet is not None and raporlar.onayli_mi(KAYNAK, calisma.run_id, ozet)
+
+    onceki = onceki_calisma(ctx, KAYNAK, ANCHOR_ADIMI, once=once, kabul=onayli)
+    if onceki is None:
+        if onceki_calisma(ctx, KAYNAK, ANCHOR_ADIMI, once=once) is not None:
+            ctx.uyar(
+                "onceki anchor calistirmalari var ama dort kapisini da gecmis olan yok:"
+                " onceki capa denetimi yapilamadi"
+            )
+        return None, None
+    try:
+        ozetler = {
+            s.metin("anchor"): s.metin("content_hash")
+            for s in satirlari_akit(onceki.klasor / UNITS_ADI, "onceki anchor units.jsonl")
+        }
+        ingest = _ust(ctx, _ust(ctx, onceki, NORMALIZE_ADIMI), INGEST_ADIMI)
+    except GirdiHatasi:
+        ctx.uyar("onceki anchor calistirmasi okunamadi: onceki capa denetimi yapilamadi")
+        return None, None
+    kilit = ingest.ayrinti("kilit_sha256")
+    return Onceki(onceki.run_id, ozetler), kilit if isinstance(kilit, str) else None
+
+
+def yukle(ctx: RunContext, *, run: str | None = None) -> Yuklenen:
+    """Son (ya da `--run`) anchor zincirini yukler; bozuk zincir `GirdiHatasi` (cikis 2)."""
     kayit = ctx.require_sources(KAYNAK)[KAYNAK]
-    ingest = (
-        calisma_bul(ctx, KAYNAK, run, INGEST_ADIMI)
+    anchor = (
+        calisma_bul(ctx, KAYNAK, run, ANCHOR_ADIMI)
         if run is not None
-        else son_calisma(ctx, KAYNAK, INGEST_ADIMI, ipucu=f"once: ingest risale --source {KAYNAK}")
+        else son_calisma(ctx, KAYNAK, ANCHOR_ADIMI, ipucu=f"once: anchor --source {KAYNAK}")
     )
-    ozet = ingest.cikti_ozeti()
+    # Rapor, sonraki adimlar hata verse de bu anchor calismasina baglanir (qa/run.py ile ayni).
+    ctx.rapor_ek["anchor_run_id"] = anchor.run_id
+    ozet = anchor.cikti_ozeti()
     if ozet is not None:
         ctx.rapor_ek["units_sha256"] = ozet
+    saglam_olmali(ctx, anchor)
+    normalize = _ust(ctx, anchor, NORMALIZE_ADIMI)
+    ingest = _ust(ctx, normalize, INGEST_ADIMI)
     ctx.rapor_ek["ingest_run_id"] = ingest.run_id
-    saglam_olmali(ctx, ingest)
     kilit_ozeti_manifest = ingest.ayrinti("kilit_sha256")
+    onceki, onceki_kilit = _onceki(ctx, anchor.run_id)
     girdi = RnkGirdisi(
         kayit=kayit,
         kilit=kilit_yukle(),
@@ -110,12 +187,15 @@ def yukle(ctx: RunContext, *, run: str | None = None) -> tuple[RnkGirdisi, Calis
         kitaplar=[s.veri for s in dosya_oku(ingest, KITAPLAR_ADI, f"{KAYNAK} {KITAPLAR_ADI}")],
         tablo=kitaplar(),
         depo_kok=ctx.depo_kok,
+        anchor=_anchor_akisi(anchor, f"anchor {KAYNAK} units.jsonl"),
+        onceki=onceki,
+        onceki_kilit_ozeti=onceki_kilit,
     )
-    return girdi, ingest
+    return Yuklenen(girdi, anchor, normalize, ingest)
 
 
 def kapilari_kos(girdi: RnkGirdisi, kapilar: Sequence[str]) -> dict[str, KapiSonucu]:
-    """Secilen kapilari sirayla calistirir (`G-KAY`, `G-BUT`, `G-NOR`)."""
+    """Secilen kapilari sirayla calistirir (`G-KAY`, `G-BUT`, `G-CAP`, `G-NOR`)."""
     return {kapi: KAPI_ISLEVLERI[kapi](girdi) for kapi in kapilar}
 
 
@@ -125,8 +205,14 @@ def run_qa(
     """Kapilari kosar, `ctx.rapor_ek` alanlarini doldurur; sonuclari dondurur."""
     ctx.rapor_ek["kaynak"] = KAYNAK
     ctx.gunluk.yaz("INFO", "qa_basla", source_id=KAYNAK)
-    girdi, ingest = yukle(ctx, run=run)  # kayitsiz ya da gecersiz kayit: cikis 2
-    ctx.rapor_ek["zincir"] = {"ingest": ingest.run_id}
+    y = yukle(ctx, run=run)  # kayitsiz ya da gecersiz kayit: cikis 2
+    girdi = y.girdi
+    ctx.rapor_ek["onceki_anchor_run_id"] = girdi.onceki.run_id if girdi.onceki is not None else None
+    ctx.rapor_ek["zincir"] = {
+        "anchor": y.anchor.run_id,
+        "normalize": y.normalize.run_id,
+        "ingest": y.ingest.run_id,
+    }
     sonuclar = kapilari_kos(girdi, kapilar)
     ctx.rapor_ek["kapilar"] = {k: GECTI if s.gecti else KALDI for k, s in sonuclar.items()}
     ctx.rapor_ek["kapi_bulgulari"] = {
@@ -155,7 +241,7 @@ def komut_qa_run_risale_rnk(
         sonuclar = run_qa(ctx, run=run, kapilar=kapilari_sec(gate))
         durumlar = ", ".join(f"{k} {GECTI if s.gecti else KALDI}" for k, s in sonuclar.items())
         sys.stdout.write(
-            f"qa run {KAYNAK}: {durumlar} (ingest run {ctx.rapor_ek['ingest_run_id']})\n"
+            f"qa run {KAYNAK}: {durumlar} (anchor run {ctx.rapor_ek['anchor_run_id']})\n"
         )
         for kapi, s in sonuclar.items():
             for bulgu in s.bulgular[:EN_COK_BULGU]:

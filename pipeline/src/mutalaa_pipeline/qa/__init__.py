@@ -31,8 +31,9 @@ def kaynak_kapilari(source_id: object) -> tuple[str, ...]:
     """Bir kaynagin `export pg` icin gecmesi gereken kapilar (varsayilan dort kapi).
 
     Meal kaynaklarinda bes kapi: G-HIZ sert kapidir (K-49 madde 12); G-MET uygulanmaz.
-    RNK Risale metninde (`risale-rnk-metin`) uc kapi: G-KAY, G-BUT, G-NOR. Diyanet karsilastirma
-    verisi (`risale-asil-nusha`) `export pg` ile yuklenmez; varsayilan dort kapi ona uygulanmaz.
+    RNK Risale metninde (`risale-rnk-metin`) dort kapi: G-KAY, G-BUT, G-CAP, G-NOR. Diyanet
+    karsilastirma verisi (`risale-asil-nusha`) `export pg` ile yuklenmez; varsayilan dort kapi ona
+    uygulanmaz.
     """
     if meal_mi(source_id):
         return MEAL_KAPILARI
@@ -40,6 +41,6 @@ def kaynak_kapilari(source_id: object) -> tuple[str, ...]:
         return YAPI_KAPILARI
     if source_id == SURE_ADI_KAYNAGI:
         return SURE_ADI_KAPILARI
-    if source_id == KAYNAK_RNK:  # A20.1b: ingest asamasi; G-CAP A20.2b'de eklenir
+    if source_id == KAYNAK_RNK:  # A20.2b: G-CAP dahil dort kapi
         return RNK_KAPILARI
     return KAPILAR

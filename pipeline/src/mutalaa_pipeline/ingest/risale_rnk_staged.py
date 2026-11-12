@@ -4,9 +4,13 @@
 
 * **Bolum agaci** RNK `json` icindekilerindendir (`contents`). Baslik satirlari (`<&€∑`) json
   dugumleriyle `title`/`textInBook` normalize eslesmesi ve `pageNo` ile eslesir; eslesen baslik
-  o bolumun `p1` birimidir ve bolumun adi dugum adindan turetilir (`slug_turet`, kardes
-  cakismasinda `-2`). Eslesmeyen baslik satiri duzeysiz baslik olarak o anki bolumde kalir
-  (uyari). Ilk eslesmeden onceki birimler kitap kokundedir (`rn:{kitap}:p{n}`).
+  o bolumun `p1` birimidir. Bolum adi sayili kalibi izler (A20.2b; `anchor.risale.baslik_bolum_adi`:
+  "Yirmi Besinci Soz" -> `soz-25`, `mukaddime`, `zeyl`, `hatime`); kaliba uymayan baslik
+  basliktan turetilir (`slug_turet`, en cok 40 karakter), kardes cakismasinda `-2` eki alir
+  (kalip adlari kalip disi bir adin eki olarak uretilmez). Kitabin ilk duzey dugumu kitap
+  slug'iyla ayni adi tasiyorsa (Sunuhat, Tuluat, Isarat) o duzey daraltilir. Eslesmeyen baslik
+  satiri duzeysiz baslik olarak o anki bolumde kalir (uyari). Ilk eslesmeden onceki birimler
+  kitap kokundedir (`rn:{kitap}:p{n}`).
 * **Paragraf** numarasi `p{n}` bolum basina 1'den artar (okuma sirasi). Dipnot `hasiye-{n}`
   bolumudur (`rn:{kitap}:{bolum}:hasiye-{n}:p{k}`; `n` bolumdeki sira, `k` dipnot ici paragraf);
   ana paragrafta `t: "hasiye"` isareti `a` ile dipnotun ilk paragraf capasini gosterir.
@@ -14,22 +18,25 @@
   birden cok kitap slug'ina bolunur; birim, ilk satirinin sayfasina gore parcaya gider. Sayfa
   isaretleri hicbir birimi bolmez; sayfa listesi RNK dosyasi (uid) duzeyinde kalir.
 
-Bolum adlari json basligindan turetilir (siralamali `soz-10` kalibi degil); kalip adlandirma ve
-slug dogrulamasi A20.2b ve I-24'e aittir. Metin degismez; `attrs.marks` isaretleri tasir.
+Slug dogrulamasi (`slug_denetle`, `bolum_denetle`) ve editor onayi I-24'e aittir. Metin degismez;
+`attrs.marks` isaretleri tasir; `attrs.baslik_yolu` bolumun json baslik zinciridir (etiket icin).
 """
 
 import bisect
 from collections import Counter
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Final
 
 from mutalaa_pipeline.anchor.risale import (
     Kitap,
     RisaleHatasi,
+    baslik_bolum_adi,
+    bolum_denetle,
+    bolum_kalibi,
     hasiye_yolu,
     kardes_slug,
     rn_capa,
-    slug_denetle,
     slug_turet,
 )
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kati_json
@@ -140,35 +147,111 @@ def json_oku(veri: bytes) -> JsonBilgisi:
     )
 
 
-def _bolum_slug(dugum: Dugum, kardesler: set[str]) -> str:
-    ad = dugum.baslik or dugum.metin_kitapta
-    try:
-        ham = slug_turet(ad, kes=False)[:MAKS_BOLUM_SLUG].rstrip("-")
-    except RisaleHatasi:
-        ham = "bolum"
-    try:
-        slug_denetle(ham)
-    except RisaleHatasi:
-        try:
-            ham = slug_denetle((BOLUM_ONEKI + ham)[:MAKS_BOLUM_SLUG].rstrip("-"))
-        except RisaleHatasi:
-            ham = "bolum"
-    sonuc = kardes_slug(ham, kardesler)
-    kardesler.add(sonuc)
-    return sonuc
+@dataclass(frozen=True)
+class BolumAgaci:
+    """Her json dugumunun bolum yolu, baslik zinciri ve adlandirma sayilari.
+
+    `yollar[j]`: dugumun slug yolu (kok `()`; daraltilan dugum ustunun yolunu tasir);
+    `basliklar[j]`: kokten dugume gorunen baslik zinciri (kok ve daraltilan dugum yok);
+    `istatistik`: `kalip_{tur}`, `baslik_turetilen`, `baslik_bos`, `kesildi_{40}`, `bolum_onekli`,
+    `kardes_eki`, `daraltildi` sayaclari (metin tasimaz).
+    """
+
+    yollar: tuple[tuple[str, ...], ...]
+    basliklar: tuple[tuple[str, ...], ...]
+    istatistik: Counter[str]
 
 
-def bolum_yollari(dugumler: tuple[Dugum, ...]) -> list[tuple[str, ...]]:
-    """Her dugumun bolum yolu (kok `()`); kardes cakismasi `-2` ekiyle cozulur."""
+def _baslik_slug(ad: str, istatistik: Counter[str]) -> str:
+    """Kalip disi baslikta slug: `slug_turet`, en cok 40 karakter; gecersizse `bolum-` oneki."""
+    try:
+        tam = slug_turet(ad, kes=False)
+    except RisaleHatasi:
+        istatistik["baslik_bos"] += 1
+        return "bolum"
+    istatistik["baslik_turetilen"] += 1
+    ham = tam[:MAKS_BOLUM_SLUG].rstrip("-")
+    if len(tam) > MAKS_BOLUM_SLUG:
+        istatistik[f"kesildi_{MAKS_BOLUM_SLUG}"] += 1
+    if _kalip_disi_uygun(ham):
+        return ham
+    istatistik["bolum_onekli"] += 1
+    onekli = (BOLUM_ONEKI + ham)[:MAKS_BOLUM_SLUG].rstrip("-")
+    return onekli if _kalip_disi_uygun(onekli) else "bolum"
+
+
+def _kalip_disi_uygun(ad: str) -> bool:
+    """Gecerli bolum adi mi; kalip adlari (`soz-4`, `hasiye-3`, `parca-1`) ayrilmis kalir.
+
+    `soz` gibi tur sozcugu de uygun degildir: kardes eki (`soz-2`) kalip adiyla karisirdi.
+    """
+    try:
+        bolum_denetle(ad)
+    except RisaleHatasi:
+        return False
+    return bolum_kalibi(ad) is None and bolum_kalibi(ad + "-2") is None
+
+
+def _benzersiz(ham: str, kardesler: set[str]) -> tuple[str, bool]:
+    """Kardes cakismasinda `-2`, `-3` ... eki (`kardes_slug`). `(ad, ek var mi)`."""
+    ad = kardes_slug(ham, kardesler)
+    return ad, ad != ham
+
+
+def bolum_agaci(
+    dugumler: tuple[Dugum, ...],
+    *,
+    parca_adi: Callable[[int], str] | None = None,
+) -> BolumAgaci:
+    """Bolum yollari, baslik zincirleri ve istatistik.
+
+    Kardes adlari `(etkin ust, kitap parcasi)` anahtariyla tekil kalir (ayni bolum agacindaki uc
+    kitap, ornegin Sunuhat/Tuluat/Isarat, birbirine `-2` eki yaptirmaz). `parca_adi(sayfa)` kitap
+    slug'ini verir; verilirse ilk duzey dugum kitap slug'iyla ayni adi tasidiginda daraltilir.
+    """
+    istatistik: Counter[str] = Counter()
     yollar: list[tuple[str, ...]] = []
-    kardesler: dict[int, set[str]] = {}
+    basliklar: list[tuple[str, ...]] = []
+    etkin: list[int] = []  # en yakin daraltilmamis atanin sirasi (kendisi dahil)
+    kardesler: dict[tuple[int, str], set[str]] = {}
     for d in dugumler:
         if d.ust is None:
             yollar.append(())
+            basliklar.append(())
+            etkin.append(d.sira)
             continue
-        ad = _bolum_slug(d, kardesler.setdefault(d.ust, set()))
+        gorunen = d.baslik or d.metin_kitapta
+        parca = parca_adi(d.sayfa) if parca_adi is not None else ""
+        kalip = baslik_bolum_adi(gorunen)
+        if kalip is not None:
+            ham = kalip
+            kalip_turu = bolum_kalibi(kalip)
+            assert kalip_turu is not None
+            istatistik[f"kalip_{kalip_turu.tur}"] += 1
+        else:
+            ham = _baslik_slug(gorunen, istatistik)
+        if d.ust == 0 and parca_adi is not None and kalip is None and ham == parca:
+            istatistik["daraltildi"] += 1
+            yollar.append(yollar[d.ust])
+            basliklar.append(basliklar[d.ust])
+            etkin.append(etkin[d.ust])
+            continue
+        mevcut = kardesler.setdefault((etkin[d.ust], parca), set())
+        ad, ekli = _benzersiz(ham, mevcut)
+        mevcut.add(ad)
+        if ekli:
+            istatistik["kardes_eki"] += 1
         yollar.append((*yollar[d.ust], ad))
-    return yollar
+        basliklar.append((*basliklar[d.ust], gorunen))
+        etkin.append(d.sira)
+    return BolumAgaci(tuple(yollar), tuple(basliklar), istatistik)
+
+
+def bolum_yollari(
+    dugumler: tuple[Dugum, ...], *, parca_adi: Callable[[int], str] | None = None
+) -> list[tuple[str, ...]]:
+    """Her dugumun bolum yolu (kok `()`); kardes cakismasi `-2` ekiyle cozulur."""
+    return list(bolum_agaci(dugumler, parca_adi=parca_adi).yollar)
 
 
 # ---------------------------------------------------------------------------
@@ -203,6 +286,15 @@ def parcalar(kitaplar: list[Kitap]) -> tuple[list[Parca], int | None]:
     return [Parca(p.slug, p.baslangic_sayfasi) for p in b.parcalar], b.son_sayfa
 
 
+def parca_sec(parca_listesi: list[Parca], sayfa: int | None) -> Parca:
+    """Sayfaya gore kitap parcasi (bolunmede ilk satirin sayfasi; sayfa yoksa ilk parca)."""
+    secilen = parca_listesi[0]
+    for p in parca_listesi:
+        if sayfa is not None and sayfa >= p.baslangic:
+            secilen = p
+    return secilen
+
+
 def kitap_donustur(
     *,
     raf: str,
@@ -232,27 +324,26 @@ def kitap_donustur(
     def parca_of(sayfa: int | None) -> Parca:
         if len(parca_listesi) == 1:
             return parca_listesi[0]
-        secilen = parca_listesi[0]
-        for p in parca_listesi:
-            if sayfa is not None and sayfa >= p.baslangic:
-                secilen = p
         if sayfa is not None and son_sayfa is not None and sayfa > son_sayfa:
             uyari["bolunme_son_sayfa_asildi"] += 1
-        return secilen
+        return parca_sec(parca_listesi, sayfa)
 
-    yollar = bolum_yollari(bilgi.dugumler)
+    agac = bolum_agaci(bilgi.dugumler, parca_adi=lambda sayfa: parca_sec(parca_listesi, sayfa).slug)
+    yollar = list(agac.yollar)
     dugumler = bilgi.dugumler
 
     # --- 1. gecis: bolum, parca, numara ------------------------------------------------
     n = len(a.birimler)
     parca_ad: list[str] = [""] * n
     bolum: list[tuple[str, ...]] = [()] * n
+    bolum_dugumu: list[int] = [0] * n  # birimin bolumunun json dugumu (baslik zinciri icin)
     numara: list[int] = [0] * n  # paragraf: p{n}; hasiye: dipnot icindeki paragraf p{k}
     hasiye_no: dict[int, int] = {}  # birim sirasi -> bolumdeki hasiye sirasi (1 tabanli)
     dugum_of: dict[int, int] = {}
     sayac_p: Counter[tuple[str, tuple[str, ...]]] = Counter()
     sayac_h: Counter[tuple[str, tuple[str, ...]]] = Counter()
     suanki: tuple[str, ...] = ()
+    suanki_dugum = 0
     ptr = 0
     eslesen_dugum = 0
     sayfa_uyumsuz = 0
@@ -263,9 +354,11 @@ def kitap_donustur(
                 ana = b.ust
                 parca_ad[b.sira] = parca_ad[ana]
                 bolum[b.sira] = bolum[ana]
+                bolum_dugumu[b.sira] = bolum_dugumu[ana]
             else:
                 parca_ad[b.sira] = parca_of(sayfa).slug
                 bolum[b.sira] = suanki
+                bolum_dugumu[b.sira] = suanki_dugum
             anahtar = (parca_ad[b.sira], bolum[b.sira])
             if b.ic_sira == 0:
                 sayac_h[anahtar] += 1
@@ -281,6 +374,7 @@ def kitap_donustur(
                 j, uyumlu = secilen
                 ptr = j + 1
                 suanki = yollar[j]
+                suanki_dugum = j
                 eslesen_dugum += 1
                 dugum_of[b.sira] = j
                 if not uyumlu:
@@ -289,6 +383,7 @@ def kitap_donustur(
                 uyari["baslik_eslesmedi"] += 1
         parca_ad[b.sira] = parca_of(sayfa).slug
         bolum[b.sira] = suanki
+        bolum_dugumu[b.sira] = suanki_dugum
         anahtar = (parca_ad[b.sira], suanki)
         sayac_p[anahtar] += 1
         numara[b.sira] = sayac_p[anahtar]
@@ -320,6 +415,7 @@ def kitap_donustur(
             "slug": parca_ad[b.sira],
             "bolum_yolu": list(bolum[b.sira]),
             "p": numara[b.sira],
+            "baslik_yolu": list(agac.basliklar[bolum_dugumu[b.sira]]),
             "dil": dil,
             "yon": yon,
             "marks": _isaretler(b, capalar),
@@ -391,6 +487,7 @@ def kitap_donustur(
         "birim": {t: sayac_tur.get(t, 0) for t in ("baslik", "paragraf", "hasiye")},
         "json_dugum": len(dugumler),
         "json_eslesen": eslesen_dugum,
+        "bolum_adlari": dict(sorted(agac.istatistik.items())),
         "ayristirici": AYRISTIRICI_SURUMU,
         "uyarilar": dict(sorted(uyari.items())),
     }

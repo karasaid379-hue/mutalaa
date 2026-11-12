@@ -14,6 +14,7 @@ from typing import Any
 import pytest
 from hat_yardimci import ctx_kur, depo_kur
 
+from mutalaa_pipeline.adimlar import risale as A
 from mutalaa_pipeline.anchor.risale import (
     Bolunme,
     BolunmeParcasi,
@@ -44,6 +45,7 @@ from mutalaa_pipeline.ingest.risale_rnk_kilit import (
     kilit_yukle,
 )
 from mutalaa_pipeline.lineage import sha256_bayt
+from mutalaa_pipeline.qa import run_risale_rnk as qa_run_modulu
 from mutalaa_pipeline.qa.checks import risale_rnk as Q
 from mutalaa_pipeline.qa.run_risale_rnk import kapilari_kos, kapilari_sec
 from mutalaa_pipeline.qa.run_risale_rnk import yukle as qa_yukle
@@ -636,13 +638,17 @@ def girdi_kur(
     )
 
 
-def test_rnk_qa_sentetik_uc_kapi_gecer() -> None:
+def test_rnk_qa_sentetik_ingest_kapilari_gecer_g_cap_anchor_ister() -> None:
+    """Ingest ciktisiyla G-KAY, G-BUT, G-NOR gecer; G-CAP anchor ciktisi olmadan kalir."""
     g = girdi_kur()
-    for ad, islev in Q.KAPI_ISLEVLERI.items():
-        sonuc = islev(g)
+    for ad in ("G-KAY", "G-BUT", "G-NOR"):
+        sonuc = Q.KAPI_ISLEVLERI[ad](g)
         assert sonuc.gecti, (ad, sonuc.bulgular)
     but = Q.g_but(g)
     assert but.sayilar["yeniden_kurulan"] == 1 and but.sayilar["kapsamsiz"] == 0
+    cap = Q.g_cap(g)
+    assert not cap.gecti and any("anchor ciktisi yok" in b for b in cap.bulgular)
+    assert tuple(Q.KAPI_ISLEVLERI) == Q.RNK_KAPILARI == ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
 
 
 def test_rnk_g_kay_eski_kilit_ozeti_kalir() -> None:
@@ -803,37 +809,43 @@ def test_rnk_uctan_uca_ingest_idempotent_ve_kapilar(
     assert not s3.atlandi and s3.klasor is not None
     for ad in ("units.jsonl", "sayfalar.jsonl", "yapi.jsonl", "kitaplar.jsonl"):
         assert (s1.klasor / ad).read_bytes() == (s3.klasor / ad).read_bytes()
-    # kapilar staged klasorunden okunur
-    birimler, sayfalar, yapi, kitap_satirlari = Q.girdi_yukle(s1.klasor)
-    manifest = json.loads((s1.klasor / "manifest.json").read_bytes())
-    g = Q.RnkGirdisi(
-        kayit=ctx1.require_sources(KAYNAK)[KAYNAK],
-        kilit=kilit,
-        kilit_ozeti_manifest=manifest["ayrintilar"]["kilit_sha256"],
-        ham={"tr_k/deneme.txt": txt, "tr_k/deneme.json": js},
-        birimler=birimler,
-        sayfalar=sayfalar,
-        yapi=yapi,
-        kitaplar=kitap_satirlari,
-        tablo=tablo,
-        depo_kok=depo_koku(),
-    )
-    for ad, islev in Q.KAPI_ISLEVLERI.items():
-        sonuc = islev(g)
-        assert sonuc.gecti, (ad, sonuc.bulgular)
-    # zincir yukleyicisi: son ingest calismasi, manifestli ham girdiler (sentetik kilit yamayla)
+
+    # normalize ve anchor: ikinci kosu atlanir, --force ayni baytlari uretir
+    def adim(ad: str, islev: Any, **kw: Any) -> Any:
+        ctx = ctx_kur(tmp_path, kok, adim=ad, kaynaklar=[KAYNAK], temiz_git=True, **kw)
+        return ctx, islev(ctx)
+
+    _, n1 = adim("normalize", A.run_normalize)
+    assert not n1.atlandi and n1.klasor is not None and n1.birim_sayisi == s1.birim_sayisi
+    assert adim("normalize", A.run_normalize)[1].atlandi
+    _, n2 = adim("normalize", A.run_normalize, force=True)
+    assert (n1.klasor / "units.jsonl").read_bytes() == (n2.klasor / "units.jsonl").read_bytes()
+    _, a1 = adim("anchor", A.run_anchor)
+    assert not a1.atlandi and a1.klasor is not None and a1.birim_sayisi == s1.birim_sayisi
+    assert adim("anchor", A.run_anchor)[1].atlandi
+    _, a2 = adim("anchor", A.run_anchor, force=True)
+    assert (a1.klasor / "units.jsonl").read_bytes() == (a2.klasor / "units.jsonl").read_bytes()
+    # zincir yukleyicisi: son anchor -> normalize -> ingest (sentetik kilit yamayla)
     kilit_yolu = tmp_path / "sentetik.lock.json"
     kilit_yolu.write_bytes(kilit_metni(kilit).encode("utf-8"))
     monkeypatch.setattr(kilit_modulu, "KILIT_YOLU", kilit_yolu)
+    monkeypatch.setattr(qa_run_modulu, "kitaplar", lambda: tablo)
     ctx_qa = ctx_kur(tmp_path, kok, adim="qa", kaynaklar=[KAYNAK], temiz_git=True)
-    yuklenen, ingest = qa_yukle(ctx_qa)
-    assert ingest.run_id == s3.run_id  # en son calisma
-    assert len(yuklenen.birimler) == s1.birim_sayisi
-    assert set(yuklenen.ham) == {"shelves.json", "tr_k/deneme.txt", "tr_k/deneme.json"}
-    assert kapilari_kos(yuklenen, ("G-KAY",))["G-KAY"].gecti
-    assert kapilari_sec(None) == ("G-KAY", "G-BUT", "G-NOR")
+    y = qa_yukle(ctx_qa)
+    assert y.anchor.run_id == a2.run_id and y.normalize.run_id == n2.run_id  # en son calisma
+    assert y.ingest.run_id == s3.run_id
+    g = y.girdi
+    g.depo_kok = depo_koku()  # G-NOR vektorleri gercek depo kokunden
+    assert len(g.birimler) == s1.birim_sayisi
+    assert set(g.ham) == {"shelves.json", "tr_k/deneme.txt", "tr_k/deneme.json"}
+    assert g.onceki is None  # kapilari gecmis onceki anchor calismasi yok
+    assert sum(1 for _ in g.anchor()) == s1.birim_sayisi  # type: ignore[misc]
+    for ad, sonuc in kapilari_kos(g, kapilari_sec(None)).items():
+        assert sonuc.gecti, (ad, sonuc.bulgular)
+    assert kapilari_sec(None) == ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
+    assert kapilari_sec(["G-CAP", "G-KAY"]) == ("G-KAY", "G-CAP")
     with pytest.raises(GirdiHatasi):
-        kapilari_sec(["G-CAP"])
+        kapilari_sec(["G-HIZ"])
 
 
 def test_rnk_ingest_kilitle_tutmayan_dosya_girdi_hatasi(tmp_path: Path) -> None:

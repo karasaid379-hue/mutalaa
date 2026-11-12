@@ -10,7 +10,7 @@ kitaplik): `qa` paketi onu ice aktarabilir.
 
     risale-rnk-metin    RNK Neşriyat `txt` + `json` (A20.1b): BIRINCIL metin; bagdastirici
                         `risale_rnk_kaynaklari`. `data/staged` birimleri `export pg` ile
-                        yuklenir (G-KAY, G-BUT, G-NOR).
+                        yuklenir (G-KAY, G-BUT, G-CAP, G-NOR).
 """
 
 import importlib
@@ -19,10 +19,10 @@ from typing import Final
 
 KAYNAK_DIYANET: Final = "risale-asil-nusha"
 KAYNAK_RNK: Final = "risale-rnk-metin"
-# A20.1 kapilari: G-CAP yalniz A20.2b'de yazilir (cap yeniden numaralanmaz denetimi).
+# Diyanet karsilastirma verisi: birim yuklenmez, G-CAP ve G-NOR uygulanmaz (A20.1).
 RISALE_KAPILARI: Final = ("G-KAY", "G-BUT")
-# A20.1b: RNK metni (ingest asamasi); G-CAP A20.2b'de eklenir.
-RNK_KAPILARI: Final = ("G-KAY", "G-BUT", "G-NOR")
+# RNK metni: dort kapi (A20.2b); G-KAY ve G-BUT ingest, G-CAP ve G-NOR anchor ciktisinda kosar.
+RNK_KAPILARI: Final = ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
 
 
 @dataclass(frozen=True)

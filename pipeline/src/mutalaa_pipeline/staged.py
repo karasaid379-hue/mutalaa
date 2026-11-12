@@ -10,8 +10,9 @@ Hata iletileri yalniz dosya etiketi, satir numarasi ve alan adi tasir; satir ice
 """
 
 import json
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Final
 
 from mutalaa_pipeline import lineage
@@ -83,6 +84,37 @@ def satirlari_oku(veri: bytes, etiket: str) -> list[Satir]:
             raise GirdiHatasi(f"{etiket}: satir {no}: nesne degil")
         satirlar.append(Satir(etiket, no, nesne))
     return satirlar
+
+
+def satirlari_akit(yol: Path, etiket: str) -> Iterator[Satir]:
+    """`satirlari_oku` ile ayni kati okuma; dosyayi satir satir akitir (bellekte tek satir).
+
+    Buyuk dosyalar icindir (ornegin Risale `units.jsonl`, yuzlerce MB). Ozet dogrulamasi
+    cagirana aittir (`zincir.saglam_olmali`); bos dosya, LF ile bitmeyen son satir, CR, UTF-8
+    olmayan bayt ve nesne olmayan satir `GirdiHatasi` verir.
+    """
+    sayi = 0
+    try:
+        with yol.open("rb") as dosya:
+            for no, ham in enumerate(dosya, start=1):
+                if not ham.endswith(LF):
+                    raise GirdiHatasi(f"{etiket}: bos ya da son satir LF ile bitmiyor")
+                if CR in ham:
+                    raise GirdiHatasi(f"{etiket}: CR (0x0D) var")
+                try:
+                    nesne = kati_json(ham[:-1].decode("utf-8"))
+                except UnicodeDecodeError:
+                    raise GirdiHatasi(f"{etiket}: satir {no}: UTF-8 degil") from None
+                except GirdiHatasi:
+                    raise GirdiHatasi(f"{etiket}: satir {no}: JSON gecersiz") from None
+                if not isinstance(nesne, dict):
+                    raise GirdiHatasi(f"{etiket}: satir {no}: nesne degil")
+                sayi += 1
+                yield Satir(etiket, no, nesne)
+    except OSError:
+        raise GirdiHatasi(f"{etiket}: dosya okunamadi") from None
+    if sayi == 0:
+        raise GirdiHatasi(f"{etiket}: bos ya da son satir LF ile bitmiyor")
 
 
 def units_baytlari(satirlar: Iterable[Mapping[str, object]]) -> tuple[bytes, int]:

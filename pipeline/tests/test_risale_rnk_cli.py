@@ -40,6 +40,18 @@ class RnkKoku:
             cli.app, ["ingest", "risale", "--source", KAYNAK, *arg, "--kok", str(self.kok)]
         ).exit_code
 
+    def adim(self, komut: str, *arg: str) -> int:
+        return runner.invoke(
+            cli.app, [komut, "--source", KAYNAK, *arg, "--kok", str(self.kok)]
+        ).exit_code
+
+    def zincir(self, *arg: str) -> int:
+        """ingest, normalize ve anchor (ilk basarisizlikta o kod doner)."""
+        for kod in (self.ingest(*arg), self.adim("normalize", *arg), self.adim("anchor", *arg)):
+            if kod != 0:
+                return kod
+        return 0
+
     def qa(self, *arg: str) -> tuple[int, str]:
         sonuc = runner.invoke(
             cli.app, ["qa", "run", "--source", KAYNAK, *arg, "--kok", str(self.kok)]
@@ -87,9 +99,9 @@ def rk(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> RnkKoku:
 def test_rnk_kaynak_kaydi_ve_kapilar() -> None:
     assert risale_kaynaklari.risale_mi(KAYNAK)
     k = risale_kaynaklari.kaynak(KAYNAK)
-    assert k.yukleme and k.kapilar == ("G-KAY", "G-BUT", "G-NOR")
+    assert k.yukleme and k.kapilar == ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
     assert risale_kaynaklari.bagdastirici_modulu(KAYNAK) is kaynak_modulu
-    assert kaynak_kapilari(KAYNAK) == ("G-KAY", "G-BUT", "G-NOR")
+    assert kaynak_kapilari(KAYNAK) == ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
     # Diyanet: karsilastirma verisi, davranis degismedi
     diyanet = risale_kaynaklari.kaynak("risale-asil-nusha")
     assert not diyanet.yukleme and diyanet.kapilar == ("G-KAY", "G-BUT")
@@ -144,17 +156,52 @@ def test_rnk_cli_kilitle_tutmayan_gelen_dosya_cikis_2(rk: RnkKoku) -> None:
     assert not (rk.veri_kok / "raw" / KAYNAK).exists()
 
 
-def test_rnk_qa_run_uc_kapi_gecer_cikis_0_rapor_alanlari(rk: RnkKoku) -> None:
+def test_rnk_normalize_anchor_komutlari_cikis_kodlari_ve_idempotentlik(rk: RnkKoku) -> None:
+    # ingest yokken normalize ve anchor girdi hatasi (2); --limit ve bilinmeyen kaynak 2
+    assert rk.adim("normalize") == 2 and rk.adim("anchor") == 2
     assert rk.ingest() == 0
+    assert rk.adim("anchor") == 2  # normalize yok
+    assert rk.adim("normalize", "--limit", "5") == 2 and rk.adim("anchor", "--limit", "5") == 2
+    n_once = rk.staged()
+    assert rk.adim("normalize", "--dry-run") == 0 and rk.staged() == n_once  # dry-run yazmaz
+    assert rk.adim("normalize") == 0 and rk.adim("anchor", "--dry-run") == 0
+    assert len(rk.staged()) == 2  # ingest + normalize
+    assert rk.adim("anchor") == 0 and len(rk.staged()) == 3
+    # --force: yeniden uretilir, cikti bayt bayt ayni (capa ve content_hash dosya ozeti)
+    assert rk.zincir("--force") == 0
+    klasorler = rk.staged()
+    assert len(klasorler) == 6
+    sirali = sorted(klasorler, key=lambda yol: yol.name)
+    for ilk, ikinci in ((0, 3), (1, 4), (2, 5)):
+        assert (sirali[ilk] / "units.jsonl").read_bytes() == (
+            sirali[ikinci] / "units.jsonl"
+        ).read_bytes()
+
+
+def test_rnk_normalize_anchor_yardim_ve_bilinmeyen_kaynak(rk: RnkKoku) -> None:
+    for komut in ("normalize", "anchor"):
+        yardim = ansisiz(runner.invoke(cli.app, [komut, "--help"]).output)
+        for ad in ("--source", "--dry-run", "--force", "--limit", "--config"):
+            assert ad in yardim
+    sonuc = runner.invoke(
+        cli.app, ["normalize", "--source", "risale-asil-nusha", "--kok", str(rk.kok)]
+    )
+    assert sonuc.exit_code == 2  # Diyanet karsilastirma verisi normalize/anchor'a girmez
+
+
+def test_rnk_qa_run_dort_kapi_gecer_cikis_0_rapor_alanlari(rk: RnkKoku) -> None:
+    assert rk.zincir() == 0
     kod, cikti = rk.qa()
     assert kod == 0, cikti
-    for kapi in ("G-KAY", "G-BUT", "G-NOR"):
+    for kapi in ("G-KAY", "G-BUT", "G-CAP", "G-NOR"):
         assert f"{kapi} gecti" in cikti
     rapor = json.loads(rk.raporlar()[-1].read_bytes())
     assert rapor["kaynak"] == KAYNAK and rapor["komut"] == "qa run"
-    assert rapor["kapilar"] == {"G-KAY": "gecti", "G-BUT": "gecti", "G-NOR": "gecti"}
+    assert rapor["kapilar"] == {k: "gecti" for k in ("G-KAY", "G-BUT", "G-CAP", "G-NOR")}
     assert set(rapor["kapi_bulgulari"]) == set(rapor["kapi_sayilari"]) == set(rapor["kapilar"])
     assert rapor["ingest_run_id"] == rapor["zincir"]["ingest"]
+    assert rapor["anchor_run_id"] == rapor["zincir"]["anchor"]
+    assert rapor["onceki_anchor_run_id"] is None
     assert len(rapor["units_sha256"]) == 64
     assert rapor["cikis_kodu"] == 0
     # rapor ve gunluk sentetik metin tasimaz
@@ -162,19 +209,34 @@ def test_rnk_qa_run_uc_kapi_gecer_cikis_0_rapor_alanlari(rk: RnkKoku) -> None:
     assert "Deneme paragrafı" not in ham
 
 
+def test_rnk_qa_run_ikinci_kosuda_onceki_calismayla_ayni_capalar(rk: RnkKoku) -> None:
+    assert rk.zincir() == 0 and rk.qa()[0] == 0
+    assert rk.zincir("--force") == 0
+    kod, cikti = rk.qa()
+    assert kod == 0, cikti
+    rapor = json.loads(rk.raporlar()[-1].read_bytes())
+    assert rapor["onceki_anchor_run_id"] is not None
+    assert rapor["kapi_sayilari"]["G-CAP"]["onceki_run"] == 1
+    assert rapor["kapi_sayilari"]["G-CAP"]["hash_degisen"] == 0
+
+
 def test_rnk_qa_run_kismi_gate_ve_gecersiz_gate(rk: RnkKoku) -> None:
-    assert rk.ingest() == 0
+    assert rk.zincir() == 0
     kod, cikti = rk.qa("--gate", "G-KAY")
     assert kod == 0 and "G-KAY gecti" in cikti and "G-BUT" not in cikti
-    assert rk.qa("--gate", "G-CAP")[0] == 2
+    kod, cikti = rk.qa("--gate", "G-CAP")
+    assert kod == 0 and "G-CAP gecti" in cikti
+    assert rk.qa("--gate", "G-HIZ")[0] == 2
 
 
-def test_rnk_qa_run_ingest_yoksa_cikis_2(rk: RnkKoku) -> None:
-    assert rk.qa()[0] == 2
+def test_rnk_qa_run_anchor_yoksa_cikis_2(rk: RnkKoku) -> None:
+    assert rk.qa()[0] == 2  # hicbir calisma yok
+    assert rk.ingest() == 0
+    assert rk.qa()[0] == 2  # yalniz ingest: anchor zinciri yok
 
 
 def test_rnk_qa_run_kapi_kalirsa_cikis_1(rk: RnkKoku) -> None:
-    assert rk.ingest() == 0
+    assert rk.zincir() == 0
     birimler = rk.staged()[-1] / "units.jsonl"
     # staged dosya bozulursa manifest ozeti tutmaz (cikis 2); kilidi bozmak G-BUT'u kaldirir
     veri = json.loads(rk.kilit_yolu.read_bytes())
@@ -189,7 +251,14 @@ def test_rnk_qa_run_kapi_kalirsa_cikis_1(rk: RnkKoku) -> None:
 
 
 def test_rnk_qa_run_staged_ozeti_bozulursa_cikis_2(rk: RnkKoku) -> None:
-    assert rk.ingest() == 0
-    birimler = rk.staged()[-1] / "units.jsonl"
+    assert rk.zincir() == 0
+    birimler = rk.staged()[-1] / "units.jsonl"  # anchor ciktisi
+    birimler.write_bytes(birimler.read_bytes() + b"\n")
+    assert rk.qa()[0] == 2
+
+
+def test_rnk_qa_run_ingest_ozeti_bozulursa_cikis_2(rk: RnkKoku) -> None:
+    assert rk.zincir() == 0
+    birimler = rk.staged()[0] / "units.jsonl"  # ingest ciktisi
     birimler.write_bytes(birimler.read_bytes() + b"\n")
     assert rk.qa()[0] == 2
