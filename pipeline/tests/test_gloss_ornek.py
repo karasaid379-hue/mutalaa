@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 import typer
+from hat_yardimci import ansisiz
 from typer.testing import CliRunner
 
 from mutalaa_pipeline import cikis
@@ -484,10 +485,11 @@ def _uygulama() -> typer.Typer:
 def test_typer_yardim_bicimi_belgeler() -> None:
     sonuc = CliRunner().invoke(_uygulama(), ["qa", "gloss-sample", "--help"])
     assert sonuc.exit_code == 0
+    yardim = ansisiz(sonuc.output)
     for parca in ("--lemmalar", "lemma_id", "dalga", "tutarli", "--tohum", "--dry-run"):
-        assert parca in sonuc.output
+        assert parca in yardim
     puan = CliRunner().invoke(_uygulama(), ["qa", "gloss-score", "--help"])
-    assert puan.exit_code == 0 and "--kappa-sablon" in puan.output
+    assert puan.exit_code == 0 and "--kappa-sablon" in ansisiz(puan.output)
 
 
 def test_typer_uctan_uca_ve_cikis_kodlari(ortam: Path) -> None:

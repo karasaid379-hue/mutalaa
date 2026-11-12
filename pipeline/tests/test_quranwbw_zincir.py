@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 
 import pytest
-from hat_yardimci import TEMIZ_GIT
+from hat_yardimci import TEMIZ_GIT, ansisiz
 from qac_yardimci import TARIH, QacZinciri, qac_hazirla
 from quranwbw_yardimci import (
     KAYNAK,
@@ -210,7 +210,7 @@ def test_enrich_gecersiz_wave_cikis_2(wz: QuranwbwZinciri, deger: str) -> None:
 def test_enrich_yardimi_dalga_0_ve_1_birlikte_acilir_der() -> None:
     sonuc = runner.invoke(cli.app, ["enrich", "glosses", "--help"], terminal_width=200)
     assert sonuc.exit_code == 0
-    metin = " ".join(sonuc.output.split())
+    metin = " ".join(ansisiz(sonuc.output).split())
     assert "dalga 0 ve 1" in metin and "birlikte" in metin.lower()
     assert "--wave N" in metin
 
