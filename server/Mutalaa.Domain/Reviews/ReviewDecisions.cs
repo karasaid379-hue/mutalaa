@@ -14,6 +14,12 @@ public static class ReviewActions
     public const string Reddet = "reddet";
     public const string UzmanaGonder = "uzmana_gonder";
     public const string EtimolojikIsaretle = "etimolojik_isaretle";
+
+    /// <summary>Kapali denetim kaydi: eslesen dizi kalip listesine eklendi (A18.4); onerilen <c>{anahtar, gerekce}</c>.</summary>
+    public const string KalipEkle = "kalip_ekle";
+
+    /// <summary>Kapali denetim kaydi: baglanti ima olarak da isaretlendi (A18.4); yeni <c>ima</c> satiri acildi.</summary>
+    public const string ImaIsaretle = "ima_isaretle";
 }
 
 /// <summary>Inceleme kararinda yetkili rol adlari (K-51 madde 2); Identity rol adlariyla ayni dizgilerdir. Karar akisi bu sabitleri sonraki adimda kullanir.</summary>
@@ -24,6 +30,17 @@ public static class ReviewRoles
 
     /// <summary>Yalniz <c>uzmanda</c> durumundaki incelemenin kararini verir.</summary>
     public const string Uzman = "uzman";
+
+    /// <summary>
+    /// Karar yetkisi (K-51 madde 2): <c>uzmanda</c> kaydin kararini yalniz <c>uzman</c>, <c>acik</c> kaydin kararini yalniz editor ya da admin verir.
+    /// Karar verilmis kayitta rol sorulmaz (karar zaten 409 <c>durum-gecisi-gecersiz</c> alir).
+    /// </summary>
+    public static bool CanDecide(ReviewStatus durum, bool isEditorOrAdmin, bool isUzman) => durum switch
+    {
+        ReviewStatus.Uzmanda => isUzman,
+        ReviewStatus.Acik => isEditorOrAdmin,
+        _ => true,
+    };
 }
 
 /// <summary>review.alan degerleri (Backend API 4.1 kuyruk tablosu).</summary>
@@ -95,9 +112,21 @@ public readonly record struct ReviewTargetState
     /// <summary>lemma hedefinin satiri (dil, kok eslemesi, onay yolu); verilmezse lemma yalniz durum hedefi olarak islenir (onay yolu yazilmaz).</summary>
     public LemmaReviewState? LemmaRow { get; init; }
 
+    /// <summary>xref hedefinin satiri (yalniz duzeltmeli onayda gerekir).</summary>
+    public LinkRowState? LinkRow { get; init; }
+
+    /// <summary>Duzeltmenin cozdugu hedef ucun olgulari (birim var mi, metin uzunlugu, kelime sayisi, ozet).</summary>
+    public LinkDstFacts? LinkDst { get; init; }
+
+    /// <summary>quran_word_fix new_value dogrulamasi icin olgular (kok var mi, lemma var mi ve dili).</summary>
+    public WordFixFacts? FixFacts { get; init; }
+
     public static ReviewTargetState ForStatus(XrefStatus status) => new() { Status = status };
 
-    public static ReviewTargetState ForFix(XrefStatus status, string field) => new() { Status = status, Field = field };
+    public static ReviewTargetState ForFix(XrefStatus status, string field, WordFixFacts? facts = null) => new() { Status = status, Field = field, FixFacts = facts };
+
+    /// <summary>Baglanti hedefi: satirin degerleri ve (duzeltme varsa) yeni hedef ucun olgulari.</summary>
+    public static ReviewTargetState ForLink(XrefStatus status, LinkRowState link, LinkDstFacts? dst = null) => new() { Status = status, LinkRow = link, LinkDst = dst };
 
     public static ReviewTargetState ForGloss(XrefStatus status, GlossReviewState gloss) => new() { Status = status, Gloss = gloss };
 
@@ -161,6 +190,12 @@ public readonly record struct ReviewOutcome
     /// </summary>
     public LemmaMappingUpdate? LemmaMapping { get; init; }
 
+    /// <summary>xref satirinin duzeltilmis alanlari (tur, hedef, aralik, koken, kanit); null ise baglanti degismez.</summary>
+    public LinkUpdate? Link { get; init; }
+
+    /// <summary>quran_word_fix.new_value yeni degeri; null ise degismez.</summary>
+    public string? WordFixNewValue { get; init; }
+
     /// <summary>Review satirinin karar alanlarini yazar (hedef degisiklikleri yazilmaz).</summary>
     public void ApplyTo(Review review)
     {
@@ -219,9 +254,22 @@ public static partial class ReviewDecisions
             return ApproveUnitText(review, request, target, actor, gerekce);
         }
 
-        return IsRootMapping(review)
-            ? ApproveRootMapping(review, request, target, actor, gerekce)
-            : ApproveStatus(review, request, target, actor, gerekce);
+        if (IsRootMapping(review))
+        {
+            return ApproveRootMapping(review, request, target, actor, gerekce);
+        }
+
+        if (request.Duzenlenen is not null && IsLinkTarget(review))
+        {
+            return ApproveLink(review, request, target, actor, gerekce);
+        }
+
+        if (request.Duzenlenen is not null && string.Equals(review.HedefTablo, ReviewTargets.QuranWordFix, StringComparison.Ordinal))
+        {
+            return ApproveWordFix(review, request, target, actor, gerekce);
+        }
+
+        return ApproveStatus(review, request, target, actor, gerekce);
     }
 
     /// <summary>Acik kaydi reddeder. Ret her asamada verilebilir; hedefi degistirmez (durum sutunlu hedef Red olur, incelemede birim taslaga doner).</summary>
@@ -622,7 +670,8 @@ public static partial class ReviewDecisions
 
     internal static void RequireOpen(Review review)
     {
-        if (review.Durum != ReviewStatus.Acik)
+        // uzmanda kayit karar icin acik gibi kabul edilir; kimin karar verecegi ReviewRoles.CanDecide ile (Api) sorulur.
+        if (review.Durum is not (ReviewStatus.Acik or ReviewStatus.Uzmanda))
         {
             throw new DomainException(DomainErrorCodes.DurumGecisiGecersiz, $"Yalniz acik kayda karar verilebilir (durum: {review.Durum.ToLabel()}).");
         }

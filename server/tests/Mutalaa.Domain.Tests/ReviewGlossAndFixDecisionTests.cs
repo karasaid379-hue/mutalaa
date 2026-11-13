@@ -161,7 +161,6 @@ public class ReviewGlossAndFixDecisionTests
 
     [Theory]
     [InlineData("surah_alias")]
-    [InlineData("xref")]
     [InlineData("lemma")]
     public void Other_status_targets_still_refuse_an_editor_value(string table)
     {

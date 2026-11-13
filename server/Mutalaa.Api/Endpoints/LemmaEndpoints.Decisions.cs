@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using Mutalaa.Api.Auth;
 using Mutalaa.Api.Problems;
 using Mutalaa.Api.Reviews;
 using Mutalaa.Domain.Content;
@@ -28,6 +29,7 @@ public static partial class LemmaEndpoints
     {
         lemmas.MapPost("/{id:int}/itiraz", ObjectAsync)
             .WithName("objectToLemmaApproval")
+            .RequireAuthorization(AuthPolicies.Editor)
             .WithSummary("Otomatik onaylı Türkçe lemma eşlemesine itiraz eder (editör incelemesi açar; başka bir editör onaylarsa lemma adaya döner).")
             .Produces<LemmaObjectionResponse>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
@@ -37,6 +39,7 @@ public static partial class LemmaEndpoints
 
         lemmas.MapPost("/{id:int}/etimolojik-isaret", MarkEtymologicalAsync)
             .WithName("markLemmaEtymological")
+            .RequireAuthorization(AuthPolicies.Editor)
             .WithSummary("Onaylı Türkçe lemmanın 'yalnızca etimolojik' işaretini editör kararıyla değiştirir (otomatik onaylıda onay yolu editör olur).")
             .Produces<EtymologyMarkResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)

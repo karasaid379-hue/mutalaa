@@ -20,11 +20,23 @@ internal enum ReviewStage
     Ikinci,
 }
 
-/// <summary>Kuyruk siralamasi (<c>sira</c>): olusturma (varsayilan, created_at ve id) ya da kelime anlami dalgasi (K-50 madde 7).</summary>
+/// <summary>
+/// Kuyruk siralamasi (<c>sira</c>): olusturma (varsayilan, created_at ve id), kelime anlami dalgasi (K-50 madde 7) ya da baglanti adayi sinifi
+/// (A18.4: tutarsiz, toplu, gri, diger; sinif icinde confidence azalan).
+/// </summary>
 internal enum ReviewSort
 {
     Olusturma,
     Dalga,
+    Sinif,
+}
+
+/// <summary>Turkce lemma onay yolu suzgeci (<c>onay_yolu</c>): otomatik, editor ya da aday (onay yolu yok).</summary>
+internal enum ApprovalFilter
+{
+    Otomatik,
+    Editor,
+    Aday,
 }
 
 /// <summary>Liste, ayrinti ve istatistik okuma sorgulari: hepsi AsNoTracking ve projeksiyonludur.</summary>
@@ -35,6 +47,55 @@ internal static class ReviewQueries
 
     /// <summary>lemma_dalga satiri olmayan kayitlarin dalga anahtari: gercek dalgalarin (0..4) hepsinden sonra gelir.</summary>
     public const int NoWave = 5;
+
+    /// <summary>Baglanti satiri okunamayan ya da olmayan kayitlarin sinif sirasi: dort sinifin da (0..3) sonrasi.</summary>
+    public const int NoClass = 4;
+
+    /// <summary>
+    /// Aday sinifinin SQL karsiligi (<see cref="LinkCandidateClassifier"/> ile ayni kural; uyum <c>ReviewLinkClassSqlParityTests</c> ile denetlenir).
+    /// jsonb alanlari tur denetiminden sonra sayiya cevrilir (yanlis turde alan "alan yok" sayilir); sinif sirasi <see cref="LinkCandidateClass"/> degeridir.
+    /// </summary>
+    internal const string ClassSql = """
+        SELECT x.id::text AS xref_key,
+               CASE
+                 WHEN (x.evidence -> 'consistent_quote') = 'false'::jsonb OR (x.type = 'atif' AND x.confidence <= 0.30::real) THEN 0
+                 WHEN x.type IN ('iktibas', 'atif')
+                      AND CASE WHEN jsonb_typeof(x.evidence -> 'matched_words') = 'number' THEN (x.evidence ->> 'matched_words')::numeric END >= 7
+                      AND CASE WHEN jsonb_typeof(x.evidence -> 'coverage') = 'number' THEN (x.evidence ->> 'coverage')::numeric END >= 0.999999
+                      AND CASE WHEN jsonb_typeof(x.evidence -> 'phrase_freq') = 'number' THEN (x.evidence ->> 'phrase_freq')::numeric END = 1
+                      AND ((x.evidence -> 'consistent_quote') = 'true'::jsonb OR x.confidence >= 0.95::real) THEN 1
+                 WHEN x.confidence >= 0.40::real AND x.confidence < 0.80::real THEN 2
+                 ELSE 3
+               END AS sinif_sira,
+               x.confidence AS confidence
+        FROM icerik.xref x
+        """;
+
+    /// <summary>Baglanti satirinin sinif sirasi ve guveni (ham SQL projeksiyonu).</summary>
+    private sealed class ClassRow
+    {
+        public required string XrefKey { get; init; }
+
+        public int SinifSira { get; init; }
+
+        public float Confidence { get; init; }
+    }
+
+    /// <summary>Turkce lemma onay yolu (ham SQL projeksiyonu; yalniz lang = 'tr').</summary>
+    private sealed class PathRow
+    {
+        public required string LemmaKey { get; init; }
+
+        public string? OnayYolu { get; init; }
+    }
+
+    private static IQueryable<ClassRow> ClassRows(IcerikDbContext db) => db.Database.SqlQueryRaw<ClassRow>(ClassSql);
+
+    private static IQueryable<PathRow> PathRows(IcerikDbContext db) =>
+        db.Database.SqlQueryRaw<PathRow>("SELECT id::text AS lemma_key, onay_yolu FROM icerik.lemma WHERE lang = 'tr'");
+
+    /// <summary>Liste ve ayrintiya eklenen turetilmis alanlar (hedefe gore: sinif, dalga, onay yolu).</summary>
+    private sealed record Enrichment(string? Sinif, int? Dalga, string? OnayYolu);
 
     /// <summary>Listede gereken alanlar; jsonb degerler (onceki, onerilen, duzenlenen) listede de doner (Backend API §4, BÇ-55).</summary>
     private sealed record Row(
@@ -68,8 +129,11 @@ internal static class ReviewQueries
         string? kaynak,
         ReviewStage? asama,
         ReviewSort sira,
+        LinkCandidateClass? sinif,
+        ApprovalFilter? onayYolu,
         (DateTime CreatedAt, long Id)? after,
         WaveCursor? waveAfter,
+        ClassCursor? classAfter,
         int limit,
         CancellationToken cancellationToken)
     {
@@ -104,11 +168,37 @@ internal static class ReviewQueries
                 && (r.IkinciInceleyen == null || r.IkinciInceleyen == string.Empty));
         }
 
+        if (sinif is { } wantedClass)
+        {
+            // Sinif yalniz baglanti satirlarinda vardir; baglantisi okunamayan kayit hicbir sinifa girmez.
+            int wantedRank = (int)wantedClass;
+            IQueryable<ClassRow> classes = ClassRows(db);
+            query = query.Where(r => r.HedefTablo == ReviewTargets.Xref && classes.Any(c => c.XrefKey == r.HedefAnahtar && c.SinifSira == wantedRank));
+        }
+
+        if (onayYolu is { } wantedPath)
+        {
+            IQueryable<PathRow> paths = PathRows(db);
+            query = wantedPath switch
+            {
+                ApprovalFilter.Otomatik => query.Where(r => r.HedefTablo == ReviewTargets.Lemma
+                    && paths.Any(p => p.LemmaKey == r.HedefAnahtar && p.OnayYolu == LemmaApprovalPaths.Otomatik)),
+                ApprovalFilter.Editor => query.Where(r => r.HedefTablo == ReviewTargets.Lemma
+                    && paths.Any(p => p.LemmaKey == r.HedefAnahtar && p.OnayYolu == LemmaApprovalPaths.Editor)),
+                _ => query.Where(r => r.HedefTablo == ReviewTargets.Lemma
+                    && paths.Any(p => p.LemmaKey == r.HedefAnahtar && p.OnayYolu == null)),
+            };
+        }
+
         List<Row> rows;
         string? next = null;
         if (sira == ReviewSort.Dalga)
         {
             (rows, next) = await ListByWaveAsync(db, query, waveAfter, limit, cancellationToken);
+        }
+        else if (sira == ReviewSort.Sinif)
+        {
+            (rows, next) = await ListByClassAsync(db, query, classAfter, limit, cancellationToken);
         }
         else
         {
@@ -135,9 +225,151 @@ internal static class ReviewQueries
 
         Dictionary<string, UnitKind> kinds = await UnitKindsForPendingAsync(db, rows, cancellationToken);
         HashSet<long> verifiedTargets = await VerifiedTargetsOfApprovedAiRowsAsync(db, rows, cancellationToken);
-        List<ReviewItemDto> items = [.. rows.Select(r => ToItem(r, kinds, verifiedTargets.Contains(r.Id)))];
+        Dictionary<long, Enrichment> enrichment = await EnrichAsync(db, [.. rows.Select(r => (r.Id, r.HedefTablo, r.HedefAnahtar))], cancellationToken);
+        List<ReviewItemDto> items = [.. rows.Select(r => ToItem(r, kinds, verifiedTargets.Contains(r.Id), enrichment.GetValueOrDefault(r.Id)))];
         return new ReviewListResponse(items, next);
     }
+
+    /// <summary>
+    /// Sinif sirasi (A18.4): (sinif sirasi, confidence azalan, review.id) artan; baglantisi okunamayan kayitlar en sonda
+    /// (sinif <see cref="NoClass"/>, guven -1). Anahtarlar once sayfalanir, sonra satirlar tek sorguyla okunup bu sirada dizilir.
+    /// </summary>
+    private static async Task<(List<Row> Rows, string? Next)> ListByClassAsync(
+        IcerikDbContext db,
+        IQueryable<Review> query,
+        ClassCursor? after,
+        int limit,
+        CancellationToken cancellationToken)
+    {
+        IQueryable<ClassRow> classes = ClassRows(db);
+        var keyed =
+            from r in query
+            join c in classes on r.HedefAnahtar equals c.XrefKey into joined
+            from c in joined.DefaultIfEmpty()
+            select new
+            {
+                r.Id,
+                Rank = (int?)c.SinifSira ?? NoClass,
+                Conf = (float?)c.Confidence ?? -1f,
+            };
+
+        if (after is { } cursor)
+        {
+            int cr = cursor.Sinif;
+            float cc = cursor.Confidence;
+            long ci = cursor.Id;
+            keyed = keyed.Where(k => k.Rank > cr
+                || (k.Rank == cr && (k.Conf < cc || (k.Conf == cc && k.Id > ci))));
+        }
+
+        var page = await keyed
+            .OrderBy(k => k.Rank)
+            .ThenByDescending(k => k.Conf)
+            .ThenBy(k => k.Id)
+            .Take(limit + 1)
+            .ToListAsync(cancellationToken);
+
+        string? next = null;
+        if (page.Count > limit)
+        {
+            page.RemoveAt(page.Count - 1);
+            var last = page[^1];
+            next = ReviewCursor.EncodeClass(new ClassCursor(last.Rank, last.Conf, last.Id));
+        }
+
+        long[] ids = [.. page.Select(p => p.Id)];
+        Dictionary<long, Row> byId = (await ProjectRows(db.Reviews.AsNoTracking().Where(r => ids.Contains(r.Id)))
+            .ToListAsync(cancellationToken))
+            .ToDictionary(r => r.Id);
+        return ([.. ids.Where(byId.ContainsKey).Select(i => byId[i])], next);
+    }
+
+    /// <summary>
+    /// Satirlara hedefe gore turetilmis alanlar: baglantida sinif (kanittan, <see cref="LinkCandidateClassifier"/>), lemma ve lemma_gloss'ta dalga,
+    /// lemmada Turkce onay yolu. Her tablo icin tek sorgu (N+1 yok); bozuk anahtar ya da bulunamayan satir alan yazmaz.
+    /// </summary>
+    private static async Task<Dictionary<long, Enrichment>> EnrichAsync(
+        IcerikDbContext db,
+        IReadOnlyCollection<(long Id, string Tablo, string Anahtar)> rows,
+        CancellationToken cancellationToken)
+    {
+        Dictionary<long, Enrichment> result = [];
+
+        Dictionary<long, Guid> xrefKeys = [];
+        Dictionary<long, int> lemmaKeys = [];
+        Dictionary<long, int> glossKeys = [];
+        foreach ((long id, string tablo, string anahtar) in rows)
+        {
+            if (string.Equals(tablo, ReviewTargets.Xref, StringComparison.Ordinal) && Guid.TryParseExact(anahtar, "D", out Guid guid))
+            {
+                xrefKeys[id] = guid;
+            }
+            else if (string.Equals(tablo, ReviewTargets.Lemma, StringComparison.Ordinal) && TryLemmaId(anahtar, out int lemmaId))
+            {
+                lemmaKeys[id] = lemmaId;
+            }
+            else if (string.Equals(tablo, ReviewTargets.LemmaGloss, StringComparison.Ordinal) && TryLemmaId(anahtar, out int glossId))
+            {
+                glossKeys[id] = glossId;
+            }
+        }
+
+        if (xrefKeys.Count > 0)
+        {
+            Guid[] ids = [.. xrefKeys.Values.Distinct()];
+            var found = await db.Xrefs.AsNoTracking()
+                .Where(x => ids.Contains(x.Id))
+                .Select(x => new { x.Id, x.Type, x.Confidence, x.Evidence })
+                .ToListAsync(cancellationToken);
+            Dictionary<Guid, string> classes = found.ToDictionary(
+                f => f.Id,
+                f => LinkCandidateClassifier.Classify(f.Type, f.Confidence, f.Evidence).ToLabel());
+            foreach ((long reviewId, Guid xrefId) in xrefKeys)
+            {
+                if (classes.TryGetValue(xrefId, out string? label))
+                {
+                    result[reviewId] = new Enrichment(label, null, null);
+                }
+            }
+        }
+
+        if (lemmaKeys.Count > 0 || glossKeys.Count > 0)
+        {
+            int[] lemmaIds = [.. lemmaKeys.Values.Concat(glossKeys.Values).Distinct()];
+            Dictionary<int, int> waves = (await db.LemmaDalgas.AsNoTracking()
+                .Where(d => lemmaIds.Contains(d.LemmaId))
+                .Select(d => new { d.LemmaId, d.Dalga })
+                .ToListAsync(cancellationToken))
+                .ToDictionary(d => d.LemmaId, d => (int)d.Dalga);
+
+            int[] pathIds = [.. lemmaKeys.Values.Distinct()];
+            Dictionary<int, string?> paths = (await db.Lemmas.AsNoTracking()
+                .Where(l => pathIds.Contains(l.Id) && l.Lang == LemmaLangs.Turkish)
+                .Select(l => new { l.Id, l.OnayYolu })
+                .ToListAsync(cancellationToken))
+                .ToDictionary(l => l.Id, l => l.OnayYolu);
+
+            foreach ((long reviewId, int lemmaId) in lemmaKeys)
+            {
+                result[reviewId] = new Enrichment(
+                    null,
+                    waves.TryGetValue(lemmaId, out int wave) ? wave : null,
+                    paths.GetValueOrDefault(lemmaId));
+            }
+
+            foreach ((long reviewId, int lemmaId) in glossKeys)
+            {
+                result[reviewId] = new Enrichment(null, waves.TryGetValue(lemmaId, out int wave) ? wave : null, null);
+            }
+        }
+
+        return result;
+    }
+
+    private static bool TryLemmaId(string key, out int id) =>
+        int.TryParse(key, NumberStyles.None, CultureInfo.InvariantCulture, out id)
+        && id >= 1
+        && string.Equals(id.ToString(CultureInfo.InvariantCulture), key, StringComparison.Ordinal);
 
     /// <summary>lemma_dalga satiri ve metin birlesim anahtari (ham SQL projeksiyonu).</summary>
     private sealed class WaveRow
@@ -250,7 +482,24 @@ internal static class ReviewQueries
             .OrderBy(g => g.HedefTablo, StringComparer.Ordinal)
             .ThenBy(g => g.Alan, StringComparer.Ordinal)
             .Select(g => new ReviewQueueCount(g.HedefTablo, g.Alan, g.Acik))];
-        return new ReviewStatsResponse(queues, queues.Sum(q => q.Acik));
+
+        // Acik baglanti adaylarinin sinif sayilari (sabit sira, sifirlar dahil); baglantisi okunamayan kayit hicbir sinifa girmez.
+        IQueryable<ClassRow> classRows = ClassRows(db);
+        var classGroups = await (
+            from r in db.Reviews.AsNoTracking()
+            where r.Durum == ReviewStatus.Acik && r.HedefTablo == ReviewTargets.Xref
+            join c in classRows on r.HedefAnahtar equals c.XrefKey
+            group c by c.SinifSira into g
+            select new { Rank = g.Key, N = g.Count() })
+            .ToListAsync(cancellationToken);
+        List<ReviewClassCount> classes =
+        [
+            .. new[] { LinkCandidateClass.Tutarsiz, LinkCandidateClass.Toplu, LinkCandidateClass.Gri, LinkCandidateClass.Diger }
+                .Select(c => new ReviewClassCount(c.ToLabel(), classGroups.FirstOrDefault(g => g.Rank == (int)c)?.N ?? 0)),
+        ];
+
+        int expert = await db.Reviews.AsNoTracking().CountAsync(r => r.Durum == ReviewStatus.Uzmanda, cancellationToken);
+        return new ReviewStatsResponse(queues, queues.Sum(q => q.Acik), classes, expert);
     }
 
     /// <summary>Kayit yoksa null. Ayrinti: liste alanlari, jsonb degerler, hedef anlik gorunumu ve turetilmis dogrulanmis.</summary>
@@ -269,6 +518,7 @@ internal static class ReviewQueries
         TargetView view = await LoadTargetViewAsync(db, r, cancellationToken);
         bool verified = ReviewVerification.IsVerified(r.HedefTablo, view.Status, view.MetinDurumu, r.Durum);
         bool pending = view.Kind is { } kind && ReviewVerification.IsSecondApprovalPending(r, kind);
+        Enrichment? extra = (await EnrichAsync(db, [(r.Id, r.HedefTablo, r.HedefAnahtar)], cancellationToken)).GetValueOrDefault(r.Id);
 
         ReviewDetailDto detail = new()
         {
@@ -300,11 +550,14 @@ internal static class ReviewQueries
             SureMs = r.SureMs,
             Hedef = view.Snapshot,
             Dogrulanmis = verified,
+            Sinif = extra?.Sinif,
+            Dalga = extra?.Dalga,
+            OnayYolu = extra?.OnayYolu,
         };
         return (detail, row.Xmin);
     }
 
-    private static ReviewItemDto ToItem(Row r, Dictionary<string, UnitKind> kinds, bool targetVerified)
+    private static ReviewItemDto ToItem(Row r, Dictionary<string, UnitKind> kinds, bool targetVerified, Enrichment? extra)
     {
         bool pending = false;
         if (kinds.TryGetValue(r.HedefAnahtar, out UnitKind kind))
@@ -351,6 +604,9 @@ internal static class ReviewQueries
             // Ayrintiyla ayni tek kural (ReviewVerification.IsUnverified); hedef onayi yalniz onayli yapay zeka satirlari icin okunur.
             Dogrulanmamis = ReviewVerification.IsUnverified(r.YzModeli, r.Durum, targetVerified),
             IkinciOnayBekliyor = pending,
+            Sinif = extra?.Sinif,
+            Dalga = extra?.Dalga,
+            OnayYolu = extra?.OnayYolu,
         };
     }
 
@@ -544,6 +800,9 @@ internal static class ReviewQueries
         }
     }
 
+    /// <summary>Yari acik aralik <c>[bas, son]</c> iki sayi; aralik yoksa (birimin tamami) null.</summary>
+    private static int[]? ToPair(AnchorSpan? span) => span is { } s ? [s.Start, s.End] : null;
+
     private sealed record TargetView(ReviewTargetSnapshot? Snapshot, XrefStatus? Status, TextStatus? MetinDurumu, UnitKind? Kind)
     {
         public static readonly TargetView Empty = new(null, null, null, null);
@@ -618,22 +877,50 @@ internal static class ReviewQueries
                     Guid id = target.Id!.Value;
                     var row = await db.Xrefs.AsNoTracking()
                         .Where(x => x.Id == id)
-                        .Select(x => new { x.Id, x.SrcAnchor, x.DstAnchor, x.Status })
+                        .Select(x => new { x.Id, x.SrcAnchor, x.SrcSpan, x.DstAnchor, x.DstSpan, x.Type, x.Score, x.Confidence, x.Origin, x.Evidence, x.Status })
                         .SingleOrDefaultAsync(cancellationToken);
-                    return row is null
-                        ? TargetView.Empty
-                        : new TargetView(
-                            new ReviewTargetSnapshot
-                            {
-                                Tablo = target.Table,
-                                Id = row.Id,
-                                SrcAnchor = row.SrcAnchor.ToString(),
-                                DstAnchor = row.DstAnchor.ToString(),
-                                Status = row.Status.ToLabel(),
-                            },
-                            row.Status,
-                            null,
-                            null);
+                    if (row is null)
+                    {
+                        return TargetView.Empty;
+                    }
+
+                    // Vurgulu dizi: kaynak birimin metni ve ozeti ayri okunur. Kur'an kaynakta aralik kelime konumudur (kod noktasi degil):
+                    // dilimlenmez. Metin yoksa, aralik metin disindaysa ya da kanittaki src_hash birimin ozetiyle uyusmuyorsa uc alan null.
+                    HighlightedSequence highlight = HighlightedSequence.None;
+                    if (row.SrcAnchor.Kind != AnchorKind.Q)
+                    {
+                        AnchorRef srcAnchor = row.SrcAnchor;
+                        var src = await db.Units.AsNoTracking()
+                            .Where(u => u.Anchor == srcAnchor)
+                            .Select(u => new { u.Metin, u.ContentHash })
+                            .SingleOrDefaultAsync(cancellationToken);
+                        if (src is not null)
+                        {
+                            highlight = LinkHighlight.Compute(src.Metin, src.ContentHash, LinkEvidenceReader.ReadString(row.Evidence, "src_hash"), row.SrcSpan);
+                        }
+                    }
+
+                    return new TargetView(
+                        new ReviewTargetSnapshot
+                        {
+                            Tablo = target.Table,
+                            Id = row.Id,
+                            SrcAnchor = row.SrcAnchor.ToString(),
+                            DstAnchor = row.DstAnchor.ToString(),
+                            Type = row.Type.ToLabel(),
+                            SrcSpan = ToPair(row.SrcSpan),
+                            DstSpan = ToPair(row.DstSpan),
+                            Score = row.Score,
+                            Confidence = row.Confidence,
+                            Origin = row.Origin.ToLabel(),
+                            EvidenceOzeti = ReviewJson.Parse(LinkEvidenceSummary.Build(row.Evidence)),
+                            VurguluDizi = new VurguluDizi(highlight.Sol, highlight.Dizi, highlight.Sag),
+                            Sinif = LinkCandidateClassifier.Classify(row.Type, row.Confidence, row.Evidence).ToLabel(),
+                            Status = row.Status.ToLabel(),
+                        },
+                        row.Status,
+                        null,
+                        null);
                 }
 
             case ReviewTargets.QuranWordFix:

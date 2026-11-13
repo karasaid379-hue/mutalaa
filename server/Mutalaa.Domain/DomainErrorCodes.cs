@@ -20,4 +20,7 @@ public static class DomainErrorCodes
 
     /// <summary>404: kayit yok.</summary>
     public const string Bulunamadi = "bulunamadi";
+
+    /// <summary>422: baglanti adayi toplu onaya uygun degil (K-13 politika 1; yalniz "toplu" sinifi toplu onaylanir).</summary>
+    public const string TopluUygunDegil = "toplu-uygun-degil";
 }

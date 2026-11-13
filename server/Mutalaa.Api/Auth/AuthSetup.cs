@@ -5,11 +5,15 @@ using Mutalaa.Infrastructure.Identity;
 
 namespace Mutalaa.Api.Auth;
 
-/// <summary>Yetki politikasi adlari (Backend API 6): Editor = editor ya da admin, Admin = yalniz admin.</summary>
+/// <summary>
+/// Yetki politikasi adlari (Backend API 6): Editor = editor ya da admin, Admin = yalniz admin, Reviewer = editor, admin ya da uzman
+/// (<c>/api/v1</c> grubunun tabani: uzman okuma uclarini ve kendisine gonderilen kaydin kararini kullanir; yazan uclar ayrica Editor ister).
+/// </summary>
 public static class AuthPolicies
 {
     public const string Editor = "Editor";
     public const string Admin = "Admin";
+    public const string Reviewer = "Reviewer";
 }
 
 public static class AuthSetup
@@ -61,6 +65,7 @@ public static class AuthSetup
         services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = StampValidationInterval);
 
         services.AddAuthorizationBuilder()
+            .AddPolicy(AuthPolicies.Reviewer, policy => policy.RequireAuthenticatedUser().RequireRole(Roles.Editor, Roles.Admin, Roles.Uzman))
             .AddPolicy(AuthPolicies.Editor, policy => policy.RequireAuthenticatedUser().RequireRole(Roles.Editor, Roles.Admin))
             .AddPolicy(AuthPolicies.Admin, policy => policy.RequireAuthenticatedUser().RequireRole(Roles.Admin));
 

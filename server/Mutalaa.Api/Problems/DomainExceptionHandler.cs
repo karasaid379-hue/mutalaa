@@ -30,6 +30,7 @@ public sealed class DomainExceptionHandler(IProblemDetailsService problemDetails
                 return true;
             case DomainErrorCodes.DegistirilemezMetin:
             case DomainErrorCodes.IncelemeDesteklenmiyor:
+            case DomainErrorCodes.TopluUygunDegil:
                 status = StatusCodes.Status422UnprocessableEntity;
                 return true;
             default:

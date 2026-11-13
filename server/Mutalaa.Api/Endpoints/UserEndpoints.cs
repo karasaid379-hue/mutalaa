@@ -23,7 +23,7 @@ public sealed record IdentityErrorDto(string Kod, string Aciklama);
 /// <summary>Editor hesaplari (yalniz admin): liste, olusturma, rol degisimi. Kendi kendine kayit yoktur.</summary>
 public static class UserEndpoints
 {
-    private static readonly string[] AllowedRoles = [Roles.Editor, Roles.Admin];
+    private static readonly string[] AllowedRoles = [Roles.Editor, Roles.Admin, Roles.Uzman];
 
     // Rol degisimlerini siralar: iki yoneticinin ayni anda birbirinin admin rolunu almasi son yoneticiyi silemez.
     private const long RoleChangeLockKey = 0x4d55_5441_4c41_4101;

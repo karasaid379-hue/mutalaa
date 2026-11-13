@@ -10,10 +10,14 @@ using Mutalaa.Api.Tests.Support;
 
 namespace Mutalaa.Api.Tests;
 
-/// <summary>Bir ucun yetki sinifi: kimlik dogrulamasiz, editor (editor ya da admin) ya da yalniz admin.</summary>
+/// <summary>
+/// Bir ucun yetki sinifi: kimlik dogrulamasiz, reviewer (editor, admin ya da uzman: okuma ve karar), editor (editor ya da admin: yazan uclar ve
+/// editore ozgu okumalar) ya da yalniz admin.
+/// </summary>
 internal enum Access
 {
     Anonymous,
+    Reviewer,
     Editor,
     Admin,
 }
@@ -49,21 +53,27 @@ internal static class ExpectedEndpoints
         new("GET", "/health/ready", Access.Anonymous, "/health/ready"),
         new("HEAD", "/health/ready", Access.Anonymous, "/health/ready"),
 
-        // Editor (editor ya da admin).
-        new("POST", "/api/v1/auth/logout", Access.Editor, "/api/v1/auth/logout", EndsSession: true),
-        new("GET", "/api/v1/auth/me", Access.Editor, "/api/v1/auth/me"),
-        new("GET", "/api/v1/sources", Access.Editor, "/api/v1/sources"),
-        new("GET", "/api/v1/sources/{slug}", Access.Editor, "/api/v1/sources/test-yok"),
-        new("GET", "/api/v1/units", Access.Editor, "/api/v1/units"),
-        new("GET", "/api/v1/units/{anchor}", Access.Editor, "/api/v1/units/q:1:1"),
+        // Reviewer (editor, admin ya da uzman): oturum, okuma ve karar (kaydin durumuna gore rol karar icinde denetlenir).
+        new("POST", "/api/v1/auth/logout", Access.Reviewer, "/api/v1/auth/logout", EndsSession: true),
+        new("GET", "/api/v1/auth/me", Access.Reviewer, "/api/v1/auth/me"),
+        new("GET", "/api/v1/sources", Access.Reviewer, "/api/v1/sources"),
+        new("GET", "/api/v1/sources/{slug}", Access.Reviewer, "/api/v1/sources/test-yok"),
+        new("GET", "/api/v1/units", Access.Reviewer, "/api/v1/units"),
+        new("GET", "/api/v1/units/{anchor}", Access.Reviewer, "/api/v1/units/q:1:1"),
+        new("GET", "/api/v1/scans/{baski}/{sayfa}", Access.Reviewer, "/api/v1/scans/test-baski/c01-s0001"),
+        new("GET", "/api/v1/reviews", Access.Reviewer, "/api/v1/reviews"),
+        new("GET", "/api/v1/reviews/stats", Access.Reviewer, "/api/v1/reviews/stats"),
+        new("GET", "/api/v1/reviews/{id:long}", Access.Reviewer, "/api/v1/reviews/1"),
+        new("POST", "/api/v1/reviews/{id:long}/decision", Access.Reviewer, "/api/v1/reviews/1/decision", """{"karar":"yanlis"}"""),
+        new("GET", "/api/v1/lemmas/{id:int}", Access.Reviewer, "/api/v1/lemmas/1"),
+
+        // Editor (editor ya da admin): yazan uclar ve editore ozgu okumalar; uzman 403 alir.
         new("POST", "/api/v1/units/{anchor}/corrections", Access.Editor, "/api/v1/units/q:1:1/corrections", EmptyJson),
-        new("GET", "/api/v1/scans/{baski}/{sayfa}", Access.Editor, "/api/v1/scans/test-baski/c01-s0001"),
-        new("GET", "/api/v1/reviews", Access.Editor, "/api/v1/reviews"),
-        new("GET", "/api/v1/reviews/stats", Access.Editor, "/api/v1/reviews/stats"),
-        new("GET", "/api/v1/reviews/{id:long}", Access.Editor, "/api/v1/reviews/1"),
-        new("POST", "/api/v1/reviews/{id:long}/decision", Access.Editor, "/api/v1/reviews/1/decision", """{"karar":"yanlis"}"""),
         new("POST", "/api/v1/reviews/decisions", Access.Editor, "/api/v1/reviews/decisions", """{"kararlar":[]}"""),
-        new("GET", "/api/v1/lemmas/{id:int}", Access.Editor, "/api/v1/lemmas/1"),
+        new("POST", "/api/v1/reviews/{id:long}/uzmana-gonder", Access.Editor, "/api/v1/reviews/1/uzmana-gonder", EmptyJson),
+        new("POST", "/api/v1/reviews/{id:long}/ima", Access.Editor, "/api/v1/reviews/1/ima", EmptyJson),
+        new("POST", "/api/v1/reviews/{id:long}/kalip", Access.Editor, "/api/v1/reviews/1/kalip", EmptyJson),
+        new("POST", "/api/v1/word-fixes", Access.Editor, "/api/v1/word-fixes", EmptyJson),
         new("POST", "/api/v1/lemmas/{id:int}/itiraz", Access.Editor, "/api/v1/lemmas/1/itiraz", EmptyJson),
         new("POST", "/api/v1/lemmas/{id:int}/etimolojik-isaret", Access.Editor, "/api/v1/lemmas/1/etimolojik-isaret", EmptyJson),
         new("GET", "/api/v1/releases", Access.Editor, "/api/v1/releases"),
@@ -178,8 +188,8 @@ public class AuthorizationMatrixTests(EditorialDatabase<AuthorizationMatrixTests
     [Fact]
     public void Every_endpoint_carries_the_expected_authorization_metadata()
     {
-        // Anonim: IAllowAnonymous var ve Admin politikasi yok (giris ucu editor grubundan Editor politikasini devralir ama
-        // AllowAnonymous onu etkisiz kilar). Editor: yalniz "Editor". Admin: "Editor" (grup) ve "Admin" birlikte aranir.
+        // Anonim: IAllowAnonymous var ve Admin politikasi yok (giris ucu grup politikasini devralir ama AllowAnonymous onu etkisiz kilar).
+        // Reviewer: yalniz grup tabani "Reviewer". Editor: "Reviewer" (grup) ve "Editor". Admin: "Reviewer" (grup) ve "Admin" birlikte aranir.
         List<string> failures = [];
         foreach (Found item in Discover(Factory.Services))
         {
@@ -212,11 +222,14 @@ public class AuthorizationMatrixTests(EditorialDatabase<AuthorizationMatrixTests
                     }
 
                     break;
+                case Access.Reviewer:
+                    AssertPolicies(item.Key, anonymous, policies, ["Reviewer"], failures);
+                    break;
                 case Access.Editor:
-                    AssertPolicies(item.Key, anonymous, policies, ["Editor"], failures);
+                    AssertPolicies(item.Key, anonymous, policies, ["Editor", "Reviewer"], failures);
                     break;
                 case Access.Admin:
-                    AssertPolicies(item.Key, anonymous, policies, ["Admin", "Editor"], failures);
+                    AssertPolicies(item.Key, anonymous, policies, ["Admin", "Reviewer"], failures);
                     break;
             }
         }
@@ -298,6 +311,37 @@ public class AuthorizationMatrixTests(EditorialDatabase<AuthorizationMatrixTests
         ProblemChecks.AssertNone(failures, "Editor cagrilari");
 
         // Gecersiz govdeler yan etki birakmadi.
+        Assert.Equal(before, await SnapshotAsync());
+    }
+
+    [Fact]
+    public async Task Uzman_calls_pass_on_reviewer_endpoints_and_get_403_problems_without_Location_on_editor_and_admin_endpoints()
+    {
+        using HttpClient uzman = await ReleaseTestKit.UzmanAsync(Factory, Ct);
+        string before = await SnapshotAsync();
+        List<string> failures = [];
+
+        foreach (ExpectedEndpoint row in ExpectedEndpoints.All)
+        {
+            using HttpClient? fresh = row.EndsSession ? await ReleaseTestKit.UzmanAsync(Factory, Ct) : null;
+            HttpClient client = fresh ?? uzman;
+            using HttpRequestMessage request = Build(row);
+            using HttpResponseMessage response = await client.SendAsync(request, Ct);
+
+            if (row.Access is Access.Editor or Access.Admin)
+            {
+                foreach (string deviation in await ProblemChecks.DeviationsAsync(response, HttpStatusCode.Forbidden, "yetki-yok", Ct))
+                {
+                    failures.Add($"{row.Key}: {deviation}");
+                }
+            }
+            else if (!Passed.Contains((int)response.StatusCode))
+            {
+                failures.Add($"{row.Key}: uzman icin durum {(int)response.StatusCode}, yetki gecmeliydi {{{string.Join(",", Passed.Order())}}}");
+            }
+        }
+
+        ProblemChecks.AssertNone(failures, "Uzman cagrilari");
         Assert.Equal(before, await SnapshotAsync());
     }
 

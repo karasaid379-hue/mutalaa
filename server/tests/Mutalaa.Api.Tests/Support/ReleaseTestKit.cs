@@ -59,6 +59,10 @@ internal static class ReleaseTestKit
     public static Task<HttpClient> EditorAsync(ApiFactory factory, CancellationToken cancellationToken) =>
         SignInAsync(factory, EditorEmail, EditorPassword, Roles.Editor, cancellationToken);
 
+    /// <summary>Yalniz <c>uzman</c> rolunde kullanici (K-51 madde 2).</summary>
+    public static Task<HttpClient> UzmanAsync(ApiFactory factory, CancellationToken cancellationToken) =>
+        SignInAsync(factory, "uzman@example.test", "uzman-parolasi-123456", Roles.Uzman, cancellationToken);
+
     private static async Task<HttpClient> SignInAsync(ApiFactory factory, string email, string password, string role, CancellationToken cancellationToken)
     {
         await using (AsyncServiceScope scope = factory.Services.CreateAsyncScope())

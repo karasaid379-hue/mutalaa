@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Mutalaa.Api.Validation;
 using Mutalaa.Domain;
+using Mutalaa.Domain.Anchors;
 using Mutalaa.Domain.Content;
 using Mutalaa.Domain.Links;
 using Mutalaa.Domain.Reviews;
@@ -11,7 +12,8 @@ using Mutalaa.Infrastructure.Persistence;
 namespace Mutalaa.Api.Reviews;
 
 /// <summary>Karar girdisi (tekil ve toplu ortak): karar etiketi cozulmus, duzenlenen deger henuz jsonb'ye cevrilmemis.</summary>
-internal sealed record DecisionInput(bool Approve, DecisionEdit? Edit, string? Gerekce);
+/// <param name="Bulk">Toplu karar ucundan mi (baglanti adayinda toplu onay yalniz "toplu" sinifinda gecer, K-13 politika 1).</param>
+internal sealed record DecisionInput(bool Approve, DecisionEdit? Edit, string? Gerekce, bool Bulk = false);
 
 /// <summary>Uygulanmis ama henuz kaydedilmemis karar: izlenen review ve izlenen hedef satiri.</summary>
 internal sealed record PreparedDecision(Review Review, object Target);
@@ -51,6 +53,9 @@ internal static class ReviewDecider
         {
             WritableText.Check(errors, prefix + "duzenlenen.metin", edit.Metin);
             WritableText.Check(errors, prefix + "duzenlenen.anlam_kisa", edit.AnlamKisa);
+            WritableText.Check(errors, prefix + "duzenlenen.dst_anchor", edit.DstAnchor);
+            WritableText.Check(errors, prefix + "duzenlenen.type", edit.Type);
+            WritableText.Check(errors, prefix + "duzenlenen.new_value", edit.NewValue);
         }
     }
 
@@ -89,6 +94,11 @@ internal static class ReviewDecider
         ReviewTarget target = ReviewTargets.Parse(review.HedefTablo, review.HedefAnahtar);
         string? edited = BuildEdited(input.Edit, review);
         (object entity, ReviewTargetState state) = await LoadTargetAsync(db, target, review, edited, cancellationToken);
+
+        if (input.Bulk && input.Approve && entity is Xref candidate)
+        {
+            ReviewDecisions.RequireBulkEligible(candidate.Type, candidate.Confidence, candidate.Evidence, input.Edit is not null);
+        }
 
         ReviewDecisionRequest request = new()
         {
@@ -136,6 +146,7 @@ internal static class ReviewDecider
 
         string hedefTablo = review.HedefTablo;
         bool hasRootFields = edit.RootId is not null || edit.ArLemmaId is not null || edit.EtymologicalOnly is not null;
+        bool hasLinkFields = edit.DstAnchor is not null || edit.DstSpan is not null || edit.Type is not null;
         if (ReviewDecisions.IsRootMappingTarget(review.HedefTablo, review.Alan))
         {
             // Kok eslemesi (K-51 madde 9): yalniz root_id, ar_lemma_id (yoksa Arapca karsilik yok) ve etymological_only.
@@ -155,6 +166,65 @@ internal static class ReviewDecider
         if (hasRootFields)
         {
             throw new DomainException(DomainErrorCodes.Dogrulama, "duzenlenen.root_id, ar_lemma_id ve etymological_only yalniz lemma + kok_eslemesi incelemesinde verilir.");
+        }
+
+        if (ReviewDecisions.IsLinkTarget(review.HedefTablo, review.Alan))
+        {
+            // Baglanti (A18.4): yalniz dst_anchor, dst_span ve type; en az biri.
+            if (edit.Metin is not null || edit.AnlamKisa is not null || edit.NewValue is not null)
+            {
+                throw new DomainException(DomainErrorCodes.Dogrulama, "Baglanti icin duzenlenen.dst_anchor, dst_span ve type verilmeli; baska alan kabul edilmez.");
+            }
+
+            if (!hasLinkFields)
+            {
+                throw new DomainException(DomainErrorCodes.Dogrulama, "duzenlenen en az bir alan icermeli (dst_anchor, dst_span ya da type).");
+            }
+
+            XrefType? type = null;
+            if (edit.Type is not null)
+            {
+                if (!XrefTypeLabels.TryParseLabel(edit.Type, out XrefType parsed))
+                {
+                    throw new DomainException(DomainErrorCodes.Dogrulama, "duzenlenen.type gecerli bir baglanti turu olmali.");
+                }
+
+                type = parsed;
+            }
+
+            AnchorSpan? span = null;
+            if (edit.DstSpan is not null)
+            {
+                if (edit.DstSpan.Length != 2)
+                {
+                    throw new DomainException(DomainErrorCodes.Dogrulama, "duzenlenen.dst_span iki tamsayidan olusan [bas, son) dizisi olmali.");
+                }
+
+                span = new AnchorSpan(edit.DstSpan[0], edit.DstSpan[1]);
+            }
+
+            return LinkEditPayload.ToPayload(new LinkEditValue(edit.DstAnchor, span, type));
+        }
+
+        if (hasLinkFields)
+        {
+            throw new DomainException(DomainErrorCodes.Dogrulama, "duzenlenen.dst_anchor, dst_span ve type yalniz baglanti (xref) incelemesinde verilir.");
+        }
+
+        if (string.Equals(hedefTablo, ReviewTargets.QuranWordFix, StringComparison.Ordinal))
+        {
+            if (edit.Metin is not null || edit.AnlamKisa is not null)
+            {
+                throw new DomainException(DomainErrorCodes.Dogrulama, "quran_word_fix icin duzenlenen.new_value verilmeli; metin ve anlam_kisa kabul edilmez.");
+            }
+
+            return WordFixPayload.ToPayload(edit.NewValue
+                ?? throw new DomainException(DomainErrorCodes.Dogrulama, "duzenlenen.new_value zorunludur."));
+        }
+
+        if (edit.NewValue is not null)
+        {
+            throw new DomainException(DomainErrorCodes.Dogrulama, "duzenlenen.new_value yalniz quran_word_fix incelemesinde verilir.");
         }
 
         if (string.Equals(hedefTablo, ReviewTargets.LemmaGloss, StringComparison.Ordinal))
@@ -234,14 +304,15 @@ internal static class ReviewDecider
                 {
                     Guid id = target.Id!.Value;
                     Xref row = await db.Xrefs.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ?? throw Missing();
-                    return (row, ReviewTargetState.ForStatus(row.Status));
+                    LinkRowState link = new(row.Type, row.SrcAnchor, row.SrcSpan, row.DstAnchor, row.DstSpan, row.Origin, row.Evidence);
+                    return (row, ReviewTargetState.ForLink(row.Status, link, await LoadLinkFactsAsync(db, link, edited, cancellationToken)));
                 }
 
             case ReviewTargets.QuranWordFix:
                 {
                     Guid id = target.Id!.Value;
                     QuranWordFix row = await db.QuranWordFixes.SingleOrDefaultAsync(x => x.Id == id, cancellationToken) ?? throw Missing();
-                    return (row, ReviewTargetState.ForFix(row.Status, row.Field));
+                    return (row, ReviewTargetState.ForFix(row.Status, row.Field, await LoadWordFixFactsAsync(db, row.Field, edited, cancellationToken)));
                 }
 
             case ReviewTargets.Lemma:
@@ -268,6 +339,87 @@ internal static class ReviewDecider
             default:
                 throw new DomainException(DomainErrorCodes.IncelemeDesteklenmiyor, $"'{target.Table}' icin inceleme desteklenmiyor.");
         }
+    }
+
+    /// <summary>
+    /// Duzeltmenin cozdugu hedef ucun olgulari (birim var mi, metin uzunlugu, ayetin kelime sayisi, ozet). Duzenleme yoksa ya da
+    /// cozulemiyorsa (Domain ayni hatayi kendi koduyla verir) null.
+    /// </summary>
+    private static async Task<LinkDstFacts?> LoadLinkFactsAsync(IcerikDbContext db, LinkRowState row, string? edited, CancellationToken cancellationToken)
+    {
+        if (!LinkEditPayload.TryRead(edited, out LinkEditValue value))
+        {
+            return null;
+        }
+
+        ResolvedLinkEdit resolved;
+        try
+        {
+            resolved = LinkEdits.Resolve(row.Type, row.DstAnchor, row.DstSpan, value);
+        }
+        catch (DomainException)
+        {
+            return null;
+        }
+
+        return await LoadDstFactsAsync(db, resolved.DstAnchor, cancellationToken);
+    }
+
+    /// <summary>Birim capasi icin hedef olgulari: birim satiri, metin uzunlugu, ozet; Kur'an ayetinde quran_word sayisi.</summary>
+    internal static async Task<LinkDstFacts> LoadDstFactsAsync(IcerikDbContext db, AnchorRef unit, CancellationToken cancellationToken)
+    {
+        var row = await db.Units.AsNoTracking()
+            .Where(u => u.Anchor == unit)
+            .Select(u => new { u.Metin, u.ContentHash })
+            .SingleOrDefaultAsync(cancellationToken);
+        int words = 0;
+        if (unit.Kind == AnchorKind.Q)
+        {
+            short sure = (short)unit.Sure;
+            short ayet = (short)unit.Ayet;
+            words = await db.QuranWords.AsNoTracking().CountAsync(w => w.Surah == sure && w.Ayah == ayet, cancellationToken);
+        }
+
+        return row is null
+            ? new LinkDstFacts(false, 0, words, null)
+            : new LinkDstFacts(true, CodePointOffsets.CodePointCount(row.Metin), words, row.ContentHash);
+    }
+
+    /// <summary>Kelime duzeltmesi yeni degerinin olgulari: kok ya da lemma var mi (yalniz root_id ve lemma_id alaninda); deger okunamiyorsa null.</summary>
+    internal static async Task<WordFixFacts?> LoadWordFixFactsAsync(IcerikDbContext db, string field, string? edited, CancellationToken cancellationToken)
+    {
+        string? raw;
+        try
+        {
+            raw = WordFixPayload.ReadNewValue(edited, "duzenlenen");
+        }
+        catch (DomainException)
+        {
+            return null;
+        }
+
+        return await LoadWordFixFactsForValueAsync(db, field, raw, cancellationToken);
+    }
+
+    internal static async Task<WordFixFacts?> LoadWordFixFactsForValueAsync(IcerikDbContext db, string field, string? raw, CancellationToken cancellationToken)
+    {
+        if (!WordFixValues.TryParseId(raw, out int id))
+        {
+            return null;
+        }
+
+        if (string.Equals(field, ReviewFields.RootId, StringComparison.Ordinal))
+        {
+            return new WordFixFacts(await db.Roots.AsNoTracking().AnyAsync(r => r.Id == id, cancellationToken), false, null);
+        }
+
+        if (string.Equals(field, ReviewFields.LemmaId, StringComparison.Ordinal))
+        {
+            string? lang = await db.Lemmas.AsNoTracking().Where(l => l.Id == id).Select(l => l.Lang).SingleOrDefaultAsync(cancellationToken);
+            return new WordFixFacts(false, lang is not null, lang);
+        }
+
+        return null;
     }
 
     /// <summary>Kok eslemesi degerinin alan dogrulamasi icin olgular: kok var mi; Arapca karsilik varsa dili ve koku.</summary>
@@ -329,9 +481,23 @@ internal static class ReviewDecider
                 break;
             case Xref xref when outcome.TargetStatus is { } status:
                 xref.Status = status;
+                if (outcome.Link is { } link)
+                {
+                    xref.Type = link.Type;
+                    xref.DstAnchor = link.DstAnchor;
+                    xref.DstSpan = link.DstSpan;
+                    xref.Origin = link.Origin;
+                    xref.Evidence = link.Evidence;
+                }
+
                 break;
             case QuranWordFix fix when outcome.TargetStatus is { } status:
                 fix.Status = status;
+                if (outcome.WordFixNewValue is { } newValue)
+                {
+                    fix.NewValue = newValue;
+                }
+
                 break;
             case Lemma lemma when outcome.TargetStatus is { } status:
                 lemma.Status = status;

@@ -4,20 +4,24 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.OpenApi;
+using Mutalaa.Api.Auth;
 using Mutalaa.Api.Problems;
 using Mutalaa.Api.Reviews;
 using Mutalaa.Api.Validation;
 using Mutalaa.Domain;
+using Mutalaa.Domain.Links;
 using Mutalaa.Domain.Reviews;
+using Mutalaa.Infrastructure.Identity;
 using Mutalaa.Infrastructure.Persistence;
 
 namespace Mutalaa.Api.Endpoints;
 
 /// <summary>
-/// Inceleme uclari (K-48; yetki: editor): kuyruk, ayrinti, istatistik, tekil karar (If-Match zorunlu) ve toplu karar
-/// (ya hep ya hic). Karar kurali <c>Mutalaa.Domain.Reviews</c>'dedir; burada yukleme, eszamanlilik ve yazma vardir.
+/// Inceleme uclari (K-48): kuyruk, ayrinti, istatistik ve tekil karar editor, admin ve uzman icindir (tekil karar If-Match ister; kaydin durumuna gore
+/// yalniz yetkili rol karar verir: <c>acik</c> editor ya da admin, <c>uzmanda</c> uzman). Toplu karar (ya hep ya hic), uzmana gonder, ima ve kalip uclari
+/// yalniz editor ya da adminindir. Karar kurali <c>Mutalaa.Domain.Reviews</c>'dedir; burada yukleme, eszamanlilik ve yazma vardir.
 /// </summary>
-public static class ReviewEndpoints
+public static partial class ReviewEndpoints
 {
     public const int MaxBulk = 100;
 
@@ -59,6 +63,7 @@ public static class ReviewEndpoints
             })
             .Produces<ReviewDecisionResult>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status412PreconditionFailed)
@@ -67,12 +72,16 @@ public static class ReviewEndpoints
 
         reviews.MapPost("/decisions", DecideBulkAsync)
             .WithName("decideReviews")
+            .RequireAuthorization(AuthPolicies.Editor)
             .Produces<BulkDecisionResult>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status412PreconditionFailed)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+
+        MapReviewActionEndpoints(reviews);
 
         return editor;
     }
@@ -84,6 +93,8 @@ public static class ReviewEndpoints
         string? kaynak,
         string? asama,
         string? sira,
+        string? sinif,
+        [FromQuery(Name = "onay_yolu")] string? onayYolu,
         string? cursor,
         int? limit,
         IcerikDbContext db,
@@ -99,7 +110,7 @@ public static class ReviewEndpoints
         ReviewStatus status = ReviewStatus.Acik;
         if (durum is not null && !ReviewStatusLabels.TryParseLabel(durum, out status))
         {
-            errors["durum"] = ["Geçersiz durum. İzin verilenler: acik, onaylandi, reddedildi, geri_alindi."];
+            errors["durum"] = ["Geçersiz durum. İzin verilenler: acik, onaylandi, reddedildi, geri_alindi, uzmanda."];
         }
 
         WritableText.Check(errors, "alan", alan);
@@ -141,9 +152,58 @@ public static class ReviewEndpoints
                     errors["sira"] = ["sira=dalga yalnız hedef_tablo lemma ya da lemma_gloss iken geçerlidir."];
                 }
             }
+            else if (string.Equals(sira, "sinif", StringComparison.Ordinal))
+            {
+                sort = ReviewSort.Sinif;
+                if (!string.Equals(hedefTablo, ReviewTargets.Xref, StringComparison.Ordinal))
+                {
+                    errors["sira"] = ["sira=sinif yalnız hedef_tablo xref iken geçerlidir."];
+                }
+            }
             else if (!string.Equals(sira, "olusturma", StringComparison.Ordinal))
             {
-                errors["sira"] = ["Geçersiz sira. İzin verilenler: olusturma, dalga."];
+                errors["sira"] = ["Geçersiz sira. İzin verilenler: olusturma, dalga, sinif."];
+            }
+        }
+
+        LinkCandidateClass? wantedClass = null;
+        if (sinif is not null)
+        {
+            if (!LinkCandidateClassLabels.TryParseLabel(sinif, out LinkCandidateClass parsedClass))
+            {
+                errors["sinif"] = ["Geçersiz sinif. İzin verilenler: tutarsiz, toplu, gri, diger."];
+            }
+            else if (!string.Equals(hedefTablo, ReviewTargets.Xref, StringComparison.Ordinal))
+            {
+                errors["sinif"] = ["sinif yalnız hedef_tablo xref iken geçerlidir."];
+            }
+            else
+            {
+                wantedClass = parsedClass;
+            }
+        }
+
+        ApprovalFilter? wantedPath = null;
+        if (onayYolu is not null)
+        {
+            ApprovalFilter? parsedPath = onayYolu switch
+            {
+                "otomatik" => ApprovalFilter.Otomatik,
+                "editor" => ApprovalFilter.Editor,
+                "aday" => ApprovalFilter.Aday,
+                _ => null,
+            };
+            if (parsedPath is null)
+            {
+                errors["onay_yolu"] = ["Geçersiz onay_yolu. İzin verilenler: otomatik, editor, aday."];
+            }
+            else if (!string.Equals(hedefTablo, ReviewTargets.Lemma, StringComparison.Ordinal))
+            {
+                errors["onay_yolu"] = ["onay_yolu yalnız hedef_tablo lemma iken geçerlidir."];
+            }
+            else
+            {
+                wantedPath = parsedPath;
             }
         }
 
@@ -155,9 +215,21 @@ public static class ReviewEndpoints
 
         (DateTime CreatedAt, long Id)? after = null;
         WaveCursor? waveAfter = null;
+        ClassCursor? classAfter = null;
         if (cursor is not null)
         {
-            if (sort == ReviewSort.Dalga)
+            if (sort == ReviewSort.Sinif)
+            {
+                if (ReviewCursor.TryDecodeClass(cursor, out ClassCursor classCursor))
+                {
+                    classAfter = classCursor;
+                }
+                else
+                {
+                    errors["cursor"] = ["İmleç geçersiz."];
+                }
+            }
+            else if (sort == ReviewSort.Dalga)
             {
                 // Imlec turu etiketlidir: olusturma imleci dalga sirasinda (ve dalga imleci olusturma sirasinda) gecersizdir.
                 if (ReviewCursor.TryDecodeWave(cursor, out WaveCursor wave))
@@ -184,7 +256,8 @@ public static class ReviewEndpoints
             return ApiProblem.Validation(errors);
         }
 
-        return TypedResults.Ok(await ReviewQueries.ListAsync(db, hedefTablo, alan, status, kaynak, stage, sort, after, waveAfter, take, cancellationToken));
+        return TypedResults.Ok(await ReviewQueries.ListAsync(
+            db, hedefTablo, alan, status, kaynak, stage, sort, wantedClass, wantedPath, after, waveAfter, classAfter, take, cancellationToken));
     }
 
     private static async Task<IResult> StatsAsync(IcerikDbContext db, CancellationToken cancellationToken) =>
@@ -226,6 +299,11 @@ public static class ReviewEndpoints
         if (review is null)
         {
             return ApiProblem.Create(StatusCodes.Status404NotFound, ProblemCodes.Bulunamadi, "İnceleme kaydı bulunamadı.");
+        }
+
+        if (!ReviewRoles.CanDecide(review.Durum, IsEditorOrAdmin(user), user.IsInRole(Roles.Uzman)))
+        {
+            return Forbidden(review.Durum);
         }
 
         if (ReviewEtag.TryParseIfMatch(http.Request, out uint expected) is { } headerError)
@@ -355,6 +433,15 @@ public static class ReviewEndpoints
             }
         }
 
+        foreach (long id in ids)
+        {
+            Review review = reviews[id];
+            if (!ReviewRoles.CanDecide(review.Durum, IsEditorOrAdmin(user), user.IsInRole(Roles.Uzman)))
+            {
+                return Forbidden(review.Durum, new Dictionary<string, object?> { ["kimlik"] = id });
+            }
+        }
+
         // Once bellekte surum karsilastirmasi: tutmayan varsa hicbiri uygulanmaz ve tam liste doner.
         long[] stale = [.. items.Where(i => i.Xmin != RowVersion.Get(db.Entry(reviews[i.Id]))).Select(i => i.Id)];
         if (stale.Length > 0)
@@ -375,7 +462,7 @@ public static class ReviewEndpoints
                 prepared.Add((item.Id, await ReviewDecider.ApplyAsync(
                     db,
                     review,
-                    new DecisionInput(approve, item.Duzenlenen, item.Gerekce),
+                    new DecisionInput(approve, item.Duzenlenen, item.Gerekce, Bulk: true),
                     actor,
                     now,
                     cancellationToken)));
@@ -465,6 +552,18 @@ public static class ReviewEndpoints
     }
 
     private static string Actor(ClaimsPrincipal user) => user.Identity?.Name ?? string.Empty;
+
+    private static bool IsEditorOrAdmin(ClaimsPrincipal user) => user.IsInRole(Roles.Editor) || user.IsInRole(Roles.Admin);
+
+    /// <summary>403 yetki-yok: kaydin durumuna gore karar verecek rol yok (acik: editor ya da admin; uzmanda: uzman).</summary>
+    private static IResult Forbidden(ReviewStatus durum, IReadOnlyDictionary<string, object?>? extensions = null) =>
+        ApiProblem.Create(
+            StatusCodes.Status403Forbidden,
+            ProblemCodes.YetkiYok,
+            durum == ReviewStatus.Uzmanda
+                ? "Uzmana gönderilen kaydın kararını yalnız uzman rolü verir."
+                : "Bu kaydın kararını editör ya da yönetici verir; uzman rolü yalnız uzmana gönderilen kayıtlara karar verir.",
+            extensions);
 
     private static DateTime Now(HttpContext http) =>
         (http.RequestServices.GetService<TimeProvider>() ?? TimeProvider.System).GetUtcNow().UtcDateTime;

@@ -78,7 +78,7 @@ internal sealed class ApiFactory : WebApplicationFactory<Program>
     {
         await using AsyncServiceScope scope = Services.CreateAsyncScope();
         RoleManager<IdentityRole> roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-        foreach (string role in new[] { Roles.Editor, Roles.Admin })
+        foreach (string role in new[] { Roles.Editor, Roles.Admin, Roles.Uzman })
         {
             if (!await roleManager.RoleExistsAsync(role))
             {

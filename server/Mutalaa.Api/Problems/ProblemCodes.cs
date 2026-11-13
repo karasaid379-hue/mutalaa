@@ -14,6 +14,7 @@ public static class ProblemCodes
     public const string Dogrulama = "dogrulama";
     public const string CapaGecersiz = "capa-gecersiz";
     public const string DegistirilemezMetin = "degistirilemez-metin";
+    public const string TopluUygunDegil = "toplu-uygun-degil";
     public const string OturumAcilamadi = "oturum-acilamadi";
     public const string YetkiYok = "yetki-yok";
     public const string Bulunamadi = "bulunamadi";
