@@ -18,7 +18,10 @@ namespace Mutalaa.Infrastructure.Packs;
 /// Risale (A20.4, K-51): risale-{kitap} (PackDefinition.Book) yalniz kendi capa onekli birimlerini unit olarak alir (etiket RisaleLabels; arama satiri, baglanti
 /// ve sayfa eslemesi yoktur) ve dil ile yonu pack_meta'ya tasir. risale-dizin (IndexesBooks) unit yerine, kapidan giren her kitap paketinin birimleri icin
 /// unit_ref ve icerigi olmayan arama satirlari yazar (Osmanli ve Arapca kitaplarda yalniz ar_norm), bir ucu Risale olan baglantilari alir ve baski sayfa
-/// satirlarini yalniz iki ucu da kapsamdaki birimler icin yazar (K-47 ile ayni sarkan uc kurali; volume kitabin cildiyle ayni olmalidir).
+/// satirlarini yalniz iki ucu da kapsamdaki birimler icin yazar (K-47 ile ayni sarkan uc kurali; volume kitabin cildiyle ayni olmalidir). risale-dizin ayrica lugat
+/// tablosunu tasir (A20.6, K-51 madde 9 ve 10): Glossary kaynaklarinin kapidan giren (IncludedLexicals "lugat_madde:{source_id}:{basliksoz}") maddeleri; onayli her
+/// derlemeye, aday yalniz dev ve internal'a (status 'aday'), red hicbirine girmez; test- onekli kaynak public'e girmez (kaynak karari, P-12). kaynaklar (siklik, kitaplar,
+/// sozluk isabeti) ve anlam basvurusu pakete yazilmaz.
 /// </summary>
 public static class PackAssembler
 {
@@ -52,6 +55,7 @@ public static class PackAssembler
 
         HashSet<string> contentSlugs = new(StringComparer.Ordinal);
         HashSet<string> dictionarySlugs = new(StringComparer.Ordinal);
+        HashSet<string> glossarySlugs = new(StringComparer.Ordinal);
         Dictionary<string, string> layouts = new(StringComparer.Ordinal);
         foreach (PackSourceBinding binding in pack.Sources)
         {
@@ -72,6 +76,10 @@ public static class PackAssembler
             else if (binding.Role == PackSourceRole.Dictionary)
             {
                 dictionarySlugs.Add(binding.Slug);
+            }
+            else if (binding.Role == PackSourceRole.Glossary)
+            {
+                glossarySlugs.Add(binding.Slug);
             }
             else if (binding.Role == PackSourceRole.Structure)
             {
@@ -173,6 +181,8 @@ public static class PackAssembler
             }
         }
 
+        List<PackLugatRow> lugat = pack.IndexesBooks ? AssembleLugat(snapshot, gate, glossarySlugs, sourcesWithRows) : [];
+
         List<PackXrefRow> xrefs = [];
         foreach (XrefRow xref in snapshot.Xrefs)
         {
@@ -255,10 +265,59 @@ public static class PackAssembler
             Lemmas = lexicon.Lemmas,
             LemmaGlosses = lexicon.LemmaGlosses,
             TrForms = [],
+            Lugat = lugat,
             WordFixCount = pack.CarriesLexicon ? lexicon.AppliedFixes : null,
             Language = book?.Language,
             Direction = book?.Direction,
         };
+    }
+
+    /// <summary>
+    /// risale-dizin lugat tablosu (K-51 madde 9 ve 10). Satir yalniz kaynagi kapidan girmisse (P-01, P-12) ve madde P-09'dan gecmisse (IncludedLexicals) alinir; satir sirasi
+    /// PackRows'a aittir. Onayli maddenin tanimi dolu olmalidir (veritabani CHECK'i); bos ise ya da basliksoz iki kaynakta yinelenirse (anahtar basliksoz) girdi tutarsizdir.
+    /// Kaynak lugat satiri verdiyse kunye ve atif satiri listelenir (P-01, P-11).
+    /// </summary>
+    private static List<PackLugatRow> AssembleLugat(
+        EditorialSnapshot snapshot,
+        GateResult gate,
+        HashSet<string> glossarySlugs,
+        HashSet<string> sourcesWithRows)
+    {
+        List<PackLugatRow> rows = [];
+        Dictionary<string, string> owners = new(StringComparer.Ordinal);
+        foreach (LugatMaddeRow madde in snapshot.LugatMaddeler)
+        {
+            if (!glossarySlugs.Contains(madde.SourceId)
+                || !gate.IncludedLexicals.Contains("lugat_madde:" + madde.SourceId + ":" + madde.Basliksoz))
+            {
+                continue;
+            }
+
+            if (string.Equals(madde.Status, ApprovedLabel, StringComparison.Ordinal) && string.IsNullOrWhiteSpace(madde.TanimTr))
+            {
+                throw new PackAssemblyException($"Onayli lugat maddesinin tanimi bos ({madde.SourceId}): {madde.Basliksoz}");
+            }
+
+            if (!owners.TryAdd(madde.Basliksoz, madde.SourceId))
+            {
+                throw new PackAssemblyException($"Lugat basliksozu iki kaynakta yinelenir ({owners[madde.Basliksoz]} ve {madde.SourceId}): {madde.Basliksoz}");
+            }
+
+            rows.Add(new PackLugatRow(
+                madde.Basliksoz,
+                madde.BasliksozNorm,
+                madde.OsmanlicaYazim,
+                madde.KokenDil,
+                madde.TanimTr,
+                madde.Duzey,
+                madde.Status,
+                madde.Origin,
+                madde.Version,
+                madde.ContentHash));
+            sourcesWithRows.Add(madde.SourceId);
+        }
+
+        return rows;
     }
 
     /// <summary>

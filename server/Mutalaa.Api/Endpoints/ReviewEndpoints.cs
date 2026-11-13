@@ -141,9 +141,17 @@ public static class ReviewEndpoints
                     errors["sira"] = ["sira=dalga yalnız hedef_tablo lemma ya da lemma_gloss iken geçerlidir."];
                 }
             }
+            else if (string.Equals(sira, "siklik", StringComparison.Ordinal))
+            {
+                sort = ReviewSort.Siklik;
+                if (!string.Equals(hedefTablo, ReviewTargets.LugatMadde, StringComparison.Ordinal))
+                {
+                    errors["sira"] = ["sira=siklik yalnız hedef_tablo lugat_madde iken geçerlidir."];
+                }
+            }
             else if (!string.Equals(sira, "olusturma", StringComparison.Ordinal))
             {
-                errors["sira"] = ["Geçersiz sira. İzin verilenler: olusturma, dalga."];
+                errors["sira"] = ["Geçersiz sira. İzin verilenler: olusturma, dalga, siklik."];
             }
         }
 
@@ -155,9 +163,21 @@ public static class ReviewEndpoints
 
         (DateTime CreatedAt, long Id)? after = null;
         WaveCursor? waveAfter = null;
+        SiklikCursor? siklikAfter = null;
         if (cursor is not null)
         {
-            if (sort == ReviewSort.Dalga)
+            if (sort == ReviewSort.Siklik)
+            {
+                if (ReviewCursor.TryDecodeSiklik(cursor, out SiklikCursor frequency))
+                {
+                    siklikAfter = frequency;
+                }
+                else
+                {
+                    errors["cursor"] = ["İmleç geçersiz."];
+                }
+            }
+            else if (sort == ReviewSort.Dalga)
             {
                 // Imlec turu etiketlidir: olusturma imleci dalga sirasinda (ve dalga imleci olusturma sirasinda) gecersizdir.
                 if (ReviewCursor.TryDecodeWave(cursor, out WaveCursor wave))
@@ -184,7 +204,7 @@ public static class ReviewEndpoints
             return ApiProblem.Validation(errors);
         }
 
-        return TypedResults.Ok(await ReviewQueries.ListAsync(db, hedefTablo, alan, status, kaynak, stage, sort, after, waveAfter, take, cancellationToken));
+        return TypedResults.Ok(await ReviewQueries.ListAsync(db, hedefTablo, alan, status, kaynak, stage, sort, after, waveAfter, siklikAfter, take, cancellationToken));
     }
 
     private static async Task<IResult> StatsAsync(IcerikDbContext db, CancellationToken cancellationToken) =>

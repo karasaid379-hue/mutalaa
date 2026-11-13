@@ -22,8 +22,11 @@ export const SESSION_QUERY_OPTIONS = {
   refetchOnWindowFocus: true,
 } as const;
 
-/** Order of a queue list (`sira`): `dalga` is the word wave order, only for `lemma` and `lemma_gloss` targets. */
-export type QueueOrder = 'olusturma' | 'dalga';
+/**
+ * Order of a queue list (`sira`): `dalga` is the word wave order, only for `lemma` and `lemma_gloss` targets;
+ * `siklik` is the descending frequency order of the Risale lügat, only for the `lugat_madde` target.
+ */
+export type QueueOrder = 'olusturma' | 'dalga' | 'siklik';
 
 export interface QueueFilter {
   hedef_tablo: string;

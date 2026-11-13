@@ -159,6 +159,7 @@ public static class SourceDigests
         }
 
         AddLexiconLines(snapshot, slug, lines);
+        AddLugatLines(snapshot, slug, lines);
 
         lines.Sort(Utf8Order.Instance);
         using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
@@ -231,6 +232,31 @@ public static class SourceDigests
                     gloss.Status,
                     gloss.Origin,
                     gloss.Version));
+            }
+        }
+    }
+
+    // Lugat maddeleri (K-51 madde 9): kaynagin butun satirlari, butun durumlar; aday -> onayli gecisi (tanim, ozet ve surum) ozeti degistirir, P-14 terfide yakalar.
+    // kaynaklar (siklik, kitaplar, anlam basvurusu) ozete girmez: pakete de girmez.
+    private static void AddLugatLines(EditorialSnapshot snapshot, string slug, List<string> lines)
+    {
+        foreach (LugatMaddeRow madde in snapshot.LugatMaddeler)
+        {
+            if (string.Equals(madde.SourceId, slug, StringComparison.Ordinal))
+            {
+                lines.Add(Line(
+                    PackTables.Lugat,
+                    slug,
+                    madde.Basliksoz,
+                    madde.BasliksozNorm,
+                    madde.OsmanlicaYazim,
+                    madde.KokenDil,
+                    madde.TanimTr,
+                    (long)madde.Duzey,
+                    madde.Status,
+                    madde.Origin,
+                    madde.Version,
+                    madde.ContentHash));
             }
         }
     }

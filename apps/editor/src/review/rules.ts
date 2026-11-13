@@ -90,6 +90,13 @@ export function isGlossEditable(review: ReviewItem): boolean {
   );
 }
 
+/** An open lügat madde review (`lugat_madde` + `tanim_tr`): approval needs the definition the editor writes (K-51 madde 10). */
+export function isLugatEditable(review: ReviewItem): boolean {
+  return (
+    review.hedef_tablo === 'lugat_madde' && review.alan === 'tanim_tr' && review.durum === 'acik'
+  );
+}
+
 /**
  * Meaning the approval would apply: the editor's `duzenlenen.anlam_kisa`, else the candidate's
  * `onerilen.anlam_kisa`; null when there is none. An edit equal to it is not sent (a plain approval).

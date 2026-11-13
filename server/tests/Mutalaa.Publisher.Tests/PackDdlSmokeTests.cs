@@ -21,7 +21,7 @@ public class PackDdlSmokeTests
         ["core"] = [.. Common, "unit", "xref_idx", "unit_search", "unit_fts", "unit_tri", "quran_word", "quran_marker", "sure", "page_map"],
         ["metin"] = [.. Common, "unit", "xref_idx", "tr_root_index", "unit_search", "unit_fts", "unit_tri", "page_map"],
         ["risale-kitap"] = [.. Common, "unit"],
-        ["risale-dizin"] = [.. Common, "unit_ref", "xref_idx", "tr_root_index", "unit_fts", "unit_tri", "page_map"],
+        ["risale-dizin"] = [.. Common, "unit_ref", "xref_idx", "tr_root_index", "unit_fts", "unit_tri", "page_map", "lugat"],
         ["kelime-kok"] = [.. Common, "word_morph", "root", "lemma", "lemma_gloss", "tr_form", "tr_root_index"],
         ["mushaf-a-cuz"] = [.. Common, "page_font", "page_line", "glyph_word"],
         ["mushaf-b"] = [.. Common, "page_image", "ayah_box", "page_map"],

@@ -89,6 +89,22 @@ public sealed record PackLemmaGlossRow(
     string Status,
     string Origin);
 
+/// <summary>
+/// lugat satiri (risale-dizin; K-51 madde 9): basliksoz kaynaktaki baytlarla, TanimTr editorun yazdigi (NFC) tanim (aday iken bos olabilir).
+/// Status 'onayli' ya da 'aday' (aday yalniz dev ve internal'da; "dogrulanmamis" durumdan turetilir); Version metindir. <c>kaynaklar</c> ve anlam basvurusu yoktur.
+/// </summary>
+public sealed record PackLugatRow(
+    string Basliksoz,
+    string BasliksozNorm,
+    string? OsmanlicaYazim,
+    string? KokenDil,
+    string? TanimTr,
+    long Duzey,
+    string Status,
+    string Origin,
+    string Version,
+    string ContentHash);
+
 /// <summary>tr_form satiri (kelime-kok; A18'e kadar bos).</summary>
 public sealed record PackTrFormRow(string KeyWide, string KeyNarrow, long TrLemmaId, long Freq);
 
@@ -136,6 +152,9 @@ public sealed class PackContent
     public IReadOnlyList<PackLemmaGlossRow> LemmaGlosses { get; init; } = [];
 
     public IReadOnlyList<PackTrFormRow> TrForms { get; init; } = [];
+
+    /// <summary>risale-dizin'in lugat satirlari (K-51 madde 9); baska pakette bos.</summary>
+    public IReadOnlyList<PackLugatRow> Lugat { get; init; } = [];
 
     /// <summary>
     /// Uygulanan onayli quran_word_fix sayisi (yalniz kelime-kok; diger paketlerde null). pack_meta'da <see cref="PackMetaKeys.WordFixCount"/>

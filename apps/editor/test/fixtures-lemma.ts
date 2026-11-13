@@ -207,11 +207,62 @@ export function lemmaInfo(over: Partial<S['LemmaDetailResponse']> = {}): S['Lemm
   };
 }
 
-/** Answers the detail of the queues by id: below 100 a word meaning draft, 100 to 199 a lemma status review, from 200 a correction; and the lemma card. */
+/** The headword of a synthetic lügat madde (made-up, not Risale text). */
+export const lugatWord = (id: number) => `deneme-sozcuk-${id}`;
+
+/** A Risale lügat madde review (`lugat_madde` + `tanim_tr`); the key is `{source_id}:{basliksoz}` (K-51 madde 10). */
+export function lugatItem(id: number, over: Partial<S['ReviewItemDto']> = {}): S['ReviewItemDto'] {
+  return reviewItem({
+    id,
+    hedef_tablo: 'lugat_madde',
+    hedef_anahtar: `risale-kelime-frekans:${lugatWord(id)}`,
+    alan: 'tanim_tr',
+    onceki: null,
+    onerilen: {
+      anlam_basvuru: [
+        { anlam: 'Deneme başvuru anlamı', sayi: 4 },
+        { anlam: 'Deneme öteki başvuru', sayi: 1 },
+      ],
+      siklik: 1000 - id,
+      kitaplar: 3,
+    },
+    xmin: 600 + id,
+    ...over,
+  });
+}
+
+export function lugatDetail(
+  id: number,
+  over: Partial<S['ReviewDetailDto']> = {},
+): S['ReviewDetailDto'] {
+  return reviewDetail({
+    ...lugatItem(id),
+    hedef: {
+      tablo: 'lugat_madde',
+      source: 'risale-kelime-frekans',
+      basliksoz: lugatWord(id),
+      duzey: 1,
+      origin: 'hat',
+      version: '1',
+      status: 'aday',
+    },
+    ...over,
+  });
+}
+
+/** Answers the detail of the queues by id: below 100 a word meaning draft, 100 to 199 a lemma status review, 200 to 299 a correction, from 300 a lügat madde; and the lemma card. */
 export function lemmaHandlers(fake: FakeApi, info: S['LemmaDetailResponse'] = lemmaInfo()): void {
   fake.get('/api/v1/reviews/{id}', (call) => {
     const id = Number(call.params.id);
-    return ok(id >= 200 ? fixDetail(id) : id >= 100 ? lemmaDetail(id) : glossDetail(id));
+    return ok(
+      id >= 300
+        ? lugatDetail(id)
+        : id >= 200
+          ? fixDetail(id)
+          : id >= 100
+            ? lemmaDetail(id)
+            : glossDetail(id),
+    );
   });
   fake.get('/api/v1/lemmas/{id}', ok(info));
 }

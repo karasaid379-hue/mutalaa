@@ -96,6 +96,23 @@ public sealed record LemmaGlossRow(
     string Origin,
     string Version);
 
+/// <summary>
+/// lugat_madde satiri (K-51 madde 9 ve 10): paketlenen sutunlar. <c>kaynaklar</c> (siklik, kitaplar, sozluk isabeti) ve anlam basvurusu BILEREK okunmaz:
+/// basvuru pakete ve maddeye yazilmaz. Version metindir ('1', onayda +1); Status 'onayli', 'aday' ya da 'red'.
+/// </summary>
+public sealed record LugatMaddeRow(
+    string SourceId,
+    string Basliksoz,
+    string BasliksozNorm,
+    string? OsmanlicaYazim,
+    string? KokenDil,
+    string? TanimTr,
+    int Duzey,
+    string Status,
+    string Origin,
+    string Version,
+    string ContentHash);
+
 /// <summary>quran_word_fix satiri (K-50 madde 4 ve 6): Field root_id, lemma_id, pos ya da features; NewValue metindir (alan turune cevrilir).</summary>
 public sealed record QuranWordFixRow(Guid Id, string Anchor, string Field, string NewValue, string Status);
 
@@ -134,7 +151,7 @@ public sealed record XrefRow(
     string? LexiconStatus);
 
 /// <summary>
-/// P-09 kapsamindaki satir: quran_word_fix ve lemma_gloss durum sutunu (Status) tasir; tr_root_index ve tr_form durum sutunu tasimaz
+/// P-09 kapsamindaki satir: quran_word_fix, lemma_gloss ve lugat_madde (Id "{source_id}:{basliksoz}") durum sutunu (Status) tasir; tr_root_index ve tr_form durum sutunu tasimaz
 /// (LinkedLemmaApproved: bagli Turkce lemma onayli). Id anahtari: quran_word_fix id, lemma_gloss lemma_id, tr_root_index "anchor|span_start",
 /// tr_form "key_narrow|tr_lemma_id".
 /// </summary>
@@ -174,6 +191,9 @@ public sealed class EditorialSnapshot
 
     /// <summary>Arapca sozluk lemmalarina bagli kelime anlamlari (butun durumlar; kapi derleme turune gore secer).</summary>
     public IReadOnlyList<LemmaGlossRow> LemmaGlosses { get; init; } = [];
+
+    /// <summary>Butun lugat maddeleri (durum ne olursa olsun; kapi derleme turune gore secer). basliksoz bayt sirasinda (source_id, basliksoz).</summary>
+    public IReadOnlyList<LugatMaddeRow> LugatMaddeler { get; init; } = [];
 
     /// <summary>Butun quran_word_fix satirlari (durum ne olursa olsun; kapi yalniz onayliyi uygular).</summary>
     public IReadOnlyList<QuranWordFixRow> WordFixes { get; init; } = [];

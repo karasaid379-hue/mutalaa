@@ -62,6 +62,7 @@ const BEKLENEN_TABLOLAR: Record<string, string[]> = {
     'unit_fts',
     'unit_tri',
     'page_map',
+    'lugat',
   ],
   'kelime-kok': [
     ...ORTAK,
@@ -165,6 +166,18 @@ const BEKLENEN_SUTUNLAR: Record<string, string[]> = {
   ],
   tr_form: ['key_wide', 'key_narrow', 'tr_lemma_id', 'freq'],
   unit_ref: ['rowid', 'anchor', 'pack_id', 'ord', 'label'],
+  lugat: [
+    'basliksoz',
+    'basliksoz_norm',
+    'osmanlica_yazim',
+    'koken_dil',
+    'tanim_tr',
+    'duzey',
+    'status',
+    'origin',
+    'version',
+    'content_hash',
+  ],
   page_font: ['page', 'format', 'data', 'sha256'],
   page_line: ['page', 'line', 'line_type', 'centered', 'sure'],
   glyph_word: ['page', 'line', 'pos', 'anchor', 'ayah', 'glyph', 'is_ayah_end'],
@@ -204,6 +217,7 @@ const BEKLENEN_PK: Record<string, string[]> = {
   tr_form: ['key_narrow', 'tr_lemma_id'],
   unit: ['rowid'],
   unit_ref: ['rowid'],
+  lugat: ['basliksoz'],
 };
 
 /** WITHOUT ROWID tables that Icerik paketleri 3.1-3.5 declares as such. */
@@ -218,11 +232,13 @@ const BELGELI_ROWIDSIZ = [
 ];
 
 /**
- * WITHOUT ROWID tables of the mushaf and audio packs. The documents give no table options for
- * them (Mobil mimari 11 marks its page_line / glyph_word draft as a proposal, without the
+ * WITHOUT ROWID tables of the mushaf and audio packs and the Risale lugat table (K-51 madde 9; its table options
+ * follow the other keyed lookup tables). The documents give no table options for
+ * the mushaf and audio tables (Mobil mimari 11 marks its page_line / glyph_word draft as a proposal, without the
  * option); the DDL files declare them WITHOUT ROWID and this list pins that.
  */
 const DDL_ROWIDSIZ = [
+  'lugat',
   'page_line',
   'glyph_word',
   'ayah_box',
@@ -504,6 +520,50 @@ describe('DDL', () => {
 
   it('has no unit_search in risale-dizin (contentless index)', () => {
     expect(tablolar(yeniVeritabani('risale-dizin'))).not.toContain('unit_search');
+  });
+
+  it('carries the lugat table in risale-dizin only (K-51 madde 9)', () => {
+    for (const tur of TURLER) {
+      expect(tablolar(yeniVeritabani(tur)).includes('lugat'), tur).toBe(tur === 'risale-dizin');
+    }
+  });
+
+  it('keeps the lugat table free of the reference data (siklik, kitaplar, anlam basvurusu; K-51 madde 10)', () => {
+    const adlar = sutunlar(yeniVeritabani('risale-dizin'), 'lugat');
+    for (const yasak of ['kaynaklar', 'siklik', 'kitaplar', 'anlam_basvuru', 'sozluk_isabet']) {
+      expect(adlar).not.toContain(yasak);
+    }
+  });
+
+  it('lets lugat take only onayli and aday rows (red never enters a pack) and indexes basliksoz_norm', () => {
+    const db = yeniVeritabani('risale-dizin');
+    const ekle = db.prepare(
+      'INSERT INTO lugat(basliksoz, basliksoz_norm, duzey, status, origin, version, content_hash) VALUES (?, ?, 1, ?, ?, ?, ?)',
+    );
+    ekle.run('deneme-a', 'deneme', 'aday', 'hat', '1', 'a'.repeat(64));
+    expect(() => ekle.run('deneme-c', 'deneme', 'red', 'hat', '1', 'c'.repeat(64))).toThrow();
+    expect(() => ekle.run('deneme-a', 'baska', 'aday', 'hat', '1', 'd'.repeat(64))).toThrow();
+    // An approved madde has a written definition; a candidate may have none.
+    expect(() => ekle.run('deneme-e', 'deneme', 'onayli', 'editor', '2', 'e'.repeat(64))).toThrow();
+    const tanimli = db.prepare(
+      'INSERT INTO lugat(basliksoz, basliksoz_norm, tanim_tr, duzey, status, origin, version, content_hash) VALUES (?, ?, ?, 1, ?, ?, ?, ?)',
+    );
+    expect(() =>
+      tanimli.run('deneme-f', 'deneme', '   ', 'onayli', 'editor', '2', 'f'.repeat(64)),
+    ).toThrow();
+    expect(() =>
+      tanimli.run('deneme-g', 'deneme', 'Deneme tanimi', 'onayli', 'editor', '2', 'g'.repeat(64)),
+    ).not.toThrow();
+    const dizin = db
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'lugat' AND name = 'lugat_norm'",
+      )
+      .all();
+    expect(dizin).toHaveLength(1);
+    const plan = db
+      .prepare('EXPLAIN QUERY PLAN SELECT basliksoz FROM lugat WHERE basliksoz_norm = ?')
+      .all('deneme') as { detail: string }[];
+    expect(plan.map((r) => r.detail).join(' ')).toContain('lugat_norm');
   });
 
   it('keeps pack_meta.schema_version aligned with user_version (stored by the publisher)', () => {

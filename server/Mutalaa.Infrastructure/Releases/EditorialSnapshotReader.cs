@@ -60,6 +60,7 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
         IReadOnlyList<RootRow> roots = await ReadRootsAsync(cancellationToken);
         IReadOnlyList<LemmaRow> lemmas = await ReadLemmasAsync(cancellationToken);
         IReadOnlyList<LemmaGlossRow> glosses = await ReadLemmaGlossesAsync(cancellationToken);
+        IReadOnlyList<LugatMaddeRow> lugat = await ReadLugatMaddelerAsync(cancellationToken);
         IReadOnlyList<QuranWordFixRow> fixes = await ReadWordFixesAsync(cancellationToken);
         PreviousReleaseRow? previous = await ReadPreviousReleaseAsync(flavor, cancellationToken);
 
@@ -76,6 +77,7 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
             Roots = roots,
             Lemmas = lemmas,
             LemmaGlosses = glosses,
+            LugatMaddeler = lugat,
             WordFixes = fixes,
             PreviousRelease = previous,
         };
@@ -302,6 +304,40 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
         return rows;
     }
 
+    /// <summary>
+    /// Lugat maddeleri (butun durumlar; (source_id, basliksoz) bayt sirali). <c>kaynaklar</c> sutunu okunmaz: siklik, kitap ve anlam basvurusu pakete girmez
+    /// (K-51 madde 10). Tablo bossa satir uretmez.
+    /// </summary>
+    public async Task<IReadOnlyList<LugatMaddeRow>> ReadLugatMaddelerAsync(CancellationToken cancellationToken)
+    {
+        const string sql = $"""
+            SELECT source_id, basliksoz, basliksoz_norm, osmanlica_yazim, koken_dil, tanim_tr, duzey, status::text, origin, version, content_hash
+            FROM {Schema}.lugat_madde
+            ORDER BY source_id COLLATE "C", basliksoz COLLATE "C"
+            """;
+
+        List<LugatMaddeRow> rows = [];
+        await using NpgsqlCommand command = new(sql, _connection);
+        await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            rows.Add(new LugatMaddeRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                Str(reader, 3),
+                Str(reader, 4),
+                Str(reader, 5),
+                reader.GetInt16(6),
+                reader.GetString(7),
+                reader.GetString(8),
+                reader.GetString(9),
+                reader.GetString(10)));
+        }
+
+        return rows;
+    }
+
     /// <summary>quran_word_fix satirlari (butun durumlar; id sirali). Tablo bossa satir uretmez.</summary>
     public async Task<IReadOnlyList<QuranWordFixRow>> ReadWordFixesAsync(CancellationToken cancellationToken)
     {
@@ -412,7 +448,7 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
         return ids;
     }
 
-    /// <summary>P-09 durum satirlari: quran_word_fix, lemma_gloss, tr_root_index ve tr_form.</summary>
+    /// <summary>P-09 durum satirlari: quran_word_fix, lemma_gloss, lugat_madde, tr_root_index ve tr_form.</summary>
     public async Task<IReadOnlyList<LexicalRow>> ReadLexicalsAsync(CancellationToken cancellationToken)
     {
         List<LexicalRow> rows = [];
@@ -424,6 +460,11 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
         await ReadLexicalAsync(
             $"SELECT lemma_id::text, status::text, false FROM {Schema}.lemma_gloss ORDER BY lemma_id",
             LexicalKind.LemmaGloss,
+            rows,
+            cancellationToken);
+        await ReadLexicalAsync(
+            $"SELECT source_id || ':' || basliksoz, status::text, false FROM {Schema}.lugat_madde ORDER BY source_id COLLATE \"C\", basliksoz COLLATE \"C\"",
+            LexicalKind.LugatMadde,
             rows,
             cancellationToken);
         await ReadLexicalAsync(

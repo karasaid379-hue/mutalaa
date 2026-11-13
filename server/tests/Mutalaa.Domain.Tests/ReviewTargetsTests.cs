@@ -9,19 +9,19 @@ namespace Mutalaa.Domain.Tests;
 /// <summary>review.hedef_tablo sabitleri ve hedef_anahtar ayristirma (K-48). Her sinama tr-TR kulturunde de calisir.</summary>
 public partial class ReviewTargetsTests
 {
-    private static readonly string[] Thirteen =
+    private static readonly string[] Fourteen =
     [
         "source", "unit", "quran_word_fix", "lemma", "lemma_gloss", "root", "tr_root_index", "tr_form", "surah_alias", "xref", "page_map",
-        "ayah_box", "audio_timing",
+        "ayah_box", "audio_timing", "lugat_madde",
     ];
 
     [GeneratedRegex(@"hedef_tablo IN \(([^)]*)\)", RegexOptions.CultureInvariant)]
     private static partial Regex CheckList();
 
     [Fact]
-    public void All_lists_the_13_targets_in_the_order_of_the_ddl_check()
+    public void All_lists_the_14_targets_in_the_order_of_the_ddl_check()
     {
-        Assert.Equal(Thirteen, ReviewTargets.All);
+        Assert.Equal(Fourteen, ReviewTargets.All);
 
         Match match = CheckList().Match(EditorialDoc.Section(EditorialDoc.Read(), 8));
         Assert.True(match.Success);
@@ -34,7 +34,7 @@ public partial class ReviewTargetsTests
     [InlineData(true)]
     public void IsKnown_is_ordinal_and_case_sensitive(bool turkish) => CultureScope.For(turkish, () =>
     {
-        foreach (string target in Thirteen)
+        foreach (string target in Fourteen)
         {
             Assert.True(ReviewTargets.IsKnown(target));
         }
@@ -49,17 +49,17 @@ public partial class ReviewTargetsTests
     [Fact]
     public void Status_column_targets_are_the_five_xref_status_tables_and_unit()
     {
-        string[] withStatus = [.. Thirteen.Where(ReviewTargets.HasStatusColumn)];
+        string[] withStatus = [.. Fourteen.Where(ReviewTargets.HasStatusColumn)];
 
-        Assert.Equal(["unit", "quran_word_fix", "lemma", "lemma_gloss", "surah_alias", "xref"], withStatus);
+        Assert.Equal(["unit", "quran_word_fix", "lemma", "lemma_gloss", "surah_alias", "xref", "lugat_madde"], withStatus);
     }
 
     [Fact]
-    public void Only_six_targets_support_review_decisions()
+    public void Only_seven_targets_support_review_decisions()
     {
-        string[] supported = [.. Thirteen.Where(ReviewTargets.IsSupported)];
+        string[] supported = [.. Fourteen.Where(ReviewTargets.IsSupported)];
 
-        Assert.Equal(["unit", "quran_word_fix", "lemma", "lemma_gloss", "surah_alias", "xref"], supported);
+        Assert.Equal(["unit", "quran_word_fix", "lemma", "lemma_gloss", "surah_alias", "xref", "lugat_madde"], supported);
     }
 
     [Theory]

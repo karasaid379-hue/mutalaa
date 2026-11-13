@@ -7,11 +7,14 @@ export const trLemma = {
     anlam: 'Anlam taslakları',
     durum: 'Lemma durumu',
     duzeltme: 'Kök ve lemma düzeltmeleri',
+    lugat: 'Lügat',
   },
   tabHints: {
     anlam: 'Kelime anlamı taslakları: kısa anlam (anlam_kisa) onayı ya da düzenleyerek onayı.',
     durum: 'Lemma kayıtlarının durum (status) onayı.',
     duzeltme: 'Kök ve lemma düzeltme önerileri (QAC üzerine): yalnız onay ya da ret.',
+    lugat:
+      'Risale lügat maddeleri: başlık söz, sıklık ve sözlük başvurusuyla gelen adaylar. Tanımı siz yazarsınız; sıklığı yüksek madde önce gelir.',
   },
   heading: {
     anlam: 'Kelime anlamı taslağı',

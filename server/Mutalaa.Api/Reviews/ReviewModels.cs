@@ -182,7 +182,24 @@ public sealed record ReviewTargetSnapshot
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? YalnizcaEtimolojik { get; init; }
 
-    /// <summary>lemma_gloss: icerik surumu ('1', her duzenlemede +1).</summary>
+    // lugat_madde (K-51 madde 9 ve 10): kaynak kimligi Source alaninda, siklik ve anlam basvurusu review.onerilen'dedir.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Basliksoz { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? OsmanlicaYazim { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? KokenDil { get; init; }
+
+    /// <summary>lugat_madde: editorun yazdigi tanim (aday iken bos).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TanimTr { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? Duzey { get; init; }
+
+    /// <summary>lemma_gloss ve lugat_madde: icerik surumu ('1', her duzenlemede +1).</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Version { get; init; }
 
@@ -196,10 +213,11 @@ public sealed record ReviewQueueCount(string HedefTablo, string Alan, int Acik);
 public sealed record ReviewStatsResponse(IReadOnlyList<ReviewQueueCount> Kuyruklar, int ToplamAcik);
 
 /// <summary>
-/// Editorun duzenledigi deger: birim metni onayinda <c>metin</c>, lemma_gloss onayinda <c>anlam_kisa</c> (K-50 madde 6);
-/// hedefe gore yalniz biri verilir, ote hedeflerde duzenlenen deger 422 <c>inceleme-desteklenmiyor</c> alir.
+/// Editorun duzenledigi deger: birim metni onayinda <c>metin</c>, lemma_gloss onayinda <c>anlam_kisa</c> (K-50 madde 6),
+/// lugat_madde onayinda <c>tanim_tr</c> (K-51 madde 10); hedefe gore yalniz biri verilir, ote hedeflerde duzenlenen deger
+/// 422 <c>inceleme-desteklenmiyor</c> alir.
 /// </summary>
-public sealed record DecisionEdit(string? Metin = null, string? AnlamKisa = null);
+public sealed record DecisionEdit(string? Metin = null, string? AnlamKisa = null, string? TanimTr = null);
 
 /// <summary>Tekil karar govdesi. karar: onaylandi ya da reddedildi.</summary>
 public sealed record DecisionBody(string? Karar, string? Gerekce, DecisionEdit? Duzenlenen = null);

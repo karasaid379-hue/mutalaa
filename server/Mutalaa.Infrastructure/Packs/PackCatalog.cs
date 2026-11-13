@@ -17,6 +17,9 @@ public enum PackSourceRole
 
     /// <summary>Sozluk verisi: root, lemma ve quran_word'un QAC sutunlarini verir (kelime-kok'te qac-morfoloji; K-50 madde 3 ve 4).</summary>
     Dictionary = 3,
+
+    /// <summary>Lugat maddesi kaynagi (risale-dizin'de risale-kelime-frekans; K-51 madde 9): kaynagin lugat_madde satirlari pakete lugat tablosuna girer.</summary>
+    Glossary = 4,
 }
 
 /// <summary>
@@ -38,7 +41,7 @@ public sealed record PackSourceBinding(string Slug, PackSourceRole Role, bool Re
 /// CarriesLexicon: paket word_morph, root, lemma ve lemma_gloss tablolarini doldurur (yalniz kelime-kok; tr_form ve tr_root_index A18'e kadar bos).
 /// Book: Risale kitap paketi (risale-{kitap}, A20.4): yalniz unit tasir (arama tablosu, xref_idx ve page_map yoktur); birimleri kaynagin (87 kitap tek
 /// kaynaktan, risale-rnk-metin, gelir) capa oneki <see cref="AnchorPrefix"/> ile ayrilir; dil ve yon pack_meta'ya yazilir.
-/// IndexesBooks: risale-dizin: unit yerine unit_ref ile icerigi olmayan unit_fts ve unit_tri satirlari, Risale uclu xref_idx ve page_map tasir.
+/// IndexesBooks: risale-dizin: unit yerine unit_ref ile icerigi olmayan unit_fts ve unit_tri satirlari, Risale uclu xref_idx, page_map ve lugat (Glossary kaynaklari) tasir.
 /// </summary>
 public sealed record PackDefinition(
     string PackId,
@@ -96,6 +99,12 @@ public sealed class PackCatalog
 
     /// <summary>Risale baglanti dizininin kaynagi (xref satirlari): risale-dizin'de atif rolunde, yalniz xref satiri varsa listelenir.</summary>
     public const string RisaleLinkSlug = "risale-atif-dizini";
+
+    /// <summary>Risale lugat maddelerinin kaynagi (Kelime-Frekans basliksoz listesi; K-51 madde 9 ve 10): risale-dizin'de Glossary rolunde, Required: false.</summary>
+    public const string RisaleLugatSlug = "risale-kelime-frekans";
+
+    /// <summary>Sentetik lugat fiksturu kaynagi (10 ila 20 uydurma madde, A20.6): test- onekli oldugu icin public'e ve internal'a girmez (P-12), dev'de gorunur.</summary>
+    public const string RisaleLugatFixtureSlug = "test-lugat-ornek";
 
     /// <summary>risale-dizin page_map satirlarinin duzen adi (RNK baskisi; core'da "medine-604").</summary>
     public const string RisalePageLayout = "rnk-baski";
@@ -219,6 +228,8 @@ public sealed class PackCatalog
                 new PackSourceBinding(RisaleTextSlug, PackSourceRole.Content, Required: true),
                 new PackSourceBinding(RisaleFixtureSourceSlug, PackSourceRole.Content, Required: false, PageMapLayout: RisaleFixturePageLayout),
                 new PackSourceBinding(RisaleLinkSlug, PackSourceRole.Attribution, Required: false),
+                new PackSourceBinding(RisaleLugatSlug, PackSourceRole.Glossary, Required: false),
+                new PackSourceBinding(RisaleLugatFixtureSlug, PackSourceRole.Glossary, Required: false),
                 new PackSourceBinding(RisalePageSlug, PackSourceRole.Structure, Required: false, PageMapLayout: RisalePageLayout),
             ],
             IndexesBooks: true);

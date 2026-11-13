@@ -6,7 +6,8 @@ namespace Mutalaa.Domain.Reviews;
 /// <summary>
 /// review.hedef_tablo degerleri (Editoryal veritabani 8, CHECK listesiyle ayni) ve hedef_anahtar ayristirma.
 /// Anahtar bicimi hedefe gore degisir: unit = capa, surah_alias = <c>{surah_no}:{alias}</c> (ilk ':' ile bolunur),
-/// xref ve quran_word_fix = Guid, lemma ve lemma_gloss = tamsayi lemma_id.
+/// xref ve quran_word_fix = Guid, lemma ve lemma_gloss = tamsayi lemma_id, lugat_madde = <c>{source_id}:{basliksoz}</c>
+/// (ilk ':' kaynak kimligini ayirir; basliksoz ':' tasiyabilir).
 /// </summary>
 public static class ReviewTargets
 {
@@ -23,13 +24,14 @@ public static class ReviewTargets
     public const string PageMap = "page_map";
     public const string AyahBox = "ayah_box";
     public const string AudioTiming = "audio_timing";
+    public const string LugatMadde = "lugat_madde";
 
     private static readonly string[] AllTargets =
     [
-        Source, Unit, QuranWordFix, Lemma, LemmaGloss, Root, TrRootIndex, TrForm, SurahAlias, Xref, PageMap, AyahBox, AudioTiming,
+        Source, Unit, QuranWordFix, Lemma, LemmaGloss, Root, TrRootIndex, TrForm, SurahAlias, Xref, PageMap, AyahBox, AudioTiming, LugatMadde,
     ];
 
-    /// <summary>13 hedef; CHECK listesindeki sirayla.</summary>
+    /// <summary>14 hedef; CHECK listesindeki sirayla.</summary>
     public static IReadOnlyList<string> All => AllTargets;
 
     /// <summary>Tablo adi CHECK listesinde mi (Ordinal, buyuk-kucuk harf duyarli).</summary>
@@ -40,11 +42,11 @@ public static class ReviewTargets
     /// Ote hedefler yalniz onayli veri tasir (Editoryal veritabani 8).
     /// </summary>
     public static bool HasStatusColumn(string? hedefTablo) =>
-        hedefTablo is Lemma or LemmaGloss or QuranWordFix or SurahAlias or Xref or Unit;
+        hedefTablo is Lemma or LemmaGloss or QuranWordFix or SurahAlias or Xref or Unit or LugatMadde;
 
     /// <summary>Inceleme akisi (onay, ret) bu hedef icin desteklenir mi; hedef_anahtar ayristirilabilir mi.</summary>
     public static bool IsSupported(string? hedefTablo) =>
-        hedefTablo is Unit or SurahAlias or Xref or QuranWordFix or Lemma or LemmaGloss;
+        hedefTablo is Unit or SurahAlias or Xref or QuranWordFix or Lemma or LemmaGloss or LugatMadde;
 
     /// <summary>
     /// hedef_anahtar'i hedefe gore ayristirir.
@@ -78,6 +80,8 @@ public static class ReviewTargets
             case Xref:
             case QuranWordFix:
                 return ReviewTarget.ForId(hedefTablo, ParseGuid(hedefAnahtar));
+            case LugatMadde:
+                return ParseLugatMadde(hedefAnahtar);
             default:
                 return ReviewTarget.ForLemma(hedefTablo!, ParseCanonicalInt(hedefAnahtar, "lemma_id", int.MaxValue));
         }
@@ -114,6 +118,32 @@ public static class ReviewTargets
         return ReviewTarget.ForSurahAlias(surahNo, key[(colon + 1)..]);
     }
 
+    private static ReviewTarget ParseLugatMadde(string key)
+    {
+        int colon = key.IndexOf(':', StringComparison.Ordinal);
+        if (colon <= 0 || colon == key.Length - 1)
+        {
+            throw new DomainException(DomainErrorCodes.Dogrulama, "lugat_madde anahtari '{source_id}:{basliksoz}' biciminde olmali.");
+        }
+
+        string sourceId = key[..colon];
+        foreach (char c in sourceId)
+        {
+            if (!(c is >= 'a' and <= 'z' || c is >= '0' and <= '9' || c == '-'))
+            {
+                throw new DomainException(DomainErrorCodes.Dogrulama, "lugat_madde anahtarinda source_id kucuk harf ASCII, rakam ve '-' olmali.");
+            }
+        }
+
+        string basliksoz = key[(colon + 1)..];
+        if (string.IsNullOrWhiteSpace(basliksoz))
+        {
+            throw new DomainException(DomainErrorCodes.Dogrulama, "lugat_madde anahtarinda basliksoz bos olamaz.");
+        }
+
+        return ReviewTarget.ForLugatMadde(sourceId, basliksoz);
+    }
+
     private static Guid ParseGuid(string key)
     {
         if (!Guid.TryParseExact(key, "D", out Guid id))
@@ -141,7 +171,7 @@ public static class ReviewTargets
 
 /// <summary>
 /// Ayristirilmis hedef_anahtar. Hedefe gore tek bir kimlik dolu olur: Anchor (unit), SurahNo ve Alias (surah_alias),
-/// Id (xref, quran_word_fix) ya da LemmaId (lemma, lemma_gloss). Deger tur oldugu icin varlik adlari (EntityDocumentTests) etkilenmez.
+/// Id (xref, quran_word_fix), LemmaId (lemma, lemma_gloss) ya da SourceId ve Basliksoz (lugat_madde). Deger tur oldugu icin varlik adlari (EntityDocumentTests) etkilenmez.
 /// </summary>
 public readonly record struct ReviewTarget
 {
@@ -157,6 +187,10 @@ public readonly record struct ReviewTarget
 
     public int? LemmaId { get; init; }
 
+    public string? SourceId { get; init; }
+
+    public string? Basliksoz { get; init; }
+
     internal static ReviewTarget ForAnchor(AnchorRef anchor) => new() { Table = ReviewTargets.Unit, Anchor = anchor };
 
     internal static ReviewTarget ForSurahAlias(int surahNo, string alias) =>
@@ -165,4 +199,7 @@ public readonly record struct ReviewTarget
     internal static ReviewTarget ForId(string table, Guid id) => new() { Table = table, Id = id };
 
     internal static ReviewTarget ForLemma(string table, int lemmaId) => new() { Table = table, LemmaId = lemmaId };
+
+    internal static ReviewTarget ForLugatMadde(string sourceId, string basliksoz) =>
+        new() { Table = ReviewTargets.LugatMadde, SourceId = sourceId, Basliksoz = basliksoz };
 }

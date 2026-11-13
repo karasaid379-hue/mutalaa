@@ -51,6 +51,7 @@ internal static class ReviewDecider
         {
             WritableText.Check(errors, prefix + "duzenlenen.metin", edit.Metin);
             WritableText.Check(errors, prefix + "duzenlenen.anlam_kisa", edit.AnlamKisa);
+            WritableText.Check(errors, prefix + "duzenlenen.tanim_tr", edit.TanimTr);
         }
     }
 
@@ -98,6 +99,7 @@ internal static class ReviewDecider
         QuranWordFix fix => fix.Status.ToLabel(),
         Lemma lemma => lemma.Status.ToLabel(),
         LemmaGloss gloss => gloss.Status.ToLabel(),
+        LugatMadde madde => madde.Status.ToLabel(),
         _ => null,
     };
 
@@ -107,7 +109,8 @@ internal static class ReviewDecider
 
     /// <summary>
     /// Duzenlenen deger jsonb olur: birim metninde <c>{"metin", "content_hash"}</c> (ozet kanonik metinden hesaplanir),
-    /// lemma_gloss'ta <c>{"anlam_kisa"}</c> (kanonik deger; bos, yalniz bosluk ya da 200 karakterden uzun 400).
+    /// lemma_gloss'ta <c>{"anlam_kisa"}</c> (kanonik deger; bos, yalniz bosluk ya da 200 karakterden uzun 400),
+    /// lugat_madde'de <c>{"tanim_tr"}</c> (kanonik deger; bos, yalniz bosluk ya da 2000 karakterden uzun 400).
     /// </summary>
     private static string? BuildEdited(DecisionEdit? edit, string hedefTablo)
     {
@@ -124,6 +127,21 @@ internal static class ReviewDecider
             }
 
             return LemmaGlossText.ToPayload(LemmaGlossText.Normalize(edit.AnlamKisa, "duzenlenen.anlam_kisa"));
+        }
+
+        if (string.Equals(hedefTablo, ReviewTargets.LugatMadde, StringComparison.Ordinal))
+        {
+            if (edit.Metin is not null || edit.AnlamKisa is not null)
+            {
+                throw new DomainException(DomainErrorCodes.Dogrulama, "lugat_madde icin duzenlenen.tanim_tr verilmeli; baska alan kabul edilmez.");
+            }
+
+            return LugatMaddeText.ToPayload(LugatMaddeText.Normalize(edit.TanimTr, "duzenlenen.tanim_tr"));
+        }
+
+        if (edit.TanimTr is not null)
+        {
+            throw new DomainException(DomainErrorCodes.Dogrulama, "duzenlenen.tanim_tr yalniz lugat_madde icin kabul edilir.");
         }
 
         if (string.IsNullOrEmpty(edit.Metin))
@@ -211,6 +229,15 @@ internal static class ReviewDecider
                     return (row, ReviewTargetState.ForGloss(row.Status, new GlossReviewState(row.AnlamKisa, row.Version, row.Origin)));
                 }
 
+            case ReviewTargets.LugatMadde:
+                {
+                    string sourceId = target.SourceId!;
+                    string basliksoz = target.Basliksoz!;
+                    LugatMadde row = await db.LugatMaddeler.SingleOrDefaultAsync(x => x.SourceId == sourceId && x.Basliksoz == basliksoz, cancellationToken)
+                        ?? throw Missing();
+                    return (row, ReviewTargetState.ForLugat(row.Status, new LugatReviewState(row.Basliksoz, row.Version)));
+                }
+
             default:
                 throw new DomainException(DomainErrorCodes.IncelemeDesteklenmiyor, $"'{target.Table}' icin inceleme desteklenmiyor.");
         }
@@ -261,6 +288,17 @@ internal static class ReviewDecider
                     gloss.ContentHash = edited.ContentHash;
                     gloss.Version = edited.Version;
                     gloss.Origin = edited.Origin;
+                }
+
+                break;
+            case LugatMadde madde when outcome.TargetStatus is { } status:
+                madde.Status = status;
+                if (outcome.Lugat is { } lugatEdit)
+                {
+                    madde.TanimTr = lugatEdit.TanimTr;
+                    madde.ContentHash = lugatEdit.ContentHash;
+                    madde.Version = lugatEdit.Version;
+                    madde.Origin = lugatEdit.Origin;
                 }
 
                 break;

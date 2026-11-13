@@ -56,7 +56,7 @@ public static class FlavorPolicy
     public static bool AllowsUnapprovedUnits(BuildFlavor flavor) => Normalize(flavor) != BuildFlavor.Public;
 
     /// <summary>
-    /// P-09 (K-50 madde 8): aday kelime anlami (lemma_gloss status = aday) yalniz dev ve internal'a, status = aday ile girer. public'e onayli girer;
+    /// P-09 (K-50 madde 8, K-51 madde 9): aday kelime anlami (lemma_gloss status = aday) ve aday lugat maddesi (lugat_madde status = aday) yalniz dev ve internal'a, status = aday ile girer. public'e onayli girer;
     /// red hicbirine girmez. quran_word_fix bu kurala baglanmaz: her derlemede yalniz onayli uygulanir.
     /// </summary>
     public static bool AllowsCandidateGlosses(BuildFlavor flavor) => Normalize(flavor) != BuildFlavor.Public;

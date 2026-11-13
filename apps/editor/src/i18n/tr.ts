@@ -114,6 +114,7 @@ export const tr = {
       status: 'Durum',
       metin: 'Metin',
       anlam_kisa: 'Kısa anlam',
+      tanim_tr: 'Tanım',
       root_id: 'Kök',
       lemma_id: 'Lemma',
       pos: 'Tür',
@@ -142,6 +143,7 @@ export const tr = {
       page_map: 'Sayfa eşlemesi',
       ayah_box: 'Âyet kutusu',
       audio_timing: 'Ses zamanlaması',
+      lugat_madde: 'Lügat maddesi',
     },
     textStatus: {
       taslak: 'Taslak',
@@ -191,6 +193,9 @@ export const tr = {
     /** Verbatim (A15.3): shown for 422 inceleme-desteklenmiyor on a unit with offset data. */
     offsetUnsupported:
       "Bu birimin ofsetli alanları (işaretler, cümleler) var; metin düzeltmesi A20'de desteklenecek",
+    /** Verbatim: shown for 422 inceleme-desteklenmiyor when a lügat madde is approved without a definition (K-51 madde 10). */
+    lugatDefinitionRequired:
+      'Lügat maddesi tanım yazılmadan onaylanamaz. Anlam başvurusu (onaysız) tanım olarak onaylanmaz; tanımı kendiniz yazın.',
     /** Per-operation overrides of the generic message. */
     contexts: {
       decision: {

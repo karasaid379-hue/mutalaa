@@ -2052,6 +2052,12 @@
               "null",
               "string"
             ]
+          },
+          "tanim_tr": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "additionalProperties": false
@@ -3357,6 +3363,37 @@
               "null",
               "boolean"
             ]
+          },
+          "basliksoz": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "osmanlica_yazim": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "koken_dil": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "tanim_tr": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "duzey": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
           },
           "version": {
             "type": [

@@ -6,8 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { fieldLabel } from '@/i18n/labels';
 import { tr } from '@/i18n/tr';
 import { trLemma } from '@/i18n/tr-lemma';
-import { formatPercent } from '@/lib/format';
-import type { QueueOrder } from '@/review/queries';
+import { trLugat } from '@/i18n/tr-lugat';
+import { formatNumber, formatPercent } from '@/lib/format';
 import { QueueLayout } from '@/review/queue-layout';
 import type { ReviewItem } from '@/review/types';
 import {
@@ -19,8 +19,11 @@ import {
   isQueueOrder,
   lemmaFilter,
   type LemmaTabId,
+  type WaveOrder,
 } from './config';
 import { LemmaCard } from './lemma-card';
+import { LugatCard } from './lugat-card';
+import { readFrequency } from './lugat-payload';
 import { consistencyOf, isReadyCandidate, isShare, readConfidence } from './payload';
 import { WordFixCard } from './word-fix-card';
 
@@ -58,8 +61,8 @@ function LemmaTabs({ value, onChange }: LemmaTabsProps) {
 }
 
 interface OrderControlProps {
-  value: QueueOrder;
-  onChange: (value: QueueOrder) => void;
+  value: WaveOrder;
+  onChange: (value: WaveOrder) => void;
 }
 
 /** "Sıra: Dalga | Oluşturma": the wave and root order of the editorial work, or the creation order. */
@@ -95,6 +98,14 @@ function OrderControl({ value, onChange }: OrderControlProps) {
 
 /** Under a word meaning candidate in the list: the consistent or inconsistent mark of its dominant share. */
 function GlossMeta({ item }: { item: ReviewItem }) {
+  if (item.hedef_tablo === 'lugat_madde') {
+    const frequency = readFrequency(item);
+    return (
+      <span className="text-xs text-muted-foreground" data-testid="lugat-item-frequency">
+        {frequency === null ? trLugat.list.noFrequency : trLugat.list.line(formatNumber(frequency))}
+      </span>
+    );
+  }
   if (item.hedef_tablo === 'quran_word_fix') {
     return (
       <span className="text-xs text-muted-foreground">
@@ -117,14 +128,14 @@ function GlossMeta({ item }: { item: ReviewItem }) {
 
 /**
  * Route `kuyruk/lemma` (Kelime anlamları §6, K-13): the word meaning drafts (`lemma_gloss` + `anlam_kisa`),
- * the lemma status (`lemma` + `status`) and the root and lemma corrections (`quran_word_fix`, every field) on
- * three tabs; the filter is screen state. The first two are listed in wave order (`sira=dalga`, the default)
+ * the lemma status (`lemma` + `status`), the root and lemma corrections (`quran_word_fix`, every field) and the
+ * Risale lügat (`lugat_madde` + `tanim_tr`, descending frequency, K-51) on four tabs; the filter is screen state. The first two are listed in wave order (`sira=dalga`, the default)
  * or in creation order; changing the order is a new query, so the cursor starts over (the API's cursors are
  * typed by order). The correction tab has no order (the API answers 400).
  */
 export function LemmaQueue() {
   const [tab, setTab] = useState<LemmaTabId>('anlam');
-  const [order, setOrder] = useState<QueueOrder>(DEFAULT_LEMMA_ORDER);
+  const [order, setOrder] = useState<WaveOrder>(DEFAULT_LEMMA_ORDER);
   return (
     <QueueLayout
       title={tr.nav.queueLemma}
@@ -140,6 +151,8 @@ export function LemmaQueue() {
       renderDetail={({ review, onDecided }) =>
         review.hedef_tablo === 'quran_word_fix' ? (
           <WordFixCard key={review.id} review={review} onDecided={onDecided} />
+        ) : review.hedef_tablo === 'lugat_madde' ? (
+          <LugatCard key={review.id} review={review} onDecided={onDecided} />
         ) : (
           <LemmaCard key={review.id} review={review} onDecided={onDecided} />
         )

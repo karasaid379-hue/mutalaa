@@ -19,11 +19,15 @@ internal enum ReviewStage
     Ikinci,
 }
 
-/// <summary>Kuyruk siralamasi (<c>sira</c>): olusturma (varsayilan, created_at ve id) ya da kelime anlami dalgasi (K-50 madde 7).</summary>
+/// <summary>
+/// Kuyruk siralamasi (<c>sira</c>): olusturma (varsayilan, created_at ve id), kelime anlami dalgasi (K-50 madde 7) ya da lugat maddesi
+/// siklik sirasi (azalan <c>kaynaklar.siklik</c>, K-51 madde 9 ve 10).
+/// </summary>
 internal enum ReviewSort
 {
     Olusturma,
     Dalga,
+    Siklik,
 }
 
 /// <summary>Liste, ayrinti ve istatistik okuma sorgulari: hepsi AsNoTracking ve projeksiyonludur.</summary>
@@ -69,6 +73,7 @@ internal static class ReviewQueries
         ReviewSort sira,
         (DateTime CreatedAt, long Id)? after,
         WaveCursor? waveAfter,
+        SiklikCursor? siklikAfter,
         int limit,
         CancellationToken cancellationToken)
     {
@@ -109,6 +114,10 @@ internal static class ReviewQueries
         {
             (rows, next) = await ListByWaveAsync(db, query, waveAfter, limit, cancellationToken);
         }
+        else if (sira == ReviewSort.Siklik)
+        {
+            (rows, next) = await ListByFrequencyAsync(db, query, siklikAfter, limit, cancellationToken);
+        }
         else
         {
             if (after is { } cursor)
@@ -148,6 +157,67 @@ internal static class ReviewQueries
         public int Dalga { get; init; }
 
         public int Sira { get; init; }
+    }
+
+    /// <summary>lugat_madde'nin birlesim anahtari (<c>{source_id}:{basliksoz}</c>) ve siklik degeri (ham SQL projeksiyonu).</summary>
+    private sealed class FrequencyRow
+    {
+        public required string MaddeKey { get; init; }
+
+        public int Siklik { get; init; }
+    }
+
+    /// <summary>
+    /// Lugat sirasi (K-51 madde 10): (siklik azalan, review.id artan). Siklik <c>kaynaklar-&gt;&gt;'siklik'</c> degeridir
+    /// (<see cref="LugatMaddeText.SiklikKey"/>); sayi olmayan ya da eksik deger 0 sayilir (cast hatasi listeyi 500 yapmaz).
+    /// Birlesim metin karsilastirmasidir (<c>source_id || ':' || basliksoz = review.hedef_anahtar</c>). Madde satiri olmayan kayit siklik 0'dadir.
+    /// Anahtarlar once (kimlik, siklik) ile sayfalanir, sonra satirlar tek sorguyla okunup bu sirada dizilir.
+    /// </summary>
+    private static async Task<(List<Row> Rows, string? Next)> ListByFrequencyAsync(
+        IcerikDbContext db,
+        IQueryable<Review> query,
+        SiklikCursor? after,
+        int limit,
+        CancellationToken cancellationToken)
+    {
+        IQueryable<FrequencyRow> maddeler = db.Database.SqlQuery<FrequencyRow>(
+            $"SELECT source_id || ':' || basliksoz AS madde_key, CASE WHEN kaynaklar->>'siklik' ~ '^[0-9]{{1,9}}$' THEN (kaynaklar->>'siklik')::integer ELSE 0 END AS siklik FROM icerik.lugat_madde");
+        var keyed =
+            from r in query
+            join m in maddeler on r.HedefAnahtar equals m.MaddeKey into joined
+            from m in joined.DefaultIfEmpty()
+            select new
+            {
+                r.Id,
+                Siklik = (int?)m.Siklik ?? 0,
+            };
+
+        if (after is { } cursor)
+        {
+            int cs = cursor.Siklik;
+            long ci = cursor.Id;
+            keyed = keyed.Where(k => k.Siklik < cs || (k.Siklik == cs && k.Id > ci));
+        }
+
+        var page = await keyed
+            .OrderByDescending(k => k.Siklik)
+            .ThenBy(k => k.Id)
+            .Take(limit + 1)
+            .ToListAsync(cancellationToken);
+
+        string? next = null;
+        if (page.Count > limit)
+        {
+            page.RemoveAt(page.Count - 1);
+            var last = page[^1];
+            next = ReviewCursor.EncodeSiklik(new SiklikCursor(last.Siklik, last.Id));
+        }
+
+        long[] ids = [.. page.Select(p => p.Id)];
+        Dictionary<long, Row> byId = (await ProjectRows(db.Reviews.AsNoTracking().Where(r => ids.Contains(r.Id)))
+            .ToListAsync(cancellationToken))
+            .ToDictionary(r => r.Id);
+        return ([.. ids.Where(byId.ContainsKey).Select(i => byId[i])], next);
     }
 
     private static IQueryable<Row> ProjectRows(IQueryable<Review> query) =>
@@ -515,6 +585,22 @@ internal static class ReviewQueries
                         MarkVerified(verified, group, found.ToDictionary(f => Key(f.LemmaId), f => f.Status, StringComparer.Ordinal), t => Key(t.Target.LemmaId!.Value));
                         break;
                     }
+
+                case ReviewTargets.LugatMadde:
+                    {
+                        List<string> sources = [.. group.Select(t => t.Target.SourceId!).Distinct(StringComparer.Ordinal)];
+                        List<string> words = [.. group.Select(t => t.Target.Basliksoz!).Distinct(StringComparer.Ordinal)];
+                        var found = await db.LugatMaddeler.AsNoTracking()
+                            .Where(x => sources.Contains(x.SourceId) && words.Contains(x.Basliksoz))
+                            .Select(x => new { x.SourceId, x.Basliksoz, x.Status })
+                            .ToListAsync(cancellationToken);
+                        MarkVerified(
+                            verified,
+                            group,
+                            found.ToDictionary(f => f.SourceId + ":" + f.Basliksoz, f => f.Status, StringComparer.Ordinal),
+                            t => t.Target.SourceId + ":" + t.Target.Basliksoz);
+                        break;
+                    }
             }
         }
 
@@ -708,6 +794,36 @@ internal static class ReviewQueries
                                 KuranAnlamlari = ReviewJson.Parse(row.KuranAnlamlari),
                                 TurkceEsKelime = row.TurkceEsKelime,
                                 YalnizcaEtimolojik = row.YalnizcaEtimolojik,
+                                Version = row.Version,
+                                Status = row.Status.ToLabel(),
+                            },
+                            row.Status,
+                            null,
+                            null);
+                }
+
+            case ReviewTargets.LugatMadde:
+                {
+                    string sourceId = target.SourceId!;
+                    string basliksoz = target.Basliksoz!;
+                    var row = await db.LugatMaddeler.AsNoTracking()
+                        .Where(x => x.SourceId == sourceId && x.Basliksoz == basliksoz)
+                        .Select(x => new { x.SourceId, x.Basliksoz, x.OsmanlicaYazim, x.KokenDil, x.TanimTr, x.Duzey, x.Origin, x.ContentHash, x.Version, x.Status })
+                        .SingleOrDefaultAsync(cancellationToken);
+                    return row is null
+                        ? TargetView.Empty
+                        : new TargetView(
+                            new ReviewTargetSnapshot
+                            {
+                                Tablo = target.Table,
+                                Source = row.SourceId,
+                                Basliksoz = row.Basliksoz,
+                                OsmanlicaYazim = row.OsmanlicaYazim,
+                                KokenDil = row.KokenDil,
+                                TanimTr = row.TanimTr,
+                                Duzey = row.Duzey,
+                                Origin = row.Origin,
+                                ContentHash = row.ContentHash,
                                 Version = row.Version,
                                 Status = row.Status.ToLabel(),
                             },

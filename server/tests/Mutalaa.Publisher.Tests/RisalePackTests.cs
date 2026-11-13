@@ -16,7 +16,7 @@ namespace Mutalaa.Publisher.Tests;
 /// unit_fts ve unit_tri, xref_idx, page_map), etiket, gorunurluk ve kapi kurallari. Girdi tamamen sentetiktir: "Deneme paragrafi N", uydurma Arapca harf dizisi;
 /// gercek Risale metni yoktur (kitap basliklari katalogdan okunur). Docker gerektirmez.
 /// </summary>
-public class RisalePackTests
+public partial class RisalePackTests
 {
     private const string BookSozler = "sozler";
     private const string BookOsmanlica = "sozler-osmanlica";
@@ -130,6 +130,8 @@ public class RisalePackTests
                 (PackCatalog.RisaleTextSlug, PackSourceRole.Content, true),
                 (PackCatalog.RisaleFixtureSourceSlug, PackSourceRole.Content, false),
                 (PackCatalog.RisaleLinkSlug, PackSourceRole.Attribution, false),
+                (PackCatalog.RisaleLugatSlug, PackSourceRole.Glossary, false),
+                (PackCatalog.RisaleLugatFixtureSlug, PackSourceRole.Glossary, false),
                 (PackCatalog.RisalePageSlug, PackSourceRole.Structure, false),
             ],
             index.Sources.Select(s => (s.Slug, s.Role, s.Required)));
@@ -692,14 +694,15 @@ public class RisalePackTests
             PackFile osmanlica = await Write(Assemble(BuildFlavor.Dev, snapshot, "risale-sozler-osmanlica"), snapshot, temp.Path, ct);
             PackFile fixture = await Write(Assemble(BuildFlavor.Dev, snapshot, "risale-test-ornek"), snapshot, temp.Path, ct);
             Assert.True(index.SelfCheck.Passed, index.SelfCheck.ToJson());
-            Assert.Equal(9, index.SelfCheck.Items.Count);
+            Assert.Equal(10, index.SelfCheck.Items.Count);
+            Assert.Contains(index.SelfCheck.Items, i => i.Name == "lugat" && i.Passed);
             Assert.Contains(index.SelfCheck.Items, i => i.Name == "fts_query" && i.Passed && !i.Detail.StartsWith("atlandi", StringComparison.Ordinal));
 
             // Dizin dosyasi: tablo kumesi ve icerigi olmayan FTS tablolari.
             using (SqliteConnection inspect = Open(index.Path))
             {
                 Assert.Equal(
-                    ["attribution", "pack_meta", "pack_source", "page_map", "tr_root_index", "unit_fts", "unit_ref", "unit_tri", "xref_idx"],
+                    ["attribution", "lugat", "pack_meta", "pack_source", "page_map", "tr_root_index", "unit_fts", "unit_ref", "unit_tri", "xref_idx"],
                     PackDefinitions.UserTables(inspect));
                 Assert.Equal(["4"], Strings(inspect, "SELECT value FROM pack_meta WHERE key = 'unit_count'"));
                 Assert.Empty(Strings(inspect, "SELECT key FROM pack_meta WHERE key IN ('dil', 'yon')"));
@@ -840,7 +843,7 @@ public class RisalePackTests
 
         Assert.Equal(["attribution", "pack_meta", "pack_source", "unit"], definitions.ExpectedTables(definitions.Resolve("risale-sozler")));
         Assert.Equal(
-            ["attribution", "pack_meta", "pack_source", "page_map", "tr_root_index", "unit_fts", "unit_ref", "unit_tri", "xref_idx"],
+            ["attribution", "lugat", "pack_meta", "pack_source", "page_map", "tr_root_index", "unit_fts", "unit_ref", "unit_tri", "xref_idx"],
             definitions.ExpectedTables(definitions.Resolve("risale-dizin")));
         Assert.Equal(["anchor", "pack_id", "ord", "label"], PackTables.Columns("unit_ref"));
     }

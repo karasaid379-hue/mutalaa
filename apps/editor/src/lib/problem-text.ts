@@ -8,6 +8,8 @@ export type ProblemContext =
 type MessageTable = Readonly<Record<string, string>>;
 
 const OFFSET_MARKER = 'Ofsetli';
+/** Start of the server's 422 message for a lügat madde approved without a definition (K-51 madde 10). */
+const LUGAT_MARKER = 'Lugat maddesi';
 
 /** `kod` of a problem; taken from `type` when the body has no `kod`; '' when neither is usable. */
 export function kodOf(problem: Problem): string {
@@ -25,10 +27,20 @@ function isOffsetUnsupported(problem: Problem): boolean {
   );
 }
 
+/** Whether the 422 says a lügat madde cannot be approved without a written definition. */
+function isLugatDefinitionRequired(problem: Problem): boolean {
+  return (
+    kodOf(problem) === 'inceleme-desteklenmiyor' && (problem.detail ?? '').startsWith(LUGAT_MARKER)
+  );
+}
+
 /** The Turkish message of a problem for an operation; unknown codes are shown raw, never guessed. */
 export function problemText(problem: Problem, context?: ProblemContext): string {
   const kod = kodOf(problem);
   if (isOffsetUnsupported(problem) && context !== 'bulk') return tr.problem.offsetUnsupported;
+  if (isLugatDefinitionRequired(problem) && context !== 'bulk') {
+    return tr.problem.lugatDefinitionRequired;
+  }
   if (context) {
     const overrides: MessageTable = tr.problem.contexts[context];
     if (Object.hasOwn(overrides, kod)) return overrides[kod] ?? '';
@@ -50,5 +62,10 @@ const DETAIL_CODES: readonly string[] = [
 ];
 
 export function showsServerDetail(problem: Problem): boolean {
-  return !!problem.detail && DETAIL_CODES.includes(kodOf(problem)) && !isOffsetUnsupported(problem);
+  return (
+    !!problem.detail &&
+    DETAIL_CODES.includes(kodOf(problem)) &&
+    !isOffsetUnsupported(problem) &&
+    !isLugatDefinitionRequired(problem)
+  );
 }

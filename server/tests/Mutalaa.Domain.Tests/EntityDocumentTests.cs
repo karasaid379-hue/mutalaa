@@ -18,7 +18,7 @@ namespace Mutalaa.Domain.Tests;
 /// </summary>
 public class EntityDocumentTests
 {
-    /// <summary>v1.x tablolari; v1 semasinda (21 tablo) yer almaz.</summary>
+    /// <summary>v1.x tablolari; v1 semasinda (22 tablo) yer almaz.</summary>
     private static readonly string[] DeferredTables = ["xref_vote", "embedding"];
 
     private static readonly string[] EntityNamespaces =
@@ -54,7 +54,7 @@ public class EntityDocumentTests
         string[] fromDoc = [.. Tables.Value.Select(t => Pascal(t.Name)).Order(StringComparer.Ordinal)];
         string[] fromDomain = [.. EntityTypes().Select(t => t.Name).Order(StringComparer.Ordinal)];
 
-        Assert.Equal(21, fromDoc.Length);
+        Assert.Equal(22, fromDoc.Length);
         Assert.Equal(fromDoc, fromDomain);
     }
 

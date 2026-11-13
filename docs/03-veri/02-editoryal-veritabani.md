@@ -17,6 +17,8 @@ Editoryal veritabanı içeriğin tek doğruluk kaynağıdır. Python içerik hat
 erDiagram
   source ||--o{ unit : "kaynak"
   source ||--o{ quran_word : "metin ve morfoloji"
+  source ||--o{ lugat_madde : "lugat"
+  root ||--o{ lugat_madde : "ar kok"
   root ||--o{ lemma : "kok"
   lemma ||--o| lemma_gloss : "anlam"
   lemma ||--o| lemma_dalga : "dalga"
@@ -203,6 +205,28 @@ CREATE TABLE lemma_dalga (                         -- kelime anlamı dalgaları 
   data_version  text NOT NULL
 );
 
+CREATE TABLE lugat_madde (                         -- Risale lügat maddesi (K-51 madde 9 ve 10); hat başlık söz adayını yazar, tanımı editör yazar
+  id               integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  source_id        text NOT NULL REFERENCES source(slug),   -- 'risale-kelime-frekans'
+  basliksoz        text NOT NULL,                    -- üçüncü taraf, kaynaktaki baytlarla
+  basliksoz_norm   text NOT NULL,                    -- arama anahtarı (ayrı sütun)
+  osmanlica_yazim  text,
+  koken_dil        text,
+  tanim_tr         text,                             -- editörün yazdığı tanım; kendi metnimiz, ilk kayıtta NFC. Aday boş açılır
+  ar_kok_id        integer REFERENCES root(id),
+  kaynaklar        jsonb NOT NULL DEFAULT '{}',      -- sıklık (siklik, int), kitap sıklıkları (kitaplar), sözlük isabetleri; anlam başvurusu burada DEĞİL, review.onerilen içinde durur
+  duzey            smallint NOT NULL,                -- okurun "Lügat: Kapalı/Az/Orta/Çok" ayarını besler
+  status           xref_status NOT NULL DEFAULT 'aday',
+  origin           text NOT NULL CHECK (origin IN ('hat','editor')),
+  version          text NOT NULL DEFAULT '1',        -- lemma_gloss.version ile aynı tür; onayda +1
+  content_hash     char(64) NOT NULL CHECK (content_hash ~ '^[0-9a-f]{64}$'),   -- sha256(basliksoz || LF || coalesce(tanim_tr, ''))
+  data_version     text NOT NULL,
+  created_at       timestamptz NOT NULL DEFAULT now(),
+  updated_at       timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (source_id, basliksoz),
+  CHECK (status <> 'onayli' OR (tanim_tr IS NOT NULL AND btrim(tanim_tr) <> ''))
+);
+
 CREATE TABLE quran_word (
   anchor        text COLLATE "C" PRIMARY KEY,        -- 'q:2:255:3'
   surah         smallint NOT NULL, ayah smallint NOT NULL, word smallint NOT NULL,
@@ -346,7 +370,7 @@ CREATE TABLE xref_vote (                           -- v1.x; canlıda genel kip v
 CREATE TABLE review (
   id               bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   hedef_tablo      text NOT NULL CHECK (hedef_tablo IN ('source','unit','quran_word_fix','lemma','lemma_gloss',
-                   'root','tr_root_index','tr_form','surah_alias','xref','page_map','ayah_box','audio_timing')),
+                   'root','tr_root_index','tr_form','surah_alias','xref','page_map','ayah_box','audio_timing','lugat_madde')),
   hedef_anahtar    text NOT NULL,                  -- çapa, lemma id, kaynak id …
   xref_id          uuid REFERENCES xref(id),       -- bağlantı incelemesinde dolu
   alan             text NOT NULL,                  -- 'metin', 'anlam_kisa', 'status', …

@@ -34,6 +34,8 @@ public sealed class IcerikDbContext(DbContextOptions<IcerikDbContext> options)
 
     public DbSet<LemmaDalga> LemmaDalgas => Set<LemmaDalga>();
 
+    public DbSet<LugatMadde> LugatMaddeler => Set<LugatMadde>();
+
     public DbSet<QuranWord> QuranWords => Set<QuranWord>();
 
     public DbSet<QuranWordFix> QuranWordFixes => Set<QuranWordFix>();

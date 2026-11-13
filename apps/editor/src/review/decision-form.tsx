@@ -11,6 +11,7 @@ import { useAnnounce } from '@/app/announce-context';
 import { useApi } from '@/app/api-context';
 import { tr } from '@/i18n/tr';
 import { trLemma } from '@/i18n/tr-lemma';
+import { trLugat } from '@/i18n/tr-lugat';
 import { formatIfMatch } from '@/lib/etag';
 import {
   codePointCount,
@@ -23,7 +24,7 @@ import { problemCode, problemStatus, toProblem } from '@/lib/problem';
 import { canDecide } from '@/lib/roles';
 import { fieldA11y, type FieldProblem } from './field-errors';
 import { ProblemList } from './problem-list';
-import { MAX_GLOSS_LENGTH, MAX_REASON_LENGTH } from './limits';
+import { MAX_GLOSS_LENGTH, MAX_REASON_LENGTH, MAX_TANIM_LENGTH } from './limits';
 import {
   ME_PATH,
   REVIEWS_PATH,
@@ -41,6 +42,7 @@ import {
   canEditValue,
   isFirstStageUnitText,
   isGlossEditable,
+  isLugatEditable,
   proposedGloss,
   proposedText,
   type UnitEditInfo,
@@ -93,6 +95,23 @@ function glossProblemMessage(problem: ReturnType<typeof toProblem>): string | nu
 }
 
 /**
+ * The Turkish message of a server rejection that belongs to the written lügat definition: a 400 `dogrulama` with
+ * an error on `duzenlenen.tanim_tr`, or a 409 (the madde is not a candidate or the decision rule is broken).
+ */
+function lugatProblemMessage(problem: ReturnType<typeof toProblem>): string | null {
+  const status = problemStatus(problem);
+  if (status === 409) return trLugat.edit.notCandidate;
+  if (
+    status === 400 &&
+    problem.errors !== undefined &&
+    Object.hasOwn(problem.errors, 'duzenlenen.tanim_tr')
+  ) {
+    return trLugat.edit.serverInvalid;
+  }
+  return null;
+}
+
+/**
  * Decision form of one review (K-48): approve or reject must be chosen explicitly; `gerekce` is required
  * (at most 2.000 code points); the edited-text field exists only when `canEditValue` is true; NUL and lone
  * surrogates are reported and cleaned only by the button. The request carries `If-Match: "{xmin}"` and always
@@ -119,6 +138,9 @@ export function DecisionForm({
     gloss: useId(),
     glossHint: useId(),
     glossError: useId(),
+    tanim: useId(),
+    tanimHint: useId(),
+    tanimError: useId(),
     decision: useId(),
     summary: useId(),
     approveClosed: useId(),
@@ -128,6 +150,7 @@ export function DecisionForm({
   const [gerekce, setGerekce] = useState('');
   const [edited, setEdited] = useState<string | null>(null);
   const [gloss, setGloss] = useState<string | null>(null);
+  const [tanim, setTanim] = useState<string | null>(null);
   const [problems, setProblems] = useState<FieldProblem[]>([]);
   const [error, setError] = useState<unknown>(null);
   const [stale, setStale] = useState<Stale | null>(null);
@@ -170,6 +193,12 @@ export function DecisionForm({
   const glossChanged = showGloss && trimGloss(glossValue) !== trimGloss(glossBaseline);
   const glossCount = glossLength(glossValue);
   const glossProblems = problems.filter((problem) => problem.fieldId === ids.gloss);
+  // A lügat madde review (K-51 madde 10): approval needs a definition the editor writes; the reference meaning is never prefilled.
+  const lugatAllowed = isLugatEditable(current) && !closed;
+  const showLugat = lugatAllowed && selected === 'onaylandi';
+  const tanimValue = tanim ?? '';
+  const tanimCount = glossLength(tanimValue);
+  const tanimProblems = problems.filter((problem) => problem.fieldId === ids.tanim);
 
   const unwritable = {
     gerekce: findUnwritable(gerekce),
@@ -178,6 +207,7 @@ export function DecisionForm({
         ? findUnwritable(editedValue)
         : { nul: false, loneSurrogate: false },
     gloss: showGloss ? findUnwritable(glossValue) : { nul: false, loneSurrogate: false },
+    tanim: showLugat ? findUnwritable(tanimValue) : { nul: false, loneSurrogate: false },
   };
   const hasUnwritable =
     unwritable.gerekce.nul ||
@@ -185,7 +215,9 @@ export function DecisionForm({
     unwritable.edited.nul ||
     unwritable.edited.loneSurrogate ||
     unwritable.gloss.nul ||
-    unwritable.gloss.loneSurrogate;
+    unwritable.gloss.loneSurrogate ||
+    unwritable.tanim.nul ||
+    unwritable.tanim.loneSurrogate;
 
   useEffect(() => {
     if (focusTick > 0) summaryRef.current?.focus();
@@ -216,6 +248,15 @@ export function DecisionForm({
       }
       if (unwritable.gloss.nul || unwritable.gloss.loneSurrogate) {
         add(ids.gloss, trLemma.edit.unwritable);
+      }
+    }
+    if (showLugat) {
+      if (trimGloss(tanimValue) === '') add(ids.tanim, trLugat.edit.empty);
+      else if (tanimCount > MAX_TANIM_LENGTH) {
+        add(ids.tanim, trLugat.edit.tooLong(tanimCount, MAX_TANIM_LENGTH));
+      }
+      if (unwritable.tanim.nul || unwritable.tanim.loneSurrogate) {
+        add(ids.tanim, trLugat.edit.unwritable);
       }
     }
     return found;
@@ -250,6 +291,7 @@ export function DecisionForm({
     setStale(null);
     const sendEdit = canEdit && selected === 'onaylandi' && editedValue !== baseline;
     const sendGloss = glossChanged;
+    const sendTanim = showLugat;
     const snapshot = current;
     try {
       const result = await decide.mutateAsync({
@@ -260,7 +302,9 @@ export function DecisionForm({
             ? { metin: editedValue }
             : sendGloss
               ? { anlam_kisa: glossValue }
-              : null,
+              : sendTanim
+                ? { tanim_tr: tanimValue }
+                : null,
           gerekce,
         },
       });
@@ -279,8 +323,12 @@ export function DecisionForm({
       const problem = toProblem(thrown);
       // A rejected edited meaning is shown next to its field (400 on the field, 409 for a target that is not a candidate).
       const glossMessage = sendGloss ? glossProblemMessage(problem) : null;
+      const lugatMessage = sendTanim ? lugatProblemMessage(problem) : null;
       if (glossMessage !== null) {
         setProblems([{ fieldId: ids.gloss, message: glossMessage }]);
+        setError(null);
+      } else if (lugatMessage !== null) {
+        setProblems([{ fieldId: ids.tanim, message: lugatMessage }]);
         setError(null);
       } else {
         setError(problem);
@@ -303,6 +351,7 @@ export function DecisionForm({
     setGerekce((value) => stripUnwritable(value));
     if (canEdit) setEdited(stripUnwritable(editedValue));
     if (showGloss) setGloss(stripUnwritable(glossValue));
+    if (showLugat) setTanim(stripUnwritable(tanimValue));
   }
 
   if (roleMissing) {
@@ -423,6 +472,37 @@ export function DecisionForm({
             {glossProblems.length > 0 ? (
               <div id={ids.glossError} className="flex flex-col gap-0.5">
                 {glossProblems.map((problem) => (
+                  <p key={problem.message} className="text-xs font-medium text-destructive">
+                    {problem.message}
+                  </p>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
+        {showLugat ? (
+          <div className="flex flex-col gap-1" data-testid="tanim-edit">
+            <Label htmlFor={ids.tanim}>{trLugat.edit.label}</Label>
+            <Textarea
+              id={ids.tanim}
+              lang="tr"
+              value={tanimValue}
+              onChange={(event) => setTanim(event.target.value)}
+              onKeyDown={onKeyDown}
+              aria-required="true"
+              aria-invalid={tanimProblems.length > 0 ? true : undefined}
+              aria-describedby={
+                tanimProblems.length > 0 ? `${ids.tanimHint} ${ids.tanimError}` : ids.tanimHint
+              }
+              rows={5}
+            />
+            <p id={ids.tanimHint} className="text-xs text-muted-foreground">
+              {`${trLugat.edit.hint} ${trLugat.edit.count(tanimCount, MAX_TANIM_LENGTH)}`}
+            </p>
+            {tanimProblems.length > 0 ? (
+              <div id={ids.tanimError} className="flex flex-col gap-0.5">
+                {tanimProblems.map((problem) => (
                   <p key={problem.message} className="text-xs font-medium text-destructive">
                     {problem.message}
                   </p>

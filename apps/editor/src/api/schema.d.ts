@@ -468,6 +468,7 @@ export interface components {
         DecisionEdit: {
             metin?: null | string;
             anlam_kisa?: null | string;
+            tanim_tr?: null | string;
         };
         JsonElement: unknown;
         LemmaDetailResponse: {
@@ -782,6 +783,12 @@ export interface components {
             kuran_anlamlari?: null | components["schemas"]["JsonElement"];
             turkce_es_kelime?: null | string;
             yalnizca_etimolojik?: null | boolean;
+            basliksoz?: null | string;
+            osmanlica_yazim?: null | string;
+            koken_dil?: null | string;
+            tanim_tr?: null | string;
+            /** Format: int32 */
+            duzey?: null | number;
             version?: null | string;
             status?: null | string;
         };

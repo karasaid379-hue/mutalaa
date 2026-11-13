@@ -122,7 +122,40 @@ public static class PackSelfCheck
             AttributionCheck(connection, tableSet, expectations.Sources),
             PackSourceCheck(connection, tableSet, expectations.Sources),
         ];
+
+        // Lugat (yalniz risale-dizin; K-51 madde 9): maddesi olmayan paketlerin madde listesi degismez.
+        if (tableSet.Contains("lugat"))
+        {
+            items.Add(LugatCheck(connection, meta));
+        }
+
         return new PackSelfCheckReport(expectations.PackId, expectations.Version, items);
+    }
+
+    // lugat: durum yalniz onayli ya da aday, onayli maddenin tanimi dolu, public pakette aday yok (K-51 madde 9; red hicbir pakete girmez).
+    private static SelfCheckItem LugatCheck(SqliteConnection connection, Dictionary<string, string> meta)
+    {
+        List<string> problems = [];
+        long invalidStatus = Scalar(connection, "SELECT count(*) FROM lugat WHERE status NOT IN ('onayli', 'aday')");
+        if (invalidStatus > 0)
+        {
+            problems.Add(Inv($"gecersiz-durum:{invalidStatus}"));
+        }
+
+        long emptyDefinition = Scalar(connection, "SELECT count(*) FROM lugat WHERE status = 'onayli' AND (tanim_tr IS NULL OR trim(tanim_tr) = '')");
+        if (emptyDefinition > 0)
+        {
+            problems.Add(Inv($"onayli-tanimsiz:{emptyDefinition}"));
+        }
+
+        long candidates = Scalar(connection, "SELECT count(*) FROM lugat WHERE status = 'aday'");
+        if (candidates > 0 && meta.TryGetValue("flavor", out string? flavor) && string.Equals(flavor, "public", StringComparison.Ordinal))
+        {
+            problems.Add(Inv($"public-aday:{candidates}"));
+        }
+
+        bool ok = problems.Count == 0;
+        return new SelfCheckItem("lugat", ok, ok ? Inv($"{Scalar(connection, "SELECT count(*) FROM lugat")} madde, {candidates} aday") : string.Join(",", problems));
     }
 
     private static SelfCheckItem IntegrityCheck(SqliteConnection connection)
