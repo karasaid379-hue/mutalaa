@@ -2,7 +2,7 @@
 
 `export/pg.py` bu modulu ice aktarir ve iki kancada kullanir (`hazirla` ve `_yukle`); gercek is
 `export/pg_qac.py` (qac-morfoloji), `export/pg_glosses.py` (quranwbw-tr) ve
-`export/pg_tr_roots.py` (kaikki-tr) icindedir. Bu modul
+`export/pg_tr_roots.py` (kaikki-tr) ve `export/pg_xref.py` (xref-baglantilar) icindedir. Bu modul
 `export.pg`'yi ice aktarmaz (dairesel ice aktarma olmasin diye ilgili modul `importlib` ile,
 cagri aninda yuklenir).
 """
@@ -21,10 +21,12 @@ if TYPE_CHECKING:
 QAC_KAYNAGI: Final = "qac-morfoloji"
 QURANWBW_KAYNAGI: Final = "quranwbw-tr"
 TR_ROOTS_KAYNAGI: Final = "kaikki-tr"
+XREF_KAYNAGI: Final = "xref-baglantilar"
 MODULLER: Final = {
     QAC_KAYNAGI: "mutalaa_pipeline.export.pg_qac",
     QURANWBW_KAYNAGI: "mutalaa_pipeline.export.pg_glosses",
     TR_ROOTS_KAYNAGI: "mutalaa_pipeline.export.pg_tr_roots",  # A18.2: Turkce lemma, tr_root_index
+    XREF_KAYNAGI: "mutalaa_pipeline.export.pg_xref",  # A18.3: kok, lemma, benzer_ayet (xref)
 }
 KAYNAKLAR: Final = frozenset(MODULLER)
 

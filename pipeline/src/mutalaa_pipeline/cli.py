@@ -593,7 +593,10 @@ def qa_run(
         bool,
         typer.Option(
             "--db",
-            help="Yalniz kaikki-tr: G-CAP'a veritabani uzantisini (tr_root_index) ekler.",
+            help=(
+                "Yalniz kaikki-tr ve xref-baglantilar: G-CAP'a veritabani uzantisini ekler"
+                " (tr_root_index; staged baglantilarin ayet ozeti ve kok/lemma tutarliligi)."
+            ),
         ),
     ] = False,
 ) -> None:

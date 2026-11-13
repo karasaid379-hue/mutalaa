@@ -85,6 +85,7 @@ EK_KAYNAKLAR: Final[Mapping[str, tuple[str, ...]]] = {
     "qac-morfoloji": (),  # A17.3: root, lemma, lemma_dalga, quran_word QAC sutunlari (pg_qac.py)
     "quranwbw-tr": (),  # A17.6: lemma_gloss adaylari ve review (pg_glosses.py)
     "kaikki-tr": (),  # A18.2: Turkce lemma, review, tr_root_index, tr_form (pg_tr_roots.py)
+    "xref-baglantilar": (),  # A18.3: kok, lemma, benzer_ayet xref satirlari (pg_xref.py)
     "test-kucuk": (),  # sentetik kitap fiksturu (A13.6; pg_fikstur.py)
     "test-tefsir-ornek": (),  # sentetik tefsir fiksturu (A13.6; pg_fikstur.py)
     "test-ses": (),  # sentetik ses fiksturu: yalniz source satiri (A13.6)

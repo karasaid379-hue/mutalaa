@@ -37,6 +37,9 @@ def kaydet(app: typer.Typer, ingest_app: typer.Typer) -> None:
     from mutalaa_pipeline import cli_tr_roots
 
     cli_tr_roots.kaydet(enrich_app)  # A18.2: enrich tr-roots
+    from mutalaa_pipeline import cli_links
+
+    cli_links.kaydet(enrich_app)  # A18.3: enrich links
 
     @ingest_app.command("qac")
     def ingest_qac(
