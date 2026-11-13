@@ -29,6 +29,11 @@ Meal (A16.4, K-49): `elmalili-meal` ve `elmalili-sade-meal` birimleri `taslak` g
 biriminin metnine hic yazmaz ve her birim icin bir inceleme kaydi acar (`export/pg_meal.py`).
 Tanik kaynagi yuklenmez.
 
+RNK Risale (A20.2b, K-51): `risale-rnk-metin` birimleri `taslak` girer; hat Risale metnine hic
+yazmaz, yalniz taslak ve ayni `content_hash` birimde turetilmis sutunlari gunceller
+(`export/pg_risale.py`). Diyanet (`risale-asil-nusha`) karsilastirma verisidir: `export pg` onu
+reddeder (cikis 2).
+
 Cikis kodlari: 0 basarili, 1 QA kapisi/ozet farki/eksik capa, 2 girdi ve yapilandirma (kayitsiz
 ya da gecersiz kaynak kaydi dahil). Iletilere satir icerigi ve baglanti dizesi yazilmaz; yalniz
 capa, sayi, ozet ve alan adi.
@@ -39,7 +44,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import psycopg
 from psycopg import sql
@@ -58,6 +63,7 @@ from mutalaa_pipeline.export import pg_kelime
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kati_json
 from mutalaa_pipeline.ingest import fikstur as fikstur_uretec
 from mutalaa_pipeline.ingest.meal_kaynaklari import MEAL_KAYNAKLARI, meal_mi
+from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_RNK, risale_mi
 from mutalaa_pipeline.lineage import (
     KELIMELER_ADI,
     NOTICE_ADI,
@@ -89,6 +95,7 @@ EK_KAYNAKLAR: Final[Mapping[str, tuple[str, ...]]] = {
     "test-ses": (),  # sentetik ses fiksturu: yalniz source satiri (A13.6)
     # Iki meal (A16.4; pg_meal.py). Tanik `elmalili-meal-epub` yuklenmez: tabloda yoktur.
     **{slug: () for slug in MEAL_KAYNAKLARI},
+    KAYNAK_RNK: (),  # A20.2b: RNK Risale metni (pg_risale.py); Diyanet karsilastirmadir, yuklenmez
 }
 # Birim degil yapi satiri yukleyen kaynaklar (K-43 madde 3): units.jsonl yerine markers/pages.
 YAPI_KAYNAKLARI: Final = frozenset({"tanzil-ust-veri"})
@@ -158,6 +165,9 @@ SELECT_SOURCE: Final = sql.SQL("SELECT {} FROM icerik.source WHERE slug = %s FOR
 )
 
 BAGLANTI = Callable[[], psycopg.Connection]
+
+if TYPE_CHECKING:
+    from mutalaa_pipeline.export.pg_risale import RisaleGirdisi
 
 
 @dataclass(frozen=True)
@@ -322,6 +332,7 @@ class Hazirlik:
     yalniz_kaynak: bool = False  # True: yalniz source satiri yuklenir (zincir ve birim yok)
     meal: bool = False  # True: taslak meal birimleri ve inceleme kuyrugu (pg_meal.py)
     meal_satirlari: list[MealSatiri] = field(default_factory=list)
+    risale: "RisaleGirdisi | None" = None  # dolu: RNK Risale birimleri akitilarak yuklenir
 
 
 # --- yardimcilar -------------------------------------------------------------------------
@@ -722,6 +733,10 @@ def hazirla(
         from mutalaa_pipeline.export import pg_sure_adlari
 
         return pg_sure_adlari.hazirla(ctx, source_id, run, ek_kaynaklar)
+    if risale_mi(source_id):  # A20.2b: Diyanet burada reddedilir (cikis 2)
+        from mutalaa_pipeline.export import pg_risale
+
+        return pg_risale.hazirla(ctx, source_id, run, ek_kaynaklar)
     if meal_mi(source_id):
         from mutalaa_pipeline.export import pg_meal
 
@@ -1122,6 +1137,10 @@ def _yukle(conn: psycopg.Connection, ctx: RunContext, h: Hazirlik) -> dict[str, 
         from mutalaa_pipeline.export import pg_meal
 
         sayilar.update(pg_meal.yukle(conn, ctx, h))
+    elif h.risale is not None:
+        from mutalaa_pipeline.export import pg_risale
+
+        sayilar.update(pg_risale.yukle(conn, ctx, h))
     elif h.yalniz_kaynak:
         pass  # yalniz `source` satiri (yukarida yazildi): unit, review ve xref yok
     else:
@@ -1216,6 +1235,10 @@ def komut_export_pg(
     )
 
     def govde(c: RunContext) -> int:
+        if risale_mi(source):  # Diyanet karsilastirma verisidir: acik hata, cikis 2
+            from mutalaa_pipeline.export import pg_risale
+
+            pg_risale.kaynak_denetle(source)
         if ek is None:
             raise GirdiHatasi("tanimsiz kaynak: export pg icin kayit yok")
         if force:
