@@ -213,6 +213,30 @@ describe('lemmaFilter', () => {
     expect(isQueueOrder('baska')).toBe(false);
   });
 
+  it('adds the server approval path filter (onay_yolu) on the Turkish mapping tab only; "hepsi" sends none', () => {
+    expect(lemmaFilter('kok', 'dalga', 'hepsi')).toEqual({
+      hedef_tablo: 'lemma',
+      alan: 'kok_eslemesi',
+    });
+    for (const path of ['otomatik', 'editor', 'aday'] as const) {
+      expect(lemmaFilter('kok', 'dalga', path)).toEqual({
+        hedef_tablo: 'lemma',
+        alan: 'kok_eslemesi',
+        onay_yolu: path,
+      });
+      expect(reviewListInit(lemmaFilter('kok', 'dalga', path)).params.query).toEqual({
+        hedef_tablo: 'lemma',
+        alan: 'kok_eslemesi',
+        durum: 'acik',
+        onay_yolu: path,
+        limit: 50,
+      });
+      // The other tabs never carry it (the API answers 400 for a target other than lemma).
+      expect(lemmaFilter('anlam', 'dalga', path)).not.toHaveProperty('onay_yolu');
+      expect(lemmaFilter('duzeltme', 'dalga', path)).not.toHaveProperty('onay_yolu');
+    }
+  });
+
   it('makes a list request with and without alan and sira', () => {
     expect(reviewListInit(lemmaFilter('anlam', 'dalga')).params.query).toEqual({
       hedef_tablo: 'lemma_gloss',

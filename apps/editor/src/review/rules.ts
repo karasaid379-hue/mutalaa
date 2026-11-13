@@ -75,7 +75,7 @@ function sameUser(a: string | null | undefined, b: string | null | undefined): b
 
 /**
  * Why "Onayla" is closed in advance, or null. `userName` is the signed-in user (e-mail, which is the user name).
- * - closed: the review already has a decision;
+ * - closed: the review already has a decision (an open record and one sent to an expert are not closed);
  * - own-proposal: an editor-sourced proposal cannot be approved by its proposer (reject is allowed);
  * - same-first-approver: the second approval must come from someone else than the first approver.
  */
@@ -83,7 +83,8 @@ export function approveBlockReason(
   review: ReviewItem,
   userName: string | null | undefined,
 ): ApproveBlock | null {
-  if (review.durum !== 'acik') return 'closed';
+  // A record sent to an expert (`uzmanda`) still waits for its decision (only the expert role gives it).
+  if (review.durum !== 'acik' && review.durum !== 'uzmanda') return 'closed';
   if (review.koken === 'editor' && sameUser(review.oneren, userName)) return 'own-proposal';
   if (review.ikinci_onay_bekliyor && sameUser(review.inceleyen, userName))
     return 'same-first-approver';

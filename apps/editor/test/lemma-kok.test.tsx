@@ -37,9 +37,16 @@ describe('Turkish lemma root mapping queue (A18.2)', () => {
       2: kokDetail(2),
       ...opts.details,
     };
-    fake.get('/api/v1/reviews', (call) =>
-      ok(page(call.search.get('alan') === 'kok_eslemesi' ? items : [])),
-    );
+    // Mirrors the server: `onay_yolu` filters by the approval path of the lemma (a candidate has none).
+    fake.get('/api/v1/reviews', (call) => {
+      const wanted = call.search.get('onay_yolu');
+      const rows = items.filter(
+        (item) =>
+          wanted === null ||
+          (wanted === 'aday' ? item.onay_yolu == null : item.onay_yolu === wanted),
+      );
+      return ok(page(call.search.get('alan') === 'kok_eslemesi' ? rows : []));
+    });
     fake.get('/api/v1/reviews/{id}', (call) => ok(details[Number(call.params.id)]!));
     fake.get('/api/v1/lemmas/{id}', ok(lemmaInfo()));
     fake.get('/api/v1/auth/me', ok(session()));
@@ -656,7 +663,7 @@ describe('Turkish lemma root mapping queue (A18.2)', () => {
       kokItem(1),
       objectionItem(2, 'otomatik'),
       objectionItem(3, 'editor'),
-      objectionItem(4, null),
+      objectionItem(4, 'yeni-yol'),
     ];
     const openTab = async (user: User) => {
       await user.click(await screen.findByRole('tab', { name: trLemma.tabs.kok }));
@@ -671,7 +678,7 @@ describe('Turkish lemma root mapping queue (A18.2)', () => {
         .filter((text) => /^300[0-9]/.test(text))
         .map((text) => text.slice(0, 4));
 
-    it('shows the four options, "Hepsi" first, and says it filters the loaded records only', async () => {
+    it('shows the four options, "Hepsi" first, and says the server filters', async () => {
       const { user } = setup({ items: items() });
       await openTab(user);
       const group = screen.getByRole('radiogroup', { name: trLemma.approvalFilter.label });
@@ -688,43 +695,43 @@ describe('Turkish lemma root mapping queue (A18.2)', () => {
       expect(screen.getByRole('radio', { name: trLemma.approvalFilter.hepsi })).toBeChecked();
       expect(group).toHaveAccessibleDescription(new RegExp(trLemma.approvalFilter.note));
       expect(links()).toEqual(['3001', '3002', '3003', '3004']);
+      // No client-side "yüklü sayfada süzülür" wording is left.
+      expect(screen.queryByText(/yalnız yüklenen kayıtlara/)).not.toBeInTheDocument();
     });
 
-    it('filters the loaded rows on the client without a new request', async () => {
+    it('sends the choice to the server as onay_yolu in a new query (the cursor starts over)', async () => {
       const { user } = setup({ items: items() });
       await openTab(user);
-      const before = listCalls().length;
+      expect(listCalls().every((call) => !call.search.has('onay_yolu'))).toBe(true);
       await pick(user, trLemma.approvalFilter.otomatik);
-      expect(links()).toEqual(['3002']);
+      await waitFor(() => expect(links()).toEqual(['3002']));
+      const call = listCalls().find((entry) => entry.search.get('onay_yolu') === 'otomatik')!;
+      expect(call.search.get('hedef_tablo')).toBe('lemma');
+      expect(call.search.get('alan')).toBe('kok_eslemesi');
+      expect(call.search.has('cursor')).toBe(false);
       await pick(user, trLemma.approvalFilter.editor);
-      expect(links()).toEqual(['3003']);
+      await waitFor(() => expect(links()).toEqual(['3003']));
+      expect(listCalls().some((entry) => entry.search.get('onay_yolu') === 'editor')).toBe(true);
       await pick(user, trLemma.approvalFilter.aday);
-      expect(links()).toEqual(['3001']);
+      await waitFor(() => expect(links()).toEqual(['3001']));
+      expect(listCalls().some((entry) => entry.search.get('onay_yolu') === 'aday')).toBe(true);
+      // "Hepsi" goes back to the request without the parameter.
+      const before = listCalls().length;
       await pick(user, trLemma.approvalFilter.hepsi);
-      expect(links()).toEqual(['3001', '3002', '3003', '3004']);
-      expect(listCalls()).toHaveLength(before);
+      await waitFor(() => expect(links()).toEqual(['3001', '3002', '3003', '3004']));
+      expect(listCalls().length).toBeGreaterThanOrEqual(before);
+      expect(listCalls().at(-1)!.search.has('onay_yolu')).toBe(false);
     });
 
-    it('says how many of the loaded records are shown', async () => {
-      const { user } = setup({ items: items() });
-      await openTab(user);
-      await pick(user, trLemma.approvalFilter.otomatik);
-      expect(
-        screen.getByRole('radiogroup', { name: trLemma.approvalFilter.label }),
-      ).toHaveAccessibleDescription(new RegExp(trLemma.approvalFilter.shown(1, 4)));
-    });
-
-    it('says so when no loaded record matches', async () => {
+    it('shows the normal empty state when the server finds no record of the path', async () => {
       const { user } = setup({ items: [kokItem(1), kokItem(2)] });
       await openTab(user);
       await pick(user, trLemma.approvalFilter.otomatik);
-      expect(await screen.findByTestId('queue-filtered-empty')).toHaveTextContent(
-        trLemma.approvalFilter.noMatch,
-      );
-      expect(screen.queryByTestId('queue-empty')).not.toBeInTheDocument();
+      expect(await screen.findByTestId('queue-empty')).toBeInTheDocument();
+      expect(screen.queryByTestId('queue-filtered-empty')).not.toBeInTheDocument();
     });
 
-    it('marks every row with its path: a badge for automatic and editor, text for the candidate', async () => {
+    it('marks every row with its path from the list item: a badge for automatic and editor, text for the candidate', async () => {
       const { user } = setup({ items: items() });
       await openTab(user);
       const rows = screen.getAllByTestId('lemma-item-approval');
@@ -737,7 +744,7 @@ describe('Turkish lemma root mapping queue (A18.2)', () => {
       expect(within(rows[2]!).getByTestId('approval-badge')).toHaveTextContent(
         trLemma.approval.editor,
       );
-      // An objection whose path cannot be read has no badge (and is in "Hepsi" only).
+      // An objection whose path is unknown has no badge (and is in "Hepsi" only).
       expect(rows[3]!.querySelector('[data-testid="approval-badge"]')).toBeNull();
     });
 

@@ -1,4 +1,5 @@
-import type { QueueFilter, QueueOrder } from '@/review/queries';
+import type { QueueFilter } from '@/review/queries';
+import type { ApprovalFilter } from './approval';
 
 export type LemmaTabId = 'anlam' | 'durum' | 'duzeltme' | 'kok';
 
@@ -23,12 +24,15 @@ export function isLemmaTab(value: unknown): value is LemmaTabId {
   return value === 'anlam' || value === 'durum' || value === 'duzeltme' || value === 'kok';
 }
 
-export const LEMMA_ORDERS: readonly QueueOrder[] = ['dalga', 'olusturma'];
+/** The two orders of the lemma queues (the link class order belongs to the link queue). */
+export type LemmaOrder = 'dalga' | 'olusturma';
+
+export const LEMMA_ORDERS: readonly LemmaOrder[] = ['dalga', 'olusturma'];
 
 /** Default order of the lemma queues: the word wave and root order of the editorial work (K-50 madde 7). */
-export const DEFAULT_LEMMA_ORDER: QueueOrder = 'dalga';
+export const DEFAULT_LEMMA_ORDER: LemmaOrder = 'dalga';
 
-export function isQueueOrder(value: unknown): value is QueueOrder {
+export function isQueueOrder(value: unknown): value is LemmaOrder {
   return value === 'dalga' || value === 'olusturma';
 }
 
@@ -41,7 +45,15 @@ export function hasWaveOrder(tab: LemmaTabId): boolean {
   return tab === 'anlam' || tab === 'durum';
 }
 
-/** The list filter of a tab: its base filter plus `sira` where the order applies. */
-export function lemmaFilter(tab: LemmaTabId, order: QueueOrder): QueueFilter {
-  return hasWaveOrder(tab) ? { ...LEMMA_FILTERS[tab], sira: order } : LEMMA_FILTERS[tab];
+/**
+ * The list filter of a tab: its base filter plus `sira` where the order applies, and on the Turkish mapping tab
+ * the server's approval path filter (`onay_yolu`; "hepsi" sends none).
+ */
+export function lemmaFilter(
+  tab: LemmaTabId,
+  order: LemmaOrder,
+  approval: ApprovalFilter = 'hepsi',
+): QueueFilter {
+  const base = hasWaveOrder(tab) ? { ...LEMMA_FILTERS[tab], sira: order } : LEMMA_FILTERS[tab];
+  return tab === 'kok' && approval !== 'hepsi' ? { ...base, onay_yolu: approval } : base;
 }

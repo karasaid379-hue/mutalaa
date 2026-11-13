@@ -1,104 +1,14 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useId, useState, type FormEvent } from 'react';
 import { useAnnounce } from '@/app/announce-context';
 import { useApi } from '@/app/api-context';
-import { ProblemMessage } from '@/components/problem-message';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { tr } from '@/i18n/tr';
 import { trLemma } from '@/i18n/tr-lemma';
-import { codePointCount, findUnwritable } from '@/lib/text';
 import { problemStatus, toProblem } from '@/lib/problem';
-import { kodOf, showsServerDetail } from '@/lib/problem-text';
-import { MAX_REASON_LENGTH } from '@/review/limits';
-import { REVIEWS_PATH, invalidateReviewCounts, reviewDetailKey } from '@/review/queries';
+import { ActionError, ReasonField } from '@/review/action-parts';
+import { reasonProblem, useRefreshReview } from '@/review/action-helpers';
 import { approvalLabel, readApprovalPath } from './approval';
-
-/** The Turkish message of the statuses an action knows; any other problem is shown as the generic problem. */
-function ActionError({
-  error,
-  messages,
-  testId,
-}: {
-  error: unknown;
-  messages: Readonly<Record<number, string>>;
-  testId: string;
-}) {
-  const problem = toProblem(error);
-  const status = problemStatus(problem);
-  const message = status !== undefined && Object.hasOwn(messages, status) ? messages[status] : null;
-  if (message === null || message === undefined) return <ProblemMessage error={error} />;
-  return (
-    <Alert variant="destructive" data-problem-code={kodOf(problem)} data-testid={testId}>
-      <AlertTitle>{message}</AlertTitle>
-      {showsServerDetail(problem) ? (
-        <AlertDescription>{`${tr.problem.detail}: ${problem.detail}`}</AlertDescription>
-      ) : null}
-    </Alert>
-  );
-}
-
-/** The first problem of a reason text: empty, over the limit or unwritable (NUL, lone surrogate); null when fine. */
-function reasonProblem(text: string, requiredText: string): string | null {
-  if (text.trim() === '') return requiredText;
-  const length = codePointCount(text);
-  if (length > MAX_REASON_LENGTH) return tr.review.reasonTooLong(length, MAX_REASON_LENGTH);
-  const unwritable = findUnwritable(text);
-  if (unwritable.nul || unwritable.loneSurrogate) return tr.review.unwritable;
-  return null;
-}
-
-function ReasonField({
-  label,
-  value,
-  onChange,
-  error,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  error: string | null;
-}) {
-  const fieldId = useId();
-  const hintId = useId();
-  const errorId = useId();
-  return (
-    <div className="flex flex-col gap-1">
-      <Label htmlFor={fieldId}>{label}</Label>
-      <Textarea
-        id={fieldId}
-        value={value}
-        rows={3}
-        aria-required="true"
-        aria-invalid={error !== null ? true : undefined}
-        aria-describedby={error !== null ? `${hintId} ${errorId}` : hintId}
-        onChange={(event) => onChange(event.target.value)}
-      />
-      <p id={hintId} className="text-xs text-muted-foreground">
-        {tr.review.reasonCount(codePointCount(value), MAX_REASON_LENGTH)}
-      </p>
-      {error !== null ? (
-        <p id={errorId} className="text-xs font-medium text-destructive">
-          {error}
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
-/** The caches a lemma action changes: the record's detail (the lemma snapshot), the lists and the counts. */
-function useRefreshReview(reviewId: number) {
-  const api = useApi();
-  const queryClient = useQueryClient();
-  return () => {
-    void queryClient.invalidateQueries({ queryKey: reviewDetailKey(api, reviewId) });
-    void queryClient.invalidateQueries({ queryKey: ['get', REVIEWS_PATH] });
-    void invalidateReviewCounts(queryClient);
-  };
-}
 
 export interface LemmaActionProps {
   /** The review whose card shows the lemma; its detail is read again after the action. */

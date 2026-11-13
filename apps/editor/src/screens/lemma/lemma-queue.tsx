@@ -1,5 +1,6 @@
-import { useId, useMemo, useState } from 'react';
+import { useId, useState } from 'react';
 import { useSearchParams } from 'react-router';
+import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,17 +8,10 @@ import { fieldLabel } from '@/i18n/labels';
 import { tr } from '@/i18n/tr';
 import { trLemma } from '@/i18n/tr-lemma';
 import { formatPercent } from '@/lib/format';
-import type { QueueOrder } from '@/review/queries';
 import { QueueLayout } from '@/review/queue-layout';
 import { isRootMappingReview } from '@/review/rules';
 import type { ReviewItem } from '@/review/types';
-import {
-  APPROVAL_FILTERS,
-  isApprovalFilter,
-  itemApproval,
-  matchesApprovalFilter,
-  type ApprovalFilter,
-} from './approval';
+import { APPROVAL_FILTERS, isApprovalFilter, itemApproval, type ApprovalFilter } from './approval';
 import { ApprovalBadge } from './approval-badge';
 import {
   DEFAULT_LEMMA_ORDER,
@@ -27,6 +21,7 @@ import {
   isLemmaTab,
   isQueueOrder,
   lemmaFilter,
+  type LemmaOrder,
   type LemmaTabId,
 } from './config';
 import { LemmaCard } from './lemma-card';
@@ -68,8 +63,8 @@ function LemmaTabs({ value, onChange }: LemmaTabsProps) {
 }
 
 interface OrderControlProps {
-  value: QueueOrder;
-  onChange: (value: QueueOrder) => void;
+  value: LemmaOrder;
+  onChange: (value: LemmaOrder) => void;
 }
 
 /** "Sıra: Dalga | Oluşturma": the wave and root order of the editorial work, or the creation order. */
@@ -106,15 +101,13 @@ function OrderControl({ value, onChange }: OrderControlProps) {
 interface ApprovalControlProps {
   value: ApprovalFilter;
   onChange: (value: ApprovalFilter) => void;
-  shown: number;
-  loaded: number;
 }
 
 /**
- * "Onay yolu: Hepsi | Otomatik onaylı | Editör onaylı | Aday" of the Turkish mapping tab. The API has no such
- * filter, so it filters the loaded records only; the note says so and the count says how many are shown.
+ * "Onay yolu: Hepsi | Otomatik onaylı | Editör onaylı | Aday" of the Turkish mapping tab. The server filters
+ * (`onay_yolu`): a change is a new query, so the list is loaded again from the first page.
  */
-function ApprovalControl({ value, onChange, shown, loaded }: ApprovalControlProps) {
+function ApprovalControl({ value, onChange }: ApprovalControlProps) {
   const hintId = useId();
   return (
     <div className="flex flex-col gap-1" data-testid="lemma-approval-filter">
@@ -139,7 +132,6 @@ function ApprovalControl({ value, onChange, shown, loaded }: ApprovalControlProp
       </RadioGroup>
       <p id={hintId} className="text-xs text-muted-foreground">
         {trLemma.approvalFilter.note}
-        {value !== 'hepsi' ? ` ${trLemma.approvalFilter.shown(shown, loaded)}.` : ''}
       </p>
     </div>
   );
@@ -158,7 +150,17 @@ function MappingMeta({ item }: { item: ReviewItem }) {
   );
 }
 
-/** Under a word meaning candidate in the list: the consistent or inconsistent mark of its dominant share. */
+/** The word wave of a lemma record (`dalga` of the list item), as text; nothing when the API gives none. */
+function WaveBadge({ item }: { item: ReviewItem }) {
+  if (typeof item.dalga !== 'number') return null;
+  return (
+    <Badge variant="outline" data-testid="lemma-item-wave">
+      {trLemma.list.wave(item.dalga)}
+    </Badge>
+  );
+}
+
+/** Under a word meaning candidate in the list: the wave and the consistent or inconsistent mark of its dominant share. */
 function GlossMeta({ item }: { item: ReviewItem }) {
   if (isRootMappingReview(item)) return <MappingMeta item={item} />;
   if (item.hedef_tablo === 'quran_word_fix') {
@@ -170,13 +172,21 @@ function GlossMeta({ item }: { item: ReviewItem }) {
   }
   const share =
     item.hedef_tablo === 'lemma_gloss' && isReadyCandidate(item) ? readConfidence(item) : null;
-  if (share === null || !isShare(share)) return null;
+  const shareValid = share !== null && isShare(share);
+  if (!shareValid && typeof item.dalga !== 'number') return null;
   return (
-    <span className="text-xs text-muted-foreground" data-testid="lemma-item-consistency">
-      {trLemma.list.line(
-        consistencyOf(share) === 'tutarli' ? trLemma.list.consistent : trLemma.list.inconsistent,
-        formatPercent(share),
-      )}
+    <span className="flex flex-wrap items-center gap-1">
+      <WaveBadge item={item} />
+      {shareValid ? (
+        <span className="text-xs text-muted-foreground" data-testid="lemma-item-consistency">
+          {trLemma.list.line(
+            consistencyOf(share) === 'tutarli'
+              ? trLemma.list.consistent
+              : trLemma.list.inconsistent,
+            formatPercent(share),
+          )}
+        </span>
+      ) : null}
     </span>
   );
 }
@@ -190,44 +200,28 @@ function GlossMeta({ item }: { item: ReviewItem }) {
  */
 export function LemmaQueue() {
   const [tab, setTab] = useState<LemmaTabId>('anlam');
-  const [order, setOrder] = useState<QueueOrder>(DEFAULT_LEMMA_ORDER);
+  const [order, setOrder] = useState<LemmaOrder>(DEFAULT_LEMMA_ORDER);
   const [approval, setApproval] = useState<ApprovalFilter>('hepsi');
-  const itemFilter = useMemo(
-    () =>
-      tab === 'kok' && approval !== 'hepsi'
-        ? (item: ReviewItem) => matchesApprovalFilter(item, approval)
-        : undefined,
-    [tab, approval],
-  );
   return (
     <QueueLayout
       title={tr.nav.queueLemma}
-      filter={lemmaFilter(tab, order)}
+      filter={lemmaFilter(tab, order, approval)}
       announceCount
-      itemFilter={itemFilter}
-      filteredEmpty={trLemma.approvalFilter.noMatch}
-      renderListHeader={({ items, loadedCount }) => (
+      renderListHeader={() => (
         <div className="flex flex-col gap-3">
           <LemmaTabs value={tab} onChange={setTab} />
           {hasWaveOrder(tab) ? <OrderControl value={order} onChange={setOrder} /> : null}
-          {tab === 'kok' ? (
-            <ApprovalControl
-              value={approval}
-              onChange={setApproval}
-              shown={items.length}
-              loaded={loadedCount}
-            />
-          ) : null}
+          {tab === 'kok' ? <ApprovalControl value={approval} onChange={setApproval} /> : null}
         </div>
       )}
       renderItemMeta={(item) => <GlossMeta item={item} />}
-      renderDetail={({ review, onDecided }) =>
-        review.hedef_tablo === 'quran_word_fix' ? (
-          <WordFixCard key={review.id} review={review} onDecided={onDecided} />
-        ) : isRootMappingReview(review) ? (
-          <TrLemmaCard key={review.id} review={review} onDecided={onDecided} />
+      renderDetail={(props) =>
+        props.review.hedef_tablo === 'quran_word_fix' ? (
+          <WordFixCard key={props.review.id} {...props} />
+        ) : isRootMappingReview(props.review) ? (
+          <TrLemmaCard key={props.review.id} {...props} />
         ) : (
-          <LemmaCard key={review.id} review={review} onDecided={onDecided} />
+          <LemmaCard key={props.review.id} {...props} />
         )
       }
     />

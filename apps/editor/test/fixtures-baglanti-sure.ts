@@ -3,7 +3,7 @@
 // strings are letter sequences built from code points; they are not Quran text.
 import type { components } from '@/api/schema';
 import { ok, type FakeApi } from './fake-api';
-import { reviewDetail, reviewItem } from './fixtures';
+import { reviewDetail, reviewItem, stats } from './fixtures';
 
 type S = components['schemas'];
 
@@ -22,8 +22,43 @@ export function xrefItem(id: number, over: Partial<S['ReviewItemDto']> = {}): S[
     onceki: null,
     onerilen: null,
     xmin: 500 + id,
+    sinif: 'toplu',
     ...over,
   });
+}
+
+/** The snapshot a link candidate review carries (A18.4): type, spans, score, evidence summary, highlighted sequence. */
+export function linkTarget(
+  src: string,
+  dst: string,
+  over: Partial<S['ReviewTargetSnapshot']> = {},
+): S['ReviewTargetSnapshot'] {
+  return {
+    tablo: 'xref',
+    src_anchor: src,
+    dst_anchor: dst,
+    status: 'aday',
+    type: 'iktibas',
+    src_span: [12, 16],
+    dst_span: [1, 5],
+    score: 0.91,
+    confidence: 0.97,
+    origin: 'hat',
+    sinif: 'toplu',
+    evidence_ozeti: {
+      matched_words: 7,
+      ayah_words: 9,
+      coverage: 0.4,
+      phrase_freq: 1,
+      consistent_quote: false,
+      position: 'govde',
+      subtype: 'deneme-alt-tur',
+      group: 'g1',
+      alternatives: [{ dst: 'q:1:3', matched_words: 5 }, 'q:1:4'],
+    },
+    vurgulu_dizi: { sol: 'Deneme önce ', dizi: ARABIC_SAMPLE_2, sag: ' deneme sonra' },
+    ...over,
+  };
 }
 
 export function xrefDetail(
@@ -34,7 +69,7 @@ export function xrefDetail(
 ): S['ReviewDetailDto'] {
   return reviewDetail({
     ...xrefItem(id),
-    hedef: { tablo: 'xref', src_anchor: src, dst_anchor: dst, status: 'aday' },
+    hedef: linkTarget(src, dst),
     ...over,
   });
 }
@@ -77,6 +112,21 @@ export function unitFor(anchor: string): S['UnitDetail'] {
 export function xrefHandlers(fake: FakeApi): void {
   fake.get('/api/v1/reviews/{id}', (call) => ok(xrefDetail(Number(call.params.id))));
   fake.get('/api/v1/units/{anchor}', (call) => ok(unitFor(call.params.anchor!)));
+  // The queue reads the counts (class counts, records at the expert); registered after the detail route, which
+  // would also match /reviews/stats.
+  fake.get(
+    '/api/v1/reviews/stats',
+    ok(
+      stats(
+        [['xref', 'status', 3]],
+        [
+          ['tutarsiz', 1],
+          ['toplu', 2],
+        ],
+        1,
+      ),
+    ),
+  );
 }
 
 // --- surah name candidates (surah_alias) ---

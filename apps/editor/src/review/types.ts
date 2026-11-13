@@ -10,4 +10,7 @@ export type BulkOutcome = components['schemas']['BulkDecisionOutcome'];
 export type Session = components['schemas']['SessionResponse'];
 export type UnitDetail = components['schemas']['UnitDetail'];
 
+export type DecisionEdit = components['schemas']['DecisionEdit'];
+export type HighlightedSequence = components['schemas']['VurguluDizi'];
+
 export type DecisionKind = 'onaylandi' | 'reddedildi';

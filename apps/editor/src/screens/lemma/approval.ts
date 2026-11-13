@@ -1,6 +1,4 @@
 import { trLemma } from '@/i18n/tr-lemma';
-import { readString } from '@/lib/payload';
-import { isObjectionReview } from '@/review/rules';
 import type { ReviewItem } from '@/review/types';
 
 // The approval path of a Turkish lemma mapping (K-51 madde 9): `otomatik` is the dictionary-evidence approval of
@@ -23,18 +21,13 @@ export function isApprovalFilter(value: unknown): value is ApprovalFilter {
 }
 
 /**
- * Where a listed review stands, read from the list item alone (the list carries no lemma row): an objection
- * (`onerilen.itiraz`) belongs to an approved lemma and its `onceki` holds the path the lemma had when it was
- * opened; any other open mapping review is a candidate. An objection whose path is unreadable is null (it
- * appears under "Hepsi" only).
+ * Where a listed review stands, read from the list item's `onay_yolu` (the server gives it for lemma items): an
+ * objection or any record of an approved lemma carries its path, a candidate has none. A value that is neither
+ * path nor empty is unknown (null); it is never guessed.
  */
 export function itemApproval(item: ReviewItem): ApprovalPath | 'aday' | null {
-  if (!isObjectionReview(item)) return 'aday';
-  return readApprovalPath(readString(item.onceki, 'onay_yolu'));
-}
-
-export function matchesApprovalFilter(item: ReviewItem, filter: ApprovalFilter): boolean {
-  return filter === 'hepsi' || itemApproval(item) === filter;
+  if (item.onay_yolu === null || item.onay_yolu === undefined) return 'aday';
+  return readApprovalPath(item.onay_yolu);
 }
 
 /** The label of a path (for sentences). */

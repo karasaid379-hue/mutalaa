@@ -283,11 +283,13 @@ export function kokDetail(
 /** An objection to an automatic approval: the target is approved with the `otomatik` path. */
 export function objectionItem(
   id: number,
-  path: 'otomatik' | 'editor' | null = 'otomatik',
+  path: 'otomatik' | 'editor' | string | null = 'otomatik',
 ): S['ReviewItemDto'] {
   return kokItem(id, {
     koken: 'editor',
     oneren: OBJECTOR,
+    // The server gives the approval path of the lemma on the list item (A18.4); a candidate has none.
+    onay_yolu: path,
     onceki: { root_id: 7, ar_lemma_id: 1001, etymological_only: false, onay_yolu: path },
     onerilen: { itiraz: true, gerekce: 'Deneme itiraz gerekçesi' },
   });
@@ -295,7 +297,7 @@ export function objectionItem(
 
 export function objectionDetail(
   id: number,
-  path: 'otomatik' | 'editor' | null = 'otomatik',
+  path: 'otomatik' | 'editor' | string | null = 'otomatik',
 ): S['ReviewDetailDto'] {
   return reviewDetail({
     ...objectionItem(id, path),

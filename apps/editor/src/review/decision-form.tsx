@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,7 @@ import {
   trimGloss,
 } from '@/lib/text';
 import { problemCode, problemStatus, toProblem } from '@/lib/problem';
-import { canDecide } from '@/lib/roles';
+import { canDecideStatus } from '@/lib/roles';
 import { fieldA11y, type FieldProblem } from './field-errors';
 import { ProblemList } from './problem-list';
 import { RootMappingFields } from './root-mapping-fields';
@@ -50,7 +50,17 @@ import {
   type UnitEditInfo,
 } from './rules';
 import { StaleRecord } from './stale-record';
-import type { DecisionKind, DecisionResult, ReviewDetail } from './types';
+import type { DecisionEdit, DecisionKind, DecisionResult, ReviewDetail } from './types';
+
+/**
+ * An edit of the approval that a screen builds with fields of its own (the link target, span and type; the new
+ * value of a word fix): `value` is the `duzenlenen` body (null = a plain approval) and `problems` block the
+ * submit while the approval is chosen. The form sends it only with "Onayla".
+ */
+export interface ExtraEdit {
+  value: DecisionEdit | null;
+  problems: readonly FieldProblem[];
+}
 
 export interface DecisionFormProps {
   /** The record being decided. Its `xmin` becomes the `If-Match` value. */
@@ -64,6 +74,10 @@ export interface DecisionFormProps {
   onDecided?: (result: DecisionResult, decision: DecisionKind) => void;
   /** Called with the fresh record after a 412 refresh. */
   onRefreshed?: (fresh: ReviewDetail) => void;
+  /** The screen's own edit of the approval (see `ExtraEdit`); its fields are `extraFields`. */
+  extraEdit?: ExtraEdit;
+  /** The screen's own edit fields, drawn inside the form under the decision choice. */
+  extraFields?: ReactNode;
   className?: string;
 }
 
@@ -122,6 +136,8 @@ export function DecisionForm({
   unit,
   onDecided,
   onRefreshed,
+  extraEdit,
+  extraFields,
   className,
 }: DecisionFormProps) {
   const api = useApi();
@@ -174,7 +190,7 @@ export function DecisionForm({
   const decide = api.$api.useMutation('post', '/api/v1/reviews/{id}/decision');
 
   const roles = me.data?.roller;
-  const roleMissing = me.data !== undefined && !canDecide(roles);
+  const roleMissing = me.data !== undefined && !canDecideStatus(roles, current.durum);
   const block = approveBlockReason(current, me.data?.kullanici.email);
   const closed = block === 'closed' || done !== null;
   const canEdit = canEditValue(current, unitInfo) && !closed;
@@ -254,6 +270,7 @@ export function DecisionForm({
         add(ids.gloss, trLemma.edit.unwritable);
       }
     }
+    if (extraEdit && selected === 'onaylandi') found.push(...extraEdit.problems);
     if (showMapping) {
       if (parsedRoot === 'invalid') add(ids.mapRoot, trLemma.kok.edit.rootInvalid);
       else if (parsedRoot === null) add(ids.mapRoot, trLemma.kok.edit.rootRequired);
@@ -292,6 +309,7 @@ export function DecisionForm({
     const sendEdit = canEdit && selected === 'onaylandi' && editedValue !== baseline;
     const sendGloss = glossChanged;
     const sendMapping = mappingChanged && typeof parsedRoot === 'number' && parsedAr !== 'invalid';
+    const sendExtra = selected === 'onaylandi' ? (extraEdit?.value ?? null) : null;
     const snapshot = current;
     try {
       const result = await decide.mutateAsync({
@@ -304,7 +322,7 @@ export function DecisionForm({
               ? { anlam_kisa: glossValue }
               : sendMapping
                 ? { root_id: parsedRoot, ar_lemma_id: parsedAr, etymological_only: etymValue }
-                : null,
+                : sendExtra,
           gerekce,
         },
       });
@@ -359,7 +377,9 @@ export function DecisionForm({
         <h3 id={ids.form} className="text-base font-medium">
           {tr.review.decisionHeading}
         </h3>
-        <p className="text-sm text-muted-foreground">{tr.review.noRole}</p>
+        <p className="text-sm text-muted-foreground" data-testid="decision-role-note">
+          {current.durum === 'uzmanda' ? tr.review.expertPending : tr.review.noRole}
+        </p>
       </section>
     );
   }
@@ -450,6 +470,8 @@ export function DecisionForm({
             {tr.review.reject}
           </Label>
         </RadioGroup>
+
+        {extraFields}
 
         {showGloss ? (
           <div className="flex flex-col gap-1" data-testid="gloss-edit">

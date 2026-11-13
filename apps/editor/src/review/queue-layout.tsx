@@ -27,6 +27,11 @@ export interface QueueDetailProps {
   review: ReviewDetail;
   /** Pass to `DecisionForm`: moves to the next record and focus follows. */
   onDecided: (result: DecisionResult, decision: DecisionKind) => void;
+  /**
+   * For an action that takes the record out of the list without a decision (sent to an expert, added to the
+   * pattern list): moves to the next record, like `onDecided`.
+   */
+  onLeft: (id: number) => void;
 }
 
 export interface QueueLayoutProps {
@@ -141,8 +146,8 @@ export function QueueLayout({
   const [listEl, setListEl] = useState<HTMLElement | null>(null);
   const [detailEl, setDetailEl] = useState<HTMLElement | null>(null);
 
-  function onDecided(result: DecisionResult) {
-    const index = items.findIndex((item) => item.id === result.id);
+  function onLeft(id: number) {
+    const index = items.findIndex((item) => item.id === id);
     const next = index >= 0 ? (items[index + 1] ?? items[index - 1]) : undefined;
     // Only `kayit` changes: the other parameters (a queue's tabs) stay.
     const nextParams = new URLSearchParams(params);
@@ -151,6 +156,10 @@ export function QueueLayout({
     setParams(nextParams, { replace: true });
     // The regions stay mounted while their content changes: focus goes to the next record, or to the list when none is left.
     (next ? detailEl : listEl)?.focus();
+  }
+
+  function onDecided(result: DecisionResult) {
+    onLeft(result.id);
   }
 
   function select(id: number): { search: string } {
@@ -260,7 +269,7 @@ export function QueueLayout({
             </div>
           ) : (
             <Fragment key={detail.data.id}>
-              {renderDetail({ review: detail.data, onDecided })}
+              {renderDetail({ review: detail.data, onDecided, onLeft })}
             </Fragment>
           )}
         </section>

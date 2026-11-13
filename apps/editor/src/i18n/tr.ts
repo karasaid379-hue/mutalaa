@@ -3,7 +3,7 @@
 // Label tables map the API's snake_case values to Turkish; an unknown value is shown raw (see labelOf).
 import type { ProblemCode } from '@/lib/problem';
 
-/** One message per problem code (18 API codes and the two client codes); the compiler checks completeness. */
+/** One message per problem code (19 API codes and the two client codes); the compiler checks completeness. */
 const problemCodes: Record<ProblemCode, string> = {
   dogrulama: 'İstek geçersiz. Girilen değerleri denetleyin.',
   'capa-gecersiz': 'Çapa geçersiz ya da birim düzeyinde değil.',
@@ -20,6 +20,8 @@ const problemCodes: Record<ProblemCode, string> = {
   'surum-gerekli': 'İstek sürüm bilgisi taşımıyor (istemci hatası).',
   'inceleme-desteklenmiyor':
     'Bu işlem bu kayıt için henüz desteklenmiyor; ayrıntı sunucu iletisindedir.',
+  'toplu-uygun-degil':
+    'Toplu onay bu kayıt için uygun değil: yalnız “toplu uygun” sınıfındaki bağlantılar toplu onaylanır; tek tek inceleyin.',
   'yayin-suruyor': 'Bu derleme türünde açık bir yayın var; bitmesini bekleyin.',
   'kalite-kapisi': 'Kalite kapısı yayını reddetti. Kapı raporuna bakın.',
   'onceki-yayin-bozuk': 'Önceki yayının manifesti yok ya da okunamıyor.',
@@ -126,6 +128,7 @@ export const tr = {
     role: {
       editor: 'Editör',
       admin: 'Yönetici',
+      uzman: 'Uzman',
     },
     target: {
       source: 'Kaynak',
@@ -190,8 +193,14 @@ export const tr = {
           'Karar verilemedi: kayıt kapalı, kendi öneriniz, aday olmayan hedef, bayat hedef ya da ikinci onay aynı kişiden.',
         bulunamadi: 'İnceleme kaydı bulunamadı.',
         'surum-gerekli': 'Karar sürüm bilgisi olmadan gönderildi (istemci hatası).',
+        'yetki-yok':
+          'Bu karar için yetkiniz yok: uzmandaki kayıtları yalnız uzman rolü karara bağlar, açık kayıtları editör ya da yönetici.',
       },
       bulk: {
+        'yetki-yok':
+          'Seçilenlerden biri uzmanda ya da yetkiniz yok; uzmandaki kayıtları yalnız uzman rolü karara bağlar. Hiçbir karar uygulanmadı.',
+        'toplu-uygun-degil':
+          'Seçilenlerden biri toplu onaya uygun değil (yalnız “toplu uygun” sınıfı). Hiçbir karar uygulanmadı; kaydı çıkarın ya da tek tek inceleyin.',
         'surum-uyusmazligi':
           'Bazı kayıtlar siz okuduktan sonra değişti; yalnız onlar yenilendi. Hiçbir karar uygulanmadı.',
         bulunamadi: 'Bazı kayıtlar bulunamadı. Hiçbir karar uygulanmadı.',
@@ -199,6 +208,25 @@ export const tr = {
         'inceleme-desteklenmiyor':
           'Bir kayıt için inceleme akışı henüz desteklenmiyor. Hiçbir karar uygulanmadı.',
         dogrulama: 'Toplu karar geçersiz. Hiçbir karar uygulanmadı.',
+      },
+      link: {
+        'surum-uyusmazligi':
+          'Kayıt siz okuduktan sonra değişti. Kayıt yenilendi ve girdiniz korundu; denetleyip yeniden gönderin.',
+        'surum-gerekli': 'İstek sürüm bilgisi olmadan gönderildi (istemci hatası).',
+        'yetki-yok': 'Bu işlem için yetkiniz yok (yalnız editör ya da yönetici).',
+        bulunamadi: 'Kayıt ya da bağlantı bulunamadı.',
+        cakisma: 'Çakışma: bu bağlantı için aynı kayıt zaten var.',
+        'durum-gecisi-gecersiz':
+          'Bu işlem şu an yapılamaz (kayıt kapalı, aday olmayan hedef ya da bu tür için uygun değil).',
+        'inceleme-desteklenmiyor':
+          'Bu işlem bu kayıt için desteklenmiyor; ayrıntı sunucu iletisindedir.',
+        dogrulama: 'İstek geçersiz. Gerekçeyi ve girilen değerleri denetleyin.',
+      },
+      wordFix: {
+        dogrulama: 'Düzeltme geçersiz: çapayı, alanı ve yeni değeri denetleyin.',
+        bulunamadi: 'Bu çapayla eşleşen kelime bulunamadı.',
+        cakisma: 'Bu kelime ve alan için bir düzeltme kaydı zaten var.',
+        'yetki-yok': 'Düzeltme önermek için editör ya da yönetici rolü gerekir.',
       },
       correction: {
         cakisma: 'Bu birim için açık bir düzeltme önerisi zaten var.',
@@ -240,6 +268,8 @@ export const tr = {
     unwritableNote: 'Bu karakterler API tarafından reddedilir; kendiliğinden silinmez.',
     summaryTitle: 'Karar gönderilemedi',
     noRole: 'Karar vermek için editör ya da yönetici rolü gerekir.',
+    expertPending:
+      'Uzman kararı bekleniyor. Bu kaydı yalnız uzman rolü karara bağlar; editör ve yönetici karar veremez.',
     closedTitle: 'Karar verilmiş',
     closedBody: 'Bu kayda karar verilmiş; yeni karar verilemez.',
     blockedOwnProposal: 'Kendi önerinizi onaylayamazsınız; reddedebilirsiniz (dört göz kuralı).',

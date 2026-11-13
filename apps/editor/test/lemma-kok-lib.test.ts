@@ -11,7 +11,6 @@ import {
   APPROVAL_FILTERS,
   isApprovalFilter,
   itemApproval,
-  matchesApprovalFilter,
   readApprovalPath,
 } from '@/screens/lemma/approval';
 import { kokDetail, kokItem, objectionItem, trTarget } from './fixtures-lemma';
@@ -100,23 +99,17 @@ describe('approval path', () => {
     expect(readApprovalPath(undefined)).toBeNull();
   });
 
-  it('classifies a listed review: a candidate, or an objection by the path in onceki; unreadable is null', () => {
+  it('classifies a listed review by the server field onay_yolu: none is a candidate; an unknown value is null', () => {
     expect(itemApproval(kokItem(1))).toBe('aday');
+    expect(itemApproval(kokItem(1, { onay_yolu: null }))).toBe('aday');
     expect(itemApproval(objectionItem(2, 'otomatik'))).toBe('otomatik');
     expect(itemApproval(objectionItem(3, 'editor'))).toBe('editor');
-    expect(itemApproval(objectionItem(4, null))).toBeNull();
+    expect(itemApproval(objectionItem(4, 'yeni-yol'))).toBeNull();
   });
 
-  it('filters: "hepsi" passes everything, the others exactly their class', () => {
+  it('has the four filter values; the server takes them as onay_yolu', () => {
     expect(APPROVAL_FILTERS).toEqual(['hepsi', 'otomatik', 'editor', 'aday']);
     expect(isApprovalFilter('aday')).toBe(true);
     expect(isApprovalFilter('baska')).toBe(false);
-    const unreadable = objectionItem(4, null);
-    expect(matchesApprovalFilter(unreadable, 'hepsi')).toBe(true);
-    for (const filter of ['otomatik', 'editor', 'aday'] as const) {
-      expect(matchesApprovalFilter(unreadable, filter)).toBe(false);
-    }
-    expect(matchesApprovalFilter(kokItem(1), 'aday')).toBe(true);
-    expect(matchesApprovalFilter(kokItem(1), 'otomatik')).toBe(false);
   });
 });

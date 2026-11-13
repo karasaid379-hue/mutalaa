@@ -5,7 +5,7 @@ import { tr } from '@/i18n/tr';
 import { trOcr } from '@/i18n/tr-ocr';
 import { Component as QueueOcr } from '@/screens/queue-ocr';
 import { ok, problem, useFakeApi } from './fake-api';
-import { OTHER_EMAIL, page, session, signedIn } from './fixtures';
+import { OTHER_EMAIL, page, session, signedIn, stats } from './fixtures';
 import {
   ARABIC_AYAH,
   AYAH_ANCHOR,
@@ -376,7 +376,7 @@ describe('kuyruk/ocr', () => {
     it('is the lazy route kuyruk/ocr of the panel, with a focused heading', async () => {
       signedIn(fake);
       ocrHandlers(fake);
-      fake.get('/api/v1/reviews/stats', ok({ kuyruklar: [], toplam_acik: 0 }));
+      fake.get('/api/v1/reviews/stats', ok(stats([])));
       fake.get('/api/v1/reviews', ok(page([ocrItem(1)])));
       const scan = withScanFetch(fake, scanBytes);
       renderApp(scan, '/kuyruk/ocr?kayit=1');

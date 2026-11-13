@@ -13,6 +13,7 @@ import type { QueueDetailProps } from '@/review/queue-layout';
 import type { ReviewDetail } from '@/review/types';
 import { JsonBlock } from '@/screens/catalog/json-block';
 import { LemmaInfo } from './lemma-info';
+import { WordFixCreate } from './word-fix-create';
 import {
   CONSISTENT_SHARE_THRESHOLD,
   consistencyOf,
@@ -355,6 +356,7 @@ export function LemmaCard({ review, onDecided }: QueueDetailProps) {
         </div>
         <p className="text-xs text-muted-foreground">{trLemma.closedNote}</p>
       </section>
+      <WordFixCreate />
       <p className="text-sm text-muted-foreground">
         {shown.hedef_tablo === 'lemma' ? trLemma.decisionNote.durum : trLemma.decisionNote.anlam}
       </p>
