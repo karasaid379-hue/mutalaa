@@ -6,7 +6,7 @@ from typing import Annotated
 
 import typer
 
-from mutalaa_pipeline import cikis, cli_gloss_ornek, cli_qac, sources
+from mutalaa_pipeline import cikis, cli_gloss_ornek, cli_gold, cli_qac, sources
 from mutalaa_pipeline.export import ayet_sayilari, ic_kesme, test_vectors
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kok_coz
 from mutalaa_pipeline.ingest import meal_kaynaklari
@@ -718,3 +718,4 @@ def sources_check(kok: KokSecenegi = None) -> None:
 
 cli_qac.kaydet(app, ingest_app)  # A17: ingest qac, enrich morphology
 cli_gloss_ornek.kaydet(qa_app)  # A17.6: qa gloss-sample, qa gloss-score
+cli_gold.kaydet(qa_app)  # A18.5: qa gold
