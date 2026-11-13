@@ -48,16 +48,38 @@ public static partial class GateEvaluator
         Dictionary<string, UnitExclusion> excludedUnits = new(StringComparer.Ordinal);
         Dictionary<string, int> unitsBySource = new(StringComparer.Ordinal);
         Dictionary<string, int> includedBySource = new(StringComparer.Ordinal);
+
+        // Capa onekli paketler (Risale kitaplari: 87 paket tek kaynaktan beslenir) birimi (onek, kaynak) ciftiyle sayar; yalniz onekini bildiren paketlerin
+        // onekleri izlenir, boylece oneksiz paketlerde ek is yoktur.
+        HashSet<string> trackedPrefixes = new(input.Packs.Where(p => p.AnchorPrefix is not null).Select(p => p.AnchorPrefix!), StringComparer.Ordinal);
+        PrefixCounts prefixUnits = new();
+        PrefixCounts prefixIncluded = new();
         foreach (GateUnit unit in input.Units)
         {
             SourceVerdict sv = EnsureSource(f, sources, unit.SourceSlug);
             (GateDecision decision, GateRule? rule, string reason) = DecideUnit(f, unit, sv);
             Count(groups, GateSubjectKind.Birim, unit.SourceSlug, decision, rule, reason);
             unitsBySource[unit.SourceSlug] = unitsBySource.GetValueOrDefault(unit.SourceSlug) + 1;
+            string? prefix = null;
+            if (trackedPrefixes.Count > 0)
+            {
+                string candidate = GatePack.PrefixOf(unit.Anchor);
+                prefix = trackedPrefixes.Contains(candidate) ? candidate : null;
+            }
+
+            if (prefix is not null)
+            {
+                prefixUnits.Add(prefix, unit.SourceSlug);
+            }
+
             if (decision == GateDecision.Girdi)
             {
                 includedUnits.Add(unit.Anchor);
                 includedBySource[unit.SourceSlug] = includedBySource.GetValueOrDefault(unit.SourceSlug) + 1;
+                if (prefix is not null)
+                {
+                    prefixIncluded.Add(prefix, unit.SourceSlug);
+                }
             }
             else
             {
@@ -66,6 +88,7 @@ public static partial class GateEvaluator
         }
 
         // Paketler.
+        UnitCounts counts = new(unitsBySource, includedBySource, prefixUnits, prefixIncluded);
         HashSet<string> seenPacks = new(StringComparer.Ordinal);
         List<GatePack> enteredPacks = [];
         foreach (GatePack pack in input.Packs.OrderBy(p => p.PackId, StringComparer.Ordinal))
@@ -75,7 +98,7 @@ public static partial class GateEvaluator
                 throw new ArgumentException($"Yinelenen paket kimligi: {pack.PackId}", nameof(input));
             }
 
-            (GateDecision decision, GateRule? rule, string reason) = DecidePack(f, pack, sources, unitsBySource, includedBySource, violations);
+            (GateDecision decision, GateRule? rule, string reason) = DecidePack(f, pack, sources, counts, violations);
             rows.Add(new GateReportRow(GateSubjectKind.Paket, pack.PackId, decision, rule, reason));
             if (decision == GateDecision.Girdi)
             {
@@ -311,12 +334,35 @@ public static partial class GateEvaluator
         return (GateDecision.Girdi, null, approved ? GateReasons.Uygun : GateReasons.Dogrulanmamis);
     }
 
+    /// <summary>(Capa oneki, kaynak) ciftine gore birim sayaci.</summary>
+    private sealed class PrefixCounts
+    {
+        private readonly Dictionary<(string Prefix, string Slug), int> _counts = [];
+
+        public void Add(string prefix, string slug) => _counts[(prefix, slug)] = _counts.GetValueOrDefault((prefix, slug)) + 1;
+
+        public int Get(string prefix, string slug) => _counts.GetValueOrDefault((prefix, slug));
+    }
+
+    private sealed record UnitCounts(
+        Dictionary<string, int> BySource,
+        Dictionary<string, int> IncludedBySource,
+        PrefixCounts ByPrefix,
+        PrefixCounts IncludedByPrefix)
+    {
+        /// <summary>Paketin kaynaktaki birim sayisi: oneki varsa yalniz o onekli birimler, yoksa kaynagin butun birimleri.</summary>
+        public int Units(GatePack pack, string slug) =>
+            pack.AnchorPrefix is { } prefix ? ByPrefix.Get(prefix, slug) : BySource.GetValueOrDefault(slug);
+
+        public int Included(GatePack pack, string slug) =>
+            pack.AnchorPrefix is { } prefix ? IncludedByPrefix.Get(prefix, slug) : IncludedBySource.GetValueOrDefault(slug);
+    }
+
     private static (GateDecision Decision, GateRule? Rule, string Reason) DecidePack(
         BuildFlavor flavor,
         GatePack pack,
         Dictionary<string, SourceVerdict> sources,
-        Dictionary<string, int> unitsBySource,
-        Dictionary<string, int> includedBySource,
+        UnitCounts counts,
         List<GateViolation> violations)
     {
         if (!pack.HasContent)
@@ -341,8 +387,8 @@ public static partial class GateEvaluator
             if (sv.Decision == GateDecision.Girdi)
             {
                 anyEntered = true;
-                anyUnits |= unitsBySource.GetValueOrDefault(slug) > 0;
-                anyIncluded |= includedBySource.GetValueOrDefault(slug) > 0;
+                anyUnits |= counts.Units(pack, slug) > 0;
+                anyIncluded |= counts.Included(pack, slug) > 0;
             }
             else
             {
@@ -354,8 +400,15 @@ public static partial class GateEvaluator
         // suzulduyse (ornegin public'te butun birimler taslak: P-08/P-10) icerigi kalmamistir: "girmedi · icerik-yok", kural kodu yok, kapi reddetmez.
         // Yapi satiri tasiyan paket (core) suzmeden etkilenmez. Girilen kaynaklarin girdide hic birimi yoksa birim kaniti yoktur (sentetik girdi, yapi ya da
         // ses kaynagi); o zaman paketin HasContent bilgisi (GateInputBuilder: birim ya da yapi satiri) gecerli kalir.
+        // Capa onekli paketin (Risale kitabi) icerigi yalniz kendi onekli birimleridir: kapsama giren birimi yoksa, kaynagin baska birimleri olsa da ya da hic
+        // birim kaniti olmasa da girmez.
         if (anyEntered)
         {
+            if (pack.AnchorPrefix is not null)
+            {
+                return anyIncluded ? (GateDecision.Girdi, null, GateReasons.Uygun) : (GateDecision.Girmedi, null, GateReasons.IcerikYok);
+            }
+
             return pack.HasStructure || anyIncluded || !anyUnits
                 ? (GateDecision.Girdi, null, GateReasons.Uygun)
                 : (GateDecision.Girmedi, null, GateReasons.IcerikYok);

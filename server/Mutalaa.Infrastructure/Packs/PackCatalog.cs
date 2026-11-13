@@ -22,7 +22,8 @@ public enum PackSourceRole
 /// <summary>
 /// Paket-kaynak baglantisi. Required: kaynak bu paketin kapi girdisinde her zaman bulunur (kaydi yoksa P-01); aksi hâlde yalniz editoryal
 /// veritabaninda satiri ya da birimi varsa girer (ornegin hadis-tecrid'te Turkce ceviriler henuz alinmamis olabilir).
-/// PageMapLayout: Structure kaynagin page_map satirlarina yazilan duzen adi.
+/// PageMapLayout: Structure kaynagin page_map satirlarina yazilan duzen adi. Content kaynakta da verilebilir: kaynak kendi sayfa eslemesini de tasir
+/// (risale-dizin'de sentetik fikstur kaynagi test-risale-ornek; gercek baski eslemesinin duzeniyle karismasin diye ayri duzen adiyla).
 /// K-47 notu: core'daki Elmalili mealleri (elmalili-meal, elmalili-sade-meal) Required: false'tur (kaynak kaydi ve birimleri yoksa paket
 /// onlarsiz uretilir); ilk meal yayininden sonra meal capa kumesi donar: onceki yayindaki her meal capasi sonrakinde etkin ya da
 /// yonlendirmeli olmali, kaybolursa yayin <c>capa-kayboldu</c> ile reddedilir.
@@ -35,6 +36,9 @@ public sealed record PackSourceBinding(string Slug, PackSourceRole Role, bool Re
 /// Katalogdaki bir paket (manifest satirinin kaynagi: Icerik paketleri 5). SchemaVersion her zaman <see cref="PackFormat.SchemaVersion"/>'dur.
 /// CarriesQuranStructure: paket quran_word, quran_marker ve page_map tablolarini doldurur (yalniz core).
 /// CarriesLexicon: paket word_morph, root, lemma ve lemma_gloss tablolarini doldurur (yalniz kelime-kok; tr_form ve tr_root_index A18'e kadar bos).
+/// Book: Risale kitap paketi (risale-{kitap}, A20.4): yalniz unit tasir (arama tablosu, xref_idx ve page_map yoktur); birimleri kaynagin (87 kitap tek
+/// kaynaktan, risale-rnk-metin, gelir) capa oneki <see cref="AnchorPrefix"/> ile ayrilir; dil ve yon pack_meta'ya yazilir.
+/// IndexesBooks: risale-dizin: unit yerine unit_ref ile icerigi olmayan unit_fts ve unit_tri satirlari, Risale uclu xref_idx ve page_map tasir.
 /// </summary>
 public sealed record PackDefinition(
     string PackId,
@@ -43,9 +47,14 @@ public sealed record PackDefinition(
     IReadOnlyList<string> DependsOn,
     IReadOnlyList<PackSourceBinding> Sources,
     bool CarriesQuranStructure = false,
-    bool CarriesLexicon = false)
+    bool CarriesLexicon = false,
+    RisaleBook? Book = null,
+    bool IndexesBooks = false)
 {
     public int SchemaVersion => PackFormat.SchemaVersion;
+
+    /// <summary>Kitap paketinin capa oneki ("rn:sozler"); kitap paketi degilse null.</summary>
+    public string? AnchorPrefix => Book?.AnchorPrefix;
 
     /// <summary>Birim ve kelime veren kaynaklar.</summary>
     public IEnumerable<PackSourceBinding> ContentSources => Sources.Where(s => s.Role == PackSourceRole.Content);
@@ -54,7 +63,8 @@ public sealed record PackDefinition(
 /// <summary>
 /// A13'teki paket kimlikleri ve kaynak eslemesi (A13.3). Verisi olmayan paket (hadis, tefsir-elmalili) tabloda durur ama aday sayilmaz:
 /// kapi girdisini kuran GateInputBuilder icerigi olmayan paketi HasContent = false verir (Domain: "girmedi · icerik-yok").
-/// kelime-kok (A17.7; sozluk verisi yoksa aday sayilmaz) katalogdadir; ses paketleri bu asamada kataloga alinmaz.
+/// kelime-kok (A17.7; sozluk verisi yoksa aday sayilmaz) ve Risale paketleri (A20.4: risale-dizin, kitap tablosundan 87 risale-{kitap}, risale-test-ornek)
+/// katalogdadir; ses paketleri bu asamada kataloga alinmaz.
 /// </summary>
 public sealed class PackCatalog
 {
@@ -75,21 +85,48 @@ public sealed class PackCatalog
     /// </summary>
     public static IReadOnlyList<string> LexiconSourceSlugs { get; } = [QacMorphologySlug, GlossSourceSlug];
 
-    /// <summary>Risale uclu baglantilarin gittigi paket (Icerik paketleri 4 madde 2); A20'ye kadar katalogda degildir.</summary>
+    /// <summary>Risale uclu baglantilarin, arama indeksinin ve baski sayfa eslemesinin gittigi paket (Icerik paketleri 3.4 ve 4 madde 2).</summary>
     public const string RisaleIndexPackId = "risale-dizin";
 
+    /// <summary>Risale metninin tek kaynagi: 87 kitabin birimleri buradan gelir (K-51 madde 2).</summary>
+    public const string RisaleTextSlug = "risale-rnk-metin";
+
+    /// <summary>Risale baski sayfa eslemesinin kaynagi (RNK Neşriyat en son baski; K-51 madde 6 ve 7): risale-dizin'de Structure rolunde.</summary>
+    public const string RisalePageSlug = "risale-baski-rnk";
+
+    /// <summary>Risale baglanti dizininin kaynagi (xref satirlari): risale-dizin'de atif rolunde, yalniz xref satiri varsa listelenir.</summary>
+    public const string RisaleLinkSlug = "risale-atif-dizini";
+
+    /// <summary>risale-dizin page_map satirlarinin duzen adi (RNK baskisi; core'da "medine-604").</summary>
+    public const string RisalePageLayout = "rnk-baski";
+
+    /// <summary>Sentetik Risale fiksturu: kitap slug'i (capa "rn:test-ornek:..."), paket risale-test-ornek ve kaynak test-risale-ornek (K-46 madde 9 ile ayni kalip).</summary>
+    public const string RisaleFixtureBookSlug = "test-ornek";
+
+    public const string RisaleFixtureSourceSlug = "test-risale-ornek";
+
+    /// <summary>Fikstur kitabinin page_map duzen adi: fikstur cildi (1) Sozler cildiyle (1) cakisir, ayri duzen adi (layout, volume, page) anahtarini ayirir.</summary>
+    public const string RisaleFixturePageLayout = "rnk-baski-test";
+
     private readonly Dictionary<string, PackDefinition> _byId;
+    private readonly Dictionary<string, PackDefinition> _byAnchorPrefix;
 
     public PackCatalog(IEnumerable<PackDefinition> packs)
     {
         ArgumentNullException.ThrowIfNull(packs);
 
         _byId = new Dictionary<string, PackDefinition>(StringComparer.Ordinal);
+        _byAnchorPrefix = new Dictionary<string, PackDefinition>(StringComparer.Ordinal);
         foreach (PackDefinition pack in packs)
         {
             if (!_byId.TryAdd(pack.PackId, pack))
             {
                 throw new ArgumentException($"Yinelenen paket kimligi: {pack.PackId}", nameof(packs));
+            }
+
+            if (pack.AnchorPrefix is { } prefix && !_byAnchorPrefix.TryAdd(prefix, pack))
+            {
+                throw new ArgumentException($"Yinelenen capa oneki: {prefix}", nameof(packs));
             }
         }
 
@@ -159,7 +196,59 @@ public sealed class PackCatalog
             Bundled: false,
             DependsOn: [CorePackId],
             Sources: [new PackSourceBinding("hadis-fawaz-ar", PackSourceRole.Content, Required: true)]),
+        .. RisaleDefinitions(RisaleBookTable.Default),
     ]);
+
+    /// <summary>
+    /// Risale paketleri (A20.4, K-51): risale-dizin, kitap tablosundan (shared/data/risale-kitaplar.json, gomulu) uretilen her kitap icin risale-{kitap}
+    /// ve sentetik fikstur risale-test-ornek. Katalog elle yazilmaz; kitap eklemek dosyaya satir eklemektir. Kitap ve dizin paketleri baska pakete bagli degildir
+    /// (kitaplar istek aninda baglanir, dizin kitap olmadan da acilir; Icerik paketleri 2). Fikstur kaynagi test- onekli oldugu icin public'e girmez (P-12).
+    /// </summary>
+    public static IEnumerable<PackDefinition> RisaleDefinitions(IReadOnlyList<RisaleBook> books)
+    {
+        ArgumentNullException.ThrowIfNull(books);
+
+        RisaleBook fixture = new(RisaleFixtureBookSlug, "Sentetik Risale örneği (test)", "tr", "ltr", null);
+        yield return new PackDefinition(
+            RisaleIndexPackId,
+            "Risale-i Nur dizini",
+            Bundled: false,
+            DependsOn: [],
+            Sources:
+            [
+                new PackSourceBinding(RisaleTextSlug, PackSourceRole.Content, Required: true),
+                new PackSourceBinding(RisaleFixtureSourceSlug, PackSourceRole.Content, Required: false, PageMapLayout: RisaleFixturePageLayout),
+                new PackSourceBinding(RisaleLinkSlug, PackSourceRole.Attribution, Required: false),
+                new PackSourceBinding(RisalePageSlug, PackSourceRole.Structure, Required: false, PageMapLayout: RisalePageLayout),
+            ],
+            IndexesBooks: true);
+
+        foreach (RisaleBook book in books)
+        {
+            yield return new PackDefinition(
+                book.PackId,
+                book.Title,
+                Bundled: false,
+                DependsOn: [],
+                Sources: [new PackSourceBinding(RisaleTextSlug, PackSourceRole.Content, Required: true)],
+                Book: book);
+        }
+
+        yield return new PackDefinition(
+            fixture.PackId,
+            fixture.Title,
+            Bundled: false,
+            DependsOn: [],
+            Sources: [new PackSourceBinding(RisaleFixtureSourceSlug, PackSourceRole.Content, Required: true)],
+            Book: fixture);
+    }
+
+    /// <summary>Capa oneki ("rn:sozler") ile kitap paketi; onek katalogda yoksa false (ornegin rn:dizin ya da bilinmeyen kitap).</summary>
+    public bool TryGetByAnchorPrefix(string prefix, [NotNullWhen(true)] out PackDefinition? pack)
+    {
+        ArgumentNullException.ThrowIfNull(prefix);
+        return _byAnchorPrefix.TryGetValue(prefix, out pack);
+    }
 
     /// <summary>Paket kimligine gore Ordinal sirali.</summary>
     public IReadOnlyList<PackDefinition> All { get; }
@@ -176,7 +265,8 @@ public sealed class PackCatalog
     /// <summary>
     /// Capanin ait oldugu paket (Icerik paketleri 4, son paragraf): q, qa ve meal capalari core; tf:{eser} tefsir-{eser}; rn:{kitap} risale-{kitap};
     /// k:{kitap} {kitap} paketi; h ve ht capalari tecrid koleksiyonu icin hadis-tecrid, digerleri hadis-kutub-i-sitte.
-    /// Ayristirilamayan capa ve konu: capasi icin null. Donen kimligin katalogda olmasi gerekmez (ornegin risale-sozler).
+    /// Ayristirilamayan capa ve konu: capasi icin null. rn:dizin kitap slug'i olamaz (risale-dizin paketiyle cakisirdi): null. Donen kimligin
+    /// katalogda olmasi gerekmez (ornegin tabloda olmayan bir kitap).
     /// </summary>
     public static string? PackIdForAnchor(string anchor)
     {
@@ -196,7 +286,9 @@ public sealed class PackCatalog
         {
             AnchorKind.Q or AnchorKind.Qa or AnchorKind.Meal => CorePackId,
             AnchorKind.Tf or AnchorKind.Tfb => "tefsir-" + anchor.Eser,
-            AnchorKind.Rn => anchor.Yol.IsDefaultOrEmpty ? null : "risale-" + anchor.Yol[0],
+            AnchorKind.Rn => anchor.Yol.IsDefaultOrEmpty || string.Equals(anchor.Yol[0], RisaleBookTable.ReservedSlug, StringComparison.Ordinal)
+                ? null
+                : RisaleBookTable.PackIdPrefix + anchor.Yol[0],
             AnchorKind.K => anchor.Yol.IsDefaultOrEmpty ? null : anchor.Yol[0],
             AnchorKind.H or AnchorKind.Ht => string.Equals(anchor.Koleksiyon, "tecrid", StringComparison.Ordinal)
                 ? "hadis-tecrid"

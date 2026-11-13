@@ -17,4 +17,9 @@
     <ProjectReference Include="..\Mutalaa.Domain\Mutalaa.Domain.csproj" />
   </ItemGroup>
 
+  <!-- Risale kitap tablosu (87 kitap) gomulu kaynaktir; PackCatalog buradan uretilir, elle yazilmaz (A20.4). Docker baglami shared/data dosyasini icermelidir. -->
+  <ItemGroup>
+    <EmbeddedResource Include="../../shared/data/risale-kitaplar.json" LogicalName="risale-kitaplar.json" />
+  </ItemGroup>
+
 </Project>

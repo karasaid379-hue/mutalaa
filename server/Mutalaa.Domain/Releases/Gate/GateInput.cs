@@ -39,13 +39,35 @@ public sealed record GateXref(
 /// <summary>
 /// Paket adayi. HasContent: pakete yazilacak veri var (yoksa "girmedi · icerik-yok", kural kodu yok). HasStructure: paket yapi satiri (kelime, isaret,
 /// sayfa; core) tasiyor ve bu satirlar var; yapi satirlari birim suzmesinden (P-08/P-10) etkilenmeden paket icerigi sayilir. Geriye uyumlu: varsayilan false.
+/// AnchorPrefix: paketin birimlerini yalniz bu iki parcali capa onekiyle ("rn:sozler") taniyan paket (kaynagi baska paketlerle paylasir); null ise birim
+/// sayimi kaynak duzeyindedir. Dolu ise HasContent ve "icerik-yok" karari yalniz o onekli birimlere bakar (Risale kitap paketleri, K-51 madde 3).
 /// </summary>
 public sealed record GatePack(
     string PackId,
     IReadOnlyList<string> DependsOn,
     IReadOnlyList<string> SourceSlugs,
     bool HasContent,
-    bool HasStructure = false);
+    bool HasStructure = false,
+    string? AnchorPrefix = null)
+{
+    /// <summary>
+    /// Capanin ilk iki parcasi ("rn:sozler:soz-10:p1" icin "rn:sozler"; tek parcali capa kendisi). Kaynagi paylasan paketlerde (87 Risale kitabi tek
+    /// kaynaktan, risale-rnk-metin, gelir) birimin hangi pakete ait oldugunu belirler; capa ayristirilmaz, yalniz dizgi kesilir.
+    /// </summary>
+    public static string PrefixOf(string anchor)
+    {
+        ArgumentNullException.ThrowIfNull(anchor);
+
+        int first = anchor.IndexOf(':', StringComparison.Ordinal);
+        if (first < 0)
+        {
+            return anchor;
+        }
+
+        int second = anchor.IndexOf(':', first + 1);
+        return second < 0 ? anchor : anchor[..second];
+    }
+}
 
 /// <summary>P-09 kapsamindaki sozluk ve duzeltme tablolari.</summary>
 public enum LexicalKind

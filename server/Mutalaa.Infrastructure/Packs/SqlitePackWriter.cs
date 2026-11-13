@@ -15,6 +15,12 @@ public static class PackMetaKeys
     /// yazilir; attribution satiri bundan etkilenmez (P-11). Diger paketlerde anahtar yoktur.
     /// </summary>
     public const string WordFixCount = "word_fix_count";
+
+    /// <summary>Risale kitap paketinin dili: <c>tr</c>, <c>ota</c> (Osmanlica) ya da <c>ar</c> (K-51 madde 4). Diger paketlerde anahtar yoktur.</summary>
+    public const string Language = "dil";
+
+    /// <summary>Risale kitap paketinin yazi yonu: <c>ltr</c> ya da <c>rtl</c> (Osmanlica ve Arapca kitaplarda rtl). Diger paketlerde anahtar yoktur.</summary>
+    public const string Direction = "yon";
 }
 
 /// <summary>
@@ -37,7 +43,8 @@ public sealed record PackWriteRequest(
 /// <summary>
 /// SQLite paket yazicisi (Backend API 10.4). Adimlar: {pack_id}-{version}.db.tmp ac (eski artigi sil), ENABLE_FTS5 denetle, page_size=4096,
 /// journal_mode=OFF, synchronous=OFF, paketler.json ddl dosyalari, user_version dogrula, satirlari tek islemde hazirlanmis komutlarla yaz
-/// (unit rowid 1..n capa sirasiyla; unit_search ayni rowid), sonra dosyalari, pack_meta, ANALYZE, VACUUM, journal_mode=DELETE, oz denetim, baglanti kapat
+/// (unit rowid 1..n capa sirasiyla; unit_search ayni rowid; risale-dizin'de unit_ref rowid 1..n capa sirasiyla ve unit_search satirlari icerigi olmayan
+/// unit_fts ile unit_tri'ye ayni rowid ile dogrudan yazilir, 'rebuild' yoktur: K-44 madde 4), sonra dosyalari, pack_meta, ANALYZE, VACUUM, journal_mode=DELETE, oz denetim, baglanti kapat
 /// (Pooling=False), .db adina tasi (IOException icin 3 deneme, 200 ms; OneDrive), sha256 ve boyut. Yazim yapmadan ozet icin <see cref="PackDigest.Compute"/>.
 /// Zaman disaridan verilir (TimeProvider): built_at ISO 8601 UTC.
 /// </summary>
@@ -185,6 +192,9 @@ public sealed class SqlitePackWriter
         Dictionary<string, long> rowids = new(StringComparer.Ordinal);
         long nextRowid = 1;
 
+        // Arama tablosu icerigi olmayan (unit_search yok, dogrudan unit_fts ve unit_tri): risale-dizin. Karar DDL'e gore verilir (sqlite_master).
+        bool contentless = !TableExists(connection, PackTables.UnitSearch) && TableExists(connection, "unit_fts");
+
         using SqliteTransaction transaction = connection.BeginTransaction();
         Dictionary<string, SqliteCommand> commands = new(StringComparer.Ordinal);
         try
@@ -192,6 +202,12 @@ public sealed class SqlitePackWriter
             foreach (PackRow row in PackRows.Enumerate(content))
             {
                 cancellationToken.ThrowIfCancellationRequested();
+
+                if (row.Table == PackTables.UnitSearch && contentless)
+                {
+                    WriteContentless(connection, transaction, commands, rowids, row);
+                    continue;
+                }
 
                 if (!commands.TryGetValue(row.Table, out SqliteCommand? command))
                 {
@@ -201,7 +217,7 @@ public sealed class SqlitePackWriter
 
                 SqliteParameterCollection parameters = command.Parameters;
                 int offset = 0;
-                if (row.Table == PackTables.Unit)
+                if (row.Table == PackTables.Unit || row.Table == PackTables.UnitRef)
                 {
                     long rowid = nextRowid++;
                     rowids[(string)row.Values[0]!] = rowid;
@@ -255,11 +271,82 @@ public sealed class SqlitePackWriter
         }
     }
 
+    // Icerigi olmayan FTS5: satir (rowid = unit_ref.rowid) dogrudan yazilir; unit_fts tr_wide, tr_stem, ar_norm; unit_tri yalniz ar_norm (K-44 madde 4).
+    private static void WriteContentless(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        Dictionary<string, SqliteCommand> commands,
+        Dictionary<string, long> rowids,
+        PackRow row)
+    {
+        string anchor = (string)row.Values[0]!;
+        if (!rowids.TryGetValue(anchor, out long rowid))
+        {
+            throw new PackWriteException($"Arama satirinin unit_ref satiri yok: {anchor}");
+        }
+
+        SqliteCommand fts = ContentlessCommand(connection, transaction, commands, "unit_fts", "rowid, tr_wide, tr_stem, ar_norm");
+        fts.Parameters[0].Value = rowid;
+        for (int i = 1; i < row.Values.Length; i++)
+        {
+            fts.Parameters[i].Value = row.Values[i] ?? DBNull.Value;
+        }
+
+        SqliteCommand trigram = ContentlessCommand(connection, transaction, commands, "unit_tri", "rowid, ar_norm");
+        trigram.Parameters[0].Value = rowid;
+        trigram.Parameters[1].Value = row.Values[3] ?? DBNull.Value;
+        try
+        {
+            fts.ExecuteNonQuery();
+            trigram.ExecuteNonQuery();
+        }
+        catch (SqliteException ex)
+        {
+            throw new PackWriteException($"unit_fts/unit_tri satiri yazilamadi: {ex.Message}", ex);
+        }
+    }
+
+    private static SqliteCommand ContentlessCommand(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        Dictionary<string, SqliteCommand> commands,
+        string table,
+        string columns)
+    {
+        if (commands.TryGetValue(table, out SqliteCommand? existing))
+        {
+            return existing;
+        }
+
+        string[] names = columns.Split(", ");
+        SqliteCommand command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"INSERT INTO {table} ({columns}) VALUES ({string.Join(", ", names.Select((_, i) => "$p" + i.ToString(CultureInfo.InvariantCulture)))})";
+        for (int i = 0; i < names.Length; i++)
+        {
+            SqliteParameter parameter = command.CreateParameter();
+            parameter.ParameterName = "$p" + i.ToString(CultureInfo.InvariantCulture);
+            command.Parameters.Add(parameter);
+        }
+
+        command.Prepare();
+        commands[table] = command;
+        return command;
+    }
+
+    private static bool TableExists(SqliteConnection connection, string table)
+    {
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = "SELECT 1 FROM sqlite_master WHERE name = $name AND type IN ('table', 'view')";
+        command.Parameters.AddWithValue("$name", table);
+        return command.ExecuteScalar() is not null;
+    }
+
     private static SqliteCommand Prepare(SqliteConnection connection, SqliteTransaction transaction, string table)
     {
         IReadOnlyList<string> columns = PackTables.Columns(table);
         List<string> names = [];
-        if (table == PackTables.Unit)
+        if (table == PackTables.Unit || table == PackTables.UnitRef)
         {
             names.Add("rowid");
             names.AddRange(columns);
@@ -300,8 +387,19 @@ public sealed class SqlitePackWriter
             ["normalizer_version"] = SearchNormalizer.NormalizerVersion,
             ["anchors_version"] = PackFormat.AnchorsVersion,
             ["data_version"] = request.DataVersion,
-            ["unit_count"] = content.Units.Count.ToString(CultureInfo.InvariantCulture),
+            ["unit_count"] = (content.Units.Count + content.UnitRefs.Count).ToString(CultureInfo.InvariantCulture),
         };
+
+        // Risale kitap paketi: dil ve yon (K-51 madde 4); diger paketlerde anahtar yoktur.
+        if (content.Language is { } language)
+        {
+            meta[PackMetaKeys.Language] = language;
+        }
+
+        if (content.Direction is { } direction)
+        {
+            meta[PackMetaKeys.Direction] = direction;
+        }
 
         // Kunye (K-50 madde 9): yalniz kelime-kok; "QAC v0.4 + Mutalaa duzeltmeleri (N adet)" cihazda bu degerden yazilir.
         if (content.WordFixCount is { } fixes)

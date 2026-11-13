@@ -611,7 +611,7 @@ public class KelimeKokPackTests
 
         Assert.Equal(["pack_source", "attribution", "word_morph", "root", "lemma", "lemma_gloss"], tables);
         Assert.Equal(
-            ["pack_source", "attribution", "unit", "unit_search", "xref_idx", "quran_word", "quran_marker", "page_map", "sure", "tr_root_index", "word_morph", "root", "lemma", "lemma_gloss", "tr_form"],
+            ["pack_source", "attribution", "unit", "unit_ref", "unit_search", "xref_idx", "quran_word", "quran_marker", "page_map", "sure", "tr_root_index", "word_morph", "root", "lemma", "lemma_gloss", "tr_form"],
             PackTables.Order);
         Assert.Equal(["lemma_id", "anlam_kisa", "kuran_anlamlari", "turkce_es_kelime", "yalnizca_etimolojik", "status", "origin"], PackTables.Columns("lemma_gloss"));
     }

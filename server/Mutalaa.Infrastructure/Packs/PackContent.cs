@@ -29,6 +29,9 @@ public sealed record PackUnitRow(
     long Approved,
     string? Successors);
 
+/// <summary>unit_ref satiri (yalniz risale-dizin): birimin kitap paketi (pack_id), kitap icindeki okuma sirasi ve okunabilir etiket. rowid yaziciya aittir (icerigi olmayan FTS satir kimligi).</summary>
+public sealed record PackUnitRefRow(string Anchor, string PackId, long Ord, string Label);
+
 public sealed record PackUnitSearchRow(string Anchor, string? TrWide, string? TrStem, string? ArNorm);
 
 /// <summary>xref_idx satiri. Start/End editoryal yari acik aralik sinirlari aynen (src_start = lower, src_end = upper).</summary>
@@ -107,6 +110,9 @@ public sealed class PackContent
 
     public IReadOnlyList<PackUnitRow> Units { get; init; } = [];
 
+    /// <summary>risale-dizin'in unit_ref satirlari; bu pakette UnitSearch satirlari icerigi olmayan unit_fts ve unit_tri'ye (rowid = unit_ref.rowid) yazilir.</summary>
+    public IReadOnlyList<PackUnitRefRow> UnitRefs { get; init; } = [];
+
     public IReadOnlyList<PackUnitSearchRow> UnitSearch { get; init; } = [];
 
     public IReadOnlyList<PackXrefRow> Xrefs { get; init; } = [];
@@ -136,4 +142,10 @@ public sealed class PackContent
     /// anahtariyla tasinir; paket ozetine girmez (ozet satirlardan turer, duzeltme sayisi word_morph satirlarinda zaten gorunur).
     /// </summary>
     public int? WordFixCount { get; init; }
+
+    /// <summary>Risale kitap paketinin dili (<c>tr</c>, <c>ota</c>, <c>ar</c>); pack_meta <see cref="PackMetaKeys.Language"/>. Kitap paketi degilse null.</summary>
+    public string? Language { get; init; }
+
+    /// <summary>Risale kitap paketinin yazi yonu (<c>ltr</c> ya da <c>rtl</c>); pack_meta <see cref="PackMetaKeys.Direction"/>. Kitap paketi degilse null.</summary>
+    public string? Direction { get; init; }
 }
