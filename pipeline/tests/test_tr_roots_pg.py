@@ -192,11 +192,15 @@ def test_ilk_yukleme_lemma_review_indeks_ve_formlar(d: TrDunya, conn: psycopg.Co
         ("bobin", "aday", None),
         ("dolap", "onayli", "otomatik"),
         ("emin", "onayli", "otomatik"),
+        ("fisto", "aday", None),
         ("kalem", "aday", None),
+        ("kelin", "aday", None),
+        ("morta", "aday", None),
         ("pelin", "onayli", "otomatik"),
         ("tavan", "onayli", "otomatik"),
-    ]  # zorba, morta, kelin, fisto: kok onerisi yok -> satir acilmaz
-    assert s["lemma_eklenen"] == 6 and s["lemma_onerisiz_atlanan"] == 4
+        ("zorba", "aday", None),
+    ]  # K-51 madde 9: kok onerisi olmayan adaylar da satir ve editor kuyrugu alir
+    assert s["lemma_eklenen"] == 10 and s["lemma_aday_kok_onerisiz_eklenen"] == 4
     assert s["span_hata"] == 0 and s["onayli_lemma"] == 4
 
     kimlik, durum, yol, koken, kok, ar, etim, kanit, freq, kaynak = tr_lemma(conn, "dolap")
@@ -219,6 +223,100 @@ def test_ilk_yukleme_lemma_review_indeks_ve_formlar(d: TrDunya, conn: psycopg.Co
     assert kimlik > max(AR_ID.values())  # yeni kimlikler Arapca lemmalarin ustunden
 
 
+def test_kok_onerisiz_adaylar_satir_ve_review_alir(d: TrDunya, conn: psycopg.Connection) -> None:
+    """Homograf, cok adayli QAC, kok cakismasi ve serbest metin kanitli adaylar (K-51 madde 9)."""
+    tohumla(conn)
+    assert d.enrich(min_sik=1) == 0
+    assert d.qa() == 0
+    assert yukle(d, conn) == 0
+    s = sayilar(d)
+    assert s["lemma_aday_kok_onerisiz_eklenen"] == 4 and s["review_esik_alti"] == 0
+    for ad, neden in (
+        ("zorba", "kok_cakismasi"),
+        ("morta", "cok_adayli_qac"),
+        ("kelin", "tr_ota_kok_cakismasi"),
+        ("fisto", "yalniz_serbest_metin"),
+    ):
+        kimlik, durum, yol, koken, kok, ar, etim, kanit, freq, kaynak = tr_lemma(conn, ad)
+        assert (durum, yol, kok, ar, etim, koken, kaynak) == (
+            "aday",
+            None,
+            None,
+            None,
+            False,
+            "kaikki",
+            KAIKKI,
+        )
+        assert isinstance(kanit, dict) and kanit["neden"] == neden and freq == 1
+        satirlar = conn.execute(
+            "SELECT hedef_tablo, alan, eylem, durum::text, koken::text, oneren, guven, xref_id,"
+            " onerilen FROM icerik.review WHERE hedef_anahtar = %s",
+            (str(kimlik),),
+        ).fetchall()
+        assert len(satirlar) == 1, ad
+        tablo, alan, eylem, rdurum, rkoken, oneren, guven, xref_id, onerilen = satirlar[0]
+        assert (tablo, alan, eylem, rdurum, rkoken, oneren) == (
+            "lemma",
+            "kok_eslemesi",
+            "oner",
+            "acik",
+            "hat",
+            "hat",
+        )
+        assert guven is None and xref_id is None
+        assert onerilen["root_id"] is None and onerilen["ar_lemma_id"] is None
+        assert onerilen["etymological_only"] is False and onerilen["neden"] == neden
+        assert set(onerilen) == {
+            "root_id",
+            "ar_lemma_id",
+            "etymological_only",
+            "neden",
+            "kanit_ozeti",
+            "aday_kokler",
+        }
+    zorba = conn.execute(
+        "SELECT onerilen -> 'aday_kokler' FROM icerik.review WHERE hedef_anahtar = %s",
+        (str(tr_lemma(conn, "zorba")[0]),),
+    ).fetchone()
+    assert zorba is not None and len(zorba[0]) == 2
+    assert {k["kaynak"] for k in zorba[0]} == {QAC} and all(k["letters"] for k in zorba[0])
+    # fisto: serbest metin, QAC adayi yok -> aday_kokler bos
+    fisto = conn.execute(
+        "SELECT onerilen -> 'aday_kokler' FROM icerik.review WHERE hedef_anahtar = %s",
+        (str(tr_lemma(conn, "fisto")[0]),),
+    ).fetchone()
+    assert fisto is not None and fisto[0] == []
+    # ikinci kosu: 0 degisiklik
+    ilk = goruntu(conn)
+    assert d.enrich(min_sik=1, force=True) == 0
+    assert d.qa() == 0
+    assert yukle(d, conn) == 0
+    assert sayilar(d)["review_eklenen"] == 0 and sayilar(d)["lemma_eklenen"] == 0
+    assert goruntu(conn) == ilk
+
+
+def test_kok_onerisiz_aday_editor_satirina_dokunulmaz(d: TrDunya, conn: psycopg.Connection) -> None:
+    tohumla(conn)
+    assert d.enrich(min_sik=1) == 0
+    assert d.qa() == 0
+    assert yukle(d, conn) == 0
+    conn.execute(
+        "UPDATE icerik.lemma SET status = 'onayli', onay_yolu = 'editor', origin = 'editor',"
+        " root_id = %s WHERE lang = 'tr' AND text_clean = 'zorba'",
+        (ROOT_ID["Sml"],),
+    )
+    conn.execute(
+        "UPDATE icerik.review SET durum = 'onaylandi' WHERE hedef_anahtar = %s",
+        (str(tr_lemma(conn, "zorba")[0]),),
+    )
+    once = tr_lemma(conn, "zorba")
+    assert d.enrich(min_sik=1, force=True) == 0
+    assert d.qa() == 0
+    assert yukle(d, conn) == 0
+    assert tr_lemma(conn, "zorba") == once
+    assert sayilar(d)["lemma_editor_korunan"] == 1 and sayilar(d)["review_eklenen"] == 0
+
+
 def test_review_yalniz_esigi_gecen_adaya_acilir(d: TrDunya, conn: psycopg.Connection) -> None:
     tohumla(conn)
     assert hepsi(d, conn) == 0
@@ -226,7 +324,7 @@ def test_review_yalniz_esigi_gecen_adaya_acilir(d: TrDunya, conn: psycopg.Connec
         "SELECT hedef_tablo, hedef_anahtar, alan, eylem, durum::text, koken::text, oneren, guven,"
         " onceki, onerilen FROM icerik.review"
     ).fetchall()
-    assert len(satirlar) == 1  # kalem (siklik 3); bobin siklik 1 < 2: rapora yazilir
+    assert len(satirlar) == 1  # kalem (siklik 3); bobin ve 4 oneri-siz aday siklik 1 < 2
     tablo, anahtar, alan, eylem, durum, koken, oneren, guven, onceki, onerilen = satirlar[0]
     kalem_id = tr_lemma(conn, "kalem")[0]
     assert (tablo, anahtar, alan, eylem) == ("lemma", str(kalem_id), "kok_eslemesi", "oner")
@@ -239,7 +337,7 @@ def test_review_yalniz_esigi_gecen_adaya_acilir(d: TrDunya, conn: psycopg.Connec
         "kaynak_sayisi",
         "maddeler",
     }
-    assert sayilar(d)["review_esik_alti"] == 1
+    assert sayilar(d)["review_esik_alti"] == 5  # esik alti rapora yazilir (bobin + 4 aday)
 
 
 def test_tr_root_index_aralik_hash_ve_guncel_metin(d: TrDunya, conn: psycopg.Connection) -> None:

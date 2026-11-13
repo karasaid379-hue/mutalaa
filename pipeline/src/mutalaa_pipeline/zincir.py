@@ -166,7 +166,7 @@ def girdi_olarak(calisma: Calisma, ad: str = UNITS_ADI) -> lineage.Girdi:
     return lineage.Girdi(yol=calisma.goreli(ad), sha256=ozet, ust_run_id=calisma.run_id)
 
 
-def dosya_oku(calisma: Calisma, ad: str, etiket: str) -> list[Satir]:
+def dosya_oku(calisma: Calisma, ad: str, etiket: str, *, bos_olabilir: bool = False) -> list[Satir]:
     """Calismanin `ad` dosyasini (JSONL), manifestteki ozetle dogrulayarak okur.
 
     Manifestte dosyanin ozeti yoksa (eski bir calisma) ya da ozet tutmuyorsa `GirdiHatasi`.
@@ -180,7 +180,7 @@ def dosya_oku(calisma: Calisma, ad: str, etiket: str) -> list[Satir]:
         raise GirdiHatasi(f"{etiket}: {ad} okunamadi") from None
     if lineage.sha256_bayt(veri) != ozet:
         raise GirdiHatasi(f"{etiket}: {ad} ozeti manifestle tutmuyor")
-    return satirlari_oku(veri, etiket)
+    return satirlari_oku(veri, etiket, bos_olabilir=bos_olabilir)
 
 
 def units_oku(calisma: Calisma, etiket: str) -> list[Satir]:

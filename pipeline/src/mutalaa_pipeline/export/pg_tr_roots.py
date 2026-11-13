@@ -16,9 +16,12 @@ LEMMA KURALLARI (K-51 madde 9)
   `(lang, text_clean)` satirinin kimligi korunur, yeni satira siradaki numara verilir.
 * `onayli_otomatik` -> `status = 'onayli'`, `onay_yolu = 'otomatik'`, `root_id`, `ar_lemma_id`
   (etimonla tek QAC lemmasi eslesmisse), `etymological_only = false`, `kanit` (`qac` icine
-  `root_id` ve `ar_lemma_id` eklenir). `aday` -> yalniz bir kok onerisi varsa satir acilir:
-  `status = 'aday'`, `onay_yolu` NULL, `root_id` NULL (oneri `kanit` ve `review` icindedir).
-  Kok onerisi olmayan aday ve `kok_yok` icin satir ACILMAZ (rapora sayilir).
+  `root_id` ve `ar_lemma_id` eklenir). HER `aday` icin satir acilir (K-51 madde 9: belirsiz,
+  celiskili, cok adayli ve yalniz serbest metin kanitli eslemeler aday kalir ve editor kuyruguna
+  gider): `status = 'aday'`, `onay_yolu` NULL, `root_id` NULL, `ar_lemma_id` NULL (oneri `kanit`
+  ve `review` icindedir; tek QAC kok onerisi varsa `review` onerisi onu tasir, yoksa
+  `root_id` null'dir ve editor "Duzenle ve onayla" ile kok girer). `kok_yok` icin satir
+  ACILMAZ (guvenilir kanit yok; rapora sayilir).
 * Hat yalniz kendi uretimini yeniden degerlendirir: `onay_yolu = 'editor'` ya da `origin =
   'editor'` satira ve `status = 'red'` satira HIC dokunulmaz (geri acilmaz). `onay_yolu =
   'otomatik'` satir: karar ayni kalirsa yalniz turetilmis sutunlar (`root_id`, `ar_lemma_id`,
@@ -30,8 +33,9 @@ LEMMA KURALLARI (K-51 madde 9)
 
 REVIEW KURALLARI: `hedef_tablo = 'lemma'`, `hedef_anahtar = lemma_id`, `alan = 'kok_eslemesi'`,
 `eylem = 'oner'`, `koken = 'hat'`, `oneren = 'hat'`, `guven` yok. `onerilen = {root_id,
-ar_lemma_id, etymological_only: false, neden, kanit_ozeti}`. Acilir: (a) staged `review_onerilir`
-(aday + kok onerisi + siklik >= `--min-freq`) olan ve HICBIR durumda `review` kaydi olmayan lemma;
+ar_lemma_id, etymological_only: false, neden, kanit_ozeti, aday_kokler}`; `aday_kokler`
+[{letters, kaynak}] yalniz cok adayli QAC eslesmesinde dolar. Acilir: (a) staged
+`review_onerilir` (aday + siklik >= `--min-freq`) olan ve HICBIR durumda `review` olmayan lemma;
 (b) otomatikten adaya donen lemma (acik `review` yoksa; `onceki` eski deger). Kayitlar toplam
 sikliga gore AZALAN sirada eklenir (kimlik sirasi kuyruk sirasidir).
 
@@ -376,6 +380,18 @@ def kanit_ozeti(kanit: Mapping[str, object]) -> dict[str, object]:
     }
 
 
+def aday_kokler(kanit: Mapping[str, object]) -> list[dict[str, str]]:
+    """`kanit.qac.adaylar` (yalniz cok adayli eslesme) -> `[{letters, kaynak}]`; yoksa bos liste."""
+    qac = kanit.get("qac")
+    ham = qac.get("adaylar") if isinstance(qac, dict) else None
+    sonuc: list[dict[str, str]] = []
+    for k in ham if isinstance(ham, list) else []:
+        harfler = k.get("letters") if isinstance(k, dict) else None
+        if isinstance(harfler, str):
+            sonuc.append({"letters": harfler, "kaynak": QAC_KAYNAGI})
+    return sonuc
+
+
 def _kanit_yok(neden: str) -> dict[str, object]:
     """Staged'de bulunmayan lemma icin `kok_yok` kaniti (otomatik onay geri alinirken)."""
     return Karar(KOK_YOK, neden).kanit()
@@ -444,9 +460,7 @@ def planla(
     sayac: Counter[str] = Counter()
     staged = {x.lemma: x for x in h.lemmalar}
     yeni = sorted(
-        x.lemma
-        for x in h.lemmalar
-        if x.lemma not in mevcut and (x.karar == ONAYLI or x.root_letters_bw is not None)
+        x.lemma for x in h.lemmalar if x.lemma not in mevcut and x.karar in (ONAYLI, ADAY)
     )
     kimlikler = kimlik_ata(
         {k: v.kimlik for k, v in mevcut.items()}, sorted({*mevcut, *yeni}), taban
@@ -481,6 +495,7 @@ def planla(
             "etymological_only": etim,
             "neden": neden,
             "kanit_ozeti": kanit_ozeti(kanit),
+            "aday_kokler": aday_kokler(kanit),
         }
 
     for lemma, x in sorted(staged.items()):
@@ -494,11 +509,11 @@ def planla(
                 sayac["lemma_onayli_eklenen"] += 1
             elif x.karar == KOK_YOK:
                 sayac["lemma_kok_yok_atlanan"] += 1
-            elif koku is None:
-                sayac["lemma_onerisiz_atlanan"] += 1
             else:
                 ey("ekle", lemma, kimlikler[lemma], (None, None), x, "aday", kanit, x.freq)
                 sayac["lemma_aday_eklenen"] += 1
+                if koku is None:
+                    sayac["lemma_aday_kok_onerisiz_eklenen"] += 1
                 if x.review_onerilir:
                     o = oneri((koku, ar), x.neden, kanit)
                     reviewlar.append(ReviewAdayi("aday", kimlikler[lemma], x.freq, None, o))
@@ -638,7 +653,7 @@ def _lemma_yukle(
         "lemma_editor_korunan",
         "lemma_red_korunan",
         "lemma_korunan_diger",
-        "lemma_onerisiz_atlanan",
+        "lemma_aday_kok_onerisiz_eklenen",
         "lemma_kok_yok_atlanan",
         "review_esik_alti",
     ):

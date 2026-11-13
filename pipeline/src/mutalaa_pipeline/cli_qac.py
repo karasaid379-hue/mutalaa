@@ -40,6 +40,9 @@ def kaydet(app: typer.Typer, ingest_app: typer.Typer) -> None:
     from mutalaa_pipeline import cli_links
 
     cli_links.kaydet(enrich_app)  # A18.3: enrich links
+    from mutalaa_pipeline import cli_citations
+
+    cli_citations.kaydet(enrich_app)  # A18.4: enrich citations
 
     @ingest_app.command("qac")
     def ingest_qac(

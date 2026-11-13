@@ -25,6 +25,8 @@ QURANWBW_KAYNAGI: Final = "quranwbw-tr"
 TR_ROOTS_KAYNAGI: Final = "kaikki-tr"
 # Kur'an ici baglantilar (A18.3): kok, lemma, benzer_ayet; ayni uc kapi, G-NOR yok.
 XREF_KAYNAGI: Final = "xref-baglantilar"
+# Acik atif ve iktibas (A18.4): atif, iktibas; ayni uc kapi, G-NOR yok.
+XREF_ATIF_KAYNAGI: Final = "xref-atif-iktibas"
 GECTI: Final = "gecti"
 KALDI: Final = "kaldi"
 QA_KOMUTU: Final = "qa run"
@@ -43,6 +45,7 @@ def kaynak_kapilari(source_id: object) -> tuple[str, ...]:
         QURANWBW_KAYNAGI,
         TR_ROOTS_KAYNAGI,
         XREF_KAYNAGI,
+        XREF_ATIF_KAYNAGI,
     ):
         return YAPI_KAPILARI
     if source_id == SURE_ADI_KAYNAGI:

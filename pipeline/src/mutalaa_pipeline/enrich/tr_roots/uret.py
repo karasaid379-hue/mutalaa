@@ -13,8 +13,8 @@ Cikti satirlari ASCII kacisli, siralidir ve zaman damgasi icermez (ayni girdi ay
 * `tr_forms.jsonl`: her yuzey bicim; anahtar `form`;
 * istatistik: sinif sayilari, neden dagilimi, zeyrek kapsami (yan rapor ve manifest).
 
-`review_onerilir`: lemma `aday`, bir kok onerisi tasiyor ve toplam sikligi `min_freq` ya da daha
-fazla. Esigin altindakiler raporda sayilir; review acilmaz.
+`review_onerilir`: lemma `aday` (kok onerisi olsun ya da olmasin; K-51 madde 9) ve toplam
+sikligi `min_freq` ya da daha fazla. Esigin altindakiler raporda sayilir; review acilmaz.
 """
 
 from collections import Counter
@@ -93,7 +93,7 @@ def _lemma_satiri(
         "pos": sorted(poslar),
         "freq": toplam,
         "freq_kaynak": dict(sorted(freq.items())),
-        "review_onerilir": karar.karar == ADAY and karar.kok is not None and toplam >= min_sik,
+        "review_onerilir": karar.karar == ADAY and toplam >= min_sik,
         "politika_surumu": POLITIKA_SURUMU,
         "source_id": "kaikki-tr",
         "data_version": data_version,
@@ -227,9 +227,7 @@ def _istatistik(
             ),
             "review_onerilir": sum(1 for s in lemma_satirlari if s["review_onerilir"]),
             "esik_alti_aday": sum(
-                1
-                for s in lemma_satirlari
-                if s["karar"] == ADAY and s["root_letters_bw"] and not s["review_onerilir"]
+                1 for s in lemma_satirlari if s["karar"] == ADAY and not s["review_onerilir"]
             ),
         },
     }

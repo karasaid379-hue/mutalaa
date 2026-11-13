@@ -65,8 +65,14 @@ def satir_baytlari(satir: Mapping[str, object]) -> bytes:
     return (metin + "\n").encode("utf-8")
 
 
-def satirlari_oku(veri: bytes, etiket: str) -> list[Satir]:
-    """`units.jsonl` baytlarini kati bicimde okur; her satir bir JSON nesnesidir."""
+def satirlari_oku(veri: bytes, etiket: str, *, bos_olabilir: bool = False) -> list[Satir]:
+    """`units.jsonl` baytlarini kati bicimde okur; her satir bir JSON nesnesidir.
+
+    `bos_olabilir`: 0 satirlik dosya (0 bayt) hata degil bos listedir (yalniz uretimi bos
+    olabilen adimlar: acik atif ve iktibas, A18.4).
+    """
+    if bos_olabilir and veri == b"":
+        return []
     if not veri or not veri.endswith(LF):
         raise GirdiHatasi(f"{etiket}: bos ya da son satir LF ile bitmiyor")
     if CR in veri:

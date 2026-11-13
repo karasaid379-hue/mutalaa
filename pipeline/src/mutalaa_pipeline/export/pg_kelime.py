@@ -22,11 +22,13 @@ QAC_KAYNAGI: Final = "qac-morfoloji"
 QURANWBW_KAYNAGI: Final = "quranwbw-tr"
 TR_ROOTS_KAYNAGI: Final = "kaikki-tr"
 XREF_KAYNAGI: Final = "xref-baglantilar"
+XREF_ATIF_KAYNAGI: Final = "xref-atif-iktibas"
 MODULLER: Final = {
     QAC_KAYNAGI: "mutalaa_pipeline.export.pg_qac",
     QURANWBW_KAYNAGI: "mutalaa_pipeline.export.pg_glosses",
     TR_ROOTS_KAYNAGI: "mutalaa_pipeline.export.pg_tr_roots",  # A18.2: Turkce lemma, tr_root_index
     XREF_KAYNAGI: "mutalaa_pipeline.export.pg_xref",  # A18.3: kok, lemma, benzer_ayet (xref)
+    XREF_ATIF_KAYNAGI: "mutalaa_pipeline.export.pg_xref_atif",  # A18.4: atif, iktibas (xref)
 }
 KAYNAKLAR: Final = frozenset(MODULLER)
 

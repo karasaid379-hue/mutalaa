@@ -1,0 +1,8 @@
+# Kalip listesi (Iktibas tespiti §7): editor onayli normalize anahtarlar. Bu dosya BOS iskelettir;
+# girdileri yalniz editor ekler ("Kalip listesine ekle" eylemi) ve Kur'an dizisi hafizadan yazilmaz.
+# Veritabanindaki onayli kayitlar (`review.eylem = 'kalip_ekle'`, `durum = 'onaylandi'`,
+# `onerilen ->> 'anahtar'`) bu dosyayla birlestirilir.
+#
+# Girdi bicimi: Arapca dizinin esleme anahtari (`normalizasyon.anahtar_dizisi`), kelimeler tek
+# bosluklu: anahtarlar = ["<kelime> <kelime> <kelime> <kelime>"]
+anahtarlar = []

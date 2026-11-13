@@ -594,8 +594,9 @@ def qa_run(
         typer.Option(
             "--db",
             help=(
-                "Yalniz kaikki-tr ve xref-baglantilar: G-CAP'a veritabani uzantisini ekler"
-                " (tr_root_index; staged baglantilarin ayet ozeti ve kok/lemma tutarliligi)."
+                "Yalniz kaikki-tr, xref-baglantilar ve xref-atif-iktibas: G-CAP'a veritabani"
+                " uzantisini ekler (tr_root_index; staged baglantilarin ayet/meal ozeti,"
+                " aralik ve kok/lemma tutarliligi)."
             ),
         ),
     ] = False,

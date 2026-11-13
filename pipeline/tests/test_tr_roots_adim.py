@@ -291,3 +291,16 @@ def test_kok_yok_lemmalar_da_staged_satiri_tasir(
     ]
     assert satirlar[0]["root_letters_bw"] is None and satirlar[0]["kanit"]["kaynaklar"] == []  # type: ignore[index]
     assert d.qa() == 0
+
+
+def test_kok_onerisiz_aday_da_review_onerilir_esige_gore(d: TrDunya) -> None:
+    """K-51 madde 9: kok onerisi olmayan adaylar da editor kuyruguna gider (esik: --min-freq)."""
+    assert d.enrich(min_sik=1) == 0
+    lm = lemmalar(d)
+    for ad in ("zorba", "morta", "kelin", "fisto"):
+        assert lm[ad]["karar"] == "aday" and lm[ad]["root_letters_bw"] is None
+        assert lm[ad]["review_onerilir"] is True
+    assert lm["tavan"]["review_onerilir"] is False  # onayli otomatik: review gerekmez
+    assert d.enrich(min_sik=2, force=True) == 0
+    lm = lemmalar(d)
+    assert not any(lm[a]["review_onerilir"] for a in ("zorba", "morta", "kelin", "fisto"))

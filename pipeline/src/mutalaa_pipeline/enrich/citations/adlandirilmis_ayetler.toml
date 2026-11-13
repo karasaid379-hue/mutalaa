@@ -1,0 +1,9 @@
+# Adlandirilmis ayetler (Iktibas tespiti §2): editor onayli liste. Bu dosya BOS iskelettir; icerigi
+# yalniz editor onaylayip ekler (ad ve hedef ayet hafizadan yazilmaz).
+#
+# Girdi bicimi:
+#   [[ayet]]
+#   ad = "<yazilis>"                 # metinde gecen ad; Turkce genis anahtarla (kesme ve sapka
+#                                    # farki gozetilmeden) eslenir
+#   hedefler = ["q:<sure>:<ayet>"]   # bir ya da daha cok ayet capasi (q:s:a)
+ayet = []
