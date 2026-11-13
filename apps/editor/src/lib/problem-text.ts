@@ -2,7 +2,8 @@ import { tr } from '@/i18n/tr';
 import { PROBLEM_TYPE_PREFIX, type Problem } from './problem';
 
 /** The operation a problem belongs to; it selects the wording (Turkish messages differ per operation). */
-export type ProblemContext = 'decision' | 'bulk' | 'correction' | 'release' | 'login';
+export type ProblemContext =
+  'decision' | 'bulk' | 'correction' | 'release' | 'login' | 'risaleBook';
 
 type MessageTable = Readonly<Record<string, string>>;
 

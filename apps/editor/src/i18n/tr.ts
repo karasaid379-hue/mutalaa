@@ -3,7 +3,7 @@
 // Label tables map the API's snake_case values to Turkish; an unknown value is shown raw (see labelOf).
 import type { ProblemCode } from '@/lib/problem';
 
-/** One message per problem code (18 API codes and the two client codes); the compiler checks completeness. */
+/** One message per problem code (20 API codes and the two client codes); the compiler checks completeness. */
 const problemCodes: Record<ProblemCode, string> = {
   dogrulama: 'İstek geçersiz. Girilen değerleri denetleyin.',
   'capa-gecersiz': 'Çapa geçersiz ya da birim düzeyinde değil.',
@@ -24,6 +24,8 @@ const problemCodes: Record<ProblemCode, string> = {
   'kalite-kapisi': 'Kalite kapısı yayını reddetti. Kapı raporuna bakın.',
   'onceki-yayin-bozuk': 'Önceki yayının manifesti yok ya da okunamıyor.',
   'depo-erisilemiyor': 'Yayın deposuna erişilemiyor ya da önceki paket doğrulanamadı.',
+  'on-kosul-eksik': 'Kitap onayı için önkoşullar eksik; eksikler aşağıda.',
+  'onaylanacak-birim-yok': 'Kitapta onaylanacak taslak birim yok.',
   hata: 'İşlenemeyen içerik.',
   'sunucu-hatasi': 'Sunucuda beklenmeyen bir hata oluştu.',
   'ag-hatasi': 'Sunucuya ulaşılamadı. Ağ bağlantısını denetleyin.',
@@ -177,6 +179,15 @@ export const tr = {
     openRelease: 'Açık yayın',
     gateReport: 'Kalite kapısı raporu yanıtla birlikte geldi.',
     anchorCode: 'Çapa hata kodu',
+    missingHeading: 'Eksik önkoşullar',
+    /** `eksikler` codes of the 422 `on-kosul-eksik` answer of the Risale book approval (K-51 madde 11). */
+    prerequisites: {
+      'gbut-kaniti-yok':
+        'Kaynakla bayt eşitliği (G-BUT) kanıtı yok: kitabın bütün birimleri dört kapıyı geçmiş bir hat yüklemesinden gelmeli.',
+      'slug-dogrulanmadi':
+        'Kitap kısa adı doğrulanmamış (risale-kitaplar.json, dogrulandi: true; İ-24).',
+      'ornek-okuma-yok': 'Örneklem okuması (tur 2) yapıldı diye işaretlenmemiş.',
+    } as Readonly<Record<string, string>>,
     /** Verbatim (A15.3): shown for 422 inceleme-desteklenmiyor on a unit with offset data. */
     offsetUnsupported:
       "Bu birimin ofsetli alanları (işaretler, cümleler) var; metin düzeltmesi A20'de desteklenecek",
@@ -211,6 +222,13 @@ export const tr = {
       },
       login: {
         'oturum-acilamadi': 'E-posta ya da parola hatalı.',
+      },
+      risaleBook: {
+        'surum-uyusmazligi':
+          'Kitap siz okuduktan sonra değişti (özet tutmuyor). Kitap yenilendi ve girdiniz korundu; denetleyip yeniden gönderin.',
+        'surum-gerekli': 'Onay kitap özeti olmadan gönderildi (istemci hatası).',
+        bulunamadi: 'Kitap bulunamadı (katalogda değil).',
+        'yetki-yok': 'Kitabı toplu onaylamak için yönetici rolü gerekir.',
       },
     },
   },

@@ -31,6 +31,35 @@ export function source(over: Partial<S['SourceDto']> = {}): S['SourceDto'] {
   };
 }
 
+/** Hex digest of a synthetic book (64 lowercase hex digits). */
+export const BOOK_DIGEST = 'c'.repeat(64);
+
+export function risaleBook(over: Partial<S['RisaleBookDto']> = {}): S['RisaleBookDto'] {
+  return {
+    slug: 'deneme-kitap',
+    baslik: 'Deneme kitap',
+    dil: 'tr',
+    yon: 'ltr',
+    dogrulandi: true,
+    birim_sayisi: 10,
+    taslak_sayisi: 7,
+    onayli_sayisi: 3,
+    ...over,
+  };
+}
+
+export function risaleBookDetail(
+  over: Partial<S['RisaleBookDetailDto']> = {},
+): S['RisaleBookDetailDto'] {
+  return {
+    ...risaleBook(),
+    ozet: BOOK_DIGEST,
+    gbut_kaniti: true,
+    kanitsiz_birim_sayisi: 0,
+    ...over,
+  };
+}
+
 export function unitItem(over: Partial<S['UnitListItem']> = {}): S['UnitListItem'] {
   return {
     anchor: 'rn:deneme:p1',

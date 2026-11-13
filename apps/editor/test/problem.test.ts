@@ -34,6 +34,8 @@ const OPEN_API_SETUP_CODES = [
   'kalite-kapisi',
   'onceki-yayin-bozuk',
   'depo-erisilemiyor',
+  'on-kosul-eksik',
+  'onaylanacak-birim-yok',
   'hata',
   'sunucu-hatasi',
 ];
@@ -41,9 +43,9 @@ const OPEN_API_SETUP_CODES = [
 const MARKER = 'Makine tarafindan okunur hata kodu (type son parcasiyla ayni): ';
 
 describe('problem code list', () => {
-  it('is the fixed list of OpenApiSetup.cs (18 codes)', () => {
+  it('is the fixed list of OpenApiSetup.cs (20 codes)', () => {
     expect([...API_PROBLEM_CODES]).toEqual(OPEN_API_SETUP_CODES);
-    expect(OPEN_API_SETUP_CODES).toHaveLength(18);
+    expect(OPEN_API_SETUP_CODES).toHaveLength(20);
   });
 
   it('is still the list in the server source', () => {

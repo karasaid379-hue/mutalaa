@@ -9,8 +9,10 @@ namespace Mutalaa.Infrastructure.Packs;
 /// Language: <c>tr</c>, <c>ota</c> (Osmanlica) ya da <c>ar</c>; Direction: <c>ltr</c> ya da <c>rtl</c> (Osmanlica ve Arapca kitaplarda rtl).
 /// Volume: RNK dosyasinin kalici cilt numarasi (page_map.volume, smallint; ayni dosyadan bolunen kitaplar ayni cildi paylasir); null yalniz
 /// katalogdaki sentetik fikstur kitabinda (sayfa eslemesi yok).
+/// Verified: JSON'daki <c>dogrulandi</c> (i-24: kitap kunyesi, icindekiler ve sayfa verisi editorce denetlendi); kitap onayi ucu bunu on kosul sayar
+/// (K-51 madde 11). Alan yoksa false.
 /// </summary>
-public sealed record RisaleBook(string Slug, string Title, string Language, string Direction, int? Volume)
+public sealed record RisaleBook(string Slug, string Title, string Language, string Direction, int? Volume, bool Verified = false)
 {
     public string PackId => RisaleBookTable.PackIdPrefix + Slug;
 
@@ -108,8 +110,9 @@ public static class RisaleBookTable
         }
 
         int volume = element.GetProperty("rnk").GetProperty("cilt").GetInt32();
+        bool verified = element.TryGetProperty("dogrulandi", out JsonElement flag) && flag.GetBoolean();
         return volume is >= 1 and <= short.MaxValue
-            ? new RisaleBook(slug, title, language, direction, volume)
+            ? new RisaleBook(slug, title, language, direction, volume, verified)
             : throw new InvalidDataException($"Cilt numarasi smallint araliginda degil: {slug}");
     }
 

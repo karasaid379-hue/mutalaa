@@ -12,6 +12,7 @@ import { tr } from '@/i18n/tr';
 import { trc } from '@/i18n/tr-catalog';
 import { formatDateTime, formatNumber } from '@/lib/format';
 import { prettyJson } from './readers';
+import { RISALE_TEXT_SOURCE, RisaleBooksPanel } from './risale-books';
 
 type Source = components['schemas']['SourceDto'];
 
@@ -144,6 +145,8 @@ function SourceDetail({ source }: { source: Source }) {
           />
         </section>
       ) : null}
+
+      {source.slug === RISALE_TEXT_SOURCE ? <RisaleBooksPanel /> : null}
 
       <div>
         <Link

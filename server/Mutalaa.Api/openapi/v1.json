@@ -1611,6 +1611,211 @@
           }
         }
       }
+    },
+    "/api/v1/risale/books": {
+      "get": {
+        "tags": [
+          "risale"
+        ],
+        "summary": "Risale kitaplarını (katalog sırasıyla) birim ve durum sayılarıyla listeler.",
+        "operationId": "listRisaleBooks",
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RisaleBookDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/risale/books/{kitap}": {
+      "get": {
+        "tags": [
+          "risale"
+        ],
+        "summary": "Tek kitabın ayrıntısını, kitap özetini (ETag) ve onay önkoşullarını döndürür.",
+        "operationId": "getRisaleBook",
+        "parameters": [
+          {
+            "name": "kitap",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RisaleBookDetailDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/risale/books/{kitap}/approve": {
+      "post": {
+        "tags": [
+          "risale"
+        ],
+        "summary": "Kitabın bütün taslak birimlerini tek işlemde onaylar (yalnız admin; If-Match kitap özeti).",
+        "operationId": "approveRisaleBook",
+        "parameters": [
+          {
+            "name": "kitap",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "description": "Kitap özeti (GET /risale/books/{kitap} ETag değeri): \"{64 küçük harf onaltılık}\" (yalnız güçlü ve tek etiket).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RisaleBookApproveBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RisaleBookApproveResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Precondition Failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition Required",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2225,7 +2430,7 @@
           },
           "kod": {
             "type": "string",
-            "description": "Makine tarafindan okunur hata kodu (type son parcasiyla ayni): dogrulama, capa-gecersiz, degistirilemez-metin, oturum-acilamadi, yetki-yok, bulunamadi, yontem-desteklenmiyor, durum-gecisi-gecersiz, cakisma, surum-uyusmazligi, surum-gerekli, inceleme-desteklenmiyor, yayin-suruyor, kalite-kapisi, onceki-yayin-bozuk, depo-erisilemiyor, hata, sunucu-hatasi."
+            "description": "Makine tarafindan okunur hata kodu (type son parcasiyla ayni): dogrulama, capa-gecersiz, degistirilemez-metin, oturum-acilamadi, yetki-yok, bulunamadi, yontem-desteklenmiyor, durum-gecisi-gecersiz, cakisma, surum-uyusmazligi, surum-gerekli, inceleme-desteklenmiyor, yayin-suruyor, kalite-kapisi, onceki-yayin-bozuk, depo-erisilemiyor, on-kosul-eksik, onaylanacak-birim-yok, hata, sunucu-hatasi."
           },
           "traceId": {
             "type": "string",
@@ -2253,6 +2458,13 @@
             "type": "integer",
             "description": "Toplu karar: hataya yol acan inceleme kaydi (400, 409, 422).",
             "format": "int64"
+          },
+          "eksikler": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "on-kosul-eksik (422): eksik kitap onayi onkosullari (gbut-kaniti-yok, slug-dogrulanmadi, ornek-okuma-yok), sabit sirada."
           },
           "hatalar": {
             "type": "array",
@@ -3161,6 +3373,153 @@
         },
         "additionalProperties": false
       },
+      "RisaleBookApproveBody": {
+        "required": [
+          "gerekce",
+          "ornek_okuma_yapildi"
+        ],
+        "type": "object",
+        "properties": {
+          "gerekce": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ornek_okuma_yapildi": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "RisaleBookApproveResult": {
+        "required": [
+          "kitap",
+          "review_id",
+          "onaylanan_birim_sayisi",
+          "ozet"
+        ],
+        "type": "object",
+        "properties": {
+          "kitap": {
+            "type": "string"
+          },
+          "review_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "onaylanan_birim_sayisi": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ozet": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RisaleBookDetailDto": {
+        "required": [
+          "ozet",
+          "gbut_kaniti",
+          "kanitsiz_birim_sayisi",
+          "slug",
+          "baslik",
+          "dil",
+          "yon",
+          "dogrulandi",
+          "birim_sayisi",
+          "taslak_sayisi",
+          "onayli_sayisi"
+        ],
+        "type": "object",
+        "properties": {
+          "ozet": {
+            "type": "string"
+          },
+          "gbut_kaniti": {
+            "type": "boolean"
+          },
+          "kanitsiz_birim_sayisi": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "baslik": {
+            "type": "string"
+          },
+          "dil": {
+            "type": "string"
+          },
+          "yon": {
+            "type": "string"
+          },
+          "dogrulandi": {
+            "type": "boolean"
+          },
+          "birim_sayisi": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "taslak_sayisi": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "onayli_sayisi": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RisaleBookDto": {
+        "required": [
+          "slug",
+          "baslik",
+          "dil",
+          "yon",
+          "dogrulandi",
+          "birim_sayisi",
+          "taslak_sayisi",
+          "onayli_sayisi"
+        ],
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "baslik": {
+            "type": "string"
+          },
+          "dil": {
+            "type": "string"
+          },
+          "yon": {
+            "type": "string"
+          },
+          "dogrulandi": {
+            "type": "boolean"
+          },
+          "birim_sayisi": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "taslak_sayisi": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "onayli_sayisi": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "SessionResponse": {
         "required": [
           "kullanici",
@@ -3601,6 +3960,9 @@
     },
     {
       "name": "releases"
+    },
+    {
+      "name": "risale"
     }
   ]
 }

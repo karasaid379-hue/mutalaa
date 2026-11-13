@@ -21,6 +21,9 @@ public static class ReviewFields
 {
     public const string Status = "status";
     public const string Metin = "metin";
+
+    /// <summary>Kitap onayi (hedef_tablo = source, hedef_anahtar = risale:{kitap}; K-51 madde 11); karar ucu bu alani desteklemez.</summary>
+    public const string MetinDurumu = "metin_durumu";
     public const string AnlamKisa = "anlam_kisa";
     public const string RootId = "root_id";
     public const string LemmaId = "lemma_id";

@@ -25,6 +25,7 @@ public static class EditorEndpoints
         editor.MapReviewEndpoints();
         editor.MapLemmaEndpoints();
         editor.MapReleaseEndpoints();
+        editor.MapRisaleBookEndpoints();
 
         return editor;
     }

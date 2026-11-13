@@ -363,6 +363,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/risale/books": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Risale kitaplarını (katalog sırasıyla) birim ve durum sayılarıyla listeler. */
+        get: operations["listRisaleBooks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/risale/books/{kitap}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tek kitabın ayrıntısını, kitap özetini (ETag) ve onay önkoşullarını döndürür. */
+        get: operations["getRisaleBook"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/risale/books/{kitap}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Kitabın bütün taslak birimlerini tek işlemde onaylar (yalnız admin; If-Match kitap özeti). */
+        post: operations["approveRisaleBook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -509,7 +560,7 @@ export interface components {
             status?: number;
             detail?: string;
             instance?: string;
-            /** @description Makine tarafindan okunur hata kodu (type son parcasiyla ayni): dogrulama, capa-gecersiz, degistirilemez-metin, oturum-acilamadi, yetki-yok, bulunamadi, yontem-desteklenmiyor, durum-gecisi-gecersiz, cakisma, surum-uyusmazligi, surum-gerekli, inceleme-desteklenmiyor, yayin-suruyor, kalite-kapisi, onceki-yayin-bozuk, depo-erisilemiyor, hata, sunucu-hatasi. */
+            /** @description Makine tarafindan okunur hata kodu (type son parcasiyla ayni): dogrulama, capa-gecersiz, degistirilemez-metin, oturum-acilamadi, yetki-yok, bulunamadi, yontem-desteklenmiyor, durum-gecisi-gecersiz, cakisma, surum-uyusmazligi, surum-gerekli, inceleme-desteklenmiyor, yayin-suruyor, kalite-kapisi, onceki-yayin-bozuk, depo-erisilemiyor, on-kosul-eksik, onaylanacak-birim-yok, hata, sunucu-hatasi. */
             kod?: string;
             /** @description Istek izleme kimligi (gunluk iliskilendirme). */
             traceId?: string;
@@ -528,6 +579,8 @@ export interface components {
              * @description Toplu karar: hataya yol acan inceleme kaydi (400, 409, 422).
              */
             kimlik?: number;
+            /** @description on-kosul-eksik (422): eksik kitap onayi onkosullari (gbut-kaniti-yok, slug-dogrulanmadi, ornek-okuma-yok), sabit sirada. */
+            eksikler?: string[];
             /** @description Kullanici olusturma (400): Identity hata kodlari ve aciklamalari. */
             hatalar?: {
                 kod?: string;
@@ -731,6 +784,48 @@ export interface components {
             yalnizca_etimolojik?: null | boolean;
             version?: null | string;
             status?: null | string;
+        };
+        RisaleBookApproveBody: {
+            gerekce: null | string;
+            ornek_okuma_yapildi: null | boolean;
+        };
+        RisaleBookApproveResult: {
+            kitap: string;
+            /** Format: int64 */
+            review_id: number;
+            /** Format: int32 */
+            onaylanan_birim_sayisi: number;
+            ozet: string;
+        };
+        RisaleBookDetailDto: {
+            ozet: string;
+            gbut_kaniti: boolean;
+            /** Format: int64 */
+            kanitsiz_birim_sayisi: number;
+            slug: string;
+            baslik: string;
+            dil: string;
+            yon: string;
+            dogrulandi: boolean;
+            /** Format: int64 */
+            birim_sayisi: number;
+            /** Format: int64 */
+            taslak_sayisi: number;
+            /** Format: int64 */
+            onayli_sayisi: number;
+        };
+        RisaleBookDto: {
+            slug: string;
+            baslik: string;
+            dil: string;
+            yon: string;
+            dogrulandi: boolean;
+            /** Format: int64 */
+            birim_sayisi: number;
+            /** Format: int64 */
+            taslak_sayisi: number;
+            /** Format: int64 */
+            onayli_sayisi: number;
         };
         SessionResponse: {
             kullanici: components["schemas"]["UserSummary"];
@@ -2071,6 +2166,167 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    listRisaleBooks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RisaleBookDto"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    getRisaleBook: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kitap: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RisaleBookDetailDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    approveRisaleBook: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Kitap özeti (GET /risale/books/{kitap} ETag değeri): "{64 küçük harf onaltılık}" (yalnız güçlü ve tek etiket). */
+                "If-Match": string;
+            };
+            path: {
+                kitap: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RisaleBookApproveBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RisaleBookApproveResult"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition Required */
+            428: {
                 headers: {
                     [name: string]: unknown;
                 };

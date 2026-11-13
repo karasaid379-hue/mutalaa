@@ -10,6 +10,7 @@ using Mutalaa.Api.Problems;
 using Mutalaa.Api.Settings;
 using Mutalaa.Infrastructure;
 using Mutalaa.Infrastructure.Identity;
+using Mutalaa.Infrastructure.Packs;
 using Mutalaa.Infrastructure.Persistence;
 using Scalar.AspNetCore;
 
@@ -43,6 +44,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 builder.Services.AddReleaseServices();
+builder.Services.AddSingleton(new RisaleBookCatalog(RisaleBookTable.Default));
 builder.Services.AddValidation();
 builder.Services.AddApiProblemDetails();
 builder.Services.AddExceptionHandler<DomainExceptionHandler>();
