@@ -27,13 +27,15 @@ public enum PackSourceRole
 /// veritabaninda satiri ya da birimi varsa girer (ornegin hadis-tecrid'te Turkce ceviriler henuz alinmamis olabilir).
 /// PageMapLayout: Structure kaynagin page_map satirlarina yazilan duzen adi. Content kaynakta da verilebilir: kaynak kendi sayfa eslemesini de tasir
 /// (risale-dizin'de sentetik fikstur kaynagi test-risale-ornek; gercek baski eslemesinin duzeniyle karismasin diye ayri duzen adiyla).
+/// AlsoGlossary: Content kaynak ayni zamanda lugat maddesi (Glossary) kaynagidir (risale-dizin'de fikstur kaynagi test-risale-ornek: birimleri, page_map ve lugat
+/// maddeleri tek kaynak adindadir, A20.6). Ayni slug iki baglama yazilmaz: pack_source ve attribution satiri tekil kalir.
 /// K-47 notu: core'daki Elmalili mealleri (elmalili-meal, elmalili-sade-meal) Required: false'tur (kaynak kaydi ve birimleri yoksa paket
 /// onlarsiz uretilir); ilk meal yayininden sonra meal capa kumesi donar: onceki yayindaki her meal capasi sonrakinde etkin ya da
 /// yonlendirmeli olmali, kaybolursa yayin <c>capa-kayboldu</c> ile reddedilir.
 /// A34'e kadar kismi meal public'e girebilir (K-49 madde 5): onayli birimleri olan meal kaynagi, butun ayetleri onaylanmadan da
 /// public pakete girer; "G-INC gecmeden public'e cikmaz" kurali A34'te yazilir.
 /// </summary>
-public sealed record PackSourceBinding(string Slug, PackSourceRole Role, bool Required, string? PageMapLayout = null);
+public sealed record PackSourceBinding(string Slug, PackSourceRole Role, bool Required, string? PageMapLayout = null, bool AlsoGlossary = false);
 
 /// <summary>
 /// Katalogdaki bir paket (manifest satirinin kaynagi: Icerik paketleri 5). SchemaVersion her zaman <see cref="PackFormat.SchemaVersion"/>'dur.
@@ -103,13 +105,10 @@ public sealed class PackCatalog
     /// <summary>Risale lugat maddelerinin kaynagi (Kelime-Frekans basliksoz listesi; K-51 madde 9 ve 10): risale-dizin'de Glossary rolunde, Required: false.</summary>
     public const string RisaleLugatSlug = "risale-kelime-frekans";
 
-    /// <summary>Sentetik lugat fiksturu kaynagi (10 ila 20 uydurma madde, A20.6): test- onekli oldugu icin public'e ve internal'a girmez (P-12), dev'de gorunur.</summary>
-    public const string RisaleLugatFixtureSlug = "test-lugat-ornek";
-
     /// <summary>risale-dizin page_map satirlarinin duzen adi (RNK baskisi; core'da "medine-604").</summary>
     public const string RisalePageLayout = "rnk-baski";
 
-    /// <summary>Sentetik Risale fiksturu: kitap slug'i (capa "rn:test-ornek:..."), paket risale-test-ornek ve kaynak test-risale-ornek (K-46 madde 9 ile ayni kalip).</summary>
+    /// <summary>Sentetik Risale fiksturu: kitap slug'i (capa "rn:test-ornek:..."), paket risale-test-ornek ve kaynak test-risale-ornek (K-46 madde 9 ile ayni kalip). Fikstur lugat maddeleri (15 uydurma madde, A20.6) de bu kaynak adindadir; test- onekli oldugu icin public'e ve internal'a girmez (P-12), dev'de gorunur.</summary>
     public const string RisaleFixtureBookSlug = "test-ornek";
 
     public const string RisaleFixtureSourceSlug = "test-risale-ornek";
@@ -226,10 +225,9 @@ public sealed class PackCatalog
             Sources:
             [
                 new PackSourceBinding(RisaleTextSlug, PackSourceRole.Content, Required: true),
-                new PackSourceBinding(RisaleFixtureSourceSlug, PackSourceRole.Content, Required: false, PageMapLayout: RisaleFixturePageLayout),
+                new PackSourceBinding(RisaleFixtureSourceSlug, PackSourceRole.Content, Required: false, PageMapLayout: RisaleFixturePageLayout, AlsoGlossary: true),
                 new PackSourceBinding(RisaleLinkSlug, PackSourceRole.Attribution, Required: false),
                 new PackSourceBinding(RisaleLugatSlug, PackSourceRole.Glossary, Required: false),
-                new PackSourceBinding(RisaleLugatFixtureSlug, PackSourceRole.Glossary, Required: false),
                 new PackSourceBinding(RisalePageSlug, PackSourceRole.Structure, Required: false, PageMapLayout: RisalePageLayout),
             ],
             IndexesBooks: true);

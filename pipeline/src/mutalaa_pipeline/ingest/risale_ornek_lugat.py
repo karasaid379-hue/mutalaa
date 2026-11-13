@@ -9,9 +9,9 @@ HICBIR durumda girmez (P-12). Kendi urettigimiz metin oldugu icin her metne uret
 `kanonik_metin` uygulanir. Disaridan dosya almaz; ayni surumde ayni baytlar cikar.
 
 Satirlar gercek yolla (`ingest/lugat_madde.py`) ayni alanlari tasir; `kaynaklar` Kelime-Frekans
-yerine `{siklik, kitaplar, fikstur}` icerir (sozluk OCR yok). Fikstur ingest'ine baglama
-(`ingest/risale_ornek.py` `dosya_yaz(ctx, KAYNAK, LUGAT_ADI, ornek_lugat_satirlari(),
-MADDE_ANAHTARI)`) birlestirmede yapilir; bu modul ortak dosyaya dokunmaz.
+yerine `{siklik, kitaplar, fikstur}` icerir (sozluk OCR yok). `ingest/risale_ornek.py`
+`OrnekBagdastirici.parse` bu satirlari `lugat.jsonl` olarak yazar; `export pg --source
+test-risale-ornek` onlari birimlerle ayni islemde yukler (`export/pg_lugat.py`).
 """
 
 from typing import Final

@@ -11,7 +11,7 @@ namespace Mutalaa.Publisher.Tests;
 public partial class RisalePackTests
 {
     private const string LugatSource = PackCatalog.RisaleLugatSlug;
-    private const string LugatFixtureSource = PackCatalog.RisaleLugatFixtureSlug;
+    private const string LugatFixtureSource = PackCatalog.RisaleFixtureSourceSlug;
 
     private static LugatMaddeRow Madde(
         string source,
@@ -27,13 +27,10 @@ public partial class RisalePackTests
         Mutalaa.Domain.Text.ContentHash.Compute(basliksoz + "\n" + (tanim ?? string.Empty));
 
     /// <summary>Risale anlik goruntusu + lugat kaynaklari ve maddeleri (Lexicals da kurulur; kapi P-09'u bunlardan okur).</summary>
-    private static EditorialSnapshot WithLugat(EditorialSnapshot basis, IReadOnlyList<LugatMaddeRow> rows, bool fixtureSource = false)
+    private static EditorialSnapshot WithLugat(EditorialSnapshot basis, IReadOnlyList<LugatMaddeRow> rows)
     {
+        // Fikstur kaynagi (test-risale-ornek) temel goruntude zaten vardir: birimleri, page_map ve lugat maddeleri tek kaynak adindadir.
         List<SourceRow> sources = [.. basis.Sources, Src(LugatSource, "sozluk")];
-        if (fixtureSource)
-        {
-            sources.Add(Src(LugatFixtureSource, "sozluk"));
-        }
 
         return new EditorialSnapshot
         {
@@ -185,12 +182,16 @@ public partial class RisalePackTests
                 Madde(LugatSource, "gercek-onayli", "onayli", "Deneme tanimi"),
                 Madde(LugatFixtureSource, "deneme-fikstur", "onayli", "Deneme fikstur tanimi"),
                 Madde(LugatFixtureSource, "deneme-fikstur-aday", "aday"),
-            ],
-            fixtureSource: true);
+            ]);
 
         string[] Words(BuildFlavor flavor) => [.. Assemble(flavor, snapshot, "risale-dizin").Lugat.Select(r => r.Basliksoz).Order(StringComparer.Ordinal)];
 
         Assert.Equal(["deneme-fikstur", "deneme-fikstur-aday", "gercek-onayli"], Words(BuildFlavor.Dev));
+
+        // Fikstur kaynagi hem birim hem lugat kaynagidir ama pack_source ve atif satiri tekildir (iki baglama yazilmaz).
+        PackContent dev = Assemble(BuildFlavor.Dev, snapshot, "risale-dizin");
+        Assert.Single(dev.PackSources, s => s.SourceId == LugatFixtureSource);
+        Assert.Single(dev.Attributions, a => a.SourceId == LugatFixtureSource);
 
         // P-12: internal'a yalniz test-kucuk ve test-ses girer; public'e hicbir test- kaynagi girmez.
         Assert.Equal(["gercek-onayli"], Words(BuildFlavor.Internal));
@@ -236,8 +237,7 @@ public partial class RisalePackTests
 
         EditorialSnapshot duplicate = WithLugat(
             Snapshot(),
-            [Madde(LugatSource, "ayni-sozcuk", "aday"), Madde(LugatFixtureSource, "ayni-sozcuk", "aday")],
-            fixtureSource: true);
+            [Madde(LugatSource, "ayni-sozcuk", "aday"), Madde(LugatFixtureSource, "ayni-sozcuk", "aday")]);
         PackAssemblyException twice = Assert.Throws<PackAssemblyException>(() => Assemble(BuildFlavor.Dev, duplicate, "risale-dizin"));
         Assert.Contains("iki kaynakta", twice.Message, StringComparison.Ordinal);
     }

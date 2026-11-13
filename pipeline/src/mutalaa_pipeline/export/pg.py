@@ -70,6 +70,7 @@ from mutalaa_pipeline.enums import SourceKind
 from mutalaa_pipeline.export import pg_kelime
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kati_json
 from mutalaa_pipeline.ingest import fikstur as fikstur_uretec
+from mutalaa_pipeline.ingest.kelime_frekans import KAYNAK as LUGAT_KAYNAGI
 from mutalaa_pipeline.ingest.meal_kaynaklari import MEAL_KAYNAKLARI, meal_mi
 from mutalaa_pipeline.ingest.risale_kaynaklari import (
     KAYNAK_BASKI,
@@ -111,7 +112,8 @@ EK_KAYNAKLAR: Final[Mapping[str, tuple[str, ...]]] = {
     **{slug: () for slug in MEAL_KAYNAKLARI},
     KAYNAK_RNK: (),  # A20.2b: RNK Risale metni (pg_risale.py); Diyanet karsilastirmadir, yuklenmez
     KAYNAK_BASKI: (),  # A20.3: RNK baski sayfa esleme, page_map (pg_risale_sayfa.py)
-    KAYNAK_ORNEK: (),  # A20.5a: sentetik Risale fiksturu: birimler ve page_map (pg_risale.py)
+    KAYNAK_ORNEK: (),  # A20.5a: sentetik Risale fiksturu: birim, page_map, lugat (pg_risale.py)
+    LUGAT_KAYNAGI: (),  # A20.6: Risale lugat adaylari ve review (pg_lugat.py)
 }
 # Birim degil yapi satiri yukleyen kaynaklar (K-43 madde 3): units.jsonl yerine markers/pages.
 YAPI_KAYNAKLARI: Final = frozenset({"tanzil-ust-veri"})
@@ -183,6 +185,7 @@ SELECT_SOURCE: Final = sql.SQL("SELECT {} FROM icerik.source WHERE slug = %s FOR
 BAGLANTI = Callable[[], psycopg.Connection]
 
 if TYPE_CHECKING:
+    from mutalaa_pipeline.export.pg_lugat import LugatSatiri
     from mutalaa_pipeline.export.pg_risale import RisaleGirdisi
 
 
@@ -364,6 +367,7 @@ class Hazirlik:
     meal_satirlari: list[MealSatiri] = field(default_factory=list)
     risale: "RisaleGirdisi | None" = None  # dolu: RNK Risale birimleri akitilarak yuklenir
     risale_sayfa: list[RisaleSayfaSatiri] = field(default_factory=list)  # dolu: page_map upsert'i
+    lugat: "list[LugatSatiri]" = field(default_factory=list)  # dolu: lugat adaylari (pg_lugat.py)
 
 
 # --- yardimcilar -------------------------------------------------------------------------
@@ -764,6 +768,10 @@ def hazirla(
         from mutalaa_pipeline.export import pg_sure_adlari
 
         return pg_sure_adlari.hazirla(ctx, source_id, run, ek_kaynaklar)
+    if source_id == LUGAT_KAYNAGI:  # A20.6: Risale lugat adaylari (lugat_madde + review)
+        from mutalaa_pipeline.export import pg_lugat
+
+        return pg_lugat.hazirla(ctx, source_id, run, ek_kaynaklar)
     if baski_mi(source_id):  # A20.3: RNK baski sayfa esleme (page_map)
         from mutalaa_pipeline.export import pg_risale_sayfa
 
@@ -1180,6 +1188,14 @@ def _yukle(conn: psycopg.Connection, ctx: RunContext, h: Hazirlik) -> dict[str, 
             from mutalaa_pipeline.export import pg_risale_sayfa
 
             sayilar.update(pg_risale_sayfa.yukle(conn, h))
+        if h.lugat:  # fikstur (A20.6): lugat maddeleri ayni islemde, birimlerden sonra
+            from mutalaa_pipeline.export import pg_lugat
+
+            sayilar.update(pg_lugat.yukle(conn, ctx, h))
+    elif h.lugat:  # A20.6: gercek Kelime-Frekans lugati (kaynak satiri yukarida yazildi)
+        from mutalaa_pipeline.export import pg_lugat
+
+        sayilar.update(pg_lugat.yukle(conn, ctx, h))
     elif h.risale_sayfa:
         from mutalaa_pipeline.export import pg_risale_sayfa
 

@@ -231,17 +231,25 @@ def test_ingest_dosya_almaz_raw_yazmaz_manifest(veri: Path) -> None:
     ayrinti = manifest["ayrintilar"]
     assert isinstance(ayrinti, dict)
     assert ayrinti["birim"] == BIRIM_SAYISI and ayrinti["sayfa"] == SAYFA_SAYISI
-    assert {p.name for p in klasor.iterdir()} == {"units.jsonl", "sayfalar.jsonl", "manifest.json"}
-    assert (klasor / "units.jsonl").read_bytes() + (klasor / "sayfalar.jsonl").read_bytes() == (
-        risale_ornek.icerik_baytlari()
-    )
+    assert ayrinti["lugat_madde"] == 15
+    assert {p.name for p in klasor.iterdir()} == {
+        "units.jsonl",
+        "sayfalar.jsonl",
+        "lugat.jsonl",
+        "manifest.json",
+    }
+    assert (
+        (klasor / "units.jsonl").read_bytes()
+        + (klasor / "sayfalar.jsonl").read_bytes()
+        + (klasor / "lugat.jsonl").read_bytes()
+    ) == risale_ornek.icerik_baytlari()
 
 
 def test_ingest_iki_kosu_ayni_baytlar_force(veri: Path) -> None:
     assert ingest() == 0
     assert ingest(force=True) == 0
     ilk, ikinci = (c[1] for c in calismalar(veri, "ingest"))
-    for ad in ("units.jsonl", "sayfalar.jsonl"):
+    for ad in ("units.jsonl", "sayfalar.jsonl", "lugat.jsonl"):
         assert (ilk / ad).read_bytes() == (ikinci / ad).read_bytes()
 
 
@@ -406,6 +414,7 @@ def girdi_kur(veri: Path) -> kapilar.OrnekGirdisi:
         xref=satirlar(veri, "anchor", "xref.jsonl"),
         beklenen=risale_ornek.birimler(),
         depo_kok=depo_koku(),
+        lugat=satirlar(veri, "ingest", "lugat.jsonl"),
     )
 
 
@@ -462,6 +471,20 @@ def test_g_but_metin_degisince_kalir(veri: Path) -> None:
     g.anchor_satirlari = degisen
     bulgular = kapilar.g_but(g).bulgular
     assert any(b.startswith("metin:") for b in bulgular)
+
+
+def test_g_but_lugat_degisince_kalir_ve_none_denetlenmez(veri: Path) -> None:
+    zincir()
+    g = girdi_kur(veri)
+    assert kapilar.g_but(g).sayilar["lugat_madde"] == 15
+    assert g.lugat is not None
+    degisen = list(g.lugat)
+    degisen[0] = kopya(degisen[0], duzey=3)
+    g.lugat = degisen
+    assert "lugat.jsonl uretecin cikisiyla ayni degil" in kapilar.g_but(g).bulgular
+    g.lugat = None  # yuklenmemis: denetlenmez (eski cagrilar)
+    assert kapilar.g_but(g).bulgular == ()
+    assert "lugat_madde" not in kapilar.g_but(g).sayilar
 
 
 def test_g_but_nfc_degil_ve_kontrol_karakteri_kalir(veri: Path) -> None:
@@ -595,6 +618,23 @@ def test_export_hazirla_fikstur_birimlerini_ve_page_mapi_kabul_eder(
     assert {p.attrs["dil"] for p in parcalar} == {"tr"}
 
 
+def test_export_hazirla_fikstur_lugatini_ayni_kaynak_adinda_okur(
+    veri: Path, tmp_path: Path
+) -> None:
+    """Fikstur lugati `test-risale-ornek` adinda (risale-dizin Glossary kaynagi ile ayni)."""
+    zincir()
+    ctx = ctx_kur(tmp_path, depo_koku(), adim="export", kaynaklar=[KAYNAK])
+    h = pg.hazirla(ctx, KAYNAK, None, ())
+    assert len(h.lugat) == 15
+    assert {m.source_id for m in h.lugat} == {KAYNAK} and KAYNAK.startswith("test-")
+    assert sum(1 for m in h.lugat if m.tanim_tr is None) == 5  # her ucuncu madde tanimsiz
+    assert all(m.kaynaklar["fikstur"] is True for m in h.lugat)
+    assert all(
+        "anlam_basvuru" not in m.kaynaklar and "anlam_basvuru" in m.onerilen for m in h.lugat
+    )
+    assert {m.duzey for m in h.lugat} == {1, 2, 3}
+
+
 def test_export_hazirla_qa_kalmissa_reddeder(veri: Path, tmp_path: Path) -> None:
     assert ingest() == 0 and normalize() == 0 and anchor() == 0  # qa raporu yok
     ctx = ctx_kur(tmp_path, depo_koku(), adim="export", kaynaklar=[KAYNAK])
@@ -624,6 +664,9 @@ def test_export_yukleme_tek_islemde_birimler_sonra_page_map(veri: Path, tmp_path
             ("INSERT INTO icerik.unit", SahteSonuc(rowcount=BIRIM_SAYISI)),
             ("count(*) FILTER (WHERE (p.start_anchor", SahteSonuc([(0, 0)])),
             ("INSERT INTO icerik.page_map", SahteSonuc(rowcount=4)),
+            ("count(*) FILTER (WHERE o.m_id IS NULL)", SahteSonuc([(15, 0, 0, 15, 0)])),
+            ("INSERT INTO icerik.lugat_madde", SahteSonuc(rowcount=15)),
+            ("INSERT INTO icerik.review", SahteSonuc(rowcount=15)),
         )
     )
     kod = pg.komut_export_pg(
@@ -643,9 +686,12 @@ def test_export_yukleme_tek_islemde_birimler_sonra_page_map(veri: Path, tmp_path
             "CREATE TEMP TABLE staging_risale_sayfa",
             "FROM (SELECT start_anchor AS anchor",
             "INSERT INTO icerik.page_map",
+            "CREATE TEMP TABLE staging_lugat",
+            "INSERT INTO icerik.lugat_madde",
+            "INSERT INTO icerik.review",
         )
     ]
-    assert sira == sorted(sira) and len(set(sira)) == 5
+    assert sira == sorted(sira) and len(set(sira)) == 8  # lugat: birimlerden ve page_map'ten sonra
     ((_, capa_params),) = db.sorgular("FROM (SELECT start_anchor AS anchor")
     assert capa_params == (KAYNAK,)  # sayfa capalari fiksturun kendi birimlerinde aranir
     sayfa_satirlari = [r for r in db.kopya_satirlari() if len(r) == 8]
@@ -660,6 +706,9 @@ def test_export_yukleme_tek_islemde_birimler_sonra_page_map(veri: Path, tmp_path
     )
     assert rapor["sayilar"]["staging"] == BIRIM_SAYISI  # type: ignore[index]
     assert rapor["sayilar"]["sayfa_staging"] == 4  # type: ignore[index]
+    assert rapor["sayilar"]["lugat_staging"] == 15  # type: ignore[index]
+    assert rapor["sayilar"]["lugat_eklenen"] == 15  # type: ignore[index]
+    assert rapor["sayilar"]["lugat_review_acilan"] == 15  # type: ignore[index]
 
 
 # --- kayit ve CLI -----------------------------------------------------------------------------

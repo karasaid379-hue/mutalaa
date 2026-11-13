@@ -131,7 +131,6 @@ public partial class RisalePackTests
                 (PackCatalog.RisaleFixtureSourceSlug, PackSourceRole.Content, false),
                 (PackCatalog.RisaleLinkSlug, PackSourceRole.Attribution, false),
                 (PackCatalog.RisaleLugatSlug, PackSourceRole.Glossary, false),
-                (PackCatalog.RisaleLugatFixtureSlug, PackSourceRole.Glossary, false),
                 (PackCatalog.RisalePageSlug, PackSourceRole.Structure, false),
             ],
             index.Sources.Select(s => (s.Slug, s.Role, s.Required)));

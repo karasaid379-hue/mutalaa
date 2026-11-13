@@ -51,6 +51,9 @@ from mutalaa_pipeline import cikis, lineage
 from mutalaa_pipeline.anchor import kanonik_metin, parse, sort_key, to_unit_span
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest.base import RawFile, StagedUnit, run_ingest, units_satiri
+from mutalaa_pipeline.ingest.lugat_madde import LUGAT_ADI, MADDE_ANAHTARI
+from mutalaa_pipeline.ingest.risale_ornek_lugat import ADET as LUGAT_ADET
+from mutalaa_pipeline.ingest.risale_ornek_lugat import ornek_lugat_baytlari, ornek_lugat_satirlari
 from mutalaa_pipeline.komut_ortak import komutu_yurut
 from mutalaa_pipeline.runctx import RunContext
 from mutalaa_pipeline.staged import dosya_yaz, yapi_baytlari
@@ -348,11 +351,11 @@ def staged_birimleri() -> list[StagedUnit]:
 
 
 def icerik_baytlari() -> bytes:
-    """Uretecin baytlari: `units.jsonl` (capa sirasiyla) ve `sayfalar.jsonl` (parmak izi icin)."""
+    """Uretecin baytlari: `units.jsonl`, `sayfalar.jsonl` ve `lugat.jsonl` (parmak izi icin)."""
     sirali = sorted(staged_birimleri(), key=lambda b: sort_key(parse(b.anchor)))
     units = "".join(units_satiri(KAYNAK, b) for b in sirali).encode("utf-8")
     sayfa, _ = yapi_baytlari(sayfalar(), SAYFA_ANAHTARI)
-    return units + sayfa
+    return units + sayfa + ornek_lugat_baytlari()
 
 
 # --- sentetik xref -------------------------------------------------------------------------
@@ -443,6 +446,9 @@ class OrnekBagdastirici:
 
     def parse(self, ctx: RunContext, files: list[RawFile]) -> Iterator[StagedUnit]:
         dosya_yaz(ctx, KAYNAK, SAYFALAR_ADI, sayfalar(), anahtar=SAYFA_ANAHTARI)
+        # Sentetik lugat (A20.6): ayni kaynak adinda 15 uydurma madde; `risale-dizin` Glossary
+        # kaynagi ayni slug'dir (`export pg --source test-risale-ornek` birimlerle yukler).
+        dosya_yaz(ctx, KAYNAK, LUGAT_ADI, ornek_lugat_satirlari(), MADDE_ANAHTARI)
         yield from staged_birimleri()
 
     def manifest_ayrintilari(self) -> dict[str, object]:
@@ -452,6 +458,7 @@ class OrnekBagdastirici:
             "kitap": KITAP,
             "birim": len(TASLAKLAR),
             "sayfa": len(sayfalar()),
+            "lugat_madde": LUGAT_ADET,
             "cilt": {DOSYA: CILT},
         }
 

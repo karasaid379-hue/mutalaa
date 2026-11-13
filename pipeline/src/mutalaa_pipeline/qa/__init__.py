@@ -27,6 +27,10 @@ SURE_ADI_KAPILARI: Final = ("G-KAY", "G-BUT")
 QAC_KAYNAGI: Final = "qac-morfoloji"
 # QuranWBW Turkce kelime anlami (A17.6): ayni uc kapi; G-NOR yok.
 QURANWBW_KAYNAGI: Final = "quranwbw-tr"
+# Risale lugat adaylari (A20.6; Kelime-Frekans baslik soz listesi): dort kapi. G-CAP "uygulanmaz"
+# olarak gecer (lugat maddesinin capasi yoktur), ama kaynak kapisi sayilir.
+LUGAT_KAYNAGI: Final = "risale-kelime-frekans"
+LUGAT_KAPILARI: Final = ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
 GECTI: Final = "gecti"
 KALDI: Final = "kaldi"
 QA_KOMUTU: Final = "qa run"
@@ -48,6 +52,8 @@ def kaynak_kapilari(source_id: object) -> tuple[str, ...]:
         return SURE_ADI_KAPILARI
     if source_id == KAYNAK_RNK:  # A20.2b: G-CAP dahil dort kapi
         return RNK_KAPILARI
+    if source_id == LUGAT_KAYNAGI:  # A20.6: lugat adaylari, dort kapi
+        return LUGAT_KAPILARI
     if source_id == KAYNAK_BASKI:  # A20.3: baski sayfa esleme, G-NOR "uygulanmaz" olarak gecer
         return BASKI_KAPILARI
     return KAPILAR

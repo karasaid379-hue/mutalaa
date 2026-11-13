@@ -1,4 +1,4 @@
-"""Risale komutlari (A20.1, A20.1b): `ingest risale`; `cli.py` yalniz `kaydet` cagirir."""
+"""Risale komutlari (A20.1, A20.6): `ingest risale` ve `ingest lugat`; `cli.py` `kaydet` der."""
 
 import sys
 from pathlib import Path
@@ -17,7 +17,7 @@ KokSecenegi = Annotated[
 
 
 def kaydet(ingest_app: typer.Typer) -> None:
-    """`ingest risale` komutunu uygulamaya ekler."""
+    """`ingest risale` ve `ingest lugat` komutlarini uygulamaya ekler."""
 
     @ingest_app.command("risale")
     def ingest_risale(
@@ -105,5 +105,73 @@ def kaydet(ingest_app: typer.Typer) -> None:
             risale_kaynaklari.KAYNAK_ORNEK: risale_ornek.komut_ingest_ornek,
         }.get(source, risale_diyanet.komut_ingest_risale)
         kod = komut(gelen_tarih=gelen_tarih, dry_run=dry_run, force=force, config=config, kok=kok)
+        if kod != cikis.BASARILI:
+            raise typer.Exit(code=kod)
+
+    @ingest_app.command("lugat")
+    def ingest_lugat(
+        source: Annotated[
+            str,
+            typer.Option(
+                "--source",
+                help="Lugat kaynagi: risale-kelime-frekans (Kelime-Frekans baslik soz listesi).",
+            ),
+        ],
+        gelen_tarih: Annotated[
+            str | None,
+            typer.Option(
+                "--gelen-tarih",
+                help=(
+                    "data/gelen/risale-kelime-frekans altindaki tarih klasoru (YYYY-AA-GG);"
+                    " yoksa en yenisi. Uc sozluk OCR dosyasi da bu tarihten alinir."
+                ),
+            ),
+        ] = None,
+        kilit_oner: Annotated[
+            bool,
+            typer.Option(
+                "--kilit-oner",
+                help="Kilidin ilk degerlerini gelen dosyalardan yazdirir; hicbir sey yazmaz.",
+            ),
+        ] = False,
+        dry_run: Annotated[
+            bool, typer.Option("--dry-run", help="raw ve staged'e yazmaz; kilit yine denetlenir.")
+        ] = False,
+        force: Annotated[
+            bool, typer.Option("--force", help="Parmak izi ayni olsa da calistirir.")
+        ] = False,
+        config: Annotated[
+            Path | None, typer.Option("--config", help="Baska bir mutalaa.toml.")
+        ] = None,
+        kok: KokSecenegi = None,
+    ) -> None:
+        """Kelime-Frekans lugat baslik soz listesini kilitle karsilastirir, staged uretir.
+
+        Maddeler `aday` ve `hat` kokenli, tanimsiz uretilir (tanimi editor yazar); `anlam`
+        sutunu yalniz editor basvurusudur. Cikis 0 ya da 2.
+        """
+        from mutalaa_pipeline.config import ayarlar_yukle
+        from mutalaa_pipeline.ingest import kelime_frekans
+
+        try:
+            if source != kelime_frekans.KAYNAK:
+                raise GirdiHatasi(
+                    f"ingest lugat: bilinmeyen lugat kaynagi (yalniz {kelime_frekans.KAYNAK})"
+                )
+            if kilit_oner:
+                if dry_run or force:
+                    raise GirdiHatasi("--kilit-oner ile --dry-run ve --force verilmez")
+                metin = kelime_frekans.kilit_oner_metni(
+                    ayarlar_yukle(config).veri_kok, kok_coz(kok), gelen_tarih
+                )
+                sys.stdout.buffer.write(metin.encode("utf-8"))  # LF (Windows CRLF yazar)
+                sys.stdout.buffer.flush()
+                return
+        except GirdiHatasi as hata:
+            typer.echo(f"hata: {hata}", err=True)
+            raise typer.Exit(code=cikis.GIRDI_HATASI) from hata
+        kod = kelime_frekans.komut_ingest_lugat(
+            gelen_tarih=gelen_tarih, dry_run=dry_run, force=force, config=config, kok=kok
+        )
         if kod != cikis.BASARILI:
             raise typer.Exit(code=kod)

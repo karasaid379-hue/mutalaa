@@ -27,7 +27,7 @@ public sealed class LugatMadde
 
     public int? ArKokId { get; set; }
 
-    /// <summary>jsonb: <c>siklik</c> (int), <c>kitaplar</c>, <c>anlam_basvuru</c> ... salt basvuru; paketlenmez (K-51 madde 10).</summary>
+    /// <summary>jsonb: <c>siklik</c> (int), <c>kitaplar</c>, sozluk isabetleri ... salt basvuru; paketlenmez. Anlam basvurusu (<c>anlam_basvuru</c>) burada DEGIL, <c>review.onerilen</c> icindedir (K-51 madde 10).</summary>
     public string Kaynaklar { get; set; } = "{}";
 
     /// <summary>Okur yogunluk ayarini besleyen duzey.</summary>

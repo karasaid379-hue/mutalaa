@@ -67,6 +67,11 @@ public static class PackAssembler
             if (binding.Role == PackSourceRole.Content)
             {
                 contentSlugs.Add(binding.Slug);
+                if (binding.AlsoGlossary)
+                {
+                    glossarySlugs.Add(binding.Slug);
+                }
+
                 if (binding.PageMapLayout is { } contentLayout)
                 {
                     // Icerik kaynagi kendi sayfa eslemesini de tasir (risale-dizin'de fikstur kaynagi).

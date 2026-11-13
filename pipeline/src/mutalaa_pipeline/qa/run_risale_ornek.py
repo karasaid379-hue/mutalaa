@@ -17,6 +17,7 @@ from pathlib import Path
 from mutalaa_pipeline import cikis
 from mutalaa_pipeline.adimlar.risale_ornek import SAYFA_ESLEME_ADI, XREF_ADI
 from mutalaa_pipeline.export.ortak import GirdiHatasi
+from mutalaa_pipeline.ingest.lugat_madde import LUGAT_ADI
 from mutalaa_pipeline.ingest.risale_ornek import KAYNAK, SAYFALAR_ADI, birimler
 from mutalaa_pipeline.komut_ortak import komutu_yurut
 from mutalaa_pipeline.qa import GECTI, KALDI, KAPILAR, QA_KOMUTU
@@ -86,6 +87,7 @@ def yukle(ctx: RunContext, *, run: str | None) -> tuple[OrnekGirdisi, Calisma, d
         beklenen=birimler(),
         depo_kok=ctx.depo_kok,
         onceki=_onceki(ctx, KAYNAK, anchor.run_id),
+        lugat=dosya_oku(ingest, LUGAT_ADI, f"ingest {KAYNAK} {LUGAT_ADI}"),
     )
     return girdi, anchor, {NORMALIZE_ADIMI: normalize, INGEST_ADIMI: ingest}
 

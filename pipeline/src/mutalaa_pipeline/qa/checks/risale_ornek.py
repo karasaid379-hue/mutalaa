@@ -12,7 +12,8 @@ adi tasir, metin asla.
   yok; kontrol karakteri yok; kendi metnimiz oldugu icin kanonik (NFC dahil); `dizin` kitap ya da
   bolum adi degil; `ar` ve `hasiye` isaretleri var ve hasiye isareti var olan dipnota gider;
   `sayfalar.jsonl` ofsetleri birim metnine sigar, bir sayfa birimin ICINDE (cumle ortasi)
-  baslar.
+  baslar; `lugat.jsonl` (15 sentetik madde, A20.6) uretecin ayni surumdeki cikisiyla bayt bayt
+  ayni (`None` ise lugat dosyasi yuklenmemistir ve denetlenmez).
 * G-CAP: capa kanonik, `rn:test-ornek:` ailesinden, `rn_yolu` dogrulayicisindan gecer, tekil;
   `ord` okuma sirasi 1..N; `parent_path`, `role`, `kind`, `source_id`, `metin_durumu`,
   `data_version`; `content_hash`; `marks` ve `sentences` araliklari yari acik, cumleler
@@ -59,6 +60,7 @@ from mutalaa_pipeline.anchor.cumle import CUMLE_SURUMU
 from mutalaa_pipeline.enums import SourceKind
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest import risale_ornek
+from mutalaa_pipeline.ingest.lugat_madde import MADDE_ANAHTARI
 from mutalaa_pipeline.ingest.risale_ornek import (
     ANCHOR_ONEKI,
     CILT,
@@ -68,6 +70,7 @@ from mutalaa_pipeline.ingest.risale_ornek import (
     KITAP,
     OrnekBirimi,
 )
+from mutalaa_pipeline.ingest.risale_ornek_lugat import ornek_lugat_baytlari
 from mutalaa_pipeline.lineage import OZET_DESENI
 from mutalaa_pipeline.normalize import NORMALIZER_VERSION, search_keys
 from mutalaa_pipeline.qa.checks.fikstur import ATIF_METNI, _bulgu, _capalar, _kontrol_karakteri
@@ -79,7 +82,7 @@ from mutalaa_pipeline.qa.checks.risale_rnk import (
 from mutalaa_pipeline.qa.checks.tanzil import KapiSonucu, Onceki
 from mutalaa_pipeline.qa.vektorler import vektorleri_calistir
 from mutalaa_pipeline.sources.kayit import Kaynak
-from mutalaa_pipeline.staged import Satir
+from mutalaa_pipeline.staged import Satir, yapi_baytlari
 
 TR_ALANLARI: Final = ("tr_narrow", "tr_wide", "tr_stem")
 SAYFA_VERSIYONU_ONEKI: Final = f"{KAYNAK}@"
@@ -110,6 +113,7 @@ class OrnekGirdisi:
     beklenen: Sequence[OrnekBirimi]  # uretecin ayni surumdeki cikisi
     depo_kok: Path
     onceki: Onceki | None = None
+    lugat: Sequence[Satir] | None = None  # ingest lugat.jsonl (A20.6); None: denetlenmez
 
 
 def _tam(deger: object) -> int | None:
@@ -244,10 +248,21 @@ def _but_sayfalar(g: OrnekGirdisi, bulgular: list[str]) -> dict[str, int]:
     return {"sayfa": len(numaralar), "sayfa_ortasi": ortasi, "sayfa_icerik_yok": icerik_yok}
 
 
+def _but_lugat(g: OrnekGirdisi, bulgular: list[str]) -> dict[str, int]:
+    """`lugat.jsonl` satirlari uretecin ayni surumdeki cikisiyla bayt bayt ayni mi."""
+    if g.lugat is None:
+        return {}
+    var, _ = yapi_baytlari([s.veri for s in g.lugat], MADDE_ANAHTARI)
+    if var != ornek_lugat_baytlari():
+        bulgular.append("lugat.jsonl uretecin cikisiyla ayni degil")
+    return {"lugat_madde": len(g.lugat)}
+
+
 def g_but(g: OrnekGirdisi) -> KapiSonucu:
     bulgular: list[str] = []
     sayilar = _but_birimleri(g, bulgular)
     sayilar.update(_but_sayfalar(g, bulgular))
+    sayilar.update(_but_lugat(g, bulgular))
     return KapiSonucu("G-BUT", tuple(bulgular), sayilar)
 
 

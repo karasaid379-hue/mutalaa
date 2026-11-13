@@ -41,6 +41,7 @@ from mutalaa_pipeline.qa import (
     GECTI,
     KALDI,
     KAPILAR,
+    LUGAT_KAYNAGI,
     QA_KOMUTU,
     QAC_KAYNAGI,
     QURANWBW_KAYNAGI,
@@ -308,6 +309,10 @@ def komut_qa_run(
         from mutalaa_pipeline.qa.run_risale_ornek import komut_qa_run_ornek
 
         return komut_qa_run_ornek(run=run, gate=gate, config=config, kok=kok)
+    if source == LUGAT_KAYNAGI:  # Risale lugat adaylari: G-KAY, G-BUT, G-CAP, G-NOR (A20.6)
+        from mutalaa_pipeline.qa.run_risale_lugat import komut_qa_run_lugat
+
+        return komut_qa_run_lugat(run=run, gate=gate, config=config, kok=kok)
     if risale_mi(source):  # Diyanet Risale (karsilastirma verisi): G-KAY, G-BUT (A20.1)
         from mutalaa_pipeline.qa.run_risale import komut_qa_run_risale
 
