@@ -11,6 +11,11 @@ kitaplik): `qa` paketi onu ice aktarabilir.
     risale-rnk-metin    RNK Neşriyat `txt` + `json` (A20.1b): BIRINCIL metin; bagdastirici
                         `risale_rnk_kaynaklari`. `data/staged` birimleri `export pg` ile
                         yuklenir (G-KAY, G-BUT, G-CAP, G-NOR).
+
+    risale-baski-rnk    RNK baski sayfa esleme (A20.3, K-51 madde 6 ve 7): `tur = "baski"`. Bir
+                        INGEST kaynagi degildir (`KAYNAKLAR`da yoktur): `risale-rnk-metin`
+                        zincirinden `anchor --source risale-baski-rnk` adimiyla `page_map`
+                        satirlari uretir; `export pg` onlari yukler (`export/pg_risale_sayfa.py`).
 """
 
 import importlib
@@ -19,10 +24,13 @@ from typing import Final
 
 KAYNAK_DIYANET: Final = "risale-asil-nusha"
 KAYNAK_RNK: Final = "risale-rnk-metin"
+KAYNAK_BASKI: Final = "risale-baski-rnk"
 # Diyanet karsilastirma verisi: birim yuklenmez, G-CAP ve G-NOR uygulanmaz (A20.1).
 RISALE_KAPILARI: Final = ("G-KAY", "G-BUT")
 # RNK metni: dort kapi (A20.2b); G-KAY ve G-BUT ingest, G-CAP ve G-NOR anchor ciktisinda kosar.
 RNK_KAPILARI: Final = ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
+# Baski sayfa esleme: dort kapi; G-NOR arama metni uretilmedigi icin "uygulanmaz" olarak gecer.
+BASKI_KAPILARI: Final = RNK_KAPILARI
 
 
 @dataclass(frozen=True)
@@ -52,6 +60,11 @@ KAYNAKLAR: Final[dict[str, RisaleKaynagi]] = {
 def risale_mi(slug: object) -> bool:
     """Bu modulun yonettigi bir Risale kaynagi mi."""
     return isinstance(slug, str) and slug in KAYNAKLAR
+
+
+def baski_mi(slug: object) -> bool:
+    """RNK baski sayfa esleme kaynagi mi (ingest kaynagi degil, bir adim ciktisi)."""
+    return slug == KAYNAK_BASKI
 
 
 def kaynak(slug: str) -> RisaleKaynagi:

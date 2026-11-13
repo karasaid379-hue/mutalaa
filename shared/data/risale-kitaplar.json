@@ -52,7 +52,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "sozler",
-        "ad": "Sözler"
+        "ad": "Sözler",
+        "cilt": 1
       },
       "dogrulandi": false
     },
@@ -110,7 +111,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "mektubat",
-        "ad": "Mektubat"
+        "ad": "Mektubat",
+        "cilt": 2
       },
       "dogrulandi": false
     },
@@ -165,7 +167,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "lemalar",
-        "ad": "Lem'alar"
+        "ad": "Lem'alar",
+        "cilt": 3
       },
       "dogrulandi": false
     },
@@ -202,7 +205,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "sualar",
-        "ad": "Şualar"
+        "ad": "Şualar",
+        "cilt": 4
       },
       "dogrulandi": false
     },
@@ -235,7 +239,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "tarihce",
-        "ad": "Tarihçe-i Hayat"
+        "ad": "Tarihçe-i Hayat",
+        "cilt": 5
       },
       "dogrulandi": false
     },
@@ -270,7 +275,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "mesnevi",
-        "ad": "Mesnevi-i Nuriye"
+        "ad": "Mesnevi-i Nuriye",
+        "cilt": 6
       },
       "dogrulandi": false
     },
@@ -316,7 +322,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "isarat",
-        "ad": "İşârâtü'l-İ'caz"
+        "ad": "İşârâtü'l-İ'caz",
+        "cilt": 7
       },
       "dogrulandi": false
     },
@@ -343,7 +350,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "sikke",
-        "ad": "Sikke-i Tasdik-i Gaybî"
+        "ad": "Sikke-i Tasdik-i Gaybî",
+        "cilt": 8
       },
       "dogrulandi": false
     },
@@ -382,7 +390,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "barla",
-        "ad": "Barla Lâhikası"
+        "ad": "Barla Lâhikası",
+        "cilt": 9
       },
       "dogrulandi": false
     },
@@ -414,7 +423,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "kastamonu",
-        "ad": "Kastamonu Lâhikası"
+        "ad": "Kastamonu Lâhikası",
+        "cilt": 10
       },
       "dogrulandi": false
     },
@@ -448,7 +458,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "emirdag1",
-        "ad": "Emirdağ Lâhikası 1"
+        "ad": "Emirdağ Lâhikası 1",
+        "cilt": 11
       },
       "dogrulandi": false
     },
@@ -480,7 +491,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "emirdag2",
-        "ad": "Emirdağ Lâhikası 2"
+        "ad": "Emirdağ Lâhikası 2",
+        "cilt": 12
       },
       "dogrulandi": false
     },
@@ -525,7 +537,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "asamusa",
-        "ad": "Asâ-yı Musa"
+        "ad": "Asâ-yı Musa",
+        "cilt": 13
       },
       "dogrulandi": false
     },
@@ -550,7 +563,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "muhakemat",
-        "ad": "Muhakemat"
+        "ad": "Muhakemat",
+        "cilt": 14
       },
       "dogrulandi": false
     },
@@ -570,7 +584,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "dvan",
-        "ad": "Divan-ı Harb-i Örfî"
+        "ad": "Divan-ı Harb-i Örfî",
+        "cilt": 15
       },
       "dogrulandi": false
     },
@@ -590,7 +605,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "gencreh",
-        "ad": "Gençlik Rehberi"
+        "ad": "Gençlik Rehberi",
+        "cilt": 16
       },
       "dogrulandi": false
     },
@@ -610,7 +626,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "hanimreh",
-        "ad": "Hanımlar Rehberi"
+        "ad": "Hanımlar Rehberi",
+        "cilt": 17
       },
       "dogrulandi": false
     },
@@ -630,7 +647,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "hutbe",
-        "ad": "Hutbe-i Şamiye"
+        "ad": "Hutbe-i Şamiye",
+        "cilt": 18
       },
       "dogrulandi": false
     },
@@ -651,6 +669,7 @@
         "raf": "tr_k",
         "uid": "sunuhat",
         "ad": "Sünuhat Tuluat İşârat",
+        "cilt": 19,
         "bolunme": {
           "son_sayfa": 111,
           "parcalar": [
@@ -687,7 +706,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "konferans",
-        "ad": "Konferans"
+        "ad": "Konferans",
+        "cilt": 20
       },
       "dogrulandi": false
     },
@@ -707,7 +727,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "munazarat",
-        "ad": "Münâzarat"
+        "ad": "Münâzarat",
+        "cilt": 21
       },
       "dogrulandi": false
     },
@@ -727,7 +748,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "nurcesme",
-        "ad": "Nur Çeşmesi"
+        "ad": "Nur Çeşmesi",
+        "cilt": 22
       },
       "dogrulandi": false
     },
@@ -747,7 +769,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "nurilkka",
-        "ad": "Nur'un İlk Kapısı"
+        "ad": "Nur'un İlk Kapısı",
+        "cilt": 23
       },
       "dogrulandi": false
     },
@@ -768,6 +791,7 @@
         "raf": "tr_k",
         "uid": "sunuhat",
         "ad": "Sünuhat Tuluat İşârat",
+        "cilt": 19,
         "bolunme": {
           "son_sayfa": 111,
           "parcalar": [
@@ -805,6 +829,7 @@
         "raf": "tr_k",
         "uid": "sunuhat",
         "ad": "Sünuhat Tuluat İşârat",
+        "cilt": 19,
         "bolunme": {
           "son_sayfa": 111,
           "parcalar": [
@@ -836,7 +861,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "imankufur",
-        "ad": "İman ve Küfür Muvazeneleri"
+        "ad": "İman ve Küfür Muvazeneleri",
+        "cilt": 24
       },
       "dogrulandi": false
     },
@@ -851,7 +877,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "abed",
-        "ad": "Asâr-ı Bedîiyye"
+        "ad": "Asâr-ı Bedîiyye",
+        "cilt": 25
       },
       "dogrulandi": false
     },
@@ -866,7 +893,8 @@
       "rnk": {
         "raf": "tr",
         "uid": "ilkeserler",
-        "ad": "İlk Eserler"
+        "ad": "İlk Eserler",
+        "cilt": 26
       },
       "dogrulandi": false
     },
@@ -881,7 +909,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "ayetkubra",
-        "ad": "Âyetü'l-Kübra"
+        "ad": "Âyetü'l-Kübra",
+        "cilt": 27
       },
       "dogrulandi": false
     },
@@ -896,7 +925,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "bcevab",
-        "ad": "Bediüzzaman Cevap Veriyor"
+        "ad": "Bediüzzaman Cevap Veriyor",
+        "cilt": 28
       },
       "dogrulandi": false
     },
@@ -911,7 +941,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "elhuccet",
-        "ad": "Elhüccetüzzehra"
+        "ad": "Elhüccetüzzehra",
+        "cilt": 29
       },
       "dogrulandi": false
     },
@@ -926,7 +957,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "enezerre",
-        "ad": "Ene ve Zerre"
+        "ad": "Ene ve Zerre",
+        "cilt": 30
       },
       "dogrulandi": false
     },
@@ -941,7 +973,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "haknurlari",
-        "ad": "Hakikat Nurları"
+        "ad": "Hakikat Nurları",
+        "cilt": 31
       },
       "dogrulandi": false
     },
@@ -956,7 +989,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "hasir",
-        "ad": "Haşir Risalesi"
+        "ad": "Haşir Risalesi",
+        "cilt": 32
       },
       "dogrulandi": false
     },
@@ -971,7 +1005,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "hastalar",
-        "ad": "Hastalar Risalesi"
+        "ad": "Hastalar Risalesi",
+        "cilt": 33
       },
       "dogrulandi": false
     },
@@ -986,7 +1021,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "hizmetreh",
-        "ad": "Hizmet Rehberi"
+        "ad": "Hizmet Rehberi",
+        "cilt": 34
       },
       "dogrulandi": false
     },
@@ -1001,7 +1037,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "ihlas",
-        "ad": "İhlas Risaleleri"
+        "ad": "İhlas Risaleleri",
+        "cilt": 35
       },
       "dogrulandi": false
     },
@@ -1016,7 +1053,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "ihtiyarlar",
-        "ad": "İhtiyarlar Risalesi"
+        "ad": "İhtiyarlar Risalesi",
+        "cilt": 36
       },
       "dogrulandi": false
     },
@@ -1031,7 +1069,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "ikincisua",
-        "ad": "İkinci Şua"
+        "ad": "İkinci Şua",
+        "cilt": 37
       },
       "dogrulandi": false
     },
@@ -1046,7 +1085,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "imanhak",
-        "ad": "İman Hakikatleri"
+        "ad": "İman Hakikatleri",
+        "cilt": 38
       },
       "dogrulandi": false
     },
@@ -1061,7 +1101,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "ksozler",
-        "ad": "Küçük Sözler"
+        "ad": "Küçük Sözler",
+        "cilt": 39
       },
       "dogrulandi": false
     },
@@ -1076,7 +1117,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "latifnukte",
-        "ad": "Latif Nükteler"
+        "ad": "Latif Nükteler",
+        "cilt": 40
       },
       "dogrulandi": false
     },
@@ -1091,7 +1133,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "meyve",
-        "ad": "Meyve Risalesi"
+        "ad": "Meyve Risalesi",
+        "cilt": 41
       },
       "dogrulandi": false
     },
@@ -1106,7 +1149,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "miftah",
-        "ad": "Miftahu'l-İman"
+        "ad": "Miftahu'l-İman",
+        "cilt": 42
       },
       "dogrulandi": false
     },
@@ -1121,7 +1165,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "mirackamer",
-        "ad": "Mirac ve Şakk-ı Kamer"
+        "ad": "Mirac ve Şakk-ı Kamer",
+        "cilt": 43
       },
       "dogrulandi": false
     },
@@ -1136,7 +1181,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "mirkatsunnet",
-        "ad": "Mirkatü's-Sünnet"
+        "ad": "Mirkatü's-Sünnet",
+        "cilt": 44
       },
       "dogrulandi": false
     },
@@ -1151,7 +1197,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "muahmed",
-        "ad": "Mu'cizât-ı Ahmediye"
+        "ad": "Mu'cizât-ı Ahmediye",
+        "cilt": 45
       },
       "dogrulandi": false
     },
@@ -1166,7 +1213,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "mukuran",
-        "ad": "Mu'cizat-ı Kur'âniye"
+        "ad": "Mu'cizat-ı Kur'âniye",
+        "cilt": 46
       },
       "dogrulandi": false
     },
@@ -1181,7 +1229,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "munacat",
-        "ad": "Münâcat"
+        "ad": "Münâcat",
+        "cilt": 47
       },
       "dogrulandi": false
     },
@@ -1196,7 +1245,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "nuralemi",
-        "ad": "Nur Aleminin bir Anahtarı"
+        "ad": "Nur Aleminin bir Anahtarı",
+        "cilt": 48
       },
       "dogrulandi": false
     },
@@ -1211,7 +1261,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "onucsua",
-        "ad": "On Üçüncü Şua"
+        "ad": "On Üçüncü Şua",
+        "cilt": 49
       },
       "dogrulandi": false
     },
@@ -1226,7 +1277,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "otuzlema",
-        "ad": "Otuzuncu Lem'a"
+        "ad": "Otuzuncu Lem'a",
+        "cilt": 50
       },
       "dogrulandi": false
     },
@@ -1241,7 +1293,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "otuzuc",
-        "ad": "Otuz Üç Pencere"
+        "ad": "Otuz Üç Pencere",
+        "cilt": 51
       },
       "dogrulandi": false
     },
@@ -1256,7 +1309,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "rahmetsefkat",
-        "ad": "Rahmet ve Şefkat İlaçları"
+        "ad": "Rahmet ve Şefkat İlaçları",
+        "cilt": 52
       },
       "dogrulandi": false
     },
@@ -1271,7 +1325,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "ramazan",
-        "ad": "Ramazan İktisat Şükür"
+        "ad": "Ramazan İktisat Şükür",
+        "cilt": 53
       },
       "dogrulandi": false
     },
@@ -1286,7 +1341,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "tabiat",
-        "ad": "Tabiat Risalesi"
+        "ad": "Tabiat Risalesi",
+        "cilt": 54
       },
       "dogrulandi": false
     },
@@ -1301,7 +1357,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "uhuvvet",
-        "ad": "Uhuvvet Risalesi"
+        "ad": "Uhuvvet Risalesi",
+        "cilt": 55
       },
       "dogrulandi": false
     },
@@ -1316,7 +1373,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "vesvese",
-        "ad": "Vesvese ve Hikmetü'l-İstiâze"
+        "ad": "Vesvese ve Hikmetü'l-İstiâze",
+        "cilt": 56
       },
       "dogrulandi": false
     },
@@ -1331,7 +1389,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "yirmidortmek",
-        "ad": "Yirmi Dördüncü Mektup"
+        "ad": "Yirmi Dördüncü Mektup",
+        "cilt": 57
       },
       "dogrulandi": false
     },
@@ -1346,7 +1405,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "yirmiuc",
-        "ad": "Yirmi Üçüncü Söz"
+        "ad": "Yirmi Üçüncü Söz",
+        "cilt": 58
       },
       "dogrulandi": false
     },
@@ -1361,7 +1421,8 @@
       "rnk": {
         "raf": "tr_k",
         "uid": "zuhretunnur",
-        "ad": "Zühretü'n-Nur"
+        "ad": "Zühretü'n-Nur",
+        "cilt": 59
       },
       "dogrulandi": false
     },
@@ -1376,7 +1437,8 @@
       "rnk": {
         "raf": "osm",
         "uid": "osm_asamusa",
-        "ad": "عصاىِ موسى"
+        "ad": "عصاىِ موسى",
+        "cilt": 60
       },
       "dogrulandi": false
     },
@@ -1391,7 +1453,8 @@
       "rnk": {
         "raf": "osm",
         "uid": "osm_barla",
-        "ad": "بارلا لاحقه‌سى"
+        "ad": "بارلا لاحقه‌سى",
+        "cilt": 61
       },
       "dogrulandi": false
     },
@@ -1406,7 +1469,8 @@
       "rnk": {
         "raf": "osm",
         "uid": "osm_emirdag1",
-        "ad": "أميرطاغ لاحقه‌سى-١"
+        "ad": "أميرطاغ لاحقه‌سى-١",
+        "cilt": 62
       },
       "dogrulandi": false
     },
@@ -1421,7 +1485,8 @@
       "rnk": {
         "raf": "osm",
         "uid": "osm_emirdag2",
-        "ad": "أميرطاغ لاحقه‌سى-٢"
+        "ad": "أميرطاغ لاحقه‌سى-٢",
+        "cilt": 63
       },
       "dogrulandi": false
     },
@@ -1436,7 +1501,8 @@
       "rnk": {
         "raf": "osm",
         "uid": "osm_isarat",
-        "ad": "إشاراتُ ‌الإعجاز"
+        "ad": "إشاراتُ ‌الإعجاز",
+        "cilt": 64
       },
       "dogrulandi": false
     },
@@ -1451,7 +1517,8 @@
       "rnk": {
         "raf": "osm",
         "uid": "osm_kastamonu",
-        "ad": "قسطمونى لاحقه‌سى"
+        "ad": "قسطمونى لاحقه‌سى",
+        "cilt": 65
       },
       "dogrulandi": false
     },
@@ -1466,7 +1533,8 @@
       "rnk": {
         "raf": "osm",
         "uid": "osm_lemalar",
-        "ad": "لمعه‌لر"
+        "ad": "لمعه‌لر",
+        "cilt": 66
       },
       "dogrulandi": false
     },
@@ -1481,7 +1549,8 @@
       "rnk": {
         "raf": "osm",
         "uid": "osm_mektubat",
-        "ad": "مكتوبات"
+        "ad": "مكتوبات",
+        "cilt": 67
       },
       "dogrulandi": false
     },
@@ -1496,7 +1565,8 @@
       "rnk": {
         "raf": "osm",
         "uid": "osm_mesnevi",
-        "ad": "مثنوئِ نوريه"
+        "ad": "مثنوئِ نوريه",
+        "cilt": 68
       },
       "dogrulandi": false
     },
@@ -1511,7 +1581,8 @@
       "rnk": {
         "raf": "osm",
         "uid": "osm_sozler",
-        "ad": "سوزلر"
+        "ad": "سوزلر",
+        "cilt": 69
       },
       "dogrulandi": false
     },
@@ -1526,7 +1597,8 @@
       "rnk": {
         "raf": "osm",
         "uid": "osm_sualar",
-        "ad": "شعاعلر"
+        "ad": "شعاعلر",
+        "cilt": 70
       },
       "dogrulandi": false
     },
@@ -1541,7 +1613,8 @@
       "rnk": {
         "raf": "osm",
         "uid": "osm_tarihce",
-        "ad": "تاريخچۀِ حيات"
+        "ad": "تاريخچۀِ حيات",
+        "cilt": 71
       },
       "dogrulandi": false
     },
@@ -1556,7 +1629,8 @@
       "rnk": {
         "raf": "ar",
         "uid": "ar_asamusa",
-        "ad": "عصا موسى"
+        "ad": "عصا موسى",
+        "cilt": 72
       },
       "dogrulandi": false
     },
@@ -1571,7 +1645,8 @@
       "rnk": {
         "raf": "ar",
         "uid": "ar_imankufur",
-        "ad": "الموازنات"
+        "ad": "الموازنات",
+        "cilt": 73
       },
       "dogrulandi": false
     },
@@ -1586,7 +1661,8 @@
       "rnk": {
         "raf": "ar",
         "uid": "ar_isarat",
-        "ad": "إشارات الإعجاز"
+        "ad": "إشارات الإعجاز",
+        "cilt": 74
       },
       "dogrulandi": false
     },
@@ -1601,7 +1677,8 @@
       "rnk": {
         "raf": "ar",
         "uid": "ar_lemalar",
-        "ad": "اللمعات"
+        "ad": "اللمعات",
+        "cilt": 75
       },
       "dogrulandi": false
     },
@@ -1616,7 +1693,8 @@
       "rnk": {
         "raf": "ar",
         "uid": "ar_mektubat",
-        "ad": "المكتوبات"
+        "ad": "المكتوبات",
+        "cilt": 76
       },
       "dogrulandi": false
     },
@@ -1631,7 +1709,8 @@
       "rnk": {
         "raf": "ar",
         "uid": "ar_melahik",
-        "ad": "الملاحق"
+        "ad": "الملاحق",
+        "cilt": 77
       },
       "dogrulandi": false
     },
@@ -1646,7 +1725,8 @@
       "rnk": {
         "raf": "ar",
         "uid": "ar_mesnevi",
-        "ad": "المثنوي العربي النوري"
+        "ad": "المثنوي العربي النوري",
+        "cilt": 78
       },
       "dogrulandi": false
     },
@@ -1661,7 +1741,8 @@
       "rnk": {
         "raf": "ar",
         "uid": "ar_saykal",
-        "ad": "صيقل الإسلام"
+        "ad": "صيقل الإسلام",
+        "cilt": 79
       },
       "dogrulandi": false
     },
@@ -1676,7 +1757,8 @@
       "rnk": {
         "raf": "ar",
         "uid": "ar_sozler",
-        "ad": "الكلمات"
+        "ad": "الكلمات",
+        "cilt": 80
       },
       "dogrulandi": false
     },
@@ -1691,7 +1773,8 @@
       "rnk": {
         "raf": "ar",
         "uid": "ar_sualar",
-        "ad": "الشعاعات"
+        "ad": "الشعاعات",
+        "cilt": 81
       },
       "dogrulandi": false
     },
@@ -1706,7 +1789,8 @@
       "rnk": {
         "raf": "ar_k",
         "uid": "ar_hasir",
-        "ad": "رسالة الحشر"
+        "ad": "رسالة الحشر",
+        "cilt": 82
       },
       "dogrulandi": false
     },
@@ -1721,7 +1805,8 @@
       "rnk": {
         "raf": "ar_k",
         "uid": "ar_hastalar",
-        "ad": "رسالة إلى كل مريض ومبتلى"
+        "ad": "رسالة إلى كل مريض ومبتلى",
+        "cilt": 83
       },
       "dogrulandi": false
     },
@@ -1736,7 +1821,8 @@
       "rnk": {
         "raf": "ar_k",
         "uid": "ar_ksozler",
-        "ad": "كلمات صغيرة"
+        "ad": "كلمات صغيرة",
+        "cilt": 84
       },
       "dogrulandi": false
     },
@@ -1751,7 +1837,8 @@
       "rnk": {
         "raf": "ar_k",
         "uid": "ar_yirmiuc",
-        "ad": "الإيمان وتكامل الانسان"
+        "ad": "الإيمان وتكامل الانسان",
+        "cilt": 85
       },
       "dogrulandi": false
     }

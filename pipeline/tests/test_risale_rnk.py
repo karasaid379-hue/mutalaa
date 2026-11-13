@@ -130,6 +130,7 @@ def kitap_kaydi(
     uid: str = "deneme",
     bolunme: Bolunme | None = None,
     dil: str = "tr",
+    cilt: int = 1,
 ) -> Kitap:
     return Kitap(
         slug=slug,
@@ -139,7 +140,7 @@ def kitap_kaydi(
         metin_kaynagi="rnk",
         diyanet_karsiligi="rnk",
         diyanet=None,
-        rnk=RnkBaglanti(raf, uid, "Deneme Kitap", bolunme),
+        rnk=RnkBaglanti(raf, uid, "Deneme Kitap", bolunme, cilt),
         dogrulandi=False,
     )
 

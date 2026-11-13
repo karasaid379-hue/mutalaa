@@ -42,6 +42,7 @@ Yon = Literal["ltr", "rtl"]
 MetinKaynagi = Literal["rnk"]
 DiyanetKarsiligi = Literal["diyanet", "derleme", "rnk"]
 
+MAX_CILT: Final = 32767  # `page_map.volume` smallint
 DIZIN: Final = "dizin"
 PAKET_ONEKI: Final = "risale-"
 DIZIN_PAKETI: Final = PAKET_ONEKI + DIZIN
@@ -467,6 +468,7 @@ class RnkBaglanti:
     uid: str
     ad: str
     bolunme: Bolunme | None = None
+    cilt: int | None = None  # kalici cilt numarasi (`page_map.volume`, K-51 madde 6)
 
 
 @dataclass(frozen=True, slots=True)
@@ -568,13 +570,20 @@ def _bolunme(deger: object, nerede: str) -> Bolunme:
 
 
 def _rnk(deger: object, nerede: str) -> RnkBaglanti:
-    nesne = _nesne(deger, nerede, ("raf", "uid", "ad"), ("bolunme",))
+    nesne = _nesne(deger, nerede, ("raf", "uid", "ad", "cilt"), ("bolunme",))
     raf = _metin(nesne["raf"], f"{nerede}.raf")
     if raf not in RNK_RAFLARI:
         raise _hata(f"{nerede}.raf: bilinmeyen raf")
     bolunme = None if "bolunme" not in nesne else _bolunme(nesne["bolunme"], f"{nerede}.bolunme")
+    cilt = _sayi(nesne["cilt"], f"{nerede}.cilt")
+    if cilt > MAX_CILT:
+        raise _hata(f"{nerede}.cilt: 1..{MAX_CILT} araliginda olmali (smallint)")
     return RnkBaglanti(
-        raf, _metin(nesne["uid"], f"{nerede}.uid"), _metin(nesne["ad"], f"{nerede}.ad"), bolunme
+        raf,
+        _metin(nesne["uid"], f"{nerede}.uid"),
+        _metin(nesne["ad"], f"{nerede}.ad"),
+        bolunme,
+        cilt,
     )
 
 
@@ -646,6 +655,19 @@ def _tutarlilik(kitap: Kitap, nerede: str) -> None:
         raise _hata(f"{nerede}: bolunme parcalari kitabin kendi slug'ini icermiyor")
 
 
+def _cilt_denetle(tablo: Sequence[Kitap]) -> None:
+    """Her RNK dosyasi (`raf/uid`) tek cilt numarasi tasir; farkli dosyalar farkli numara tasir."""
+    dosya_cilt: dict[tuple[str, str], int] = {}
+    cilt_dosya: dict[int, tuple[str, str]] = {}
+    for k in tablo:
+        assert k.rnk is not None and k.rnk.cilt is not None
+        anahtar = (k.rnk.raf, k.rnk.uid)
+        if dosya_cilt.setdefault(anahtar, k.rnk.cilt) != k.rnk.cilt:
+            raise _hata("ayni RNK dosyasina bagli kitaplar farkli cilt tasiyor")
+        if cilt_dosya.setdefault(k.rnk.cilt, anahtar) != anahtar:
+            raise _hata("iki RNK dosyasi ayni cilt numarasini tasiyor")
+
+
 def kitaplar(yol: Path | None = None) -> tuple[Kitap, ...]:
     """`shared/data/risale-kitaplar.json` tablosunu okur ve dogrular.
 
@@ -667,6 +689,7 @@ def kitaplar(yol: Path | None = None) -> tuple[Kitap, ...]:
     slug_listesi = [k.slug for k in sonuc]
     if len(set(slug_listesi)) != len(slug_listesi):
         raise _hata("yinelenen slug")
+    _cilt_denetle(sonuc)
     return sonuc
 
 

@@ -366,7 +366,7 @@ def _satir(**degisen: Any) -> dict[str, Any]:
         "metin_kaynagi": "rnk",
         "diyanet_karsiligi": "derleme",
         "diyanet": None,
-        "rnk": {"raf": "tr_k", "uid": "deneme", "ad": "Deneme Kitap"},
+        "rnk": {"raf": "tr_k", "uid": "deneme", "ad": "Deneme Kitap", "cilt": 1},
         "dogrulandi": False,
     }
     satir.update(degisen)
@@ -416,9 +416,14 @@ def test_yukleyici_depo_disi_yolu_reddeder(tmp_path: Path) -> None:
         ("diyanet-alani-yok", {"diyanet_karsiligi": "diyanet"}),
         ("diyanet-alani-fazla", {"diyanet": {"klasor": "01 K", "dosyalar": ["a.txt"]}}),
         ("rnk-yok", {"rnk": None}),
-        ("raf-bilinmiyor", {"rnk": {"raf": "evr", "uid": "kuran", "ad": "x"}}),
-        ("raf-dille-uyumsuz", {"rnk": {"raf": "osm", "uid": "osm_x", "ad": "x"}}),
-        ("rnk-fazla-alan", {"rnk": {"raf": "tr", "uid": "x", "ad": "x", "asd": 1}}),
+        ("raf-bilinmiyor", {"rnk": {"raf": "evr", "uid": "kuran", "ad": "x", "cilt": 1}}),
+        ("raf-dille-uyumsuz", {"rnk": {"raf": "osm", "uid": "osm_x", "ad": "x", "cilt": 1}}),
+        ("rnk-fazla-alan", {"rnk": {"raf": "tr", "uid": "x", "ad": "x", "cilt": 1, "asd": 1}}),
+        ("cilt-yok", {"rnk": {"raf": "tr_k", "uid": "deneme", "ad": "x"}}),
+        ("cilt-sifir", {"rnk": {"raf": "tr_k", "uid": "deneme", "ad": "x", "cilt": 0}}),
+        ("cilt-smallint-ustu", {"rnk": {"raf": "tr_k", "uid": "deneme", "ad": "x", "cilt": 32768}}),
+        ("cilt-metin", {"rnk": {"raf": "tr_k", "uid": "deneme", "ad": "x", "cilt": "1"}}),
+        ("cilt-mantiksal", {"rnk": {"raf": "tr_k", "uid": "deneme", "ad": "x", "cilt": True}}),
         ("dogrulandi-sayi", {"dogrulandi": 0}),
         ("baslik-bos", {"baslik": ""}),
         ("fazla-alan", {"not": "x"}),
@@ -468,13 +473,55 @@ def test_yukleyici_bolunme_kendi_slugini_icermeli(
             {"slug": "b-kitap", "baslangic_sayfasi": 5},
         ],
     }
-    satir = _satir(rnk={"raf": "tr_k", "uid": "deneme", "ad": "x", "bolunme": bolunme})
+    satir = _satir(rnk={"raf": "tr_k", "uid": "deneme", "ad": "x", "cilt": 1, "bolunme": bolunme})
     assert "kendi slug" in str(_hata(tmp_path, monkeypatch, {"surum": 1, "kitaplar": [satir]}))
     iyi = _satir(
-        slug="a-kitap", rnk={"raf": "tr_k", "uid": "deneme", "ad": "x", "bolunme": bolunme}
+        slug="a-kitap",
+        rnk={"raf": "tr_k", "uid": "deneme", "ad": "x", "cilt": 1, "bolunme": bolunme},
     )
     sonuc = _yukle(tmp_path, monkeypatch, {"surum": 1, "kitaplar": [iyi]})
     assert sonuc[0].rnk is not None and sonuc[0].rnk.bolunme is not None
     # sayfalar artan olmali
     bolunme["parcalar"][1]["baslangic_sayfasi"] = 1  # type: ignore[index]
     _hata(tmp_path, monkeypatch, {"surum": 1, "kitaplar": [iyi]})
+
+
+def test_yukleyici_cilt_tekil_ve_dosya_basina_tek(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def rnk(uid: str, cilt: int) -> dict[str, Any]:
+        return {"raf": "tr_k", "uid": uid, "ad": "x", "cilt": cilt}
+
+    # iki farkli RNK dosyasi ayni cilt numarasini tasiyamaz
+    iki = [_satir(slug="a-kitap", rnk=rnk("a", 1)), _satir(slug="b-kitap", rnk=rnk("b", 1))]
+    assert "ayni cilt" in str(_hata(tmp_path, monkeypatch, {"surum": 1, "kitaplar": iki}))
+    # ayni RNK dosyasina bagli kitaplar (bolunme) ayni cilt numarasini tasir
+    bolunme = {
+        "son_sayfa": 10,
+        "parcalar": [
+            {"slug": "a-kitap", "baslangic_sayfasi": 1},
+            {"slug": "b-kitap", "baslangic_sayfasi": 5},
+        ],
+    }
+    ayni = {**rnk("x", 3), "bolunme": bolunme}
+    bolunen = [_satir(slug="a-kitap", rnk=ayni), _satir(slug="b-kitap", rnk={**ayni, "cilt": 4})]
+    assert "farkli cilt" in str(_hata(tmp_path, monkeypatch, {"surum": 1, "kitaplar": bolunen}))
+    iyi = [_satir(slug="a-kitap", rnk=ayni), _satir(slug="b-kitap", rnk=ayni)]
+    sonuc = _yukle(tmp_path, monkeypatch, {"surum": 1, "kitaplar": iyi})
+    assert [k.rnk.cilt for k in sonuc if k.rnk] == [3, 3]
+
+
+def test_gercek_tablo_cilt_kalici_1den_85e_ilk_gorunme_sirasi() -> None:
+    tablo = kitaplar()
+    ilk: dict[tuple[str, str], int] = {}
+    for k in tablo:
+        assert k.rnk is not None and k.rnk.cilt is not None
+        ilk.setdefault((k.rnk.raf, k.rnk.uid), k.rnk.cilt)
+    assert sorted(ilk.values()) == list(range(1, 86))
+    assert [
+        ilk[(k.rnk.raf, k.rnk.uid)]
+        for k in tablo
+        if k.rnk and k.slug in {"sunuhat", "tuluat", "isarat"}
+    ] == [19, 19, 19]
+    # eski "ilk gorunme sirasi" numaralamasiyla ayni (kalici hale getirildi)
+    assert list(ilk.values()) == list(range(1, 86))

@@ -9,7 +9,12 @@ Kapilar `qa/checks/` altindadir; `qa/run.py` zinciri okur, kapilari calistirir v
 from typing import Final
 
 from mutalaa_pipeline.ingest.meal_kaynaklari import MEAL_KAPILARI, meal_mi
-from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_RNK, RNK_KAPILARI
+from mutalaa_pipeline.ingest.risale_kaynaklari import (
+    BASKI_KAPILARI,
+    KAYNAK_BASKI,
+    KAYNAK_RNK,
+    RNK_KAPILARI,
+)
 
 KAPILAR: Final = ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
 # Ust veri (yapi) kaynaginda normalizasyon yoktur: ar_norm/search_text uretilmez, G-NOR uygulanmaz.
@@ -43,4 +48,6 @@ def kaynak_kapilari(source_id: object) -> tuple[str, ...]:
         return SURE_ADI_KAPILARI
     if source_id == KAYNAK_RNK:  # A20.2b: G-CAP dahil dort kapi
         return RNK_KAPILARI
+    if source_id == KAYNAK_BASKI:  # A20.3: baski sayfa esleme, G-NOR "uygulanmaz" olarak gecer
+        return BASKI_KAPILARI
     return KAPILAR

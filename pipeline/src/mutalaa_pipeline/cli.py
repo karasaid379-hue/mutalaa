@@ -474,6 +474,13 @@ def _risale_rnk_mi(source: str) -> bool:
     return source == KAYNAK_RNK
 
 
+def _risale_sayfa_mi(source: str) -> bool:
+    """RNK baski sayfa esleme kaynagi mi (A20.3); `anchor` adimi `page_map` satirlari uretir."""
+    from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_BASKI
+
+    return source == KAYNAK_BASKI
+
+
 def _limit_reddet(limit: int | None) -> None:
     """Tanzil adimlarinda kismi calisma kabul edilmez (G-BUT ve capa kumesi bozulur)."""
     if limit is not None:
@@ -573,6 +580,12 @@ def anchor_komutu(
         from mutalaa_pipeline.adimlar import risale as risale_adimlari
 
         kod = risale_adimlari.komut_anchor(
+            source=source, dry_run=dry_run, force=force, config=config, kok=kok
+        )
+    elif _risale_sayfa_mi(source):  # RNK baski sayfa esleme: page_map satirlari (A20.3)
+        from mutalaa_pipeline.adimlar import risale_sayfa
+
+        kod = risale_sayfa.komut_anchor(
             source=source, dry_run=dry_run, force=force, config=config, kok=kok
         )
     elif meal_kaynaklari.kayitli_mi(source):  # iki meal: capa, ord, tanik skoru (A16.3)
