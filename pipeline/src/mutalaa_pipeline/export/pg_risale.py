@@ -64,6 +64,7 @@ from mutalaa_pipeline.anchor import content_hash
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.export.pg import (
     Hazirlik,
+    RisaleSayfaSatiri,
     _anchor_calismasi,
     _bildirim,
     _capa_listesi,
@@ -73,7 +74,7 @@ from mutalaa_pipeline.export.pg import (
     _zincir,
     _zincir_denetle,
 )
-from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_RNK, KAYNAKLAR
+from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_ORNEK, KAYNAK_RNK, KAYNAKLAR
 from mutalaa_pipeline.lineage import OZET_DESENI, UNITS_ADI
 from mutalaa_pipeline.normalize import tr_stem
 from mutalaa_pipeline.runctx import QaKaldi, RunContext
@@ -83,6 +84,11 @@ PARTI: Final = 5000  # `COPY` parti buyuklugu (satir); parti sinirlari islem sin
 ROLLER: Final = frozenset({ROL_GOVDE, ROL_BASLIK, ROL_DIPNOT})
 ISARET_TURLERI: Final = frozenset({"ar", "hasiye", "rnk"})  # birlestirme isareti `satir` yuklenmez
 ETIKET: Final = f"anchor {KAYNAK_RNK} {UNITS_ADI}"
+
+
+def etiket(source_id: str) -> str:
+    """Hata iletisi etiketi: `anchor {kaynak} units.jsonl` (RNK icin `ETIKET` ile ayni)."""
+    return f"anchor {source_id} {UNITS_ADI}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -261,7 +267,7 @@ def satir_coz(satir: Satir, source_id: str) -> RisaleSatiri:
 
 def satirlari_akit_risale(yol: Path, source_id: str) -> Iterator[RisaleSatiri]:
     """`units.jsonl` satirlarini akitip dogrular (bellekte tek satir)."""
-    for satir in satirlari_akit(yol, ETIKET):
+    for satir in satirlari_akit(yol, etiket(source_id)):
         yield satir_coz(satir, source_id)
 
 
@@ -272,7 +278,7 @@ def dosyayi_dogrula(yol: Path, source_id: str, sha256: str) -> RisaleGirdisi:
     sayi = 0
     for satir in satirlari_akit_risale(yol, source_id):
         if satir.anchor in gorulen:
-            raise GirdiHatasi(f"{ETIKET}: yinelenen anchor: {_capalar([satir.anchor])}")
+            raise GirdiHatasi(f"{etiket(source_id)}: yinelenen anchor: {_capalar([satir.anchor])}")
         gorulen.add(satir.anchor)
         kitaplar.add(satir.anchor.split(":")[1])
         sayi += 1
@@ -309,6 +315,16 @@ def hazirla(
     bildirimler = {slug: _bildirim(ingest[slug], kaynaklar[slug]) for slug in kaynak_idleri}
     yol = lineage.goreli_yol(ctx.veri_kok, units_dosya)
     girdiler = [lineage.Girdi(yol, sha, anchor_run_id)]
+    sayfalar: list[RisaleSayfaSatiri] = []
+    if source_id == KAYNAK_ORNEK:
+        # Fikstur (A20.5a): `page_map.jsonl` ayni anchor calismasindadir; birimlerle ayni islemde
+        # yuklenir (`pg._yukle`). Gercek RNK'da page_map ayri kaynaktir (`risale-baski-rnk`).
+        from mutalaa_pipeline.export import pg_risale_sayfa
+
+        sayfa_yol, sayfa_sha, sayfalar = pg_risale_sayfa.calismadan_oku(
+            ctx, klasor, manifest, source_id
+        )
+        girdiler.append(lineage.Girdi(sayfa_yol, sayfa_sha, anchor_run_id))
     for slug in kaynak_idleri:
         girdiler += [lineage.Girdi(d["yol"], d["sha256"]) for d in ham[slug]]
     return Hazirlik(
@@ -326,6 +342,7 @@ def hazirla(
         bildirimler=bildirimler,
         parmak=ctx.parmak_izi(girdiler),
         risale=risale,
+        risale_sayfa=sayfalar,
     )
 
 

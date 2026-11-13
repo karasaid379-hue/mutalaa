@@ -23,7 +23,8 @@ Iletiler ve rapor yalniz sayi, sayfa ve capa tasir; metin yazilmaz. Sayaclar: `s
 `sayfa_eklenen`, `sayfa_guncellenen`, `sayfa_degismeyen`, `sayfa_bolum_basi`, `sayfa_dosya`.
 """
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from pathlib import Path
 from typing import Final
 
 import psycopg
@@ -47,18 +48,25 @@ from mutalaa_pipeline.export.pg import (
     _zincir,
     _zincir_denetle,
 )
-from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_BASKI, KAYNAK_RNK
+from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_BASKI, KAYNAK_ORNEK, KAYNAK_RNK
 from mutalaa_pipeline.runctx import QaKaldi, RunContext
 from mutalaa_pipeline.staged import satirlari_oku
 
 SMALLINT_USTU: Final = 32767
 INT_USTU: Final = 2147483647
+# `page_map` kaynagi -> sayfa capalarinin birim olarak yuklendigi kaynak. Gercek RNK'da sayfa
+# eslemesi ayri kaynaktir (`risale-baski-rnk`) ve metin `risale-rnk-metin`dedir; fiksturde
+# (A20.5a) ikisi ayni kaynaktir (`test-risale-ornek`) ve `pg_risale.hazirla` onu birimlerle ayni
+# islemde yukler.
+METIN_KAYNAGI: Final = {KAYNAK_BASKI: KAYNAK_RNK, KAYNAK_ORNEK: KAYNAK_ORNEK}
 
 
-def kaynak_denetle(source_id: str) -> None:
-    """Yalniz `risale-baski-rnk` kabul edilir."""
-    if source_id != KAYNAK_BASKI:
+def kaynak_denetle(source_id: str) -> str:
+    """`page_map` kaynagi (`risale-baski-rnk` ya da fikstur) kabul edilir; metin kaynagini verir."""
+    metin = METIN_KAYNAGI.get(source_id)
+    if metin is None:
         raise GirdiHatasi(f"{source_id}: bu yukleme yalniz {KAYNAK_BASKI} icindir")
+    return metin
 
 
 # --- satirlari okuma -----------------------------------------------------------------------
@@ -114,16 +122,13 @@ def satirlari_coz(veri: bytes, source_id: str) -> list[RisaleSayfaSatiri]:
 # --- hazirlik ------------------------------------------------------------------------------
 
 
-def hazirla(
-    ctx: RunContext, source_id: str, run: str | None, ek_kaynaklar: Sequence[str]
-) -> Hazirlik:
-    """Veritabanina dokunmadan tum dosya onkosullarini denetler (RNK baski sayfa esleme)."""
-    kaynak_denetle(source_id)
-    kaynak_idleri = (source_id, *ek_kaynaklar)
-    kaynaklar = ctx.require_sources(kaynak_idleri)  # G-KAY: kayit gecerli, atif_metni dolu
-    anchor_run_id, klasor, manifest = _anchor_calismasi(ctx, source_id, run)
-    if not lineage.ciktilar_saglam(ctx.veri_kok, manifest):
-        raise GirdiHatasi("sayfa esleme calistirmasinin ciktilari saglam degil")
+def calismadan_baytlar(
+    ctx: RunContext, klasor: Path, manifest: Mapping[str, object]
+) -> tuple[str, str, bytes]:
+    """Anchor calismasinin `page_map.jsonl` dosyasi: `(veri koku yolu, sha256, bayt)`.
+
+    Dosya manifestteki ozetle dogrulanir; satirlar burada AYRISTIRILMAZ (`satirlari_coz`).
+    """
     beklenen = _manifest_ozet(manifest, SAYFA_ESLEME_ADI)
     if beklenen is None:
         raise GirdiHatasi(f"manifestte {SAYFA_ESLEME_ADI} yok (once anchor --source)")
@@ -135,11 +140,37 @@ def hazirla(
     sha = lineage.sha256_bayt(veri)
     if sha != beklenen:
         raise GirdiHatasi(f"{SAYFA_ESLEME_ADI} ozeti manifestle tutmuyor")
+    return lineage.goreli_yol(ctx.veri_kok, dosya), sha, veri
+
+
+def calismadan_oku(
+    ctx: RunContext, klasor: Path, manifest: Mapping[str, object], source_id: str
+) -> tuple[str, str, list[RisaleSayfaSatiri]]:
+    """`calismadan_baytlar` ve kati okuma: `(veri koku yolu, sha256, satirlar)`."""
+    yol, sha, veri = calismadan_baytlar(ctx, klasor, manifest)
+    return yol, sha, satirlari_coz(veri, source_id)
+
+
+def hazirla(
+    ctx: RunContext, source_id: str, run: str | None, ek_kaynaklar: Sequence[str]
+) -> Hazirlik:
+    """Veritabanina dokunmadan tum dosya onkosullarini denetler (RNK baski sayfa esleme).
+
+    Yalniz `risale-baski-rnk` icin: fiksturun `page_map` satirlari `pg_risale.hazirla` icinde,
+    birimlerle birlikte okunur (`calismadan_oku`).
+    """
+    if kaynak_denetle(source_id) != KAYNAK_RNK:
+        raise GirdiHatasi(f"{source_id}: page_map birimlerle birlikte yuklenir (export pg)")
+    kaynak_idleri = (source_id, *ek_kaynaklar)
+    kaynaklar = ctx.require_sources(kaynak_idleri)  # G-KAY: kayit gecerli, atif_metni dolu
+    anchor_run_id, klasor, manifest = _anchor_calismasi(ctx, source_id, run)
+    if not lineage.ciktilar_saglam(ctx.veri_kok, manifest):
+        raise GirdiHatasi("sayfa esleme calistirmasinin ciktilari saglam degil")
+    yol, sha, veri = calismadan_baytlar(ctx, klasor, manifest)
     zincir = _zincir(ctx, manifest)
     ingest, ham = _zincir_denetle(ctx, zincir, (KAYNAK_RNK,))
     qa_rapor_id = _qa_denetle(ctx, source_id, anchor_run_id, sha)  # dort kapi; kalirsa yukleme yok
     satirlar = satirlari_coz(veri, source_id)
-    yol = lineage.goreli_yol(ctx.veri_kok, dosya)
     # Ham dosyalar `risale-rnk-metin` ingest'inindir (ayni klasor iki kaydin kaynagidir).
     ham_dosyalar = {slug: ham[KAYNAK_RNK] for slug in kaynak_idleri}
     girdiler = [lineage.Girdi(yol, sha, anchor_run_id)]
@@ -243,11 +274,12 @@ def yukle(conn: psycopg.Connection, h: Hazirlik) -> dict[str, int]:
                     s.data_version,
                 )
             )
-    eksik_capa = _capa_listesi(conn, EKSIK_CAPA, (KAYNAK_RNK,))
+    metin_kaynagi = kaynak_denetle(h.source_id)
+    eksik_capa = _capa_listesi(conn, EKSIK_CAPA, (metin_kaynagi,))
     if eksik_capa:
         raise QaKaldi(
-            f"page_map capasi {KAYNAK_RNK} biriminde yok ({len(eksik_capa)}):"
-            f" {_capalar(eksik_capa)} (once export pg --source {KAYNAK_RNK})"
+            f"page_map capasi {metin_kaynagi} biriminde yok ({len(eksik_capa)}):"
+            f" {_capalar(eksik_capa)} (once export pg --source {metin_kaynagi})"
         )
     tasan = _capa_listesi(conn, OFSET_TASAN)
     if tasan:

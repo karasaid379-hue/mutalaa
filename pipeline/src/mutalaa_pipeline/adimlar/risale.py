@@ -40,7 +40,7 @@ from collections import Counter
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final
+from typing import Final, Protocol
 
 from mutalaa_pipeline import cikis, lineage
 from mutalaa_pipeline.adimlar.normalize_tanzil import INGEST_ALANLARI
@@ -458,8 +458,28 @@ def run_normalize(ctx: RunContext, slug: str = KAYNAK) -> AdimSonucu:
     return AdimSonucu(ctx.run_id, False, birim, klasor, diller=dict(diller))
 
 
-def run_anchor(ctx: RunContext, slug: str = KAYNAK) -> AdimSonucu:
-    """Kaynak kaydi, son normalize, parmak izi, capa alanlari, `staged`, manifest (en son)."""
+class AnchorEki(Protocol):
+    """`run_anchor` kancasi: ek girdi ve ek ciktilar (sentetik fikstur: `page_map`, `xref`; A20.5a).
+
+    `girdiler` parmak izine ve manifeste, `ciktilar` manifeste girer. `ciktilar` anchor satirlarini
+    (yazilan `units.jsonl` satirlari, capa sirasinda degil okunma sirasinda) alir; dosyalarini
+    `staged.dosya_yaz` ile yazar (`--dry-run`'da yazmaz) ve manifest `ayrintilar`ina eklenecek
+    alanlari dondurur.
+    """
+
+    def girdiler(self, ctx: RunContext) -> list[lineage.Girdi]: ...
+
+    def ciktilar(
+        self, ctx: RunContext, satirlar: Sequence[Satir], surum: str
+    ) -> tuple[list[lineage.Cikti], Mapping[str, object]]: ...
+
+
+def run_anchor(ctx: RunContext, slug: str = KAYNAK, *, ek: AnchorEki | None = None) -> AdimSonucu:
+    """Kaynak kaydi, son normalize, parmak izi, capa alanlari, `staged`, manifest (en son).
+
+    `ek` verilirse ek girdiler parmak izine, ek ciktilar manifeste girer (varsayilan: yok;
+    davranis degismez).
+    """
     kayit = ctx.require_sources(slug)[slug]
     if kayit.surum is None:
         raise GirdiHatasi(f"kaynak {slug}: surum cozulemedi (TOML surum alani yok)")
@@ -467,6 +487,8 @@ def run_anchor(ctx: RunContext, slug: str = KAYNAK) -> AdimSonucu:
     normalize = son_calisma(ctx, slug, NORMALIZE_ADIMI, ipucu=f"once: normalize --source {slug}")
     saglam_olmali(ctx, normalize)
     girdiler = [girdi_olarak(normalize)]
+    if ek is not None:
+        girdiler += ek.girdiler(ctx)
     parmak, onceki, atla = _atla(ctx, slug, girdiler)
     if atla:
         ctx.gunluk.yaz("INFO", "anchor_atlandi", source_id=slug)
@@ -477,16 +499,23 @@ def run_anchor(ctx: RunContext, slug: str = KAYNAK) -> AdimSonucu:
     etiket = f"normalize {slug} units.jsonl"
     siralar = ord_haritasi(satirlari_akit(dosya, etiket))  # 1. gecis: yalniz okuma sirasi
     kayitlar: list[tuple[SortKey, str, bytes]] = []
+    ek_satirlar: list[Satir] = []  # yalniz `ek` varken doldurulur
     sayilar: Counter[str] = Counter()
     for satir in satirlari_akit(dosya, etiket):  # 2. gecis: alanlar
         cikti = anchor_satiri(slug, satir, kayit.surum)
         capa = str(cikti["anchor"])
         cikti["ord"] = siralar[capa]
+        if ek is not None:
+            ek_satirlar.append(Satir("anchor", len(ek_satirlar) + 1, cikti))
         sayilar[f"rol_{cikti['role']}"] += 1
         sayilar["cumle"] += len(cikti["sentences"])  # type: ignore[arg-type]
         sayilar["isaret"] += len(cikti["marks"])  # type: ignore[arg-type]
         kayitlar.append((sort_key(parse(capa)), capa, satir_baytlari(cikti)))
     cikti_dosyasi = _siralayip_yaz(ctx, ctx.staged_dizin(slug) / lineage.UNITS_ADI, kayitlar)
+    ek_ciktilar: list[lineage.Cikti] = []
+    ek_ayrintilar: Mapping[str, object] = {}
+    if ek is not None:
+        ek_ciktilar, ek_ayrintilar = ek.ciktilar(ctx, ek_satirlar, kayit.surum)
     birim = cikti_dosyasi.satir or 0
     ctx.sayi("birim", birim)
     if ctx.dry_run:
@@ -497,7 +526,7 @@ def run_anchor(ctx: RunContext, slug: str = KAYNAK) -> AdimSonucu:
     ctx.manifest_yaz(
         klasor,
         girdiler=girdiler,
-        ciktilar=[cikti_dosyasi],
+        ciktilar=[cikti_dosyasi, *ek_ciktilar],
         parmak=parmak,
         ayrintilar={
             "kaynak": slug,
@@ -507,6 +536,7 @@ def run_anchor(ctx: RunContext, slug: str = KAYNAK) -> AdimSonucu:
             "birim": birim,
             "kitap": len({c.split(":")[1] for _, c, _ in kayitlar}),
             "sayilar": dict(sorted(sayilar.items())),
+            **ek_ayrintilar,
         },
     )
     ctx.gunluk.yaz("INFO", "anchor_bitti", source_id=slug, sayilar={"birim": birim})
@@ -573,6 +603,7 @@ __all__ = [
     "ANCHOR_ALANLARI",
     "NORMALIZE_ALANLARI",
     "AdimSonucu",
+    "AnchorEki",
     "anchor_satiri",
     "komut_anchor",
     "komut_normalize",

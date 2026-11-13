@@ -12,6 +12,10 @@ kitaplik): `qa` paketi onu ice aktarabilir.
                         `risale_rnk_kaynaklari`. `data/staged` birimleri `export pg` ile
                         yuklenir (G-KAY, G-BUT, G-CAP, G-NOR).
 
+    test-risale-ornek   Sentetik Risale fiksturu (A20.5a): `export pg` ile yuklenir; ingest,
+                        normalize, anchor ve qa `ingest/risale_ornek.py`, `adimlar/risale_ornek.py`
+                        ve `qa/run_risale_ornek.py` modullerindedir (`yukleme = True`).
+
     risale-baski-rnk    RNK baski sayfa esleme (A20.3, K-51 madde 6 ve 7): `tur = "baski"`. Bir
                         INGEST kaynagi degildir (`KAYNAKLAR`da yoktur): `risale-rnk-metin`
                         zincirinden `anchor --source risale-baski-rnk` adimiyla `page_map`
@@ -25,6 +29,8 @@ from typing import Final
 KAYNAK_DIYANET: Final = "risale-asil-nusha"
 KAYNAK_RNK: Final = "risale-rnk-metin"
 KAYNAK_BASKI: Final = "risale-baski-rnk"
+# Sentetik fikstur (A20.5a): `test-` onekli; ingest/normalize/anchor/qa kendi modullerindedir.
+KAYNAK_ORNEK: Final = "test-risale-ornek"
 # Diyanet karsilastirma verisi: birim yuklenmez, G-CAP ve G-NOR uygulanmaz (A20.1).
 RISALE_KAPILARI: Final = ("G-KAY", "G-BUT")
 # RNK metni: dort kapi (A20.2b); G-KAY ve G-BUT ingest, G-CAP ve G-NOR anchor ciktisinda kosar.
@@ -51,6 +57,12 @@ KAYNAKLAR: Final[dict[str, RisaleKaynagi]] = {
     KAYNAK_RNK: RisaleKaynagi(
         slug=KAYNAK_RNK,
         modul="mutalaa_pipeline.ingest.risale_rnk_kaynaklari",
+        yukleme=True,
+        kapilar=RNK_KAPILARI,
+    ),
+    KAYNAK_ORNEK: RisaleKaynagi(
+        slug=KAYNAK_ORNEK,
+        modul="mutalaa_pipeline.ingest.risale_ornek",
         yukleme=True,
         kapilar=RNK_KAPILARI,
     ),

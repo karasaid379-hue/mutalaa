@@ -29,7 +29,12 @@ from mutalaa_pipeline.anchor.ayet_sayilari import AYET_SAYILARI
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest import fikstur, tanzil, tanzil_bicim
 from mutalaa_pipeline.ingest.meal_kaynaklari import meal_mi
-from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_BASKI, KAYNAK_RNK, risale_mi
+from mutalaa_pipeline.ingest.risale_kaynaklari import (
+    KAYNAK_BASKI,
+    KAYNAK_ORNEK,
+    KAYNAK_RNK,
+    risale_mi,
+)
 from mutalaa_pipeline.komut_ortak import komutu_yurut
 from mutalaa_pipeline.lineage import NOTICE_ADI
 from mutalaa_pipeline.qa import (
@@ -299,6 +304,10 @@ def komut_qa_run(
         from mutalaa_pipeline.qa.run_risale_sayfa import komut_qa_run_risale_sayfa
 
         return komut_qa_run_risale_sayfa(run=run, gate=gate, config=config, kok=kok)
+    if source == KAYNAK_ORNEK:  # sentetik Risale fiksturu: dort kapi (A20.5a)
+        from mutalaa_pipeline.qa.run_risale_ornek import komut_qa_run_ornek
+
+        return komut_qa_run_ornek(run=run, gate=gate, config=config, kok=kok)
     if risale_mi(source):  # Diyanet Risale (karsilastirma verisi): G-KAY, G-BUT (A20.1)
         from mutalaa_pipeline.qa.run_risale import komut_qa_run_risale
 

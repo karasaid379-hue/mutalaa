@@ -38,6 +38,10 @@ RNK baski sayfa esleme (A20.3, K-51 madde 6 ve 7): `risale-baski-rnk` satirlari 
 upsert edilir; hat satir silmez (`export/pg_risale_sayfa.py`). `risale-rnk-metin` onceden
 yuklenmis olmali: capa `unit`te yoksa islem geri alinir (cikis 1).
 
+Sentetik Risale fiksturu (A20.5a): `test-risale-ornek` birimleri `pg_risale.py` ile (RNK ile ayni
+kurallar), kendi `page_map` satirlari (`source_id = test-risale-ornek`) AYNI islemde birimlerden
+sonra `pg_risale_sayfa.py` ile yuklenir. Fikstur `xref` satirlari bu adimda yuklenmez (A20.7b).
+
 Cikis kodlari: 0 basarili, 1 QA kapisi/ozet farki/eksik capa, 2 girdi ve yapilandirma (kayitsiz
 ya da gecersiz kaynak kaydi dahil). Iletilere satir icerigi ve baglanti dizesi yazilmaz; yalniz
 capa, sayi, ozet ve alan adi.
@@ -69,6 +73,7 @@ from mutalaa_pipeline.ingest import fikstur as fikstur_uretec
 from mutalaa_pipeline.ingest.meal_kaynaklari import MEAL_KAYNAKLARI, meal_mi
 from mutalaa_pipeline.ingest.risale_kaynaklari import (
     KAYNAK_BASKI,
+    KAYNAK_ORNEK,
     KAYNAK_RNK,
     baski_mi,
     risale_mi,
@@ -106,6 +111,7 @@ EK_KAYNAKLAR: Final[Mapping[str, tuple[str, ...]]] = {
     **{slug: () for slug in MEAL_KAYNAKLARI},
     KAYNAK_RNK: (),  # A20.2b: RNK Risale metni (pg_risale.py); Diyanet karsilastirmadir, yuklenmez
     KAYNAK_BASKI: (),  # A20.3: RNK baski sayfa esleme, page_map (pg_risale_sayfa.py)
+    KAYNAK_ORNEK: (),  # A20.5a: sentetik Risale fiksturu: birimler ve page_map (pg_risale.py)
 }
 # Birim degil yapi satiri yukleyen kaynaklar (K-43 madde 3): units.jsonl yerine markers/pages.
 YAPI_KAYNAKLARI: Final = frozenset({"tanzil-ust-veri"})
@@ -1170,6 +1176,10 @@ def _yukle(conn: psycopg.Connection, ctx: RunContext, h: Hazirlik) -> dict[str, 
         from mutalaa_pipeline.export import pg_risale
 
         sayilar.update(pg_risale.yukle(conn, ctx, h))
+        if h.risale_sayfa:  # fikstur (A20.5a): page_map ayni islemde, birimlerden sonra
+            from mutalaa_pipeline.export import pg_risale_sayfa
+
+            sayilar.update(pg_risale_sayfa.yukle(conn, h))
     elif h.risale_sayfa:
         from mutalaa_pipeline.export import pg_risale_sayfa
 

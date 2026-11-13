@@ -474,6 +474,13 @@ def _risale_rnk_mi(source: str) -> bool:
     return source == KAYNAK_RNK
 
 
+def _risale_ornek_mi(source: str) -> bool:
+    """Sentetik Risale fiksturu mu (A20.5a); normalize ve anchor kendi modulundedir."""
+    from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_ORNEK
+
+    return source == KAYNAK_ORNEK
+
+
 def _risale_sayfa_mi(source: str) -> bool:
     """RNK baski sayfa esleme kaynagi mi (A20.3); `anchor` adimi `page_map` satirlari uretir."""
     from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_BASKI
@@ -515,6 +522,12 @@ def normalize_komutu(
         from mutalaa_pipeline.adimlar import fikstur as fikstur_adimlari
 
         kod = fikstur_adimlari.komut_normalize(
+            source=source, dry_run=dry_run, force=force, config=config, kok=kok
+        )
+    elif _risale_ornek_mi(source):  # sentetik Risale fiksturu: ayni normalize kodu (A20.5a)
+        from mutalaa_pipeline.adimlar import risale_ornek as risale_ornek_adimlari
+
+        kod = risale_ornek_adimlari.komut_normalize(
             source=source, dry_run=dry_run, force=force, config=config, kok=kok
         )
     elif _risale_rnk_mi(source):  # RNK Risale: tr ve ar_norm anahtarlari (A20.2b)
@@ -574,6 +587,12 @@ def anchor_komutu(
         from mutalaa_pipeline.adimlar import fikstur as fikstur_adimlari
 
         kod = fikstur_adimlari.komut_anchor(
+            source=source, dry_run=dry_run, force=force, config=config, kok=kok
+        )
+    elif _risale_ornek_mi(source):  # sentetik Risale fiksturu: capa, page_map, xref (A20.5a)
+        from mutalaa_pipeline.adimlar import risale_ornek as risale_ornek_adimlari
+
+        kod = risale_ornek_adimlari.komut_anchor(
             source=source, dry_run=dry_run, force=force, config=config, kok=kok
         )
     elif _risale_rnk_mi(source):  # RNK Risale: capa, ord, marks, sentences (A20.2b)
