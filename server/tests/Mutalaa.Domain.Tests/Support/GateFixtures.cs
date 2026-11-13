@@ -21,8 +21,9 @@ internal static class GateFixtures
         TextStatus status = TextStatus.Onayli,
         bool aiDraft = false,
         UnitStatus unitStatus = UnitStatus.Etkin,
-        bool hasSuccessors = false) =>
-        new(anchor, source, status, aiDraft, unitStatus, hasSuccessors);
+        bool hasSuccessors = false,
+        string? hash = null) =>
+        new(anchor, source, status, aiDraft, unitStatus, hasSuccessors, hash);
 
     public static Guid Id(int n) => new(n, 0, 0, [0, 0, 0, 0, 0, 0, 0, 0]);
 
@@ -44,14 +45,26 @@ internal static class GateFixtures
     public static GateInput WithRegularSource(
         IReadOnlyList<GateUnit>? units = null,
         IReadOnlyList<GateXref>? xrefs = null,
-        IReadOnlyList<GateLexical>? lexicals = null) =>
+        IReadOnlyList<GateLexical>? lexicals = null,
+        IReadOnlyList<GateMeasurement>? gates = null) =>
         new()
         {
             Sources = [Src(Regular)],
             Units = units ?? [],
             Xrefs = xrefs ?? [],
             Lexicals = lexicals ?? [],
+            Gates = gates ?? [],
         };
+
+    public static GateMeasurement Gate(XrefType type, string setClass, string result) => new(type, setClass, result);
+
+    /// <summary>kok, lemma ve benzer_ayet icin silver sinifiyla gecen tur kapilari (public'te otomatik aday satirlarini acar).</summary>
+    public static GateMeasurement[] OpenGates() =>
+    [
+        Gate(XrefType.Kok, "silver", "gecti"),
+        Gate(XrefType.Lemma, "silver", "gecti"),
+        Gate(XrefType.BenzerAyet, "silver", "gecti"),
+    ];
 
     public static GateReportRow Single(GateResult result, GateSubjectKind kind) =>
         Assert.Single(result.Report.Rows, r => r.Kind == kind);

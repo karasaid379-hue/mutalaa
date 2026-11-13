@@ -211,7 +211,8 @@ public class GateMatrixTests
         foreach ((BuildFlavor flavor, bool expected) in cells)
         {
             GateXref xref = Xref(type, status, confidence);
-            GateResult result = GateEvaluator.Evaluate(flavor, WithRegularSource(xrefs: [xref]));
+            // Tur kapisi acik: bu matris onay/guven kurallarini olcer; kapi hucreleri Gate_matrix_* testlerindedir.
+            GateResult result = GateEvaluator.Evaluate(flavor, WithRegularSource(xrefs: [xref], gates: OpenGates()));
 
             XrefVerdict verdict = result.XrefVerdicts[xref.Id];
             Assert.True(expected == verdict.Included, $"{flavor} {type.ToLabel()} {status.ToLabel()} {confidence}: beklenen giris={expected}");
@@ -251,7 +252,7 @@ public class GateMatrixTests
 
         Assert.True(GateEvaluator.Evaluate(BuildFlavor.Dev, WithRegularSource(xrefs: [xref])).IsXrefIncluded(xref.Id));
         Assert.True(GateEvaluator.Evaluate(BuildFlavor.Internal, WithRegularSource(xrefs: [xref])).IsXrefIncluded(xref.Id));
-        Assert.Equal(!humanApproval, GateEvaluator.Evaluate(BuildFlavor.Public, WithRegularSource(xrefs: [xref])).IsXrefIncluded(xref.Id));
+        Assert.Equal(!humanApproval, GateEvaluator.Evaluate(BuildFlavor.Public, WithRegularSource(xrefs: [xref], gates: OpenGates())).IsXrefIncluded(xref.Id));
         Assert.Equal(humanApproval, XrefTypeClass.RequiresHumanApproval(type));
         Assert.Equal(!humanApproval, XrefTypeClass.IsAutomatic(type));
     }

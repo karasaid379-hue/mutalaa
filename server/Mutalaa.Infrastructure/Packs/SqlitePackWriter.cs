@@ -15,6 +15,12 @@ public static class PackMetaKeys
     /// yazilir; attribution satiri bundan etkilenmez (P-11). Diger paketlerde anahtar yoktur.
     /// </summary>
     public const string WordFixCount = "word_fix_count";
+
+    /// <summary>
+    /// Tur kapisi ozeti (K-51 madde 5 ve 11): RFC 8785 kanonik JSON <c>{tur: {set_sinifi, sonuc}}</c>. Yalniz kelime-kok (kok, lemma) ve core (benzer_ayet)
+    /// paketlerinde bulunur; paket ozetine girer. Uygulama ve rapor "silver ile olculdu" bilgisini buradan okur.
+    /// </summary>
+    public const string GateSummary = "gate_summary";
 }
 
 /// <summary>
@@ -307,6 +313,11 @@ public sealed class SqlitePackWriter
         if (content.WordFixCount is { } fixes)
         {
             meta[PackMetaKeys.WordFixCount] = fixes.ToString(CultureInfo.InvariantCulture);
+        }
+
+        if (content.GateSummary is { } gateSummary)
+        {
+            meta[PackMetaKeys.GateSummary] = gateSummary;
         }
 
         return meta;

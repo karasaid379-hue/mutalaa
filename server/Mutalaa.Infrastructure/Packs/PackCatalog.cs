@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Mutalaa.Domain.Anchors;
+using Mutalaa.Domain.Links;
 
 namespace Mutalaa.Infrastructure.Packs;
 
@@ -34,7 +35,7 @@ public sealed record PackSourceBinding(string Slug, PackSourceRole Role, bool Re
 /// <summary>
 /// Katalogdaki bir paket (manifest satirinin kaynagi: Icerik paketleri 5). SchemaVersion her zaman <see cref="PackFormat.SchemaVersion"/>'dur.
 /// CarriesQuranStructure: paket quran_word, quran_marker ve page_map tablolarini doldurur (yalniz core).
-/// CarriesLexicon: paket word_morph, root, lemma ve lemma_gloss tablolarini doldurur (yalniz kelime-kok; tr_form ve tr_root_index A18'e kadar bos).
+/// CarriesLexicon: paket word_morph, root, lemma (QAC Arapca ve Turkce, K-51 madde 9), lemma_gloss, tr_root_index ve tr_form tablolarini doldurur (yalniz kelime-kok).
 /// </summary>
 public sealed record PackDefinition(
     string PackId,
@@ -75,6 +76,12 @@ public sealed class PackCatalog
     /// </summary>
     public static IReadOnlyList<string> LexiconSourceSlugs { get; } = [QacMorphologySlug, GlossSourceSlug];
 
+    /// <summary>Turkce lemma kaynagi (kaikki-tr): lemma (lang = 'tr') satirlarinin kaynagi; kelime-kok'te atif rolu, Required: false.</summary>
+    public const string TrLemmaSourceSlug = "kaikki-tr";
+
+    /// <summary>QurSim (benzer_ayet kaynaklarindan biri): core'da atif rolu, Required: false; benzer_ayet satiri varsa kunyesi listelenir.</summary>
+    public const string QursimSlug = "qursim";
+
     /// <summary>Risale uclu baglantilarin gittigi paket (Icerik paketleri 4 madde 2); A20'ye kadar katalogda degildir.</summary>
     public const string RisaleIndexPackId = "risale-dizin";
 
@@ -111,6 +118,7 @@ public sealed class PackCatalog
                 new PackSourceBinding("elmalili-sade-meal", PackSourceRole.Content, Required: false),
                 new PackSourceBinding("tanzil-simple-clean", PackSourceRole.Attribution, Required: true),
                 new PackSourceBinding("tanzil-ust-veri", PackSourceRole.Structure, Required: true, PageMapLayout: "medine-604"),
+                new PackSourceBinding(QursimSlug, PackSourceRole.Attribution, Required: false),
             ],
             CarriesQuranStructure: true),
         new PackDefinition(
@@ -122,6 +130,7 @@ public sealed class PackCatalog
             [
                 new PackSourceBinding(QacMorphologySlug, PackSourceRole.Dictionary, Required: true),
                 new PackSourceBinding(GlossSourceSlug, PackSourceRole.Attribution, Required: false),
+                new PackSourceBinding(TrLemmaSourceSlug, PackSourceRole.Attribution, Required: false),
             ],
             CarriesLexicon: true),
         new PackDefinition(
@@ -202,6 +211,26 @@ public sealed class PackCatalog
                 ? "hadis-tecrid"
                 : "hadis-kutub-i-sitte",
             _ => null,
+        };
+    }
+
+    /// <summary>
+    /// Baglantinin yazilacagi paket, tur dahil (Icerik paketleri 4; K-51 madde 3): QAC'den tureyen kok ve lemma baglantilari iki ucu core olsa da
+    /// kelime-kok'e (core QAC verisi tasimaz); benzer_ayet iki ucu da core'daysa core'a (yani q: capalari) gider. Digerleri
+    /// <see cref="PackIdForXref(string, string)"/> kuralini izler (benzer_ayet'in iki ucu q: ise sonuc core'dur). Uclardan biri paketlenemiyorsa (ayristirilamayan capa, konu:) null.
+    /// </summary>
+    public string? PackIdForXref(XrefType type, string srcAnchor, string dstAnchor)
+    {
+        string? generic = PackIdForXref(srcAnchor, dstAnchor);
+        if (generic is null)
+        {
+            return null;
+        }
+
+        return type switch
+        {
+            XrefType.Kok or XrefType.Lemma => KelimeKokPackId,
+            _ => generic,
         };
     }
 

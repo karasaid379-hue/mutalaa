@@ -177,7 +177,9 @@ public class ReleaseEndToEndTests(PublishedWorld world, PostgresFixture postgres
 
         Dictionary<string, string[]> expectedNames = new(StringComparer.Ordinal)
         {
-            ["core"] = ["kok-orta", "kok-yuksek"],
+            // K-51: benzer_ayet core'da, kok ve lemma kelime-kok'te; xref_gate fiksturde bos oldugundan public'te otomatik aday satirlar girmez (kapi-olculmedi), onayli girer.
+            ["core"] = flavor == BuildFlavor.Public ? ["benzer-onayli"] : ["benzer-onayli", "benzer-yuksek"],
+            [EndToEndData.KelimeKokPack] = flavor == BuildFlavor.Public ? ["kok-onayli"] : ["kok-onayli", "kok-orta", "kok-yuksek"],
             ["hadis-sentetik"] = flavor == BuildFlavor.Public ? ["atif-onayli"] : ["atif-aday", "atif-onayli"],
             ["test-kucuk"] = ["iktibas-kucuk"],
             ["tefsir-test-ornek"] = ["ima-tefsir"],
@@ -186,22 +188,23 @@ public class ReleaseEndToEndTests(PublishedWorld world, PostgresFixture postgres
         List<string> everywhere = [];
         foreach (ManifestPack pack in manifest.Packs)
         {
-            if (pack.PackId == EndToEndData.KelimeKokPack)
-            {
-                continue; // kelime-kok baglanti (xref_idx) tasimaz; baglantilar A18 ile core ve metin paketlerindedir.
-            }
-
             using PackDb db = await Harness.OpenPackAsync(flavor, pack.PackId, ct);
             string[] actual = [.. db.Column("SELECT id FROM xref_idx").Order(StringComparer.Ordinal)];
             string[] expected = [.. expectedNames[pack.PackId].Select(n => AnyId(content, n)).Order(StringComparer.Ordinal)];
             Assert.Equal(expected, actual);
             everywhere.AddRange(actual);
 
-            if (pack.PackId == "core")
+            if (pack.PackId == EndToEndData.KelimeKokPack && flavor != BuildFlavor.Public)
             {
                 // approved/folded onceden hesaplanir: 0,6 guvenli aday katlanir (< 0,70), 0,9 guvenli aday katlanmaz.
                 Assert.Equal((0, 1), (db.Scalar<int>("SELECT approved FROM xref_idx WHERE id = $id", ("$id", AnyId(content, "kok-orta"))), db.Scalar<int>("SELECT folded FROM xref_idx WHERE id = $id", ("$id", AnyId(content, "kok-orta")))));
                 Assert.Equal((0, 0), (db.Scalar<int>("SELECT approved FROM xref_idx WHERE id = $id", ("$id", AnyId(content, "kok-yuksek"))), db.Scalar<int>("SELECT folded FROM xref_idx WHERE id = $id", ("$id", AnyId(content, "kok-yuksek")))));
+            }
+
+            if (pack.PackId == "core")
+            {
+                Assert.Equal(1, db.Scalar<int>("SELECT approved FROM xref_idx WHERE id = $id", ("$id", AnyId(content, "benzer-onayli"))));
+                Assert.Equal("{}", db.Scalar<string>("SELECT value FROM pack_meta WHERE key = 'gate_summary'"));
             }
 
             if (pack.PackId == "hadis-sentetik")
@@ -217,6 +220,19 @@ public class ReleaseEndToEndTests(PublishedWorld world, PostgresFixture postgres
         IReadOnlyList<GateRow> rows = EndToEndHarness.GateRows(await ReleaseOfAsync(flavor, ct));
         Assert.Equal(("girmedi", "P-07", "red", 1), Reduce(Assert.Single(rows, r => r.Kind == "baglanti" && r.Id == "atif" && r.Reason == "red")));
         Assert.Equal(("girmedi", "P-07", "dusuk-guven", 1), Reduce(Assert.Single(rows, r => r.Kind == "baglanti" && r.Id == "kok" && r.Reason == "dusuk-guven")));
+        if (flavor == BuildFlavor.Public)
+        {
+            // K-51 madde 5: olculmemis turun aday satirlari public'e girmez; rapor "girmedi - P-07" yazar ve onayli satir girer.
+            Assert.Equal(("girmedi", "P-07", "kapi-olculmedi", 2), Reduce(Assert.Single(rows, r => r.Kind == "baglanti" && r.Id == "kok" && r.Reason == "kapi-olculmedi")));
+            Assert.Equal(("girmedi", "P-07", "kapi-olculmedi", 1), Reduce(Assert.Single(rows, r => r.Kind == "baglanti" && r.Id == "benzer_ayet" && r.Reason == "kapi-olculmedi")));
+            GateRow gateRow = Assert.Single(rows, r => r.Kind == "kapi" && r.Id == "kok");
+            Assert.Equal(("girmedi", "P-07", "kapi-olculmedi"), (gateRow.Decision, gateRow.Rule, gateRow.Reason));
+        }
+        else
+        {
+            Assert.Equal(("girdi", (string?)null, "aday", 2), Reduce(Assert.Single(rows, r => r.Kind == "baglanti" && r.Id == "kok" && r.Reason == "aday")));
+        }
+
         if (flavor == BuildFlavor.Public)
         {
             Assert.Equal(("girmedi", "P-07", "aday-public", 1), Reduce(Assert.Single(rows, r => r.Kind == "baglanti" && r.Id == "atif" && r.Reason == "aday-public")));

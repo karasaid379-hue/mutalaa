@@ -96,6 +96,42 @@ public sealed record LemmaGlossRow(
     string Origin,
     string Version);
 
+/// <summary>
+/// lemma satiri (lang = 'tr'; K-51 madde 9): Turkce lemma. Status onayli/aday/red metnidir; OnayYolu editor ya da otomatik (onayli satirda dolu);
+/// HasKanit: kanit sutunu bir jsonb nesnesi (icerigi okunmaz). Freq kulliyat sikligidir (pakette occurrences olur). Origin kaikki/editor/...
+/// </summary>
+public sealed record TrLemmaRow(
+    int Id,
+    string Text,
+    string TextClean,
+    int? RootId,
+    int Occurrences,
+    int? ArLemmaId,
+    bool EtymologicalOnly,
+    int? Freq,
+    string Status,
+    string? OnayYolu,
+    bool HasKanit,
+    string? Origin,
+    string SourceId,
+    string DataVersion);
+
+/// <summary>tr_root_index satiri (K-51 madde 1): UnitHash satir uretilirken birimin content_hash ilk 16 hanesidir. Anchor birim (meal) capasidir.</summary>
+public sealed record TrRootIndexRow(string Anchor, int SpanStart, int SpanEnd, int RootId, int TrLemmaId, bool EtymologicalOnly, string UnitHash, string DataVersion);
+
+/// <summary>tr_form satiri: Turkce bicimden lemmaya.</summary>
+public sealed record TrFormRow(string KeyWide, string KeyNarrow, int TrLemmaId, int Freq, string DataVersion);
+
+/// <summary>xref_gate satiri (K-51 madde 5 ve 11): Tur etiketi, SetSinifi altin/silver/sentetik, Sonuc gecti/kaldi.</summary>
+public sealed record XrefGateRow(
+    string Tur,
+    string SetSinifi,
+    string Sonuc,
+    string SetSurumu,
+    IReadOnlyList<string> SetKaynaklari,
+    string RaporSha256,
+    DateTime OlculduAt);
+
 /// <summary>quran_word_fix satiri (K-50 madde 4 ve 6): Field root_id, lemma_id, pos ya da features; NewValue metindir (alan turune cevrilir).</summary>
 public sealed record QuranWordFixRow(Guid Id, string Anchor, string Field, string NewValue, string Status);
 
@@ -115,7 +151,8 @@ public sealed record PageMapRow(
 
 /// <summary>
 /// xref satiri. Uc araliklari editoryal yari acik int4range sinirlaridir (bos ise null). Score ve Confidence real (float) sutunlardir.
-/// LexiconStatus: evidence.lexicon_status (alan yoksa null).
+/// LexiconStatus: evidence.lexicon_status (alan yoksa null). SrcHash ve DstHash: evidence.src_hash ve dst_hash (uc birimin content_hash ilk 16 hanesi;
+/// K-51 madde 1; alan yoksa null). EvidenceSourceId: evidence.source_id (satirin veri kaynagi; pakete atif satiri eklemek icin; alan yoksa null).
 /// </summary>
 public sealed record XrefRow(
     Guid Id,
@@ -131,12 +168,15 @@ public sealed record XrefRow(
     string Evidence,
     string Status,
     string DataVersion,
-    string? LexiconStatus);
+    string? LexiconStatus,
+    string? SrcHash = null,
+    string? DstHash = null,
+    string? EvidenceSourceId = null);
 
 /// <summary>
-/// P-09 kapsamindaki satir: quran_word_fix ve lemma_gloss durum sutunu (Status) tasir; tr_root_index ve tr_form durum sutunu tasimaz
-/// (LinkedLemmaApproved: bagli Turkce lemma onayli). Id anahtari: quran_word_fix id, lemma_gloss lemma_id, tr_root_index "anchor|span_start",
-/// tr_form "key_narrow|tr_lemma_id".
+/// P-09 kapsamindaki satir: quran_word_fix ve lemma_gloss durum sutunu (Status) tasir. Okuyucu yalniz bu iki tabloyu satir olarak getirir; Turkce lemma,
+/// tr_root_index ve tr_form snapshot'ta kendi listelerindedir (TrLemmas, TrRootIndex, TrForms) ve kapi girdisine GateInputBuilder'da donusur. tr_root_index ve
+/// tr_form icin LinkedLemmaApproved eski (listesiz) kurulum icindir. Id anahtari: quran_word_fix id, lemma_gloss lemma_id.
 /// </summary>
 public sealed record LexicalRow(LexicalKind Kind, string Id, string? Status, bool LinkedLemmaApproved);
 
@@ -161,7 +201,7 @@ public sealed class EditorialSnapshot
 
     public IReadOnlyList<XrefRow> Xrefs { get; init; } = [];
 
-    /// <summary>Acik review satiri olan baglantilar (public icin P-07 ek kosulu).</summary>
+    /// <summary>Acik (durum = acik ya da uzmanda) review satiri olan baglantilar (public icin P-07 ek kosulu).</summary>
     public IReadOnlySet<Guid> OpenReviewXrefIds { get; init; } = new HashSet<Guid>();
 
     public IReadOnlyList<LexicalRow> Lexicals { get; init; } = [];
@@ -177,6 +217,18 @@ public sealed class EditorialSnapshot
 
     /// <summary>Butun quran_word_fix satirlari (durum ne olursa olsun; kapi yalniz onayliyi uygular).</summary>
     public IReadOnlyList<QuranWordFixRow> WordFixes { get; init; } = [];
+
+    /// <summary>Turkce lemmalar (lang = 'tr'; butun durumlar; K-51 madde 9). Kapi yalniz onayliyi alir.</summary>
+    public IReadOnlyList<TrLemmaRow> TrLemmas { get; init; } = [];
+
+    /// <summary>tr_root_index satirlari (anchor, span_start sirali).</summary>
+    public IReadOnlyList<TrRootIndexRow> TrRootIndex { get; init; } = [];
+
+    /// <summary>tr_form satirlari (key_narrow, tr_lemma_id sirali).</summary>
+    public IReadOnlyList<TrFormRow> TrForms { get; init; } = [];
+
+    /// <summary>xref_gate satirlari (tur, set_sinifi sirali); bos ise hicbir tur olculmemistir.</summary>
+    public IReadOnlyList<XrefGateRow> XrefGates { get; init; } = [];
 
     /// <summary>Istenen derleme turunun en son yayinlandi yayini; yoksa null.</summary>
     public PreviousReleaseRow? PreviousRelease { get; init; }

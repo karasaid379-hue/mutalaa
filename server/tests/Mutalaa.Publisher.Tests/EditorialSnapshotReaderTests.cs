@@ -455,12 +455,135 @@ public partial class EditorialSnapshotReaderTests(EditorialDatabase<EditorialSna
         Assert.Equal("onayli", gloss.Status);
         LexicalRow fix = Assert.Single(rows, r => r.Kind == LexicalKind.QuranWordFix);
         Assert.Equal("aday", fix.Status);
+        // K-51: Turkce lemma, tr_root_index ve tr_form artik LexicalRow degil, kendi listelerindedir.
+        Assert.DoesNotContain(rows, r => r.Kind is LexicalKind.TrForm or LexicalKind.TrRootIndex or LexicalKind.TrLemma);
+        IReadOnlyList<TrFormRow> forms = await reader.ReadTrFormsAsync(ct);
         Assert.Equal(
-            [($"{slug}|{approvedLemma}", true), ($"{slug}|{candidateLemma}", false)],
-            rows.Where(r => r.Kind == LexicalKind.TrForm && r.Id.StartsWith(slug, StringComparison.Ordinal))
-                .OrderBy(r => r.Id, StringComparer.Ordinal)
-                .Select(r => (r.Id, r.LinkedLemmaApproved)));
-        Assert.All(rows.Where(r => r.Kind == LexicalKind.TrForm), r => Assert.Null(r.Status));
+            [(slug, approvedLemma, "test"), (slug, candidateLemma, "test")],
+            forms.Where(f => f.KeyNarrow == slug).OrderBy(f => f.TrLemmaId).Select(f => (f.KeyNarrow, f.TrLemmaId, f.DataVersion)));
+    }
+
+    [Fact]
+    public async Task It_reads_turkish_lemmas_with_the_approval_path_and_whether_the_evidence_is_an_object()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        string slug = Unique("test-trlemma-");
+        await InsertSourceAsync(slug, "sozluk", ct: ct);
+        int baseId = 93000 + Random.Shared.Next(0, 1000);
+        const string insert =
+            """
+            INSERT INTO icerik.lemma (id, lang, text, text_clean, freq, etymological_only, origin, status, onay_yolu, kanit, source_id, data_version)
+            VALUES (@id, 'tr', 'deneme', 'deneme-' || @id, @freq, @ety, 'kaikki', @st::icerik.xref_status, @yol, @kanit::jsonb, @s, 'dv-1')
+            """;
+        await Db.ExecuteAsync(insert, ct, ("id", baseId), ("freq", 7), ("ety", false), ("st", "onayli"), ("yol", "otomatik"), ("kanit", "{\"politika\": \"deneme\"}"), ("s", slug));
+        await Db.ExecuteAsync(insert, ct, ("id", baseId + 1), ("freq", null), ("ety", true), ("st", "onayli"), ("yol", "editor"), ("kanit", null), ("s", slug));
+        await Db.ExecuteAsync(insert, ct, ("id", baseId + 2), ("freq", 1), ("ety", false), ("st", "aday"), ("yol", null), ("kanit", null), ("s", slug));
+
+        await using EditorialSnapshotReader reader = await EditorialSnapshotReader.OpenAsync(Db.ConnectionString, ct);
+        IReadOnlyList<TrLemmaRow> lemmas = await reader.ReadTrLemmasAsync(ct);
+
+        TrLemmaRow auto = Assert.Single(lemmas, l => l.Id == baseId);
+        Assert.Equal(("onayli", "otomatik", true, 7, "kaikki", slug, "dv-1"), (auto.Status, auto.OnayYolu, auto.HasKanit, auto.Freq, auto.Origin, auto.SourceId, auto.DataVersion));
+        TrLemmaRow editor = Assert.Single(lemmas, l => l.Id == baseId + 1);
+        Assert.Equal(("editor", false, (int?)null, true), (editor.OnayYolu, editor.HasKanit, editor.Freq, editor.EtymologicalOnly));
+        TrLemmaRow candidate = Assert.Single(lemmas, l => l.Id == baseId + 2);
+        Assert.Equal(("aday", (string?)null), (candidate.Status, candidate.OnayYolu));
+        Assert.All(lemmas.Where(l => l.SourceId == slug), l => Assert.Equal("deneme", l.Text));
+    }
+
+    [Fact]
+    public async Task It_reads_tr_root_index_with_unit_hash_in_anchor_byte_order_and_xref_gate_rows()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        string slug = Unique("test-trindeks-");
+        await InsertSourceAsync(slug, "sozluk", ct: ct);
+        int lemmaId = 94000 + Random.Shared.Next(0, 1000);
+        int rootId = 94000 + Random.Shared.Next(0, 1000);
+        await Db.ExecuteAsync(
+            "INSERT INTO icerik.root (id, letters, source_id, data_version) VALUES (@id, @l, @s, 'test')",
+            ct,
+            ("id", rootId),
+            ("l", string.Create(CultureInfo.InvariantCulture, $"kok{rootId}")),
+            ("s", slug));
+        await Db.ExecuteAsync(
+            "INSERT INTO icerik.lemma (id, lang, text, text_clean, status, onay_yolu, source_id, data_version) VALUES (@id, 'tr', 'deneme', 'deneme-' || @id, 'onayli'::icerik.xref_status, 'editor', @s, 'test')",
+            ct,
+            ("id", lemmaId),
+            ("s", slug));
+        const string insertIndex =
+            """
+            INSERT INTO icerik.tr_root_index (anchor, span_start, span_end, root_id, tr_lemma_id, etymological_only, unit_hash, data_version)
+            VALUES (@a, @st, @en, @r, @l, @e, @h, 'dv-2')
+            """;
+        await Db.ExecuteAsync(insertIndex, ct, ("a", $"k:{slug}:p2"), ("st", 4), ("en", 9), ("r", rootId), ("l", lemmaId), ("e", true), ("h", HashA[..16]));
+        await Db.ExecuteAsync(insertIndex, ct, ("a", $"k:{slug}:p1"), ("st", 10), ("en", 12), ("r", rootId), ("l", lemmaId), ("e", false), ("h", HashB[..16]));
+        await Db.ExecuteAsync(insertIndex, ct, ("a", $"k:{slug}:p1"), ("st", 2), ("en", 5), ("r", rootId), ("l", lemmaId), ("e", false), ("h", HashB[..16]));
+        await Db.ExecuteAsync(
+            "INSERT INTO icerik.xref_gate (tur, set_sinifi, set_surumu, sonuc, set_kaynaklari, rapor_sha256, data_version) VALUES ('kok'::icerik.xref_type, 'silver', 's1', 'gecti', ARRAY['a@1','b@2'], @h, 'dv-3')",
+            ct,
+            ("h", HashA));
+
+        await using EditorialSnapshotReader reader = await EditorialSnapshotReader.OpenAsync(Db.ConnectionString, ct);
+        IReadOnlyList<TrRootIndexRow> rows = [.. (await reader.ReadTrRootIndexAsync(ct)).Where(r => r.Anchor.Contains(slug, StringComparison.Ordinal))];
+
+        Assert.Equal([($"k:{slug}:p1", 2), ($"k:{slug}:p1", 10), ($"k:{slug}:p2", 4)], rows.Select(r => (r.Anchor, r.SpanStart)));
+        TrRootIndexRow last = rows[2];
+        Assert.Equal((9, rootId, lemmaId, true, HashA[..16], "dv-2"), (last.SpanEnd, last.RootId, last.TrLemmaId, last.EtymologicalOnly, last.UnitHash, last.DataVersion));
+
+        XrefGateRow gate = Assert.Single(await reader.ReadXrefGatesAsync(ct), g => g.RaporSha256 == HashA && g.Tur == "kok");
+        Assert.Equal(("silver", "gecti", "s1"), (gate.SetSinifi, gate.Sonuc, gate.SetSurumu));
+        Assert.Equal(["a@1", "b@2"], gate.SetKaynaklari);
+        Assert.Equal(DateTimeKind.Utc, gate.OlculduAt.Kind);
+
+        EditorialSnapshot snapshot = await reader.LoadAsync(BuildFlavor.Public, ct);
+        Assert.Contains(snapshot.TrRootIndex, r => r.Anchor == $"k:{slug}:p2");
+        Assert.Contains(snapshot.TrLemmas, l => l.Id == lemmaId);
+        Assert.Contains(snapshot.XrefGates, g => g.Tur == "kok" && g.SetSinifi == "silver");
+    }
+
+    [Fact]
+    public async Task It_reads_the_xref_end_hashes_and_the_evidence_source_and_counts_uzmanda_reviews_as_open()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        string slug = Unique("test-xhash-");
+        Guid withHash = Guid.NewGuid();
+        Guid withoutHash = Guid.NewGuid();
+        Guid expert = Guid.NewGuid();
+        Guid decided = Guid.NewGuid();
+        await InsertSourceAsync(slug, ct: ct);
+        await InsertUnitAsync($"k:{slug}:p1", slug, ct: ct);
+        await InsertUnitAsync($"k:{slug}:p2", slug, ord: 2, ct: ct);
+        const string insertXref =
+            """
+            INSERT INTO icerik.xref (id, src_anchor, dst_anchor, type, score, confidence, evidence, origin, status, data_version)
+            VALUES (@id, @src, @dst, 'benzer_ayet'::icerik.xref_type, 0.7, 0.9, @ev::jsonb, 'hat'::icerik.xref_origin, 'aday'::icerik.xref_status, 'dv-1')
+            """;
+        await Db.ExecuteAsync(insertXref, ct, ("id", withHash), ("src", $"k:{slug}:p1"), ("dst", $"k:{slug}:p2"), ("ev", "{\"src_hash\": \"aaaaaaaaaaaaaaaa\", \"dst_hash\": \"bbbbbbbbbbbbbbbb\", \"source_id\": \"qursim\"}"));
+        await Db.ExecuteAsync(insertXref, ct, ("id", withoutHash), ("src", $"k:{slug}:p2"), ("dst", $"k:{slug}:p1"), ("ev", "{}"));
+        await Db.ExecuteAsync(insertXref, ct, ("id", expert), ("src", $"k:{slug}:p3"), ("dst", $"k:{slug}:p4"), ("ev", "{}"));
+        await Db.ExecuteAsync(insertXref, ct, ("id", decided), ("src", $"k:{slug}:p4"), ("dst", $"k:{slug}:p3"), ("ev", "{}"));
+        const string reviewSql = "INSERT INTO icerik.review (hedef_tablo, hedef_anahtar, xref_id, alan, eylem, durum, koken, oneren) VALUES ('xref', @k, @x, 'status', 'oner', @d::icerik.inceleme_durumu, 'hat'::icerik.xref_origin, 'test-hat')";
+        await Db.ExecuteAsync(reviewSql, ct, ("k", expert.ToString()), ("x", expert), ("d", "uzmanda"));
+        await Db.ExecuteAsync(reviewSql, ct, ("k", decided.ToString()), ("x", decided), ("d", "reddedildi"));
+
+        await using EditorialSnapshotReader reader = await EditorialSnapshotReader.OpenAsync(Db.ConnectionString, ct);
+        List<XrefRow> xrefs = [];
+        await foreach (XrefRow xref in reader.ReadXrefsAsync(ct))
+        {
+            if (xref.Id == withHash || xref.Id == withoutHash)
+            {
+                xrefs.Add(xref);
+            }
+        }
+
+        IReadOnlySet<Guid> reviews = await reader.ReadOpenReviewXrefIdsAsync(ct);
+
+        XrefRow a = xrefs.Single(x => x.Id == withHash);
+        Assert.Equal(("aaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbb", "qursim"), (a.SrcHash, a.DstHash, a.EvidenceSourceId));
+        XrefRow b = xrefs.Single(x => x.Id == withoutHash);
+        Assert.Equal(((string?)null, (string?)null, (string?)null), (b.SrcHash, b.DstHash, b.EvidenceSourceId));
+        Assert.Contains(expert, reviews);
+        Assert.DoesNotContain(decided, reviews);
     }
 
     [Fact]

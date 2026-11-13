@@ -28,6 +28,9 @@ public static class GateInputBuilder
     private const string ApprovedLabel = "onayli";
     private const string SeparateIndexKind = "baglanti_verisi";
 
+    /// <summary>content_hash ozet on eki (K-51 madde 1: evidence.src_hash, dst_hash ve tr_root_index.unit_hash).</summary>
+    private const int HashPrefixLength = 16;
+
     /// <param name="fileExists">Kaynak kaydi dosyasi denetimi; null ise <see cref="File.Exists(string?)"/>. Testler enjekte eder.</param>
     public static GateInput Build(
         EditorialSnapshot snapshot,
@@ -118,6 +121,19 @@ public static class GateInputBuilder
                 row.Kind == LexicalKind.QuranWordFix ? fixes.Defect(row.Id) : null));
         }
 
+        AddTurkishLexicals(snapshot, lexicals);
+
+        List<GateMeasurement> gates = [];
+        foreach (XrefGateRow row in snapshot.XrefGates)
+        {
+            if (!XrefTypeLabels.TryParseLabel(row.Tur, out XrefType gateType))
+            {
+                throw new InvalidDataException($"Bilinmeyen xref_gate turu: {row.Tur}");
+            }
+
+            gates.Add(new GateMeasurement(gateType, row.SetSinifi, row.Sonuc));
+        }
+
         return new GateInput
         {
             Sources = sources,
@@ -125,10 +141,56 @@ public static class GateInputBuilder
             Xrefs = xrefs,
             Packs = packs,
             Lexicals = lexicals,
+            Gates = gates,
             CarriedPackIds = carriedPackIds ?? [],
             PreviousAnchors = previousAnchors ?? [],
         };
     }
+
+    // Turkce lemma, tr_root_index ve tr_form (K-51 madde 1 ve 9): kapi girdisine her satir bir GateLexical olur. tr_root_index ve tr_form satiri
+    // bagli lemmanin kimligini tasir (kapi lemmanin kararini izler); tr_root_index ayrica birim capasi ve kaydedilen unit_hash degerini tasir.
+    // Kimlikler: lemma "{id}", tr_root_index "{anchor}|{span_start}", tr_form "{key_narrow}|{tr_lemma_id}" (PackAssembler ayni anahtari kullanir).
+    private static void AddTurkishLexicals(EditorialSnapshot snapshot, List<GateLexical> lexicals)
+    {
+        Dictionary<int, TrLemmaRow> lemmas = [];
+        foreach (TrLemmaRow lemma in snapshot.TrLemmas)
+        {
+            lemmas[lemma.Id] = lemma;
+            lexicals.Add(new GateLexical(
+                LexicalKind.TrLemma,
+                lemma.Id.ToString(CultureInfo.InvariantCulture),
+                ParseStatus(lemma.Status),
+                LinkedLemmaApproved: false,
+                LemmaId: lemma.Id,
+                OnayYolu: lemma.OnayYolu,
+                HasKanit: lemma.HasKanit));
+        }
+
+        foreach (TrRootIndexRow row in snapshot.TrRootIndex)
+        {
+            lexicals.Add(new GateLexical(
+                LexicalKind.TrRootIndex,
+                row.Anchor + "|" + row.SpanStart.ToString(CultureInfo.InvariantCulture),
+                null,
+                IsApproved(lemmas, row.TrLemmaId),
+                LemmaId: row.TrLemmaId,
+                UnitAnchor: row.Anchor,
+                UnitHash: row.UnitHash));
+        }
+
+        foreach (TrFormRow row in snapshot.TrForms)
+        {
+            lexicals.Add(new GateLexical(
+                LexicalKind.TrForm,
+                row.KeyNarrow + "|" + row.TrLemmaId.ToString(CultureInfo.InvariantCulture),
+                null,
+                IsApproved(lemmas, row.TrLemmaId),
+                LemmaId: row.TrLemmaId));
+        }
+    }
+
+    private static bool IsApproved(Dictionary<int, TrLemmaRow> lemmas, int lemmaId) =>
+        lemmas.TryGetValue(lemmaId, out TrLemmaRow? lemma) && string.Equals(lemma.Status, ApprovedLabel, StringComparison.Ordinal);
 
     /// <summary>Kaynak kaydi: pipeline/sources/{slug}.toml dosyasi var. Slug dosya adi olarak gecerli degilse kayitsizdir (yol kacisi yok).</summary>
     public static bool IsRegistered(string sourcesDir, string slug, Func<string, bool> fileExists)
@@ -160,6 +222,7 @@ public static class GateInputBuilder
         pack.CarriesLexicon
         && (snapshot.Roots.Count > 0
             || snapshot.Lemmas.Count > 0
+            || snapshot.TrLemmas.Count > 0
             || snapshot.LemmaGlosses.Count > 0
             || snapshot.QuranWords.Any(w => w.MorphSource is not null));
 
@@ -211,7 +274,8 @@ public static class GateInputBuilder
             throw new InvalidDataException($"Bilinmeyen birim durumu ({unit.Anchor}): {unit.Status}");
         }
 
-        return new GateUnit(unit.Anchor, unit.SourceId, textStatus, unit.IsAiDraft, status, HasSuccessors(unit));
+        string? hashPrefix = unit.ContentHash.Length >= HashPrefixLength ? unit.ContentHash[..HashPrefixLength] : unit.ContentHash;
+        return new GateUnit(unit.Anchor, unit.SourceId, textStatus, unit.IsAiDraft, status, HasSuccessors(unit), hashPrefix);
     }
 
     // K-47 madde 2: yonlendirme "dolu" successors'tir. jsonb sutunda '[]' (bos dizi) ve JSON 'null' bos sayilir; yalniz en az bir ogeli dizi doludur.
@@ -274,7 +338,9 @@ public static class GateInputBuilder
             lexiconApproved,
             srcSource,
             dstSource,
-            separateIndex);
+            separateIndex,
+            xref.SrcHash,
+            xref.DstHash);
     }
 
     private static TextStatus ParseTextStatus(string label, string anchor) =>

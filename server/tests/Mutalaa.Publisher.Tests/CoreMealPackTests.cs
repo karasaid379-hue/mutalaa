@@ -86,10 +86,12 @@ public class CoreMealPackTests
         PackDefinition core = PackCatalog.Default.Get("core");
 
         Assert.Equal("Kur'an ve Elmalılı mealleri", core.Title);
+        // qursim (K-51 madde 3): benzer_ayet satirlarinin kaynagi, atif rolunde ve istege bagli.
         Assert.Equal(
-            [OriginalSlug, PlainSlug],
+            [OriginalSlug, PlainSlug, "qursim"],
             core.Sources.Where(s => !s.Required).Select(s => s.Slug).Order(StringComparer.Ordinal));
-        Assert.All(core.Sources.Where(s => !s.Required), s => Assert.Equal(PackSourceRole.Content, s.Role));
+        Assert.All(core.Sources.Where(s => !s.Required && s.Slug != "qursim"), s => Assert.Equal(PackSourceRole.Content, s.Role));
+        Assert.Equal(PackSourceRole.Attribution, core.Sources.Single(s => s.Slug == "qursim").Role);
         Assert.Equal(
             ["elmalili-meal", "elmalili-sade-meal", "tanzil-uthmani"],
             core.ContentSources.Select(s => s.Slug).Order(StringComparer.Ordinal));

@@ -171,7 +171,7 @@ public class GateRuleTests
         GateXref atThreshold = Xref(XrefType.Kok, XrefStatus.Aday, XrefTypeClass.ConfidenceMin, id: 1);
         GateXref below = Xref(XrefType.Kok, XrefStatus.Aday, 0.4999, id: 2);
 
-        GateResult result = GateEvaluator.Evaluate(BuildFlavor.Public, WithRegularSource(xrefs: [atThreshold, below]));
+        GateResult result = GateEvaluator.Evaluate(BuildFlavor.Public, WithRegularSource(xrefs: [atThreshold, below], gates: OpenGates()));
 
         Assert.True(result.IsXrefIncluded(atThreshold.Id));
         Assert.False(result.IsXrefIncluded(below.Id));
@@ -236,7 +236,7 @@ public class GateRuleTests
         GateXref kokYes = Xref(XrefType.Kok, XrefStatus.Aday, 0.9, lexiconApproved: true, id: 3);
         GateXref similarNo = Xref(XrefType.BenzerAyet, XrefStatus.Aday, 0.9, lexiconApproved: false, id: 4);
 
-        GateInput input = WithRegularSource(xrefs: [kokNo, lemmaNo, kokYes, similarNo]);
+        GateInput input = WithRegularSource(xrefs: [kokNo, lemmaNo, kokYes, similarNo], gates: OpenGates());
         GateResult publicResult = GateEvaluator.Evaluate(BuildFlavor.Public, input);
         GateResult internalResult = GateEvaluator.Evaluate(BuildFlavor.Internal, input);
 

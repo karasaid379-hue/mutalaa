@@ -15,6 +15,9 @@ public enum GateSubjectKind
     Birim = 2,
     Baglanti = 3,
     Sozluk = 4,
+
+    /// <summary>Otomatik turun yayin kapisi (xref_gate; K-51 madde 5 ve 11). Id tur etiketidir.</summary>
+    Kapi = 5,
 }
 
 /// <summary>Rapor JSON etiketleri. Acik switch; yansima ve kulturlu donusum yok.</summary>
@@ -34,6 +37,7 @@ public static class GateLabels
         GateSubjectKind.Birim => "birim",
         GateSubjectKind.Baglanti => "baglanti",
         GateSubjectKind.Sozluk => "sozluk",
+        GateSubjectKind.Kapi => "kapi",
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
     };
 }
