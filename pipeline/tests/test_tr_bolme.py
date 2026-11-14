@@ -17,6 +17,7 @@ from mutalaa_pipeline.enrich.tr_roots.bolme import (
     ROL_TARIF,
     Parca,
     bol,
+    ek_zinciri_mi,
     kesme_tekle,
     parcalar,
 )
@@ -83,3 +84,63 @@ def test_bos_ve_sozcuksuz_metin() -> None:
 
 def test_sondaki_tire_ve_kesme_sozcuge_katilmaz() -> None:
     assert [p.yuzey for p in parcalar("kalem- ve kalem' ve")] == ["kalem", "ve", "kalem", "ve"]
+
+
+@pytest.mark.parametrize(
+    ("govde", "kalan"),
+    [
+        ("Deneme", "nin"),  # unluyle biten: tamlayan (n)In
+        ("Deneme", "yi"),  # belirtme (y)I
+        ("Deneme", "ye"),  # yonelme (y)A
+        ("Deneme", "de"),  # bulunma
+        ("Deneme", "den"),  # ayrilma
+        ("Deneme", "ler"),  # cogul
+        ("Deneme", "lerin"),  # cogul + tamlayan
+        ("Deneme", "dir"),  # bildirme
+        ("Deneme", "ydi"),  # bildirme (y)DI
+        ("Deneme", "deki"),  # bulunma + ilgi
+        ("Kor", "dan"),  # unsuzle biten, arka unlu
+        ("Kor", "un"),  # yuvarlak arka unlu: u
+        ("Kor", "larının"),  # cogul + 3. kisi iyeligi + tamlayan (n buffer)
+        ("Kor", "lar'ın"),  # ek icindeki kesme yok sayilir
+        ("Deneme", "miz"),  # iyelik (m)Iz: unluyle biten, ince
+        ("Kur'ân", "ın"),  # sapkali unlu: iki uyumdan biri
+        ("Kur'ân", "in"),
+    ],
+)
+def test_ek_zinciri_kabul(govde: str, kalan: str) -> None:
+    assert ek_zinciri_mi(govde, kalan)
+
+
+@pytest.mark.parametrize(
+    ("govde", "kalan"),
+    [
+        ("Deneme", ""),  # bos
+        ("Deneme", "m"),  # unlusuz tek harf
+        ("Deneme", "meli"),  # zincir degil
+        ("Bol", "den"),  # unlu uyumu bozuk (o -> a)
+        ("Deneme", "ın"),  # unluyle biten govdeden sonra unlu ile baslayan ek
+        ("Kor", "yı"),  # unsuzle biten govdeden sonra kaynastirma y
+        ("Mur", "ame"),
+        ("Deneme", "xyz"),
+        ("Deneme", "dene"),
+    ],
+)
+def test_ek_zinciri_ret(govde: str, kalan: str) -> None:
+    assert not ek_zinciri_mi(govde, kalan)
+
+
+def test_ic_kesmeli_sozcuk_butun_kalir_ve_ayrilan_yalniz_gercek_ek() -> None:
+    sonuc = bol("Dene'meli Kor'dan Bol'den")
+    assert [p.yuzey for p in sonuc.parcalar] == ["Dene'meli", "Kor", "Bol'den"]
+    assert [a.metin for a in sonuc.atlananlar] == ["'dan"]
+    # lemmatizer girdisi ic kesmeyi siler, kod noktasi araligi sozcugun tamamini kapsar
+    assert sonuc.parcalar[0].lemmatizer_girdisi == "denemeli"
+    assert (sonuc.parcalar[0].bas, sonuc.parcalar[0].son) == (0, 9)
+
+
+def test_liste_girdisi_ek_zinciri_sinamasindan_once_korunur() -> None:
+    # `ma'na` listede: `na` ek gibi gorunse de govdeye aittir; ardindan gelen `'da` ek olur
+    sonuc = bol("Ma'na'da")
+    assert [(p.yuzey, p.bas, p.son) for p in sonuc.parcalar] == [("Ma'na", 0, 5)]
+    assert [a.metin for a in sonuc.atlananlar] == ["'da"]

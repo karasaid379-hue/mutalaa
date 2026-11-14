@@ -54,6 +54,7 @@ class TurSonucu:
     referans_kapsami: dict[str, object] = field(default_factory=dict)
     alt_sonuclar: dict[str, str] = field(default_factory=dict)
     uretim_kaynaklari: list[str] = field(default_factory=list)
+    kaldi_nedeni: str | None = None  # kapi esikleri tutsa bile sonucun `kaldi` yazilma nedeni
 
     @property
     def gate_tur(self) -> str:
@@ -89,7 +90,7 @@ def tahmin_ozeti(parcalar: Sequence[str]) -> str:
 def rapor_govdesi(
     s: TurSonucu, olculdu: datetime, gerileme: Sequence[Mapping[str, object]]
 ) -> dict[str, object]:
-    return {
+    govde: dict[str, object] = {
         "rapor_surumu": RAPOR_SURUMU,
         "tur": s.cli_tur,
         "xref_gate_tur": s.gate_tur,
@@ -115,6 +116,9 @@ def rapor_govdesi(
         "uretim_komutu": s.manifest["uretim_komutu"],
         "gerileme": list(gerileme),
     }
+    if s.kaldi_nedeni is not None:  # yalniz doluysa yazilir: eski raporlarin bicimi degismez
+        govde["kaldi_nedeni"] = s.kaldi_nedeni
+    return govde
 
 
 def govde_ozeti(govde: Mapping[str, object]) -> str:

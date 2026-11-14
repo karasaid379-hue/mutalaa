@@ -24,6 +24,8 @@ from mutalaa_pipeline.qa.checks.tr_roots import KAPI_ISLEVLERI, TrRootsGirdisi
 from mutalaa_pipeline.qa.run_tr_roots import yukle
 from mutalaa_pipeline.sources.kayit import Kaynak
 
+DOSYALAR = ("tr_lemmas.jsonl", "tr_forms.jsonl")
+
 
 @pytest.fixture
 def d(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> TrDunya:
@@ -84,7 +86,7 @@ def test_lemma_satirlari_kanit_kok_ve_siklik(d: TrDunya) -> None:
     assert onayli == {"tavan", "dolap", "emin", "pelin"}
     for ad in onayli:
         k = lm[ad]["kanit"]
-        assert isinstance(k, dict) and k["politika_surumu"] == "1" and k["kaynaklar"]
+        assert isinstance(k, dict) and k["politika_surumu"] == "2" and k["kaynaklar"]
         assert lm[ad]["root_letters_bw"] is not None
     assert lm["dolap"]["ar_lemma_qac_ref"] == "samal" and lm["tavan"]["ar_lemma_qac_ref"] is None
     assert lm["tavan"]["freq"] == 3
@@ -119,6 +121,52 @@ def test_ayni_girdi_ayni_baytlar_ve_manifest(d: TrDunya) -> None:
     dosya = d.veri / "reports"
     yan = [json.loads(p.read_bytes()) for p in dosya.glob("*-tr-roots.json")]
     assert len(yan) == 2 and yan[0]["istatistik"]["siniflar"]["onayli_otomatik"]["tur"] == 4
+
+
+def test_hash_tohumu_manifest_ve_raporda_uyari_cikis_kodu_degismez(
+    d: TrDunya, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setenv("PYTHONHASHSEED", "7")
+    assert d.enrich() == 0  # uyari cikis kodunu bozmaz
+    err = capsys.readouterr().err
+    assert "UYARI" in err and "PYTHONHASHSEED=7" in err and "PYTHONHASHSEED=0" in err
+    assert d.manifest()["ayrintilar"]["python_hash_seed"] == "7"  # type: ignore[index]
+    (yan,) = [json.loads(p.read_bytes()) for p in (d.veri / "reports").glob("*-tr-roots.json")]
+    assert yan["python_hash_seed"] == "7"
+    assert len(yan["uyarilar"]) == 1 and "PYTHONHASHSEED=7" in yan["uyarilar"][0]
+
+
+def test_hash_tohumu_ayarsizsa_rastgele_yazilir_ve_uyarilir(
+    d: TrDunya, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.delenv("PYTHONHASHSEED", raising=False)
+    assert d.enrich() == 0
+    assert "UYARI" in capsys.readouterr().err
+    assert d.manifest()["ayrintilar"]["python_hash_seed"] == "rastgele"  # type: ignore[index]
+
+
+def test_hash_tohumu_sifirsa_uyari_yok(
+    d: TrDunya, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setenv("PYTHONHASHSEED", "0")
+    assert d.enrich() == 0
+    assert "UYARI" not in capsys.readouterr().err
+    assert d.manifest()["ayrintilar"]["python_hash_seed"] == "0"  # type: ignore[index]
+    (yan,) = [json.loads(p.read_bytes()) for p in (d.veri / "reports").glob("*-tr-roots.json")]
+    assert yan["uyarilar"] == []
+
+
+def test_hash_tohumu_staged_ciktiyi_degistirmez(
+    d: TrDunya, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Sahte lemmatizer ile tohum yalniz kayda gecer; staged satirlar bayt bayt ayni kalir."""
+    monkeypatch.setenv("PYTHONHASHSEED", "0")
+    assert d.enrich() == 0
+    a = {ad: (d.son_calisma(KAIKKI, "enrich") / ad).read_bytes() for ad in DOSYALAR}
+    monkeypatch.setenv("PYTHONHASHSEED", "1")
+    assert d.enrich(force=True) == 0
+    b = {ad: (d.son_calisma(KAIKKI, "enrich") / ad).read_bytes() for ad in DOSYALAR}
+    assert a == b
 
 
 def test_satirlar_sirali_ve_zaman_damgasiz(d: TrDunya) -> None:

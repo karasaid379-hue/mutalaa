@@ -26,7 +26,13 @@ from mutalaa_pipeline import cikis, lineage
 from mutalaa_pipeline.enrich.rapor import yan_rapor_yaz
 from mutalaa_pipeline.enrich.tr_roots.eslesme import QacEnvanteri
 from mutalaa_pipeline.enrich.tr_roots.etimoloji import DIL_OTA, DIL_TR, KaikkiIndeksi, dokum_oku
-from mutalaa_pipeline.enrich.tr_roots.lemmatize import Lemmatizer, ZeyrekLemmatizer, zeyrek_surumu
+from mutalaa_pipeline.enrich.tr_roots.lemmatize import (
+    Lemmatizer,
+    ZeyrekLemmatizer,
+    hash_tohumu,
+    hash_tohumu_uyarisi,
+    zeyrek_surumu,
+)
 from mutalaa_pipeline.enrich.tr_roots.politika import (
     POLITIKA_ADI,
     POLITIKA_SURUMU,
@@ -216,6 +222,11 @@ def run_enrich_tr_roots(
     ctx.sayi("tur", int(str(ist["tur"])))
     ctx.sayi("token", int(str(ist["token"])))
     ctx.sayi("tr_lemma", len(uretim.lemma_satirlari))
+    tohum = hash_tohumu()
+    uyari = hash_tohumu_uyarisi(tohum)
+    if uyari is not None:  # cikis kodunu etkilemez; stderr, gunluk ve rapor/manifestte gorunur
+        sys.stderr.write(f"enrich tr-roots: {uyari}\n")
+        ctx.gunluk.yaz("WARNING", "enrich_tr_roots_hash_tohumu", source_id=KAYNAK)
     if ctx.dry_run:
         ctx.gunluk.yaz("INFO", "enrich_tr_roots_dry_run", source_id=KAYNAK)
         return AdimSonucu(ctx.run_id, False, uretim, None)
@@ -243,6 +254,7 @@ def run_enrich_tr_roots(
             "meal_run": {m: c.run_id for m, c in meal_calismalari.items()},
             "qac_run": qac.run_id,
             "zeyrek_surumu": zeyrek_surumu(),
+            "python_hash_seed": tohum,
             "kaikki_madde": {"tr": tr_madde, "ota": ota_madde},
             "sayilar": {
                 "tur": ist["tur"],
@@ -266,6 +278,8 @@ def run_enrich_tr_roots(
             "min_siklik": min_sik,
             "mealler": mealler,
             "zeyrek_surumu": zeyrek_surumu(),
+            "python_hash_seed": tohum,
+            "uyarilar": [uyari] if uyari is not None else [],
             "istatistik": ist,
         },
     )

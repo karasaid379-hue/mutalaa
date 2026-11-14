@@ -8,6 +8,9 @@ Satirlar ACIKCA SENTETIKTIR (uydurma sozcukler, anlamsiz Arapca harf dizileri). 
 
 import gzip
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -34,6 +37,7 @@ from mutalaa_pipeline.enrich.tr_roots.eslesme import (
 from mutalaa_pipeline.enrich.tr_roots.etimoloji import (
     DIL_OTA,
     DIL_TR,
+    KAYNAK_SABLONLARI,
     KaikkiIndeksi,
     Kanit,
     dokum_oku,
@@ -44,6 +48,9 @@ from mutalaa_pipeline.enrich.tr_roots.lemmatize import (
     Cozum,
     ZeyrekLemmatizer,
     _cozumleri_topla,
+    _ozellik_hesabini_kopyalat,
+    hash_tohumu,
+    hash_tohumu_uyarisi,
 )
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 
@@ -81,13 +88,20 @@ def test_root_sablonu_baska_dil_kanit_degil() -> None:
     assert m is not None and m.kanitlar == ()
 
 
-@pytest.mark.parametrize(
-    "ad", ["bor", "bor+", "lbor", "slbor", "der", "der+", "inh", "inh+", "calque"]
-)
+@pytest.mark.parametrize("ad", ["bor", "bor+", "lbor", "slbor", "der", "der+", "inh", "inh+"])
 def test_arapca_kaynakli_sablon_etimon_kanittir(ad: str) -> None:
     m = madde_cikar(kayit(sablon(ad, **{"1": "tr", "2": "ar", "3": ETIMON_SML})), DIL_TR)
     assert m is not None
     assert m.kanitlar == (Kanit("etimon", f"etymology_templates.{ad}", ETIMON_SML),)
+
+
+def test_calque_sablonu_yapisal_kanit_degildir() -> None:
+    """K-51 madde 9 (b): ceviri ariciligi (calque) soy kaniti sayilmaz; politika surumu 2."""
+    assert "calque" not in KAYNAK_SABLONLARI
+    m = madde_cikar(kayit(sablon("calque", **{"1": "tr", "2": "ar", "3": ETIMON_SML})), DIL_TR)
+    assert m is not None and m.kanitlar == () and m.osmanlica == () and not m.yapisal
+    ota = madde_cikar(kayit(sablon("calque", **{"1": "tr", "2": "ota", "3": "ددد"})), DIL_TR)
+    assert ota is not None and ota.osmanlica == ()
 
 
 def test_kaynak_dili_arapca_degilse_kanit_degil() -> None:
@@ -271,3 +285,75 @@ def test_zeyrek_gercek_kapsam_ve_susturma(
     yakalanan = capsys.readouterr()
     assert "APPENDING RESULT" not in yakalanan.out + yakalanan.err
     assert lem.analiz("kitaplar") is a  # onbellek
+
+
+# --- PYTHONHASHSEED (A18 inceleme bulgusu 1) ----------------------------------------------------
+
+
+def test_hash_tohumu_ve_uyari_metni(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("PYTHONHASHSEED", raising=False)
+    assert hash_tohumu() == "rastgele"
+    assert "PYTHONHASHSEED=rastgele" in str(hash_tohumu_uyarisi())
+    monkeypatch.setenv("PYTHONHASHSEED", "3")
+    assert hash_tohumu() == "3" and "PYTHONHASHSEED=3" in str(hash_tohumu_uyarisi())
+    monkeypatch.setenv("PYTHONHASHSEED", "0")
+    assert hash_tohumu_uyarisi() is None
+    assert hash_tohumu_uyarisi("5") is not None and hash_tohumu_uyarisi("0") is None
+
+
+def test_zeyrek_ozellik_hesabi_her_cagrida_yeni_kume_dondurur() -> None:
+    """lru_cache'li islev ayni kumeyi dondurup kirlenmeye yol aciyordu; sarmalayici kopya verir."""
+    pytest.importorskip("zeyrek")
+    from zeyrek import attributes, morphotactics, rulebasedanalyzer
+
+    _ozellik_hesabini_kopyalat()
+    _ozellik_hesabini_kopyalat()  # idempotent
+    a = attributes.calculate_phonetic_attributes("deneme")
+    b = attributes.calculate_phonetic_attributes("deneme")
+    assert a == b and a is not b
+    a.add(attributes.PhoneticAttribute.LastLetterDropped)  # eski davranista b de kirlenirdi
+    assert attributes.PhoneticAttribute.LastLetterDropped not in (
+        attributes.calculate_phonetic_attributes("deneme")
+    )
+    # modullerin ice aktardigi adlar da ayni sarmalayiciyi gosterir
+    assert morphotactics.calculate_phonetic_attributes is attributes.calculate_phonetic_attributes
+    assert rulebasedanalyzer.calculate_phonetic_attributes is (
+        attributes.calculate_phonetic_attributes
+    )
+
+
+TOHUM_SOZCUKLERI = ("göz", "adı", "adım", "inin", "inse", "insi", "reddi", "meddini", "aramayız")
+TOHUM_BETIGI = (
+    "import json, sys\n"
+    "from pathlib import Path\n"
+    "from mutalaa_pipeline.enrich.tr_roots.lemmatize import ZeyrekLemmatizer\n"
+    "lm = ZeyrekLemmatizer(Path(sys.argv[1]))\n"
+    "cikti = {w: sorted([c.lemma, c.pos] for c in lm.analiz(w).cozumler) for w in sys.argv[2:]}\n"
+    "sys.stdout.write(json.dumps(cikti, ensure_ascii=True, sort_keys=True))\n"
+)
+
+
+def test_zeyrek_cozumu_karma_tohumundan_bagimsiz() -> None:
+    """Farkli PYTHONHASHSEED degerleri ayni cozumleri verir (eskiden 0/1/2 tohumlari ayrisirdi)."""
+    pytest.importorskip("zeyrek")
+    depo = Path(__file__).resolve().parents[2] / "data" / "gelen" / "nltk-punkt"
+    adaylar = sorted(depo.glob("*/nltk_data")) if depo.is_dir() else []
+    if not adaylar:
+        pytest.skip("data/gelen/nltk-punkt yok")
+    surecler = {
+        tohum: subprocess.Popen(
+            [sys.executable, "-c", TOHUM_BETIGI, str(adaylar[-1]), *TOHUM_SOZCUKLERI],
+            env={**os.environ, "PYTHONHASHSEED": tohum},
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        for tohum in ("0", "1", "2")
+    }
+    ciktilar: dict[str, dict[str, list[list[str]]]] = {}
+    for tohum, surec in surecler.items():
+        out, err = surec.communicate(timeout=240)
+        assert surec.returncode == 0, err.decode("utf-8", "replace")[-300:]
+        ciktilar[tohum] = json.loads(out)
+    assert ciktilar["0"] == ciktilar["1"] == ciktilar["2"]
+    assert ["göz", "Noun"] in ciktilar["0"]["göz"]  # kirlenmis sozlukte `Unk` donerdi
+    assert ["ad", "Noun"] in ciktilar["0"]["adı"]

@@ -214,7 +214,7 @@ def test_ilk_yukleme_lemma_review_indeks_ve_formlar(d: TrDunya, conn: psycopg.Co
     )
     assert kok == ROOT_ID["Sml"] and ar == AR_ID["samal"]
     assert isinstance(kanit, dict) and kanit["qac"]["root_id"] == kok  # type: ignore[index]
-    assert kanit["qac"]["ar_lemma_id"] == ar and kanit["politika_surumu"] == "1"  # type: ignore[index]
+    assert kanit["qac"]["ar_lemma_id"] == ar and kanit["politika_surumu"] == "2"  # type: ignore[index]
     tavan = tr_lemma(conn, "tavan")
     assert tavan[4] == ROOT_ID["bnr"] and tavan[5] is None and tavan[6] is False
     # aday: kok onerisi lemma satirinda DEGIL (review ve kanit icinde)

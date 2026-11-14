@@ -271,6 +271,48 @@ def test_kok_olc_kapi_gecer() -> None:
     assert s.sonuc == "gecti"
 
 
+def test_kok_olc_kapi_yalniz_otomatik_onayli_tahminleri_olcer() -> None:
+    """K-51 madde 11: editor onayli tahminler kapiya girmez, ayri bilgi alaninda raporlanir."""
+    manifest, ornekler, evren = _olcum_dunyasi()
+    don = [str(o["id"]) for o in ornekler[:4]]
+    otomatik = {
+        don[0]: _tahmin(don[0], "k1x"),  # dogru
+        don[1]: _tahmin(don[1], "k3x"),  # yanlis
+    }
+    editor = {
+        don[2]: Tahmin(don[2], "k2x", "editor", frozenset({"kaikki-tr"})),  # dogru (editor)
+        don[3]: Tahmin(don[3], "k9x", "editor", frozenset({"kaikki-tr"})),  # yanlis (editor)
+    }
+    sadece = kok_olc(manifest, ornekler, evren, otomatik)
+    karisik = kok_olc(manifest, ornekler, evren, {**otomatik, **editor})
+    # kapi olculeri ve data_version editor satirlarindan etkilenmez
+    assert karisik.olculer == sadece.olculer
+    assert karisik.sonuc == sadece.sonuc
+    assert karisik.tahmin_ozeti == sadece.tahmin_ozeti
+    assert (
+        karisik.ayrintilar["dondurulmus_kapi_olcumu"]
+        == sadece.ayrintilar["dondurulmus_kapi_olcumu"]
+    )
+    assert karisik.referans_kapsami["tahmin_toplam"] == 2
+    # yalniz otomatik: 2 tahmin, 1 dogru -> kesinlik 0,5 (editor dogrusu kesinligi yukseltmez)
+    kapi = karisik.ayrintilar["dondurulmus_kapi_olcumu"]
+    assert kapi["tahminli"] == 2 and kapi["dogru"] == 1  # type: ignore[index]
+    assert karisik.ayrintilar["kapi_tahmin_onay_yolu"] == "otomatik"
+    assert karisik.ayrintilar["tahmin_onay_yolu"] == {"otomatik": 2, "editor": 2}
+    bilgi = karisik.ayrintilar["editor_onayli_bilgi"]
+    assert bilgi["tahmin"] == 2 and bilgi["referansli"] == 2  # type: ignore[index]
+    assert bilgi["referansli_dogru"] == 1 and bilgi["referansli_kesinlik"] == 0.5  # type: ignore[index]
+    assert sadece.ayrintilar["editor_onayli_bilgi"]["tahmin"] == 0  # type: ignore[index]
+    assert sadece.ayrintilar["editor_onayli_bilgi"]["referansli_kesinlik"] is None  # type: ignore[index]
+
+
+def test_kok_dongusellik_denetimi_editor_kaynaklarini_kapsamaz() -> None:
+    manifest, ornekler, evren = _olcum_dunyasi()
+    editor = {"x": Tahmin("x", "k1x", "editor", frozenset({"quranwbw-tr"}))}
+    s = kok_olc(manifest, ornekler, evren, editor)  # kapiya girmeyen satir dongusellik sayilmaz
+    assert s.uretim_kaynaklari == []
+
+
 def test_kok_olc_kappa_kaynaklar_arasi_uyum() -> None:
     manifest, ornekler, evren = _olcum_dunyasi()
     don = [str(o["id"]) for o in ornekler[:4]]

@@ -19,6 +19,9 @@ Karar uc siniftan biridir:
 * `kok_yok`: guvenilir kanit yok (bilinmeyen sozcuk, kapali sinif, madde ya da kanit yok, kanit var
   ama QAC kokune eslesmiyor). Bu sozcuge kok atanmaz ve lemma satiri acilmaz.
 
+Surum 2: `calque` sablonu yapisal kanit listesinden cikarildi (K-51 madde 9 (b): `bor`, `der`,
+`inh`, `root`, `ety`, `etymon` ailesi; ceviri ariciligi soy kaniti degildir).
+
 Otomatik eslemede `etymological_only` her zaman false'tur (anlam kaymasi otomatik taninmaz).
 """
 
@@ -39,7 +42,7 @@ from mutalaa_pipeline.enrich.tr_roots.etimoloji import KaikkiIndeksi, Madde
 from mutalaa_pipeline.enrich.tr_roots.lemmatize import Analiz
 
 POLITIKA_ADI: Final = "tr-kok-otomatik-onay"
-POLITIKA_SURUMU: Final = "1"
+POLITIKA_SURUMU: Final = "2"
 YONTEM_ADI: Final = "kaikki-yapisal-etimoloji+qac-eslesme"
 YONTEM_SURUMU: Final = "1"
 KAYNAK_ID: Final = "kaikki-tr"

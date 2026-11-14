@@ -7,6 +7,7 @@ dongusellik hatasi), `--dry-run` hicbir sey yazmaz, rapor ve `xref_gate` satiri.
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from hat_yardimci import ansisiz, depo_kur
@@ -193,6 +194,92 @@ def test_gerileme_cikis_1_yalniz_onceki_gecti_raporuna_gore(
     # kaldi raporlar referans olmaz: onceki kabul edilmis hala 0,97/0,96 gecti raporlarindan biri
     onceki = kapi.onceki_kabul_edilmis(tmp_path / "data", "kok")
     assert onceki is not None and onceki["sonuc"] == "gecti"
+
+
+def test_esikler_tutsa_bile_gerileme_xref_gate_kaldi_yazar_cikis_1(
+    dunya: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _sahte(monkeypatch, kok=lambda o: _sonuc("kok", 0.99))
+    assert _calistir(dunya) == cikis.BASARILI  # kabul edilmis kosu: gecti (0,99)
+    capsys.readouterr()
+    # 0,99 -> 0,95: esik (>= 0,95) tutar ama dusus 0,04 > 0,02: kaldi + cikis 1
+    _sahte(monkeypatch, kok=lambda o: _sonuc("kok", 0.95))
+    assert _sonuc("kok", 0.95).sonuc == "gecti"
+    baglanti = SahteBaglanti()
+    assert _calistir(dunya, baglanti=baglanti) == cikis.QA_KALDI
+    cikti = capsys.readouterr()
+    assert "gerileme" in cikti.err and "qa gold kok: kaldi" in cikti.out
+    son = max((kapi.rapor_oku(p) for p in _raporlar(tmp_path)), key=lambda r: str(r["olculdu_utc"]))
+    assert son["sonuc"] == "kaldi" and son["olculer"]["kesinlik"] == 0.95
+    assert "gerileme: kesinlik 0.9900 -> 0.9500" in str(son["kaldi_nedeni"])
+    assert [g["olcu"] for g in son["gerileme"]] == ["kesinlik"]
+    ((_, parametre),) = baglanti.cagrilar
+    assert parametre[3] == "kaldi" and parametre[5] == son["rapor_sha256"]
+    # kaldi rapor referans olmaz; kabul edilmis kosu hala 0,99
+    onceki = kapi.onceki_kabul_edilmis(tmp_path / "data", "kok")
+    assert onceki is not None and onceki["olculer"]["kesinlik"] == 0.99
+
+
+def test_gerilemesiz_gecen_kosuda_kaldi_nedeni_yok(
+    dunya: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _sahte(monkeypatch, kok=lambda o: _sonuc("kok", 0.99))
+    assert _calistir(dunya) == cikis.BASARILI
+    r = kapi.rapor_oku(_raporlar(tmp_path)[0])
+    assert r["sonuc"] == "gecti" and "kaldi_nedeni" not in r
+
+
+def _sozluksel_secim_kur(
+    monkeypatch: pytest.MonkeyPatch,
+    secim: set[tuple[int, int]],
+    db_satirlari: list[tuple[int, int]],
+) -> run.Oturum:
+    """`sozluksel_secim` bagimliliklarini sahtelerle degistirir (uretim girdisi, DB satirlari)."""
+    ctx = SimpleNamespace(
+        require_sources=lambda adlar: {a: SimpleNamespace(surum="1") for a in adlar},
+        veri_kok=Path("."),
+    )
+    monkeypatch.setattr(run, "son_calisma", lambda *a, **k: object())
+    monkeypatch.setattr(run, "saglam_olmali", lambda *a, **k: None)
+    monkeypatch.setattr(run, "units_oku", lambda *a, **k: [])
+    monkeypatch.setattr(
+        run.db_girdi, "db_oku", lambda *a, **k: SimpleNamespace(ayetler=[], kelimeler=[])
+    )
+    monkeypatch.setattr(run, "ayet_kelimeleri", lambda *a, **k: [])
+    monkeypatch.setattr(run, "simple_kelimeleri", lambda *a, **k: SimpleNamespace(kelimeler=[]))
+    monkeypatch.setattr(run, "KuranIndeksi", lambda *a, **k: object())
+    monkeypatch.setattr(run, "adaylari_bul", lambda *a, **k: sorted(secim))
+    monkeypatch.setattr(run, "sinirla", lambda adaylar: {(lo - 1, hi - 1) for lo, hi in adaylar})
+    monkeypatch.setattr(run.benzer, "satirlari_oku", lambda *a, **k: (list(db_satirlari), {}, {}))
+    return SimpleNamespace(ctx=ctx, conn=object())  # type: ignore[return-value]
+
+
+def test_db_qursimsiz_secimde_degilse_girdi_hatasi_cikis_2(
+    dunya: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    secim = {(1, 2), (3, 4)}
+    # DB'de bagimsiz secimde olmayan bir sozluksel satir var: (7, 9)
+    o = _sozluksel_secim_kur(monkeypatch, secim, [(1, 2), (7, 9)])
+    with pytest.raises(GirdiHatasi) as hata:
+        run.sozluksel_secim(o, {})
+    mesaj = str(hata.value)
+    assert "1 veritabani" in mesaj and "2 QurSim'siz" in mesaj
+    assert "7" not in mesaj and "9" not in mesaj  # yalniz sayac: ayet sirasi ya da metin yok
+    # komut: cikis 2, benzer-ayet icin rapor ve xref_gate yazilmaz
+    _sahte(monkeypatch, **{"benzer-ayet": lambda oturum: run.sozluksel_secim(o, {})})  # type: ignore[arg-type]
+    baglanti = SahteBaglanti()
+    assert _calistir(dunya, "benzer-ayet", baglanti=baglanti) == cikis.GIRDI_HATASI
+    assert "db_qursimsiz" not in capsys.readouterr().out
+    assert _raporlar(tmp_path) == [] and baglanti.cagrilar == []
+
+
+def test_db_qursimsiz_tamami_secimde_ise_sayac_sifir_ve_hata_yok(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    o = _sozluksel_secim_kur(monkeypatch, {(1, 2), (3, 4)}, [(1, 2), (3, 4)])
+    secilen, _, sayac = run.sozluksel_secim(o, {})
+    assert secilen == [(1, 2), (3, 4)]
+    assert sayac["db_qursimsiz_secimde_degil"] == 0 and sayac["db_qursimsiz_sozluksel_satir"] == 2
 
 
 def test_hata_diger_turleri_durdurmaz_cikis_2_yalniz_kaynak_adi(

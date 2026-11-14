@@ -1,7 +1,10 @@
 """`kok` seti ve olcumu: Turkce lemma -> Arapca kok (A18.5; K-51 madde 9-11; sinif `silver`).
 
-URETIM (olculen): `icerik.lemma` icinde `lang = 'tr'`, `status = 'onayli'`, `onay_yolu` `otomatik`
-ya da `editor`, kok sahibi satirlar; kok kaikki kanitindan ve QAC eslesmesinden gelir.
+URETIM (olculen): `icerik.lemma` icinde `lang = 'tr'`, `status = 'onayli'`, `onay_yolu =
+'otomatik'`, kok sahibi satirlar; kok kaikki kanitindan ve QAC eslesmesinden gelir. KAPI YALNIZ
+OTOMATIK ONAYLI TAHMINLERI OLCER (K-51 madde 11: kapi otomatik onay politikasinin dogrulugunu
+sinar). `onay_yolu = 'editor'` (insan karari) tahminleri kapiya, `data_version`a ve dongusellik
+denetimine GIRMEZ; ayri bilgi alani olarak (`editor_onayli_bilgi`) raporlanir.
 
 REFERANS (bagimsiz kaynak): QuranWBW Turkce kelime anlamlari (`quranwbw-tr`, ham dosya
 `data/gelen/quranwbw-tr/<tarih>/6.json`; A17 `cikar` okuyucusu). Arapca kelimenin Turkce anlam
@@ -62,6 +65,7 @@ from mutalaa_pipeline.qa.uyum import wilson_alt_sinir, wilson_ust_sinir
 KAYNAK_QWBW: Final = "quranwbw-tr"
 KAYNAK_QAC: Final = "qac-morfoloji"
 KAYNAK_KAIKKI: Final = "kaikki-tr"
+ONAY_OTOMATIK: Final = "otomatik"
 MIN_DESTEK: Final = 3
 MIN_PAY_PAYDA: Final = 10  # destek * 10 >= toplam  <=>  pay >= 0,10 (tam sayi aritmetigi)
 BANT_YUKSEK: Final = 100
@@ -472,13 +476,43 @@ def daraltma_onerisi(
     }
 
 
+def editor_onayli_bilgi(
+    editor: Mapping[str, Tahmin],
+    ornekler: Sequence[Mapping[str, object]],
+    referans_evreni: Mapping[str, Mapping[str, object]],
+) -> dict[str, object]:
+    """Editor onayli (insan karari) tahminlerin AYRI raporu; kapiya girmez (K-51 md. 11)."""
+    referansli = [
+        x for x in editor if x in referans_evreni and referans_evreni[x]["referans_kokler"]
+    ]
+    dogru = sum(1 for x in referansli if editor[x].kok in kok_kumesi(referans_evreni[x]))
+    ornek_lemmalari = {str(o["tr_lemma"]) for o in ornekler}
+    return {
+        "tahmin": len(editor),
+        "referansli": len(referansli),
+        "referansli_dogru": dogru,
+        "referansli_kesinlik": round(dogru / len(referansli), 6) if referansli else None,
+        "ornek_setinde": sum(1 for x in editor if x in ornek_lemmalari),
+        "not": (
+            "Insan karari kapi olcumune, data_version'a ve dongusellik denetimine girmez;"
+            " bilgi olarak yazilir."
+        ),
+    }
+
+
 def kok_olc(
     manifest: Mapping[str, object],
     ornekler: Sequence[Mapping[str, object]],
     referans_evreni: Mapping[str, Mapping[str, object]],
-    tahminler: Mapping[str, Tahmin],
+    tum_tahminler: Mapping[str, Tahmin],
 ) -> TurSonucu:
-    """Dondurulmus parcada kapi olcumu; gelistirme ve tum evren bilgi olarak yazilir."""
+    """Dondurulmus parcada kapi olcumu; gelistirme ve tum evren bilgi olarak yazilir.
+
+    Kapi YALNIZ `onay_yolu = 'otomatik'` tahminleri olcer (K-51 madde 11); editor onayli tahminler
+    `editor_onayli_bilgi` altinda ayri raporlanir.
+    """
+    tahminler = {k: t for k, t in tum_tahminler.items() if t.onay_yolu == ONAY_OTOMATIK}
+    editor = {k: t for k, t in tum_tahminler.items() if t.onay_yolu != ONAY_OTOMATIK}
     setler.manifest_dongusellik_denetle(
         manifest, {k for t in tahminler.values() for k in t.kaynaklar}
     )
@@ -583,6 +617,8 @@ def kok_olc(
     esikler = dict(ESIKLER["kok"])
     sonuc = kapi_karari(esikler, olculer)
     notlar = [
+        "Kapi yalniz onay_yolu='otomatik' tahminleri olcer (K-51 madde 11);"
+        " editor onayli tahminler ayrintilar.editor_onayli_bilgi altinda bilgidir.",
         "Referans QuranWBW ceviri esdegerligidir (etimoloji degil);"
         " 'yalnizca etimolojik' etiketi icin olcum yoktur.",
         "Kapsam: set yalniz Kur'an'da gecen sozcukleri olcer;"
@@ -613,7 +649,9 @@ def kok_olc(
             "min_destek": MIN_DESTEK,
             "min_pay": 1 / MIN_PAY_PAYDA,
             "ornek_bant_sayilari": dict(Counter(str(o["siklik_bandi"]) for o in ornekler)),
-            "tahmin_onay_yolu": dict(Counter(t.onay_yolu for t in tahminler.values())),
+            "tahmin_onay_yolu": dict(Counter(t.onay_yolu for t in tum_tahminler.values())),
+            "kapi_tahmin_onay_yolu": ONAY_OTOMATIK,
+            "editor_onayli_bilgi": editor_onayli_bilgi(editor, ornekler, referans_evreni),
             "politika_daraltma_onerisi": daraltma_onerisi(tahminler, referans_evreni),
         },
         notlar=notlar,

@@ -9,11 +9,13 @@ kurali -> rapor `data/reports/{data_version}-gold-{tur}.json` -> `icerik.xref_ga
 
 Cikis kodlari: 0 olcum tamamlandi (kapi `kaldi` olsa bile; bilgi rapor ve `xref_gate`'te), 1 yalniz
 gerileme kurali kirildiysa (onceki kabul edilmis `gecti` raporuna gore bir olcu 0,02'den fazla
-dustu), 2 girdi, yapilandirma ya da dongusellik hatasi. Hata iletilerinde yalniz kaynak adi, sayi
+dustu; esikler tutsa bile `xref_gate` sonucu `kaldi` yazilir, rapor `kaldi_nedeni` tasir), 2 girdi,
+yapilandirma ya da dongusellik hatasi (benzer-ayet: `db_qursimsiz_secimde_degil` > 0 da girdi
+hatasidir: uretim ve bagimsiz secim ayni girdiden ayrisamaz). Hata iletilerinde yalniz kaynak
+adi, sayi
 ve capa bulunur; icerik metni yazilmaz.
 """
 
-import os
 import sys
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -30,7 +32,13 @@ from mutalaa_pipeline.enrich.baglantilar.benzer import adaylari_bul, sinirla
 from mutalaa_pipeline.enrich.baglantilar.girdi import ayet_kelimeleri
 from mutalaa_pipeline.enrich.baglantilar.uret import simple_kelimeleri
 from mutalaa_pipeline.enrich.quran_index import KuranIndeksi
-from mutalaa_pipeline.enrich.tr_roots.lemmatize import Lemmatizer, ZeyrekLemmatizer, zeyrek_surumu
+from mutalaa_pipeline.enrich.tr_roots.lemmatize import (
+    Lemmatizer,
+    ZeyrekLemmatizer,
+    hash_tohumu,
+    hash_tohumu_uyarisi,
+    zeyrek_surumu,
+)
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest import quranwbw
 from mutalaa_pipeline.ingest.meal_ortak import gelen_dizini, gelen_tarihi_coz
@@ -46,7 +54,7 @@ from mutalaa_pipeline.qa.gold.kapi import (
     rapor_yaz,
     xref_gate_yaz,
 )
-from mutalaa_pipeline.qa.gold.olcum import gerilemeleri_bul
+from mutalaa_pipeline.qa.gold.olcum import KALDI, gerilemeleri_bul
 from mutalaa_pipeline.runctx import QaKaldi, RunContext
 from mutalaa_pipeline.zincir import (
     ANCHOR_ADIMI,
@@ -107,6 +115,9 @@ def kok_seti_uret(
         int(i): str(h) for i, h in conn.execute("SELECT id, letters_bw FROM icerik.root").fetchall()
     }
     lm = lemmatizer if lemmatizer is not None else ZeyrekLemmatizer(_nltk_klasoru(ctx))
+    uyari = hash_tohumu_uyarisi()
+    if uyari is not None:
+        sys.stderr.write(f"qa gold kok: {uyari}\n")
     kurulum = kok.referans_say(anlamlar, kelime_koku, lm)
     referans = kok.referans_kokleri(kurulum)
     ozet = {
@@ -117,9 +128,9 @@ def kok_seti_uret(
         "bilinmeyen_parca": kurulum.bilinmeyen_parca,
         "lemma": len(kurulum.toplam),
         "referansli_lemma": sum(1 for v in referans.values() if v),
-        # zeyrek ciktisi PYTHONHASHSEED'e duyarlidir (rastgele tohumda kosular arasi ~%0,03 oynar);
-        # ayni set icin PYTHONHASHSEED=0 ile uretin. Olcum kalici set uzerinden yapilir.
-        "python_hash_seed": os.environ.get("PYTHONHASHSEED", "rastgele"),
+        # zeyrek ciktisi PYTHONHASHSEED'e duyarliydi (`ZeyrekLemmatizer` artik kapatir; kalan
+        # duyarlilik icin uyari verilir); tohum kayda gecer. Olcum kalici set uzerinden yapilir.
+        "python_hash_seed": hash_tohumu(),
     }
     return kok.kok_seti_kur(
         referans=referans,
@@ -331,6 +342,12 @@ def sozluksel_secim(
         "db_qursimsiz_sozluksel_satir": len(db_qursimsiz),
         "db_qursimsiz_secimde_degil": sum(1 for c in db_qursimsiz if c not in kume),
     }
+    if sayac["db_qursimsiz_secimde_degil"] > 0:
+        raise GirdiHatasi(
+            f"benzer-ayet: {sayac['db_qursimsiz_secimde_degil']} veritabani sozluksel satiri"
+            f" bagimsiz secimde yok ({sayac['db_qursimsiz_sozluksel_satir']} QurSim'siz satirdan);"
+            " once enrich links ve export pg --source xref-baglantilar"
+        )
     kaynak = {sentetik.KAYNAK_UTHMANI, sentetik.KAYNAK_SIMPLE} & set(kayitlar)
     return secilen, kaynak, sayac
 
@@ -460,6 +477,13 @@ def sonuclandir(o: Oturum, s: TurSonucu) -> None:
     gerileme = gerilemeleri_bul(onceki_olculer(onceki), s.olculer)
     for g in gerileme:
         o.regresyonlar.append(f"{s.cli_tur}.{g.olcu} {g.onceki:.4f} -> {g.simdiki:.4f}")
+    if gerileme:
+        # esikler tutsa bile gerileme kabul edilmis sonucu bozar: kapi `kaldi` (cikis 1 de korunur)
+        s.kaldi_nedeni = "gerileme: " + ", ".join(
+            f"{g.olcu} {g.onceki:.4f} -> {g.simdiki:.4f}" for g in gerileme
+        )
+        s.notlar.append(f"Sonuc kaldi: {s.kaldi_nedeni} (esik 0,02'den fazla dusus).")
+        s.sonuc = KALDI
     govde = rapor_govdesi(
         s,
         o.ctx.saat(),

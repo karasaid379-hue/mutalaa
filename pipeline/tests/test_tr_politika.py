@@ -272,7 +272,7 @@ def test_kanit_k51_bicimindedir() -> None:
         "karar",
         "neden",
     }
-    assert kanit["politika_surumu"] == POLITIKA_SURUMU == "1"
+    assert kanit["politika_surumu"] == POLITIKA_SURUMU == "2"
     kaynak = kanit["kaynaklar"][0]  # type: ignore[index]
     assert set(kaynak) == {"source_id", "surum", "madde", "alan", "deger"}
     assert kaynak["source_id"] == "kaikki-tr" and kaynak["madde"] == "dolap"

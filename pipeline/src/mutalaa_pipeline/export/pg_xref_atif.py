@@ -248,8 +248,20 @@ SILINEBILIR: Final = (
     " WHERE r.xref_id = a.id AND NOT (r.durum = 'acik' AND r.koken = 'hat' AND r.inceleyen IS NULL"
     " AND r.duzenlenen IS NULL))"
 )
-REVIEW_SIL: Final = "DELETE FROM icerik.review r WHERE r.xref_id IN (" + SILINEBILIR + ")"
-SIL: Final = "DELETE FROM icerik.xref x WHERE x.id IN (" + SILINEBILIR + ")"
+# ESZAMANLI KARAR KORUMASI: `IN (alt sorgu)` listesi deyim basinda hesaplanir; deyim bir satirda
+# kilit beklerken editor onayi (ya da incelemesi) araya girerse PostgreSQL (READ COMMITTED) yalniz
+# DIS tablonun yeni satir surumunu yeniden sinar, alt sorgu sonucunu yenilemez. Bu yuzden
+# `pg_xref.SIL` deseni gibi hat sahipligi ve dokunulmamislik kosulu DIS DELETE'te de yazilidir:
+# xref `origin = 'hat' AND status = 'aday'`, review `durum = 'acik' AND inceleyen IS NULL` (araya
+# giren onay/inceleme satiri silinmez).
+REVIEW_SIL: Final = (
+    "DELETE FROM icerik.review r WHERE r.durum = 'acik' AND r.koken = 'hat' AND r.inceleyen IS NULL"
+    " AND r.duzenlenen IS NULL AND r.xref_id IN (" + SILINEBILIR + ")"
+)
+SIL: Final = (
+    "DELETE FROM icerik.xref x WHERE x.origin = 'hat' AND x.status = 'aday' AND NOT EXISTS"
+    " (SELECT 1 FROM icerik.review r WHERE r.xref_id = x.id) AND x.id IN (" + SILINEBILIR + ")"
+)
 SIL_ENGELLENEN: Final = (
     "SELECT count(*) FROM (" + URETILMEYEN_ADAY + ") a WHERE a.id NOT IN (" + SILINEBILIR + ")"
 )

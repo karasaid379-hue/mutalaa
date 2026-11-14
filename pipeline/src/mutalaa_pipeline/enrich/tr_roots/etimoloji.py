@@ -8,8 +8,9 @@ YAPISAL KANIT (bir `Kanit`) yalniz sablonlardan gelir:
 
 * `root` sablonu, `args['2'] == 'ar'`: kok harfleri `args['3']` ve sonrasi (bosluklu tek dizi ya da
   ayri argumanlar);
-* `bor`, `bor+`, `lbor`, `slbor`, `der`, `der+`, `inh`, `inh+`, `calque` sablonu, `args['2'] ==
-  'ar'`: etimon `args['3']`; `args['2'] == 'ota'`: Osmanlica baglanti bicimi;
+* `bor`, `bor+`, `lbor`, `slbor`, `der`, `der+`, `inh`, `inh+` sablonu (`calque` DEGIL: ceviri
+  ariciligi etimolojik soy kaniti sayilmaz, K-51 madde 9 (b)), `args['2'] == 'ar'`: etimon
+  `args['3']`; `args['2'] == 'ota'`: Osmanlica baglanti bicimi;
 * `ety` ve `etymon` agac sablonlari: `args['3']` icindeki `ar:ETIMON` (etimon) ve `ota:BICIM`
   (Osmanlica baglanti).
 
@@ -32,9 +33,7 @@ from mutalaa_pipeline.normalize.turkish import lower_turkish
 DIL_TR: Final = "tr"
 DIL_OTA: Final = "ota"
 KOK_SABLONU: Final = "root"
-KAYNAK_SABLONLARI: Final = frozenset(
-    {"bor", "bor+", "lbor", "slbor", "der", "der+", "inh", "inh+", "calque"}
-)
+KAYNAK_SABLONLARI: Final = frozenset({"bor", "bor+", "lbor", "slbor", "der", "der+", "inh", "inh+"})
 AGAC_SABLONLARI: Final = frozenset({"ety", "etymon"})
 TUR_KOK: Final = "kok"
 TUR_ETIMON: Final = "etimon"
