@@ -28,6 +28,9 @@ public static class GateReasons
     public const string LemmaOnaysiz = "lemma-onaysiz";
     public const string UcBirimGirmedi = "uc-birim-girmedi";
 
+    /// <summary>P-01 (baglanti satiri): satirin evidence.source_id kaynagi derlemede girmedi (kaynak kaydi yok ya da kaynak karari girmedi); satir pakete yazilmaz.</summary>
+    public const string XrefKaynakGirmedi = "kaynak-girmedi";
+
     /// <summary>P-07 (K-51 madde 1): satirin evidence.src_hash ya da dst_hash degeri ucun birimin guncel content_hash ilk 16 haneyle tutmuyor.</summary>
     public const string UcOzetiTutmadi = "uc-ozeti-tutmadi";
 

@@ -25,6 +25,7 @@ public sealed record GateUnit(
 /// LexiconApproved: evidence.lexicon_status onayli ya da alan yok. SrcSourceSlug ve DstSourceSlug uclarin eserinin kaynak slug'idir.
 /// DstIsSeparateIndex: hedef, kaynak kaydi olan ayri bir dizine aittir (risale-atif-dizini); hedef eserin gorunurlugu aranmaz.
 /// SrcHash ve DstHash: evidence.src_hash ve dst_hash (uc birimlerin content_hash ilk 16 hanesi; K-51 madde 1). Alan yoksa null: o uc denetlenmez.
+/// EvidenceSourceId: evidence.source_id (satirin veri kaynagi, ornegin qursim); doluysa o kaynak derlemede girmis olmali (P-01). Alan yoksa null: denetlenmez.
 /// </summary>
 public sealed record GateXref(
     Guid Id,
@@ -39,7 +40,8 @@ public sealed record GateXref(
     string DstSourceSlug,
     bool DstIsSeparateIndex,
     string? SrcHash = null,
-    string? DstHash = null);
+    string? DstHash = null,
+    string? EvidenceSourceId = null);
 
 /// <summary>
 /// Paket adayi. HasContent: pakete yazilacak veri var (yoksa "girmedi · icerik-yok", kural kodu yok). HasStructure: paket yapi satiri (kelime, isaret,

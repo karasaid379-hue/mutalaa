@@ -257,6 +257,7 @@ public static class LinkHighlight
     /// <paramref name="text"/> kaynak birimin metni, <paramref name="contentHash"/> birimin guncel ozeti, <paramref name="evidenceSrcHash"/>
     /// kanitin <c>src_hash</c> degeri (16 hane), <paramref name="span"/> kaynak araligi ([bas, son) kod noktasi; null birimin tamami).
     /// Ozet yoksa ya da birimin ozetinin onekiyle uyusmuyorsa (metin degismis, ofset guvenilmez) hicbir sey gosterilmez.
+    /// Baglam penceresi (<see cref="Window"/>) sinirlari Mn isaretlerine (hareke) bolunmez (<see cref="CodePointOffsets.SnapSpan"/>).
     /// </summary>
     public static HighlightedSequence Compute(string? text, string? contentHash, string? evidenceSrcHash, AnchorSpan? span)
     {
@@ -279,11 +280,12 @@ public static class LinkHighlight
             return HighlightedSequence.None;
         }
 
-        int from = Math.Max(0, range.Start - Window);
-        int to = Math.Min(length, range.End + Window);
+        // Baglam sinirlari bir Mn isaretinin (hareke) ortasina dusmez (LemmaQueries.Split ile ayni): pencere her yanda birkac isaret kadar 40'i asabilir.
+        AnchorSpan left = CodePointOffsets.SnapSpan(text, new AnchorSpan(Math.Max(0, range.Start - Window), range.Start));
+        AnchorSpan right = CodePointOffsets.SnapSpan(text, new AnchorSpan(range.End, Math.Min(length, range.End + Window)));
         return new HighlightedSequence(
-            CodePointOffsets.Slice(text, from, range.Start),
+            CodePointOffsets.Slice(text, left.Start, left.End),
             CodePointOffsets.Slice(text, range.Start, range.End),
-            CodePointOffsets.Slice(text, range.End, to));
+            CodePointOffsets.Slice(text, right.Start, right.End));
     }
 }

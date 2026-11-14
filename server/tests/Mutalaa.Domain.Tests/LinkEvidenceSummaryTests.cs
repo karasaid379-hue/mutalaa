@@ -128,6 +128,25 @@ public class LinkEvidenceSummaryTests
         Assert.Equal(text[110..150], result.Sag);
     });
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void The_context_window_never_splits_a_combining_mark_from_its_base(bool turkish) => CultureScope.For(turkish, () =>
+    {
+        // Sentetik metin: 'a' dizisi; pencerenin sol siniri (60) ve sag siniri (150) birlestirici isaretin (U+0301, Mn) uzerine duser.
+        char[] chars = Text(200).ToCharArray();
+        chars[60] = '́';
+        chars[150] = '́';
+        string text = new(chars);
+
+        HighlightedSequence result = LinkHighlight.Compute(text, Hash, Hash16, new AnchorSpan(100, 110));
+
+        Assert.Equal(text[59..100], result.Sol);
+        Assert.Equal(text[100..110], result.Dizi);
+        Assert.Equal(text[110..151], result.Sag);
+        Assert.False(char.GetUnicodeCategory(result.Sol![0]) == System.Globalization.UnicodeCategory.NonSpacingMark);
+    });
+
     [Fact]
     public void The_context_is_cut_at_the_unit_edges()
     {

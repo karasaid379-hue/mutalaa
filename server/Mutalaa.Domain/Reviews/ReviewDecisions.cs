@@ -259,6 +259,11 @@ public static partial class ReviewDecisions
             return ApproveRootMapping(review, request, target, actor, gerekce);
         }
 
+        if (IsRevalidation(review))
+        {
+            return ApproveRevalidation(request, target, actor, gerekce);
+        }
+
         if (request.Duzenlenen is not null && IsLinkTarget(review))
         {
             return ApproveLink(review, request, target, actor, gerekce);
@@ -299,6 +304,11 @@ public static partial class ReviewDecisions
         if (IsRootMapping(review))
         {
             return RejectRootMapping(review, request, target, actor, gerekce);
+        }
+
+        if (IsRevalidation(review))
+        {
+            return RejectRevalidation(review, request, target, actor, gerekce);
         }
 
         RequireFieldMatch(review, target);

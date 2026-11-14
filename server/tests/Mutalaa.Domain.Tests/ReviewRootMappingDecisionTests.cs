@@ -383,7 +383,7 @@ public class ReviewRootMappingDecisionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void Marking_an_auto_approved_lemma_changes_the_value_and_moves_it_to_the_editor_path_keeping_the_evidence(bool turkish)
+    public void Marking_an_auto_approved_lemma_changes_only_the_flag_and_keeps_the_auto_approval_path_and_origin(bool turkish)
     {
         CultureScope.For(turkish, () =>
         {
@@ -397,8 +397,8 @@ public class ReviewRootMappingDecisionTests
                 Now);
 
             Assert.True(mark.Update.EtymologicalOnly);
-            Assert.Equal(LemmaApprovalPaths.Editor, mark.Update.OnayYolu);
-            Assert.Equal(LemmaOrigins.Editor, mark.Update.Origin);
+            Assert.Equal(LemmaApprovalPaths.Otomatik, mark.Update.OnayYolu);
+            Assert.Equal("kaikki", mark.Update.Origin);
             Assert.Equal(RootA, mark.Update.RootId);
             Assert.Equal(ArLemma, mark.Update.ArLemmaId);
 
@@ -433,6 +433,7 @@ public class ReviewRootMappingDecisionTests
 
         Assert.False(mark.Update.EtymologicalOnly);
         Assert.Equal(LemmaApprovalPaths.Editor, mark.Update.OnayYolu);
+        Assert.Equal(LemmaOrigins.Editor, mark.Update.Origin);
     }
 
     [Fact]

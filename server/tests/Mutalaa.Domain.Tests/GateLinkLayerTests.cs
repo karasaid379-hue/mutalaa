@@ -264,6 +264,68 @@ public class GateLinkLayerTests
         AssertHashRejected(GateEvaluator.Evaluate(BuildFlavor.Dev, WithHashedUnits(word, HashA, HashB)), word.Id);
     });
 
+    // ---- P-01: baglanti satirinin veri kaynagi (evidence.source_id) ----
+
+    private const string DataSource = "qursim";
+
+    private static GateInput WithEvidenceSource(GateXref xref, params GateSource[] extraSources) =>
+        new() { Sources = [Src(Regular), .. extraSources], Xrefs = [xref], Gates = OpenGates() };
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void P01_a_link_whose_evidence_source_is_not_in_the_build_stays_out_with_kaynak_girmedi(bool turkish) => CultureScope.For(turkish, () =>
+    {
+        foreach (BuildFlavor flavor in new[] { BuildFlavor.Dev, BuildFlavor.Internal, BuildFlavor.Public })
+        {
+            foreach (XrefStatus status in new[] { XrefStatus.Onayli, XrefStatus.Aday })
+            {
+                GateXref xref = Xref(XrefType.BenzerAyet, status, 0.9) with { EvidenceSourceId = DataSource };
+
+                // Kaynak girdide yok, kayitsiz ya da atif metni bos: satir girmez.
+                foreach (GateSource[] extra in new GateSource[][] { [], [Src(DataSource, registered: false)], [Src(DataSource, attribution: null)] })
+                {
+                    GateResult result = GateEvaluator.Evaluate(flavor, WithEvidenceSource(xref, extra));
+
+                    XrefVerdict verdict = result.XrefVerdicts[xref.Id];
+                    Assert.False(verdict.Included);
+                    Assert.Equal(GateRule.P01, verdict.Rule);
+                    Assert.Equal(GateReasons.XrefKaynakGirmedi, verdict.Reason);
+                    Assert.Equal(DataSource, verdict.Detail);
+                    Assert.Contains(
+                        result.Report.Rows,
+                        r => r.Kind == GateSubjectKind.Baglanti && r.Rule == GateRule.P01 && r.Reason == GateReasons.XrefKaynakGirmedi + ":" + DataSource);
+                }
+            }
+        }
+    });
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void P01_a_link_whose_evidence_source_entered_the_build_is_included(bool turkish) => CultureScope.For(turkish, () =>
+    {
+        foreach (BuildFlavor flavor in new[] { BuildFlavor.Dev, BuildFlavor.Internal, BuildFlavor.Public })
+        {
+            GateXref xref = Xref(XrefType.BenzerAyet, XrefStatus.Onayli, 0.9) with { EvidenceSourceId = DataSource };
+
+            GateResult result = GateEvaluator.Evaluate(flavor, WithEvidenceSource(xref, Src(DataSource)));
+
+            Assert.True(result.IsXrefIncluded(xref.Id), flavor.ToString());
+        }
+    });
+
+    [Fact]
+    public void P01_rows_without_an_evidence_source_are_not_affected_by_the_source_check()
+    {
+        foreach (string? none in new string?[] { null, string.Empty })
+        {
+            GateXref xref = Xref(XrefType.BenzerAyet, XrefStatus.Onayli, 0.9) with { EvidenceSourceId = none };
+
+            Assert.True(GateEvaluator.Evaluate(BuildFlavor.Public, WithEvidenceSource(xref)).IsXrefIncluded(xref.Id));
+        }
+    }
+
     // ---- P-09: Turkce lemma ----
 
     private static GateLexical Lemma(int id, XrefStatus status, string? onayYolu, bool kanit = true) =>

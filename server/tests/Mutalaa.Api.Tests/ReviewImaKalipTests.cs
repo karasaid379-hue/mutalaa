@@ -34,8 +34,20 @@ public class ReviewImaKalipTests(EditorialDatabase<ReviewImaKalipTests> fixture)
         return (world, xref, review);
     }
 
-    private static Task<HttpResponseMessage> ImaAsync(HttpClient client, long id, object body) =>
-        client.PostAsJsonAsync($"/api/v1/reviews/{id.ToString(CultureInfo.InvariantCulture)}/ima", body, Ct);
+    private static Task<HttpResponseMessage> ImaAsync(HttpClient client, long id, object body, string? ifMatch)
+    {
+        HttpRequestMessage request = new(HttpMethod.Post, $"/api/v1/reviews/{id.ToString(CultureInfo.InvariantCulture)}/ima") { Content = JsonContent.Create(body) };
+        if (ifMatch is not null)
+        {
+            request.Headers.TryAddWithoutValidation("If-Match", ifMatch);
+        }
+
+        return client.SendAsync(request, Ct);
+    }
+
+    /// <summary>Kaydin guncel ETag'iyle ima istegi (kardes uclar gibi If-Match zorunludur).</summary>
+    private async Task<HttpResponseMessage> ImaAsync(HttpClient client, Review review, object body) =>
+        await ImaAsync(client, review.Id, body, Etag(await XminAsync(review.Id)));
 
     private static Task<HttpResponseMessage> KalipAsync(HttpClient client, long id, object body, string? ifMatch)
     {
@@ -56,7 +68,7 @@ public class ReviewImaKalipTests(EditorialDatabase<ReviewImaKalipTests> fixture)
         (World world, Xref xref, Review review) = await SeedAsync(dstSpan: new AnchorSpan(3, 8));
         using HttpClient client = await ClientAsync();
 
-        using HttpResponseMessage response = await ImaAsync(client, review.Id, new { gerekce = "Basligi ayetin manasi" });
+        using HttpResponseMessage response = await ImaAsync(client, review, new { gerekce = "Basligi ayetin manasi" });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         JsonElement body = await ApiFactory.ReadJsonAsync(response, Ct);
@@ -107,7 +119,7 @@ public class ReviewImaKalipTests(EditorialDatabase<ReviewImaKalipTests> fixture)
         (_, _, Review review) = await SeedAsync(XrefType.Atif);
         using HttpClient client = await ClientAsync();
 
-        using HttpResponseMessage response = await ImaAsync(client, review.Id, new { gerekce = "Deneme" });
+        using HttpResponseMessage response = await ImaAsync(client, review, new { gerekce = "Deneme" });
         long auditId = (await ApiFactory.ReadJsonAsync(response, Ct)).GetProperty("review_id").GetInt64();
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -120,9 +132,9 @@ public class ReviewImaKalipTests(EditorialDatabase<ReviewImaKalipTests> fixture)
     {
         (_, _, Review review) = await SeedAsync();
         using HttpClient client = await ClientAsync();
-        using HttpResponseMessage first = await ImaAsync(client, review.Id, new { gerekce = "Deneme" });
+        using HttpResponseMessage first = await ImaAsync(client, review, new { gerekce = "Deneme" });
 
-        using HttpResponseMessage second = await ImaAsync(client, review.Id, new { gerekce = "Deneme" });
+        using HttpResponseMessage second = await ImaAsync(client, review, new { gerekce = "Deneme" });
 
         Assert.Equal(HttpStatusCode.Created, first.StatusCode);
         Assert.Equal(HttpStatusCode.Conflict, second.StatusCode);
@@ -140,7 +152,7 @@ public class ReviewImaKalipTests(EditorialDatabase<ReviewImaKalipTests> fixture)
         (_, _, Review review) = await SeedAsync(type);
         using HttpClient client = await ClientAsync();
 
-        using HttpResponseMessage response = await ImaAsync(client, review.Id, new { gerekce = "Deneme" });
+        using HttpResponseMessage response = await ImaAsync(client, review, new { gerekce = "Deneme" });
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         Assert.Equal("inceleme-desteklenmiyor", await ProblemCodeAsync(response));
@@ -153,7 +165,7 @@ public class ReviewImaKalipTests(EditorialDatabase<ReviewImaKalipTests> fixture)
         (_, _, Review review) = await SeedAsync(XrefType.Ima);
         using HttpClient client = await ClientAsync();
 
-        using HttpResponseMessage response = await ImaAsync(client, review.Id, new { gerekce = "Deneme" });
+        using HttpResponseMessage response = await ImaAsync(client, review, new { gerekce = "Deneme" });
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         Assert.Equal("durum-gecisi-gecersiz", await ProblemCodeAsync(response));
@@ -168,7 +180,7 @@ public class ReviewImaKalipTests(EditorialDatabase<ReviewImaKalipTests> fixture)
         (_, _, Review review) = await SeedAsync(durum: durum);
         using HttpClient client = await ClientAsync();
 
-        using HttpResponseMessage response = await ImaAsync(client, review.Id, new { gerekce = "Deneme" });
+        using HttpResponseMessage response = await ImaAsync(client, review, new { gerekce = "Deneme" });
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         Assert.Equal(0L, await Db.ScalarAsync<long>("SELECT count(*) FROM icerik.xref WHERE type = 'ima'", Ct));
@@ -180,7 +192,7 @@ public class ReviewImaKalipTests(EditorialDatabase<ReviewImaKalipTests> fixture)
         (_, _, Review review) = await SeedAsync(status: XrefStatus.Onayli);
         using HttpClient client = await ClientAsync();
 
-        using HttpResponseMessage response = await ImaAsync(client, review.Id, new { gerekce = "Deneme" });
+        using HttpResponseMessage response = await ImaAsync(client, review, new { gerekce = "Deneme" });
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
@@ -202,8 +214,8 @@ public class ReviewImaKalipTests(EditorialDatabase<ReviewImaKalipTests> fixture)
         });
         using HttpClient client = await ClientAsync();
 
-        using HttpResponseMessage nonLink = await ImaAsync(client, lemmaReview.Id, new { gerekce = "Deneme" });
-        using HttpResponseMessage unknown = await ImaAsync(client, 999999, new { gerekce = "Deneme" });
+        using HttpResponseMessage nonLink = await ImaAsync(client, lemmaReview, new { gerekce = "Deneme" });
+        using HttpResponseMessage unknown = await ImaAsync(client, 999999, new { gerekce = "Deneme" }, null);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, nonLink.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, unknown.StatusCode);
@@ -217,10 +229,46 @@ public class ReviewImaKalipTests(EditorialDatabase<ReviewImaKalipTests> fixture)
         await Db.ExecuteAsync("UPDATE icerik.review SET hedef_anahtar = @k, xref_id = NULL WHERE id = @id", Ct, ("k", Guid.NewGuid().ToString("D")), ("id", review.Id));
         using HttpClient client = await ClientAsync();
 
-        using HttpResponseMessage response = await ImaAsync(client, review.Id, new { gerekce = "Deneme" });
+        using HttpResponseMessage response = await ImaAsync(client, review, new { gerekce = "Deneme" });
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         Assert.NotNull(xref);
+    }
+
+    [Fact]
+    public async Task Ima_without_if_match_is_428_and_a_malformed_header_is_400_and_nothing_is_written()
+    {
+        (_, _, Review review) = await SeedAsync();
+        using HttpClient client = await ClientAsync();
+
+        using HttpResponseMessage missing = await ImaAsync(client, review.Id, new { gerekce = "Deneme" }, null);
+        using HttpResponseMessage malformed = await ImaAsync(client, review.Id, new { gerekce = "Deneme" }, "abc");
+
+        Assert.Equal(HttpStatusCode.PreconditionRequired, missing.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, malformed.StatusCode);
+        Assert.Equal(0L, await Db.ScalarAsync<long>("SELECT count(*) FROM icerik.xref WHERE type = 'ima'", Ct));
+    }
+
+    [Fact]
+    public async Task Ima_with_a_stale_etag_after_another_decision_is_412_and_writes_nothing()
+    {
+        (_, Xref xref, Review review) = await SeedAsync();
+        string stale = Etag(await XminAsync(review.Id));
+        using HttpClient a = await ClientAsync();
+        using HttpClient b = await ClientAsync(EditorBEmail, EditorBPassword);
+
+        // Baska bir editor karari araya girer (ret): kaydin surumu degisir.
+        using (HttpResponseMessage rejected = await DecideAsync(b, review.Id, stale, Reject("Baska editor reddetti")))
+        {
+            Assert.Equal(HttpStatusCode.OK, rejected.StatusCode);
+        }
+
+        using HttpResponseMessage response = await ImaAsync(a, review.Id, new { gerekce = "Deneme" }, stale);
+
+        Assert.Equal(HttpStatusCode.PreconditionFailed, response.StatusCode);
+        Assert.Equal("surum-uyusmazligi", await ProblemCodeAsync(response));
+        Assert.Equal(0L, await Db.ScalarAsync<long>("SELECT count(*) FROM icerik.xref WHERE type = 'ima'", Ct));
+        Assert.Equal("red", (await XrefRowAsync(xref.Id)).Status);
     }
 
     [Theory]

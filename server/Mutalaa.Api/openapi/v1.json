@@ -1262,6 +1262,15 @@
               "type": "integer",
               "format": "int64"
             }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "description": "Kaydın ETag değeri: \"{xmin}\" (yalnız güçlü ve tek etiket).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -1325,8 +1334,28 @@
               }
             }
           },
+          "412": {
+            "description": "Precondition Failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "422": {
             "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition Required",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1608,7 +1637,7 @@
         "tags": [
           "lemmas"
         ],
-        "summary": "Onaylı Türkçe lemmanın 'yalnızca etimolojik' işaretini editör kararıyla değiştirir (otomatik onaylıda onay yolu editör olur).",
+        "summary": "Onaylı Türkçe lemmanın 'yalnızca etimolojik' işaretini editör kararıyla değiştirir (otomatik onaylıda onay yolu, köken ve kanıt korunur; yalnız işaret değişir).",
         "operationId": "markLemmaEtymological",
         "parameters": [
           {

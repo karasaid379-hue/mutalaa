@@ -40,11 +40,14 @@ public static partial class ReviewEndpoints
             .WithName("markReviewLinkAsIma")
             .WithSummary("Bağlantı adayının kaynak ucundan aynı hedefe yeni bir ima satırı açar (editör, onaylı, güven 1); özgün aday korunur.")
             .RequireAuthorization(AuthPolicies.Editor)
+            .AddOpenApiOperationTransformer(IfMatchHeader)
             .Produces<ImaMarkResult>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+            .ProducesProblem(StatusCodes.Status412PreconditionFailed)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status428PreconditionRequired);
 
         reviews.MapPost("/{id:long}/kalip", AddPatternAsync)
             .WithName("addReviewLinkToPatternList")
@@ -153,19 +156,48 @@ public static partial class ReviewEndpoints
             return ApiProblem.Validation(errors);
         }
 
-        Review? review = await db.Reviews.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id, cancellationToken);
+        Review? review = await db.Reviews.SingleOrDefaultAsync(r => r.Id == id, cancellationToken);
         if (review is null)
         {
             return NotFoundReview();
         }
 
-        Xref? source = await LoadLinkOfAsync(db, review, track: false, cancellationToken);
-        if (source is null)
+        if (ReviewEtag.TryParseIfMatch(http.Request, out uint expected) is { } headerError)
         {
-            return ApiProblem.Create(StatusCodes.Status404NotFound, ProblemCodes.Bulunamadi, "İncelemenin bağlantı kaydı bulunamadı.");
+            return headerError;
         }
 
-        (Xref ima, Review audit) = LinkQueueActions.MarkIma(source, review, Guid.CreateVersion7(), Actor(user), body.Gerekce, Now(http));
+        EntityEntry<Review> entry = db.Entry(review);
+        if (expected != RowVersion.Get(entry))
+        {
+            return Stale();
+        }
+
+        RowVersion.Expect(entry, expected);
+
+        Review audit;
+        Xref ima;
+        try
+        {
+            Xref? source = await LoadLinkOfAsync(db, review, track: false, cancellationToken);
+            if (source is null)
+            {
+                return ApiProblem.Create(StatusCodes.Status404NotFound, ProblemCodes.Bulunamadi, "İncelemenin bağlantı kaydı bulunamadı.");
+            }
+
+            (ima, audit) = LinkQueueActions.MarkIma(source, review, Guid.CreateVersion7(), Actor(user), body.Gerekce, Now(http));
+        }
+        catch (DomainException)
+        {
+            // Baska bir karar araya girdiyse (surum degisti) kaybeden istek 412 alir; yoksa Domain hatasi kodu ile doner.
+            if ((await ReviewChangedSinceAsync(db, [(review.Id, expected)], cancellationToken)).Length > 0)
+            {
+                return Stale();
+            }
+
+            throw;
+        }
+
         db.Xrefs.Add(ima);
         db.Reviews.Add(audit);
 

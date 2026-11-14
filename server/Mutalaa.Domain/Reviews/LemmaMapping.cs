@@ -312,7 +312,9 @@ public readonly record struct EtymologyMark(Review Review, LemmaMappingUpdate Up
 
 /// <summary>
 /// <c>etimolojik_isaretle</c> eylemi (K-51 madde 9): editor, onayli bir Turkce lemmanin <c>etymological_only</c> degerini kendi karariyla
-/// degistirir; otomatik onayli satirda da calisir ve onay yolunu <c>editor</c> yapar (kanit korunur).
+/// degistirir. Otomatik onayli satirda da calisir ve onay yolunu YAPMAZ: <c>onay_yolu</c>, <c>kanit</c> ve <c>origin</c> korunur, yalniz
+/// <c>etymological_only</c> degisir (isaret otomatik tespit edilemez, editor listesidir; satirin otomatik onayi bozulmaz). Karari kimin verdigi
+/// <c>etimolojik_isaretle</c> review satirindadir. Editor yolundaki satirda <c>origin</c> <c>editor</c> olur (deger editor karari).
 /// </summary>
 public static class LemmaEtymology
 {
@@ -367,8 +369,12 @@ public static class LemmaEtymology
             Onerilen = proposed,
         };
 
-        // Deger editor karariyla degisti: koken editor, onay yolu editor; kanit (otomatik onayin denetim izi) oldugu gibi kalir.
-        LemmaMappingUpdate update = new(lemma.RootId, lemma.ArLemmaId, etymologicalOnly, LemmaOrigins.Editor, LemmaApprovalPaths.Editor);
+        // Otomatik onayli satirda onay yolu ve koken (hat) korunur; yalniz isaret degisir (K-51 madde 9). Editor yolundaki satirda koken editor olur.
+        // onay_yolu bos kalamaz (lemma_tr_onayli_onay_yolu_check): onayli satirda her zaman dolu gelir, yine de editor'e dusurulur.
+        bool automatic = string.Equals(lemma.OnayYolu, LemmaApprovalPaths.Otomatik, StringComparison.Ordinal);
+        LemmaMappingUpdate update = automatic
+            ? new(lemma.RootId, lemma.ArLemmaId, etymologicalOnly, lemma.Origin, LemmaApprovalPaths.Otomatik)
+            : new(lemma.RootId, lemma.ArLemmaId, etymologicalOnly, LemmaOrigins.Editor, LemmaApprovalPaths.Editor);
         return new EtymologyMark(review, update);
     }
 }

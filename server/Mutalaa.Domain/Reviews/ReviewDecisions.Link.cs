@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Mutalaa.Domain.Links;
 using Mutalaa.Domain.Text;
 
@@ -15,6 +16,75 @@ public static partial class ReviewDecisions
         && string.Equals(alan, ReviewFields.Status, StringComparison.Ordinal);
 
     internal static bool IsLinkTarget(Review review) => IsLinkTarget(review.HedefTablo, review.Alan);
+
+    /// <summary>
+    /// Yeniden dogrulama kaydi mi (K-51 madde 8): hedef (xref, status) ve <c>onerilen.yeniden_dogrula = true</c>. Hat, onayli ve <c>origin = hat</c> bir
+    /// baglantinin uretilmedigi ya da uc metni degistigi durumda bunu acar. Onerilen okunamiyorsa (bozuk JSON, nesne degil) kayit sayilmaz.
+    /// </summary>
+    public static bool IsRevalidation(string? hedefTablo, string? alan, string? onerilen)
+    {
+        if (!IsLinkTarget(hedefTablo, alan) || string.IsNullOrWhiteSpace(onerilen))
+        {
+            return false;
+        }
+
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(onerilen);
+            return document.RootElement.ValueKind == JsonValueKind.Object
+                && document.RootElement.TryGetProperty("yeniden_dogrula", out JsonElement flag)
+                && flag.ValueKind == JsonValueKind.True;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    public static bool IsRevalidation(Review review) => IsRevalidation(review.HedefTablo, review.Alan, review.Onerilen);
+
+    /// <summary>
+    /// Yeniden dogrulama onayi = "hala gecerli": review <c>onaylandi</c>, xref onayli kalir ve hicbir xref alani degismez; deger duzeltmesi yoktur
+    /// (<c>duzenlenen</c> 422). Hedef <c>onayli</c> olmali (aksi 409); aday araniyor degil.
+    /// </summary>
+    private static ReviewOutcome ApproveRevalidation(ReviewDecisionRequest request, ReviewTargetState target, string actor, string gerekce)
+    {
+        if (request.Duzenlenen is not null)
+        {
+            throw RevalidationEditRejected();
+        }
+
+        RequireApprovedLink(target);
+        return new ReviewOutcome
+        {
+            Durum = ReviewStatus.Onaylandi,
+            Eylem = ReviewActions.Onayla,
+            Inceleyen = actor,
+            IncelendiAt = request.Now,
+            Gerekce = gerekce,
+            TargetStatus = XrefStatus.Onayli,
+        };
+    }
+
+    /// <summary>Yeniden dogrulama reddi = "gecersiz": xref <c>red</c> olur (hedef onayli olmali), review <c>reddedildi</c>.</summary>
+    private static ReviewOutcome RejectRevalidation(Review review, ReviewDecisionRequest request, ReviewTargetState target, string actor, string gerekce)
+    {
+        RequireApprovedLink(target);
+        return Rejected(review, request, actor, gerekce, secondStage: false) with { TargetStatus = XrefStatus.Red };
+    }
+
+    public static DomainException RevalidationEditRejected() =>
+        new(DomainErrorCodes.IncelemeDesteklenmiyor, "Yeniden dogrulama kaydinda deger duzenlenemez; onayla (hala gecerli) ya da reddet (gecersiz).");
+
+    private static void RequireApprovedLink(ReviewTargetState target)
+    {
+        XrefStatus status = target.Status
+            ?? throw new InvalidOperationException("Durum sutunlu hedef icin hedef durumu verilmeli.");
+        if (status != XrefStatus.Onayli)
+        {
+            throw new DomainException(DomainErrorCodes.DurumGecisiGecersiz, $"Yeniden dogrulanan baglanti onayli degil (durum: {status.ToLabel()}).");
+        }
+    }
 
     /// <summary>
     /// Duzenlenen degeri okur, mevcut satira uygular ve sonucu hesaplar. Hicbir sey degismiyorsa (deger mevcut satirla ayni) onay duz onaydir:
@@ -66,10 +136,15 @@ public static partial class ReviewDecisions
 
     /// <summary>
     /// Toplu onay yalniz "toplu" sinifindaki baglanti adayinda gecer (K-13 politika 1): siniflama kurali <see cref="LinkCandidateClassifier"/>'dir.
-    /// Baska sinif ya da kayitli deger (<c>duzenlenen</c>) tasiyan istek 422 <c>toplu-uygun-degil</c>.
+    /// Yeniden dogrulama kaydi, baska sinif ya da kayitli deger (<c>duzenlenen</c>) tasiyan istek 422 <c>toplu-uygun-degil</c>.
     /// </summary>
-    public static void RequireBulkEligible(XrefType type, float confidence, string? evidenceJson, bool hasEdit)
+    public static void RequireBulkEligible(XrefType type, float confidence, string? evidenceJson, bool hasEdit, bool revalidation = false)
     {
+        if (revalidation)
+        {
+            throw new DomainException(DomainErrorCodes.TopluUygunDegil, "Yeniden dogrulama kaydi 'toplu' degildir; tek tek inceleyin.");
+        }
+
         LinkCandidateClass sinif = LinkCandidateClassifier.Classify(type, confidence, evidenceJson);
         if (sinif != LinkCandidateClass.Toplu)
         {

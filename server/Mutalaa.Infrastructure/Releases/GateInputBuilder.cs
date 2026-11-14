@@ -340,7 +340,8 @@ public static class GateInputBuilder
             dstSource,
             separateIndex,
             xref.SrcHash,
-            xref.DstHash);
+            xref.DstHash,
+            xref.EvidenceSourceId);
     }
 
     private static TextStatus ParseTextStatus(string label, string anchor) =>

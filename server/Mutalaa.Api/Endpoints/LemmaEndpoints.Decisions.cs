@@ -20,7 +20,7 @@ public sealed record LemmaObjectionResponse(long Id, string Durum);
 /// <summary>Etimolojik işaret gövdesi: yeni <c>etymological_only</c> değeri ve gerekçe, ikisi de zorunlu.</summary>
 public sealed record EtymologyMarkRequest(bool? EtymologicalOnly, string? Gerekce);
 
-/// <summary>Etimolojik işaret sonucu: denetim izi review kimliği, yeni değer, lemmanın onay yolu (hep <c>editor</c>) ve durumu.</summary>
+/// <summary>Etimolojik işaret sonucu: denetim izi review kimliği, yeni değer, lemmanın onay yolu (değişmez: otomatik onaylıda <c>otomatik</c> kalır) ve durumu.</summary>
 public sealed record EtymologyMarkResponse(long ReviewId, bool EtymologicalOnly, string OnayYolu, string Status);
 
 public static partial class LemmaEndpoints
@@ -40,7 +40,7 @@ public static partial class LemmaEndpoints
         lemmas.MapPost("/{id:int}/etimolojik-isaret", MarkEtymologicalAsync)
             .WithName("markLemmaEtymological")
             .RequireAuthorization(AuthPolicies.Editor)
-            .WithSummary("Onaylı Türkçe lemmanın 'yalnızca etimolojik' işaretini editör kararıyla değiştirir (otomatik onaylıda onay yolu editör olur).")
+            .WithSummary("Onaylı Türkçe lemmanın 'yalnızca etimolojik' işaretini editör kararıyla değiştirir (otomatik onaylıda onay yolu, köken ve kanıt korunur; yalnız işaret değişir).")
             .Produces<EtymologyMarkResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -89,7 +89,7 @@ public static partial class LemmaEndpoints
             .Where(r => r.HedefTablo == ReviewTargets.Lemma
                 && r.HedefAnahtar == key
                 && r.Alan == ReviewFields.KokEslemesi
-                && r.Durum == ReviewStatus.Acik)
+                && (r.Durum == ReviewStatus.Acik || r.Durum == ReviewStatus.Uzmanda))
             .Select(r => r.Onerilen)
             .ToListAsync(cancellationToken);
         bool hasOpenObjection = openProposals.Any(LemmaMappingPayload.IsObjection);

@@ -189,6 +189,48 @@ public class LinkLayerPackTests
         Assert.DoesNotContain(publicCore.PackSources, s => s.SourceId == Qursim);
     }
 
+    [Fact]
+    public void A_link_whose_evidence_source_is_left_out_of_the_build_is_not_written_and_the_gate_reports_it()
+    {
+        PackCatalog catalog = PackCatalog.Default;
+        EditorialSnapshot snapshot = Snapshot();
+
+        // qursim kaynak kaydi olmadigi icin derlemeye girmez: benzer_ayet QurSim satiri pakete yazilmaz.
+        GateResult without = PackTestData.Evaluate(BuildFlavor.Dev, snapshot, catalog, fileExists: path => !string.Equals(Path.GetFileName(path), Qursim + ".toml", StringComparison.Ordinal));
+        PackContent coreWithout = PackAssembler.Assemble(catalog.Get("core"), BuildFlavor.Dev, snapshot, without, catalog);
+
+        Assert.DoesNotContain(coreWithout.Xrefs, x => x.Id == Id(SimilarId));
+        XrefVerdict verdict = without.XrefVerdicts[SimilarId];
+        Assert.False(verdict.Included);
+        Assert.Equal(GateRule.P01, verdict.Rule);
+        Assert.Equal(GateReasons.XrefKaynakGirmedi, verdict.Reason);
+        Assert.Contains(
+            without.Report.Rows,
+            r => r.Kind == GateSubjectKind.Baglanti && r.Rule == GateRule.P01 && r.Reason == GateReasons.XrefKaynakGirmedi + ":" + Qursim);
+        Assert.DoesNotContain(coreWithout.PackSources, s => s.SourceId == Qursim);
+
+        // Kaynak dahilken ayni satir girer.
+        GateResult with = PackTestData.Evaluate(BuildFlavor.Dev, snapshot, catalog);
+        PackContent coreWith = PackAssembler.Assemble(catalog.Get("core"), BuildFlavor.Dev, snapshot, with, catalog);
+        Assert.Contains(coreWith.Xrefs, x => x.Id == Id(SimilarId));
+        Assert.Contains(coreWith.PackSources, s => s.SourceId == Qursim);
+    }
+
+    [Fact]
+    public void Links_without_an_evidence_source_are_not_affected_when_the_data_source_is_left_out()
+    {
+        PackCatalog catalog = PackCatalog.Default;
+        EditorialSnapshot snapshot = Snapshot();
+
+        GateResult gate = PackTestData.Evaluate(BuildFlavor.Dev, snapshot, catalog, fileExists: path => !string.Equals(Path.GetFileName(path), Qursim + ".toml", StringComparison.Ordinal));
+        PackContent kelimeKok = PackAssembler.Assemble(catalog.Get("kelime-kok"), BuildFlavor.Dev, snapshot, gate, catalog);
+
+        // LemmaXrefId ve KokApprovedId evidence.source_id tasimaz; KokId'nin kaynagi QAC'dir ve girmistir.
+        Assert.Contains(kelimeKok.Xrefs, x => x.Id == Id(LemmaXrefId));
+        Assert.Contains(kelimeKok.Xrefs, x => x.Id == Id(KokApprovedId));
+        Assert.Contains(kelimeKok.Xrefs, x => x.Id == Id(KokId));
+    }
+
     // ---- Turkce lemma, tr_root_index, tr_form ----
 
     [Fact]

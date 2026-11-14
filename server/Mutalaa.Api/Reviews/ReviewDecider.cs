@@ -97,7 +97,8 @@ internal static class ReviewDecider
 
         if (input.Bulk && input.Approve && entity is Xref candidate)
         {
-            ReviewDecisions.RequireBulkEligible(candidate.Type, candidate.Confidence, candidate.Evidence, input.Edit is not null);
+            ReviewDecisions.RequireBulkEligible(
+                candidate.Type, candidate.Confidence, candidate.Evidence, input.Edit is not null, ReviewDecisions.IsRevalidation(review));
         }
 
         ReviewDecisionRequest request = new()
@@ -142,6 +143,12 @@ internal static class ReviewDecider
         if (edit is null)
         {
             return null;
+        }
+
+        if (ReviewDecisions.IsRevalidation(review))
+        {
+            // Yeniden dogrulamada deger duzeltilmez (onay "hala gecerli", ret "gecersiz"); bos duzenlenen de 422.
+            throw ReviewDecisions.RevalidationEditRejected();
         }
 
         string hedefTablo = review.HedefTablo;

@@ -152,6 +152,11 @@ public static partial class GateEvaluator
                 verdict = CheckXrefEndHashes(xref, verdict, unitsByAnchor);
             }
 
+            if (verdict.Included)
+            {
+                verdict = CheckXrefEvidenceSource(xref, verdict, includedSources);
+            }
+
             if (!verdicts.TryAdd(xref.Id, verdict))
             {
                 throw new ArgumentException($"Yinelenen baglanti kimligi: {xref.Id}", nameof(input));
@@ -609,6 +614,13 @@ public static partial class GateEvaluator
             ? verdict with { Included = false, Rule = GateRule.P07, Reason = GateReasons.UcOzetiTutmadi, Detail = string.Empty }
             : verdict;
     }
+
+    // P-01: satirin evidence.source_id kaynagi derlemede girmediyse (kaynak kaydi yok, kaynak karari "girmedi" ya da bu derleme turune kapali) satir pakete
+    // girmez ("kaynak-girmedi:<slug>", tum derleme turlerinde). source_id alani olmayan satir etkilenmez.
+    private static XrefVerdict CheckXrefEvidenceSource(GateXref xref, XrefVerdict verdict, HashSet<string> includedSources) =>
+        string.IsNullOrEmpty(xref.EvidenceSourceId) || includedSources.Contains(xref.EvidenceSourceId)
+            ? verdict
+            : verdict with { Included = false, Rule = GateRule.P01, Reason = GateReasons.XrefKaynakGirmedi, Detail = xref.EvidenceSourceId };
 
     private static bool EndHashMismatch(string anchor, string? recorded, Dictionary<string, GateUnit> unitsByAnchor)
     {

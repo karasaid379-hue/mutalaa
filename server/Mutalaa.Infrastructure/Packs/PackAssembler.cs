@@ -156,6 +156,12 @@ public static class PackAssembler
 
             if (xref.EvidenceSourceId is { } evidenceSource)
             {
+                // P-01: veri kaynagi derlemede girmediyse satir yazilmaz (kapi karari da ayni; burada ikinci savunma).
+                if (!gate.IncludedSources.Contains(evidenceSource))
+                {
+                    continue;
+                }
+
                 xrefSources.Add(evidenceSource);
             }
 

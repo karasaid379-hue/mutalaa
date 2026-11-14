@@ -74,6 +74,24 @@ public class GateInputBuilderLinkLayerTests
     }
 
     [Fact]
+    public void The_evidence_source_of_a_link_passes_through_to_the_gate_input()
+    {
+        Guid withSource = Guid.NewGuid();
+        Guid without = Guid.NewGuid();
+        EditorialSnapshot snapshot = Snapshot(
+            xrefs:
+            [
+                PackTestData.Xref("q:1:1", "q:1:2", "benzer_ayet", "aday", id: withSource, evidenceSource: "qursim"),
+                PackTestData.Xref("q:1:1", "q:1:2", "kok", "aday", id: without),
+            ]);
+
+        GateInput input = Build(snapshot);
+
+        Assert.Equal("qursim", Assert.Single(input.Xrefs, x => x.Id == withSource).EvidenceSourceId);
+        Assert.Null(Assert.Single(input.Xrefs, x => x.Id == without).EvidenceSourceId);
+    }
+
+    [Fact]
     public void Xref_gate_rows_become_measurements_and_an_unknown_type_is_a_data_error()
     {
         GateInput input = Build(Snapshot(gates:

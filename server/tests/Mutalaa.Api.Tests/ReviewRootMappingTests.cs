@@ -513,6 +513,35 @@ public class ReviewRootMappingTests(EditorialDatabase<ReviewRootMappingTests> fi
     }
 
     [Fact]
+    public async Task A_second_objection_is_409_while_the_first_one_waits_with_the_expert()
+    {
+        Seed seed = await SeedBaseAsync();
+        Lemma lemma = await SeedAutoApprovedAsync(seed);
+        using HttpClient a = await EditorA();
+        using HttpClient b = await EditorB();
+        long first = (await ApiFactory.ReadJsonAsync(await PostAsync(a, $"/api/v1/lemmas/{lemma.Id}/itiraz", new { gerekce = "Ilk itiraz" }), Ct)).GetProperty("id").GetInt64();
+
+        // Itiraz uzmana gonderilir: durum 'uzmanda', hala karar bekliyor (acik sayilir).
+        using HttpRequestMessage handoff = new(HttpMethod.Post, $"/api/v1/reviews/{first.ToString(CultureInfo.InvariantCulture)}/uzmana-gonder")
+        {
+            Content = JsonContent.Create(new { gerekce = "Uzman gorusu gerekli" }),
+        };
+        handoff.Headers.TryAddWithoutValidation("If-Match", Etag(await XminAsync(first)));
+        using (HttpResponseMessage sent = await a.SendAsync(handoff, Ct))
+        {
+            Assert.Equal(HttpStatusCode.OK, sent.StatusCode);
+        }
+
+        Assert.Equal("uzmanda", await Db.ScalarAsync<string>("SELECT durum::text FROM icerik.review WHERE id = @id", Ct, ("id", first)));
+
+        using HttpResponseMessage second = await PostAsync(b, $"/api/v1/lemmas/{lemma.Id}/itiraz", new { gerekce = "Ikinci itiraz" });
+
+        Assert.Equal(HttpStatusCode.Conflict, second.StatusCode);
+        Assert.Equal("durum-gecisi-gecersiz", await CodeAsync(second));
+        Assert.Equal(1, await Db.ScalarAsync<long>("SELECT count(*) FROM icerik.review WHERE hedef_tablo = 'lemma'", Ct));
+    }
+
+    [Fact]
     public async Task The_opener_can_withdraw_their_own_objection_by_rejecting_it()
     {
         Seed seed = await SeedBaseAsync();
@@ -541,11 +570,8 @@ public class ReviewRootMappingTests(EditorialDatabase<ReviewRootMappingTests> fi
             Assert.Equal("inceleme-desteklenmiyor", await CodeAsync(withValue));
         }
 
-        // Baska bir yolla (etimolojik isaret) lemma editor yoluna gecti: itiraz artik otomatik onaya degil.
-        using (HttpResponseMessage marked = await PostAsync(b, $"/api/v1/lemmas/{lemma.Id}/etimolojik-isaret", new { etymological_only = true, gerekce = "Isaret" }))
-        {
-            Assert.Equal(HttpStatusCode.OK, marked.StatusCode);
-        }
+        // Lemma baska bir yolla editor yoluna gecti: itiraz artik otomatik onaya degil.
+        await Db.ExecuteAsync("UPDATE icerik.lemma SET onay_yolu = 'editor' WHERE id = " + lemma.Id.ToString(CultureInfo.InvariantCulture), Ct);
 
         using HttpResponseMessage stale = await DecideAsync(b, id, Etag(await XminAsync(id)), Approve());
         Assert.Equal(HttpStatusCode.Conflict, stale.StatusCode);
@@ -651,7 +677,7 @@ public class ReviewRootMappingTests(EditorialDatabase<ReviewRootMappingTests> fi
     // Etimolojik isaret
 
     [Fact]
-    public async Task Marking_an_auto_approved_lemma_changes_the_value_moves_it_to_the_editor_path_and_keeps_the_evidence()
+    public async Task Marking_an_auto_approved_lemma_changes_only_the_flag_and_keeps_the_auto_path_origin_and_evidence()
     {
         Seed seed = await SeedBaseAsync();
         Lemma lemma = await SeedAutoApprovedAsync(seed);
@@ -663,14 +689,14 @@ public class ReviewRootMappingTests(EditorialDatabase<ReviewRootMappingTests> fi
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         JsonElement body = await ApiFactory.ReadJsonAsync(response, Ct);
         Assert.True(body.GetProperty("etymological_only").GetBoolean());
-        Assert.Equal("editor", body.GetProperty("onay_yolu").GetString());
+        Assert.Equal("otomatik", body.GetProperty("onay_yolu").GetString());
         Assert.Equal("onayli", body.GetProperty("status").GetString());
         long reviewId = body.GetProperty("review_id").GetInt64();
 
         LemmaRow row = await RowAsync(lemma.Id);
         Assert.True(row.Etymological);
-        Assert.Equal("editor", row.OnayYolu);
-        Assert.Equal("editor", row.Origin);
+        Assert.Equal("otomatik", row.OnayYolu);
+        Assert.Equal("kaikki", row.Origin);
         Assert.Equal("onayli", row.Status);
         Assert.Equal(seed.Root.Id, row.RootId);
         using (JsonDocument before = JsonDocument.Parse(kanitBefore))
@@ -703,7 +729,24 @@ public class ReviewRootMappingTests(EditorialDatabase<ReviewRootMappingTests> fi
     }
 
     [Fact]
-    public async Task Marking_an_auto_approved_lemma_closes_the_door_on_a_later_objection_because_it_is_now_editor_approved()
+    public async Task Marking_an_editor_approved_lemma_keeps_the_editor_path_and_sets_the_origin_to_editor()
+    {
+        Seed seed = await SeedBaseAsync();
+        Lemma lemma = await SeedTrLemmaAsync(seed.Source, XrefStatus.Onayli, LemmaApprovalPaths.Editor, rootId: seed.Root.Id, arLemmaId: seed.Arabic.Id);
+        using HttpClient client = await EditorA();
+
+        using HttpResponseMessage response = await PostAsync(client, $"/api/v1/lemmas/{lemma.Id}/etimolojik-isaret", new { etymological_only = true, gerekce = "Isaret" });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("editor", (await ApiFactory.ReadJsonAsync(response, Ct)).GetProperty("onay_yolu").GetString());
+        LemmaRow row = await RowAsync(lemma.Id);
+        Assert.Equal("editor", row.OnayYolu);
+        Assert.Equal("editor", row.Origin);
+        Assert.True(row.Etymological);
+    }
+
+    [Fact]
+    public async Task Marking_an_auto_approved_lemma_leaves_it_open_to_objection_because_it_is_still_auto_approved()
     {
         Seed seed = await SeedBaseAsync();
         Lemma lemma = await SeedAutoApprovedAsync(seed);
@@ -712,7 +755,7 @@ public class ReviewRootMappingTests(EditorialDatabase<ReviewRootMappingTests> fi
 
         using HttpResponseMessage objection = await PostAsync(client, $"/api/v1/lemmas/{lemma.Id}/itiraz", new { gerekce = "Itiraz" });
 
-        Assert.Equal(HttpStatusCode.Conflict, objection.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, objection.StatusCode);
     }
 
     [Fact]
