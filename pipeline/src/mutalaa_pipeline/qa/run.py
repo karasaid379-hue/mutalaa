@@ -38,6 +38,7 @@ from mutalaa_pipeline.ingest.risale_kaynaklari import (
 from mutalaa_pipeline.komut_ortak import komutu_yurut
 from mutalaa_pipeline.lineage import NOTICE_ADI
 from mutalaa_pipeline.qa import (
+    ATIF_KAYNAGI,
     GECTI,
     KALDI,
     KAPILAR,
@@ -313,6 +314,10 @@ def komut_qa_run(
         from mutalaa_pipeline.qa.run_risale_lugat import komut_qa_run_lugat
 
         return komut_qa_run_lugat(run=run, gate=gate, config=config, kok=kok)
+    if source == ATIF_KAYNAGI:  # Risale ayet atif dizini: G-KAY, G-BUT, G-CAP, G-NOR (A20.7b)
+        from mutalaa_pipeline.qa.run_risale_atif import komut_qa_run_risale_atif
+
+        return komut_qa_run_risale_atif(run=run, gate=gate, config=config, kok=kok)
     if risale_mi(source):  # Diyanet Risale (karsilastirma verisi): G-KAY, G-BUT (A20.1)
         from mutalaa_pipeline.qa.run_risale import komut_qa_run_risale
 

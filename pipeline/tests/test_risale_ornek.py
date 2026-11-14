@@ -616,6 +616,12 @@ def test_export_hazirla_fikstur_birimlerini_ve_page_mapi_kabul_eder(
     assert len(parcalar) == BIRIM_SAYISI
     assert {p.source_id for p in parcalar} == {KAYNAK}
     assert {p.attrs["dil"] for p in parcalar} == {"tr"}
+    # fiksturun iki sentetik xref'i (A20.7b): ayni hazirlikta, binde puanla
+    assert {x.tur for x in h.xref} == {"atif", "iktibas"}
+    assert {(x.score_binde, x.confidence_binde) for x in h.xref} == {(1000, 1000)}
+    assert {x.dst_anchor for x in h.xref} == {"q:1:2", "q:1:1"}
+    assert [x.dst_span for x in sorted(h.xref, key=lambda x: x.tur)] == [None, (1, 3)]
+    assert all(x.evidence["fikstur"] is True for x in h.xref)
 
 
 def test_export_hazirla_fikstur_lugatini_ayni_kaynak_adinda_okur(
@@ -667,6 +673,8 @@ def test_export_yukleme_tek_islemde_birimler_sonra_page_map(veri: Path, tmp_path
             ("count(*) FILTER (WHERE o.m_id IS NULL)", SahteSonuc([(15, 0, 0, 15, 0)])),
             ("INSERT INTO icerik.lugat_madde", SahteSonuc(rowcount=15)),
             ("INSERT INTO icerik.review", SahteSonuc(rowcount=15)),
+            ("LEFT JOIN icerik.xref x ON", SahteSonuc([(2, 0, 0, 0, 0, 0)])),
+            ("INSERT INTO icerik.xref", SahteSonuc(rowcount=2)),
         )
     )
     kod = pg.komut_export_pg(
@@ -689,9 +697,12 @@ def test_export_yukleme_tek_islemde_birimler_sonra_page_map(veri: Path, tmp_path
             "CREATE TEMP TABLE staging_lugat",
             "INSERT INTO icerik.lugat_madde",
             "INSERT INTO icerik.review",
+            "CREATE TEMP TABLE staging_xref",
+            "INSERT INTO icerik.xref",
         )
     ]
-    assert sira == sorted(sira) and len(set(sira)) == 8  # lugat: birimlerden ve page_map'ten sonra
+    # lugat: birimlerden ve page_map'ten sonra; xref en son (iki ucu da ayni islemde)
+    assert sira == sorted(sira) and len(set(sira)) == 10
     ((_, capa_params),) = db.sorgular("FROM (SELECT start_anchor AS anchor")
     assert capa_params == (KAYNAK,)  # sayfa capalari fiksturun kendi birimlerinde aranir
     sayfa_satirlari = [r for r in db.kopya_satirlari() if len(r) == 8]
@@ -709,6 +720,70 @@ def test_export_yukleme_tek_islemde_birimler_sonra_page_map(veri: Path, tmp_path
     assert rapor["sayilar"]["lugat_staging"] == 15  # type: ignore[index]
     assert rapor["sayilar"]["lugat_eklenen"] == 15  # type: ignore[index]
     assert rapor["sayilar"]["lugat_review_acilan"] == 15  # type: ignore[index]
+    assert rapor["sayilar"]["xref_staging"] == 2  # type: ignore[index]
+    assert rapor["sayilar"]["xref_eklenen"] == 2  # type: ignore[index]
+    xref_kopya = [r for r in db.kopya_satirlari() if len(r) == 10]
+    assert len(xref_kopya) == 2
+    assert {r[6] for r in xref_kopya} == {1.0}  # score: 1 -> binde 1000 -> 1,0
+    assert any(r[5] is not None for r in xref_kopya)  # kelime araligi q:1:1:1-2 -> [1, 3)
+
+
+def test_export_fikstur_xref_hedefi_yoksa_yazilmaz_uyari_verir(veri: Path, tmp_path: Path) -> None:
+    """Tanzil yuklenmemisse fikstur birimleri yine yuklenir; xref yazilmaz (uyari, sayac)."""
+    zincir()
+    db = SahteBaglanti(
+        esle(
+            ("INSERT INTO icerik.unit", SahteSonuc(rowcount=BIRIM_SAYISI)),
+            ("count(*) FILTER (WHERE (p.start_anchor", SahteSonuc([(0, 0)])),
+            ("INSERT INTO icerik.page_map", SahteSonuc(rowcount=4)),
+            ("count(*) FILTER (WHERE o.m_id IS NULL)", SahteSonuc([(15, 0, 0, 15, 0)])),
+            ("INSERT INTO icerik.lugat_madde", SahteSonuc(rowcount=15)),
+            ("INSERT INTO icerik.review", SahteSonuc(rowcount=15)),
+            ("s.dst_anchor) ORDER BY", SahteSonuc([("q:1:1",), ("q:1:2",)])),
+        )
+    )
+    kod = pg.komut_export_pg(
+        ayarlar_kur(tmp_path),
+        depo_kok=depo_koku(),
+        source=KAYNAK,
+        baglanti=lambda: db,  # type: ignore[arg-type, return-value]
+    )
+    assert kod == 0
+    assert [i.durum for i in db.islemler] == ["onaylandi"]
+    assert not db.sorgular("INSERT INTO icerik.xref")
+    assert db.sorgular("INSERT INTO icerik.unit")  # birimler yine yuklendi
+    rapor = next(
+        r
+        for r in (
+            json.loads(p.read_text(encoding="utf-8")) for p in (veri / "reports").glob("*.json")
+        )
+        if r.get("komut") == "export pg"
+    )
+    assert rapor["sayilar"]["xref_hedefi_yok"] == 2  # type: ignore[index]
+    assert any("hedef ayeti" in u for u in rapor["uyarilar"])  # type: ignore[union-attr]
+
+
+def test_export_fikstur_xref_kaynak_ucu_yoksa_cikis_bir(veri: Path, tmp_path: Path) -> None:
+    zincir()
+    db = SahteBaglanti(
+        esle(
+            ("INSERT INTO icerik.unit", SahteSonuc(rowcount=BIRIM_SAYISI)),
+            ("count(*) FILTER (WHERE (p.start_anchor", SahteSonuc([(0, 0)])),
+            ("INSERT INTO icerik.page_map", SahteSonuc(rowcount=4)),
+            ("count(*) FILTER (WHERE o.m_id IS NULL)", SahteSonuc([(15, 0, 0, 15, 0)])),
+            ("INSERT INTO icerik.lugat_madde", SahteSonuc(rowcount=15)),
+            ("INSERT INTO icerik.review", SahteSonuc(rowcount=15)),
+            ("s.src_anchor) ORDER BY", SahteSonuc([("rn:test-ornek:bolum-1:p1",)])),
+        )
+    )
+    kod = pg.komut_export_pg(
+        ayarlar_kur(tmp_path),
+        depo_kok=depo_koku(),
+        source=KAYNAK,
+        baglanti=lambda: db,  # type: ignore[arg-type, return-value]
+    )
+    assert kod == 1
+    assert db.islemler[0].durum == "geri_alindi"  # ardindan basarisiz pipeline_run satiri
 
 
 # --- kayit ve CLI -----------------------------------------------------------------------------

@@ -31,6 +31,10 @@ QURANWBW_KAYNAGI: Final = "quranwbw-tr"
 # olarak gecer (lugat maddesinin capasi yoktur), ama kaynak kapisi sayilir.
 LUGAT_KAYNAGI: Final = "risale-kelime-frekans"
 LUGAT_KAPILARI: Final = ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
+# Risale ayet atif dizini (A20.7b; K-51 madde 13): `enrich citations` ciktisi, dort kapi.
+# G-NOR "uygulanmaz" olarak gecer (satirlar metin tasimaz), ama kaynak kapisi sayilir.
+ATIF_KAYNAGI: Final = "risale-atif-dizini"
+ATIF_KAPILARI: Final = ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
 GECTI: Final = "gecti"
 KALDI: Final = "kaldi"
 QA_KOMUTU: Final = "qa run"
@@ -54,6 +58,8 @@ def kaynak_kapilari(source_id: object) -> tuple[str, ...]:
         return RNK_KAPILARI
     if source_id == LUGAT_KAYNAGI:  # A20.6: lugat adaylari, dort kapi
         return LUGAT_KAPILARI
+    if source_id == ATIF_KAYNAGI:  # A20.7b: ayet atif dizini, dort kapi
+        return ATIF_KAPILARI
     if source_id == KAYNAK_BASKI:  # A20.3: baski sayfa esleme, G-NOR "uygulanmaz" olarak gecer
         return BASKI_KAPILARI
     return KAPILAR

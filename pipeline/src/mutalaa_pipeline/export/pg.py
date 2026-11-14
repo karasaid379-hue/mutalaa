@@ -40,7 +40,12 @@ yuklenmis olmali: capa `unit`te yoksa islem geri alinir (cikis 1).
 
 Sentetik Risale fiksturu (A20.5a): `test-risale-ornek` birimleri `pg_risale.py` ile (RNK ile ayni
 kurallar), kendi `page_map` satirlari (`source_id = test-risale-ornek`) AYNI islemde birimlerden
-sonra `pg_risale_sayfa.py` ile yuklenir. Fikstur `xref` satirlari bu adimda yuklenmez (A20.7b).
+sonra `pg_risale_sayfa.py` ile, fiksturun iki `xref` satiri `pg_risale_atif.py` ile yuklenir
+(A20.7b; hedef ayet `unit`te yoksa xref yazilmaz, uyari verilir).
+
+Risale ayet atif dizini (A20.7b, K-51 madde 13): `risale-atif-dizini` adaylari `icerik.xref`
+tablosuna upsert edilir; hat yalniz `origin = 'hat'` ve `status = 'aday'` satirin turetilmis
+sutunlarini gunceller, silme `--prune` ve `--yedek-alindi` ister (`export/pg_risale_atif.py`).
 
 Cikis kodlari: 0 basarili, 1 QA kapisi/ozet farki/eksik capa, 2 girdi ve yapilandirma (kayitsiz
 ya da gecersiz kaynak kaydi dahil). Iletilere satir icerigi ve baglanti dizesi yazilmaz; yalniz
@@ -86,6 +91,7 @@ from mutalaa_pipeline.lineage import (
     RUN_ID_DESENI,
     UNITS_ADI,
 )
+from mutalaa_pipeline.qa import ATIF_KAYNAGI
 from mutalaa_pipeline.qa.rapor import QaRaporlari
 from mutalaa_pipeline.runctx import QaKaldi, RunContext, komut_calistir
 from mutalaa_pipeline.sources.kayit import Kaynak
@@ -114,6 +120,7 @@ EK_KAYNAKLAR: Final[Mapping[str, tuple[str, ...]]] = {
     KAYNAK_BASKI: (),  # A20.3: RNK baski sayfa esleme, page_map (pg_risale_sayfa.py)
     KAYNAK_ORNEK: (),  # A20.5a: sentetik Risale fiksturu: birim, page_map, lugat (pg_risale.py)
     LUGAT_KAYNAGI: (),  # A20.6: Risale lugat adaylari ve review (pg_lugat.py)
+    ATIF_KAYNAGI: (),  # A20.7b: Risale ayet atif adaylari, xref (pg_risale_atif.py)
 }
 # Birim degil yapi satiri yukleyen kaynaklar (K-43 madde 3): units.jsonl yerine markers/pages.
 YAPI_KAYNAKLARI: Final = frozenset({"tanzil-ust-veri"})
@@ -187,6 +194,7 @@ BAGLANTI = Callable[[], psycopg.Connection]
 if TYPE_CHECKING:
     from mutalaa_pipeline.export.pg_lugat import LugatSatiri
     from mutalaa_pipeline.export.pg_risale import RisaleGirdisi
+    from mutalaa_pipeline.export.pg_risale_atif import XrefYuk
 
 
 @dataclass(frozen=True)
@@ -368,6 +376,8 @@ class Hazirlik:
     risale: "RisaleGirdisi | None" = None  # dolu: RNK Risale birimleri akitilarak yuklenir
     risale_sayfa: list[RisaleSayfaSatiri] = field(default_factory=list)  # dolu: page_map upsert'i
     lugat: "list[LugatSatiri]" = field(default_factory=list)  # dolu: lugat adaylari (pg_lugat.py)
+    xref: "list[XrefYuk]" = field(default_factory=list)  # dolu: xref adaylari (pg_risale_atif.py)
+    xref_prune: bool = False  # True: staged'de olmayan hat+aday xref silinir (--prune, onayli)
 
 
 # --- yardimcilar -------------------------------------------------------------------------
@@ -772,6 +782,10 @@ def hazirla(
         from mutalaa_pipeline.export import pg_lugat
 
         return pg_lugat.hazirla(ctx, source_id, run, ek_kaynaklar)
+    if source_id == ATIF_KAYNAGI:  # A20.7b: Risale ayet atif adaylari (xref)
+        from mutalaa_pipeline.export import pg_risale_atif
+
+        return pg_risale_atif.hazirla(ctx, source_id, run, ek_kaynaklar)
     if baski_mi(source_id):  # A20.3: RNK baski sayfa esleme (page_map)
         from mutalaa_pipeline.export import pg_risale_sayfa
 
@@ -1192,6 +1206,14 @@ def _yukle(conn: psycopg.Connection, ctx: RunContext, h: Hazirlik) -> dict[str, 
             from mutalaa_pipeline.export import pg_lugat
 
             sayilar.update(pg_lugat.yukle(conn, ctx, h))
+        if h.xref:  # fikstur (A20.7b): xref ayni islemde, birimlerden sonra
+            from mutalaa_pipeline.export import pg_risale_atif
+
+            sayilar.update(pg_risale_atif.yukle(conn, ctx, h))
+    elif h.xref:  # A20.7b: Risale ayet atif adaylari (kaynak satiri yukarida yazildi)
+        from mutalaa_pipeline.export import pg_risale_atif
+
+        sayilar.update(pg_risale_atif.yukle(conn, ctx, h))
     elif h.lugat:  # A20.6: gercek Kelime-Frekans lugati (kaynak satiri yukarida yazildi)
         from mutalaa_pipeline.export import pg_lugat
 
@@ -1275,6 +1297,8 @@ def komut_export_pg(
     force: bool = False,
     kayit: Mapping[str, tuple[str, ...]] | None = None,
     baglanti: BAGLANTI | None = None,
+    prune: bool = False,
+    yedek_alindi: bool = False,
 ) -> int:
     """`export pg` komutu; cikis kodunu dondurur (rapor `data/reports/{run_id}.json`).
 
@@ -1300,9 +1324,13 @@ def komut_export_pg(
             pg_risale.kaynak_denetle(source)
         if ek is None:
             raise GirdiHatasi("tanimsiz kaynak: export pg icin kayit yok")
+        from mutalaa_pipeline.export import pg_risale_atif
+
+        pg_risale_atif.prune_denetle(source, prune, yedek_alindi)
         if force:
             c.uyar("--force export pg icin etkisiz: parmak izi atlamasi yok (K-39 madde 8)")
         h = hazirla(c, source, run, ek)
+        h.xref_prune = prune
         kapat = baglanti is None
         conn = baglanti() if baglanti is not None else baglan(ayarlar, autocommit=True)
         try:

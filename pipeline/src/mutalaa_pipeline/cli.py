@@ -218,6 +218,20 @@ def export_pg_komutu(
     force: Annotated[
         bool, typer.Option("--force", help="Kabul edilir; export pg parmak izi atlamaz (K-39).")
     ] = False,
+    prune: Annotated[
+        bool,
+        typer.Option(
+            "--prune",
+            help=(
+                "YALNIZ risale-atif-dizini: staged'de olmayan hat+aday xref satirlarini SILER."
+                " Kullanici onayi ve yedek gerekir; --yedek-alindi ile birlikte verilir."
+            ),
+        ),
+    ] = False,
+    yedek_alindi: Annotated[
+        bool,
+        typer.Option("--yedek-alindi", help="--prune icin: yedek alindigini ve onayi dogrular."),
+    ] = False,
     config: Annotated[Path | None, typer.Option("--config", help="Baska bir mutalaa.toml.")] = None,
     kok: KokSecenegi = None,
 ) -> None:
@@ -232,7 +246,14 @@ def export_pg_komutu(
     except GirdiHatasi as hata:
         raise _hata(hata) from hata
     kod = pg.komut_export_pg(
-        ayarlar, depo_kok=depo, source=source, run=run, dry_run=dry_run, force=force
+        ayarlar,
+        depo_kok=depo,
+        source=source,
+        run=run,
+        dry_run=dry_run,
+        force=force,
+        prune=prune,
+        yedek_alindi=yedek_alindi,
     )
     if kod != cikis.BASARILI:
         raise typer.Exit(code=kod)

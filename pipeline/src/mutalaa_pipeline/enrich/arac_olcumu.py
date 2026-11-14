@@ -1,12 +1,14 @@
 """A20.7a atif araci olcum duzenegi: orneklem, kosu ve rapor (hat tarafi; veritabani yok).
 
 Uc aday arac (`ijaza` 2.0.0, `quran-detector` 0.0.2, `quran-toolkit` 0.1.0; QDetect elendi) ayni
-girdi ve ayni Tanzil metni uzerinde, her biri ayri bir surecte kosulur (arac bagimliliklari proje
-bagimliligi degildir):
+girdi ve ayni Tanzil metni uzerinde, her biri ayri bir surecte olculdu (13 Kasim 2026; K-51 madde
+13). Kazanan `quran-toolkit` 0.1.0'dir ve proje bagimliligidir; `ijaza` ve `quran-detector`
+sarmalayicilari silindi: bu duzenek bugun yalniz `quran-toolkit` kosar, rapor birlestirme kodu
+olcum kaydini okumak icin kalir:
 
     uv run --directory pipeline python -I -X utf8 -m mutalaa_pipeline.enrich.arac_olcumu ornek ...
-    uv run --directory pipeline --with ijaza==2.0.0 python -I -X utf8 \\
-        -m mutalaa_pipeline.enrich.arac_olcumu kos --arac ijaza ...
+    uv run --directory pipeline python -I -X utf8 \\
+        -m mutalaa_pipeline.enrich.arac_olcumu kos --arac quran-toolkit ...
     uv run --directory pipeline python -I -X utf8 -m mutalaa_pipeline.enrich.arac_olcumu rapor ...
 
 Etiket yoktur (Iktibas tespiti §10, Risale altin seti: etiketleme insan adimi İ-13): sonuc
@@ -355,14 +357,16 @@ def _sarmalayici(
     arac: str, ayetler: Sequence[tuple[int, int, str, str]], calisma: Path
 ) -> DiziTespitcisi:
     from mutalaa_pipeline.enrich import arac_sarmalayicilari as s
+    from mutalaa_pipeline.enrich.kuran_metni import ayetleri_kur
 
-    if arac == "ijaza":
-        return s.IjazaSarmalayici(ayetler)
-    if arac == "quran-detector":
-        return s.DetectorSarmalayici(ayetler, calisma)
-    if arac == "quran-toolkit":
-        return s.ToolkitSarmalayici(ayetler, calisma)
-    raise GirdiHatasi("bilinmeyen arac")
+    del calisma  # arac dosya yazmaz (kuran_metni: bellekte jeton listesi)
+    if arac != s.ARAC_ADI:
+        raise GirdiHatasi("bu arac sarmalayicisi kaldirildi (K-51 madde 13: kazanan quran-toolkit)")
+    kuran = ayetleri_kur(
+        [(sure, ayet, uthmani) for sure, ayet, uthmani, _ in ayetler],
+        [(sure, ayet, basit) for sure, ayet, _, basit in ayetler],
+    )
+    return s.ToolkitSarmalayici(kuran)
 
 
 def _cagir(tespitci: DiziTespitcisi, metin: str) -> tuple[list[DiziEslesmesi], float, str | None]:
@@ -386,9 +390,14 @@ def kos(
     cikti: Path,
 ) -> dict[str, Any]:
     """Tek araci orneklem ve kontroller uzerinde kosar; ham sonucu `cikti` JSON'una yazar."""
-    from mutalaa_pipeline.enrich.arac_sarmalayicilari import ARAC_PAKETLERI, paket_surumu
+    from mutalaa_pipeline.enrich.arac_sarmalayicilari import (
+        ARAC_ADI,
+        ARAC_MODULU,
+        ARAC_SURUMU,
+        paket_surumu,
+    )
 
-    modul, dagitim, beklenen = ARAC_PAKETLERI[arac]
+    modul, dagitim, beklenen = ARAC_MODULU, ARAC_ADI, ARAC_SURUMU
     ham: dict[str, Any] = {"rapor_surumu": RAPOR_SURUMU, "arac": arac, "beklenen_surum": beklenen}
     ham["python"] = sys.version.split()[0]
     bellek_once = bellek_mb()

@@ -1,180 +1,118 @@
-"""Atif araclari icin `DiziTespitcisi` sarmalayicilari (A20.7a olcumu; QDetect elendi).
+"""Atif araci sarmalayicisi: `quran-toolkit` 0.1.0 (K-51 madde 13; A20.7a olcumu sonrasi).
 
-Uc aday arac ayni Tanzil metniyle beslenir (`data/gelen/tanzil-uthmani` ve `tanzil-simple-clean`):
-araclarin kendi paketlerindeki Kur'an verisi kullanilmaz. Araclar `importlib` ile yuklenir; proje
-bagimliligi degillerdir (`uv run --with <paket>==<surum>`); kazanan secilince `uv add` ile eklenir
-(K-51 guncellemesi) ve yalniz onun sarmalayicisi kalir.
+`ijaza` 2.0.0 ve `quran-detector` 0.0.2 elendi; sarmalayicilari ve import'lari silindi. Arac
+Kur'an verisini kendi paketinden degil Tanzil Simple Clean metninden alir (`kuran_metni`): her
+ayetin kelimesi QAC siralamasiyla (besmele onegi ve durak isaretleri haric) bir `QuranToken` olur.
+Ayetin simple-clean kelime sayisi QAC sayisiyla ayni degilse konum 0 verilir (konum bilinmiyor;
+hedef ayet duzeyinde kalir). Dosya yazilmaz: araclarin `find_ayat` islevi dogrudan bellekteki
+jeton listesiyle cagrilir.
 
-Her sarmalayici bir diziyi (Arapca metin) alir ve `DiziEslesmesi` listesi dondurur; ofsetler dizi
-metninde kod noktasi, `[bas, son)`. Araclar bosluklari tek bosluga indirip kendi ofsetlerini
-bildirdigi icin ofsetler bosluk disi karakter sirasi uzerinden asil metne geri esitlenir.
-
-Metin hicbir yerde saklanmaz ya da yazilmaz.
+Sarmalayici bir diziyi (Arapca metin) alir ve `DiziEslesmesi` listesi dondurur; ofsetler dizi
+metninde kod noktasi, `[bas, son)`. Arac en az `min_words` (4) kelimelik diziler bulur; daha
+kisa dizi arac tarafindan bulunmaz. `tekrar`, eslesen kelime dizisinin Kur'an'da kac farkli
+yerde gectigidir (kalip ifade cezasi icin); aracin kendi ciktisi degildir, jeton listesinden
+hesaplanir. Metin hicbir yerde saklanmaz ya da yazilmaz.
 """
 
 import importlib
 import importlib.metadata
-import re
-from collections.abc import Callable, Sequence
-from itertools import accumulate
-from pathlib import Path
+from collections.abc import Sequence
 from typing import Any, Final
 
-from mutalaa_pipeline.enrich.citations import DiziEslesmesi
+from mutalaa_pipeline.enrich.citations import DiziEslesmesi, Parca
+from mutalaa_pipeline.enrich.kuran_metni import Ayet, basit_kelimeler
 
-ARAC_PAKETLERI: Final = {
-    "ijaza": ("ijaza", "ijaza", "2.0.0"),
-    "quran-detector": ("quran_detector", "quran-detector", "0.0.2"),
-    "quran-toolkit": ("quran_toolkit", "quran-toolkit", "0.1.0"),
-}
-
-type AyetMetni = tuple[int, int, str, str]  # (sure, ayet, uthmani, simple_clean)
-
-_BOSLUK_DISI: Final = re.compile(r"\S")
-_SOZCUK: Final = re.compile(r"\S+")
+ARAC_ADI: Final = "quran-toolkit"
+ARAC_MODULU: Final = "quran_toolkit"
+ARAC_SURUMU: Final = "0.1.0"
+EN_AZ_KELIME: Final = 4  # aracin varsayilan en kucuk dizi uzunlugu (Iktibas tespiti §7)
+KONUM_YOK: Final = 0
+WAW: Final = "\N{ARABIC LETTER WAW}"
 
 
-def paket_surumu(paket: str) -> str:
+def paket_surumu(paket: str = ARAC_ADI) -> str:
     """Yuklu paketin dagitim surumu."""
     return importlib.metadata.version(paket)
 
 
-def bosluk_disi_konumlar(metin: str) -> list[int]:
-    """Bosluk olmayan her karakterin `metin` icindeki konumu (k. karakter -> konum)."""
-    return [m.start() for m in _BOSLUK_DISI.finditer(metin)]
-
-
-def _kompaktan_asila(konumlar: Sequence[int], k_bas: int, k_son: int) -> tuple[int, int] | None:
-    """Bosluk disi karakter dizisi `[k_bas, k_son)` -> asil metin `[bas, son)`."""
-    if not 0 <= k_bas < k_son <= len(konumlar):
-        return None
-    return konumlar[k_bas], konumlar[k_son - 1] + 1
-
-
-class IjazaSarmalayici:
-    """ijaza 2.0.0: `QuranValidator.scan_for_verses` (kademeli eslesme, tek en iyi ayet/pencere)."""
-
-    ad: str = "ijaza"
-    surum: str = "2.0.0"
-
-    def __init__(
-        self,
-        ayetler: Sequence[AyetMetni],
-        *,
-        min_words: int = 3,
-        max_words: int = 50,
-        esik: float = 0.85,
-    ) -> None:
-        self._ayar = {"min_words": min_words, "max_words": max_words, "confidence_threshold": esik}
-        modul: Any = importlib.import_module("ijaza.validator")
-        asil_yukle: Callable[[str], list[Any]] = modul._load_json_data
-        veri = [
-            {"id": i, "surah": s, "ayah": a, "text": uthmani, "textSimple": basit}
-            for i, (s, a, uthmani, basit) in enumerate(ayetler, start=1)
-        ]
-
-        def yukle(dosya: str) -> list[Any]:
-            return veri if dosya == "quran-verses.json" else asil_yukle(dosya)
-
-        modul._load_json_data = yukle
-        try:
-            self._dogrulayici: Any = importlib.import_module("ijaza").create_validator()
-        finally:
-            modul._load_json_data = asil_yukle
-
-    def tespit_et(self, dizi_metni: str) -> list[DiziEslesmesi]:
-        birlesik = " ".join(dizi_metni.split())
-        konumlar = bosluk_disi_konumlar(dizi_metni)
-        onek = [0, *accumulate(0 if k.isspace() else 1 for k in birlesik)]
-        sonuc: list[DiziEslesmesi] = []
-        for e in self._dogrulayici.scan_for_verses(birlesik, **self._ayar):
-            aralik = _kompaktan_asila(konumlar, onek[e["start_pos"]], onek[e["end_pos"]])
-            if aralik is None:
-                continue
-            ayetler = tuple((v.surah, v.ayah) for v in e["verses"])
-            kelime = len(birlesik[e["start_pos"] : e["end_pos"]].split())
-            sonuc.append(
-                DiziEslesmesi(aralik[0], aralik[1], ayetler, float(e["confidence"]), kelime)
-            )
-        return sonuc
-
-
-class DetectorSarmalayici:
-    """quran-detector 0.0.2: `Engine.detect` (trie + Levenshtein; Tanzil Simple Clean ile)."""
-
-    ad: str = "quran-detector"
-    surum: str = "0.0.2"
-
-    def __init__(self, ayetler: Sequence[AyetMetni], calisma: Path) -> None:
-        engine_modulu: Any = importlib.import_module("quran_detector.engine")
-        config_modulu: Any = importlib.import_module("quran_detector.config")
-        metin_modulu: Any = importlib.import_module("quran_detector.text")
-        kaynaklar: Any = importlib.import_module("importlib.resources")
-        veri_klasoru = kaynaklar.files("quran_detector") / "data"
-        calisma.mkdir(parents=True, exist_ok=True)
-        basit = calisma / "quran-simple.txt"
-        # Tanzil Simple Clean satirlari ("sure|ayet|metin"); araclarin kendi dosya bicimi.
-        with basit.open("w", encoding="utf-8", newline="\n") as dosya:
-            for sure, ayet, _uthmani, metin in ayetler:
-                dosya.write(f"{sure}|{ayet}|{metin}\n")
-        self._engine: Any = engine_modulu.Engine.from_paths(
-            str(basit),
-            str(veri_klasoru / "quran-index.xml"),
-            str(veri_klasoru / "non-terminals.txt"),
-        )
-        self._ayarlar: Any = config_modulu.Settings()
-        self._pad: Callable[[str], str] = metin_modulu.pad_symbols
-
-    def tespit_et(self, dizi_metni: str) -> list[DiziEslesmesi]:
-        konumlar = bosluk_disi_konumlar(dizi_metni)
-        sozcukler = [len(m.group()) for m in _SOZCUK.finditer(self._pad(dizi_metni))]
-        toplam = [0, *accumulate(sozcukler)]
-        sonuc: list[DiziEslesmesi] = []
-        for kayit in self._engine.detect(self._pad(dizi_metni), settings=self._ayarlar):
-            bas, son = kayit["start_in_text"], kayit["end_in_text"]
-            if not 0 <= bas < son <= len(sozcukler):
-                continue
-            aralik = _kompaktan_asila(konumlar, toplam[bas], toplam[son])
-            if aralik is None:
-                continue
-            sure = self._engine.surah_rank[kayit["surah_name"]]
-            ayetler = tuple((sure, a) for a in range(kayit["aya_start"], kayit["aya_end"] + 1))
-            # Arac skor vermez (`skor = None`); uzunluk kelime sayisidir.
-            sonuc.append(DiziEslesmesi(aralik[0], aralik[1], ayetler, None, son - bas))
-        return sonuc
-
-
 class ToolkitSarmalayici:
-    """quran-toolkit 0.1.0: `AyahDetector.find` (kelime dizisi eslesmesi; Tanzil Simple Clean)."""
+    """quran-toolkit 0.1.0: `find_ayat` (kelime dizisi eslesmesi; Tanzil Simple Clean)."""
 
-    ad: str = "quran-toolkit"
-    surum: str = "0.1.0"
+    ad: str = ARAC_ADI
+    surum: str = ARAC_SURUMU
 
-    def __init__(self, ayetler: Sequence[AyetMetni], calisma: Path, *, min_words: int = 4) -> None:
-        paket: Any = importlib.import_module("quran_toolkit")
-        calisma.mkdir(parents=True, exist_ok=True)
-        csv_yolu = calisma / "quran.csv"
-        uthmani_yolu = calisma / "quran-uthmani.txt"
-        with csv_yolu.open("w", encoding="utf-8", newline="\n") as dosya:
-            for sure, ayet, _uthmani, metin in ayetler:
-                for sira, sozcuk in enumerate(metin.split(), start=1):
-                    dosya.write(f"{sure},{ayet},{sira},{sozcuk}\n")
-        with uthmani_yolu.open("w", encoding="utf-8", newline="\n") as dosya:
-            for sure, ayet, uthmani, _metin in ayetler:
-                dosya.write(f"{sure}|{ayet}|{uthmani}\n")
-        self._dedektor: Any = paket.AyahDetector(
-            quran_csv_path=str(csv_yolu),
-            quran_uthmani_path=str(uthmani_yolu),
-            min_words=min_words,
-        )
+    def __init__(self, ayetler: Sequence[Ayet], *, min_words: int = EN_AZ_KELIME) -> None:
+        self._paket: Any = importlib.import_module(ARAC_MODULU)
+        paket = self._paket
+        self._min_words = min_words
+        jetonlar: list[Any] = []
+        for a in ayetler:
+            if a.basit_kelimeler is not None:
+                kelimeler = a.basit_kelimeler
+                konumlar = range(1, len(kelimeler) + 1)
+            else:  # hizasiz ayet: konum bilinmiyor; kelimeler yine eslesmeye girer
+                kelimeler = _hizasiz_kelimeler(a)
+                konumlar = range(len(kelimeler))
+            for sira, kelime in zip(konumlar, kelimeler, strict=True):
+                bicimler = frozenset(x for x in (paket.normalize_arabic(kelime),) if x)
+                if not bicimler:
+                    continue  # aracin yukleyicisi gibi: bos kalan jeton atilir
+                jetonlar.append(
+                    paket.QuranToken(a.sure, a.ayet, sira if a.hizali else KONUM_YOK, bicimler)
+                )
+        self._jetonlar: list[Any] = jetonlar
+        self._indeks: Any = paket.build_index(jetonlar)
+
+    def _tekrar(self, eslesme: Any) -> int:
+        """Eslesen normalize kelime dizisinin Kur'an'daki baslangic sayisi (en az 1)."""
+        paket = self._paket
+        dizi = [
+            "".join(paket.normalize_arabic(paket.clean_token(t)) for t in w.text.split())
+            for w in eslesme.words
+        ]
+        if not dizi:
+            return 1
+        adaylar = set(self._indeks.get(dizi[0], ())) | set(self._indeks.get(WAW + dizi[0], ()))
+        sayi = 0
+        for c in adaylar:
+            if c + len(dizi) > len(self._jetonlar):
+                continue
+            ilk = self._jetonlar[c].forms
+            if dizi[0] not in ilk and WAW + dizi[0] not in ilk:
+                continue
+            if all(dizi[k] in self._jetonlar[c + k].forms for k in range(1, len(dizi))):
+                sayi += 1
+        return max(1, sayi)
 
     def tespit_et(self, dizi_metni: str) -> list[DiziEslesmesi]:
         sonuc: list[DiziEslesmesi] = []
-        for e in self._dedektor.find(dizi_metni):
-            ayetler = tuple((e.surah, a) for a in range(e.ayah_start, e.ayah_end + 1))
+        eslesmeler = self._paket.find_ayat(
+            dizi_metni, self._jetonlar, self._indeks, min_words=self._min_words
+        )
+        for e in eslesmeler:
+            parcalar: list[Parca] = []
+            for k, w in enumerate(e.words):
+                sure = self._jetonlar[e.word_start + k].surah
+                if parcalar and (parcalar[-1].sure, parcalar[-1].ayet) == (sure, w.ayah):
+                    onceki = parcalar[-1]
+                    parcalar[-1] = Parca(sure, w.ayah, onceki.ilk, w.position, onceki.sayi + 1)
+                else:
+                    parcalar.append(Parca(sure, w.ayah, w.position, w.position, 1))
+            ayetler = tuple((p.sure, p.ayet) for p in parcalar)
             sonuc.append(
                 DiziEslesmesi(
-                    e.char_start, e.char_end, ayetler, None, e.word_end - e.word_start + 1
+                    e.char_start,
+                    e.char_end,
+                    ayetler,
+                    None,
+                    len(e.words),
+                    tuple(parcalar),
+                    self._tekrar(e),
                 )
             )
         return sonuc
+
+
+def _hizasiz_kelimeler(ayet: Ayet) -> tuple[str, ...]:
+    """Hizasiz ayetin eslesmeye girecek kelimeleri: Simple Clean belirtecleri (besmele atilir)."""
+    return basit_kelimeler(ayet.sure, ayet.ayet, ayet.basit)

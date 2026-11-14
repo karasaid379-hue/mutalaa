@@ -61,7 +61,7 @@ from mutalaa_pipeline.adimlar.risale import (
     rn_yolu,
 )
 from mutalaa_pipeline.anchor import content_hash
-from mutalaa_pipeline.export import pg_lugat
+from mutalaa_pipeline.export import pg_lugat, pg_risale_atif
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.export.pg import (
     Hazirlik,
@@ -76,6 +76,7 @@ from mutalaa_pipeline.export.pg import (
     _zincir_denetle,
 )
 from mutalaa_pipeline.export.pg_lugat import LugatSatiri
+from mutalaa_pipeline.export.pg_risale_atif import XrefYuk
 from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_ORNEK, KAYNAK_RNK, KAYNAKLAR
 from mutalaa_pipeline.lineage import OZET_DESENI, UNITS_ADI
 from mutalaa_pipeline.normalize import tr_stem
@@ -319,6 +320,7 @@ def hazirla(
     girdiler = [lineage.Girdi(yol, sha, anchor_run_id)]
     sayfalar: list[RisaleSayfaSatiri] = []
     lugat: list[LugatSatiri] = []
+    xref: list[XrefYuk] = []
     if source_id == KAYNAK_ORNEK:
         # Fikstur (A20.5a): `page_map.jsonl` ayni anchor calismasindadir; birimlerle ayni islemde
         # yuklenir (`pg._yukle`). Gercek RNK'da page_map ayri kaynaktir (`risale-baski-rnk`).
@@ -332,6 +334,9 @@ def hazirla(
         # (`pg._yukle`, dev'e girer: test- onekli kaynak). Gercek lugat ayri kaynaktir.
         lugat_yol, lugat_sha, lugat = pg_lugat.calismadan_oku(ctx, ingest[source_id], source_id)
         girdiler.append(lineage.Girdi(lugat_yol, lugat_sha, ingest[source_id].run_id))
+        # Fikstur xref'i (A20.7b): `xref.jsonl` anchor calismasindadir; ayni islemde yuklenir.
+        xref_yol, xref_sha, xref = pg_risale_atif.fikstur_oku(ctx, klasor, manifest, source_id)
+        girdiler.append(lineage.Girdi(xref_yol, xref_sha, anchor_run_id))
     for slug in kaynak_idleri:
         girdiler += [lineage.Girdi(d["yol"], d["sha256"]) for d in ham[slug]]
     return Hazirlik(
@@ -351,6 +356,7 @@ def hazirla(
         risale=risale,
         risale_sayfa=sayfalar,
         lugat=lugat,
+        xref=xref,
     )
 
 

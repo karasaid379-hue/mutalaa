@@ -1,7 +1,8 @@
-"""`Tespit` -> `xref` aday satiri, dogal anahtar tekilligi ve idempotentlik (A20.7a).
+"""`Tespit` -> `xref` aday satiri, dogal anahtar tekilligi ve idempotentlik (A20.7a/b).
 
 Girdiler sentetiktir ("Deneme paragrafi ...", Arap alfabesi harfleri, uydurma sure adi). Gercek
-bir Kur'an ya da Risale metni kullanilmaz; `q:` capalarindaki sayilar serbesttir.
+bir Kur'an ya da Risale metni kullanilmaz; `q:` capalarindaki sayilar serbesttir. `score` ve
+`confidence` binde tam sayidir (0..1000); staged JSON ondalik sayi tasimaz.
 """
 
 import json
@@ -10,9 +11,9 @@ from pathlib import Path
 
 import pytest
 
-from mutalaa_pipeline.enrich import atif_gramer, citations
-from mutalaa_pipeline.enrich.citations import DiziEslesmesi, Tespit
-from mutalaa_pipeline.export.ortak import GirdiHatasi
+from mutalaa_pipeline.enrich import atif_gramer, atif_guven, citations
+from mutalaa_pipeline.enrich.citations import DiziEslesmesi, Parca, Tespit
+from mutalaa_pipeline.export.ortak import GirdiHatasi, kati_json
 
 SRC = "rn:deneme-kitap:bolum-1:p3"
 SRC_2 = "rn:deneme-kitap:bolum-1:p12"
@@ -31,8 +32,8 @@ def _tespit(**degisen: object) -> Tespit:
         "yontem": citations.YONTEM_ARAC,
         "arac": "sahte-arac",
         "arac_surumu": "1.0.0",
-        "skor": 0.9,
-        "guven": 0.9,
+        "skor": 900,
+        "guven": 900,
         "ayrintilar": {"kelime_sayisi": 4},
     }
     temel.update(degisen)
@@ -45,14 +46,15 @@ class SahteArac:
     ad = "sahte-arac"
     surum = "1.0.0"
 
-    def __init__(self, skor: float | None = 0.9) -> None:
+    def __init__(self, skor: float | None = 0.9, **ek: object) -> None:
         self.skor = skor
+        self.ek = ek
         self.cagrilar: list[str] = []
 
     def tespit_et(self, dizi_metni: str) -> Sequence[DiziEslesmesi]:
         self.cagrilar.append(dizi_metni)
         ilk_iki = len(" ".join(dizi_metni.split()[:2]))
-        return [DiziEslesmesi(0, ilk_iki, ((2, 255), (2, 256)), self.skor, 2)]
+        return [DiziEslesmesi(0, ilk_iki, ((2, 255), (2, 256)), self.skor, 2, **self.ek)]  # type: ignore[arg-type]
 
 
 def test_tespit_dogrulamalari() -> None:
@@ -68,10 +70,16 @@ def test_tespit_dogrulamalari() -> None:
         {"ayet": 287},
         {"tur": "ima"},
         {"yontem": "elle"},
-        {"skor": 1.5},
-        {"guven": -0.1},
+        {"skor": 1500},
+        {"skor": 0.9},  # ondalik: staged JSON tasimaz
+        {"guven": -1},
+        {"guven": True},
+        {"dst_bas": 5, "dst_son": 5},
+        {"dst_bas": 1},
+        {"dst_bas": 0, "dst_son": 3},
         {"ayrintilar": {"serbest": 1}},
         {"ayrintilar": {"sinyal": "Deneme paragrafi 1 bir cumle"}},
+        {"ayrintilar": {"kapsama": 0.5}},
     ):
         with pytest.raises(GirdiHatasi):
             _tespit(**kotu)
@@ -86,18 +94,29 @@ def test_xref_satiri_alanlari() -> None:
     assert satir["src_span"] == [10, 25]
     assert satir["dst_anchor"] == "q:2:255"
     assert satir["dst_span"] is None
-    assert satir["score"] == 0.9
-    assert satir["confidence"] == 0.9
+    assert satir["score_binde"] == 900
+    assert satir["confidence_binde"] == 900
     assert satir["data_version"] == SURUM
+    assert set(satir) == citations.XREF_ALANLARI
     assert satir["evidence"] == {
         "arac": "sahte-arac",
         "arac_surumu": "1.0.0",
         "kelime_sayisi": 4,
-        "skor": 0.9,
+        "skor_binde": 900,
         "source_id": "risale-atif-dizini",
         "yontem": "arac",
     }
     assert citations.KAYNAK_ID == "risale-atif-dizini"
+    # staged biciminin katiligi: ondalik sayi yok, ayni baytlar kati okumadan gecer
+    veri, _ = citations.xrefs_baytlari([satir])
+    assert kati_json(veri.decode("ascii").strip()) == satir
+
+
+def test_kelime_araligi_dst_span() -> None:
+    satir = citations.tespitten_xref(_tespit(dst_bas=3, dst_son=8), SURUM)
+    assert satir["dst_anchor"] == "q:2:255"
+    assert satir["dst_span"] == [3, 8]  # q:2:255:3-7 -> [3, 8) (K-26 to_unit_span)
+    assert citations.xref_natural_key(satir)[4] == (3, 8)
 
 
 def test_dogal_anahtar() -> None:
@@ -112,15 +131,15 @@ def test_dogal_anahtar() -> None:
 
 
 def test_ayni_anahtar_birlesir_en_yuksek_guven_kalir() -> None:
-    dusuk = _tespit(arac="a-arac", guven=0.6, skor=0.6)
-    yuksek = _tespit(arac="b-arac", guven=0.9, skor=0.9)
+    dusuk = _tespit(arac="a-arac", guven=600, skor=600)
+    yuksek = _tespit(arac="b-arac", guven=900, skor=900)
     baska_aralik = _tespit(src_bas=30, src_son=40)
     baska_tur = _tespit(tur=citations.TUR_ATIF, yontem=citations.YONTEM_GRAMER, arac="x")
     satirlar = citations.xrefleri_birlestir([dusuk, baska_aralik, yuksek, baska_tur], SURUM)
     anahtarlar = [citations.xref_natural_key(s) for s in satirlar]
     assert len(anahtarlar) == len(set(anahtarlar)) == 3
     birlesen = next(s for s in satirlar if s["src_span"] == [10, 25] and s["type"] == "iktibas")
-    assert birlesen["confidence"] == 0.9
+    assert birlesen["confidence_binde"] == 900
     assert birlesen["evidence"]["arac"] == "b-arac"  # type: ignore[index]
     assert birlesen["evidence"]["birlesen"] == 2  # type: ignore[index]
     tekli = next(s for s in satirlar if s["src_span"] == [30, 40])
@@ -154,27 +173,88 @@ def test_birimden_tespitler_atif_ve_iktibas() -> None:
     assert iktibas[0].ayrintilar["grup"] == f"g{len(onek)}-{len(onek) + ilk_iki}"
     assert iktibas[0].ayrintilar["grup_boyutu"] == 2
     assert iktibas[0].ayrintilar["dizi_turu"] == "alinti"
+    assert iktibas[0].ayrintilar["guven_kaynagi"] == "arac_skoru"
+    assert (iktibas[0].skor, iktibas[0].guven) == (900, 900)
     assert (iktibas[0].yontem, iktibas[0].arac) == ("arac", "sahte-arac")
     assert len(atif) == 1
     assert (atif[0].sure, atif[0].ayet, atif[0].yontem) == (2, 255, "atif_gramer")
     assert metin[atif[0].src_bas : atif[0].src_son] == "(2:255)"
-    assert atif[0].guven == atif_gramer.GUVEN_ADSIZ_PARANTEZ
+    assert atif[0].guven == atif_guven.binde(atif_gramer.GUVEN_ADSIZ_PARANTEZ) == 850
+    assert atif[0].skor == 1000  # Baglanti modeli §6: atif icin score = 1,0
 
 
 def test_arac_skor_vermezse_varsayilan_ve_isaret() -> None:
     marks = [{"t": "ar", "s": 0, "e": len(DIZI), "tur": "blok"}]
     tespitler = citations.birimden_tespitler(SRC, DIZI, marks, tespitci=SahteArac(None))
-    assert {t.skor for t in tespitler} == {citations.VARSAYILAN_SKOR}
+    assert {t.skor for t in tespitler} == {citations.VARSAYILAN_SKOR} == {500}
     assert tespitler[0].ayrintilar["skor_yok"] is True
     satir = citations.tespitten_xref(tespitler[0], SURUM)
-    assert "skor" not in satir["evidence"]  # type: ignore[operator]
+    assert "skor_binde" not in satir["evidence"]  # type: ignore[operator]
     assert satir["evidence"]["guven_kaynagi"] == "varsayilan"  # type: ignore[index]
+    assert satir["evidence"]["skor_yok"] is True  # type: ignore[index]
+
+
+def test_guven_hesabi_kapsama_kelime_sayisi_ve_tekrar() -> None:
+    marks = [{"t": "ar", "s": 0, "e": len(DIZI), "tur": "blok"}]
+    parcalar = (Parca(2, 255, 2, 5, 4), Parca(2, 256, 1, 4, 4))
+    sayilar = {(2, 255): 10, (2, 256): 4}
+
+    def tespitler(tekrar: int) -> list[Tespit]:
+        arac = SahteArac(None, parcalar=parcalar, tekrar=tekrar)
+        # kelime_sayisi 2 yerine 8 (iki ayette 4+4) verilsin diye ozel arac
+        arac.tespit_et = lambda m: [  # type: ignore[method-assign]
+            DiziEslesmesi(0, len(m), ((2, 255), (2, 256)), None, 8, parcalar, tekrar)
+        ]
+        return citations.birimden_tespitler(
+            SRC, DIZI, marks, tespitci=arac, ayet_kelime=lambda s, a: sayilar.get((s, a))
+        )
+
+    bir = tespitler(1)
+    assert [(t.sure, t.ayet, t.dst_bas, t.dst_son) for t in bir] == [
+        (2, 255, 2, 6),  # kelime 2-5 -> [2, 6)
+        (2, 256, None, None),  # 1-4 = ayetin tamami (4 kelime)
+    ]
+    kanit = bir[0].ayrintilar
+    assert kanit["guven_kaynagi"] == "kapsama_hesabi"
+    assert kanit["kapsama"] == 571  # 8 / (10 + 4)
+    assert kanit["ayet_kelime_sayisi"] == 14
+    assert kanit["skor_yok"] is True
+    assert (bir[0].skor, bir[0].guven) == (
+        atif_guven.iktibas_puani(8, 14, 1).skor,
+        atif_guven.iktibas_puani(8, 14, 1).guven,
+    )
+    iki = tespitler(2)
+    assert iki[0].guven < bir[0].guven
+    assert iki[0].ayrintilar["tekrar"] == 2
+    assert "tekrar" not in bir[0].ayrintilar
+
+
+def test_konum_bilinmiyorsa_ayet_duzeyinde_kalir() -> None:
+    marks = [{"t": "ar", "s": 0, "e": len(DIZI), "tur": "blok"}]
+    arac = SahteArac(None)
+    arac.tespit_et = lambda m: [  # type: ignore[method-assign]
+        DiziEslesmesi(0, len(m), ((2, 255),), None, 4, (Parca(2, 255, 0, 0, 4),), 1)
+    ]
+    t = citations.birimden_tespitler(SRC, DIZI, marks, tespitci=arac, ayet_kelime=lambda s, a: 10)
+    assert (t[0].dst_bas, t[0].dst_son) == (None, None)
+    assert t[0].ayrintilar["kelime_konumu_yok"] is True
+
+
+def test_osmanlica_ve_arapca_kitapta_yalniz_alinti_isareti() -> None:
+    marks = [
+        {"t": "ar", "s": 0, "e": len(DIZI), "tur": "blok"},
+        {"t": "ar", "s": 0, "e": len(DIZI), "tur": "alinti"},
+    ]
+    for dil, beklenen in (("tr", 2), ("ota", 1), ("ar", 1)):
+        arac = SahteArac()
+        citations.birimden_tespitler(SRC, DIZI, marks, tespitci=arac, dil=dil)
+        assert len(arac.cagrilar) == beklenen, dil
 
 
 def test_min_skor_suzer_ve_arac_yoksa_yalniz_atif() -> None:
     marks = [{"t": "ar", "s": 0, "e": len(DIZI), "tur": "blok"}]
     assert (
-        citations.birimden_tespitler(SRC, DIZI, marks, tespitci=SahteArac(0.3), min_skor=0.5) == []
+        citations.birimden_tespitler(SRC, DIZI, marks, tespitci=SahteArac(0.3), min_skor=500) == []
     )
     assert citations.birimden_tespitler(SRC, DIZI, marks) == []
 

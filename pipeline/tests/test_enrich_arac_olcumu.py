@@ -11,7 +11,6 @@ from typing import Any
 import pytest
 
 from mutalaa_pipeline.enrich import arac_olcumu as olcum
-from mutalaa_pipeline.enrich.arac_sarmalayicilari import bosluk_disi_konumlar
 from mutalaa_pipeline.staged import satir_baytlari
 
 DIZI = "ابت ثجح خدذ هوز"  # sentetik
@@ -168,11 +167,6 @@ def test_dagilim_ve_yuzdelik() -> None:
     d = olcum.dagilim([1, 2, 3, 4, 5])
     assert (d["n"], d["min"], d["p50"], d["maks"], d["ort"]) == (5, 1, 3, 5, 3.0)
     assert olcum.yuzdelik([], 0.5) is None
-
-
-def test_bosluk_disi_konumlar() -> None:
-    assert bosluk_disi_konumlar("a  b\tc") == [0, 3, 5]
-    assert bosluk_disi_konumlar("  ") == []
 
 
 def _ayetler() -> list[tuple[int, int, str, str]]:
