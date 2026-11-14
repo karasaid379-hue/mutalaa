@@ -121,7 +121,7 @@ describe('problemText', () => {
       'decision',
     );
     expect(offset).toBe(
-      "Bu birimin ofsetli alanları (işaretler, cümleler) var; metin düzeltmesi A20'de desteklenecek",
+      "Bu birimin ofsetli alanları (işaretler, cümleler) var; üçüncü taraf Risale metni düzeltilmez (K-51)",
     );
     // Another reason for the same code keeps the generic wording.
     expect(

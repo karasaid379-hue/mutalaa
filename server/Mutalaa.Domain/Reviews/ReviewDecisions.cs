@@ -251,8 +251,8 @@ public static class ReviewDecisions
     /// (2) uygulanacak metin duzenlenen, yoksa onerilen; ikisi de bossa (yalniz durum onayi) metin degismez, null doner;
     /// (3) metin degisiyorsa Canonicalize, ContentHash, rev + 1 ve arama anahtarlari (tr_stem NULL). Ozet degismiyorsa null doner.
     /// Degistirilemez metin (ayet, kuran_metni) 422 <c>degistirilemez-metin</c>.
-    /// Ofsetli turev alanlar (marks, sentences) metin degisimiyle kayar; yeniden hesaplari BC-59'dadir (A20):
-    /// metin GERCEKTEN degisiyorsa ve birimde ofsetli alan varsa 422 <c>inceleme-desteklenmiyor</c> (K-48 degismez; kisitlama BC-59'da kalkar).
+    /// Ofsetli turev alanlar (marks, sentences) metin degisimiyle kayar; K-51 madde 8 korumayi KALICI yapar (Risale metni duzeltilmez):
+    /// metin GERCEKTEN degisiyorsa ve birimde ofsetli alan varsa 422 <c>inceleme-desteklenmiyor</c>.
     /// Birlesik mealin izleyen biriminde (<c>attrs.birlesik_ile</c> dolu; K-49 madde 8) metin degistiren her karar da ayni kodla 422 verir.
     /// Durum onayi (metin degismez) ve ret serbesttir.
     /// </summary>
@@ -372,7 +372,7 @@ public static class ReviewDecisions
         {
             throw new DomainException(
                 DomainErrorCodes.IncelemeDesteklenmiyor,
-                "Ofsetli alanlarin (marks, sentences) yeniden hesabi BC-59'da (A20) yapilana kadar bu birimde metin degisimi desteklenmiyor; metni degistiren onay yapilamaz.");
+                "Ofsetli alanlarin (marks, sentences) bulundugu birimde metin degisimi desteklenmiyor: Risale metni ucuncu taraf kanonik metindir ve duzeltilmez (K-51 madde 8); metni degistiren onay yapilamaz.");
         }
     }
 

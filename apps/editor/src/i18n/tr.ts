@@ -192,7 +192,7 @@ export const tr = {
     } as Readonly<Record<string, string>>,
     /** Verbatim (A15.3): shown for 422 inceleme-desteklenmiyor on a unit with offset data. */
     offsetUnsupported:
-      "Bu birimin ofsetli alanları (işaretler, cümleler) var; metin düzeltmesi A20'de desteklenecek",
+      "Bu birimin ofsetli alanları (işaretler, cümleler) var; üçüncü taraf Risale metni düzeltilmez (K-51)",
     /** Verbatim: shown for 422 inceleme-desteklenmiyor when a lügat madde is approved without a definition (K-51 madde 10). */
     lugatDefinitionRequired:
       'Lügat maddesi tanım yazılmadan onaylanamaz. Anlam başvurusu (onaysız) tanım olarak onaylanmaz; tanımı kendiniz yazın.',
