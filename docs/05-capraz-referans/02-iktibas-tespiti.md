@@ -1,6 +1,6 @@
 # İktibas ve Atıf Tespiti
 
-> **Sürüm:** 1.4 · **Tarih:** 13 Kasım 2026 · **Durum:** Taslak
+> **Sürüm:** 1.5 · **Tarih:** 13 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-04](../00-ozet/02-karar-defteri.md#k-04--hadis-kaynakları) · [K-12](../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü)
 
 Bu dosya Risale-i Nur ve tefsir metinlerindeki âyet iktibaslarının ve açık atıfların bulunmasını tanımlar. Çıktı `xref` tablosuna `type = 'atif'` ve `type = 'iktibas'` satırlarıdır ([bağlantı modeli](./01-baglanti-modeli.md)). İş Python 3.13 içerik hattında, `pipeline/enrich/` altında, çevrimdışı çalışır (K-12). Her satır editör panelinde onaylanmadan mağazaya çıkmaz (K-13). Metni verilmeden yapılan imalar sözlüksel tespitle bulunamaz; onları editör `ima` olarak girer.
@@ -70,9 +70,9 @@ Varyant tablosu planı:
 - **Riskli adlar:** ortak kelime ya da özel isim olan sure adları (Nûr, Fecr, Asr, Leyl, Şems, Kamer, Hac, Kalem, Nahl, Neml, Fil, Tîn, Rûm, Kadr, Nasr ve Yûnus, Hûd, Yûsuf, İbrâhîm, Meryem, Muhammed, Nûh). Bunlar yalnız parantez, "Sûre/sûresi" ya da "âyet" kelimesiyle kabul edilir; "Risale-i Nur" böylece elenir. Bible parser da ham metinde "she is 2 cool" ifadesini Isaiah 2 okuduğu için aynı uyarıyı yapar.
 
 Doğrulama ve güven:
-1. Sure 1–114, âyet 1 ile o surenin âyet sayısı arasında olmalı; aralık dışı eşleşme atılır ve günlüğe yazılır.
+1. Sure 1–114, âyet 1 ile o surenin âyet sayısı arasında olmalı; aralık dışı eşleşme atılır ve günlüğe yazılır. Bir aralığın bir ucu bile dışarıdaysa aralığın tamamı atılır; 30'dan uzun âyet aralığı da atılır (`aralik_cok_uzun` sayacı). Sayısal biçimler (`(2:255)`, `[2/255]`) her zaman etkindir; ad tabanlı biçimler yalnız onaylı `surah_alias` satırlarıyla açılır, sözlük boşsa kapalıdır (`ad_tabanli_kapali` sayacı).
 2. ±200 karakter içinde bir Arapça dizi aynı âyete hizalanırsa `consistent_quote = true` olur ve güven 0,99'a çıkar. Başka âyete hizalanırsa satır "tutarsız" işaretlenir, güven 0,30'a iner ve kuyruğun başına gider. Neden numaralandırma farkı ya da OCR hatası olabilir.
-3. Başlangıç güvenleri: parantez ya da anahtar kelimeli güvenli ad 0,95; çıplak "Ad: SAYI" 0,85; güçlü ipuçlu riskli ad 0,85; adlandırılmış âyet 0,90. Eski planın sabit değerleri (Kur'an 0,85, hadis 0,80, 0,6 altı gizli) bu kalibre değerlerle değişir (`quran-app-docs/04-okuma/03-risale-i-nur-okuyucu.md`).
+3. Başlangıç güvenleri: parantez ya da anahtar kelimeli güvenli ad 0,95; çıplak "Ad: SAYI" 0,85; güçlü ipuçlu riskli ad 0,85; adlandırılmış âyet 0,90; yalnız sayısal parantez biçimi 0,90 (ad yok ama parantez ve sure/âyet çifti birlikte; ad tabanlı 0,95 ile çıplak 0,85 arasında). Tutarlı alıntı 0,99, tutarsız 0,30 olur (madde 2; [K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 16). Eski planın sabit değerleri (Kur'an 0,85, hadis 0,80, 0,6 altı gizli) bu kalibre değerlerle değişir (`quran-app-docs/04-okuma/03-risale-i-nur-okuyucu.md`).
 
 ## 3. Arapça dizilerin çıkarılması
 
@@ -113,8 +113,9 @@ Eşleştirmeye özgü iki ek adım: ؤ → و ve ئ → ي; tek başına ء sili
 - **Kaynaklar:** Tanzil Uthmani (kelime numarası QAC/QUL konumuyla aynı) ve Tanzil Simple Clean (imlâî). İkisi de normalize edilir.
 - **Küresel konum:** kelimeler mushaf sırasıyla 0'dan numaralanır (77.429 kelime, [QAC SSS](https://corpus.quran.com/faq.jsp)). n-gramlar âyet sınırını aşabilir; ardışık âyet alıntıları böylece tek diyagonalde kalır.
 - **n = 3 ve 4;** kayıt: n-gram → küresel konum listesi. İki biçim ve iki n için yaklaşık 310 bin kayıt bellekte durur (tahmin).
-- **İmlâî → Uthmani konum eşlemesi** (`imlai_word_map(surah, ayah, imlai_pos, uthmani_pos)`): âyetteki kelime sayıları eşitse birebir, değilse âyet içi hizalamayla (Doğrulanacak).
-- **Tam âyet karması:** normalize âyet metni → âyet listesi. n'den kısa âyetlerin tam alıntısını yakalar.
+- **İmlâî → Uthmani konum eşlemesi** (`imlai_word_map(surah, ayah, imlai_pos, uthmani_pos)`): âyetteki kelime sayıları eşitse birebir, değilse âyet içi hizalamayla. **Çözüldü (13 Kasım 2026, A18.4):** hizalama `difflib.SequenceMatcher` ile yapılır; eşleşen belirteç kesin konum alır, kalanlar orantılı konum alır ve satıra `evidence.konum_belirsiz = true` yazılır ([K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 16).
+- **Besmele önü.** Tanzil Simple Clean'in besmele önü (1. ve 9. sure dışındaki her surenin ilk âyeti) yalnız bellekteki eşleştirme kopyasından atılır; kaynak metne dokunulmaz (K-26, K-51 madde 16). Böylece Simple Clean âyet kelime sayısı Uthmani ile karşılaştırılabilir.
+- **Tam âyet karması:** normalize âyet metni → âyet listesi. n'den kısa âyetlerin tam alıntısını yakalar. Uygulama: dört kelimeden kısa dizi, tamamı bir âyetin normalize metniyse aday olur (`tam_ayet_kisa_dizi` sayacı); öteki kısa diziler tohum vermez.
 - İndeks hatta kalır, pakete girmez. Cihazdaki geri dönüş araması `core` paketindeki Kur'an trigram tablosunu kullanır.
 
 ```python
@@ -132,6 +133,8 @@ def seeds(span_keys, index, n):
 
 passim önce aday çiftleri bulur, sonra Smith-Waterman ile hizalar ([KITAB passim](https://kitab-project.org/methods/text-reuse)). Burada hizalama kelime düzeyindedir ve 1–2 düzenlemeye dayanır (araştırma notu).
 
+**Hizalama kararı (A18.4, [K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 13).** biopython `PairwiseAligner` yalnız eşitlik karşılaştırır ve bulanık eşleşmeyi taşımaz; bulanık eşleşme için her pencerede V × V benzerlik matrisi kurmak gerekir ve aynı maliyeti C uzantısı bağımlılığıyla getirir. Bu yüzden kendi Smith-Waterman uygulamamız yazıldı (`rapidfuzz`, benzerlik ≥ 80); biopython eklenmedi. Puanlar: tam eşleşme +2, bulanık +1, uyuşmazlık −2, boşluk −2; geri izleme çapraz > yukarı > sol önceliklidir (belirleyici); tohum penceresi ±5 kelime genişletilir. Kod: `pipeline/src/mutalaa_pipeline/enrich/citations/hizala.py`.
+
 ```python
 def sw(a, b, match=2, fuzzy=1, miss=-2, gap=-2, sim=80):
     H = [[0] * (len(b) + 1) for _ in range(len(a) + 1)]; best = (0, 0, 0)
@@ -144,7 +147,9 @@ def sw(a, b, match=2, fuzzy=1, miss=-2, gap=-2, sim=80):
 ```
 
 - Hizalanan küresel konumlar âyet sınırlarında bölünür; her âyet için ayrı satır yazılır ve satırlar `evidence.group` ile bağlanır.
+- **Eleme.** Aynı hizalamayı veren tekrarlar (aynı âyet ve dizi örtüşmesi ≥ %50) tek aday olur; dizi aralığı daha çok kelimeli başka bir adayın içinde kalan **alt dizi** adayı ayrı hedef sayılmaz (`hiza_tekrar_elenen`, `alt_dizi_elenen` sayaçları).
 - Her satır şunları kaydeder: `matched_words` (n), `ayah_words` (N), `coverage = n/N`, `identity = n/(n+e)`, `edits`, `index` (`uthmani`/`imlai`) ve `phrase_freq` (f, eşleşen normalize dizinin geçtiği farklı âyet sayısı).
+- **Evidence sözleşmesi (A18.4).** Satır ayrıca şunları taşır: `position`, `phrase_key` (eşleşen dizinin normalize anahtarı; "Kalıp listesine ekle" bunu kullanır), `src_hash` ve `dst_hash` (kaynak ve hedef birimin `content_hash` değerinin ilk 16 hanesi; yeniden doğrulama bunlara bakar, [Bağlantı modeli](./01-baglanti-modeli.md) §4 madde 5), `source_id` (`tanzil-uthmani` ya da `tanzil-simple-clean`), `src_span` (Arapça dizinin birim metnindeki kod noktası aralığı `[başlangıç, bitiş)`; kanonik metin, NFC uygulanmaz), `context` (bağlam sinyalleri), `consistent_quote` (§2 madde 2; yalnız hesaplanabildiğinde), `group`, `alternatives` (en çok 10) ve `konum_belirsiz` (§5). Satırın `dst_span` değeri QAC kelime konumu `[ilk, son + 1)` aralığıdır.
 - Puan formülü bağlantı modelindedir ([01 §6](./01-baglanti-modeli.md)). Parametreler başlangıç değeridir; geliştirme bölümünde ayarlanır.
 
 ## 7. Kısa ve kalıp ifadeler
@@ -159,7 +164,7 @@ En büyük yanlış pozitif kaynağı kısa ve kalıplaşmış ifadelerdir. QUL 
 | f > 1 ve bağlam tek hedef seçiyor | O hedef tutulur, diğerleri `evidence.alternatives` |
 | f > 1 ve bağlam yok | En çok 3 hedef `aday`, her biri 1/f özgüllükle; editör seçer |
 
-Kalıp listesi `pipeline/enrich/` altında editör onaylı bir dosyadır; girdileri normalize anahtar olarak tutulur.
+Kalıp listesi `pipeline/src/mutalaa_pipeline/enrich/citations/kalip_listesi.toml` dosyasıdır; girdileri normalize anahtar olarak tutulur ve anahtarı kapsayan kalıp da eşleşir. Panelde "Kalıp listesine ekle" kapalı bir `kalip_ekle` denetim kaydı yazar ve adayı reddeder ([Backend API](../02-mimari/05-backend-api.md) §4); hat koşu başında bu kayıtları (`review.eylem = 'kalip_ekle'`, `durum = 'onaylandi'`) dosyayla birleştirir.
 
 ## 8. Bağlam sinyalleri ve güven
 
@@ -217,16 +222,18 @@ Hedefler [Kapsam ve fazlar](../01-urun/01-kapsam-ve-fazlar.md#8-v1-başarı-öl�
 | Araç | Sürüm | Yaklaşım | Değerlendirme sorusu |
 |---|---|---|---|
 | [ijaza](https://pypi.org/project/ijaza/) | 2.0.0 (8 Mart 2026) | Tam, normalize, kısmi, bulanık kademeli eşleşme; etiketsiz alıntı bulur; 6.236 âyet, Uthmani + sade | Risale'den çıkarılan dizilerde kesinlik ve duyarlılık |
-| [passim](https://kitab-project.org/methods/text-reuse) | A18.0'da sabitlenir | Aday çift + Smith-Waterman; 300 kelimelik kilometre taşları | Yöntem kaynağı; Risale ↔ Elmalılı metin yeniden kullanımı için de denenebilir |
+| [passim](https://kitab-project.org/methods/text-reuse) | 2.0.1 (A18.0'da sabitlendi); A18.4 karşılaştırmasında ölçülmedi | Aday çift + Smith-Waterman; 300 kelimelik kilometre taşları | Yöntem kaynağı; Risale ↔ Elmalılı metin yeniden kullanımı için de denenebilir |
 | [QDetect](https://fount.aucegypt.edu/faculty_journal_articles/2523) | Depo bulunamadı | MSA ve lehçede âyet tespiti | Depo bulunursa |
-| [quran-search-in-text](https://pypi.org/project/quran-search-in-text/0.0.9/) | 0.0.9 (Kas 2024); 0.1.3 mevcut | Paragraf paragraf tarar, âyet adresi ve HTML bağlantı üretir | Hızlı taban çizgisi |
+| [quran-search-in-text](https://pypi.org/project/quran-search-in-text/) | 0.1.3 (Kas 2024) | Paragraf paragraf tarar, âyet adresi ve HTML bağlantı üretir | Hızlı taban çizgisi |
 | [quran-verse-detection](https://github.com/topics/quran-verse-detection) | A18.0'da sabitlenir | Âyet metninden sure ve âyet | Tam âyet tanıma |
 
 ijaza etiketli test verisi taşımaz: bu araçlar yalnız karşılaştırma aracıdır, değerlendirme seti değildir ([K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 12). Hiçbiri Osmanlıca-Türkçe bir ana metin için tasarlanmadı (rapor). Karar kuralı: ijaza ve quran-search-in-text geliştirme bölümünde bizim çıkardığımız dizilerle koşulur. ijaza hedefleri tutarsa `pipeline/enrich/` içinde sarılır ve normalizasyon, bağlam ve kalıp katmanları bizde kalır. Tutmazsa §5–6'daki eşleştirici yazılır ve gerekirse ijaza'nın normalizasyonu kullanılır.
 
+**Karar (A18.4, [K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 13).** ijaza 2.0.0 sentetik sette uzun iktibasta duyarlılık 0,752 verdi (eşik 0,85): sarılmaz. quran-search-in-text 0.1.3 uzun kesinlikte 0,41 verdi: kullanılmaz. İkisi yalnız geliştirme grubunda karşılaştırma aracı olarak kalır. Eşleştirici §5–6'daki kendi uygulamamızdır (`pipeline/src/mutalaa_pipeline/enrich/citations/`); hizalama kararı §6'dadır.
+
 ## 12. Editör iş akışı
 
-- **Kuyruk sırası:** önce tutarsız atıflar, sonra toplu onaya uygun yüksek güvenli gruplar, en son gri bölge.
+- **Kuyruk sırası:** önce tutarsız atıflar, sonra toplu onaya uygun yüksek güvenli gruplar, en son gri bölge. Uygulandı (A18.4): API her adaya `sinif` verir (`tutarsiz`, `toplu`, `gri`, `diger`) ve `sira=sinif` bu sırada döner; kural ve uç ayrıntısı [Backend API](../02-mimari/05-backend-api.md) §4.1'dedir.
 - **Kart:** paragraf ve vurgulu dizi, aday âyet (Arapça + Elmalılı meali, eşleşen kelimeler vurgulu), kanıt özeti ("kapsama %40 · 7 kelime · Kur'an'da 1 âyette · açık atıf yok · meal benzerliği 0,62"), alternatifler.
 - **Eylemler:** Onayla, Reddet, Hedefi değiştir, Aralığı düzelt, "İma olarak işaretle" (yeni `ima` satırı, `origin = 'editor'`), "Kalıp listesine ekle".
 - **Toplu onay:** n ≥ 7, kapsama 1, f = 1 ve tutarlı açık atıf ya da güven ≥ 0,95 olan sınıf için editör rastgele %10 örneklemi inceler. Örneklemde tek hata çıkarsa toplu onay iptal edilir ve satırlar tek tek incelenir. Kararlar `review` tablosuna yazılır.
@@ -242,7 +249,7 @@ Aynı gramer motoru `collection_alias` tablosuyla hadis atıflarını ayrıştı
 
 1. Risale kaynağındaki açık atıflar müellif metninde mi, yayıncı dipnotunda mı? Yayıncı dipnotu ayrıca korunabilir; bu yüzden `position = 'dipnot'` ayrı tutulur.
 2. Risale'deki Arapça ibarelerin yazımı Uthmani'ye mi imlâî'ye mi yakın? Değerlendirme setinde `index` dağılımıyla ölçülür.
-3. Tanzil Uthmani ve Simple Clean metinlerinde âyet başına kelime sayısı eşit mi?
+3. Tanzil Uthmani ve Simple Clean metinlerinde âyet başına kelime sayısı eşit mi? **A18.4 uygulaması** eşit olmayan âyeti hizalayarak çözer ve satırı `konum_belirsiz` ile işaretler (§5).
 4. Elmalılı'nın âyet numaralandırması Tanzil ile aynı mı?
 5. Tek başına hemzenin silinmesi arama normalizasyonuna da alınsın mı? [Arama](../03-veri/05-arama-fts5.md) dosyasıyla ortak karar gerekir.
 

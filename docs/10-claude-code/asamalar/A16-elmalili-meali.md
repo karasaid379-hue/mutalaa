@@ -1,6 +1,6 @@
 # A16 · Elmalılı mealleri: orijinal ve sadeleştirilmiş, hazır metin yolu, inceleme kuyruğu, iki tur
 
-> **Sürüm:** 2.2 · **Tarih:** 12 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-38](../../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-48](../../00-ozet/02-karar-defteri.md#k-48--editör-api-kuralları-inceleme-kararı-ikinci-onay-eşzamanlılık-yayın-talebi-ve-sayfa-görseli) · [K-49](../../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
+> **Sürüm:** 2.3 · **Tarih:** 13 Kasım 2026 · **Durum:** Taslak · **Bağlı kararlar:** [K-51](../../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) · [K-03](../../00-ozet/02-karar-defteri.md#k-03--tefsir-önce-elmalılı-meali) · [K-12](../../00-ozet/02-karar-defteri.md#k-12--i̇çerik-hattı-python) · [K-13](../../00-ozet/02-karar-defteri.md#k-13--editör-paneli) · [K-25](../../00-ozet/02-karar-defteri.md#k-25--i̇lkeler) · [K-26](../../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-37](../../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-38](../../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-42](../../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-48](../../00-ozet/02-karar-defteri.md#k-48--editör-api-kuralları-inceleme-kararı-ikinci-onay-eşzamanlılık-yayın-talebi-ve-sayfa-görseli) · [K-49](../../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi)
 > **Faz:** 1 · İçerik hattı · **Önkoşul:** [A10](./A10-tanzil-alimi.md) · [A15](./A15-editor-paneli.md) · **İnsan adımı:** İ-11
 > **Ajanlar:** `hat-gelistirici` · `metin-denetcisi` · `sunucu-gelistirici` · `web-gelistirici` · `arastirmaci` · `test-yazari` · `inceleyici` · **Beceriler:** `icerik-hatti` · `metin-butunlugu` · `capa-gramer` · `paket-yayini` · **Tahmini oturum:** 5–7 Claude Code oturumu; insan turları ayrıca
 > **Başlat:** `/asama A16`
@@ -20,7 +20,7 @@ Aşama tedarikle başlar (A16.0): kaynak dosyalarını Claude Code internetten i
 - [Backend API](../../02-mimari/05-backend-api.md): §4 inceleme uçları ve liste süzgeçleri, §4.1 karar kuralları, §6
 - [İçerik paketleri](../../03-veri/03-icerik-paketleri.md): §1 `core` içeriği, §5 meal başlığı
 - [Yayın süreci](../../07-yayin/01-yayin-sureci.md): §7.3 değişiklik yönetimi
-- [Belge çelişkileri](../07-belge-celiskileri.md): BÇ-08 (çözüldü), BÇ-53 (meal için çözüldü), BÇ-54, BÇ-58 ve BÇ-59 (bu aşamada değil; A18 ve A20)
+- [Belge çelişkileri](../07-belge-celiskileri.md): BÇ-08 (çözüldü), BÇ-53 (meal için çözüldü), BÇ-54, BÇ-58 (çözüldü, 13 Kasım 2026, K-51 madde 1) ve BÇ-59 (bu aşamada değil; A20)
 
 ## Kapsam
 **Yapılır**
@@ -37,7 +37,7 @@ Aşama tedarikle başlar (A16.0): kaynak dosyalarını Claude Code internetten i
 - OCR, tarama ve `page_map` (S-15). Özgün baskıyla karşılaştırma ve "temel metin" sayılma da S-15'tedir.
 - Tefsir metni (`tf:elmalili`) ve A37 kaynak seçimi: tanıklar yalnız A16 raporu içindir.
 - Mobilde meal seçimi ve gösterimi (A24, A32).
-- Ofsetli tablolar ve iktibas bağlantısı (A18; [BÇ-58](../07-belge-celiskileri.md#1-karar-bekleyenler)). Birim `marks`/`sentences` yeniden hesabı (A20; [BÇ-59](../07-belge-celiskileri.md#1-karar-bekleyenler)).
+- Ofsetli tablolar ve iktibas bağlantısı (A18; [BÇ-58](../07-belge-celiskileri.md#1-karar-bekleyenler) çözüldü, [K-51](../../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) madde 1: `tr_root_index.unit_hash` ve `evidence.src_hash`/`dst_hash` ile yeniden hesap). Birim `marks`/`sentences` yeniden hesabı (A20; [BÇ-59](../07-belge-celiskileri.md#1-karar-bekleyenler)).
 - Kelime anlamları (A17). Sürüm dondurma ve mağaza yayını (A34).
 - Yapay zekâ ile meal üretimi, çevirisi, düzeltmesi ya da sadeleştirmesi: yasaktır.
 - T ailesinden ("yeni Elmalılı": Tanzil `tr.yazir` vb.) metin almak: Elmalılı adıyla alınmaz.
