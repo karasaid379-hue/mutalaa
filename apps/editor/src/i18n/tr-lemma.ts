@@ -294,6 +294,7 @@ export const trLemma = {
       reason: 'İşaret gerekçesi',
       reasonRequired: 'İşaret gerekçesi zorunludur.',
       unchanged: 'İşaret şu anki değerle aynı; değiştirmeden kaydedilemez.',
+      summaryTitle: 'İşaret kaydedilemedi',
       submit: 'İşareti kaydet',
       submitting: 'Kaydediliyor…',
       saved: (value: string, pathLabel: string) =>
@@ -314,6 +315,7 @@ export const trLemma = {
       open: 'İtiraz et',
       reason: 'İtiraz gerekçesi',
       reasonRequired: 'İtiraz gerekçesi zorunludur.',
+      summaryTitle: 'İtiraz gönderilemedi',
       submit: 'İtirazı gönder',
       submitting: 'Gönderiliyor…',
       cancel: 'Vazgeç',

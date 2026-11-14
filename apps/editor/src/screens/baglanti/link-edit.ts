@@ -75,6 +75,15 @@ function parseTarget(text: string): { target: ParsedTarget } | { problem: LinkEd
   return { target: { kind: anchor.t, carriesSpan } };
 }
 
+/**
+ * Whether a typed target anchor carries its own span (a word range or `@a-b`). The span fields are closed for it
+ * and their typed values are cleared, so nothing stays in a closed field that would block the approval.
+ */
+export function anchorCarriesSpan(text: string): boolean {
+  const parsed = parseTarget(text.trim());
+  return 'target' in parsed && parsed.target.carriesSpan;
+}
+
 /** Largest integer the API reads (a 32 bit integer). */
 const MAX_BOUND = 2_147_483_647;
 

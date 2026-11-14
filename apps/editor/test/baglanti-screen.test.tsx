@@ -296,8 +296,13 @@ describe('BaglantiQueue', () => {
       expect(text).toHaveTextContent(`Deneme önce ${ARABIC_SAMPLE_2} deneme sonra`);
       const mark = text.querySelector('mark')!;
       expect(mark).toHaveTextContent(ARABIC_SAMPLE_2);
-      expect(mark).toHaveAttribute('lang', 'ar');
-      expect(mark).toHaveAttribute('dir', 'rtl');
+      // The Arabic sequence is Arabic text (Amiri, right to left); the Turkish context around it is Turkish.
+      const arabic = within(mark).getByText(ARABIC_SAMPLE_2);
+      expect(arabic).toHaveAttribute('lang', 'ar');
+      expect(arabic).toHaveAttribute('dir', 'rtl');
+      expect(arabic).toHaveClass('font-quran');
+      expect(within(text).getByText('Deneme önce')).toHaveAttribute('lang', 'tr');
+      expect(within(text).getByText('deneme sonra')).toHaveAttribute('lang', 'tr');
       expect(screen.queryByTestId('link-highlight-stale')).not.toBeInTheDocument();
       expect(screen.getByRole('group', { name: trBaglanti.highlight.heading })).toBeInTheDocument();
     });
@@ -313,8 +318,33 @@ describe('BaglantiQueue', () => {
       renderInRouter(fake, <BaglantiQueue />, '/?kayit=1');
       const text = await screen.findByTestId('link-highlight-text');
       const mark = text.querySelector('mark')!;
-      expect(mark).toHaveAttribute('lang', 'tr');
-      expect(mark).not.toHaveAttribute('dir');
+      expect(within(mark).getByText('deneme dizisi')).toHaveAttribute('lang', 'tr');
+      expect(mark.querySelector('[lang="ar"]')).toBeNull();
+      expect(mark.querySelector('[dir="rtl"]')).toBeNull();
+    });
+
+    it('gives each part the language of its own script: an Arabic context is Arabic, a Turkish sequence stays Turkish', async () => {
+      withDetail(
+        xrefDetail(1, undefined, undefined, {
+          hedef: linkTarget('rn:deneme:p1', 'q:1:2', {
+            vurgulu_dizi: {
+              sol: `${ARABIC_SAMPLE} önce `,
+              dizi: 'deneme dizisi',
+              sag: ` sonra ${ARABIC_SAMPLE_2}`,
+            },
+          }),
+        }),
+      );
+      renderInRouter(fake, <BaglantiQueue />, '/?kayit=1');
+      const text = await screen.findByTestId('link-highlight-text');
+      const arabicParts = Array.from(text.querySelectorAll('[lang="ar"]'));
+      expect(arabicParts.map((part) => part.textContent)).toEqual([ARABIC_SAMPLE, ARABIC_SAMPLE_2]);
+      for (const part of arabicParts) expect(part).toHaveAttribute('dir', 'rtl');
+      expect(within(text).getByText('önce')).toHaveAttribute('lang', 'tr');
+      expect(within(text).getByText('sonra')).toHaveAttribute('lang', 'tr');
+      expect(text.querySelector('mark')!.querySelector('[lang="ar"]')).toBeNull();
+      // The runs joined are the stored text, unchanged.
+      expect(text.textContent).toBe(`${ARABIC_SAMPLE} önce deneme dizisi sonra ${ARABIC_SAMPLE_2}`);
     });
 
     it.each([

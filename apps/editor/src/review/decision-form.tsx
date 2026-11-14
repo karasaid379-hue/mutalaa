@@ -62,6 +62,12 @@ export interface ExtraEdit {
   problems: readonly FieldProblem[];
 }
 
+/** What `DecisionForm` hands to `extraFields` given as a function: the problems of the last submit and the id of their summary list. */
+export interface ExtraFieldsContext {
+  problems: readonly FieldProblem[];
+  summaryId: string;
+}
+
 export interface DecisionFormProps {
   /** The record being decided. Its `xmin` becomes the `If-Match` value. */
   review: ReviewDetail;
@@ -76,8 +82,13 @@ export interface DecisionFormProps {
   onRefreshed?: (fresh: ReviewDetail) => void;
   /** The screen's own edit of the approval (see `ExtraEdit`); its fields are `extraFields`. */
   extraEdit?: ExtraEdit;
-  /** The screen's own edit fields, drawn inside the form under the decision choice. */
-  extraFields?: ReactNode;
+  /**
+   * The screen's own edit fields, drawn inside the form under the decision choice. A function gets the problems of
+   * the last submit, so the fields can point to their messages in the summary (`fieldA11y`).
+   */
+  extraFields?: ReactNode | ((context: ExtraFieldsContext) => ReactNode);
+  /** Texts of the two decision choices when the screen words them differently (a re-validation). */
+  choiceLabels?: { approve: string; reject: string };
   className?: string;
 }
 
@@ -138,6 +149,7 @@ export function DecisionForm({
   onRefreshed,
   extraEdit,
   extraFields,
+  choiceLabels,
   className,
 }: DecisionFormProps) {
   const api = useApi();
@@ -463,15 +475,17 @@ export function DecisionForm({
               disabled={closed || approveClosed}
               aria-describedby={approveClosed ? ids.approveClosed : undefined}
             />
-            {tr.review.approve}
+            {choiceLabels?.approve ?? tr.review.approve}
           </Label>
           <Label className="min-h-6 gap-2 font-normal">
             <RadioGroupItem value="reddedildi" disabled={closed} />
-            {tr.review.reject}
+            {choiceLabels?.reject ?? tr.review.reject}
           </Label>
         </RadioGroup>
 
-        {extraFields}
+        {typeof extraFields === 'function'
+          ? extraFields({ problems, summaryId: ids.summary })
+          : extraFields}
 
         {showGloss ? (
           <div className="flex flex-col gap-1" data-testid="gloss-edit">

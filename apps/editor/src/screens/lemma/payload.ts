@@ -173,6 +173,33 @@ export function hasArabicLetters(text: string): boolean {
   return /[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]/u.test(text);
 }
 
+/** One run of a text in a single script: Arabic (right to left) or anything else (Turkish, Latin, digits). */
+export interface ScriptRun {
+  text: string;
+  arabic: boolean;
+}
+
+// An Arabic run: Arabic letters (the four blocks of `hasArabicLetters`), joined across spaces and joiners.
+const ARABIC_RUN = /[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]+(?:[ ‌‍]+[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]+)*/gu;
+
+/**
+ * Splits a text into runs of one script so every run gets its own `lang` and direction. The text is never changed:
+ * the runs joined are the text. Spaces between two Arabic words stay in the Arabic run; any other character
+ * (punctuation, digits, line breaks) belongs to the surrounding non-Arabic run.
+ */
+export function splitScriptRuns(text: string): ScriptRun[] {
+  const runs: ScriptRun[] = [];
+  let last = 0;
+  for (const match of text.matchAll(ARABIC_RUN)) {
+    const start = match.index;
+    if (start > last) runs.push({ text: text.slice(last, start), arabic: false });
+    runs.push({ text: match[0], arabic: true });
+    last = start + match[0].length;
+  }
+  if (last < text.length) runs.push({ text: text.slice(last), arabic: false });
+  return runs;
+}
+
 /** The lemma id of the review's target: the snapshot's `lemma_id`, else the numeric target key; null when neither is one. */
 export function readLemmaId(review: ReviewDetail): number | null {
   const fromTarget = review.hedef?.lemma_id;

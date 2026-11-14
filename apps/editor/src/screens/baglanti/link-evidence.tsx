@@ -7,7 +7,7 @@ import { trBaglanti } from '@/i18n/tr-baglanti-sure';
 import { formatDecimal, formatPercent } from '@/lib/format';
 import { REVIEW_PATH, reviewDetailInit } from '@/review/queries';
 import type { ReviewDetail, ReviewItem } from '@/review/types';
-import { hasArabicLetters } from '@/screens/lemma/payload';
+import { splitScriptRuns } from '@/screens/lemma/payload';
 import {
   hasSummaryFacts,
   readEvidence,
@@ -64,8 +64,28 @@ function UnitSection({ label, anchor, arabic = false }: UnitSectionProps) {
 }
 
 /**
+ * A text drawn by its script: an Arabic run is Arabic text (`ArabicText`: Amiri, `lang="ar"`, right to left), every
+ * other run (Turkish, Latin, digits) is `lang="tr"`. The text is not changed; the runs joined are the text.
+ */
+function ScriptRuns({ text }: { text: string }) {
+  return (
+    <>
+      {splitScriptRuns(text).map((run, index) =>
+        run.arabic ? (
+          <ArabicText key={index} text={run.text} className="text-xl leading-normal" />
+        ) : (
+          <span key={index} lang="tr">
+            {run.text}
+          </span>
+        ),
+      )}
+    </>
+  );
+}
+
+/**
  * The highlighted sequence of the source paragraph (`vurgulu_dizi`: before, sequence, after). The sequence is a
- * `<mark>`; an Arabic sequence is Arabic text (`lang="ar"`, right to left). When the paragraph changed after the
+ * `<mark>`; every part is drawn by its script (Arabic runs are Arabic text, the rest is Turkish). When the paragraph changed after the
  * link was found, the API gives nothing and the section says "Metin güncel değil".
  */
 function HighlightSection({ review }: { review: ReviewDetail }) {
@@ -90,15 +110,11 @@ function HighlightSection({ review }: { review: ReviewDetail }) {
         </>
       ) : (
         <p dir="auto" className="text-sm whitespace-pre-wrap" data-testid="link-highlight-text">
-          {highlight.before ? <span lang="tr">{highlight.before}</span> : null}
-          {hasArabicLetters(highlight.sequence) ? (
-            <mark lang="ar" dir="rtl" className="font-quran text-xl">
-              {highlight.sequence}
-            </mark>
-          ) : (
-            <mark lang="tr">{highlight.sequence}</mark>
-          )}
-          {highlight.after ? <span lang="tr">{highlight.after}</span> : null}
+          {highlight.before ? <ScriptRuns text={highlight.before} /> : null}
+          <mark>
+            <ScriptRuns text={highlight.sequence} />
+          </mark>
+          {highlight.after ? <ScriptRuns text={highlight.after} /> : null}
         </p>
       )}
     </div>

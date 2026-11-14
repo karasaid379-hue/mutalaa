@@ -22,6 +22,7 @@ import {
   readDistribution,
   readLemmaValue,
   readYzRecord,
+  splitScriptRuns,
 } from '@/screens/lemma/payload';
 import { formatPercent } from '@/lib/format';
 import { glossLength, trimGloss } from '@/lib/text';
@@ -334,5 +335,44 @@ describe('trimGloss and glossLength', () => {
     );
     expect(glossLength(String.fromCodePoint(0x1d7d8).repeat(5))).toBe(5);
     expect(glossLength('')).toBe(0);
+  });
+});
+
+describe('splitScriptRuns', () => {
+  const AR = String.fromCodePoint(0x0627, 0x0628, 0x062c);
+  const AR2 = String.fromCodePoint(0x0647, 0x0648, 0x0632);
+
+  it('has no runs for an empty text', () => {
+    expect(splitScriptRuns('')).toEqual([]);
+  });
+
+  it('keeps a Turkish text as one non-Arabic run', () => {
+    expect(splitScriptRuns('Deneme paragrafı 1')).toEqual([
+      { text: 'Deneme paragrafı 1', arabic: false },
+    ]);
+  });
+
+  it('keeps an Arabic text as one Arabic run, spaces between its words included', () => {
+    expect(splitScriptRuns(`${AR} ${AR2}`)).toEqual([{ text: `${AR} ${AR2}`, arabic: true }]);
+  });
+
+  it('splits a mixed text by script and gives the spaces to the Turkish side', () => {
+    expect(splitScriptRuns(`önce ${AR} ve ${AR2}.`)).toEqual([
+      { text: 'önce ', arabic: false },
+      { text: AR, arabic: true },
+      { text: ' ve ', arabic: false },
+      { text: AR2, arabic: true },
+      { text: '.', arabic: false },
+    ]);
+  });
+
+  it('never changes the text: the runs joined are the text', () => {
+    const text = `  ${AR}
+${AR2} 12 ${AR} `;
+    expect(
+      splitScriptRuns(text)
+        .map((run) => run.text)
+        .join(''),
+    ).toBe(text);
   });
 });

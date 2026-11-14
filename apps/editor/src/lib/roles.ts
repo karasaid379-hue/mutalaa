@@ -30,6 +30,14 @@ export function canSendToExpert(roles: Roles): boolean {
   return canDecide(roles);
 }
 
+/**
+ * Whether the user may use the lemma actions (objection, "yalnızca etimolojik" mark, word fix): the server asks
+ * the Editor policy for them, so the expert role gets a 403 there.
+ */
+export function canLemmaAction(roles: Roles): boolean {
+  return canDecide(roles);
+}
+
 /** Admin policy: release requests, preview, promote, rollback. */
 export function canPublish(roles: Roles): boolean {
   return has(roles, ROLE_ADMIN);

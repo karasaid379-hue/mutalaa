@@ -122,3 +122,14 @@ export function readSpan(value: readonly number[] | null | undefined): [number, 
   const [start, end] = value;
   return Number.isInteger(start) && Number.isInteger(end) ? [start!, end!] : null;
 }
+
+/**
+ * A re-validation record: the target link is already approved (`hedef.status = 'onayli'`) and the proposal says so
+ * (`onerilen.yeniden_dogrula = true`). Approving means "hâlâ geçerli", rejecting means "geçersiz (kaldır)". The
+ * proposal is opaque JSON, so only a boolean `true` counts. `targetStatus` is left out for a list item, which
+ * carries the proposal but no snapshot.
+ */
+export function isRevalidation(onerilen: unknown, targetStatus?: string | null): boolean {
+  if (readBoolean(onerilen, 'yeniden_dogrula') !== true) return false;
+  return targetStatus === undefined || targetStatus === 'onayli';
+}

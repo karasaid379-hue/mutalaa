@@ -9,6 +9,7 @@ import { formatNumber } from '@/lib/format';
 import { readObjectionReason, readRootMapping } from '@/lib/payload';
 import { ReviewBadges } from '@/review/badges';
 import { DecisionForm } from '@/review/decision-form';
+import { EditorActionGate } from '@/review/role-gate';
 import type { QueueDetailProps } from '@/review/queue-layout';
 import { isObjectionReview } from '@/review/rules';
 import type { ReviewDetail } from '@/review/types';
@@ -196,6 +197,11 @@ function KwicLine({ item }: { item: KwicItem }) {
   );
 }
 
+/** A key of one KWIC line: the unit anchor plus the line's place in the list (the API gives no offset). */
+function kwicKey(item: KwicItem, index: number): string {
+  return `${item.capa}#${index}`;
+}
+
 function KwicSection({ rows }: { rows: KwicItem[] | null | undefined }) {
   const text = trLemma.kok.kwic;
   return (
@@ -204,8 +210,9 @@ function KwicSection({ rows }: { rows: KwicItem[] | null | undefined }) {
         <>
           <p className="text-xs text-muted-foreground">{text.note}</p>
           <ul className="flex flex-col gap-2">
-            {rows.map((item) => (
-              <KwicLine key={item.capa} item={item} />
+            {rows.map((item, index) => (
+              // One unit can have several lines (the same anchor), so the anchor alone is no key.
+              <KwicLine key={kwicKey(item, index)} item={item} />
             ))}
           </ul>
         </>
@@ -271,11 +278,13 @@ export function TrLemmaCard({ review, onDecided }: QueueDetailProps) {
       <EvidenceSection evidence={target?.kanit_ozeti} />
       <KwicSection rows={target?.kwic} />
       {canMark && lemmaId !== null ? (
-        <EtymologyForm
-          reviewId={shown.id}
-          lemmaId={lemmaId}
-          current={target?.etymological_only === true}
-        />
+        <EditorActionGate heading={trLemma.kok.etym.heading} testId="lemma-etymology">
+          <EtymologyForm
+            reviewId={shown.id}
+            lemmaId={lemmaId}
+            current={target?.etymological_only === true}
+          />
+        </EditorActionGate>
       ) : target?.status === 'aday' ? (
         <Section title={trLemma.kok.etym.heading} testId="lemma-etymology">
           <p className="text-sm text-muted-foreground">{trLemma.kok.etym.candidateNote}</p>
@@ -286,7 +295,9 @@ export function TrLemmaCard({ review, onDecided }: QueueDetailProps) {
         </Section>
       ) : null}
       {canObject && lemmaId !== null ? (
-        <ObjectionForm reviewId={shown.id} lemmaId={lemmaId} />
+        <EditorActionGate heading={trLemma.kok.objection.heading} testId="lemma-objection">
+          <ObjectionForm reviewId={shown.id} lemmaId={lemmaId} />
+        </EditorActionGate>
       ) : null}
       <p className="text-sm text-muted-foreground">
         {objection ? trLemma.decisionNote.itiraz : trLemma.decisionNote.kok}

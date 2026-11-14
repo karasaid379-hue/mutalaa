@@ -9,6 +9,7 @@ import { trLemma } from '@/i18n/tr-lemma';
 import { formatNumber, formatPercent } from '@/lib/format';
 import { ReviewBadges } from '@/review/badges';
 import { DecisionForm } from '@/review/decision-form';
+import { EditorActionGate } from '@/review/role-gate';
 import type { QueueDetailProps } from '@/review/queue-layout';
 import type { ReviewDetail } from '@/review/types';
 import { JsonBlock } from '@/screens/catalog/json-block';
@@ -356,7 +357,9 @@ export function LemmaCard({ review, onDecided }: QueueDetailProps) {
         </div>
         <p className="text-xs text-muted-foreground">{trLemma.closedNote}</p>
       </section>
-      <WordFixCreate />
+      <EditorActionGate heading={trLemma.wordFixCreate.heading} testId="word-fix-create">
+        <WordFixCreate />
+      </EditorActionGate>
       <p className="text-sm text-muted-foreground">
         {shown.hedef_tablo === 'lemma' ? trLemma.decisionNote.durum : trLemma.decisionNote.anlam}
       </p>

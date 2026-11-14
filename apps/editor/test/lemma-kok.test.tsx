@@ -579,6 +579,11 @@ describe('Turkish lemma root mapping queue (A18.2)', () => {
     const approved = (path: 'otomatik' | 'editor', over = {}) =>
       kokDetail(4, { hedef: trTarget(4, { status: 'onayli', onay_yolu: path, ...over }) });
     const checkbox = () => screen.getByRole('checkbox', { name: trLemma.kok.etym.checkbox });
+    // The mark is shown once the session is known (the role gate), so the card is ready when its switch is.
+    const cardReady = async () => {
+      await card();
+      await screen.findByRole('checkbox', { name: trLemma.kok.etym.checkbox });
+    };
     const reasonField = () => screen.getByLabelText(trLemma.kok.etym.reason);
     const save = (user: User) =>
       user.click(screen.getByRole('button', { name: trLemma.kok.etym.submit }));
@@ -588,7 +593,7 @@ describe('Turkish lemma root mapping queue (A18.2)', () => {
         route: '/?kayit=4',
         details: { 4: approved('editor', { etymological_only: true }) },
       });
-      await card();
+      await cardReady();
       const section = screen.getByTestId('lemma-etymology');
       expect(section).toHaveTextContent(trLemma.kok.etym.current(trLemma.kok.yes));
       expect(checkbox()).toBeChecked();
@@ -608,7 +613,7 @@ describe('Turkish lemma root mapping queue (A18.2)', () => {
 
     it('refuses an unchanged value and an empty reason before anything is sent', async () => {
       const { user } = setup({ route: '/?kayit=4', details: { 4: approved('otomatik') } });
-      await card();
+      await cardReady();
       await save(user);
       expect(await screen.findByText(trLemma.kok.etym.unchanged)).toBeInTheDocument();
       await user.click(checkbox());
@@ -623,7 +628,7 @@ describe('Turkish lemma root mapping queue (A18.2)', () => {
         ok({ review_id: 88, etymological_only: true, onay_yolu: 'editor', status: 'onayli' }),
       );
       const { user } = setup({ route: '/?kayit=4', details: { 4: approved('otomatik') } });
-      await card();
+      await cardReady();
       await user.click(checkbox());
       fireEvent.change(reasonField(), { target: { value: 'Anlam kaymış' } });
       await save(user);
@@ -648,7 +653,7 @@ describe('Turkish lemma root mapping queue (A18.2)', () => {
     ] as const)('shows %i in Turkish', async (status, kod) => {
       fake.post('/api/v1/lemmas/{id}/etimolojik-isaret', problem(status, kod));
       const { user } = setup({ route: '/?kayit=4', details: { 4: approved('editor') } });
-      await card();
+      await cardReady();
       await user.click(checkbox());
       fireEvent.change(reasonField(), { target: { value: 'Neden' } });
       await save(user);
@@ -793,7 +798,7 @@ describe('Turkish lemma root mapping queue (A18.2)', () => {
       });
       const { container, user } = setup({ details: { 4: auto }, route: '/?kayit=4' });
       await card();
-      await user.click(screen.getByRole('button', { name: trLemma.kok.objection.open }));
+      await user.click(await screen.findByRole('button', { name: trLemma.kok.objection.open }));
       await user.click(screen.getByRole('button', { name: trLemma.kok.objection.submit }));
       await screen.findByText(trLemma.kok.objection.reasonRequired);
       expect(names(await runAxe(container))).toEqual([]);

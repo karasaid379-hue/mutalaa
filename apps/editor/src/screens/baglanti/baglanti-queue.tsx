@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useApi } from '@/app/api-context';
+import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { tr } from '@/i18n/tr';
 import { trBaglanti } from '@/i18n/tr-baglanti-sure';
@@ -16,6 +17,16 @@ import { ExpertAction, ImaAction, PatternAction } from './link-actions';
 import { ClassBadge, ClassFilter, StatusView } from './link-class';
 import { useLinkEditForm } from './link-edit-fields';
 import { LinkEvidence, SampleEvidence } from './link-evidence';
+import { isRevalidation } from './link-snapshot';
+
+/** The "Yeniden doğrulama" mark of a record (text, never colour alone). */
+function RevalidationBadge() {
+  return (
+    <Badge variant="outline" data-testid="revalidation-badge">
+      {trBaglanti.revalidation.badge}
+    </Badge>
+  );
+}
 
 function Detail({ review, onDecided, onLeft }: QueueDetailProps) {
   const api = useApi();
@@ -25,6 +36,8 @@ function Detail({ review, onDecided, onLeft }: QueueDetailProps) {
   const shown = refreshed && refreshed.from === review ? refreshed.to : review;
   const { extraEdit, fields } = useLinkEditForm(shown);
   const open = shown.durum === 'acik';
+  // A re-validation of an approved link: the same decision endpoint and body, other words; no edit, ima or pattern.
+  const revalidation = isRevalidation(shown.onerilen, shown.hedef?.status);
   const showActions = open && canSendToExpert(me.data?.roller);
   return (
     <div className="flex flex-col gap-4" data-testid="link-card">
@@ -33,7 +46,13 @@ function Detail({ review, onDecided, onLeft }: QueueDetailProps) {
         <span className="flex flex-wrap items-center gap-1">
           <ReviewBadges review={shown} showOrigin />
           <ClassBadge sinif={shown.sinif ?? shown.hedef?.sinif} />
+          {revalidation ? <RevalidationBadge /> : null}
         </span>
+        {revalidation ? (
+          <p className="text-sm text-muted-foreground" data-testid="revalidation-note">
+            {trBaglanti.revalidation.note}
+          </p>
+        ) : null}
       </div>
       <LinkEvidence review={shown} />
       <ApprovalStages review={shown} />
@@ -41,8 +60,15 @@ function Detail({ review, onDecided, onLeft }: QueueDetailProps) {
         review={review}
         onDecided={onDecided}
         onRefreshed={(fresh) => setRefreshed({ from: review, to: fresh })}
-        extraEdit={extraEdit}
-        extraFields={shown.durum === 'acik' || shown.durum === 'uzmanda' ? fields : null}
+        extraEdit={revalidation ? undefined : extraEdit}
+        extraFields={
+          !revalidation && (shown.durum === 'acik' || shown.durum === 'uzmanda') ? fields : null
+        }
+        choiceLabels={
+          revalidation
+            ? { approve: trBaglanti.revalidation.approve, reject: trBaglanti.revalidation.reject }
+            : undefined
+        }
       />
       {showActions ? (
         <section
@@ -51,8 +77,8 @@ function Detail({ review, onDecided, onLeft }: QueueDetailProps) {
           data-testid="link-actions"
         >
           <h3 className="text-base font-medium">{trBaglanti.actions.heading}</h3>
-          <ImaAction review={shown} />
-          <PatternAction review={shown} onLeft={onLeft} />
+          {revalidation ? null : <ImaAction review={shown} />}
+          {revalidation ? null : <PatternAction review={shown} onLeft={onLeft} />}
           <ExpertAction review={shown} onLeft={onLeft} />
         </section>
       ) : null}
@@ -85,7 +111,7 @@ export function BaglantiQueue({ bulkEnabled = BULK_ENABLED }: BaglantiQueueProps
   const filter = useMemo(() => linkFilter(status, sinif), [status, sinif]);
 
   const eligible = (item: ReviewItem) =>
-    bulkEnabled && status === 'acik' && item.sinif === BULK_CLASS;
+    bulkEnabled && status === 'acik' && item.sinif === BULK_CLASS && !isRevalidation(item.onerilen);
 
   function toggle(id: number, checked: boolean) {
     setSelected((previous) => {
@@ -103,7 +129,12 @@ export function BaglantiQueue({ bulkEnabled = BULK_ENABLED }: BaglantiQueueProps
       title={tr.nav.queueBaglanti}
       filter={filter}
       announceCount
-      renderItemMeta={(item) => <ClassBadge sinif={item.sinif} />}
+      renderItemMeta={(item) => (
+        <>
+          <ClassBadge sinif={item.sinif} />
+          {isRevalidation(item.onerilen) ? <RevalidationBadge /> : null}
+        </>
+      )}
       renderItem={(item: ReviewItem) =>
         eligible(item) ? (
           <label className="flex min-h-6 items-center gap-2 text-sm">

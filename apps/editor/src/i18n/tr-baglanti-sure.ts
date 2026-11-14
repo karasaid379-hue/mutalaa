@@ -103,7 +103,7 @@ export const trBaglanti = {
     spanKuran: 'Kur’an hedefinde kelime konumu (1 ile kelime sayısı + 1 arası).',
     spanText: 'Metin hedefinde kod noktası (0 ile metin uzunluğu arası).',
     spanCurrent: (value: string) => `Şu anki aralık: ${value}.`,
-    spanCarried: 'Çapa kendi aralığını taşıyor; aralık alanları kapalı.',
+    spanCarried: 'Çapa kendi aralığını taşıyor; bu yüzden aralık alanları kapalı ve boş bırakılır.',
     spanStart: 'Başlangıç',
     spanEnd: 'Bitiş',
     type: 'Tür değiştir',
@@ -128,6 +128,7 @@ export const trBaglanti = {
     reason: 'Gerekçe',
     reasonRequired: 'Gerekçe zorunludur.',
     cancel: 'Vazgeç',
+    summaryTitle: 'İşlem gönderilemedi',
     expert: {
       heading: 'Uzmana gönder',
       open: 'Uzmana gönder',
@@ -160,7 +161,14 @@ export const trBaglanti = {
       422: 'Bu işlem bu kayıt için desteklenmiyor.',
     } as Readonly<Record<number, string>>,
   },
-  bulkNote: 'Toplu seçim yalnız “Toplu uygun” sınıfındaki açık kayıtlarda etkindir.',
+  revalidation: {
+    badge: 'Yeniden doğrulama',
+    note: 'Bu bağlantı onaylı ve yeniden doğrulanıyor. “Hâlâ geçerli” bağlantıyı olduğu gibi korur; “Geçersiz (kaldır)” bağlantıyı kaldırır. Hedef, aralık ve tür bu kayıtta düzenlenmez; ima ve kalıp listesi eylemleri yoktur.',
+    approve: 'Hâlâ geçerli',
+    reject: 'Geçersiz (kaldır)',
+  },
+  bulkNote:
+    'Toplu seçim yalnız “Toplu uygun” sınıfındaki açık kayıtlarda etkindir; yeniden doğrulama kayıtları toplu seçilmez.',
 } as const;
 
 export const trSureAdi = {

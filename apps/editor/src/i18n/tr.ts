@@ -268,6 +268,7 @@ export const tr = {
     unwritableNote: 'Bu karakterler API tarafından reddedilir; kendiliğinden silinmez.',
     summaryTitle: 'Karar gönderilemedi',
     noRole: 'Karar vermek için editör ya da yönetici rolü gerekir.',
+    editorActionNote: 'Bu eylem editör rolü ister.',
     expertPending:
       'Uzman kararı bekleniyor. Bu kaydı yalnız uzman rolü karara bağlar; editör ve yönetici karar veremez.',
     closedTitle: 'Karar verilmiş',

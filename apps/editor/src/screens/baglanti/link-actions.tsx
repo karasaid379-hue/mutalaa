@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useId, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { useAnnounce } from '@/app/announce-context';
 import { useApi } from '@/app/api-context';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,9 @@ import { trBaglanti } from '@/i18n/tr-baglanti-sure';
 import { formatIfMatch } from '@/lib/etag';
 import { problemStatus, toProblem } from '@/lib/problem';
 import { reasonProblem } from '@/review/action-helpers';
-import { ActionError, ReasonField } from '@/review/action-parts';
+import { ActionError, FormErrors, ReasonField } from '@/review/action-parts';
+import { useFocusRequest } from '@/review/focus-request';
+import type { FieldProblem } from '@/review/field-errors';
 import {
   REVIEWS_PATH,
   invalidateReviewCounts,
@@ -40,21 +42,34 @@ interface ReasonActionProps {
  */
 function ReasonAction({ text, testId, run, onStale }: ReasonActionProps) {
   const announce = useAnnounce();
-  const headingId = useId();
+  const ids = { heading: useId(), reason: useId(), summary: useId() };
   const [open, setOpen] = useState(false);
   const [gerekce, setGerekce] = useState('');
-  const [problem, setProblem] = useState<string | null>(null);
+  const [problems, setProblems] = useState<FieldProblem[]>([]);
   const [error, setError] = useState<unknown>(null);
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState<string | null>(null);
+  const reasonRef = useRef<HTMLTextAreaElement>(null);
+  // Focus: the first field when the form opens, the error area after a failed send, the heading after success,
+  // the opening button after "Vazgeç".
+  const { attach: attachError, request: focusError } = useFocusRequest<HTMLDivElement>();
+  const { attach: attachHeading, request: focusHeading } = useFocusRequest<HTMLHeadingElement>();
+  const { attach: attachOpen, request: focusOpen } = useFocusRequest<HTMLButtonElement>();
+
+  useEffect(() => {
+    if (open) reasonRef.current?.focus();
+  }, [open]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (pending) return;
     const found = reasonProblem(gerekce, trBaglanti.actions.reasonRequired);
-    setProblem(found);
+    setProblems(found === null ? [] : [{ fieldId: ids.reason, message: found }]);
     setError(null);
-    if (found !== null) return;
+    if (found !== null) {
+      focusError();
+      return;
+    }
     setPending(true);
     try {
       const message = await run(gerekce);
@@ -62,8 +77,10 @@ function ReasonAction({ text, testId, run, onStale }: ReasonActionProps) {
       setOpen(false);
       setGerekce('');
       announce(message);
+      focusHeading();
     } catch (thrown) {
       setError(thrown);
+      focusError();
       if (problemStatus(toProblem(thrown)) === 412) onStale();
     } finally {
       setPending(false);
@@ -72,11 +89,16 @@ function ReasonAction({ text, testId, run, onStale }: ReasonActionProps) {
 
   return (
     <section
-      aria-labelledby={headingId}
+      aria-labelledby={ids.heading}
       className="flex flex-col gap-2 rounded-lg border p-3"
       data-testid={testId}
     >
-      <h4 id={headingId} className="text-sm font-medium">
+      <h4
+        id={ids.heading}
+        ref={attachHeading}
+        tabIndex={-1}
+        className="text-sm font-medium outline-none"
+      >
         {text.heading}
       </h4>
       {done !== null ? (
@@ -87,19 +109,29 @@ function ReasonAction({ text, testId, run, onStale }: ReasonActionProps) {
       {open ? (
         <form noValidate className="flex flex-col gap-2" onSubmit={(event) => void submit(event)}>
           <p className="text-xs text-muted-foreground">{text.hint}</p>
+          <FormErrors
+            regionRef={attachError}
+            title={trBaglanti.actions.summaryTitle}
+            problems={problems}
+            listId={ids.summary}
+          >
+            {error !== null ? (
+              <ActionError
+                error={error}
+                messages={trBaglanti.actions.errors}
+                testId={`${testId}-error`}
+              />
+            ) : null}
+          </FormErrors>
           <ReasonField
             label={trBaglanti.actions.reason}
             value={gerekce}
             onChange={setGerekce}
-            error={problem}
+            fieldId={ids.reason}
+            problems={problems}
+            listId={ids.summary}
+            inputRef={reasonRef}
           />
-          {error !== null ? (
-            <ActionError
-              error={error}
-              messages={trBaglanti.actions.errors}
-              testId={`${testId}-error`}
-            />
-          ) : null}
           <div className="flex flex-wrap gap-2">
             <Button type="submit" disabled={pending}>
               {pending ? text.submitting : text.submit}
@@ -110,8 +142,9 @@ function ReasonAction({ text, testId, run, onStale }: ReasonActionProps) {
               disabled={pending}
               onClick={() => {
                 setOpen(false);
-                setProblem(null);
+                setProblems([]);
                 setError(null);
+                focusOpen();
               }}
             >
               {trBaglanti.actions.cancel}
@@ -122,6 +155,7 @@ function ReasonAction({ text, testId, run, onStale }: ReasonActionProps) {
         <>
           <p className="text-xs text-muted-foreground">{text.hint}</p>
           <Button
+            ref={attachOpen}
             type="button"
             variant="outline"
             className="self-start"

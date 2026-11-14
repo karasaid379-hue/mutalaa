@@ -2,7 +2,7 @@
 import { QueryClient } from '@tanstack/react-query';
 import { describe, expect, it } from 'vitest';
 import { tr } from '@/i18n/tr';
-import { canDecideStatus, canSendToExpert } from '@/lib/roles';
+import { canDecideStatus, canLemmaAction, canSendToExpert } from '@/lib/roles';
 import { kodOf, problemText, showsServerDetail } from '@/lib/problem-text';
 import {
   REVIEWS_PATH,
@@ -14,6 +14,7 @@ import { approveBlockReason } from '@/review/rules';
 import { LINK_CLASSES, isLinkClass, isLinkStatusView, linkFilter } from '@/screens/baglanti/config';
 import {
   EMPTY_LINK_EDIT,
+  anchorCarriesSpan,
   isEditableType,
   resolveLinkEdit,
   type LinkEditContext,
@@ -22,6 +23,7 @@ import {
 import {
   classCount,
   hasSummaryFacts,
+  isRevalidation,
   readEvidence,
   readHighlight,
   readLinkClass,
@@ -357,5 +359,67 @@ describe('problem wording of A18.4', () => {
     expect(problemText({ kod: 'sunucu-hatasi' }, 'wordFix')).toBe(
       tr.problem.codes['sunucu-hatasi'],
     );
+  });
+});
+
+describe('anchorCarriesSpan', () => {
+  it.each([
+    ['q:2:255:3-7', true],
+    ['q:2:255:3', true],
+    ['h:buhari:52@3-9', true],
+    [' q:2:255:3-7 ', true],
+    ['q:2:255', false],
+    ['h:buhari:52', false],
+    ['', false],
+    ['q:2:287x', false],
+    ['q:2:255-257', false],
+  ])('reads %j as carrying a span: %s', (text, expected) => {
+    expect(anchorCarriesSpan(text)).toBe(expected);
+  });
+
+  it('leaves the resolver strict: a span typed next to a carrying anchor is still a conflict', () => {
+    // The form empties the closed fields; a direct caller still gets the conflict code.
+    expect(edit({ dstAnchor: 'q:2:255:3-7', spanStart: '1', spanEnd: '4' }).problems).toEqual([
+      { field: 'span', code: 'spanConflict' },
+    ]);
+    expect(edit({ dstAnchor: 'q:2:255:3-7', spanStart: '', spanEnd: '' }).problems).toEqual([]);
+  });
+});
+
+describe('isRevalidation', () => {
+  it.each([
+    [{ yeniden_dogrula: true }, 'onayli', true],
+    [{ yeniden_dogrula: true, baska: 1 }, 'onayli', true],
+    [{ yeniden_dogrula: true }, 'aday', false],
+    [{ yeniden_dogrula: true }, null, false],
+    [{ yeniden_dogrula: false }, 'onayli', false],
+    [{ yeniden_dogrula: 'true' }, 'onayli', false],
+    [{ yeniden_dogrula: 1 }, 'onayli', false],
+    [{}, 'onayli', false],
+    [null, 'onayli', false],
+    [undefined, 'onayli', false],
+    ['yeniden_dogrula', 'onayli', false],
+  ])('reads the proposal %j with the target status %s as %s', (proposal, status, expected) => {
+    expect(isRevalidation(proposal, status)).toBe(expected);
+  });
+
+  it('reads a list item, which has no snapshot, by the proposal alone', () => {
+    expect(isRevalidation({ yeniden_dogrula: true })).toBe(true);
+    expect(isRevalidation({ yeniden_dogrula: false })).toBe(false);
+    expect(isRevalidation(null)).toBe(false);
+  });
+});
+
+describe('canLemmaAction', () => {
+  it.each([
+    [['editor'], true],
+    [['admin'], true],
+    [['editor', 'admin'], true],
+    [['uzman'], false],
+    [[], false],
+    [null, false],
+    [undefined, false],
+  ])('roles %j: %s', (roles, expected) => {
+    expect(canLemmaAction(roles)).toBe(expected);
   });
 });
