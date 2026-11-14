@@ -454,7 +454,7 @@ describe('link candidate edit and actions', () => {
     });
 
     describe('İma olarak işaretle', () => {
-      it('sends {gerekce} without If-Match and says which ima row was opened; the candidate stays', async () => {
+      it('sends {gerekce} with If-Match = xmin and says which ima row was opened; the candidate stays', async () => {
         fake.post('/api/v1/reviews/{id}/ima', (call) =>
           ok(
             {
@@ -478,7 +478,7 @@ describe('link candidate edit and actions', () => {
         await waitFor(() => expect(imaCalls()).toHaveLength(1));
         const call = imaCalls()[0]!;
         expect(call.params.id).toBe('1');
-        expect(call.headers.has('If-Match')).toBe(false);
+        expect(call.headers.get('If-Match')).toBe('"501"');
         expect(call.json).toEqual({ gerekce: 'Dolaylı gönderme' });
         expect(await within(section).findByTestId('link-ima-done')).toHaveTextContent(
           trBaglanti.actions.ima.done('00000000-0000-4000-8000-0000000000aa'),

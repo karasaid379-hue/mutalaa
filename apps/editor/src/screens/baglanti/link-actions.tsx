@@ -220,7 +220,7 @@ export function ExpertAction({ review, onLeft }: LinkActionProps) {
   );
 }
 
-/** "İma olarak işaretle" (`markReviewLinkAsIma`): a new ima row from the same source to the same target; the candidate stays. */
+/** "İma olarak işaretle" (`markReviewLinkAsIma`, If-Match): a new ima row from the same source to the same target; the candidate stays. */
 export function ImaAction({ review }: { review: ReviewDetail }) {
   const api = useApi();
   const mutation = api.$api.useMutation('post', '/api/v1/reviews/{id}/ima');
@@ -233,7 +233,7 @@ export function ImaAction({ review }: { review: ReviewDetail }) {
       onStale={refresh}
       run={async (gerekce) => {
         const result = await mutation.mutateAsync({
-          params: { path: { id: review.id } },
+          params: { path: { id: review.id }, header: { 'If-Match': formatIfMatch(review.xmin) } },
           body: { gerekce },
         });
         refresh();

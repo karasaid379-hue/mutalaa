@@ -360,7 +360,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Onaylı Türkçe lemmanın 'yalnızca etimolojik' işaretini editör kararıyla değiştirir (otomatik onaylıda onay yolu editör olur). */
+        /** Onaylı Türkçe lemmanın 'yalnızca etimolojik' işaretini editör kararıyla değiştirir (otomatik onaylıda onay yolu, köken ve kanıt korunur; yalnız işaret değişir). */
         post: operations["markLemmaEtymological"];
         delete?: never;
         options?: never;
@@ -2032,7 +2032,10 @@ export interface operations {
     markReviewLinkAsIma: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                /** @description Kaydın ETag değeri: "{xmin}" (yalnız güçlü ve tek etiket). */
+                "If-Match": string;
+            };
             path: {
                 id: number;
             };
@@ -2089,8 +2092,26 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition Required */
+            428: {
                 headers: {
                     [name: string]: unknown;
                 };
