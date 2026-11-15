@@ -363,14 +363,16 @@ CREATE INDEX xref_queue ON xref (type, confidence DESC) WHERE status = 'aday';
 
 CREATE TABLE xref_gate (                           -- A18 (K-51 madde 5); `qa gold` yazar, Yayınlayıcı okur
   tur             xref_type NOT NULL,
-  set_sinifi      text NOT NULL,                  -- 'altin' | 'silver' | 'sentetik'; tür başına her sınıf için tek satır
+  alt_tur         text NOT NULL,                  -- '' | 'sozluksel' | 'alim' (benzer_ayet) | 'tr_lemma' | 'xref' (kok); K-51 madde 18
+  set_sinifi      text NOT NULL,                  -- 'altin' | 'silver' | 'sentetik'; (tür, alt tür) başına her sınıf için tek satır
   set_surumu      text NOT NULL,
   sonuc           text NOT NULL,                  -- 'gecti' | 'kaldi'
   set_kaynaklari  text[] NOT NULL,                -- setin kurulduğu kaynaklar (source_id@sürüm)
   rapor_sha256    char(64) NOT NULL,
   data_version    text NOT NULL,
   olculdu_at      timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (tur, set_sinifi),
+  PRIMARY KEY (tur, alt_tur, set_sinifi),
+  CONSTRAINT xref_gate_alt_tur_check CHECK (alt_tur IN ('','sozluksel','alim','tr_lemma','xref') AND ((tur = 'benzer_ayet' AND alt_tur IN ('sozluksel','alim')) OR (tur = 'kok' AND alt_tur IN ('tr_lemma','xref')) OR (tur NOT IN ('benzer_ayet','kok') AND alt_tur = ''))),
   CONSTRAINT xref_gate_set_sinifi_check CHECK (set_sinifi IN ('altin','silver','sentetik')),
   CONSTRAINT xref_gate_sonuc_check CHECK (sonuc IN ('gecti','kaldi')),
   CONSTRAINT xref_gate_rapor_sha256_check CHECK (rapor_sha256 ~ '^[0-9a-f]{64}$')
