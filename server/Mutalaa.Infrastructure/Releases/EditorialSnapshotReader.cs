@@ -415,7 +415,8 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
         const string sql = $"""
             SELECT id, src_anchor, lower(src_span), upper(src_span), dst_anchor, lower(dst_span), upper(dst_span),
                    type::text, score, confidence, evidence::text, status::text, data_version, evidence->>'lexicon_status',
-                   evidence->>'src_hash', evidence->>'dst_hash', evidence->>'source_id'
+                   evidence->>'src_hash', evidence->>'dst_hash', evidence->>'source_id',
+                   coalesce(jsonb_typeof(evidence->'qursim') = 'object', false)
             FROM {Schema}.xref
             ORDER BY id
             """;
@@ -441,7 +442,8 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
                 Str(reader, 13),
                 Str(reader, 14),
                 Str(reader, 15),
-                Str(reader, 16));
+                Str(reader, 16),
+                reader.GetBoolean(17));
         }
     }
 
@@ -569,13 +571,13 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
         return rows;
     }
 
-    /// <summary>xref_gate satirlari (tur, set_sinifi sirali). Tablo bossa satir uretmez: hicbir tur olculmemistir.</summary>
+    /// <summary>xref_gate satirlari (tur, alt_tur, set_sinifi sirali). Tablo bossa satir uretmez: hicbir tur olculmemistir.</summary>
     public async Task<IReadOnlyList<XrefGateRow>> ReadXrefGatesAsync(CancellationToken cancellationToken)
     {
         const string sql = $"""
-            SELECT tur::text, set_sinifi, sonuc, set_surumu, set_kaynaklari, rapor_sha256::text, olculdu_at
+            SELECT tur::text, set_sinifi, sonuc, set_surumu, set_kaynaklari, rapor_sha256::text, olculdu_at, alt_tur
             FROM {Schema}.xref_gate
-            ORDER BY tur::text COLLATE "C", set_sinifi COLLATE "C"
+            ORDER BY tur::text COLLATE "C", alt_tur COLLATE "C", set_sinifi COLLATE "C"
             """;
 
         List<XrefGateRow> rows = [];
@@ -590,7 +592,8 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
                 reader.GetString(3),
                 reader.GetFieldValue<string[]>(4),
                 reader.GetString(5).Trim(),
-                reader.GetFieldValue<DateTime>(6)));
+                reader.GetFieldValue<DateTime>(6),
+                reader.GetString(7)));
         }
 
         return rows;

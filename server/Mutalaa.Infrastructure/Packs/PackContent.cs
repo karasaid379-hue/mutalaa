@@ -184,8 +184,9 @@ public sealed class PackContent
     public string? Direction { get; init; }
 
     /// <summary>
-    /// Kapi ozeti (pack_meta <see cref="PackMetaKeys.GateSummary"/>; K-51 madde 5 ve 11): RFC 8785 kanonik JSON <c>{"kok":{"set_sinifi":"silver","sonuc":"gecti"}}</c>;
-    /// yalniz altin ya da silver sinifinda olcumu olan turler yazilir (kok ve lemma kelime-kok'te, benzer_ayet core'da). Olcum yoksa <c>{}</c>.
+    /// Kapi ozeti (pack_meta <see cref="PackMetaKeys.GateSummary"/>; K-51 madde 5 ve 11): RFC 8785 kanonik JSON <c>{"kok/tr_lemma":{"set_sinifi":"silver","sonuc":"gecti"}}</c>;
+    /// anahtar tur ya da <c>tur/alt_tur</c> (kok/xref, kok/tr_lemma ve lemma kelime-kok'te; benzer_ayet/sozluksel ve benzer_ayet/alim core'da);
+    /// yalniz altin ya da silver sinifinda olcumu olan kapilar yazilir. Olcum yoksa <c>{}</c>.
     /// Diger paketlerde null (anahtar yok). Paket ozetine girer.
     /// </summary>
     public string? GateSummary { get; init; }

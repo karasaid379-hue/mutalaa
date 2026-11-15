@@ -92,17 +92,41 @@ public class GateInputBuilderLinkLayerTests
     }
 
     [Fact]
+    public void A_qursim_evidence_object_passes_through_and_decides_the_alim_gate_key()
+    {
+        Guid scholar = Guid.NewGuid();
+        Guid lexical = Guid.NewGuid();
+        EditorialSnapshot snapshot = Snapshot(
+            xrefs:
+            [
+                PackTestData.Xref("q:1:1", "q:1:2", "benzer_ayet", "aday", id: scholar) with { HasQursimEvidence = true },
+                PackTestData.Xref("q:1:1", "q:1:2", "benzer_ayet", "aday", id: lexical),
+            ]);
+
+        GateInput input = Build(snapshot);
+
+        GateXref a = Assert.Single(input.Xrefs, x => x.Id == scholar);
+        GateXref b = Assert.Single(input.Xrefs, x => x.Id == lexical);
+        Assert.True(a.HasQursimEvidence);
+        Assert.False(b.HasQursimEvidence);
+        Assert.Equal("alim", XrefGateRules.GateKeyOf(a.Type, a.EvidenceSourceId, a.HasQursimEvidence).SubType);
+        Assert.Equal("sozluksel", XrefGateRules.GateKeyOf(b.Type, b.EvidenceSourceId, b.HasQursimEvidence).SubType);
+    }
+
+    [Fact]
     public void Xref_gate_rows_become_measurements_and_an_unknown_type_is_a_data_error()
     {
         GateInput input = Build(Snapshot(gates:
         [
-            new XrefGateRow("kok", "silver", "gecti", "s1", ["a@1"], new string('a', 64), DateTime.UnixEpoch),
-            new XrefGateRow("benzer_ayet", "altin", "kaldi", "s2", ["b@1"], new string('b', 64), DateTime.UnixEpoch),
+            new XrefGateRow("kok", "silver", "gecti", "s1", ["a@1"], new string('a', 64), DateTime.UnixEpoch, "tr_lemma"),
+            new XrefGateRow("kok", "silver", "kaldi", "s1", ["a@1"], new string('a', 64), DateTime.UnixEpoch, "xref"),
+            new XrefGateRow("benzer_ayet", "altin", "kaldi", "s2", ["b@1"], new string('b', 64), DateTime.UnixEpoch, "alim"),
+            new XrefGateRow("lemma", "altin", "gecti", "s3", ["c@1"], new string('c', 64), DateTime.UnixEpoch),
         ]));
 
         Assert.Equal(
-            [(XrefType.Kok, "silver", "gecti"), (XrefType.BenzerAyet, "altin", "kaldi")],
-            input.Gates.Select(g => (g.Type, g.SetClass, g.Result)));
+            [(XrefType.Kok, "silver", "gecti", "tr_lemma"), (XrefType.Kok, "silver", "kaldi", "xref"), (XrefType.BenzerAyet, "altin", "kaldi", "alim"), (XrefType.Lemma, "altin", "gecti", "")],
+            input.Gates.Select(g => (g.Type, g.SetClass, g.Result, g.SubType)));
         Assert.Empty(Build(Snapshot()).Gates);
         Assert.Throws<InvalidDataException>(() => Build(Snapshot(gates: [new XrefGateRow("bilinmeyen", "silver", "gecti", "s", [], new string('a', 64), DateTime.UnixEpoch)])));
     }

@@ -225,8 +225,10 @@ public class ReleaseEndToEndTests(PublishedWorld world, PostgresFixture postgres
             // K-51 madde 5: olculmemis turun aday satirlari public'e girmez; rapor "girmedi - P-07" yazar ve onayli satir girer.
             Assert.Equal(("girmedi", "P-07", "kapi-olculmedi", 2), Reduce(Assert.Single(rows, r => r.Kind == "baglanti" && r.Id == "kok" && r.Reason == "kapi-olculmedi")));
             Assert.Equal(("girmedi", "P-07", "kapi-olculmedi", 1), Reduce(Assert.Single(rows, r => r.Kind == "baglanti" && r.Id == "benzer_ayet" && r.Reason == "kapi-olculmedi")));
-            GateRow gateRow = Assert.Single(rows, r => r.Kind == "kapi" && r.Id == "kok");
+            GateRow gateRow = Assert.Single(rows, r => r.Kind == "kapi" && r.Id == "kok/xref");
             Assert.Equal(("girmedi", "P-07", "kapi-olculmedi"), (gateRow.Decision, gateRow.Rule, gateRow.Reason));
+            Assert.Equal(("girmedi", "P-07", "kapi-olculmedi"), Reduce3(Assert.Single(rows, r => r.Kind == "kapi" && r.Id == "benzer_ayet/sozluksel")));
+            Assert.DoesNotContain(rows, r => r.Kind == "kapi" && r.Id is "kok" or "benzer_ayet");
         }
         else
         {
@@ -243,6 +245,8 @@ public class ReleaseEndToEndTests(PublishedWorld world, PostgresFixture postgres
             Assert.Equal(("girdi", (string?)null, "aday", 1), Reduce(Assert.Single(rows, r => r.Kind == "baglanti" && r.Id == "atif" && r.Reason == "aday")));
         }
     }
+
+    private static (string Decision, string? Rule, string Reason) Reduce3(GateRow row) => (row.Decision, row.Rule, row.Reason);
 
     private static (string Decision, string? Rule, string Reason, int Count) Reduce(GateRow row) => (row.Decision, row.Rule, row.Reason, row.Count);
 

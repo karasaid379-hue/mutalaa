@@ -234,12 +234,18 @@ public class LinkLayerConstraintTests(EditorialDatabase<LinkLayerConstraintTests
         Assert.Equal(0L, await Db.ScalarAsync<long>(NoDefaultSql, ct));
     }
 
-    private static string GateInsert(string tur = "'kok'", string sinif = "'silver'", string sonuc = "'gecti'", string kaynaklar = "ARRAY['kaikki']", string sha = Sha64) =>
-        "INSERT INTO icerik.xref_gate (tur, set_sinifi, set_surumu, sonuc, set_kaynaklari, rapor_sha256, data_version) "
-        + $"VALUES ({tur}, {sinif}, '1', {sonuc}, {kaynaklar}, {sha}, 'test')";
+    private static string GateInsert(
+        string tur = "'kok'",
+        string sinif = "'silver'",
+        string sonuc = "'gecti'",
+        string kaynaklar = "ARRAY['kaikki']",
+        string sha = Sha64,
+        string altTur = "'xref'") =>
+        "INSERT INTO icerik.xref_gate (tur, alt_tur, set_sinifi, set_surumu, sonuc, set_kaynaklari, rapor_sha256, data_version) "
+        + $"VALUES ({tur}, {altTur}, {sinif}, '1', {sonuc}, {kaynaklar}, {sha}, 'test')";
 
     [Fact]
-    public async Task A_gate_row_is_keyed_by_type_and_set_class_and_stamps_the_measurement_time()
+    public async Task A_gate_row_is_keyed_by_type_subtype_and_set_class_and_stamps_the_measurement_time()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
         await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
@@ -247,11 +253,79 @@ public class LinkLayerConstraintTests(EditorialDatabase<LinkLayerConstraintTests
         Assert.Equal(1, await session.ExecuteAsync(GateInsert(), ct));
         Assert.Equal(1, await session.ExecuteAsync(GateInsert(sinif: "'altin'"), ct));
         Assert.Equal(1, await session.ExecuteAsync(GateInsert(sinif: "'sentetik'", sonuc: "'kaldi'", kaynaklar: "ARRAY[]::text[]"), ct));
-        Assert.Equal(1, await session.ExecuteAsync(GateInsert(tur: "'lemma'"), ct));
-        Assert.Equal(3L, await session.ScalarAsync<long>("SELECT count(*) FROM icerik.xref_gate WHERE tur = 'kok'", ct));
-        Assert.Equal(4L, await session.ScalarAsync<long>("SELECT count(*) FROM icerik.xref_gate WHERE olculdu_at = now()", ct));
+        Assert.Equal(1, await session.ExecuteAsync(GateInsert(tur: "'lemma'", altTur: "''"), ct));
+
+        // Ayni (tur, set sinifi) farkli alt turle ayri satirdir.
+        Assert.Equal(1, await session.ExecuteAsync(GateInsert(altTur: "'tr_lemma'"), ct));
+        Assert.Equal(1, await session.ExecuteAsync(GateInsert(tur: "'benzer_ayet'", altTur: "'sozluksel'"), ct));
+        Assert.Equal(1, await session.ExecuteAsync(GateInsert(tur: "'benzer_ayet'", altTur: "'alim'"), ct));
+        Assert.Equal(4L, await session.ScalarAsync<long>("SELECT count(*) FROM icerik.xref_gate WHERE tur = 'kok'", ct));
+        Assert.Equal(7L, await session.ScalarAsync<long>("SELECT count(*) FROM icerik.xref_gate WHERE olculdu_at = now()", ct));
 
         await AssertViolationAsync(() => session.ExecuteAsync(GateInsert(), ct), Unique, "xref_gate_pkey");
+
+        // Ihlal islemi iptal eder: ayni alt turun ikinci satiri ayri islemde denenir.
+        await using RollbackSession second = await Db.OpenRollbackSessionAsync(ct);
+        Assert.Equal(1, await second.ExecuteAsync(GateInsert(tur: "'benzer_ayet'", altTur: "'alim'"), ct));
+        await AssertViolationAsync(() => second.ExecuteAsync(GateInsert(tur: "'benzer_ayet'", altTur: "'alim'"), ct), Unique, "xref_gate_pkey");
+    }
+
+    [Theory]
+    [InlineData("'benzer_ayet'", "'sozluksel'")]
+    [InlineData("'benzer_ayet'", "'alim'")]
+    [InlineData("'kok'", "'tr_lemma'")]
+    [InlineData("'kok'", "'xref'")]
+    [InlineData("'lemma'", "''")]
+    [InlineData("'atif'", "''")]
+    [InlineData("'iktibas'", "''")]
+    [InlineData("'anlamsal'", "''")]
+    public async Task Gate_accepts_every_documented_type_and_subtype_pair(string tur, string altTur)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+
+        Assert.Equal(1, await session.ExecuteAsync(GateInsert(tur: tur, altTur: altTur), ct));
+    }
+
+    [Theory]
+    [InlineData("'kok'", "''")]
+    [InlineData("'kok'", "'alim'")]
+    [InlineData("'kok'", "'sozluksel'")]
+    [InlineData("'benzer_ayet'", "''")]
+    [InlineData("'benzer_ayet'", "'tr_lemma'")]
+    [InlineData("'benzer_ayet'", "'xref'")]
+    [InlineData("'lemma'", "'xref'")]
+    [InlineData("'lemma'", "'tr_lemma'")]
+    [InlineData("'atif'", "'sozluksel'")]
+    [InlineData("'iktibas'", "'alim'")]
+    [InlineData("'kok'", "'bilinmeyen'")]
+    [InlineData("'kok'", "'Xref'")]
+    public async Task Gate_subtype_check_rejects_inconsistent_or_unknown_pairs(string tur, string altTur)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+
+        await AssertViolationAsync(() => session.ExecuteAsync(GateInsert(tur: tur, altTur: altTur), ct), CheckViolation, "xref_gate_alt_tur_check");
+    }
+
+    [Fact]
+    public async Task Gate_subtype_is_required_and_has_no_default()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+
+        PostgresException missing = await Assert.ThrowsAsync<PostgresException>(() => session.ExecuteAsync(
+            "INSERT INTO icerik.xref_gate (tur, set_sinifi, set_surumu, sonuc, set_kaynaklari, rapor_sha256, data_version) "
+            + $"VALUES ('lemma', 'silver', '1', 'gecti', ARRAY['kaikki'], {Sha64}, 'test')",
+            ct));
+
+        Assert.Equal(NotNull, missing.SqlState);
+        Assert.Equal("alt_tur", missing.ColumnName);
+        Assert.Equal(
+            0L,
+            await Db.ScalarAsync<long>(
+                "SELECT count(*) FROM information_schema.columns WHERE table_schema = 'icerik' AND table_name = 'xref_gate' AND column_name = 'alt_tur' AND column_default IS NOT NULL",
+                ct));
     }
 
     [Theory]
@@ -333,5 +407,82 @@ public class LinkLayerConstraintTests(EditorialDatabase<LinkLayerConstraintTests
         Assert.Equal(0L, await fresh.ScalarAsync<long>(NoDefaultSql, ct));
         await using DbSession after = fresh.OpenSession();
         Assert.False(after.Context.Database.HasPendingModelChanges());
+    }
+
+    private const string PreviousMigration = "20261112211605_AddLinkLayer";
+
+    private const string GateKeyColumnsSql =
+        "SELECT a.attname::text FROM pg_constraint c JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY (c.conkey) "
+        + "WHERE c.conname = 'xref_gate_pkey' AND c.conrelid = 'icerik.xref_gate'::regclass ORDER BY array_position(c.conkey, a.attnum)";
+
+    private static Task InsertLegacyGateRowAsync(TestDatabase db, string tur, string sinif, string sonuc, CancellationToken ct) =>
+        db.ExecuteAsync(
+            "INSERT INTO icerik.xref_gate (tur, set_sinifi, set_surumu, sonuc, set_kaynaklari, rapor_sha256, data_version) "
+            + $"VALUES ('{tur}', '{sinif}', '1', '{sonuc}', ARRAY['kaynak'], {Sha64}, 'test')",
+            ct);
+
+    [Fact]
+    public async Task AddGateSubtype_gives_old_rows_an_empty_subtype_drops_the_ones_the_check_cannot_hold_and_migrates_down_again()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using TestDatabase fresh = await postgres.CreateDatabaseAsync("gatesubtype", ct);
+        await using (DbSession before = fresh.OpenSession())
+        {
+            await before.Context.GetService<IMigrator>().MigrateAsync(PreviousMigration, ct);
+        }
+
+        Assert.Equal(["tur", "set_sinifi"], await fresh.ColumnAsync(GateKeyColumnsSql, ct));
+        await InsertLegacyGateRowAsync(fresh, "atif", "sentetik", "kaldi", ct);
+        await InsertLegacyGateRowAsync(fresh, "benzer_ayet", "altin", "kaldi", ct);
+        await InsertLegacyGateRowAsync(fresh, "iktibas", "sentetik", "gecti", ct);
+        await InsertLegacyGateRowAsync(fresh, "kok", "silver", "kaldi", ct);
+        await InsertLegacyGateRowAsync(fresh, "lemma", "altin", "gecti", ct);
+
+        // Yukari: bos alt tur kok ve benzer_ayet icin gecersiz; o satirlar silinir (kapi yeniden olculene kadar kapali), digerleri bos alt tur alir.
+        await fresh.MigrateAsync(ct);
+
+        Assert.Equal(["tur", "alt_tur", "set_sinifi"], await fresh.ColumnAsync(GateKeyColumnsSql, ct));
+        Assert.Equal(
+            ["atif|", "iktibas|", "lemma|"],
+            await fresh.ColumnAsync("SELECT tur::text || '|' || alt_tur FROM icerik.xref_gate ORDER BY 1", ct));
+        Assert.Equal(
+            0L,
+            await fresh.ScalarAsync<long>(
+                "SELECT count(*) FROM information_schema.columns WHERE table_schema = 'icerik' AND table_name = 'xref_gate' AND column_name = 'alt_tur' AND column_default IS NOT NULL",
+                ct));
+        Assert.Equal(
+            ["xref_gate_alt_tur_check"],
+            await fresh.ColumnAsync("SELECT conname::text FROM pg_constraint WHERE conrelid = 'icerik.xref_gate'::regclass AND conname = 'xref_gate_alt_tur_check'", ct));
+        await using (DbSession after = fresh.OpenSession())
+        {
+            Assert.False(after.Context.Database.HasPendingModelChanges());
+        }
+
+        // Yeni satirlar yazilir; ayni (tur, set sinifi) icin iki alt tur yan yana durur.
+        await fresh.ExecuteAsync(
+            "INSERT INTO icerik.xref_gate (tur, alt_tur, set_sinifi, set_surumu, sonuc, set_kaynaklari, rapor_sha256, data_version) VALUES "
+            + $"('kok', 'tr_lemma', 'silver', '2', 'kaldi', ARRAY['k'], {Sha64}, 'test'), ('kok', 'xref', 'silver', '2', 'gecti', ARRAY['k'], {Sha64}, 'test')",
+            ct);
+
+        // Asagi: alt turlu satirlar eski semada tutulamaz ve silinir; birincil anahtar (tur, set_sinifi) olur, sutun kalkar.
+        await using (DbSession down = fresh.OpenSession())
+        {
+            await down.Context.GetService<IMigrator>().MigrateAsync(PreviousMigration, ct);
+        }
+
+        Assert.Equal(["tur", "set_sinifi"], await fresh.ColumnAsync(GateKeyColumnsSql, ct));
+        Assert.Equal(
+            0L,
+            await fresh.ScalarAsync<long>("SELECT count(*) FROM information_schema.columns WHERE table_schema = 'icerik' AND table_name = 'xref_gate' AND column_name = 'alt_tur'", ct));
+        Assert.Equal(
+            0L,
+            await fresh.ScalarAsync<long>("SELECT count(*) FROM pg_constraint WHERE conrelid = 'icerik.xref_gate'::regclass AND conname = 'xref_gate_alt_tur_check'", ct));
+        Assert.Equal(
+            ["atif", "iktibas", "lemma"],
+            await fresh.ColumnAsync("SELECT tur::text FROM icerik.xref_gate ORDER BY 1", ct));
+
+        // Yeniden yukari: temiz gecis.
+        await fresh.MigrateAsync(ct);
+        Assert.Equal(["tur", "alt_tur", "set_sinifi"], await fresh.ColumnAsync(GateKeyColumnsSql, ct));
     }
 }

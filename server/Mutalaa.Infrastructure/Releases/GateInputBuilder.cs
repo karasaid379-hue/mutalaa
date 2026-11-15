@@ -140,7 +140,7 @@ public static class GateInputBuilder
                 throw new InvalidDataException($"Bilinmeyen xref_gate turu: {row.Tur}");
             }
 
-            gates.Add(new GateMeasurement(gateType, row.SetSinifi, row.Sonuc));
+            gates.Add(new GateMeasurement(gateType, row.SetSinifi, row.Sonuc, row.AltTur));
         }
 
         return new GateInput
@@ -359,7 +359,8 @@ public static class GateInputBuilder
             separateIndex,
             xref.SrcHash,
             xref.DstHash,
-            xref.EvidenceSourceId);
+            xref.EvidenceSourceId,
+            xref.HasQursimEvidence);
     }
 
     private static TextStatus ParseTextStatus(string label, string anchor) =>

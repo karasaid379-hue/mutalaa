@@ -774,6 +774,76 @@ public class ReleaseEndToEndFlowTests(PostgresFixture postgres, SeaweedFixture s
         Assert.Equal(0, (await harness.RunCliAsync("verify", "--flavor", "public")).Code);
     }
 
+    // ---------------------------------------------------------------- K-51 madde 5: kapi alt turleri
+
+    [Fact]
+    public async Task Public_gate_subtypes_decide_their_own_links_report_rows_and_gate_summary()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using EndToEndHarness harness = await NewHarnessAsync();
+
+        // Sozluksel benzer_ayet ve kok baglantisi kapisi acik; kok/tr_lemma ve alim (QurSim kanitli satir) olculdu ve kaldi.
+        const string insertGate =
+            "INSERT INTO icerik.xref_gate (tur, alt_tur, set_sinifi, set_surumu, sonuc, set_kaynaklari, rapor_sha256, data_version) "
+            + "VALUES (@t::icerik.xref_type, @a, @s, 's1', @r, ARRAY['kaynak@1'], repeat('a', 64), 'dv-gate')";
+        await harness.Database.ExecuteAsync(insertGate, ct, ("t", "kok"), ("a", "xref"), ("s", "silver"), ("r", "gecti"));
+        await harness.Database.ExecuteAsync(insertGate, ct, ("t", "kok"), ("a", "tr_lemma"), ("s", "silver"), ("r", "kaldi"));
+        await harness.Database.ExecuteAsync(insertGate, ct, ("t", "benzer_ayet"), ("a", "sozluksel"), ("s", "silver"), ("r", "gecti"));
+        await harness.Database.ExecuteAsync(insertGate, ct, ("t", "benzer_ayet"), ("a", "alim"), ("s", "altin"), ("r", "kaldi"));
+        Guid scholar = Guid.Parse("00000000-0000-7000-8000-0000000000a1");
+        await harness.Database.ExecuteAsync(
+            """
+            INSERT INTO icerik.xref (id, src_anchor, dst_anchor, type, score, confidence, evidence, origin, status, data_version)
+            VALUES (@id, 'q:1:4', 'q:1:5', 'benzer_ayet'::icerik.xref_type, 0.5, 0.9, '{"qursim": {"label": 1}}'::jsonb, 'hat'::icerik.xref_origin, 'aday'::icerik.xref_status, 'dv-1')
+            """,
+            ct,
+            ("id", scholar));
+
+        CliResult publish = await harness.RunCliAsync("publish", "--flavor", "public");
+
+        Assert.Equal(0, publish.Code);
+        string id(string name) => harness.Content.Xrefs[name].Id.ToString("D", System.Globalization.CultureInfo.InvariantCulture);
+
+        // Baglantilar: kok/xref acik (dusuk guvenli satir yine girmez); sozluksel benzer_ayet girer, QurSim kanitli satir alim kapisinda kalir.
+        using (PackDb kelimeKok = await harness.OpenPackAsync(BuildFlavor.Public, EndToEndData.KelimeKokPack, ct))
+        {
+            Assert.Equal(
+                new[] { id("kok-onayli"), id("kok-orta"), id("kok-yuksek") }.Order(StringComparer.Ordinal),
+                kelimeKok.Column("SELECT id FROM xref_idx").Order(StringComparer.Ordinal));
+            Assert.Equal(
+                "{\"kok/tr_lemma\":{\"set_sinifi\":\"silver\",\"sonuc\":\"kaldi\"},\"kok/xref\":{\"set_sinifi\":\"silver\",\"sonuc\":\"gecti\"}}",
+                kelimeKok.Scalar<string>("SELECT value FROM pack_meta WHERE key = 'gate_summary'"));
+        }
+
+        using (PackDb core = await harness.OpenPackAsync(BuildFlavor.Public, "core", ct))
+        {
+            Assert.Equal(
+                new[] { id("benzer-onayli"), id("benzer-yuksek") }.Order(StringComparer.Ordinal),
+                core.Column("SELECT id FROM xref_idx").Order(StringComparer.Ordinal));
+            Assert.DoesNotContain(scholar.ToString("D", System.Globalization.CultureInfo.InvariantCulture), core.Column("SELECT id FROM xref_idx"));
+            Assert.Equal(
+                "{\"benzer_ayet/alim\":{\"set_sinifi\":\"altin\",\"sonuc\":\"kaldi\"},\"benzer_ayet/sozluksel\":{\"set_sinifi\":\"silver\",\"sonuc\":\"gecti\"}}",
+                core.Scalar<string>("SELECT value FROM pack_meta WHERE key = 'gate_summary'"));
+        }
+
+        // Rapor: her kapi kendi alt turuyle yazilir; stdout ayni satirlari tasir.
+        Release row = await harness.GetReleaseAsync(BuildFlavor.Public, "2026.11.0", ct);
+        IReadOnlyList<GateRow> rows = EndToEndHarness.GateRows(row);
+        GateRow GateOf(string gateId) => Assert.Single(rows, r => r.Kind == "kapi" && r.Id == gateId);
+        Assert.Equal(("girdi", (string?)null, "silver-ile-olculdu"), (GateOf("kok/xref").Decision, GateOf("kok/xref").Rule, GateOf("kok/xref").Reason));
+        Assert.Equal(("girmedi", "P-07", "kapi-gecmedi:silver"), (GateOf("kok/tr_lemma").Decision, GateOf("kok/tr_lemma").Rule, GateOf("kok/tr_lemma").Reason));
+        Assert.Equal(("girdi", (string?)null, "silver-ile-olculdu"), (GateOf("benzer_ayet/sozluksel").Decision, GateOf("benzer_ayet/sozluksel").Rule, GateOf("benzer_ayet/sozluksel").Reason));
+        Assert.Equal(("girmedi", "P-07", "kapi-gecmedi:altin"), (GateOf("benzer_ayet/alim").Decision, GateOf("benzer_ayet/alim").Rule, GateOf("benzer_ayet/alim").Reason));
+        Assert.DoesNotContain(rows, r => r.Kind == "kapi" && r.Id is "kok" or "benzer_ayet");
+        Assert.Contains("kapi benzer_ayet/alim: altin ile olculdu (kaldi)", publish.Out + harness.Out, StringComparison.Ordinal);
+        Assert.Contains("kapi kok/tr_lemma: silver ile olculdu (kaldi)", publish.Out + harness.Out, StringComparison.Ordinal);
+        Assert.Contains("kapi kok/xref: silver ile olculdu (gecti)", publish.Out + harness.Out, StringComparison.Ordinal);
+        Assert.Equal(("girmedi", "P-07", "kapi-gecmedi", 1), (GateRowOf(rows, "benzer_ayet", "kapi-gecmedi").Decision, GateRowOf(rows, "benzer_ayet", "kapi-gecmedi").Rule, GateRowOf(rows, "benzer_ayet", "kapi-gecmedi").Reason, GateRowOf(rows, "benzer_ayet", "kapi-gecmedi").Count));
+    }
+
+    private static GateRow GateRowOf(IReadOnlyList<GateRow> rows, string type, string reason) =>
+        Assert.Single(rows, r => r.Kind == "baglanti" && r.Id == type && r.Reason == reason);
+
     // ---------------------------------------------------------------- gizli degerler
 
     [Fact]

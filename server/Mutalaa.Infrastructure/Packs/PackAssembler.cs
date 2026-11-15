@@ -582,8 +582,8 @@ public static class PackAssembler
         return new Lexicon(wordMorph, roots, lemmas, glosses, trRootIndex, trForms, applied, withRows);
     }
 
-    // pack_meta gate_summary (K-51 madde 5 ve 11): kelime-kok icin kok ve lemma, core icin benzer_ayet; yalniz altin ya da silver olcumu olan turler.
-    // Baska paketlerde null (anahtar yok).
+    // pack_meta gate_summary (K-51 madde 5 ve 11): kelime-kok icin kok/xref, kok/tr_lemma ve lemma, core icin benzer_ayet/sozluksel ve benzer_ayet/alim;
+    // yalniz altin ya da silver olcumu olan kapilar. Anahtar: tur ya da "tur/alt_tur" (GateKey.Label). Baska paketlerde null (anahtar yok).
     private static string? GateSummaryFor(PackDefinition pack, EditorialSnapshot snapshot)
     {
         XrefType[] types = pack.CarriesLexicon
@@ -594,12 +594,14 @@ public static class PackAssembler
             return null;
         }
 
+        GateKey[] keys = [.. XrefGateRules.AllKeys.Where(k => types.Contains(k.Type))];
+
         List<GateMeasurement> measurements = [];
         foreach (XrefGateRow row in snapshot.XrefGates)
         {
             if (XrefTypeLabels.TryParseLabel(row.Tur, out XrefType type))
             {
-                measurements.Add(new GateMeasurement(type, row.SetSinifi, row.Sonuc));
+                measurements.Add(new GateMeasurement(type, row.SetSinifi, row.Sonuc, row.AltTur));
             }
         }
 
@@ -607,15 +609,15 @@ public static class PackAssembler
         using (Utf8JsonWriter writer = new(buffer))
         {
             writer.WriteStartObject();
-            foreach (XrefType type in types)
+            foreach (GateKey key in keys)
             {
-                XrefTypeGate gate = XrefGateRules.Resolve(measurements, type);
+                XrefTypeGate gate = XrefGateRules.Resolve(measurements, key);
                 if (gate.Status == XrefGateStatus.NotMeasured)
                 {
                     continue;
                 }
 
-                writer.WriteStartObject(type.ToLabel());
+                writer.WriteStartObject(key.Label);
                 writer.WriteString("set_sinifi", gate.SetClass);
                 writer.WriteString("sonuc", gate.Result);
                 writer.WriteEndObject();

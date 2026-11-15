@@ -26,6 +26,8 @@ public sealed record GateUnit(
 /// DstIsSeparateIndex: hedef, kaynak kaydi olan ayri bir dizine aittir (risale-atif-dizini); hedef eserin gorunurlugu aranmaz.
 /// SrcHash ve DstHash: evidence.src_hash ve dst_hash (uc birimlerin content_hash ilk 16 hanesi; K-51 madde 1). Alan yoksa null: o uc denetlenmez.
 /// EvidenceSourceId: evidence.source_id (satirin veri kaynagi, ornegin qursim); doluysa o kaynak derlemede girmis olmali (P-01). Alan yoksa null: denetlenmez.
+/// HasQursimEvidence: evidence.qursim bir nesne (QurSim kanitli satir; sozluksel secimle de eslesen cift dahil). benzer_ayet satirinin kapi alt turunu belirler:
+/// EvidenceSourceId qursim ise ya da HasQursimEvidence true ise "alim", degilse "sozluksel" (K-51 madde 5; <see cref="XrefGateRules.GateKeyOf"/>).
 /// </summary>
 public sealed record GateXref(
     Guid Id,
@@ -41,7 +43,8 @@ public sealed record GateXref(
     bool DstIsSeparateIndex,
     string? SrcHash = null,
     string? DstHash = null,
-    string? EvidenceSourceId = null);
+    string? EvidenceSourceId = null,
+    bool HasQursimEvidence = false);
 
 /// <summary>
 /// Paket adayi. HasContent: pakete yazilacak veri var (yoksa "girmedi · icerik-yok", kural kodu yok). HasStructure: paket yapi satiri (kelime, isaret,
@@ -129,10 +132,11 @@ public sealed record GateLexical(
     string? UnitHash = null);
 
 /// <summary>
-/// xref_gate satiri (K-51 madde 5 ve 11): bir turun bir set sinifi icin son olcum sonucu. SetClass altin, silver ya da sentetik; Result gecti ya da kaldi.
-/// Bilinmeyen sinif ve sonuc dizgileri kapi acmaz (olculmemis sayilir).
+/// xref_gate satiri (K-51 madde 5 ve 11): bir kapinin (tur ve alt tur) bir set sinifi icin son olcum sonucu. SetClass altin, silver ya da sentetik;
+/// Result gecti ya da kaldi. SubType <see cref="XrefGateSubtypes"/> degeridir (alt turu olmayan turde bos). Bilinmeyen sinif ve sonuc dizgileri kapi
+/// acmaz (olculmemis sayilir); alt turu kapinin alt turuyle tutmayan satir (ornegin eski bos alt tur kok icin) o kapiyi hic etkilemez.
 /// </summary>
-public sealed record GateMeasurement(XrefType Type, string SetClass, string Result);
+public sealed record GateMeasurement(XrefType Type, string SetClass, string Result, string SubType = XrefGateSubtypes.None);
 
 /// <summary>Kapi girdisi (Yayin sureci 2). Tum liste alanlari varsayilan bostur.</summary>
 public sealed record GateInput
