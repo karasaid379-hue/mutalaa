@@ -95,6 +95,27 @@ public class ReleaseDigestsTests
     }
 
     [Fact]
+    public void The_turkish_lemma_source_digest_follows_status_approval_path_evidence_presence_and_the_offset_rows()
+    {
+        const string slug = "kaikki-tr";
+        TrLemmaRow Lemma(string status, string? path, bool kanit) => new(1, "deneme", "deneme-1", 1, 0, null, false, 3, status, path, kanit, "kaikki", slug, "dv-1");
+        TrRootIndexRow Index(string hash) => new("meal:elmalili:1:1", 0, 4, 1, 1, false, hash, "dv-1");
+        string Digest(TrLemmaRow lemma, params TrRootIndexRow[] index) =>
+            SourceDigests.Compute(new EditorialSnapshot { TrLemmas = [lemma], TrRootIndex = index, TrForms = [new TrFormRow("deneme", "deneme", 1, 2, "dv-1")] }, [slug])[slug];
+
+        string auto = Digest(Lemma("onayli", "otomatik", true), Index("0123456789abcdef"));
+
+        Assert.NotEqual(EmptyDigest, auto);
+        Assert.Equal(auto, Digest(Lemma("onayli", "otomatik", true), Index("0123456789abcdef")));
+        Assert.NotEqual(auto, Digest(Lemma("aday", "otomatik", true), Index("0123456789abcdef")));
+        Assert.NotEqual(auto, Digest(Lemma("onayli", "editor", true), Index("0123456789abcdef")));
+        Assert.NotEqual(auto, Digest(Lemma("onayli", "otomatik", false), Index("0123456789abcdef")));
+        Assert.NotEqual(auto, Digest(Lemma("onayli", "otomatik", true), Index("fedcba9876543210")));
+        Assert.NotEqual(auto, Digest(Lemma("onayli", "otomatik", true)));
+        Assert.Equal(EmptyDigest, SourceDigests.Compute(new EditorialSnapshot { TrLemmas = [Lemma("onayli", "editor", true)] }, ["baska"])["baska"]);
+    }
+
+    [Fact]
     public async Task PackInspector_reads_meta_sources_attributions_and_anchors_from_a_written_pack()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;

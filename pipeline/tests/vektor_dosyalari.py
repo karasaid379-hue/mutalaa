@@ -36,6 +36,7 @@ NORMALIZE_TR_GOVDE: Final = "normalize/tr-govde.jsonl"
 EXTRACT_MEAL: Final = "extract/meal.jsonl"  # K-49 madde 13: cikarim vektoru, yalniz Python kosar
 # K-52 madde 8: Risale cumle ayirici vektoru (sentetik); cumle sinirlari yalniz hatta hesaplanir
 EXTRACT_RISALE_CUMLE: Final = "extract/risale-cumle.jsonl"
+TR_BOLME: Final = "enrich/tr-bolme.jsonl"  # A18.2: Turkce on bolme (hat ici), yalniz Python kosar
 
 # Kosucu test dosyasi -> yukledigi vektor dosyalari.
 KOSULAN: Final[dict[str, tuple[str, ...]]] = {
@@ -43,6 +44,7 @@ KOSULAN: Final[dict[str, tuple[str, ...]]] = {
     "test_normalize_vectors.py": (NORMALIZE_TR, NORMALIZE_AR, NORMALIZE_TR_GOVDE),
     "test_extract_meal.py": (EXTRACT_MEAL,),
     "test_risale_cumle.py": (EXTRACT_RISALE_CUMLE,),
+    "test_tr_bolme.py": (TR_BOLME,),
 }
 
 # Python'un kosmadigi dosya -> gerekce.

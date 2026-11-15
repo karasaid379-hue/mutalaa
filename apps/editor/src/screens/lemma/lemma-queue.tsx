@@ -1,5 +1,6 @@
 import { useId, useState } from 'react';
 import { useSearchParams } from 'react-router';
+import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,7 +10,10 @@ import { trLemma } from '@/i18n/tr-lemma';
 import { trLugat } from '@/i18n/tr-lugat';
 import { formatNumber, formatPercent } from '@/lib/format';
 import { QueueLayout } from '@/review/queue-layout';
+import { isRootMappingReview } from '@/review/rules';
 import type { ReviewItem } from '@/review/types';
+import { APPROVAL_FILTERS, isApprovalFilter, itemApproval, type ApprovalFilter } from './approval';
+import { ApprovalBadge } from './approval-badge';
 import {
   DEFAULT_LEMMA_ORDER,
   LEMMA_ORDERS,
@@ -25,6 +29,7 @@ import { LemmaCard } from './lemma-card';
 import { LugatCard } from './lugat-card';
 import { parseLugatKey, readFrequency } from './lugat-payload';
 import { consistencyOf, isReadyCandidate, isShare, readConfidence } from './payload';
+import { TrLemmaCard } from './tr-lemma-card';
 import { WordFixCard } from './word-fix-card';
 
 interface LemmaTabsProps {
@@ -96,8 +101,71 @@ function OrderControl({ value, onChange }: OrderControlProps) {
   );
 }
 
-/** Under a word meaning candidate in the list: the consistent or inconsistent mark of its dominant share. */
+interface ApprovalControlProps {
+  value: ApprovalFilter;
+  onChange: (value: ApprovalFilter) => void;
+}
+
+/**
+ * "Onay yolu: Hepsi | Otomatik onaylı | Editör onaylı | Aday" of the Turkish mapping tab. The server filters
+ * (`onay_yolu`): a change is a new query, so the list is loaded again from the first page.
+ */
+function ApprovalControl({ value, onChange }: ApprovalControlProps) {
+  const hintId = useId();
+  return (
+    <div className="flex flex-col gap-1" data-testid="lemma-approval-filter">
+      <RadioGroup
+        aria-label={trLemma.approvalFilter.label}
+        aria-describedby={hintId}
+        value={value}
+        className="flex flex-wrap items-center gap-x-4 gap-y-1"
+        onValueChange={(next) => {
+          if (isApprovalFilter(next)) onChange(next);
+        }}
+      >
+        <span className="text-sm font-medium" aria-hidden="true">
+          {trLemma.approvalFilter.label}
+        </span>
+        {APPROVAL_FILTERS.map((filter) => (
+          <Label key={filter} className="min-h-6 gap-2 font-normal">
+            <RadioGroupItem value={filter} />
+            {trLemma.approvalFilter[filter]}
+          </Label>
+        ))}
+      </RadioGroup>
+      <p id={hintId} className="text-xs text-muted-foreground">
+        {trLemma.approvalFilter.note}
+      </p>
+    </div>
+  );
+}
+
+/** Under a Turkish mapping in the list: the approval path (an automatic one is never drawn as an editor approval). */
+function MappingMeta({ item }: { item: ReviewItem }) {
+  const approval = itemApproval(item);
+  return (
+    <span className="flex flex-wrap items-center gap-1" data-testid="lemma-item-approval">
+      {approval === 'otomatik' || approval === 'editor' ? <ApprovalBadge path={approval} /> : null}
+      <span className="text-xs text-muted-foreground">
+        {approval === 'aday' ? trLemma.approvalFilter.itemAday : trLemma.approval.objection}
+      </span>
+    </span>
+  );
+}
+
+/** The word wave of a lemma record (`dalga` of the list item), as text; nothing when the API gives none. */
+function WaveBadge({ item }: { item: ReviewItem }) {
+  if (typeof item.dalga !== 'number') return null;
+  return (
+    <Badge variant="outline" data-testid="lemma-item-wave">
+      {trLemma.list.wave(item.dalga)}
+    </Badge>
+  );
+}
+
+/** Under a word meaning candidate in the list: the wave and the consistent or inconsistent mark of its dominant share. */
 function GlossMeta({ item }: { item: ReviewItem }) {
+  if (isRootMappingReview(item)) return <MappingMeta item={item} />;
   if (item.hedef_tablo === 'lugat_madde') {
     const frequency = readFrequency(item);
     const key = parseLugatKey(item.hedef_anahtar);
@@ -125,13 +193,21 @@ function GlossMeta({ item }: { item: ReviewItem }) {
   }
   const share =
     item.hedef_tablo === 'lemma_gloss' && isReadyCandidate(item) ? readConfidence(item) : null;
-  if (share === null || !isShare(share)) return null;
+  const shareValid = share !== null && isShare(share);
+  if (!shareValid && typeof item.dalga !== 'number') return null;
   return (
-    <span className="text-xs text-muted-foreground" data-testid="lemma-item-consistency">
-      {trLemma.list.line(
-        consistencyOf(share) === 'tutarli' ? trLemma.list.consistent : trLemma.list.inconsistent,
-        formatPercent(share),
-      )}
+    <span className="flex flex-wrap items-center gap-1">
+      <WaveBadge item={item} />
+      {shareValid ? (
+        <span className="text-xs text-muted-foreground" data-testid="lemma-item-consistency">
+          {trLemma.list.line(
+            consistencyOf(share) === 'tutarli'
+              ? trLemma.list.consistent
+              : trLemma.list.inconsistent,
+            formatPercent(share),
+          )}
+        </span>
+      ) : null}
     </span>
   );
 }
@@ -139,32 +215,38 @@ function GlossMeta({ item }: { item: ReviewItem }) {
 /**
  * Route `kuyruk/lemma` (Kelime anlamları §6, K-13): the word meaning drafts (`lemma_gloss` + `anlam_kisa`),
  * the lemma status (`lemma` + `status`), the root and lemma corrections (`quran_word_fix`, every field) and the
- * Risale lügat (`lugat_madde` + `tanim_tr`, descending frequency, K-52) on four tabs; the filter is screen state. The first two are listed in wave order (`sira=dalga`, the default)
- * or in creation order; changing the order is a new query, so the cursor starts over (the API's cursors are
- * typed by order). The correction tab has no order (the API answers 400).
+ * Turkish lemma root mappings (`lemma` + `kok_eslemesi`, A18.2) and the Risale lügat (`lugat_madde` + `tanim_tr`,
+ * descending frequency, K-52) on five tabs; the filter is screen state. The first two are listed in wave order
+ * (`sira=dalga`, the default) or in creation order; changing the order is a new query, so the cursor starts over
+ * (the API's cursors are typed by order). The correction, mapping and lügat tabs have no order switch (the API
+ * answers 400 for the correction target; the lügat queue is always in frequency order).
  */
 export function LemmaQueue() {
   const [tab, setTab] = useState<LemmaTabId>('anlam');
   const [order, setOrder] = useState<WaveOrder>(DEFAULT_LEMMA_ORDER);
+  const [approval, setApproval] = useState<ApprovalFilter>('hepsi');
   return (
     <QueueLayout
       title={tr.nav.queueLemma}
-      filter={lemmaFilter(tab, order)}
+      filter={lemmaFilter(tab, order, approval)}
       announceCount
       renderListHeader={() => (
         <div className="flex flex-col gap-3">
           <LemmaTabs value={tab} onChange={setTab} />
           {hasWaveOrder(tab) ? <OrderControl value={order} onChange={setOrder} /> : null}
+          {tab === 'kok' ? <ApprovalControl value={approval} onChange={setApproval} /> : null}
         </div>
       )}
       renderItemMeta={(item) => <GlossMeta item={item} />}
-      renderDetail={({ review, onDecided }) =>
-        review.hedef_tablo === 'quran_word_fix' ? (
-          <WordFixCard key={review.id} review={review} onDecided={onDecided} />
-        ) : review.hedef_tablo === 'lugat_madde' ? (
-          <LugatCard key={review.id} review={review} onDecided={onDecided} />
+      renderDetail={(props) =>
+        props.review.hedef_tablo === 'quran_word_fix' ? (
+          <WordFixCard key={props.review.id} {...props} />
+        ) : props.review.hedef_tablo === 'lugat_madde' ? (
+          <LugatCard key={props.review.id} {...props} />
+        ) : isRootMappingReview(props.review) ? (
+          <TrLemmaCard key={props.review.id} {...props} />
         ) : (
-          <LemmaCard key={review.id} review={review} onDecided={onDecided} />
+          <LemmaCard key={props.review.id} {...props} />
         )
       }
     />

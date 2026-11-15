@@ -266,6 +266,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reviews/{id}/uzmana-gonder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Açık kaydı uzmana gönderir (durum uzmanda; özgün eylem korunur). Kararı yalnız uzman rolü verir. */
+        post: operations["sendReviewToExpert"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reviews/{id}/ima": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bağlantı adayının kaynak ucundan aynı hedefe yeni bir ima satırı açar (editör, onaylı, güven 1); özgün aday korunur. */
+        post: operations["markReviewLinkAsIma"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reviews/{id}/kalip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** İktibas adayının eşleşen dizisini kalıp listesine ekler (kapalı denetim kaydı) ve adayı reddeder. */
+        post: operations["addReviewLinkToPatternList"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/lemmas/{id}": {
         parameters: {
             query?: never;
@@ -277,6 +328,57 @@ export interface paths {
         get: operations["getLemma"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lemmas/{id}/itiraz": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Otomatik onaylı Türkçe lemma eşlemesine itiraz eder (editör incelemesi açar; başka bir editör onaylarsa lemma adaya döner). */
+        post: operations["objectToLemmaApproval"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lemmas/{id}/etimolojik-isaret": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Onaylı Türkçe lemmanın 'yalnızca etimolojik' işaretini editör kararıyla değiştirir (otomatik onaylıda onay yolu, köken ve kanıt korunur; yalnız işaret değişir). */
+        post: operations["markLemmaEtymological"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/word-fixes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Kelime düzeltmesi adayı açar (quran_word_fix aday + inceleme kaydı). Değer alana göre doğrulanır. */
+        post: operations["createWordFix"];
         delete?: never;
         options?: never;
         head?: never;
@@ -468,7 +570,35 @@ export interface components {
         DecisionEdit: {
             metin?: null | string;
             anlam_kisa?: null | string;
+            /** Format: int32 */
+            root_id?: null | number;
+            /** Format: int32 */
+            ar_lemma_id?: null | number;
+            etymological_only?: null | boolean;
+            dst_anchor?: null | string;
+            dst_span?: null | number[];
+            type?: null | string;
+            new_value?: null | string;
             tanim_tr?: null | string;
+        };
+        EtymologyMarkRequest: {
+            etymological_only: null | boolean;
+            gerekce: null | string;
+        };
+        EtymologyMarkResponse: {
+            /** Format: int64 */
+            review_id: number;
+            etymological_only: boolean;
+            onay_yolu: string;
+            status: string;
+        };
+        ImaMarkResult: {
+            /** Format: uuid */
+            id: string;
+            /** Format: int64 */
+            review_id: number;
+            type: string;
+            status: string;
         };
         JsonElement: unknown;
         LemmaDetailResponse: {
@@ -479,6 +609,7 @@ export interface components {
             dalga: null | components["schemas"]["LemmaWaveInfo"];
             ayni_kok_anlamlari: components["schemas"]["LemmaSiblingGloss"][];
             kwic: components["schemas"]["LemmaKwicItem"][];
+            tr?: null | components["schemas"]["TrLemmaExtras"];
         };
         LemmaFrequency: {
             /** Format: int32 */
@@ -499,6 +630,19 @@ export interface components {
             root_id: null | number;
             qac_ref: null | string;
             etymological_only: boolean;
+            onay_yolu?: null | string;
+            /** Format: int32 */
+            ar_lemma_id?: null | number;
+            /** Format: int32 */
+            freq?: null | number;
+        };
+        LemmaKanitSummary: {
+            /** Format: int32 */
+            kaynak_sayisi?: null | number;
+            qac_eslesme?: null | string;
+            karar?: null | string;
+            neden?: null | string;
+            politika_surumu?: null | string;
         };
         LemmaKwicItem: {
             kelime_capa: string;
@@ -512,6 +656,14 @@ export interface components {
             capa: string;
             metin: string;
             metin_durumu: string;
+        };
+        LemmaObjectionRequest: {
+            gerekce: null | string;
+        };
+        LemmaObjectionResponse: {
+            /** Format: int64 */
+            id: number;
+            durum: string;
         };
         LemmaPosCount: {
             pos: null | string;
@@ -549,6 +701,17 @@ export interface components {
             email: string;
             parola: string;
         };
+        PatternAddResult: {
+            /** Format: int64 */
+            id: number;
+            durum: string;
+            eylem: string;
+            /** Format: uint32 */
+            xmin: number;
+            anahtar: string;
+            /** Format: int64 */
+            denetim_review_id: number;
+        };
         PreviewReleaseRequest: {
             derleme: string;
             paketler: null | string[];
@@ -561,7 +724,7 @@ export interface components {
             status?: number;
             detail?: string;
             instance?: string;
-            /** @description Makine tarafindan okunur hata kodu (type son parcasiyla ayni): dogrulama, capa-gecersiz, degistirilemez-metin, oturum-acilamadi, yetki-yok, bulunamadi, yontem-desteklenmiyor, durum-gecisi-gecersiz, cakisma, surum-uyusmazligi, surum-gerekli, inceleme-desteklenmiyor, yayin-suruyor, kalite-kapisi, onceki-yayin-bozuk, depo-erisilemiyor, on-kosul-eksik, onaylanacak-birim-yok, hata, sunucu-hatasi. */
+            /** @description Makine tarafindan okunur hata kodu (type son parcasiyla ayni): dogrulama, capa-gecersiz, degistirilemez-metin, oturum-acilamadi, yetki-yok, bulunamadi, yontem-desteklenmiyor, durum-gecisi-gecersiz, cakisma, surum-uyusmazligi, surum-gerekli, inceleme-desteklenmiyor, toplu-uygun-degil, yayin-suruyor, kalite-kapisi, onceki-yayin-bozuk, depo-erisilemiyor, on-kosul-eksik, onaylanacak-birim-yok, hata, sunucu-hatasi. */
             kod?: string;
             /** @description Istek izleme kimligi (gunluk iliskilendirme). */
             traceId?: string;
@@ -651,6 +814,11 @@ export interface components {
             /** Format: uint32 */
             xmin: number;
         };
+        ReviewClassCount: {
+            sinif: string;
+            /** Format: int32 */
+            acik: number;
+        };
         ReviewDecisionResult: {
             /** Format: int64 */
             id: number;
@@ -698,6 +866,18 @@ export interface components {
             xmin: number;
             dogrulanmamis: boolean;
             ikinci_onay_bekliyor: boolean;
+            sinif?: null | string;
+            /** Format: int32 */
+            dalga?: null | number;
+            onay_yolu?: null | string;
+        };
+        ReviewHandoffResult: {
+            /** Format: int64 */
+            id: number;
+            durum: string;
+            eylem: string;
+            /** Format: uint32 */
+            xmin: number;
         };
         ReviewItemDto: {
             /** Format: int64 */
@@ -730,6 +910,10 @@ export interface components {
             xmin: number;
             dogrulanmamis: boolean;
             ikinci_onay_bekliyor: boolean;
+            sinif?: null | string;
+            /** Format: int32 */
+            dalga?: null | number;
+            onay_yolu?: null | string;
         };
         ReviewListResponse: {
             items: components["schemas"]["ReviewItemDto"][];
@@ -741,10 +925,16 @@ export interface components {
             /** Format: int32 */
             acik: number;
         };
+        ReviewReasonBody: {
+            gerekce: null | string;
+        };
         ReviewStatsResponse: {
             kuyruklar: components["schemas"]["ReviewQueueCount"][];
             /** Format: int32 */
             toplam_acik: number;
+            baglanti_siniflari: components["schemas"]["ReviewClassCount"][];
+            /** Format: int32 */
+            toplam_uzmanda: number;
         };
         ReviewTargetSnapshot: {
             tablo: string;
@@ -764,6 +954,16 @@ export interface components {
             id?: null | string;
             src_anchor?: null | string;
             dst_anchor?: null | string;
+            type?: null | string;
+            src_span?: null | number[];
+            dst_span?: null | number[];
+            /** Format: float */
+            score?: null | number;
+            /** Format: float */
+            confidence?: null | number;
+            evidence_ozeti?: null | components["schemas"]["JsonElement"];
+            vurgulu_dizi?: null | components["schemas"]["VurguluDizi"];
+            sinif?: null | string;
             field?: null | string;
             qac_value?: null | string;
             new_value?: null | string;
@@ -793,6 +993,15 @@ export interface components {
             duzey?: null | number;
             version?: null | string;
             status?: null | string;
+            onay_yolu?: null | string;
+            kanit_ozeti?: null | components["schemas"]["LemmaKanitSummary"];
+            root_letters?: null | string;
+            /** Format: int32 */
+            ar_lemma_id?: null | number;
+            ar_lemma_text?: null | string;
+            /** Format: int32 */
+            freq?: null | number;
+            kwic?: null | components["schemas"]["TrKwicItem"][];
         };
         RisaleBookApproveBody: {
             gerekce: null | string;
@@ -866,6 +1075,18 @@ export interface components {
             /** Format: int64 */
             birim_sayisi: number;
         };
+        TrKwicItem: {
+            capa: string;
+            sol: null | string;
+            kelime: null | string;
+            sag: null | string;
+        };
+        TrLemmaExtras: {
+            kanit_ozeti: null | components["schemas"]["LemmaKanitSummary"];
+            root_letters: null | string;
+            ar_lemma_text: null | string;
+            kwic: components["schemas"]["TrKwicItem"][];
+        };
         UnitDetail: {
             anchor: string;
             kind: string;
@@ -930,6 +1151,24 @@ export interface components {
                 [key: string]: string[];
             };
         } & components["schemas"]["ProblemDetails"];
+        VurguluDizi: {
+            sol: null | string;
+            dizi: null | string;
+            sag: null | string;
+        };
+        WordFixRequest: {
+            anchor: null | string;
+            field: null | string;
+            new_value: null | string;
+            reason: null | string;
+        };
+        WordFixResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: int64 */
+            review_id: number;
+            durum: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -1505,6 +1744,8 @@ export interface operations {
                 kaynak?: string;
                 asama?: string;
                 sira?: string;
+                sinif?: string;
+                onay_yolu?: string;
                 cursor?: string;
                 limit?: number;
             };
@@ -1657,6 +1898,15 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
             /** @description Not Found */
             404: {
                 headers: {
@@ -1744,6 +1994,15 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
             /** @description Not Found */
             404: {
                 headers: {
@@ -1773,6 +2032,282 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    sendReviewToExpert: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Kaydın ETag değeri: "{xmin}" (yalnız güçlü ve tek etiket). */
+                "If-Match": string;
+            };
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewReasonBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewHandoffResult"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition Required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    markReviewLinkAsIma: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Kaydın ETag değeri: "{xmin}" (yalnız güçlü ve tek etiket). */
+                "If-Match": string;
+            };
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewReasonBody"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImaMarkResult"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition Required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    addReviewLinkToPatternList: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Kaydın ETag değeri: "{xmin}" (yalnız güçlü ve tek etiket). */
+                "If-Match": string;
+            };
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewReasonBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatternAddResult"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition Required */
+            428: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1813,6 +2348,217 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    objectToLemmaApproval: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LemmaObjectionRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LemmaObjectionResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    markLemmaEtymological: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EtymologyMarkRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EtymologyMarkResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    createWordFix: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WordFixRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WordFixResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

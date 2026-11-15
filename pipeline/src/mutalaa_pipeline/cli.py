@@ -6,7 +6,15 @@ from typing import Annotated
 
 import typer
 
-from mutalaa_pipeline import cikis, cli_gloss_ornek, cli_qac, cli_risale, cli_risale_rapor, sources
+from mutalaa_pipeline import (
+    cikis,
+    cli_gloss_ornek,
+    cli_gold,
+    cli_qac,
+    cli_risale,
+    cli_risale_rapor,
+    sources,
+)
 from mutalaa_pipeline.export import ayet_sayilari, ic_kesme, test_vectors
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kok_coz
 from mutalaa_pipeline.ingest import meal_kaynaklari
@@ -662,11 +670,22 @@ def qa_run(
     ] = None,
     config: Annotated[Path | None, typer.Option("--config", help="Baska bir mutalaa.toml.")] = None,
     kok: KokSecenegi = None,
+    db: Annotated[
+        bool,
+        typer.Option(
+            "--db",
+            help=(
+                "Yalniz kaikki-tr, xref-baglantilar ve xref-atif-iktibas: G-CAP'a veritabani"
+                " uzantisini ekler (tr_root_index; staged baglantilarin ayet/meal ozeti,"
+                " aralik ve kok/lemma tutarliligi)."
+            ),
+        ),
+    ] = False,
 ) -> None:
     """QA kapilarini kosar ve data/reports/{run_id}.json raporunu yazar. Cikis 0, 1 ya da 2."""
     from mutalaa_pipeline.qa import run as qa_calistir
 
-    kod = qa_calistir.komut_qa_run(source=source, run=run, gate=gate, config=config, kok=kok)
+    kod = qa_calistir.komut_qa_run(source=source, run=run, gate=gate, config=config, kok=kok, db=db)
     if kod != cikis.BASARILI:
         raise typer.Exit(code=kod)
 
@@ -782,3 +801,4 @@ cli_qac.kaydet(app, ingest_app)  # A17: ingest qac, enrich morphology
 cli_gloss_ornek.kaydet(qa_app)  # A17.6: qa gloss-sample, qa gloss-score
 cli_risale.kaydet(ingest_app)  # A20.1: ingest risale
 cli_risale_rapor.kaydet(qa_app)  # A20.2b: qa risale-rapor
+cli_gold.kaydet(qa_app)  # A18.5: qa gold

@@ -71,11 +71,13 @@ public static class RisaleBookEndpoints
         books.MapGet(string.Empty, ListAsync)
             .WithName("listRisaleBooks")
             .WithSummary("Risale kitaplarını (katalog sırasıyla) birim ve durum sayılarıyla listeler.")
+            .RequireAuthorization(AuthPolicies.Editor)
             .Produces<IReadOnlyList<RisaleBookDto>>();
 
         books.MapGet("/{kitap}", GetAsync)
             .WithName("getRisaleBook")
             .WithSummary("Tek kitabın ayrıntısını, kitap özetini (ETag) ve onay önkoşullarını döndürür.")
+            .RequireAuthorization(AuthPolicies.Editor)
             .Produces<RisaleBookDetailDto>()
             .ProducesProblem(StatusCodes.Status404NotFound);
 

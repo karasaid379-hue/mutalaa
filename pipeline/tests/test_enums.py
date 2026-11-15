@@ -42,7 +42,7 @@ BEKLENEN_SAYILAR = {
     "unit_kind": 7,
     "unit_status": 2,
     "metin_durumu": 3,
-    "inceleme_durumu": 4,
+    "inceleme_durumu": 5,
     "surum_durumu": 5,
 }
 

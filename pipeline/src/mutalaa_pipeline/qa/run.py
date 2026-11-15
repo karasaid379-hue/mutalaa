@@ -48,7 +48,10 @@ from mutalaa_pipeline.qa import (
     QAC_KAYNAGI,
     QURANWBW_KAYNAGI,
     SURE_ADI_KAYNAGI,
+    TR_ROOTS_KAYNAGI,
     UST_VERI_KAYNAGI,
+    XREF_ATIF_KAYNAGI,
+    XREF_KAYNAGI,
 )
 from mutalaa_pipeline.qa.checks.tanzil import (
     KAPI_ISLEVLERI,
@@ -281,8 +284,31 @@ def komut_qa_run(
     gate: Sequence[str] | None,
     config: Path | None,
     kok: Path | None,
+    db: bool = False,
 ) -> int:
-    """`qa run` komutu; cikis kodunu dondurur (rapor `data/reports/{run_id}.json`)."""
+    """`qa run` komutu; cikis kodunu dondurur (rapor `data/reports/{run_id}.json`).
+
+    `db`: yalniz `kaikki-tr` (`tr_root_index`) ve `xref-baglantilar` (staged satirlar ve ayet
+    ozetleri) icin G-CAP'a veritabani uzantisini ekler.
+    """
+    if db and source not in (TR_ROOTS_KAYNAGI, XREF_KAYNAGI, XREF_ATIF_KAYNAGI):
+        sys.stderr.write(
+            f"hata: --db yalniz --source {TR_ROOTS_KAYNAGI}, {XREF_KAYNAGI} ya da"
+            f" {XREF_ATIF_KAYNAGI} ile kullanilir\n"
+        )
+        return cikis.GIRDI_HATASI
+    if source == XREF_ATIF_KAYNAGI:  # acik atif ve iktibas: G-KAY, G-BUT, G-CAP (A18.4)
+        from mutalaa_pipeline.qa.run_xref_atif import komut_qa_run_xref_atif
+
+        return komut_qa_run_xref_atif(run=run, gate=gate, config=config, kok=kok, db=db)
+    if source == XREF_KAYNAGI:  # Kur'an ici baglantilar: G-KAY, G-BUT, G-CAP (A18.3)
+        from mutalaa_pipeline.qa.run_xref import komut_qa_run_xref
+
+        return komut_qa_run_xref(run=run, gate=gate, config=config, kok=kok, db=db)
+    if source == TR_ROOTS_KAYNAGI:  # Turkce kelime -> kok eslemesi: G-KAY, G-BUT, G-CAP (A18.2)
+        from mutalaa_pipeline.qa.run_tr_roots import komut_qa_run_tr_roots
+
+        return komut_qa_run_tr_roots(run=run, gate=gate, config=config, kok=kok, db=db)
     if source == UST_VERI_KAYNAGI:  # isaret ve sayfa satirlari: G-KAY, G-BUT, G-CAP (A11.6)
         from mutalaa_pipeline.qa.run_ust_veri import komut_qa_run_ust_veri
 

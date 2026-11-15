@@ -8,8 +8,13 @@ internal sealed class TrRootIndexConfiguration : IEntityTypeConfiguration<TrRoot
 {
     public void Configure(EntityTypeBuilder<TrRootIndex> b)
     {
-        b.ToTable("tr_root_index", t => t.HasCheckConstraint("tr_root_index_check", "span_start < span_end"));
+        b.ToTable("tr_root_index", t =>
+        {
+            t.HasCheckConstraint("tr_root_index_check", "span_start < span_end");
+            t.HasCheckConstraint("tr_root_index_unit_hash_check", "unit_hash ~ '^[0-9a-f]{16}$'");
+        });
         b.HasKey(x => new { x.Anchor, x.SpanStart });
+        b.Property(x => x.UnitHash).HasColumnType("char(16)");
         b.Property(x => x.EtymologicalOnly).HasAlwaysWrittenDefault(false);
         b.References<TrRootIndex, Root>(x => x.RootId);
         b.References<TrRootIndex, Lemma>(x => x.TrLemmaId);

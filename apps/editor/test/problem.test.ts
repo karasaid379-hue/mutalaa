@@ -30,6 +30,7 @@ const OPEN_API_SETUP_CODES = [
   'surum-uyusmazligi',
   'surum-gerekli',
   'inceleme-desteklenmiyor',
+  'toplu-uygun-degil',
   'yayin-suruyor',
   'kalite-kapisi',
   'onceki-yayin-bozuk',
@@ -43,9 +44,9 @@ const OPEN_API_SETUP_CODES = [
 const MARKER = 'Makine tarafindan okunur hata kodu (type son parcasiyla ayni): ';
 
 describe('problem code list', () => {
-  it('is the fixed list of OpenApiSetup.cs (20 codes)', () => {
+  it('is the fixed list of OpenApiSetup.cs (21 codes)', () => {
     expect([...API_PROBLEM_CODES]).toEqual(OPEN_API_SETUP_CODES);
-    expect(OPEN_API_SETUP_CODES).toHaveLength(20);
+    expect(OPEN_API_SETUP_CODES).toHaveLength(21);
   });
 
   it('is still the list in the server source', () => {

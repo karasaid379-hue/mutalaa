@@ -4,6 +4,7 @@ using Mutalaa.Api.Endpoints;
 using Mutalaa.Domain.Anchors;
 using Mutalaa.Domain.Content;
 using Mutalaa.Domain.Links;
+using Mutalaa.Domain.Reviews;
 using Mutalaa.Domain.Text;
 using Mutalaa.Infrastructure.Persistence;
 
@@ -63,15 +64,21 @@ internal static class LemmaQueries
             ? await SiblingGlossesAsync(db, id, siblingRoot, cancellationToken)
             : [];
 
+        // Turkce lemma (K-51 madde 9): onay yolu, kanit ozeti, kok harfleri, Arapca karsilik metni ve tr_root_index'ten ilk uc ornek.
+        TrLemmaExtras? tr = string.Equals(lemma.Lang, LemmaLangs.Turkish, StringComparison.Ordinal)
+            ? await TrLemmaQueries.ExtrasAsync(db, id, lemma.RootId, lemma.ArLemmaId, lemma.Kanit, cancellationToken)
+            : null;
+
         int wordCount = kinds.Sum(k => k.Sayi);
         return new LemmaDetailResponse(
-            new LemmaInfo(lemma.Id, lemma.Text, lemma.Lang, lemma.Status.ToLabel(), lemma.Origin, lemma.Occurrences, lemma.RootId, lemma.QacRef, lemma.EtymologicalOnly),
+            new LemmaInfo(lemma.Id, lemma.Text, lemma.Lang, lemma.Status.ToLabel(), lemma.Origin, lemma.Occurrences, lemma.RootId, lemma.QacRef, lemma.EtymologicalOnly, lemma.OnayYolu, lemma.ArLemmaId, lemma.Freq),
             root,
             kinds,
             new LemmaFrequency(wordCount, ayahCount),
             wave,
             siblings,
-            await KwicAsync(db, id, wordCount, cancellationToken));
+            await KwicAsync(db, id, wordCount, cancellationToken),
+            tr);
     }
 
     private static async Task<List<LemmaPosCount>> PosDistributionAsync(IcerikDbContext db, int id, CancellationToken cancellationToken)

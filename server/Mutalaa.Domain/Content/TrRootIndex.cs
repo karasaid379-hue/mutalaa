@@ -18,5 +18,8 @@ public sealed class TrRootIndex
 
     public bool EtymologicalOnly { get; set; }
 
+    /// <summary>Birimin content_hash degerinin ilk 16 hanesi (K-51 madde 1); satir uretildigi andaki metni belirler.</summary>
+    public required string UnitHash { get; set; }
+
     public required string DataVersion { get; set; }
 }

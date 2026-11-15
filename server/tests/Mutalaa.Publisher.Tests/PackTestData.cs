@@ -75,8 +75,11 @@ internal static class PackTestData
         string status = "onayli",
         float score = 0.5f,
         float confidence = 0.9f,
-        Guid? id = null) =>
-        new(id ?? Guid.NewGuid(), src, null, null, dst, null, null, type, score, confidence, "{}", status, "test", null);
+        Guid? id = null,
+        string? srcHash = null,
+        string? dstHash = null,
+        string? evidenceSource = null) =>
+        new(id ?? Guid.NewGuid(), src, null, null, dst, null, null, type, score, confidence, "{}", status, "test", null, srcHash, dstHash, evidenceSource);
 
     /// <summary>Gate icin kayit dosyasi var sayilan kaynak kumesi.</summary>
     public static Func<string, bool> AllRegistered() => _ => true;

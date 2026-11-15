@@ -1,0 +1,11 @@
+# A18.5 (2026-11-13) · kaynak: docs/10-claude-code/asamalar/A18-baglantilar-ve-altin-setler.md A18.5 · karar: K-42, K-51 madde 12
+slug = "ilm-matching-ayah"
+tur = "baglanti_verisi"
+baslik = "arriqaaq/ilm: qul/matching-ayah.json (hesaplamalı benzer âyet eşleşmeleri)"
+surum = "6e03b8de43f34b623eab684390f43bb0ba7825a9"
+provider = "github.com/arriqaaq"
+kaynak_url = "https://raw.githubusercontent.com/arriqaaq/ilm/6e03b8de43f34b623eab684390f43bb0ba7825a9/qul/matching-ayah.json"
+atif_metni = "Benzer âyet eşleşmeleri: arriqaaq/ilm, qul/matching-ayah.json (hesaplamalı; commit 6e03b8de)."
+atif_url = "https://github.com/arriqaaq/ilm"
+notlar = '''
+Aşama: A18.5. Biçim: JSON, sözlük "sure:ayet" anahtarı -> eşleşme listesi (matched_ayah_key, matched_words_count, coverage, score, match_words); 373.367 bayt. Kullanım: benzer_ayet ölçümünde ikinci referans (sınıf silver: hesaplamalı, bağımsız doğrulanmamış); kendi kaynak kimliğiyle evidence'a girmez. Dosya özeti data/gelen/ilm-matching-ayah/2026-11-13/SHA256SUMS içindedir.'''

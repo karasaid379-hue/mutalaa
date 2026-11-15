@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text.Json.Nodes;
 using Microsoft.EntityFrameworkCore;
+using Mutalaa.Api.Auth;
 using Mutalaa.Api.Problems;
 using Mutalaa.Api.Validation;
 using Mutalaa.Domain;
@@ -17,6 +18,7 @@ public static partial class UnitEndpoints
 {
     private static void MapCorrectionEndpoints(RouteGroupBuilder units) =>
         units.MapPost("/{anchor}/corrections", CorrectAsync)
+            .RequireAuthorization(AuthPolicies.Editor)
             .WithName("proposeUnitCorrection")
             .WithSummary("Birim metni için düzeltme önerisi açar (inceleme kuyruğuna 'oner' satırı).")
             .Produces<CorrectionResponse>(StatusCodes.Status201Created)

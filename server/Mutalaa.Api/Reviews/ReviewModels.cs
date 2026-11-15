@@ -1,5 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Mutalaa.Api.Lemmas;
+using Mutalaa.Domain.Reviews;
 
 namespace Mutalaa.Api.Reviews;
 
@@ -59,6 +61,21 @@ public record ReviewItemDto
 
     /// <summary>Meal ya da tefsir metninde ilk onay verilmis, ikinci onay bekleniyor.</summary>
     public required bool IkinciOnayBekliyor { get; init; }
+
+    /// <summary>
+    /// Baglanti adayi sinifi (hedef_tablo xref; A18.4): tutarsiz, toplu, gri, diger. Kural <c>LinkCandidateClassifier</c>'dir;
+    /// baglanti satiri okunamiyorsa ve baska hedeflerde yazilmaz.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Sinif { get; init; }
+
+    /// <summary>Kelime anlami dalgasi (0..4): hedef lemma ya da lemma_gloss ise lemma_dalga.dalga; satir yoksa ve baska hedeflerde yazilmaz.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? Dalga { get; init; }
+
+    /// <summary>Hedef lemmanin onay yolu (editor, otomatik); yalniz Turkce lemma hedefinde ve yolu varsa yazilir (aday lemmada yok).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? OnayYolu { get; init; }
 }
 
 public sealed record ReviewListResponse(IReadOnlyList<ReviewItemDto> Items, string? NextCursor);
@@ -125,6 +142,38 @@ public sealed record ReviewTargetSnapshot
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? DstAnchor { get; init; }
+
+    // xref (A18.4)
+
+    /// <summary>xref: baglanti turu (atif, iktibas, ima, kok, lemma, benzer_ayet ...).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Type { get; init; }
+
+    /// <summary>xref: kaynak uc araligi <c>[bas, son]</c> iki sayi (yari acik; metin biriminde kod noktasi, Kur'an ucunda kelime konumu); yok = birimin tamami.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int[]? SrcSpan { get; init; }
+
+    /// <summary>xref: hedef uc araligi; <see cref="SrcSpan"/> ile ayni anlam.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int[]? DstSpan { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public float? Score { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public float? Confidence { get; init; }
+
+    /// <summary>xref: kanit ozeti (beyaz listeli anahtarlar: matched_words, ayah_words, coverage, identity, phrase_freq, consistent_quote, position, subtype, group, alternatives, src_hash, dst_hash, source_id, editor_duzeltmesi).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? EvidenceOzeti { get; init; }
+
+    /// <summary>xref: kaynak birimin metninden kaynak araligina denk gelen dilim ve kod noktasi baglami (±40). Metin yoksa, aralik metin disindaysa ya da kanittaki src_hash birimin ozetiyle uyusmuyorsa uc alan da null.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public VurguluDizi? VurguluDizi { get; init; }
+
+    /// <summary>xref: aday sinifi (<see cref="ReviewItemDto.Sinif"/> ile ayni kural).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Sinif { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Field { get; init; }
@@ -210,18 +259,94 @@ public sealed record ReviewTargetSnapshot
     /// <summary>Durum sutunlu hedeflerde status (aday, onayli, red); birimde unit.status (etkin, kullanim_disi).</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Status { get; init; }
+
+    // lemma (yalniz lang = 'tr'; K-51 madde 9)
+
+    /// <summary>Turkce lemma: onay yolu (editor, otomatik); aday ya da redde yok.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? OnayYolu { get; init; }
+
+    /// <summary>Turkce lemma: otomatik onay kaniti ozeti (kaynak sayisi, QAC eslesme turu, karar, neden); kanit yoksa yazilmaz.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LemmaKanitSummary? KanitOzeti { get; init; }
+
+    /// <summary>Turkce lemma: eslenen kokun harfleri (root.letters).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? RootLetters { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? ArLemmaId { get; init; }
+
+    /// <summary>Turkce lemma: Arapca karsiligin metni (ar_lemma.text).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ArLemmaText { get; init; }
+
+    /// <summary>Turkce lemma: kulliyat sikligi (lemma.freq).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? Freq { get; init; }
+
+    /// <summary>Turkce lemma: tr_root_index uzerinden en cok 3 ornek (birim metninden +/-40 kod noktasi); tablo bossa bos liste.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<TrKwicItem>? Kwic { get; init; }
 }
+
+/// <summary>Vurgulu dizi: <c>dizi</c> vurgulanan dilim, <c>sol</c> ve <c>sag</c> yanlarindaki en cok 40 kod noktasi. Uc alan birlikte dolu ya da birlikte null.</summary>
+public sealed record VurguluDizi(string? Sol, string? Dizi, string? Sag);
 
 public sealed record ReviewQueueCount(string HedefTablo, string Alan, int Acik);
 
-public sealed record ReviewStatsResponse(IReadOnlyList<ReviewQueueCount> Kuyruklar, int ToplamAcik);
+/// <summary>Acik baglanti adaylarinin sinif sayilari (A18.4); sinif etiketi <c>tutarsiz</c>, <c>toplu</c>, <c>gri</c>, <c>diger</c>.</summary>
+public sealed record ReviewClassCount(string Sinif, int Acik);
+
+/// <summary>
+/// Kuyruk sayilari. <c>toplam_acik</c> yalniz <c>acik</c> kayitlari sayar; uzmana gonderilenler (<c>uzmanda</c>) ayri sayilir.
+/// <c>baglanti_siniflari</c> acik xref adaylarinin dort sinifini da (sifir olsa da) sabit sirayla verir.
+/// </summary>
+public sealed record ReviewStatsResponse(
+    IReadOnlyList<ReviewQueueCount> Kuyruklar,
+    int ToplamAcik,
+    IReadOnlyList<ReviewClassCount> BaglantiSiniflari,
+    int ToplamUzmanda);
 
 /// <summary>
 /// Editorun duzenledigi deger: birim metni onayinda <c>metin</c>, lemma_gloss onayinda <c>anlam_kisa</c> (K-50 madde 6),
-/// lugat_madde onayinda <c>tanim_tr</c> (K-52 madde 10); hedefe gore yalniz biri verilir, ote hedeflerde duzenlenen deger
-/// 422 <c>inceleme-desteklenmiyor</c> alir.
+/// lugat_madde onayinda <c>tanim_tr</c> (K-52 madde 10),
+/// Turkce lemma kok eslemesi onayinda <c>root_id</c>, <c>ar_lemma_id</c> ve <c>etymological_only</c> (K-51 madde 9);
+/// hedefe gore yalniz o hedefin alanlari verilir (baska alan 400), ote hedeflerde duzenlenen deger 422 <c>inceleme-desteklenmiyor</c> alir.
+/// Kok eslemesinde <c>root_id</c> ve <c>etymological_only</c> zorunludur; <c>ar_lemma_id</c> yoksa ya da null ise Arapca karsilik yoktur.
+/// Baglanti (xref) onayinda <c>dst_anchor</c>, <c>dst_span</c> (<c>[bas, son)</c> iki sayi) ve <c>type</c> (yalniz atif, iktibas, ima kendi aralarinda) verilir,
+/// en az biri; <c>dst_anchor</c> verilirse hedef araligi o capayla birlikte yeniden belirlenir (<c>dst_span</c> yoksa birimin tamami),
+/// yalniz <c>dst_span</c> verilirse mevcut hedefin araligi duzeltilir. <c>quran_word_fix</c> onayinda yalniz <c>new_value</c> verilir.
 /// </summary>
-public sealed record DecisionEdit(string? Metin = null, string? AnlamKisa = null, string? TanimTr = null);
+public sealed record DecisionEdit(
+    string? Metin = null,
+    string? AnlamKisa = null,
+    int? RootId = null,
+    int? ArLemmaId = null,
+    bool? EtymologicalOnly = null,
+    string? DstAnchor = null,
+    int[]? DstSpan = null,
+    string? Type = null,
+    string? NewValue = null,
+    string? TanimTr = null);
+
+/// <summary>Uzmana gonder, kalip ve ima gibi gerekce isteyen eylem govdesi.</summary>
+public sealed record ReviewReasonBody(string? Gerekce);
+
+/// <summary>Uzmana gonder sonucu: kaydin yeni durumu (<c>uzmanda</c>), korunan eylemi ve yeni <c>xmin</c>.</summary>
+public sealed record ReviewHandoffResult(long Id, string Durum, string Eylem, uint Xmin);
+
+/// <summary>"Ima olarak isaretle" sonucu: yeni <c>ima</c> satirinin kimligi, denetim kaydinin <c>review</c> kimligi, turu ve durumu.</summary>
+public sealed record ImaMarkResult(Guid Id, long ReviewId, string Type, string Status);
+
+/// <summary>"Kalip listesine ekle" sonucu: reddedilen adayin <c>review</c> sonucu, saklanan normalize anahtar ve kapali denetim kaydinin kimligi.</summary>
+public sealed record PatternAddResult(long Id, string Durum, string Eylem, uint Xmin, string Anahtar, long DenetimReviewId);
+
+/// <summary>Editorun kelime duzeltmesi adayi: <c>anchor</c> kelime capasi (<c>q:s:a:k</c>), <c>field</c> <c>root_id|lemma_id|pos|features</c>.</summary>
+public sealed record WordFixRequest(string? Anchor, string? Field, string? NewValue, string? Reason);
+
+/// <summary>Acilan kelime duzeltmesi: <c>id</c> duzeltme kimligi, <c>review_id</c> inceleme kaydi, <c>durum</c> her zaman <c>aday</c>.</summary>
+public sealed record WordFixResponse(Guid Id, long ReviewId, string Durum);
 
 /// <summary>Tekil karar govdesi. karar: onaylandi ya da reddedildi.</summary>
 public sealed record DecisionBody(string? Karar, string? Gerekce, DecisionEdit? Duzenlenen = null);

@@ -68,7 +68,10 @@ public sealed record PackWordMorphRow(string Anchor, long? RootId, long? LemmaId
 /// <summary>root satiri (kelime-kok). IdfQ editoryal real (float) sutunun kisa onlu gosterimidir (PackRows.FromSingle).</summary>
 public sealed record PackRootRow(long Id, string Letters, long Occurrences, long AyahCount, double? IdfQ, string? KokAnlami);
 
-/// <summary>lemma satiri (kelime-kok; lang = 'ar').</summary>
+/// <summary>
+/// lemma satiri (kelime-kok): lang = 'ar' (QAC) ya da 'tr' (K-51 madde 9). Approval onayin yolunu tasir: 'qac' (QAC sozlugu, ar), 'editor' (editor onayi)
+/// ya da 'auto' (sozluk kanitiyla otomatik onay; uygulama ayri isaretler). Turkce satirda Occurrences editoryal freq (kulturel siklik) degeridir.
+/// </summary>
 public sealed record PackLemmaRow(
     long Id,
     string Lang,
@@ -77,7 +80,16 @@ public sealed record PackLemmaRow(
     long? RootId,
     long Occurrences,
     long? ArLemmaId,
-    long EtymologicalOnly);
+    long EtymologicalOnly,
+    string Approval);
+
+/// <summary>lemma.approval degerleri (Icerik paketleri 3.3).</summary>
+public static class LemmaApprovals
+{
+    public const string Qac = "qac";
+    public const string Editor = "editor";
+    public const string Auto = "auto";
+}
 
 /// <summary>lemma_gloss satiri (kelime-kok). Status 'onayli' ya da 'aday' (aday yalniz dev ve internal'da); Origin editoryal lemma_gloss.origin degeridir.</summary>
 public sealed record PackLemmaGlossRow(
@@ -108,7 +120,7 @@ public sealed record PackLugatRow(
     string Version,
     string ContentHash);
 
-/// <summary>tr_form satiri (kelime-kok; A18'e kadar bos).</summary>
+/// <summary>tr_form satiri (kelime-kok).</summary>
 public sealed record PackTrFormRow(string KeyWide, string KeyNarrow, long TrLemmaId, long Freq);
 
 /// <summary>
@@ -170,4 +182,11 @@ public sealed class PackContent
 
     /// <summary>Risale kitap paketinin yazi yonu (<c>ltr</c> ya da <c>rtl</c>); pack_meta <see cref="PackMetaKeys.Direction"/>. Kitap paketi degilse null.</summary>
     public string? Direction { get; init; }
+
+    /// <summary>
+    /// Kapi ozeti (pack_meta <see cref="PackMetaKeys.GateSummary"/>; K-51 madde 5 ve 11): RFC 8785 kanonik JSON <c>{"kok":{"set_sinifi":"silver","sonuc":"gecti"}}</c>;
+    /// yalniz altin ya da silver sinifinda olcumu olan turler yazilir (kok ve lemma kelime-kok'te, benzer_ayet core'da). Olcum yoksa <c>{}</c>.
+    /// Diger paketlerde null (anahtar yok). Paket ozetine girer.
+    /// </summary>
+    public string? GateSummary { get; init; }
 }

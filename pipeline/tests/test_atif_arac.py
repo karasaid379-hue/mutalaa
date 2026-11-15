@@ -171,6 +171,9 @@ def test_arac_kimligi_ve_surumu() -> None:
 # --- kaybeden sarmalayicilar silindi -------------------------------------------------------
 
 KAYNAK_KLASORU = Path(__file__).resolve().parents[1] / "src" / "mutalaa_pipeline"
+# A18 (K-51 madde 13): `ijaza` yalniz bu modulde ve dev grubunda karsilastirma araci olarak
+# kullanilir.
+IZINLI_KARSILASTIRMA = Path("qa") / "gold" / "araclar.py"
 YASAK = re.compile(
     r"^\s*(?:import|from)\s+(?:ijaza|quran_detector)\b|import_module\(\s*['\"](?:ijaza|quran_detector)"
     r"|IjazaSarmalayici|DetectorSarmalayici",
@@ -184,12 +187,15 @@ def test_kaybeden_sarmalayicilar_silindi() -> None:
     bulunan = [
         str(yol.relative_to(KAYNAK_KLASORU))
         for yol in KAYNAK_KLASORU.rglob("*.py")
-        if YASAK.search(yol.read_text(encoding="utf-8"))
+        if yol.relative_to(KAYNAK_KLASORU) != IZINLI_KARSILASTIRMA
+        and YASAK.search(yol.read_text(encoding="utf-8"))
     ]
     assert bulunan == []
     pyproject = (KAYNAK_KLASORU.parents[1] / "pyproject.toml").read_text(encoding="utf-8")
-    assert "quran-toolkit==0.1.0" in pyproject
-    assert "ijaza" not in pyproject
+    calisma, _, gelistirme = pyproject.partition("[dependency-groups]")
+    assert "quran-toolkit==0.1.0" in calisma
+    assert "ijaza" not in calisma  # calisma bagimliligi degil
+    assert "ijaza==2.0.0" in gelistirme  # A18 (K-51 madde 13): yalniz dev grubunda karsilastirma
     assert "quran-detector" not in pyproject
 
 

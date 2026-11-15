@@ -67,10 +67,14 @@ export function unitDetail(over: Partial<S['UnitDetail']> = {}): S['UnitDetail']
 
 export function stats(
   entries: [string, string, number][] = [['unit', 'metin', 3]],
+  classes: [string, number][] = [],
+  expert = 0,
 ): S['ReviewStatsResponse'] {
   return {
     kuyruklar: entries.map(([hedef_tablo, alan, acik]) => ({ hedef_tablo, alan, acik })),
     toplam_acik: entries.reduce((sum, [, , acik]) => sum + acik, 0),
+    baglanti_siniflari: classes.map(([sinif, acik]) => ({ sinif, acik })),
+    toplam_uzmanda: expert,
   };
 }
 

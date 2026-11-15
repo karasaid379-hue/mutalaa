@@ -67,7 +67,7 @@ describe('Lügat tab of LemmaQueue', () => {
     user.click(screen.getByRole('button', { name: tr.review.submit }));
 
   describe('list', () => {
-    it('is the fourth tab and lists lugat_madde + tanim_tr in descending frequency order, without a cursor and an order switch', async () => {
+    it('is the fifth tab and lists lugat_madde + tanim_tr in descending frequency order, without a cursor and an order switch', async () => {
       const { user, router } = setup({ route: '/?kayit=301' });
       await screen.findByRole('link', { name: /^1001/ });
       await openLugat(user);
@@ -78,6 +78,7 @@ describe('Lügat tab of LemmaQueue', () => {
         trLemma.tabs.anlam,
         trLemma.tabs.durum,
         trLemma.tabs.duzeltme,
+        trLemma.tabs.kok,
         trLemma.tabs.lugat,
       ]);
       const last = listCalls().at(-1)!;
@@ -479,6 +480,8 @@ describe('Lügat tab of LemmaQueue', () => {
             { hedef_tablo: 'lugat_madde', alan: 'tanim_tr', acik: 5 },
           ],
           toplam_acik: 7,
+          baglanti_siniflari: [],
+          toplam_uzmanda: 0,
         }),
       );
       fake.get('/api/v1/reviews', ok(page([glossItem(1)])));

@@ -12,16 +12,18 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ROUTE_PATHS, type RoutePath } from '@/app/routes';
 import { tr } from '@/i18n/tr';
 import { trc } from '@/i18n/tr-catalog';
+import { trBaglanti } from '@/i18n/tr-baglanti-sure';
 import { trLemma } from '@/i18n/tr-lemma';
 import { DecisionForm } from '@/review/decision-form';
 import { BaglantiQueue } from '@/screens/baglanti/baglanti-queue';
 import { ok, problem, useFakeApi } from './fake-api';
-import { EDITOR_EMAIL, page, reviewDetail, session, signedIn, unitDetail } from './fixtures';
+import { EDITOR_EMAIL, page, reviewDetail, session, signedIn, stats, unitDetail } from './fixtures';
 import {
   ARABIC_SAMPLE,
   aliasDetail,
   aliasItem,
   TANZIL_FARK,
+  xrefDetail,
   xrefHandlers,
   xrefItem,
   type AliasSpec,
@@ -286,16 +288,64 @@ describe('axe: the link candidates queue (full card and the 10 percent sample pa
     return renderInRouter(fake, <BaglantiQueue bulkEnabled={bulkEnabled} />, route);
   }
 
-  it('the full card: evidence, four missing sections, closed buttons and the decision form', async () => {
+  it('the full card: evidence, highlight, summary, alternatives, edit fields, actions and the decision form', async () => {
     const { container } = setupQueue(2, '/?kayit=1');
     // Evidence: paragraph, candidate ayah (Arabic, as stored) and meal, all loaded.
     await screen.findByText('Deneme paragrafı 1');
     await screen.findByText('Deneme meal metni 1');
     expect(await screen.findByText(ARABIC_SAMPLE)).toHaveAttribute('lang', 'ar');
-    // The closed buttons and the decision form are on screen.
-    expect(container.querySelectorAll('[data-open-question]').length).toBeGreaterThan(0);
+    // The highlight, the summary, the alternatives, the edit fields, the actions and the decision form are on screen.
+    expect(screen.getByTestId('link-highlight-text')).toBeInTheDocument();
+    expect(screen.getByTestId('link-evidence-line')).toBeInTheDocument();
+    expect(screen.getAllByTestId('link-alternative')).toHaveLength(2);
+    expect(await screen.findByTestId('link-edit')).toBeInTheDocument();
+    await screen.findByTestId('link-actions');
+    expect(container.querySelectorAll('[data-open-question]')).toHaveLength(0);
     await screen.findByRole('radio', { name: tr.review.approve });
     expect(screen.getByRole('button', { name: tr.review.submit })).toBeInTheDocument();
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the card with the three action forms opened and the edit problems shown', async () => {
+    const { container, user } = setupQueue(2, '/?kayit=1');
+    await screen.findByTestId('link-actions');
+    for (const open of [
+      trBaglanti.actions.ima.open,
+      trBaglanti.actions.pattern.open,
+      trBaglanti.actions.expert.open,
+    ]) {
+      await user.click(screen.getByRole('button', { name: open }));
+    }
+    // An empty reason in each form, and an invalid target and span in the edit fields.
+    for (const submit of [
+      trBaglanti.actions.ima.submit,
+      trBaglanti.actions.pattern.submit,
+      trBaglanti.actions.expert.submit,
+    ]) {
+      await user.click(screen.getByRole('button', { name: submit }));
+    }
+    const anchor = screen.getByLabelText(trBaglanti.edit.target);
+    fireEvent.change(anchor, { target: { value: 'q:2:255-257' } });
+    fireEvent.blur(anchor);
+    fireEvent.change(screen.getByLabelText(trBaglanti.edit.spanStart), { target: { value: '5' } });
+    fireEvent.change(screen.getByLabelText(trBaglanti.edit.spanEnd), { target: { value: '5' } });
+    fireEvent.blur(screen.getByLabelText(trBaglanti.edit.spanEnd));
+    expect(await screen.findAllByText(trBaglanti.actions.reasonRequired)).toHaveLength(3);
+    expect(screen.getAllByText(trBaglanti.edit.problems.anchorRange).length).toBeGreaterThan(0);
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it('the expert view: a record at the expert with the "Uzman kararı bekleniyor" note', async () => {
+    const list = [xrefItem(1, { durum: 'uzmanda' })];
+    fake.get('/api/v1/reviews', ok(page(list)));
+    xrefHandlers(fake);
+    fake.get('/api/v1/reviews/{id}', ok(xrefDetail(1, undefined, undefined, { durum: 'uzmanda' })));
+    fake.get('/api/v1/reviews/stats', ok(stats([['xref', 'status', 0]], [], 1)));
+    fake.get('/api/v1/auth/me', ok(session()));
+    const { container } = renderInRouter(fake, <BaglantiQueue />, '/?kayit=1');
+    expect(await screen.findByTestId('decision-role-note')).toHaveTextContent(
+      tr.review.expertPending,
+    );
     expect(await violations(container)).toEqual([]);
   });
 
@@ -446,7 +496,7 @@ describe('axe: the lemma queue (A17.7)', () => {
     // The detail handler comes after lemmaHandlers so it wins; signedIn comes first for its /reviews/stats answer.
     fake.get('/api/v1/reviews/{id}', ok(detail));
     fake.get('/api/v1/auth/me', ok(session()));
-    fake.get('/api/v1/reviews/stats', ok({ kuyruklar: [], toplam_acik: 0 }));
+    fake.get('/api/v1/reviews/stats', ok(stats([])));
     fake.get('/api/v1/reviews', (call) =>
       ok(
         page(

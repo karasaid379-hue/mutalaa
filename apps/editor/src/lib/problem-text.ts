@@ -3,7 +3,7 @@ import { PROBLEM_TYPE_PREFIX, type Problem } from './problem';
 
 /** The operation a problem belongs to; it selects the wording (Turkish messages differ per operation). */
 export type ProblemContext =
-  'decision' | 'bulk' | 'correction' | 'release' | 'login' | 'risaleBook';
+  'decision' | 'bulk' | 'link' | 'wordFix' | 'correction' | 'release' | 'login' | 'risaleBook';
 
 type MessageTable = Readonly<Record<string, string>>;
 
@@ -58,6 +58,7 @@ const DETAIL_CODES: readonly string[] = [
   'durum-gecisi-gecersiz',
   'cakisma',
   'inceleme-desteklenmiyor',
+  'toplu-uygun-degil',
   'hata',
 ];
 

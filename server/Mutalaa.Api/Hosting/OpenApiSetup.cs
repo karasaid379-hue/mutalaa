@@ -135,7 +135,7 @@ public static class OpenApiSetup
                 Type = JsonSchemaType.String,
                 Description = "Makine tarafindan okunur hata kodu (type son parcasiyla ayni): dogrulama, capa-gecersiz, degistirilemez-metin, "
                     + "oturum-acilamadi, yetki-yok, bulunamadi, yontem-desteklenmiyor, durum-gecisi-gecersiz, cakisma, surum-uyusmazligi, "
-                    + "surum-gerekli, inceleme-desteklenmiyor, yayin-suruyor, kalite-kapisi, onceki-yayin-bozuk, depo-erisilemiyor, on-kosul-eksik, "
+                    + "surum-gerekli, inceleme-desteklenmiyor, toplu-uygun-degil, yayin-suruyor, kalite-kapisi, onceki-yayin-bozuk, depo-erisilemiyor, on-kosul-eksik, "
                     + "onaylanacak-birim-yok, hata, sunucu-hatasi.",
             },
             ["traceId"] = new OpenApiSchema { Type = JsonSchemaType.String, Description = "Istek izleme kimligi (gunluk iliskilendirme)." },

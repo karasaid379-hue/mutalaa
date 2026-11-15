@@ -703,6 +703,7 @@ public class KelimeKokPackTests
             Roots = a.Roots,
             Lemmas = a.Lemmas,
             LemmaGlosses = a.LemmaGlosses,
+            GateSummary = a.GateSummary,
             WordFixCount = 7,
         };
 

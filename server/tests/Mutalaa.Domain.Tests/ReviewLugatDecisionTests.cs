@@ -272,7 +272,8 @@ public class ReviewLugatDecisionTests
     [Fact]
     public void Other_status_targets_still_refuse_an_edited_value()
     {
-        Review review = StatusReview(ReviewTargets.Xref);
+        // xref artik duzenlenmis baglanti kabul eder (A18, K-51); duzenleme kabul etmeyen durum hedefi: sure adi.
+        Review review = StatusReview(ReviewTargets.SurahAlias);
 
         Assert.Equal(
             DomainErrorCodes.IncelemeDesteklenmiyor,

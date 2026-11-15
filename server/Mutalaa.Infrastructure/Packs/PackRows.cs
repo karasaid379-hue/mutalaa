@@ -53,7 +53,7 @@ public static class PackTables
         [TrRootIndex] = ["anchor", "span_start", "span_end", "root_id", "tr_lemma_id", "etymological_only"],
         [WordMorph] = ["anchor", "root_id", "lemma_id", "pos", "features"],
         [Root] = ["id", "letters", "occurrences", "ayah_count", "idf_q", "kok_anlami"],
-        [Lemma] = ["id", "lang", "text", "text_clean", "root_id", "occurrences", "ar_lemma_id", "etymological_only"],
+        [Lemma] = ["id", "lang", "text", "text_clean", "root_id", "occurrences", "ar_lemma_id", "etymological_only", "approval"],
         [LemmaGloss] = ["lemma_id", "anlam_kisa", "kuran_anlamlari", "turkce_es_kelime", "yalnizca_etimolojik", "status", "origin"],
         [TrForm] = ["key_wide", "key_narrow", "tr_lemma_id", "freq"],
         [Lugat] = ["basliksoz", "basliksoz_norm", "osmanlica_yazim", "koken_dil", "tanim_tr", "anlam_no", "kaynak", "duzey", "status", "origin", "version", "content_hash"],
@@ -172,7 +172,7 @@ public static class PackRows
 
         foreach (PackLemmaRow r in content.Lemmas.OrderBy(r => r.Id))
         {
-            yield return new PackRow(PackTables.Lemma, [r.Id, r.Lang, r.Text, r.TextClean, r.RootId, r.Occurrences, r.ArLemmaId, r.EtymologicalOnly]);
+            yield return new PackRow(PackTables.Lemma, [r.Id, r.Lang, r.Text, r.TextClean, r.RootId, r.Occurrences, r.ArLemmaId, r.EtymologicalOnly, r.Approval]);
         }
 
         foreach (PackLemmaGlossRow r in content.LemmaGlosses.OrderBy(r => r.LemmaId))

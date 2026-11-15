@@ -10,4 +10,6 @@ public sealed class TrForm
     public int TrLemmaId { get; set; }
 
     public int Freq { get; set; }
+
+    public required string DataVersion { get; set; }
 }
