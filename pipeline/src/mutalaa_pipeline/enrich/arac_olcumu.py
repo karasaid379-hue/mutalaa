@@ -38,7 +38,7 @@ from typing import Any, Final
 
 from mutalaa_pipeline.anchor import Rn, parse, sort_key
 from mutalaa_pipeline.enrich import arapca_dizi, atif_gramer
-from mutalaa_pipeline.enrich.citations import DiziEslesmesi, DiziTespitcisi
+from mutalaa_pipeline.enrich.risale_atif import DiziEslesmesi, DiziTespitcisi
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest.tanzil_bicim import ayristir
 from mutalaa_pipeline.normalize.arabic import normalize_ar

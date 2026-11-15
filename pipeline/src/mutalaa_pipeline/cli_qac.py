@@ -39,7 +39,7 @@ def kaydet(app: typer.Typer, ingest_app: typer.Typer) -> None:
     cli_quranwbw.kaydet(ingest_app, enrich_app)  # A17.6: ingest quranwbw-tr, enrich glosses
     from mutalaa_pipeline import cli_atif
 
-    cli_atif.kaydet(enrich_app)  # A20.7b: enrich citations
+    cli_atif.kaydet(enrich_app)  # A20.7b: enrich risale-citations
 
     @ingest_app.command("qac")
     def ingest_qac(

@@ -1,15 +1,17 @@
-"""Risale ayet atif aday adimi (A20.7b; K-52 madde 13): `mutalaa enrich citations --source ...`.
+"""Risale ayet atif aday adimi (A20.7b; K-52 madde 13).
+
+Komut: `mutalaa enrich risale-citations --source ...`.
 
 Girdi `risale-rnk-metin` anchor calismasinin `units.jsonl` dosyasidir (satir satir akitilir,
 413 MB'lik dosya bellege alinmaz) ve Tanzil Uthmani ile Simple Clean metni (`enrich/kuran_metni`:
 `data/gelen/tanzil-*`, kilitle dogrulanir, bellekte). Cikti
 `staged/risale-atif-dizini/{run_id}/xrefs.jsonl`: `xref` aday satirlari (`origin = 'hat'`,
-`status = 'aday'`, tur `atif` ya da `iktibas`; ayrinti `enrich/citations.py`). Arac `quran-toolkit`
-0.1.0'dir (`arac_sarmalayicilari`); acik atif grameri, Arapca dizi cikarimi ve `score` /
-`confidence` hesabi bizdedir (`atif_gramer`, `arapca_dizi`, `atif_guven`).
+`status = 'aday'`, tur `atif` ya da `iktibas`; ayrinti `enrich/risale_atif.py`). Arac
+`quran-toolkit` 0.1.0'dir (`arac_sarmalayicilari`); acik atif grameri, Arapca dizi cikarimi ve
+`score` / `confidence` hesabi bizdedir (`atif_gramer`, `arapca_dizi`, `atif_guven`).
 
 Adim adi `anchor`dir (`zincir.ANCHOR_ADIMI`): `qa run --source risale-atif-dizini` ve
-`export pg` bu calismayi bu adla arar; komut `enrich citations`tir (manifest `komut` alani).
+`export pg` bu calismayi bu adla arar; komut `enrich risale-citations`tir (manifest `komut` alani).
 Idempotent: ayni girdi (ayni units ozeti, ayni Tanzil dosyalari, ayni arac surumu) ayni
 `xrefs.jsonl` baytlarini verir; `--force` yoksa parmak izi ayniysa adim atlanir.
 
@@ -28,10 +30,10 @@ from pathlib import Path
 from typing import Final
 
 from mutalaa_pipeline import cikis, lineage
-from mutalaa_pipeline.enrich import arac_sarmalayicilari, citations, kuran_metni
+from mutalaa_pipeline.enrich import arac_sarmalayicilari, kuran_metni, risale_atif
 from mutalaa_pipeline.enrich.arac_olcumu import bellek_mb
-from mutalaa_pipeline.enrich.citations import KAYNAK_ID, Tespit, XrefSatiri
 from mutalaa_pipeline.enrich.rapor import yan_rapor_yaz
+from mutalaa_pipeline.enrich.risale_atif import KAYNAK_ID, Tespit, XrefSatiri
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_RNK
 from mutalaa_pipeline.komut_ortak import komutu_yurut
@@ -63,7 +65,7 @@ class AtifSonucu:
 
 def _kaynak_kontrol(source: str) -> None:
     if source != KAYNAK_RNK:
-        raise GirdiHatasi(f"enrich citations yalniz --source {KAYNAK_RNK} icindir")
+        raise GirdiHatasi(f"enrich risale-citations yalniz --source {KAYNAK_RNK} icindir")
 
 
 def veri_surumu(kaynak_surumu: str, units_sha256: str) -> str:
@@ -110,7 +112,7 @@ def tespitleri_uret(
     for capa, metin, marks, dil, ozet in _birimler(units):
         sayac["birim"] += 1
         sayac["ar_isareti"] += sum(1 for m in marks if m.get("t") == "ar")
-        bulunan = citations.birimden_tespitler(
+        bulunan = risale_atif.birimden_tespitler(
             capa,
             metin,
             marks,
@@ -152,7 +154,7 @@ def rapor_govdesi(
         src = s["src_anchor"]
         assert isinstance(src, str)
         tur_dil[f"{s['type']}|{dil_haritasi.get(src, '')}"] += 1
-        if s["type"] == citations.TUR_IKTIBAS:
+        if s["type"] == risale_atif.TUR_IKTIBAS:
             k = evidence.get("kapsama")
             if isinstance(k, int):
                 kapsama.append(k)
@@ -185,7 +187,7 @@ def rapor_govdesi(
     }
 
 
-def run_enrich_citations(
+def run_enrich_risale_atif(
     ctx: RunContext, source: str, gelen_tarih: str | None = None
 ) -> AtifSonucu:
     """Kaynak kayitlari, ust calisma, parmak izi, aday satirlari, manifest (en son)."""
@@ -194,7 +196,7 @@ def run_enrich_citations(
     surum = kayitlar[KAYNAK].surum
     if surum is None:
         raise GirdiHatasi(f"{KAYNAK}: kaynak kaydinda surum yok")
-    ctx.gunluk.yaz("INFO", "enrich_citations_basla", source_id=KAYNAK)
+    ctx.gunluk.yaz("INFO", "enrich_risale_atif_basla", source_id=KAYNAK)
     anchor = son_calisma(ctx, KAYNAK_RNK, ANCHOR_ADIMI, ipucu=f"once: anchor --source {source}")
     saglam_olmali(ctx, anchor)
     units_girdi = girdi_olarak(anchor, UNITS_ADI)
@@ -210,14 +212,14 @@ def run_enrich_citations(
         force=ctx.force,
         veri_kok=ctx.veri_kok,
     ):
-        ctx.gunluk.yaz("INFO", "enrich_citations_atlandi", source_id=KAYNAK)
+        ctx.gunluk.yaz("INFO", "enrich_risale_atif_atlandi", source_id=KAYNAK)
         ctx.sayi("atlandi", 1)
         return AtifSonucu(ctx.run_id, True, 0, None, onceki[0] if onceki else None)
 
     t0 = time.perf_counter()
     tespitler, dil_haritasi, sayaclar = tespitleri_uret(anchor.klasor / UNITS_ADI, kuran)
     data_version = veri_surumu(surum, units_girdi.sha256)
-    satirlar = citations.xrefleri_birlestir(tespitler, data_version)
+    satirlar = risale_atif.xrefleri_birlestir(tespitler, data_version)
     sure = time.perf_counter() - t0
     _, tepe = bellek_mb()
     if not satirlar:
@@ -226,13 +228,13 @@ def run_enrich_citations(
     ctx.sayi("birim", sayaclar.get("birim", 0))
     ctx.sayi("tespit_ham", len(tespitler))
     ctx.sayi("xref", len(satirlar))
-    ctx.sayi("xref_atif", sayilar[citations.TUR_ATIF])
-    ctx.sayi("xref_iktibas", sayilar[citations.TUR_IKTIBAS])
+    ctx.sayi("xref_atif", sayilar[risale_atif.TUR_ATIF])
+    ctx.sayi("xref_iktibas", sayilar[risale_atif.TUR_IKTIBAS])
     if ctx.dry_run:
-        ctx.gunluk.yaz("INFO", "enrich_citations_dry_run", source_id=KAYNAK)
+        ctx.gunluk.yaz("INFO", "enrich_risale_atif_dry_run", source_id=KAYNAK)
         return AtifSonucu(ctx.run_id, False, len(satirlar), None)
     klasor = ctx.staged_dizin(KAYNAK)
-    cikti = citations.xrefs_yaz_baglam(ctx, satirlar)
+    cikti = risale_atif.xrefs_yaz_baglam(ctx, satirlar)
     ctx.manifest_yaz(
         klasor,
         girdiler=girdiler,
@@ -253,8 +255,8 @@ def run_enrich_citations(
             "sayilar": {
                 "birim": sayaclar.get("birim", 0),
                 "xref": len(satirlar),
-                "atif": sayilar[citations.TUR_ATIF],
-                "iktibas": sayilar[citations.TUR_IKTIBAS],
+                "atif": sayilar[risale_atif.TUR_ATIF],
+                "iktibas": sayilar[risale_atif.TUR_IKTIBAS],
             },
         },
     )
@@ -263,11 +265,11 @@ def run_enrich_citations(
         "atif",
         rapor_govdesi(satirlar, len(tespitler), dil_haritasi, sayaclar, sure, tepe, kuran),
     )
-    ctx.gunluk.yaz("INFO", "enrich_citations_bitti", source_id=KAYNAK)
+    ctx.gunluk.yaz("INFO", "enrich_risale_atif_bitti", source_id=KAYNAK)
     return AtifSonucu(ctx.run_id, False, len(satirlar), klasor)
 
 
-def komut_enrich_citations(
+def komut_enrich_risale_atif(
     *,
     source: str,
     gelen_tarih: str | None,
@@ -276,24 +278,24 @@ def komut_enrich_citations(
     config: Path | None,
     kok: Path | None,
 ) -> int:
-    """`enrich citations` komutu; cikis kodunu dondurur."""
+    """`enrich risale-citations` komutu; cikis kodunu dondurur."""
 
     def govde(ctx: RunContext) -> int:
-        sonuc = run_enrich_citations(ctx, source, gelen_tarih)
+        sonuc = run_enrich_risale_atif(ctx, source, gelen_tarih)
         if sonuc.atlandi:
             ozet = f"atlandi (parmak izi onceki calistirmayla ayni, run {sonuc.onceki_run_id})"
         elif ctx.dry_run:
             ozet = f"{sonuc.satir} aday (dry-run, hicbir sey yazilmadi)"
         else:
             ozet = f"{sonuc.satir} aday, run {sonuc.run_id}"
-        sys.stdout.write(f"enrich citations {source}: {ozet}\n")
+        sys.stdout.write(f"enrich risale-citations {source}: {ozet}\n")
         return cikis.BASARILI
 
     parametreler: dict[str, object] = {"source": source}
     if gelen_tarih is not None:
         parametreler["gelen_tarih"] = gelen_tarih
     return komutu_yurut(
-        komut="enrich citations",
+        komut="enrich risale-citations",
         adim=ANCHOR_ADIMI,
         kaynaklar=[KAYNAK, KAYNAK_RNK],
         config=config,

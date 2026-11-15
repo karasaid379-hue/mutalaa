@@ -1,6 +1,6 @@
 """`mutalaa qa run --source risale-atif-dizini`: zinciri yukler, kapilari kosar (A20.7b).
 
-Zincir: son `enrich citations` calismasi (`anchor` adimi; ya da `--run`) -> taranan
+Zincir: son `enrich risale-citations` calismasi (`anchor` adimi; ya da `--run`) -> taranan
 `risale-rnk-metin` anchor calismasi (manifest `girdiler`, ozet ust calismanin ciktisiyla ayni
 olmali) ve Tanzil dosyalari (`data/gelen/tanzil-*`; manifestteki ozet ve kilitle dogrulanir).
 G-KAY, G-BUT, G-CAP, G-NOR `qa/checks/risale_atif.py`'dedir. Taranan `units.jsonl` satir satir
@@ -19,7 +19,7 @@ from typing import Final
 
 from mutalaa_pipeline import cikis
 from mutalaa_pipeline.enrich import kuran_metni
-from mutalaa_pipeline.enrich.citations import KAYNAK_ID, XREFS_ADI
+from mutalaa_pipeline.enrich.risale_atif import KAYNAK_ID, XREFS_ADI
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_RNK
 from mutalaa_pipeline.komut_ortak import komutu_yurut
@@ -120,7 +120,7 @@ def yukle(ctx: RunContext, *, run: str | None) -> tuple[AtifGirdisi, Calisma, Ca
         calisma_bul(ctx, KAYNAK, run, ANCHOR_ADIMI)
         if run is not None
         else son_calisma(
-            ctx, KAYNAK, ANCHOR_ADIMI, ipucu=f"once: enrich citations --source {KAYNAK_RNK}"
+            ctx, KAYNAK, ANCHOR_ADIMI, ipucu=f"once: enrich risale-citations --source {KAYNAK_RNK}"
         )
     )
     ctx.rapor_ek["anchor_run_id"] = calisma.run_id

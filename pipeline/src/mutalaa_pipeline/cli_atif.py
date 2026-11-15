@@ -1,4 +1,4 @@
-"""Risale ayet atif komutu (A20.7b): `enrich citations` (`cli_qac.kaydet` ekler)."""
+"""Risale ayet atif komutu (A20.7b): `enrich risale-citations` (`cli_qac.kaydet` ekler)."""
 
 from typing import Annotated
 
@@ -27,10 +27,10 @@ GelenTarih = Annotated[
 
 
 def kaydet(enrich_app: typer.Typer) -> None:
-    """`enrich citations` komutunu ekler."""
+    """`enrich risale-citations` komutunu ekler."""
 
-    @enrich_app.command("citations")
-    def enrich_citations(
+    @enrich_app.command("risale-citations")
+    def enrich_risale_citations(
         source: Kaynak,
         gelen_tarih: GelenTarih = None,
         dry_run: DryRun = False,
@@ -39,9 +39,9 @@ def kaydet(enrich_app: typer.Typer) -> None:
         kok: KokSecenegi = None,
     ) -> None:
         """Risale ayet atif ve iktibas adaylarini uretir (xrefs.jsonl). Cikis 0 ya da 2."""
-        from mutalaa_pipeline.adimlar import enrich_citations as adim
+        from mutalaa_pipeline.adimlar import enrich_risale_atif as adim
 
-        kod = adim.komut_enrich_citations(
+        kod = adim.komut_enrich_risale_atif(
             source=source,
             gelen_tarih=gelen_tarih,
             dry_run=dry_run,

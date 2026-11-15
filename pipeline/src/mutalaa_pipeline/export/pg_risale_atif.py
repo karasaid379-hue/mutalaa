@@ -2,7 +2,7 @@
 
 `export/pg.py` ile ayni akis (dosya onkosullari -> tek veritabani islemi, advisory kilit,
 `source` satiri `pg._source_satirlari` ile); sablon `pg_risale_sayfa.py`'dir. Dosya tarafi: kaynak
-kaydi (G-KAY), son `enrich citations` calismasi (`xrefs.jsonl`; `anchor` adimi), zincir
+kaydi (G-KAY), son `enrich risale-citations` calismasi (`xrefs.jsonl`; `anchor` adimi), zincir
 (atif -> `risale-rnk-metin` anchor -> normalize -> ingest), QA raporu (DORT kapi; kalan kapida
 yukleme yapilmaz) ve satirlarin kati okunmasi. Veritabanina dokunmadan yapilir.
 
@@ -51,8 +51,8 @@ from psycopg.types.range import Range
 
 from mutalaa_pipeline import lineage
 from mutalaa_pipeline.anchor import AnchorError, Q, Rn, format, parse
-from mutalaa_pipeline.enrich import citations
-from mutalaa_pipeline.enrich.citations import KAYNAK_ID
+from mutalaa_pipeline.enrich import risale_atif
+from mutalaa_pipeline.enrich.risale_atif import KAYNAK_ID
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.export.pg import (
     Hazirlik,
@@ -73,7 +73,7 @@ FIKSTUR_XREF_ADI: Final = "xref.jsonl"
 BINDE: Final = 1000
 CONSTRAINT: Final = "xref_natural_key"
 SRC_HASH_UZUNLUGU: Final = 16
-HAT_SATIRLARI: Final = citations.XREF_ALANLARI
+HAT_SATIRLARI: Final = risale_atif.XREF_ALANLARI
 FIKSTUR_SATIRLARI: Final = frozenset(
     {
         "confidence",
@@ -183,14 +183,14 @@ def _satir_coz(satir: Satir, source_id: str, fikstur: bool) -> XrefYuk:
         raise GirdiHatasi(f"{yer}: alan kumesi beklenen degil")
     v = satir.veri
     tur = v["type"]
-    if tur not in citations.TURLER:
+    if tur not in risale_atif.TURLER:
         raise GirdiHatasi(f"{yer}: type atif ya da iktibas degil")
-    if v["origin"] != citations.ORIGIN or v["status"] != citations.STATUS:
+    if v["origin"] != risale_atif.ORIGIN or v["status"] != risale_atif.STATUS:
         raise GirdiHatasi(f"{yer}: origin hat ve status aday olmali")
     evidence = v["evidence"]
     if not isinstance(evidence, dict):
         raise GirdiHatasi(f"{yer}: evidence nesne degil")
-    citations.evidence_denetle(evidence)
+    risale_atif.evidence_denetle(evidence)
     if evidence.get("source_id") != source_id:
         raise GirdiHatasi(f"{yer}: evidence.source_id --source ile ayni degil")
     surum = satir.metin("data_version")
@@ -270,11 +270,11 @@ def hazirla(
     anchor_run_id, klasor, manifest = _anchor_calismasi(ctx, source_id, run)
     if not lineage.ciktilar_saglam(ctx.veri_kok, manifest):
         raise GirdiHatasi("atif calistirmasinin ciktilari saglam degil")
-    yol, sha, veri = dosya_baytlari(ctx, klasor, manifest, citations.XREFS_ADI)
+    yol, sha, veri = dosya_baytlari(ctx, klasor, manifest, risale_atif.XREFS_ADI)
     zincir = _zincir(ctx, manifest)
     ingest, _ham = _zincir_denetle(ctx, zincir, (KAYNAK_RNK,))
     qa_rapor_id = _qa_denetle(ctx, source_id, anchor_run_id, sha)  # dort kapi; kalirsa yukleme yok
-    satirlar = satirlari_coz(veri, source_id, citations.XREFS_ADI)
+    satirlar = satirlari_coz(veri, source_id, risale_atif.XREFS_ADI)
     girdiler = [lineage.Girdi(yol, sha, anchor_run_id)]
     girdiler += [lineage.Girdi(g, o) for g, o in _gelen_girdileri(manifest) if o is not None]
     return Hazirlik(
@@ -458,7 +458,7 @@ def yukle(conn: psycopg.Connection, ctx: RunContext, h: Hazirlik) -> dict[str, i
     if ozet:
         raise QaKaldi(
             f"xref kaynak birimi staged'den sonra degismis ({len(ozet)}): {_capalar(ozet)}"
-            " (enrich citations yeniden calismali)"
+            " (enrich risale-citations yeniden calismali)"
         )
     sonuc = conn.execute(SAYAC).fetchone()  # toplama sorgusu her zaman bir satir doner
     eklenecek, guncellenecek, ayni, onayli, red, editor = (

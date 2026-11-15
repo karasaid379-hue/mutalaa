@@ -28,7 +28,7 @@ from typing import Final
 
 from mutalaa_pipeline import lineage
 from mutalaa_pipeline.anchor import AnchorError, AnchorRef, Q, Rn, format, parse, to_unit_span
-from mutalaa_pipeline.enrich import arapca_dizi, atif_gramer, citations
+from mutalaa_pipeline.enrich import arapca_dizi, atif_gramer, risale_atif
 from mutalaa_pipeline.enrich.arac_sarmalayicilari import ARAC_ADI, ARAC_SURUMU
 from mutalaa_pipeline.enrich.kuran_metni import KuranMetni
 from mutalaa_pipeline.enums import SourceKind
@@ -40,7 +40,7 @@ EN_COK_ORNEK: Final = 5
 KAPILAR: Final = ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
 EN_COK_ALAN_UZUNLUGU: Final = 256  # hicbir alan metin tasimaz; capa en uzun 256 karakter
 SRC_HASH_UZUNLUGU: Final = 16
-ISARET_YALNIZ_ALINTI: Final = citations.ISARET_YALNIZ_ALINTI
+ISARET_YALNIZ_ALINTI: Final = risale_atif.ISARET_YALNIZ_ALINTI
 
 Satir = Mapping[str, object]
 
@@ -98,7 +98,7 @@ def _no(i: int) -> str:
 def g_kay(g: AtifGirdisi) -> KapiSonucu:
     bulgular: list[str] = []
     k = g.kayit
-    if k.slug != citations.KAYNAK_ID:
+    if k.slug != risale_atif.KAYNAK_ID:
         bulgular.append("kaynak kaydi: slug kaynak kimligiyle ayni degil")
     if k.tur is not SourceKind.BAGLANTI_VERISI:
         bulgular.append("kaynak kaydi: tur baglanti_verisi olmali")
@@ -108,7 +108,7 @@ def g_kay(g: AtifGirdisi) -> KapiSonucu:
         bulgular.append("kaynak kaydi: atif_metni bos")
     if g.manifest.get("arac") != ARAC_ADI or g.manifest.get("arac_surumu") != ARAC_SURUMU:
         bulgular.append(f"manifest: arac {ARAC_ADI} {ARAC_SURUMU} degil")
-    beklenen = f"{citations.KAYNAK_ID}@{k.surum}/{g.units_sha256[:12]}" if k.surum else None
+    beklenen = f"{risale_atif.KAYNAK_ID}@{k.surum}/{g.units_sha256[:12]}" if k.surum else None
     if g.manifest.get("data_version") != beklenen:
         bulgular.append(
             "manifest: data_version kayit surumu ve units ozetinden uretilenle ayni degil"
@@ -123,7 +123,7 @@ def g_kay(g: AtifGirdisi) -> KapiSonucu:
         ev = s.get("evidence")
         if (
             isinstance(ev, dict)
-            and ev.get("yontem") == citations.YONTEM_ARAC
+            and ev.get("yontem") == risale_atif.YONTEM_ARAC
             and (ev.get("arac") != ARAC_ADI or ev.get("arac_surumu") != ARAC_SURUMU)
         ):
             arac_farki.append(_no(i))
@@ -198,14 +198,14 @@ def _src_denetle(
     if isinstance(ev, dict) and ev.get("src_hash") != birim.content_hash[:SRC_HASH_UZUNLUGU]:
         bulgular["src_hash"].append(_no(i))
     assert isinstance(src, str)
-    if tur == citations.TUR_ATIF:
+    if tur == risale_atif.TUR_ATIF:
         kume = atif_onbellegi.get(src)
         if kume is None:
             kume = atif_onbellegi[src] = _atif_anahtarlari(birim.metin)
         ref = _ayet_cifti(s)
         if ref is None or (bas, son, *ref) not in kume:
             bulgular["atif"].append(_no(i))
-    elif tur == citations.TUR_IKTIBAS:
+    elif tur == risale_atif.TUR_IKTIBAS:
         diziler = dizi_onbellegi.get(src)
         if diziler is None:
             diziler = dizi_onbellegi[src] = arapca_dizi.isaretlerden(birim.metin, birim.marks)
@@ -260,24 +260,24 @@ def g_but(g: AtifGirdisi) -> KapiSonucu:
     atif_onbellegi: dict[str, set[tuple[int, int, int, int]]] = {}
     dizi_onbellegi: dict[str, list[arapca_dizi.ArapcaDizi]] = {}
     for i, s in enumerate(g.satirlar):
-        if set(s) != citations.XREF_ALANLARI:
+        if set(s) != risale_atif.XREF_ALANLARI:
             kat["alan"].append(_no(i))
             continue
-        if s["origin"] != citations.ORIGIN or s["status"] != citations.STATUS:
+        if s["origin"] != risale_atif.ORIGIN or s["status"] != risale_atif.STATUS:
             kat["sabit"].append(_no(i))
         tur = s["type"]
-        if tur not in citations.TURLER:
+        if tur not in risale_atif.TURLER:
             kat["tur"].append(_no(i))
         for ad in ("score_binde", "confidence_binde"):
             v = _tam(s[ad])
-            if v is None or not 0 <= v <= citations.BINDE_USTU:
+            if v is None or not 0 <= v <= risale_atif.BINDE_USTU:
                 kat["puan"].append(_no(i))
         ev = s["evidence"]
         try:
             if not isinstance(ev, dict):
                 raise GirdiHatasi("evidence nesne degil")
-            citations.evidence_denetle(ev)
-            if ev.get("source_id") != citations.KAYNAK_ID:
+            risale_atif.evidence_denetle(ev)
+            if ev.get("source_id") != risale_atif.KAYNAK_ID:
                 raise GirdiHatasi("source_id")
         except GirdiHatasi:
             kat["evidence"].append(_no(i))
@@ -307,8 +307,8 @@ def g_but(g: AtifGirdisi) -> KapiSonucu:
     sayilar = {
         "satir": len(g.satirlar),
         "birim": len(g.birimler),
-        "atif": sum(1 for s in g.satirlar if s.get("type") == citations.TUR_ATIF),
-        "iktibas": sum(1 for s in g.satirlar if s.get("type") == citations.TUR_IKTIBAS),
+        "atif": sum(1 for s in g.satirlar if s.get("type") == risale_atif.TUR_ATIF),
+        "iktibas": sum(1 for s in g.satirlar if s.get("type") == risale_atif.TUR_IKTIBAS),
     }
     return KapiSonucu("G-BUT", tuple(bulgular), sayilar)
 
@@ -371,9 +371,9 @@ def g_cap(g: AtifGirdisi) -> KapiSonucu:
     _bulgu(bulgular, "dst_span", span_kotu, "satirda dst_span birim araligina cevrilemiyor")
     try:
         satirlar = [dict(s) for s in g.satirlar]
-        if satirlar != sorted(satirlar, key=citations.siralama_anahtari):
+        if satirlar != sorted(satirlar, key=risale_atif.siralama_anahtari):
             bulgular.append("satirlar capa sirasinda degil")
-        veri, _ = citations.xrefs_baytlari(satirlar)
+        veri, _ = risale_atif.xrefs_baytlari(satirlar)
     except GirdiHatasi as hata:
         bulgular.append(f"dogal anahtar: {hata}")
     except (AnchorError, KeyError, TypeError):

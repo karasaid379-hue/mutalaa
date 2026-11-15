@@ -1,4 +1,6 @@
-"""`enrich citations`, `qa run` ve `export pg --source risale-atif-dizini` (A20.7b; SENTETIK veri).
+"""`enrich risale-citations`, `qa run` ve `export pg --source risale-atif-dizini`.
+
+A20.7b; SENTETIK veri.
 
 Testler VERITABANISIZDIR: anchor zinciri sentetik birimlerle kurulur ("Deneme paragrafi N ...",
 Arap alfabesi harflerinden uydurulmus kelimeler), Kur'an metni uydurma bir ayet kumesidir
@@ -22,9 +24,9 @@ from test_sources import alanlar_kur, kayit_yaz
 from typer.testing import CliRunner
 
 from mutalaa_pipeline import cli, lineage
-from mutalaa_pipeline.adimlar import enrich_citations
+from mutalaa_pipeline.adimlar import enrich_risale_atif
 from mutalaa_pipeline.anchor import content_hash
-from mutalaa_pipeline.enrich import citations, kuran_metni
+from mutalaa_pipeline.enrich import kuran_metni, risale_atif
 from mutalaa_pipeline.export import pg, pg_risale_atif
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_RNK
@@ -33,7 +35,7 @@ from mutalaa_pipeline.qa import run_risale_atif
 from mutalaa_pipeline.qa.checks import risale_atif as kapilar
 from mutalaa_pipeline.staged import satirlari_oku
 
-ATIF = citations.KAYNAK_ID
+ATIF = risale_atif.KAYNAK_ID
 runner = CliRunner()
 D1 = cumle(3, 4, 5, 6, 7)  # 1:1 sonu + 1:2 basi (iki ayet)
 D2 = cumle(11, 12, 13, 14, 15, 16)  # 1:3'un tamami
@@ -110,7 +112,7 @@ def sahte_yukle(
 
 
 def uret(s: Senaryo, **kw: object) -> int:
-    return enrich_citations.komut_enrich_citations(
+    return enrich_risale_atif.komut_enrich_risale_atif(
         source=str(kw.get("source", KAYNAK_RNK)),
         gelen_tarih=None,
         dry_run=bool(kw.get("dry_run", False)),
@@ -145,7 +147,7 @@ def raporlar(s: Senaryo, komut: str) -> list[dict[str, object]]:
     return sonuc
 
 
-# --- enrich citations ----------------------------------------------------------------------
+# --- enrich risale-citations ----------------------------------------------------------------------
 
 
 def test_komut_beklenen_adaylari_uretir(s: Senaryo) -> None:
@@ -166,7 +168,7 @@ def test_komut_beklenen_adaylari_uretir(s: Senaryo) -> None:
     ]
     for x in satirlar:
         assert x["origin"] == "hat" and x["status"] == "aday"
-        assert set(x) == citations.XREF_ALANLARI
+        assert set(x) == risale_atif.XREF_ALANLARI
         for alan in ("score_binde", "confidence_binde"):
             assert type(x[alan]) is int and 0 <= x[alan] <= 1000  # type: ignore[operator]
         evidence = x["evidence"]
@@ -233,13 +235,13 @@ def test_idempotent_ikinci_kosu_ayni_baytlar_ve_sirali(s: Senaryo) -> None:
     assert manifestler[0]["ciktilar"][0]["sha256"] == manifestler[1]["ciktilar"][0]["sha256"]
     # capa sirasi: p1 < p3 < p4 < p6
     satirlar = xref_satirlari(s)
-    assert satirlar == sorted(satirlar, key=citations.siralama_anahtari)
+    assert satirlar == sorted(satirlar, key=risale_atif.siralama_anahtari)
 
 
 def test_manifest_zincir_ve_ayrintilar(s: Senaryo) -> None:
     uret(s)
     manifest = json.loads((atif_calismalari(s)[-1] / "manifest.json").read_text("utf-8"))
-    assert manifest["adim"] == "anchor" and manifest["komut"] == "enrich citations"
+    assert manifest["adim"] == "anchor" and manifest["komut"] == "enrich risale-citations"
     yollar = [g["yol"] for g in manifest["girdiler"]]
     assert f"staged/{KAYNAK_RNK}/{s.anchor_run}/units.jsonl" in yollar
     assert sum(1 for y in yollar if y.startswith("gelen/tanzil-")) == 2
@@ -770,7 +772,7 @@ def test_satirlari_coz_katiligi(s: Senaryo) -> None:
 
 def test_cli_yardim_renkli_de_gecer(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("FORCE_COLOR", "1")
-    r = runner.invoke(cli.app, ["enrich", "citations", "--help"])
+    r = runner.invoke(cli.app, ["enrich", "risale-citations", "--help"])
     assert r.exit_code == 0
     metin = ansisiz(r.output)
     for secenek in ("--source", "--gelen-tarih", "--dry-run", "--force", "--config", "--kok"):
@@ -780,20 +782,23 @@ def test_cli_yardim_renkli_de_gecer(monkeypatch: pytest.MonkeyPatch) -> None:
     assert "--prune" in metin and "--yedek-alindi" in metin
     assert "SILER" in metin
     r = runner.invoke(cli.app, ["enrich", "--help"])
-    assert "citations" in ansisiz(r.output)
+    assert "risale-citations" in ansisiz(r.output)
 
 
 def test_cli_source_zorunlu_ve_yanlis_kaynak(s: Senaryo) -> None:
-    r = runner.invoke(cli.app, ["enrich", "citations", "--kok", str(s.kok)])
+    r = runner.invoke(cli.app, ["enrich", "risale-citations", "--kok", str(s.kok)])
     assert r.exit_code == 2  # --source eksik (Typer kullanim hatasi)
     r = runner.invoke(
-        cli.app, ["enrich", "citations", "--source", "risale-asil-nusha", "--kok", str(s.kok)]
+        cli.app,
+        ["enrich", "risale-citations", "--source", "risale-asil-nusha", "--kok", str(s.kok)],
     )
     assert r.exit_code == 2
 
 
 def test_cli_uctan_uca(s: Senaryo) -> None:
-    r = runner.invoke(cli.app, ["enrich", "citations", "--source", KAYNAK_RNK, "--kok", str(s.kok)])
+    r = runner.invoke(
+        cli.app, ["enrich", "risale-citations", "--source", KAYNAK_RNK, "--kok", str(s.kok)]
+    )
     assert r.exit_code == 0, r.output
     assert "6 aday" in r.output
     r = runner.invoke(cli.app, ["qa", "run", "--source", ATIF, "--kok", str(s.kok)])

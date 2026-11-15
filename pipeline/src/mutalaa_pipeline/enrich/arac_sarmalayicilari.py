@@ -19,8 +19,8 @@ import importlib.metadata
 from collections.abc import Sequence
 from typing import Any, Final
 
-from mutalaa_pipeline.enrich.citations import DiziEslesmesi, Parca
 from mutalaa_pipeline.enrich.kuran_metni import Ayet, basit_kelimeler
+from mutalaa_pipeline.enrich.risale_atif import DiziEslesmesi, Parca
 
 ARAC_ADI: Final = "quran-toolkit"
 ARAC_MODULU: Final = "quran_toolkit"

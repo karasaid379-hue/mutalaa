@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from mutalaa_pipeline.enrich import arac_sarmalayicilari, atif_guven, citations, kuran_metni
+from mutalaa_pipeline.enrich import arac_sarmalayicilari, atif_guven, kuran_metni, risale_atif
 from mutalaa_pipeline.enrich.arac_sarmalayicilari import ToolkitSarmalayici
 from mutalaa_pipeline.enrich.kuran_metni import KuranMetni, ayetleri_kur, basit_kelimeler
 from mutalaa_pipeline.export.ortak import GirdiHatasi
@@ -194,7 +194,7 @@ def test_kaybeden_sarmalayicilar_silindi() -> None:
 
 
 def test_sarmalayici_citations_arayuzune_uyar(arac: ToolkitSarmalayici) -> None:
-    tespitler = citations.birimden_tespitler(
+    tespitler = risale_atif.birimden_tespitler(
         "rn:deneme-kitap:p1",
         f"Deneme paragrafi 1 {cumle(3, 4, 5, 6, 7)} sonu.",
         [{"t": "ar", "s": 19, "e": 19 + len(cumle(3, 4, 5, 6, 7)), "tur": "blok"}],
