@@ -519,9 +519,15 @@ public partial class EditorialSnapshotReaderTests(EditorialDatabase<EditorialSna
         await Db.ExecuteAsync(insertIndex, ct, ("a", $"k:{slug}:p1"), ("st", 10), ("en", 12), ("r", rootId), ("l", lemmaId), ("e", false), ("h", HashB[..16]));
         await Db.ExecuteAsync(insertIndex, ct, ("a", $"k:{slug}:p1"), ("st", 2), ("en", 5), ("r", rootId), ("l", lemmaId), ("e", false), ("h", HashB[..16]));
         await Db.ExecuteAsync(
-            "INSERT INTO icerik.xref_gate (tur, set_sinifi, set_surumu, sonuc, set_kaynaklari, rapor_sha256, data_version) VALUES ('kok'::icerik.xref_type, 'silver', 's1', 'gecti', ARRAY['a@1','b@2'], @h, 'dv-3')",
+            "INSERT INTO icerik.xref_gate (tur, alt_tur, set_sinifi, set_surumu, sonuc, set_kaynaklari, rapor_sha256, data_version) VALUES ('kok'::icerik.xref_type, 'tr_lemma', 'silver', 's1', 'gecti', ARRAY['a@1','b@2'], @h, 'dv-3')",
             ct,
             ("h", HashA));
+        // Ayni (tur, set sinifi) icin alt turler ayri satir olarak (tur, alt_tur, set_sinifi) sirasiyla okunur (okuyucu acilmadan once yazilir).
+        const string insertGate = "INSERT INTO icerik.xref_gate (tur, alt_tur, set_sinifi, set_surumu, sonuc, set_kaynaklari, rapor_sha256, data_version) VALUES (@t::icerik.xref_type, @a, @s, 's2', @r, ARRAY['q@1'], @h, 'dv-4')";
+        await Db.ExecuteAsync(insertGate, ct, ("t", "kok"), ("a", "xref"), ("s", "altin"), ("r", "kaldi"), ("h", HashB));
+        await Db.ExecuteAsync(insertGate, ct, ("t", "benzer_ayet"), ("a", "sozluksel"), ("s", "silver"), ("r", "kaldi"), ("h", HashB));
+        await Db.ExecuteAsync(insertGate, ct, ("t", "benzer_ayet"), ("a", "alim"), ("s", "altin"), ("r", "gecti"), ("h", HashB));
+        await Db.ExecuteAsync(insertGate, ct, ("t", "lemma"), ("a", string.Empty), ("s", "altin"), ("r", "gecti"), ("h", HashB));
 
         await using EditorialSnapshotReader reader = await EditorialSnapshotReader.OpenAsync(Db.ConnectionString, ct);
         IReadOnlyList<TrRootIndexRow> rows = [.. (await reader.ReadTrRootIndexAsync(ct)).Where(r => r.Anchor.Contains(slug, StringComparison.Ordinal))];
@@ -530,15 +536,21 @@ public partial class EditorialSnapshotReaderTests(EditorialDatabase<EditorialSna
         TrRootIndexRow last = rows[2];
         Assert.Equal((9, rootId, lemmaId, true, HashA[..16], "dv-2"), (last.SpanEnd, last.RootId, last.TrLemmaId, last.EtymologicalOnly, last.UnitHash, last.DataVersion));
 
-        XrefGateRow gate = Assert.Single(await reader.ReadXrefGatesAsync(ct), g => g.RaporSha256 == HashA && g.Tur == "kok");
+        IReadOnlyList<XrefGateRow> gates = await reader.ReadXrefGatesAsync(ct);
+        Assert.Equal(
+            ["benzer_ayet/alim/altin", "benzer_ayet/sozluksel/silver", "kok/xref/altin", "lemma//altin"],
+            gates.Where(g => g.RaporSha256 == HashB).Select(g => $"{g.Tur}/{g.AltTur}/{g.SetSinifi}"));
+
+        XrefGateRow gate = Assert.Single(gates, g => g.RaporSha256 == HashA && g.Tur == "kok");
         Assert.Equal(("silver", "gecti", "s1"), (gate.SetSinifi, gate.Sonuc, gate.SetSurumu));
+        Assert.Equal("tr_lemma", gate.AltTur);
         Assert.Equal(["a@1", "b@2"], gate.SetKaynaklari);
         Assert.Equal(DateTimeKind.Utc, gate.OlculduAt.Kind);
 
         EditorialSnapshot snapshot = await reader.LoadAsync(BuildFlavor.Public, ct);
         Assert.Contains(snapshot.TrRootIndex, r => r.Anchor == $"k:{slug}:p2");
         Assert.Contains(snapshot.TrLemmas, l => l.Id == lemmaId);
-        Assert.Contains(snapshot.XrefGates, g => g.Tur == "kok" && g.SetSinifi == "silver");
+        Assert.Contains(snapshot.XrefGates, g => g.Tur == "kok" && g.AltTur == "tr_lemma" && g.SetSinifi == "silver");
     }
 
     [Fact]
@@ -550,6 +562,8 @@ public partial class EditorialSnapshotReaderTests(EditorialDatabase<EditorialSna
         Guid withoutHash = Guid.NewGuid();
         Guid expert = Guid.NewGuid();
         Guid decided = Guid.NewGuid();
+        Guid qursimObject = Guid.NewGuid();
+        Guid qursimScalar = Guid.NewGuid();
         await InsertSourceAsync(slug, ct: ct);
         await InsertUnitAsync($"k:{slug}:p1", slug, ct: ct);
         await InsertUnitAsync($"k:{slug}:p2", slug, ord: 2, ct: ct);
@@ -560,6 +574,8 @@ public partial class EditorialSnapshotReaderTests(EditorialDatabase<EditorialSna
             """;
         await Db.ExecuteAsync(insertXref, ct, ("id", withHash), ("src", $"k:{slug}:p1"), ("dst", $"k:{slug}:p2"), ("ev", "{\"src_hash\": \"aaaaaaaaaaaaaaaa\", \"dst_hash\": \"bbbbbbbbbbbbbbbb\", \"source_id\": \"qursim\"}"));
         await Db.ExecuteAsync(insertXref, ct, ("id", withoutHash), ("src", $"k:{slug}:p2"), ("dst", $"k:{slug}:p1"), ("ev", "{}"));
+        await Db.ExecuteAsync(insertXref, ct, ("id", qursimObject), ("src", $"k:{slug}:p1"), ("dst", $"k:{slug}:p5"), ("ev", "{\"qursim\": {\"label\": 1}}"));
+        await Db.ExecuteAsync(insertXref, ct, ("id", qursimScalar), ("src", $"k:{slug}:p1"), ("dst", $"k:{slug}:p6"), ("ev", "{\"qursim\": \"x\"}"));
         await Db.ExecuteAsync(insertXref, ct, ("id", expert), ("src", $"k:{slug}:p3"), ("dst", $"k:{slug}:p4"), ("ev", "{}"));
         await Db.ExecuteAsync(insertXref, ct, ("id", decided), ("src", $"k:{slug}:p4"), ("dst", $"k:{slug}:p3"), ("ev", "{}"));
         const string reviewSql = "INSERT INTO icerik.review (hedef_tablo, hedef_anahtar, xref_id, alan, eylem, durum, koken, oneren) VALUES ('xref', @k, @x, 'status', 'oner', @d::icerik.inceleme_durumu, 'hat'::icerik.xref_origin, 'test-hat')";
@@ -570,7 +586,7 @@ public partial class EditorialSnapshotReaderTests(EditorialDatabase<EditorialSna
         List<XrefRow> xrefs = [];
         await foreach (XrefRow xref in reader.ReadXrefsAsync(ct))
         {
-            if (xref.Id == withHash || xref.Id == withoutHash)
+            if (xref.Id == withHash || xref.Id == withoutHash || xref.Id == qursimObject || xref.Id == qursimScalar)
             {
                 xrefs.Add(xref);
             }
@@ -582,6 +598,12 @@ public partial class EditorialSnapshotReaderTests(EditorialDatabase<EditorialSna
         Assert.Equal(("aaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbb", "qursim"), (a.SrcHash, a.DstHash, a.EvidenceSourceId));
         XrefRow b = xrefs.Single(x => x.Id == withoutHash);
         Assert.Equal(((string?)null, (string?)null, (string?)null), (b.SrcHash, b.DstHash, b.EvidenceSourceId));
+        Assert.False(a.HasQursimEvidence);
+        Assert.False(b.HasQursimEvidence);
+
+        // evidence.qursim yalniz nesne ise "alim" kaniti sayilir (skaler deger sayilmaz).
+        Assert.True(xrefs.Single(x => x.Id == qursimObject).HasQursimEvidence);
+        Assert.False(xrefs.Single(x => x.Id == qursimScalar).HasQursimEvidence);
         Assert.Contains(expert, reviews);
         Assert.DoesNotContain(decided, reviews);
     }

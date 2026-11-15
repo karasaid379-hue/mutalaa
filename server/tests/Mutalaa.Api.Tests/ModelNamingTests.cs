@@ -172,7 +172,7 @@ public partial class ModelNamingTests
             "release_talep_check", "source_dosya_sha256_check", "audio_timing_file_sha256_check", "lemma_gloss_content_hash_check", "lemma_dalga_dalga_check",
             "lugat_madde_origin_check", "lugat_madde_content_hash_check", "lugat_madde_onayli_tanim_check", "lugat_madde_anlam_no_check", "lugat_madde_duzey_check",
             "lemma_onay_yolu_check", "lemma_tr_onayli_onay_yolu_check", "lemma_otomatik_kanit_check", "tr_root_index_unit_hash_check",
-            "xref_gate_set_sinifi_check", "xref_gate_sonuc_check", "xref_gate_rapor_sha256_check",
+            "xref_gate_set_sinifi_check", "xref_gate_sonuc_check", "xref_gate_rapor_sha256_check", "xref_gate_alt_tur_check",
         ];
 
         OnAllModels(model =>

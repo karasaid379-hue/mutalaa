@@ -16,6 +16,8 @@ public class GateLinkLayerTests
 {
     private static readonly XrefType[] AutoGateTypes = [XrefType.Kok, XrefType.Lemma, XrefType.BenzerAyet];
 
+    private static readonly GateKey KokXref = new(XrefType.Kok, XrefGateSubtypes.Xref);
+
     private const string HashA = "aaaaaaaaaaaaaaaa";
     private const string HashB = "bbbbbbbbbbbbbbbb";
 
@@ -26,21 +28,21 @@ public class GateLinkLayerTests
     [InlineData(true)]
     public void Resolve_picks_gold_over_silver_and_ignores_synthetic_unknown_and_other_types(bool turkish) => CultureScope.For(turkish, () =>
     {
-        Assert.Equal(XrefGateStatus.NotMeasured, XrefGateRules.Resolve([], XrefType.Kok).Status);
-        Assert.Equal(XrefGateStatus.NotMeasured, XrefGateRules.Resolve([Gate(XrefType.Kok, "sentetik", "gecti")], XrefType.Kok).Status);
-        Assert.Equal(XrefGateStatus.NotMeasured, XrefGateRules.Resolve([Gate(XrefType.Kok, "silver", "belki")], XrefType.Kok).Status);
-        Assert.Equal(XrefGateStatus.NotMeasured, XrefGateRules.Resolve([Gate(XrefType.Lemma, "silver", "gecti")], XrefType.Kok).Status);
-        Assert.Equal(XrefGateStatus.NotMeasured, XrefGateRules.Resolve([Gate(XrefType.Kok, "Silver", "gecti")], XrefType.Kok).Status);
+        Assert.Equal(XrefGateStatus.NotMeasured, XrefGateRules.Resolve([], KokXref).Status);
+        Assert.Equal(XrefGateStatus.NotMeasured, XrefGateRules.Resolve([Gate(XrefType.Kok, "sentetik", "gecti")], KokXref).Status);
+        Assert.Equal(XrefGateStatus.NotMeasured, XrefGateRules.Resolve([Gate(XrefType.Kok, "silver", "belki")], KokXref).Status);
+        Assert.Equal(XrefGateStatus.NotMeasured, XrefGateRules.Resolve([Gate(XrefType.Lemma, "silver", "gecti")], KokXref).Status);
+        Assert.Equal(XrefGateStatus.NotMeasured, XrefGateRules.Resolve([Gate(XrefType.Kok, "Silver", "gecti")], KokXref).Status);
 
-        XrefTypeGate silver = XrefGateRules.Resolve([Gate(XrefType.Kok, "silver", "gecti")], XrefType.Kok);
+        XrefTypeGate silver = XrefGateRules.Resolve([Gate(XrefType.Kok, "silver", "gecti")], KokXref);
         Assert.True(silver.Opens);
         Assert.Equal("silver", silver.SetClass);
 
-        XrefTypeGate goldFailed = XrefGateRules.Resolve([Gate(XrefType.Kok, "silver", "gecti"), Gate(XrefType.Kok, "altin", "kaldi")], XrefType.Kok);
+        XrefTypeGate goldFailed = XrefGateRules.Resolve([Gate(XrefType.Kok, "silver", "gecti"), Gate(XrefType.Kok, "altin", "kaldi")], KokXref);
         Assert.Equal(XrefGateStatus.Failed, goldFailed.Status);
         Assert.Equal("altin", goldFailed.SetClass);
 
-        XrefTypeGate synthPlusFailed = XrefGateRules.Resolve([Gate(XrefType.Kok, "sentetik", "gecti"), Gate(XrefType.Kok, "silver", "kaldi")], XrefType.Kok);
+        XrefTypeGate synthPlusFailed = XrefGateRules.Resolve([Gate(XrefType.Kok, "sentetik", "gecti"), Gate(XrefType.Kok, "silver", "kaldi")], KokXref);
         Assert.Equal(XrefGateStatus.Failed, synthPlusFailed.Status);
 
         Assert.Equal(GateReasons.KapiOlculmedi, XrefGateRules.ReasonWhenClosed(XrefTypeGate.NotMeasured));
@@ -158,7 +160,7 @@ public class GateLinkLayerTests
 
         GateResult result = GateEvaluator.Evaluate(BuildFlavor.Public, input);
 
-        GateReportRow kok = Row(result, GateSubjectKind.Kapi, "kok");
+        GateReportRow kok = Row(result, GateSubjectKind.Kapi, "kok/xref");
         Assert.Equal(GateDecision.Girdi, kok.Decision);
         Assert.Equal("silver-ile-olculdu", kok.Reason);
         Assert.Null(kok.Rule);
@@ -166,7 +168,7 @@ public class GateLinkLayerTests
         Assert.Equal(GateDecision.Girmedi, lemma.Decision);
         Assert.Equal(GateRule.P07, lemma.Rule);
         Assert.Equal("kapi-gecmedi:altin", lemma.Reason);
-        GateReportRow similar = Row(result, GateSubjectKind.Kapi, "benzer_ayet");
+        GateReportRow similar = Row(result, GateSubjectKind.Kapi, "benzer_ayet/sozluksel");
         Assert.Equal(GateDecision.Girmedi, similar.Decision);
         Assert.Equal(GateReasons.KapiOlculmedi, similar.Reason);
 
@@ -373,7 +375,7 @@ public class GateLinkLayerTests
 
     private static void AssertLemmaCell(string path, bool kanit, string? setClass, string? result, bool publicIn, bool devIn, string? reason)
     {
-        GateMeasurement[] gates = setClass is null ? [] : [Gate(XrefType.Kok, setClass, result!)];
+        GateMeasurement[] gates = setClass is null ? [] : [TrLemmaGate(setClass, result!)];
         // Bagli tr_root_index ve tr_form lemmanin kararini izler (kapi ve kanit gerekceleri satira tasinir).
         GateLexical[] lexicals = [Lemma(1, XrefStatus.Onayli, path, kanit), RootIndex(1), Form(1)];
 
@@ -398,23 +400,27 @@ public class GateLinkLayerTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void P09_turkish_lemma_uses_the_kok_gate_not_the_lemma_gate_and_reports_the_approval_path(bool turkish) => CultureScope.For(turkish, () =>
+    public void P09_turkish_lemma_uses_the_kok_tr_lemma_gate_not_the_lemma_or_kok_xref_gate_and_reports_the_approval_path(bool turkish) => CultureScope.For(turkish, () =>
     {
         GateLexical[] lexicals = [Lemma(1, XrefStatus.Onayli, "otomatik"), Lemma(2, XrefStatus.Onayli, "editor")];
 
-        GateResult lemmaGateOnly = GateEvaluator.Evaluate(BuildFlavor.Public, LexicalInput(lexicals, [Gate(XrefType.Lemma, "silver", "gecti")]));
+        // Ne lemma kapisi ne kok/xref kapisi ne de eski bos alt turlu kok satiri Turkce lemmayi acar.
+        GateResult lemmaGateOnly = GateEvaluator.Evaluate(
+            BuildFlavor.Public,
+            LexicalInput(lexicals, [Gate(XrefType.Lemma, "silver", "gecti"), Gate(XrefType.Kok, "silver", "gecti"), Gate(XrefType.Kok, "silver", "gecti", string.Empty)]));
         Assert.DoesNotContain("lemma_tr:1", lemmaGateOnly.IncludedLexicals);
         Assert.Contains("lemma_tr:2", lemmaGateOnly.IncludedLexicals);
 
-        GateResult kokGate = GateEvaluator.Evaluate(BuildFlavor.Public, LexicalInput(lexicals, [Gate(XrefType.Kok, "silver", "gecti")]));
+        GateResult kokGate = GateEvaluator.Evaluate(BuildFlavor.Public, LexicalInput(lexicals, [TrLemmaGate("silver", "gecti")]));
         Assert.Contains("lemma_tr:1", kokGate.IncludedLexicals);
         Assert.Contains(kokGate.Report.Rows, r => r.Kind == GateSubjectKind.Sozluk && r.Id == "lemma_tr" && r.Reason == GateReasons.OtomatikOnay && r.Count == 1);
         Assert.Contains(kokGate.Report.Rows, r => r.Kind == GateSubjectKind.Sozluk && r.Id == "lemma_tr" && r.Reason == GateReasons.Uygun && r.Count == 1);
-        Assert.Equal("silver-ile-olculdu", Row(kokGate, GateSubjectKind.Kapi, "kok").Reason);
+        Assert.Equal("silver-ile-olculdu", Row(kokGate, GateSubjectKind.Kapi, "kok/tr_lemma").Reason);
+        Assert.DoesNotContain(kokGate.Report.Rows, r => r.Kind == GateSubjectKind.Kapi && r.Id == "kok/xref");
 
-        // Otomatik lemma kapi satirini xref olmasa da gerektirir: public'te kok kapi satiri "olculmedi" yazilir.
+        // Otomatik lemma kapi satirini xref olmasa da gerektirir: public'te kok/tr_lemma kapi satiri "olculmedi" yazilir.
         GateResult none = GateEvaluator.Evaluate(BuildFlavor.Public, LexicalInput(lexicals));
-        Assert.Equal(GateReasons.KapiOlculmedi, Row(none, GateSubjectKind.Kapi, "kok").Reason);
+        Assert.Equal(GateReasons.KapiOlculmedi, Row(none, GateSubjectKind.Kapi, "kok/tr_lemma").Reason);
     });
 
     [Theory]

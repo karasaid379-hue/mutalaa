@@ -22,6 +22,14 @@ Karar uc siniftan biridir:
 Surum 2: `calque` sablonu yapisal kanit listesinden cikarildi (K-51 madde 9 (b): `bor`, `der`,
 `inh`, `root`, `ety`, `etymon` ailesi; ceviri ariciligi soy kaniti degildir).
 
+Surum 3 (15 Kasim 2026, proje sahibi karari): K-51 madde 9 (a)-(e) AYNEN gecerlidir ve ek kosul
+olarak `ONAY_KOMBINASYONU` aranir: otomatik onay yalniz kanitin ozellikleri (`ozellik.py`)
+`kaikki_dilleri = tr` ve `kaikki_pos = noun` olan eslemeye verilir (yalniz Turkce madde kaniti,
+yalniz ad turu). Kombinasyon yalniz GELISTIRME parcasinda secildi (kesinlik >= 0,95, en az 15
+referansli tahmin; 189 hipotezden uc aday); dondurulmus parca yalniz olcum icindir. Kosullari
+saglayip kombinasyonda olmayan esleme `aday` olur (`kanit_kombinasyonu_disi`), tek kok onerisi
+`kok` olarak tasinir ve mevcut `--min-freq` kuraliyla `review` acilir.
+
 Otomatik eslemede `etymological_only` her zaman false'tur (anlam kaymasi otomatik taninmaz).
 """
 
@@ -40,9 +48,10 @@ from mutalaa_pipeline.enrich.tr_roots.eslesme import (
 )
 from mutalaa_pipeline.enrich.tr_roots.etimoloji import KaikkiIndeksi, Madde
 from mutalaa_pipeline.enrich.tr_roots.lemmatize import Analiz
+from mutalaa_pipeline.enrich.tr_roots.ozellik import ozellikler
 
 POLITIKA_ADI: Final = "tr-kok-otomatik-onay"
-POLITIKA_SURUMU: Final = "2"
+POLITIKA_SURUMU: Final = "3"
 YONTEM_ADI: Final = "kaikki-yapisal-etimoloji+qac-eslesme"
 YONTEM_SURUMU: Final = "1"
 KAYNAK_ID: Final = "kaikki-tr"
@@ -66,6 +75,10 @@ TR_OTA_KOK_CAKISMASI: Final = "tr_ota_kok_cakismasi"
 KOK_CAKISMASI: Final = "kok_cakismasi"
 POS_UYUSMAZLIGI: Final = "pos_uyusmazligi"
 HOMOGRAF_CELISKISI: Final = "homograf_madde_celisiyor"
+KANIT_KOMBINASYONU_DISI: Final = "kanit_kombinasyonu_disi"
+
+# Surum 3 ek kosulu: otomatik onay yalniz bu kanit ozellik degerlerinin HEPSINI tasiyan esleme icin.
+ONAY_KOMBINASYONU: Final[Mapping[str, str]] = {"kaikki_dilleri": "tr", "kaikki_pos": "noun"}
 
 # zeyrek (Zemberek) lemma turu -> kaikki `pos` kumesi
 POS_ESLEME: Final[Mapping[str, frozenset[str]]] = {
@@ -148,6 +161,12 @@ class YuzeyKarari:
     neden: str
     lemma: str | None = None
     lemma_karari: Karar | None = None
+
+
+def kombinasyonda_mi(kanit: Mapping[str, object]) -> bool:
+    """Kanit nesnesi `ONAY_KOMBINASYONU` degerlerinin hepsini tasiyor mu (surum 3 ek kosulu)."""
+    oz = ozellikler(kanit)
+    return all(oz[ad] == deger for ad, deger in ONAY_KOMBINASYONU.items())
 
 
 def kapali_mi(lemma: str, poslar: frozenset[str]) -> bool:
@@ -290,7 +309,7 @@ def lemma_karari(
         karar, neden = ADAY, HOMOGRAF_CELISKISI
     elif tur_uyusmuyor:
         karar, neden = ADAY, POS_UYUSMAZLIGI
-    return sonuc(
+    sonuc_karar = sonuc(
         karar,
         neden,
         kok=kok,
@@ -299,6 +318,17 @@ def lemma_karari(
         adaylar=(kok,),
         kaynaklar=kaynaklar,
     )
+    if karar == ONAYLI and not kombinasyonda_mi(sonuc_karar.kanit()):
+        return sonuc(
+            ADAY,
+            KANIT_KOMBINASYONU_DISI,
+            kok=kok,
+            ar_lemma=sonuc_karar.ar_lemma,
+            yontem=sonuc_karar.yontem,
+            adaylar=(kok,),
+            kaynaklar=kaynaklar,
+        )
+    return sonuc_karar
 
 
 def yuzey_karari(

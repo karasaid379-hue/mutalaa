@@ -12,20 +12,19 @@ namespace Mutalaa.Domain.Releases.Gate;
 /// -> sozluk (P-09) -> capa sureklilik. Baglanti (P-07) ayrica uc birimlerin bu derlemenin kapsamina girmesini ister (K-47 madde 1: "uc-birim-girmedi");
 /// capa sureklilik onceki yayinin her capasinin bu derlemede bulunmasini ya da acik geri cekilme kaydi (kullanim_disi + successors) tasimasini ister
 /// (K-47 madde 2: "capa-kayboldu"). P-11 ve P-14 dosya/kanal verisi gerektirdiginden ayri islevlerdir (GateEvaluator.Integrity).
-/// K-51 (A18.6): otomatik turlerin (kok, lemma, benzer_ayet) aday satiri public'e yalniz xref_gate'te o tur icin altin ya da silver sinifiyla gecen kapi varsa girer
-/// ("kapi-olculmedi", "kapi-gecmedi"; sentetik sinif kapi acmaz; dev ve internal kapiya bakmaz); ucun birimi var ve evidence ozeti birimin content_hash on ekiyle
+/// K-51 (A18.6): otomatik turlerin (kok, lemma, benzer_ayet) aday satiri public'e yalniz xref_gate'te o kapi (tur ve alt tur) icin altin ya da silver sinifiyla gecen
+/// kapi varsa girer: kok baglantisi kok/xref, lemma lemma, benzer_ayet satiri alim (evidence.source_id qursim ya da evidence.qursim var) ya da sozluksel kapisina baglidir;
+/// Turkce lemma eslemesi (P-09) kok/tr_lemma kapisina baglidir ve oteki kapilari etkilemez
+/// ("kapi-olculmedi", "kapi-gecmedi"; sentetik sinif kapi acmaz; dev ve internal kapiya bakmaz; alt turu tutmayan eski satir kapi acmaz); ucun birimi var ve evidence ozeti birimin content_hash on ekiyle
 /// tutmuyorsa satir hicbir derlemeye girmez ("uc-ozeti-tutmadi"). P-09: Turkce lemma yalniz onayli girer; otomatik onayli lemma kanit nesnesi ister ("kanitsiz-otomatik-onay")
-/// ve public'te kok kapisina baglidir; tr_root_index ve tr_form bagli lemmanin kararini izler, tr_root_index ayrica birim kapsami ve unit_hash ozeti ister
-/// ("birim-girmedi", "ozet-tutmadi"). Rapora her kapi turu icin "kapi" satiri yazilir ("silver-ile-olculdu" ya da "kapi-olculmedi").
+/// ve public'te kok/tr_lemma kapisina baglidir; tr_root_index ve tr_form bagli lemmanin kararini izler, tr_root_index ayrica birim kapsami ve unit_hash ozeti ister
+/// ("birim-girmedi", "ozet-tutmadi"). Rapora her kapi (tur ve alt tur) icin "kapi" satiri yazilir ("silver-ile-olculdu" ya da "kapi-olculmedi").
 /// </summary>
 public static partial class GateEvaluator
 {
     private readonly record struct SourceVerdict(GateDecision Decision, GateRule? Rule, string Reason);
 
     private readonly record struct UnitExclusion(GateRule? Rule, string Reason);
-
-    /// <summary>Tur kapisi olan baglanti turleri (kok, lemma, benzer_ayet); rapor ve kapi cozumu bu sirayla yapilir.</summary>
-    private static readonly XrefType[] GateTypes = [XrefType.Kok, XrefType.Lemma, XrefType.BenzerAyet];
 
     private readonly record struct RowKey(GateSubjectKind Kind, string Id, GateDecision Decision, GateRule? Rule, string Reason);
 
@@ -135,11 +134,11 @@ public static partial class GateEvaluator
         manifest.UnionWith(input.CarriedPackIds);
         violations.AddRange(EvaluateP13(enteredPacks, manifest));
 
-        // Tur kapilari (xref_gate; K-51 madde 5 ve 11): her kapi turunun durumu bir kez cozulur.
-        Dictionary<XrefType, XrefTypeGate> typeGates = [];
-        foreach (XrefType gateType in GateTypes)
+        // Tur kapilari (xref_gate; K-51 madde 5 ve 11): her kapinin (tur ve alt tur) durumu bir kez cozulur.
+        Dictionary<GateKey, XrefTypeGate> typeGates = [];
+        foreach (GateKey gateKey in XrefGateRules.AllKeys)
         {
-            typeGates[gateType] = XrefGateRules.Resolve(input.Gates, gateType);
+            typeGates[gateKey] = XrefGateRules.Resolve(input.Gates, gateKey);
         }
 
         Dictionary<string, GateUnit> unitsByAnchor = new(StringComparer.Ordinal);
@@ -150,13 +149,15 @@ public static partial class GateEvaluator
 
         // Baglantilar (P-07).
         Dictionary<Guid, XrefVerdict> verdicts = [];
-        HashSet<XrefType> seenGateTypes = [];
+        HashSet<GateKey> seenGateKeys = [];
         foreach (GateXref xref in input.Xrefs)
         {
-            XrefTypeGate typeGate = typeGates.GetValueOrDefault(xref.Type);
+            XrefTypeGate typeGate = default;
             if (XrefGateRules.HasGate(xref.Type))
             {
-                seenGateTypes.Add(xref.Type);
+                GateKey xrefKey = XrefGateRules.GateKeyOf(xref.Type, xref.EvidenceSourceId, xref.HasQursimEvidence);
+                typeGate = typeGates.GetValueOrDefault(xrefKey);
+                seenGateKeys.Add(xrefKey);
             }
 
             XrefVerdict verdict = EvaluateXref(
@@ -202,7 +203,7 @@ public static partial class GateEvaluator
 
         // Turkce lemmalar once (K-51 madde 9): tr_root_index ve tr_form satirlari bagli lemmanin kararini izler.
         Dictionary<int, (bool Included, string Reason)> lemmaVerdicts = [];
-        XrefTypeGate rootGate = typeGates.GetValueOrDefault(XrefType.Kok);
+        XrefTypeGate trLemmaGate = typeGates.GetValueOrDefault(XrefGateRules.TrLemmaKey);
         bool anyAutoLemma = false;
         foreach (GateLexical lexical in input.Lexicals)
         {
@@ -212,7 +213,7 @@ public static partial class GateEvaluator
             }
 
             string label = lexical.Kind.ToLabel();
-            (bool ok, string reason) = DecideTrLemma(f, lexical, rootGate);
+            (bool ok, string reason) = DecideTrLemma(f, lexical, trLemmaGate);
             anyAutoLemma |= string.Equals(lexical.OnayYolu, GateReasons.OnayYoluOtomatik, StringComparison.Ordinal);
             if (lexical.LemmaId is { } lemmaId)
             {
@@ -254,19 +255,20 @@ public static partial class GateEvaluator
             }
         }
 
-        // Tur kapisi satirlari: kapi turu icin baglanti (ya da, kok icin, otomatik Turkce lemma) varsa ya da olcum satiri varsa yazilir.
-        foreach (XrefType gateType in GateTypes)
+        // Tur kapisi satirlari: kapi icin baglanti (ya da, kok/tr_lemma icin, otomatik Turkce lemma) varsa ya da olcum satiri varsa yazilir.
+        // Satir kimligi "tur" ya da "tur/alt_tur" (ornegin "benzer_ayet/alim", "kok/tr_lemma").
+        foreach (GateKey gateKey in XrefGateRules.AllKeys)
         {
-            XrefTypeGate gate = typeGates[gateType];
-            bool relevant = seenGateTypes.Contains(gateType)
+            XrefTypeGate gate = typeGates[gateKey];
+            bool relevant = seenGateKeys.Contains(gateKey)
                 || gate.Status != XrefGateStatus.NotMeasured
-                || (gateType == XrefType.Kok && anyAutoLemma);
+                || (gateKey == XrefGateRules.TrLemmaKey && anyAutoLemma);
             if (!relevant)
             {
                 continue;
             }
 
-            string typeLabel = gateType.ToLabel();
+            string typeLabel = gateKey.Label;
             if (gate.Opens)
             {
                 rows.Add(new GateReportRow(GateSubjectKind.Kapi, typeLabel, GateDecision.Girdi, null, gate.SetClass + GateReasons.OlculduSoneki));
@@ -606,10 +608,10 @@ public static partial class GateEvaluator
 
     /// <summary>
     /// P-09, Turkce lemma (K-51 madde 9 ve 11): yalniz status = onayli girer. onay_yolu = editor her derlemeye girer ("uygun"). onay_yolu = otomatik kanit
-    /// nesnesi ister (yoksa "kanitsiz-otomatik-onay", her derlemede) ve public'e yalniz kok kapisi (xref_gate, tur = kok) altin ya da silver sinifiyla gectiyse
+    /// nesnesi ister (yoksa "kanitsiz-otomatik-onay", her derlemede) ve public'e yalniz kok/tr_lemma kapisi (xref_gate, tur = kok, alt_tur = tr_lemma) altin ya da silver sinifiyla gectiyse
     /// girer ("kapi-olculmedi", "kapi-gecmedi"); dev ve internal kapiya bakmaz ("otomatik-onay"). Onay yolu bilinmiyorsa "onaysiz-satir".
     /// </summary>
-    private static (bool Included, string Reason) DecideTrLemma(BuildFlavor flavor, GateLexical lexical, XrefTypeGate rootGate)
+    private static (bool Included, string Reason) DecideTrLemma(BuildFlavor flavor, GateLexical lexical, XrefTypeGate trLemmaGate)
     {
         switch (lexical.Status)
         {
@@ -636,7 +638,7 @@ public static partial class GateEvaluator
             return (false, GateReasons.KanitsizOtomatikOnay);
         }
 
-        if (flavor == BuildFlavor.Public && XrefGateRules.ReasonWhenClosed(rootGate) is { } closed)
+        if (flavor == BuildFlavor.Public && XrefGateRules.ReasonWhenClosed(trLemmaGate) is { } closed)
         {
             return (false, closed);
         }

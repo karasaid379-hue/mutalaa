@@ -10,7 +10,9 @@ from mutalaa_pipeline.cli_qac import Config, DryRun, KokSecenegi
 Tur = Annotated[
     str,
     typer.Option(
-        "--type", help="Olculecek tur: kok, lemma, benzer-ayet, atif, iktibas ya da hepsi."
+        "--type",
+        help="Olculecek tur: kok, kok-baglanti, lemma, benzer-ayet, benzer-ayet-alim, atif, iktibas"
+        " ya da hepsi.",
     ),
 ]
 Build = Annotated[

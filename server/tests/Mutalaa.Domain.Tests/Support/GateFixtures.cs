@@ -56,14 +56,27 @@ internal static class GateFixtures
             Gates = gates ?? [],
         };
 
-    public static GateMeasurement Gate(XrefType type, string setClass, string result) => new(type, setClass, result);
+    /// <summary>
+    /// xref_gate olcum satiri. Alt tur verilmezse turun baglanti kapisi alt turu kullanilir (kok: xref, benzer_ayet: sozluksel, digerleri bos);
+    /// Turkce lemma kapisi icin <see cref="TrLemmaGate"/>, alim kapisi icin <see cref="AlimGate"/> kullanilir.
+    /// </summary>
+    public static GateMeasurement Gate(XrefType type, string setClass, string result, string? subType = null) =>
+        new(type, setClass, result, subType ?? XrefGateRules.GateKeyOf(type, null, false).SubType);
 
-    /// <summary>kok, lemma ve benzer_ayet icin silver sinifiyla gecen tur kapilari (public'te otomatik aday satirlarini acar).</summary>
+    /// <summary>kok/tr_lemma kapisi (P-09: Turkce lemma eslemesinin olcumu).</summary>
+    public static GateMeasurement TrLemmaGate(string setClass, string result) => Gate(XrefType.Kok, setClass, result, XrefGateSubtypes.TrLemma);
+
+    /// <summary>benzer_ayet/alim kapisi (QurSim).</summary>
+    public static GateMeasurement AlimGate(string setClass, string result) => Gate(XrefType.BenzerAyet, setClass, result, XrefGateSubtypes.Alim);
+
+    /// <summary>Bes kapinin (kok/xref, kok/tr_lemma, lemma, benzer_ayet/sozluksel, benzer_ayet/alim) hepsi silver ile gecen hali (public'te otomatik satirlari acar).</summary>
     public static GateMeasurement[] OpenGates() =>
     [
         Gate(XrefType.Kok, "silver", "gecti"),
+        TrLemmaGate("silver", "gecti"),
         Gate(XrefType.Lemma, "silver", "gecti"),
         Gate(XrefType.BenzerAyet, "silver", "gecti"),
+        AlimGate("silver", "gecti"),
     ];
 
     public static GateReportRow Single(GateResult result, GateSubjectKind kind) =>

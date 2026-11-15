@@ -1614,6 +1614,10 @@ namespace Mutalaa.Infrastructure.Migrations
                         .HasColumnType("icerik.xref_type")
                         .HasColumnName("tur");
 
+                    b.Property<string>("AltTur")
+                        .HasColumnType("text")
+                        .HasColumnName("alt_tur");
+
                     b.Property<string>("SetSinifi")
                         .HasColumnType("text")
                         .HasColumnName("set_sinifi");
@@ -1655,11 +1659,13 @@ namespace Mutalaa.Infrastructure.Migrations
                         .HasColumnType("xid")
                         .HasColumnName("xmin");
 
-                    b.HasKey("Tur", "SetSinifi")
+                    b.HasKey("Tur", "AltTur", "SetSinifi")
                         .HasName("xref_gate_pkey");
 
                     b.ToTable("xref_gate", "icerik", t =>
                         {
+                            t.HasCheckConstraint("xref_gate_alt_tur_check", "alt_tur IN ('','sozluksel','alim','tr_lemma','xref') AND ((tur = 'benzer_ayet' AND alt_tur IN ('sozluksel','alim')) OR (tur = 'kok' AND alt_tur IN ('tr_lemma','xref')) OR (tur NOT IN ('benzer_ayet','kok') AND alt_tur = ''))");
+
                             t.HasCheckConstraint("xref_gate_rapor_sha256_check", "rapor_sha256 ~ '^[0-9a-f]{64}$'");
 
                             t.HasCheckConstraint("xref_gate_set_sinifi_check", "set_sinifi IN ('altin','silver','sentetik')");

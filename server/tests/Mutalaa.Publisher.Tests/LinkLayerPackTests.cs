@@ -105,8 +105,17 @@ public class LinkLayerPackTests
         new("baska", "baska", 102, 1, "dv-1"),
     ];
 
-    private static XrefGateRow Gate(string tur, string setClass, string result) =>
-        new(tur, setClass, result, "s1", ["kaynak@1"], new string('a', 64), new DateTime(2026, 11, 13, 0, 0, 0, DateTimeKind.Utc));
+    // Alt tur verilmezse turun baglanti kapisi alt turu kullanilir (kok: xref, benzer_ayet: sozluksel, digerleri bos); tr_lemma ve alim acikca verilir.
+    private static XrefGateRow Gate(string tur, string setClass, string result, string? altTur = null) =>
+        new(
+            tur,
+            setClass,
+            result,
+            "s1",
+            ["kaynak@1"],
+            new string('a', 64),
+            new DateTime(2026, 11, 13, 0, 0, 0, DateTimeKind.Utc),
+            altTur ?? tur switch { "kok" => "xref", "benzer_ayet" => "sozluksel", _ => string.Empty });
 
     private static PackContent Assemble(BuildFlavor flavor, EditorialSnapshot snapshot, string packId)
     {
@@ -166,7 +175,8 @@ public class LinkLayerPackTests
     [Fact]
     public void Public_with_gold_and_silver_gates_open_admits_the_candidates_and_the_end_hash_still_applies()
     {
-        EditorialSnapshot snapshot = Snapshot([Gate("kok", "altin", "gecti"), Gate("lemma", "silver", "gecti"), Gate("benzer_ayet", "silver", "gecti")]);
+        EditorialSnapshot snapshot = Snapshot(
+            [Gate("kok", "altin", "gecti"), Gate("lemma", "silver", "gecti"), Gate("benzer_ayet", "silver", "gecti"), Gate("benzer_ayet", "silver", "gecti", "alim")]);
 
         PackContent kelimeKok = Assemble(BuildFlavor.Public, snapshot, "kelime-kok");
         PackContent core = Assemble(BuildFlavor.Public, snapshot, "core");
@@ -174,6 +184,30 @@ public class LinkLayerPackTests
         Assert.Equal(new[] { KokId, LemmaXrefId, KokApprovedId }.Select(Id).Order(StringComparer.Ordinal), kelimeKok.Xrefs.Select(x => x.Id).Order(StringComparer.Ordinal));
         Assert.Contains(core.Xrefs, x => x.Id == Id(SimilarId));
         Assert.DoesNotContain(core.Xrefs, x => x.Id == Id(SimilarStaleId));
+    }
+
+    [Fact]
+    public void A_benzer_ayet_row_with_a_qursim_evidence_object_takes_the_alim_gate_and_the_others_take_the_sozluksel_gate()
+    {
+        Guid lexical = new("0190c000-0000-7000-8000-0000000000a1");
+        Guid scholar = new("0190c000-0000-7000-8000-0000000000a2");
+        string ayah1 = Hash16("Deneme paragrafi 1");
+        string ayah2 = Hash16("Deneme paragrafi 2");
+        IReadOnlyList<XrefRow> rows =
+        [
+            .. Snapshot().Xrefs.Where(x => x.Type != "benzer_ayet"),
+            PackTestData.Xref("q:1:1", "q:1:2", "benzer_ayet", "aday", confidence: 0.9f, id: lexical, srcHash: ayah1, dstHash: ayah2),
+            PackTestData.Xref("q:1:2", "q:1:1", "benzer_ayet", "aday", confidence: 0.9f, id: scholar, srcHash: ayah2, dstHash: ayah1) with { HasQursimEvidence = true },
+        ];
+
+        IReadOnlyList<string> InCore(XrefGateRow gate) => [.. Assemble(BuildFlavor.Public, Snapshot([gate], xrefs: rows), "core").Xrefs.Select(x => x.Id)];
+
+        IReadOnlyList<string> lexicalOpen = InCore(Gate("benzer_ayet", "silver", "gecti"));
+        IReadOnlyList<string> alimOpen = InCore(Gate("benzer_ayet", "silver", "gecti", "alim"));
+        Assert.Contains(Id(lexical), lexicalOpen);
+        Assert.DoesNotContain(Id(scholar), lexicalOpen);
+        Assert.Contains(Id(scholar), alimOpen);
+        Assert.DoesNotContain(Id(lexical), alimOpen);
     }
 
     [Fact]
@@ -276,16 +310,24 @@ public class LinkLayerPackTests
     }
 
     [Fact]
-    public void Public_with_a_passed_kok_gate_admits_automatic_lemmas_but_a_failed_one_or_the_lemma_gate_alone_does_not()
+    public void Public_with_a_passed_kok_tr_lemma_gate_admits_automatic_lemmas_but_a_failed_one_or_any_other_gate_alone_does_not()
     {
-        PackContent opened = Assemble(BuildFlavor.Public, Snapshot([Gate("kok", "silver", "gecti")]), "kelime-kok");
-        PackContent failed = Assemble(BuildFlavor.Public, Snapshot([Gate("kok", "silver", "kaldi")]), "kelime-kok");
+        PackContent opened = Assemble(BuildFlavor.Public, Snapshot([Gate("kok", "silver", "gecti", "tr_lemma")]), "kelime-kok");
+        PackContent failed = Assemble(BuildFlavor.Public, Snapshot([Gate("kok", "silver", "kaldi", "tr_lemma")]), "kelime-kok");
         PackContent lemmaGate = Assemble(BuildFlavor.Public, Snapshot([Gate("lemma", "silver", "gecti")]), "kelime-kok");
+        PackContent kokXrefGate = Assemble(BuildFlavor.Public, Snapshot([Gate("kok", "silver", "gecti")]), "kelime-kok");
+        PackContent legacyKok = Assemble(BuildFlavor.Public, Snapshot([Gate("kok", "silver", "gecti", string.Empty)]), "kelime-kok");
 
         Assert.Equal([100L, 101L], opened.Lemmas.Where(l => l.Lang == "tr").Select(l => l.Id).Order());
         Assert.Equal([0L, 5L], opened.TrRootIndex.Select(r => r.SpanStart).Order());
         Assert.Equal([101L], failed.Lemmas.Where(l => l.Lang == "tr").Select(l => l.Id));
         Assert.Equal([101L], lemmaGate.Lemmas.Where(l => l.Lang == "tr").Select(l => l.Id));
+        Assert.Equal([101L], kokXrefGate.Lemmas.Where(l => l.Lang == "tr").Select(l => l.Id));
+        Assert.Equal([101L], legacyKok.Lemmas.Where(l => l.Lang == "tr").Select(l => l.Id));
+
+        // Kok baglantisi (kok/xref) ile Turkce lemma (kok/tr_lemma) ayri kapilardir: kok/tr_lemma acikken kok adayi girmez, kok/xref acikken girer.
+        Assert.DoesNotContain(opened.Xrefs, x => x.Id == Id(KokId));
+        Assert.Contains(kokXrefGate.Xrefs, x => x.Id == Id(KokId));
     }
 
     [Fact]
@@ -344,20 +386,29 @@ public class LinkLayerPackTests
         [
             Gate("kok", "silver", "gecti"),
             Gate("kok", "sentetik", "kaldi"),
+            Gate("kok", "altin", "kaldi", "tr_lemma"),
+            Gate("kok", "silver", "gecti", string.Empty), // eski bos alt turlu satir: ozete girmez
             Gate("lemma", "altin", "kaldi"),
             Gate("lemma", "silver", "gecti"),
             Gate("benzer_ayet", "sentetik", "gecti"),
+            Gate("benzer_ayet", "silver", "gecti", "alim"),
             Gate("atif", "silver", "gecti"),
         ]);
 
+        // Anahtar "tur" ya da "tur/alt_tur"; RFC 8785 sirasi (kod noktasi): kok/tr_lemma < kok/xref < lemma.
         Assert.Equal(
-            "{\"kok\":{\"set_sinifi\":\"silver\",\"sonuc\":\"gecti\"},\"lemma\":{\"set_sinifi\":\"altin\",\"sonuc\":\"kaldi\"}}",
+            "{\"kok/tr_lemma\":{\"set_sinifi\":\"altin\",\"sonuc\":\"kaldi\"},\"kok/xref\":{\"set_sinifi\":\"silver\",\"sonuc\":\"gecti\"},\"lemma\":{\"set_sinifi\":\"altin\",\"sonuc\":\"kaldi\"}}",
             Assemble(BuildFlavor.Public, snapshot, "kelime-kok").GateSummary);
-        Assert.Equal("{}", Assemble(BuildFlavor.Public, snapshot, "core").GateSummary); // benzer_ayet yalniz sentetik: olculmemis
+        // benzer_ayet/sozluksel yalniz sentetik: olculmemis; alim silver ile gecti.
+        Assert.Equal("{\"benzer_ayet/alim\":{\"set_sinifi\":\"silver\",\"sonuc\":\"gecti\"}}", Assemble(BuildFlavor.Public, snapshot, "core").GateSummary);
         Assert.Null(Assemble(BuildFlavor.Dev, snapshot, "test-kucuk").GateSummary);
         Assert.Equal(
-            "{\"benzer_ayet\":{\"set_sinifi\":\"silver\",\"sonuc\":\"kaldi\"}}",
+            "{\"benzer_ayet/sozluksel\":{\"set_sinifi\":\"silver\",\"sonuc\":\"kaldi\"}}",
             Assemble(BuildFlavor.Dev, Snapshot([Gate("benzer_ayet", "silver", "kaldi")]), "core").GateSummary);
+        Assert.Equal(
+            "{\"benzer_ayet/alim\":{\"set_sinifi\":\"altin\",\"sonuc\":\"gecti\"},\"benzer_ayet/sozluksel\":{\"set_sinifi\":\"silver\",\"sonuc\":\"kaldi\"}}",
+            Assemble(BuildFlavor.Dev, Snapshot([Gate("benzer_ayet", "silver", "kaldi"), Gate("benzer_ayet", "altin", "gecti", "alim")]), "core").GateSummary);
+        Assert.Equal("{}", Assemble(BuildFlavor.Dev, Snapshot([Gate("benzer_ayet", "silver", "gecti", string.Empty)]), "core").GateSummary);
         Assert.Equal("{}", Assemble(BuildFlavor.Dev, Snapshot(), "kelime-kok").GateSummary);
     }
 
@@ -408,7 +459,7 @@ public class LinkLayerPackTests
             using SqliteConnection connection = new(builder.ConnectionString);
             connection.Open();
 
-            Assert.Equal("{\"kok\":{\"set_sinifi\":\"silver\",\"sonuc\":\"gecti\"}}", Scalar(connection, "SELECT value FROM pack_meta WHERE key = 'gate_summary'"));
+            Assert.Equal("{\"kok/xref\":{\"set_sinifi\":\"silver\",\"sonuc\":\"gecti\"}}", Scalar(connection, "SELECT value FROM pack_meta WHERE key = 'gate_summary'"));
             Assert.Equal("gate_summary", PackMetaKeys.GateSummary);
             Assert.Equal("3", Scalar(connection, "SELECT count(*) FROM xref_idx"));
             Assert.Equal("auto", Scalar(connection, "SELECT approval FROM lemma WHERE id = 100"));
@@ -427,7 +478,7 @@ public class LinkLayerPackTests
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
         using PackTestData.TempDir dir = new();
-        EditorialSnapshot snapshot = Snapshot([Gate("benzer_ayet", "silver", "gecti")]);
+        EditorialSnapshot snapshot = Snapshot([Gate("benzer_ayet", "silver", "gecti"), Gate("benzer_ayet", "silver", "gecti", "alim")]);
         PackContent content = Assemble(BuildFlavor.Public, snapshot, "core");
         SqlitePackWriter writer = new(PackTestData.Definitions(), new FixedClock(new DateTimeOffset(2026, 11, 13, 9, 0, 0, TimeSpan.Zero)));
 
@@ -437,7 +488,9 @@ public class LinkLayerPackTests
         SqliteConnectionStringBuilder builder = new() { DataSource = file.Path, Pooling = false, Mode = SqliteOpenMode.ReadOnly };
         using SqliteConnection connection = new(builder.ConnectionString);
         connection.Open();
-        Assert.Equal("{\"benzer_ayet\":{\"set_sinifi\":\"silver\",\"sonuc\":\"gecti\"}}", Scalar(connection, "SELECT value FROM pack_meta WHERE key = 'gate_summary'"));
+        Assert.Equal(
+            "{\"benzer_ayet/alim\":{\"set_sinifi\":\"silver\",\"sonuc\":\"gecti\"},\"benzer_ayet/sozluksel\":{\"set_sinifi\":\"silver\",\"sonuc\":\"gecti\"}}",
+            Scalar(connection, "SELECT value FROM pack_meta WHERE key = 'gate_summary'"));
         Assert.Equal("2", Scalar(connection, "SELECT count(*) FROM xref_idx WHERE type = 'benzer_ayet'"));
         Assert.Equal("0", Scalar(connection, "SELECT count(*) FROM xref_idx WHERE type IN ('kok', 'lemma')"));
     }

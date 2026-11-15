@@ -726,6 +726,8 @@ CREATE TABLE icerik.xref_gate (
     rapor_sha256 character(64) NOT NULL,
     data_version text NOT NULL,
     olculdu_at timestamp with time zone DEFAULT now() NOT NULL,
+    alt_tur text NOT NULL,
+    CONSTRAINT xref_gate_alt_tur_check CHECK (((alt_tur = ANY (ARRAY[''::text, 'sozluksel'::text, 'alim'::text, 'tr_lemma'::text, 'xref'::text])) AND (((tur = 'benzer_ayet'::icerik.xref_type) AND (alt_tur = ANY (ARRAY['sozluksel'::text, 'alim'::text]))) OR ((tur = 'kok'::icerik.xref_type) AND (alt_tur = ANY (ARRAY['tr_lemma'::text, 'xref'::text]))) OR ((tur <> ALL (ARRAY['benzer_ayet'::icerik.xref_type, 'kok'::icerik.xref_type])) AND (alt_tur = ''::text))))),
     CONSTRAINT xref_gate_rapor_sha256_check CHECK ((rapor_sha256 ~ '^[0-9a-f]{64}$'::text)),
     CONSTRAINT xref_gate_set_sinifi_check CHECK ((set_sinifi = ANY (ARRAY['altin'::text, 'silver'::text, 'sentetik'::text]))),
     CONSTRAINT xref_gate_sonuc_check CHECK ((sonuc = ANY (ARRAY['gecti'::text, 'kaldi'::text])))
@@ -1042,7 +1044,7 @@ ALTER TABLE ONLY icerik.unit
 --
 
 ALTER TABLE ONLY icerik.xref_gate
-    ADD CONSTRAINT xref_gate_pkey PRIMARY KEY (tur, set_sinifi);
+    ADD CONSTRAINT xref_gate_pkey PRIMARY KEY (tur, alt_tur, set_sinifi);
 
 
 --

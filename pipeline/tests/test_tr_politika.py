@@ -29,11 +29,13 @@ from mutalaa_pipeline.enrich.tr_roots.politika import (
     BILINMEYEN_SOZCUK,
     COK_ADAYLI_QAC,
     HOMOGRAF_CELISKISI,
+    KANIT_KOMBINASYONU_DISI,
     KANIT_YOK,
     KAPALI_SINIF,
     KOK_CAKISMASI,
     KOK_YOK,
     MADDE_YOK,
+    ONAY_KOMBINASYONU,
     ONAYLI,
     POLITIKA_SURUMU,
     POS_UYUSMAZLIGI,
@@ -41,6 +43,7 @@ from mutalaa_pipeline.enrich.tr_roots.politika import (
     TR_OTA_KOK_CAKISMASI,
     YALNIZ_SERBEST_METIN,
     Karar,
+    kombinasyonda_mi,
     lemma_karari,
     yuzey_karari,
 )
@@ -90,12 +93,15 @@ def test_hemze_katlamasi_kok_harfleriyle_tutar() -> None:
 
 
 def test_osmanlica_zinciri_yapisal_kanittir() -> None:
+    """Osmanlica zinciri YAPISAL kanittir (madde 9 (b)); surum 3'te otomatik onay kombinasyonu
+    (yalniz Turkce madde kaniti) disinda kaldigi icin aday olur, kok onerisi korunur."""
     indeks = indeks_kur(
         tr_madde("pelin", osmanlica=("ععع",)),
         ota_madde("ععع", kok_kanit(KOK_SML)),
     )
     k = karar(indeks, "pelin")
-    assert (k.karar, k.yontem) == (ONAYLI, "kok_harfleri")
+    assert (k.karar, k.neden, k.yontem) == (ADAY, KANIT_KOMBINASYONU_DISI, "kok_harfleri")
+    assert k.kok is not None and k.kok.letters_bw == "Sml"  # oneri editore tasinir
     assert {x["madde"] for x in k.kaynaklar} == {"ععع"}  # kanit Osmanlica maddeden gelir
 
 
@@ -158,8 +164,12 @@ def test_pos_uyusmazligi_aday_kalir_ve_oneri_tasir() -> None:
 
 
 def test_zeyrek_turu_kaikki_turuyle_eslesirse_onay() -> None:
+    """Tur uyusmazligi yok: karar `uyusmazlik` nedeniyle aday DEGIL; yalniz surum 3 kombinasyonu
+    (ad turu) disinda kaldigi icin `kanit_kombinasyonu_disi` aday olur."""
     k = karar(indeks_kur(tr_madde("kalem", kok_kanit(KOK_BNR), pos="adj")), "kalem", "Adj")
-    assert k.karar == ONAYLI
+    assert (k.karar, k.neden) == (ADAY, KANIT_KOMBINASYONU_DISI)
+    ad = karar(indeks_kur(tr_madde("kalem", kok_kanit(KOK_BNR), pos="noun")), "kalem", "Noun")
+    assert ad.karar == ONAYLI
 
 
 def test_ayni_lemma_ve_turde_madde_kanitsizsa_homograf_aday() -> None:
@@ -272,7 +282,7 @@ def test_kanit_k51_bicimindedir() -> None:
         "karar",
         "neden",
     }
-    assert kanit["politika_surumu"] == POLITIKA_SURUMU == "2"
+    assert kanit["politika_surumu"] == POLITIKA_SURUMU == "3"
     kaynak = kanit["kaynaklar"][0]  # type: ignore[index]
     assert set(kaynak) == {"source_id", "surum", "madde", "alan", "deger"}
     assert kaynak["source_id"] == "kaikki-tr" and kaynak["madde"] == "dolap"
@@ -302,3 +312,63 @@ def test_kanit_qac_koku_olmayan_onayli_gecersiz() -> None:
     hatalar = kanit_hatalari(kanit, ONAYLI, "kosullar_saglandi")
     assert "kanit_qac_kok_yok" in hatalar and "kanit_eslesme" in hatalar
     assert kanit_hatalari("kanit", ONAYLI, "x") == ["kanit_nesne_degil"]
+
+
+# --- politika surumu 3: kanit kombinasyonu (yalniz Turkce madde kaniti VE ad turu) --------------
+
+
+def test_onay_kombinasyonu_gelistirmede_secilen_deger() -> None:
+    assert dict(ONAY_KOMBINASYONU) == {"kaikki_dilleri": "tr", "kaikki_pos": "noun"}
+    assert POLITIKA_SURUMU == "3"
+
+
+def test_kombinasyon_saglanirsa_onay_ve_kanit_surumu_3() -> None:
+    k = karar(indeks_kur(tr_madde("tavan", kok_kanit(KOK_BNR))), "tavan")
+    assert (k.karar, k.neden) == (ONAYLI, "kosullar_saglandi")
+    assert k.kanit()["politika_surumu"] == "3"
+    assert kombinasyonda_mi(k.kanit())
+
+
+@pytest.mark.parametrize(
+    ("indeks", "poslar"),
+    [
+        # Osmanlica madde kaniti: kaikki_dilleri = ota
+        (
+            indeks_kur(tr_madde("tavan", osmanlica=("ععع",)), ota_madde("ععع", kok_kanit(KOK_BNR))),
+            ("Noun",),
+        ),
+        # Turkce ve Osmanlica birlikte: kaikki_dilleri = ota+tr
+        (
+            indeks_kur(
+                tr_madde("tavan", kok_kanit(KOK_BNR), osmanlica=("ععع",)),
+                ota_madde("ععع", kok_kanit(KOK_BNR)),
+            ),
+            ("Noun",),
+        ),
+        # sifat: kaikki_pos = adj
+        (indeks_kur(tr_madde("tavan", kok_kanit(KOK_BNR), pos="adj")), ("Adj",)),
+        # ozel ad: kaikki_pos = name
+        (indeks_kur(tr_madde("tavan", kok_kanit(KOK_BNR), pos="name")), ("Noun",)),
+    ],
+)
+def test_kombinasyon_disi_esleme_aday_olur_ve_kok_onerisi_tasinir(
+    indeks: KaikkiIndeksi, poslar: tuple[str, ...]
+) -> None:
+    k = karar(indeks, "tavan", *poslar)
+    assert (k.karar, k.neden) == (ADAY, KANIT_KOMBINASYONU_DISI)
+    assert k.kok is not None and k.kok.letters_bw == "bnr"
+    assert not kombinasyonda_mi(k.kanit())
+    assert kanit_hatalari(k.kanit(), ADAY, KANIT_KOMBINASYONU_DISI) == []
+
+
+def test_kombinasyon_ek_kosuldur_digerlerinin_yerine_gecmez() -> None:
+    """(a)-(e) once: kombinasyon saglansa bile cok adayli QAC aday kalir (neden degismez)."""
+    k = karar(indeks_kur(tr_madde("morta", etimon_kanit(ETIMON_MRT))), "morta")
+    assert (k.karar, k.neden) == (ADAY, COK_ADAYLI_QAC)
+    k2 = karar(indeks_kur(tr_madde("fisto", zayif=True)), "fisto")
+    assert (k2.karar, k2.neden) == (ADAY, YALNIZ_SERBEST_METIN)
+
+
+def test_kombinasyonda_mi_bos_ya_da_bozuk_kanitta_hayir() -> None:
+    assert not kombinasyonda_mi({})
+    assert not kombinasyonda_mi({"kaynaklar": "x", "qac": 3})

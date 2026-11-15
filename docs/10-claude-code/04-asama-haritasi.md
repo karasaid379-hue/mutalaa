@@ -1,6 +1,6 @@
 # Aşama haritası
 
-> **Sürüm:** 1.7 · **Tarih:** 13 Kasım 2026 · **Durum:** Taslak
+> **Sürüm:** 1.8 · **Tarih:** 16 Kasım 2026 · **Durum:** Taslak
 > **Bağlı kararlar:** [K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) · [K-08](../00-ozet/02-karar-defteri.md#k-08--platform-sırası) · [K-31](../00-ozet/02-karar-defteri.md#k-31--geliştirme-aracı-claude-code) · [K-38](../00-ozet/02-karar-defteri.md#k-38--kaynak-edinimi-dijital-öncelikli-kanıtla-yükseltme) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-49](../00-ozet/02-karar-defteri.md#k-49--elmalılı-mealleri-hazır-metin-yolu-ve-ocrın-proje-sonuna-ertelenmesi) · [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü)
 
 Bu dosya [Fazlar](../08-yol-haritasi/01-fazlar.md) planını Claude Code'un yürütebileceği aşamalara böler. Her aşamanın kendi dosyası vardır ve `/asama <no>` ile başlatılır. Bir aşama tek oturumda bitmek zorunda değildir; aşama dosyasındaki adımlar (`A07.1`, `A07.2` …) tek oturumluk iştir. A09–A40 aşamalarının (A39 hariç) ilk adımı `.0` numaralı tedarik adımıdır (`A09.0`): gerekli yapılar araştırılır, aşamanın `## Tedarik` bölümüne yazılır ve indirilir; öteki adımların numaraları kaymaz ([K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük)). Aşamaların durumu [İlerleme](./05-ilerleme.md) dosyasında, Claude Code'un yapamadığı işler (hesap, altyapı, editör emeği) [İnsan adımları](./06-insan-adimlari.md) dosyasındadır.
@@ -139,7 +139,7 @@ A33'ün önkoşulu A24 ile A32 arasındaki bütün aşamalardır; grafikte yaln�
 | Yerel ortam tek komutla kalkıyor | A03 |
 | `core` aynı girdiyle aynı içerik özetini üretiyor; değişmezlik ve kalite kapısı testleri yeşil; `public` manifest onaysız birim, insan onayı isteyen türde aday bağlantı ve `test-` önekli kaynak içermiyor | A10, A13 |
 | Orijinal Elmalılı meali iki düzeltme turundan geçti (tur 1 ve tur 2; sadeleştirilmiş mealin turları fazı bekletmez). Turlar A16'nın kapanışını bekletmez; A18, A19 ve A37 bunlarla başlar ve ilerler, turlar `public` yayının ve Faz 1 çıkışının şartıdır | A16 (araçlar), İ-11 (turlar) |
-| Her otomatik bağlantı türü için kapı raporu ve `xref_gate` satırı var; kapılar değerlendirme setleriyle (`altin`, `silver`, `sentetik`) geçildi | A18 |
+| Her otomatik bağlantı kapısı (tür ve alt tür: `kok/tr_lemma`, `kok/xref`, `lemma`, `benzer_ayet/sozluksel`, `benzer_ayet/alim`) için kapı raporu ve `xref_gate` satırı var; kapılar değerlendirme setleriyle (`altin`, `silver`, `sentetik`) geçildi | A18 |
 | Maestro akışları yeşil; arama p95 < 50 ms (K-17); erişilebilirlik tamam | A28, A32, A33 |
 | `public` kuru çalıştırması 0 ile bitiyor; terfide içerik özetleri iç kanalda test edilen yayınla aynı (P-14); `public` yapıt taraması yeşil; mağazada yayında | A34 |
 

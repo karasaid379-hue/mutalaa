@@ -140,7 +140,9 @@ public sealed record TrRootIndexRow(string Anchor, int SpanStart, int SpanEnd, i
 /// <summary>tr_form satiri: Turkce bicimden lemmaya.</summary>
 public sealed record TrFormRow(string KeyWide, string KeyNarrow, int TrLemmaId, int Freq, string DataVersion);
 
-/// <summary>xref_gate satiri (K-51 madde 5 ve 11): Tur etiketi, SetSinifi altin/silver/sentetik, Sonuc gecti/kaldi.</summary>
+/// <summary>
+/// xref_gate satiri (K-51 madde 5 ve 11): Tur etiketi, AltTur (sozluksel, alim, tr_lemma, xref ya da bos), SetSinifi altin/silver/sentetik, Sonuc gecti/kaldi.
+/// </summary>
 public sealed record XrefGateRow(
     string Tur,
     string SetSinifi,
@@ -148,7 +150,8 @@ public sealed record XrefGateRow(
     string SetSurumu,
     IReadOnlyList<string> SetKaynaklari,
     string RaporSha256,
-    DateTime OlculduAt);
+    DateTime OlculduAt,
+    string AltTur = "");
 
 /// <summary>quran_word_fix satiri (K-50 madde 4 ve 6): Field root_id, lemma_id, pos ya da features; NewValue metindir (alan turune cevrilir).</summary>
 public sealed record QuranWordFixRow(Guid Id, string Anchor, string Field, string NewValue, string Status);
@@ -171,6 +174,7 @@ public sealed record PageMapRow(
 /// xref satiri. Uc araliklari editoryal yari acik int4range sinirlaridir (bos ise null). Score ve Confidence real (float) sutunlardir.
 /// LexiconStatus: evidence.lexicon_status (alan yoksa null). SrcHash ve DstHash: evidence.src_hash ve dst_hash (uc birimin content_hash ilk 16 hanesi;
 /// K-51 madde 1; alan yoksa null). EvidenceSourceId: evidence.source_id (satirin veri kaynagi; pakete atif satiri eklemek icin; alan yoksa null).
+/// HasQursimEvidence: evidence.qursim bir nesne (benzer_ayet kapisinin alim alt turu; K-51 madde 5).
 /// </summary>
 public sealed record XrefRow(
     Guid Id,
@@ -189,7 +193,8 @@ public sealed record XrefRow(
     string? LexiconStatus,
     string? SrcHash = null,
     string? DstHash = null,
-    string? EvidenceSourceId = null);
+    string? EvidenceSourceId = null,
+    bool HasQursimEvidence = false);
 
 /// <summary>
 /// P-09 kapsamindaki satir: quran_word_fix, lemma_gloss ve lugat_madde (Id "{source_id}:{anlam_no}:{basliksoz}") durum sutunu (Status) tasir. Okuyucu yalniz bu

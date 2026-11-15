@@ -26,11 +26,17 @@ tumu), sabit tohumla (`sha256(tohum:lemma)` sirasi) secilir. Dondurulmus parca (
 gelistirme parcasi (%40) bilgidir.
 
 OLCUM: kesinlik = koku referans kumesinde olan / referansi olan tahminler; duyarlilik = referansi
-olan ornekler icinde tahmini olan VE dogru olan oran. Referansi olmayan (QuranWBW'de gecmeyen ya da
-destegi yetmeyen) lemmalar OLCUME KATILMAZ, sayisi ayri yazilir. KAPSAM KISITI: set yalniz
-Kur'an'da gecen sozcukleri olcer; meal sozcuklerinin geri kalani bu setle olculmez. Kappa: iki
-bagimsiz etiket kaynagi (kaikki tabanli eslesme / QuranWBW tabanli referansin baskin koku) arasinda
-KAYNAKLAR ARASI uyumdur, insan kappasi degildir.
+olan ornekler icinde tahmini olan VE dogru olan oran. KAPI YALNIZ KESINLIGE BAGLIDIR (kesinlik >=
+0,95; proje sahibi karari, 15 Kasim 2026: public guvenligini kesinlik belirler, kapsam degil);
+duyarlilik `ayrintilar.kapsam_bilgisi` altinda bilgi olarak raporlanir, sonucu belirlemez ve
+gerileme kurali yalniz kesinlikte calisir (`olculer` yalniz kesinligi tasir).
+EN AZ ORNEK SARTI: dondurulmus parcada en az 30 referansli tahmin yoksa sonuc `kaldi`
+(`kaldi_nedeni = orneklem_yetersiz`, `ayrintilar.olculemedi_bilgi`); kesinlik yine
+hesaplanir. Referansi olmayan
+(QuranWBW'de gecmeyen ya da destegi yetmeyen) lemmalar OLCUME KATILMAZ, sayisi ayri yazilir.
+KAPSAM KISITI: set yalniz Kur'an'da gecen sozcukleri olcer; meal sozcuklerinin geri kalani bu
+setle olculmez. Kappa: iki bagimsiz etiket kaynagi (kaikki tabanli eslesme / QuranWBW tabanli
+referansin baskin koku) arasinda KAYNAKLAR ARASI uyumdur, insan kappasi degildir.
 
 DONGUSELLIK: set kaniti `quranwbw-tr` (`kanit`); uretim kaniti `kaikki-tr` (`kanit`): kesisim yok.
 QAC kok sozlugu iki tarafta ortaktir (`sozluk` rolu): kok kimlikleri ve Arapca kelime -> kok
@@ -52,9 +58,16 @@ from mutalaa_pipeline.enrich.tr_roots.bolme import parcalar
 from mutalaa_pipeline.enrich.tr_roots.lemmatize import Lemmatizer
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.qa.gold import setler
-from mutalaa_pipeline.qa.gold.kapi import TurSonucu, tahmin_ozeti
+from mutalaa_pipeline.qa.gold.kapi import (
+    KOK_MIN_REFERANSLI_TAHMIN,
+    ORNEKLEM_YETERSIZ,
+    TurSonucu,
+    tahmin_ozeti,
+)
 from mutalaa_pipeline.qa.gold.olcum import (
     ESIKLER,
+    KALDI,
+    KOK_DUYARLILIK_BILGI_ESIGI,
     esik_degerlendir,
     kapi_karari,
     kappa_sklearn,
@@ -428,8 +441,12 @@ def daraltma_onerisi(
     tahminler: Mapping[str, Tahmin],
     referans_evreni: Mapping[str, Mapping[str, object]],
     esik: float = ESIKLER["kok"]["kesinlik"],
+    tohum: int = setler.VARSAYILAN_TOHUM,
 ) -> dict[str, object]:
-    """Referansi olan TUM tahminlerde politika ozelligine gore kesinlik (kapi kalirsa: K-51 md. 11).
+    """Referansi olan GELISTIRME parcasi tahminlerinde ozellige gore kesinlik (K-51 md. 11).
+
+    Yalniz `setler.bolme('kok', lemma) == gelistirme` lemmalar sayilir: dondurulmus parca (kapi
+    olcumu) politikanin daraltilmasina girdi olamaz.
 
     K-51 madde 11: kok kapisi tutmazsa rapor, politikanin hangi kosulunun daraltilacagini onerir.
     Bu oneri ayar degil bilgidir: set, esik ve kapi sonucu degismez; karari proje sahibi verir.
@@ -437,6 +454,8 @@ def daraltma_onerisi(
     """
     gruplar: dict[str, dict[str, list[bool]]] = {}
     for lemma, t in tahminler.items():
+        if setler.bolme("kok", lemma, tohum) != setler.GELISTIRME:
+            continue
         satir = referans_evreni.get(lemma)
         if satir is None or not satir["referans_kokler"]:
             continue
@@ -463,7 +482,7 @@ def daraltma_onerisi(
         yeterli, key=lambda g: (-float(str(g["kesinlik"])), str(g["ozellik"]), str(g["deger"]))
     )
     return {
-        "olcut": "referansi olan tum tahminler (ornek degil); bilgi, ayar degil",
+        "olcut": "referansi olan gelistirme parcasi tahminleri (dondurulmus parca yok); bilgi",
         "en_yuksek_kesinlikli_uc_grup_en_az_20_tahmin": en_iyi[:3],
         "ozellige_gore_kesinlik": tablo,
         "esigi_gecen_gruplar_en_az_20_tahmin": adaylar,
@@ -609,13 +628,40 @@ def kok_olc(
             " esdegerligidir; referansi olmayan tahminler yanlis degil, OLCULMEMISTIR."
         ),
     }
-    olculer = {
-        "kesinlik": float(str(kapi["kesinlik"])),
-        "duyarlilik": float(str(kapi["duyarlilik"])),
-        "f1": float(str(kapi["f1"])),
-    }
+    # Gerileme kurali yalniz `olculer` uzerinde calisir: yalniz kesinlik (kapi sarti) girer.
+    olculer = {"kesinlik": float(str(kapi["kesinlik"]))}
     esikler = dict(ESIKLER["kok"])
+    duyarlilik = float(str(kapi["duyarlilik"]))
+    kapsam_bilgisi: dict[str, object] = {
+        "duyarlilik": duyarlilik,
+        "f1": float(str(kapi["f1"])),
+        "bilgi_esigi": KOK_DUYARLILIK_BILGI_ESIGI,
+        "bilgi_esigi_tuttu": duyarlilik >= KOK_DUYARLILIK_BILGI_ESIGI - 1e-12,
+        "kapi_sarti": False,
+        "not": (
+            "Duyarlilik kapsam bilgisidir, kapi sarti degildir: public guvenligini kesinlik"
+            " belirler (proje sahibi karari, 15 Kasim 2026)."
+        ),
+    }
     sonuc = kapi_karari(esikler, olculer)
+    # EN AZ ORNEK SARTI (yalniz kok/tr_lemma; kapi.KOK_MIN_REFERANSLI_TAHMIN): referansli tahmin
+    # sayisi 30'un altindaysa kesinlik hesaplanir ve bilgi olarak yazilir ama kapi `kaldi` olur.
+    referansli_tahmin = int(str(kapi["tahminli"]))
+    orneklem_yeterli = referansli_tahmin >= KOK_MIN_REFERANSLI_TAHMIN
+    kaldi_nedeni: str | None = None
+    olculemedi_bilgi: dict[str, object] | None = None
+    if not orneklem_yeterli:
+        sonuc = KALDI
+        kaldi_nedeni = ORNEKLEM_YETERSIZ
+        olculemedi_bilgi = {
+            "referansli_tahmin": referansli_tahmin,
+            "esik": KOK_MIN_REFERANSLI_TAHMIN,
+            "kesinlik_bilgi": olculer["kesinlik"],
+            "not": (
+                "Kesinlik hesaplandi ama ornek sayisi esigin altinda: kapi kaniti sayilmaz"
+                " (proje sahibi karari, 15 Kasim 2026)."
+            ),
+        }
     notlar = [
         "Kapi yalniz onay_yolu='otomatik' tahminleri olcer (K-51 madde 11);"
         " editor onayli tahminler ayrintilar.editor_onayli_bilgi altinda bilgidir.",
@@ -627,7 +673,7 @@ def kok_olc(
         " kok kimlikleri ve Arapca kelime -> kok ayni kaynaktan.",
         "Kappa kaynaklar arasi uyumdur, insan kappasi degildir;"
         " kappa esigi S-16'ya kadar uygulanmaz.",
-        "Duyarlilik: referansi olan orneklerin tamami paydadir"
+        "Duyarlilik kapi sarti DEGILDIR (kapsam bilgisi); referansi olan orneklerin tamami paydadir"
         " (tahmini olmayan ornek yanlis sayilir).",
     ]
     ozet = tahmin_ozeti([f"{t.lemma}|{t.kok}|{t.onay_yolu}" for _, t in sorted(tahminler.items())])
@@ -642,6 +688,13 @@ def kok_olc(
         olculen_ornek=len(donduruldu),
         ayrintilar={
             "dondurulmus_kapi_olcumu": kapi,
+            "kapsam_bilgisi": kapsam_bilgisi,
+            "orneklem_sarti": {
+                "min_referansli_tahmin": KOK_MIN_REFERANSLI_TAHMIN,
+                "referansli_tahmin": referansli_tahmin,
+                "saglandi": orneklem_yeterli,
+            },
+            "olculemedi_bilgi": olculemedi_bilgi,
             "gelistirme_bilgi": bilgi_gelistirme,
             "tum_ornek_bilgi": bilgi_tum,
             "bant_kirilimi_dondurulmus": bant_kirilimi,
@@ -652,11 +705,15 @@ def kok_olc(
             "tahmin_onay_yolu": dict(Counter(t.onay_yolu for t in tum_tahminler.values())),
             "kapi_tahmin_onay_yolu": ONAY_OTOMATIK,
             "editor_onayli_bilgi": editor_onayli_bilgi(editor, ornekler, referans_evreni),
-            "politika_daraltma_onerisi": daraltma_onerisi(tahminler, referans_evreni),
+            "politika_daraltma_onerisi": daraltma_onerisi(
+                tahminler, referans_evreni, tohum=int(str(manifest["tohum"]))
+            ),
         },
         notlar=notlar,
         referans_kapsami=kapsam,
         uretim_kaynaklari=uretim,
+        kaldi_nedeni=kaldi_nedeni,
+        min_ornek=KOK_MIN_REFERANSLI_TAHMIN,
     )
 
 
