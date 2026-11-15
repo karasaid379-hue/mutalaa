@@ -172,6 +172,8 @@ const BEKLENEN_SUTUNLAR: Record<string, string[]> = {
     'osmanlica_yazim',
     'koken_dil',
     'tanim_tr',
+    'anlam_no',
+    'kaynak',
     'duzey',
     'status',
     'origin',
@@ -217,7 +219,7 @@ const BEKLENEN_PK: Record<string, string[]> = {
   tr_form: ['key_narrow', 'tr_lemma_id'],
   unit: ['rowid'],
   unit_ref: ['rowid'],
-  lugat: ['basliksoz'],
+  lugat: ['basliksoz', 'kaynak', 'anlam_no'],
 };
 
 /** WITHOUT ROWID tables that Icerik paketleri 3.1-3.5 declares as such. */
@@ -538,21 +540,46 @@ describe('DDL', () => {
   it('lets lugat take only onayli and aday rows (red never enters a pack) and indexes basliksoz_norm', () => {
     const db = yeniVeritabani('risale-dizin');
     const ekle = db.prepare(
-      'INSERT INTO lugat(basliksoz, basliksoz_norm, duzey, status, origin, version, content_hash) VALUES (?, ?, 1, ?, ?, ?, ?)',
+      'INSERT INTO lugat(basliksoz, basliksoz_norm, anlam_no, kaynak, duzey, status, origin, version, content_hash) VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?)',
     );
-    ekle.run('deneme-a', 'deneme', 'aday', 'hat', '1', 'a'.repeat(64));
-    expect(() => ekle.run('deneme-c', 'deneme', 'red', 'hat', '1', 'c'.repeat(64))).toThrow();
-    expect(() => ekle.run('deneme-a', 'baska', 'aday', 'hat', '1', 'd'.repeat(64))).toThrow();
-    // An approved madde has a written definition; a candidate may have none.
-    expect(() => ekle.run('deneme-e', 'deneme', 'onayli', 'editor', '2', 'e'.repeat(64))).toThrow();
-    const tanimli = db.prepare(
-      'INSERT INTO lugat(basliksoz, basliksoz_norm, tanim_tr, duzey, status, origin, version, content_hash) VALUES (?, ?, ?, 1, ?, ?, ?, ?)',
-    );
+    ekle.run('deneme-a', 'deneme', 1, 'lugat-a', 'aday', 'hat', '1', 'a'.repeat(64));
     expect(() =>
-      tanimli.run('deneme-f', 'deneme', '   ', 'onayli', 'editor', '2', 'f'.repeat(64)),
+      ekle.run('deneme-c', 'deneme', 1, 'lugat-a', 'red', 'hat', '1', 'c'.repeat(64)),
+    ).toThrow();
+    // The key is (basliksoz, kaynak, anlam_no): the same headword may come from another source or as another meaning.
+    expect(() =>
+      ekle.run('deneme-a', 'baska', 1, 'lugat-a', 'aday', 'hat', '1', 'd'.repeat(64)),
     ).toThrow();
     expect(() =>
-      tanimli.run('deneme-g', 'deneme', 'Deneme tanimi', 'onayli', 'editor', '2', 'g'.repeat(64)),
+      ekle.run('deneme-a', 'deneme', 1, 'lugat-b', 'aday', 'kaynak', '1', 'd'.repeat(64)),
+    ).not.toThrow();
+    expect(() =>
+      ekle.run('deneme-a', 'deneme', 2, 'lugat-a', 'aday', 'kaynak', '1', 'd'.repeat(64)),
+    ).not.toThrow();
+    expect(() =>
+      ekle.run('deneme-a', 'deneme', 0, 'lugat-c', 'aday', 'kaynak', '1', 'd'.repeat(64)),
+    ).toThrow();
+    // An approved madde has a written definition; a candidate may have none.
+    expect(() =>
+      ekle.run('deneme-e', 'deneme', 1, 'lugat-a', 'onayli', 'editor', '2', 'e'.repeat(64)),
+    ).toThrow();
+    const tanimli = db.prepare(
+      'INSERT INTO lugat(basliksoz, basliksoz_norm, tanim_tr, anlam_no, kaynak, duzey, status, origin, version, content_hash) VALUES (?, ?, ?, 1, ?, 1, ?, ?, ?, ?)',
+    );
+    expect(() =>
+      tanimli.run('deneme-f', 'deneme', '   ', 'lugat-a', 'onayli', 'editor', '2', 'f'.repeat(64)),
+    ).toThrow();
+    expect(() =>
+      tanimli.run(
+        'deneme-g',
+        'deneme',
+        'Deneme tanimi',
+        'lugat-a',
+        'onayli',
+        'kaynak',
+        '2',
+        'g'.repeat(64),
+      ),
     ).not.toThrow();
     const dizin = db
       .prepare(

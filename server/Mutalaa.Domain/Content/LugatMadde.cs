@@ -3,8 +3,9 @@ using Mutalaa.Domain.Links;
 namespace Mutalaa.Domain.Content;
 
 /// <summary>
-/// icerik.lugat_madde satiri (Editoryal veritabani 5; K-51 madde 9 ve 10): Risale lugat maddesi. Hat basliksozu, siklik ve sozluk
-/// basvurusuyla <c>aday</c> acar; tanimi editor yazar (<c>tanim_tr</c> bos kalir), onayda <c>onayli</c> olur.
+/// icerik.lugat_madde satiri (Editoryal veritabani 5; K-51 madde 9, 10 ve 14): Risale lugat maddesi. Hat, lugat kaynagindan tanimli
+/// (<c>origin = 'kaynak'</c>, bayt bayt) ya da yalniz Risale basliksozunden tanimsiz (<c>origin = 'hat'</c>) <c>aday</c> acar;
+/// editor kaynak tanimini degistirmeden onaylar ya da duzenleyip onaylar (<c>origin = 'editor'</c>), tanimsiz adayin tanimini yazar.
 /// </summary>
 public sealed class LugatMadde
 {
@@ -18,11 +19,17 @@ public sealed class LugatMadde
 
     public required string BasliksozNorm { get; set; }
 
+    /// <summary>Ayni (kaynak, basliksoz) icin kaynak sirasiyla anlam sirasi (1'den; K-51 madde 14). Veritabani varsayilani 1.</summary>
+    public short AnlamNo { get; set; } = 1;
+
     public string? OsmanlicaYazim { get; set; }
 
     public string? KokenDil { get; set; }
 
-    /// <summary>Editorun yazdigi tanim; kendi urettigimiz metin (ilk kayitta NFC). Aday bos olabilir; onayli bos olamaz (CHECK).</summary>
+    /// <summary>
+    /// Editorun yazdigi (<c>origin = 'editor'</c>; ilk kayitta NFC) ya da lugat kaynagindan gelen (<c>origin = 'kaynak'</c>; bayt bayt, NFC yok) tanim.
+    /// <c>hat</c> adayi bos olabilir; onayli bos olamaz (CHECK).
+    /// </summary>
     public string? TanimTr { get; set; }
 
     public int? ArKokId { get; set; }
@@ -30,12 +37,12 @@ public sealed class LugatMadde
     /// <summary>jsonb: <c>siklik</c> (int), <c>kitaplar</c>, sozluk isabetleri ... salt basvuru; paketlenmez. Anlam basvurusu (<c>anlam_basvuru</c>) burada DEGIL, <c>review.onerilen</c> icindedir (K-51 madde 10).</summary>
     public string Kaynaklar { get; set; } = "{}";
 
-    /// <summary>Okur yogunluk ayarini besleyen duzey.</summary>
+    /// <summary>Risale siklik duzeyi: 1..3 siklik, 4 = Risale baslik soz listesinde yok (CHECK 1..4).</summary>
     public short Duzey { get; set; }
 
     public XrefStatus Status { get; set; } = XrefStatus.Aday;
 
-    /// <summary><c>hat</c> ya da <c>editor</c> (CHECK).</summary>
+    /// <summary><c>hat</c> (tanimsiz aday), <c>kaynak</c> (lugat kaynagindan tanim) ya da <c>editor</c> (CHECK).</summary>
     public required string Origin { get; set; }
 
     /// <summary>Icerik surumu ('1', onayda +1); lemma_gloss.version ile ayni tur.</summary>

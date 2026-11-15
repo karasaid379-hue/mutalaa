@@ -250,6 +250,36 @@ export function lugatDetail(
   });
 }
 
+/** The synthetic definition a lügat source gives (made-up, not dictionary text). */
+export const lugatSourceText = (id: number) => `Deneme kaynak tanımı ${id}`;
+
+/**
+ * A lügat madde review of a lügat source (K-51 madde 14): the key is `{source_id}:{anlam_no}:{basliksoz}`, the madde carries the
+ * source definition (`origin = 'kaynak'`) unless `tanim` is null (a candidate without a definition, `origin = 'hat'`).
+ */
+export function lugatSourceDetail(
+  id: number,
+  opts: { source?: string; anlamNo?: number; tanim?: string | null } = {},
+): S['ReviewDetailDto'] {
+  const source = opts.source ?? 'lugat-rnk';
+  const anlamNo = opts.anlamNo ?? 1;
+  const tanim = opts.tanim === undefined ? lugatSourceText(id) : opts.tanim;
+  return lugatDetail(id, {
+    hedef_anahtar: `${source}:${anlamNo}:${lugatWord(id)}`,
+    hedef: {
+      tablo: 'lugat_madde',
+      source,
+      anlam_no: anlamNo,
+      basliksoz: lugatWord(id),
+      duzey: 1,
+      ...(tanim === null ? {} : { tanim_tr: tanim }),
+      origin: tanim === null ? 'hat' : 'kaynak',
+      version: '1',
+      status: 'aday',
+    },
+  });
+}
+
 /** Answers the detail of the queues by id: below 100 a word meaning draft, 100 to 199 a lemma status review, 200 to 299 a correction, from 300 a lügat madde; and the lemma card. */
 export function lemmaHandlers(fake: FakeApi, info: S['LemmaDetailResponse'] = lemmaInfo()): void {
   fake.get('/api/v1/reviews/{id}', (call) => {

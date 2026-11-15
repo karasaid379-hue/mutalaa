@@ -18,7 +18,7 @@ public enum PackSourceRole
     /// <summary>Sozluk verisi: root, lemma ve quran_word'un QAC sutunlarini verir (kelime-kok'te qac-morfoloji; K-50 madde 3 ve 4).</summary>
     Dictionary = 3,
 
-    /// <summary>Lugat maddesi kaynagi (risale-dizin'de risale-kelime-frekans; K-51 madde 9): kaynagin lugat_madde satirlari pakete lugat tablosuna girer.</summary>
+    /// <summary>Lugat maddesi kaynagi (risale-dizin'de lugat-rnk, lugat-sozluk-rganeyev ve risale-kelime-frekans; K-51 madde 9 ve 14): kaynagin lugat_madde satirlari pakete lugat tablosuna girer.</summary>
     Glossary = 4,
 }
 
@@ -104,6 +104,12 @@ public sealed class PackCatalog
 
     /// <summary>Risale lugat maddelerinin kaynagi (Kelime-Frekans basliksoz listesi; K-51 madde 9 ve 10): risale-dizin'de Glossary rolunde, Required: false.</summary>
     public const string RisaleLugatSlug = "risale-kelime-frekans";
+
+    /// <summary>RNK lugati (K-51 madde 14): tanimli lugat maddeleri; risale-dizin'de Glossary rolunde, Required: false. Atif satiri kaynagin kendi adidir.</summary>
+    public const string RisaleLugatRnkSlug = "lugat-rnk";
+
+    /// <summary>Ikinci lugat kaynagi (GitHub rganeyev/Sozluk; K-51 madde 14): yalniz RNK lugatinda bulunmayan basliklar; risale-dizin'de Glossary rolunde, Required: false.</summary>
+    public const string RisaleLugatSozlukSlug = "lugat-sozluk-rganeyev";
 
     /// <summary>risale-dizin page_map satirlarinin duzen adi (RNK baskisi; core'da "medine-604").</summary>
     public const string RisalePageLayout = "rnk-baski";
@@ -228,6 +234,8 @@ public sealed class PackCatalog
                 new PackSourceBinding(RisaleFixtureSourceSlug, PackSourceRole.Content, Required: false, PageMapLayout: RisaleFixturePageLayout, AlsoGlossary: true),
                 new PackSourceBinding(RisaleLinkSlug, PackSourceRole.Attribution, Required: false),
                 new PackSourceBinding(RisaleLugatSlug, PackSourceRole.Glossary, Required: false),
+                new PackSourceBinding(RisaleLugatRnkSlug, PackSourceRole.Glossary, Required: false),
+                new PackSourceBinding(RisaleLugatSozlukSlug, PackSourceRole.Glossary, Required: false),
                 new PackSourceBinding(RisalePageSlug, PackSourceRole.Structure, Required: false, PageMapLayout: RisalePageLayout),
             ],
             IndexesBooks: true);

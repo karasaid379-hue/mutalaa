@@ -195,7 +195,7 @@ export const tr = {
       "Bu birimin ofsetli alanları (işaretler, cümleler) var; üçüncü taraf Risale metni düzeltilmez (K-51)",
     /** Verbatim: shown for 422 inceleme-desteklenmiyor when a lügat madde is approved without a definition (K-51 madde 10). */
     lugatDefinitionRequired:
-      'Lügat maddesi tanım yazılmadan onaylanamaz. Anlam başvurusu (onaysız) tanım olarak onaylanmaz; tanımı kendiniz yazın.',
+      'Lügat maddesi tanım yazılmadan onaylanamaz: kaynaktan gelen bir tanımı yok. Anlam başvurusu (onaysız) tanım olarak onaylanmaz; tanımı kendiniz yazın.',
     /** Per-operation overrides of the generic message. */
     contexts: {
       decision: {

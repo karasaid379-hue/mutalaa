@@ -1,5 +1,5 @@
 import { readMealAttrs, readString, readTextPayload } from '@/lib/payload';
-import type { ReviewItem, UnitDetail } from './types';
+import type { ReviewDetail, ReviewItem, UnitDetail } from './types';
 
 // Pre-checks of the decision form. They only close controls early; the API has the last word (K-48),
 // and a 409/422 answer is always shown with its own code.
@@ -90,7 +90,18 @@ export function isGlossEditable(review: ReviewItem): boolean {
   );
 }
 
-/** An open lügat madde review (`lugat_madde` + `tanim_tr`): approval needs the definition the editor writes (K-51 madde 10). */
+/**
+ * The definition a lügat madde carries from its source (`hedef.origin = 'kaynak'`, non-blank `tanim_tr`; K-51 madde 10 and 14), or
+ * null. Such a candidate can be approved unchanged; every other candidate needs a definition the editor writes.
+ */
+export function lugatSourceDefinition(review: Pick<ReviewDetail, 'hedef'>): string | null {
+  const target = review.hedef;
+  if (!target || target.origin !== 'kaynak') return null;
+  const definition = target.tanim_tr;
+  return typeof definition === 'string' && definition.trim() !== '' ? definition : null;
+}
+
+/** An open lügat madde review (`lugat_madde` + `tanim_tr`): approval carries the source definition unchanged or the one the editor writes (K-51 madde 10 and 14). */
 export function isLugatEditable(review: ReviewItem): boolean {
   return (
     review.hedef_tablo === 'lugat_madde' && review.alan === 'tanim_tr' && review.durum === 'acik'

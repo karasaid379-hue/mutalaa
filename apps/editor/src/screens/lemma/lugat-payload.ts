@@ -54,6 +54,35 @@ export function readLugatReference(value: unknown): LugatReference | null {
   };
 }
 
+export interface LugatKey {
+  source: string;
+  /** Meaning number (1 for the legacy two-part key). */
+  anlamNo: number;
+  basliksoz: string;
+}
+
+const MAX_ANLAM_NO = 32767;
+
+/**
+ * Splits a lügat `hedef_anahtar` the way the server does (K-51 madde 14): `{source_id}:{anlam_no}:{basliksoz}`; a second
+ * part that is not all ASCII digits makes it the legacy `{source_id}:{basliksoz}` (meaning 1). null when unreadable.
+ */
+export function parseLugatKey(key: string): LugatKey | null {
+  const first = key.indexOf(':');
+  if (first <= 0 || first === key.length - 1) return null;
+  const source = key.slice(0, first);
+  const rest = key.slice(first + 1);
+  const second = rest.indexOf(':');
+  if (second > 0 && /^[0-9]+$/.test(rest.slice(0, second))) {
+    const digits = rest.slice(0, second);
+    const anlamNo = Number(digits);
+    if (String(anlamNo) !== digits || anlamNo < 1 || anlamNo > MAX_ANLAM_NO) return null;
+    const basliksoz = rest.slice(second + 1);
+    return basliksoz.trim() === '' ? null : { source, anlamNo, basliksoz };
+  }
+  return rest.trim() === '' ? null : { source, anlamNo: 1, basliksoz: rest };
+}
+
 /** Total frequency of a list item (`onerilen.siklik`), the key of the queue order; null when absent. */
 export function readFrequency(item: Pick<ReviewItem, 'onerilen'>): number | null {
   return readLugatReference(item.onerilen)?.siklik ?? null;

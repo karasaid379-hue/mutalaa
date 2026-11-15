@@ -170,7 +170,7 @@ public partial class ModelNamingTests
             "unit_check", "quran_word_check", "tr_root_index_check", "ayah_box_check", "audio_timing_check",
             "review_yz_kaydi_check", "quran_marker_kind_check", "quran_marker_secde_turu_check", "quran_marker_check",
             "release_talep_check", "source_dosya_sha256_check", "audio_timing_file_sha256_check", "lemma_gloss_content_hash_check", "lemma_dalga_dalga_check",
-            "lugat_madde_origin_check", "lugat_madde_content_hash_check", "lugat_madde_onayli_tanim_check",
+            "lugat_madde_origin_check", "lugat_madde_content_hash_check", "lugat_madde_onayli_tanim_check", "lugat_madde_anlam_no_check", "lugat_madde_duzey_check",
         ];
 
         OnAllModels(model =>

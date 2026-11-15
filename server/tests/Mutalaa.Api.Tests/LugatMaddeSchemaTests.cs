@@ -11,8 +11,8 @@ using Npgsql;
 namespace Mutalaa.Api.Tests;
 
 /// <summary>
-/// AddLugatMadde (K-51 madde 9 ve 10): tablonun sutunlari, varsayilanlari ve kisitlari, <c>review.hedef_tablo</c> CHECK'ine ek ve
-/// mevcut verinin korunmasi (Docker'li, Testcontainers postgres:18.6-trixie). Sentetik basliksozler.
+/// AddLugatMadde ve AddLugatAnlam (K-51 madde 9, 10 ve 14): tablonun sutunlari, varsayilanlari ve kisitlari (anlam_no, origin 'kaynak',
+/// duzey 1..4, tekillik (source_id, basliksoz, anlam_no)), <c>review.hedef_tablo</c> CHECK'ine ek ve mevcut verinin korunmasi (Docker'li, Testcontainers postgres:18.6-trixie). Sentetik basliksozler.
 /// </summary>
 public class LugatMaddeSchemaTests(EditorialDatabase<LugatMaddeSchemaTests> fixture, PostgresFixture postgres)
     : IClassFixture<EditorialDatabase<LugatMaddeSchemaTests>>
@@ -21,6 +21,8 @@ public class LugatMaddeSchemaTests(EditorialDatabase<LugatMaddeSchemaTests> fixt
     private const string ForeignKey = "23503";
     private const string Check = "23514";
     private const string PreviousMigration = "20261112003055_AddLemmaWave";
+    private const string LugatTableMigration = "20261113061922_AddLugatMadde";
+    private const string UniqueName = "lugat_madde_source_id_basliksoz_anlam_no_key";
 
     private TestDatabase Db => fixture.Database;
 
@@ -71,6 +73,7 @@ public class LugatMaddeSchemaTests(EditorialDatabase<LugatMaddeSchemaTests> fixt
                 "data_version text NO  NO ",
                 "created_at timestamp with time zone NO now() NO ",
                 "updated_at timestamp with time zone NO now() NO ",
+                "anlam_no smallint NO 1 NO ",
             ],
             columns);
         Assert.Equal("xref_status", await Db.ScalarAsync<string>(
@@ -95,7 +98,7 @@ public class LugatMaddeSchemaTests(EditorialDatabase<LugatMaddeSchemaTests> fixt
     }
 
     [Fact]
-    public async Task Source_and_headword_are_unique_together_and_the_same_headword_is_allowed_in_another_source()
+    public async Task Source_headword_and_meaning_number_are_unique_together_and_the_same_headword_is_allowed_in_another_source_or_meaning()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
         await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
@@ -105,10 +108,11 @@ public class LugatMaddeSchemaTests(EditorialDatabase<LugatMaddeSchemaTests> fixt
 
         Assert.Equal(1, await AddMaddeAsync(session, ct, second, "deneme-sozcuk"));
         Assert.Equal(1, await AddMaddeAsync(session, ct, first, "baska-sozcuk"));
+        Assert.Equal(1, await AddMaddeAsync(session, ct, first, "deneme-sozcuk", ", anlam_no", ", 2")); // ayni baslik, ikinci anlam
         PostgresException exception = await Assert.ThrowsAsync<PostgresException>(() => AddMaddeAsync(session, ct, first, "deneme-sozcuk"));
 
         Assert.Equal(Unique, exception.SqlState);
-        Assert.Equal("lugat_madde_source_id_basliksoz_key", exception.ConstraintName);
+        Assert.Equal(UniqueName, exception.ConstraintName);
     }
 
     [Fact]
@@ -122,7 +126,7 @@ public class LugatMaddeSchemaTests(EditorialDatabase<LugatMaddeSchemaTests> fixt
         int affected = await session.ExecuteAsync(
             "INSERT INTO icerik.lugat_madde (source_id, basliksoz, basliksoz_norm, duzey, origin, content_hash, data_version) "
             + "VALUES (@s, 'deneme-sozcuk', 'yeni', 2, 'hat', repeat('b', 64), 'test2') "
-            + "ON CONFLICT ON CONSTRAINT lugat_madde_source_id_basliksoz_key DO UPDATE SET duzey = EXCLUDED.duzey, data_version = EXCLUDED.data_version",
+            + "ON CONFLICT ON CONSTRAINT lugat_madde_source_id_basliksoz_anlam_no_key DO UPDATE SET duzey = EXCLUDED.duzey, data_version = EXCLUDED.data_version",
             ct,
             ("s", slug));
 
@@ -214,6 +218,100 @@ public class LugatMaddeSchemaTests(EditorialDatabase<LugatMaddeSchemaTests> fixt
         PostgresException exception = await Assert.ThrowsAsync<PostgresException>(() => rejected.ExecuteAsync(
             "INSERT INTO icerik.review (hedef_tablo, hedef_anahtar, alan, eylem, koken, oneren) VALUES ('lugat', 'x', 'tanim_tr', 'oner', 'hat', 'hat')", ct));
         Assert.Equal("review_hedef_tablo_check", exception.ConstraintName);
+    }
+
+    [Fact]
+    public async Task ON_CONFLICT_ON_CONSTRAINT_with_the_new_name_updates_the_same_meaning_and_inserts_another_one()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+        string slug = await AddSourceAsync(session, ct);
+        const string Upsert =
+            "INSERT INTO icerik.lugat_madde (source_id, basliksoz, basliksoz_norm, anlam_no, duzey, origin, tanim_tr, content_hash, data_version) "
+            + "VALUES (@s, 'deneme-sozcuk', 'deneme-sozcuk', @n, 2, 'kaynak', 'deneme tanimi', repeat('b', 64), 'test2') "
+            + "ON CONFLICT ON CONSTRAINT lugat_madde_source_id_basliksoz_anlam_no_key DO UPDATE SET data_version = EXCLUDED.data_version";
+
+        await session.ExecuteAsync(Upsert, ct, ("s", slug), ("n", (short)1));
+        await session.ExecuteAsync(Upsert, ct, ("s", slug), ("n", (short)2));
+        await session.ExecuteAsync(Upsert, ct, ("s", slug), ("n", (short)2));
+
+        Assert.Equal(2L, await session.ScalarAsync<long>("SELECT count(*) FROM icerik.lugat_madde", ct));
+        Assert.Equal("1,2", await session.ScalarAsync<string>("SELECT string_agg(anlam_no::text, ',' ORDER BY anlam_no) FROM icerik.lugat_madde", ct));
+    }
+
+    [Fact]
+    public async Task The_old_unique_constraint_is_gone_and_the_new_one_is_a_real_unique_constraint()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+
+        IReadOnlyList<string> names = await Db.ColumnAsync(
+            "SELECT conname || ' ' || contype::text FROM pg_constraint WHERE conrelid = 'icerik.lugat_madde'::regclass AND contype IN ('u', 'p') ORDER BY conname", ct);
+
+        Assert.Equal(["lugat_madde_pkey p", UniqueName + " u"], names);
+    }
+
+    [Fact]
+    public async Task The_meaning_number_defaults_to_one_and_a_candidate_may_carry_a_source_definition()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using RollbackSession session = await Db.OpenRollbackSessionAsync(ct);
+        string slug = await AddSourceAsync(session, ct);
+
+        await session.ExecuteAsync(
+            "INSERT INTO icerik.lugat_madde (source_id, basliksoz, basliksoz_norm, duzey, origin, tanim_tr, content_hash, data_version) "
+            + "VALUES (@s, 'kaynakli', 'kaynakli', 4, 'kaynak', 'deneme tanimi', repeat('a', 64), 'test')",
+            ct,
+            ("s", slug));
+
+        Assert.Equal((short)1, await session.ScalarAsync<short>("SELECT anlam_no FROM icerik.lugat_madde", ct));
+        Assert.Equal("aday", await session.ScalarAsync<string>("SELECT status::text FROM icerik.lugat_madde", ct));
+        Assert.Equal("deneme tanimi", await session.ScalarAsync<string>("SELECT tanim_tr FROM icerik.lugat_madde", ct));
+        Assert.Equal((short)4, await session.ScalarAsync<short>("SELECT duzey FROM icerik.lugat_madde", ct));
+    }
+
+    [Fact]
+    public async Task Migrating_from_AddLugatMadde_gives_existing_rows_anlam_no_one_and_down_drops_only_rows_the_old_schema_cannot_hold()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using TestDatabase fresh = await postgres.CreateDatabaseAsync("lugatanlam", ct);
+        await using (DbSession before = fresh.OpenSession())
+        {
+            await before.Context.GetService<IMigrator>().MigrateAsync(LugatTableMigration, ct);
+        }
+
+        string slug = TestData.UniqueSlug();
+        await fresh.ExecuteAsync(
+            "INSERT INTO icerik.source (slug, tur, baslik, surum, atif_metni) VALUES (@s, 'risale', 'Deneme kaynagi', '1', 'Deneme atfi')", ct, ("s", slug));
+        await fresh.ExecuteAsync(
+            "INSERT INTO icerik.lugat_madde (source_id, basliksoz, basliksoz_norm, duzey, origin, content_hash, data_version) VALUES (@s, 'birinci', 'birinci', 1, 'hat', repeat('a', 64), 'test')", ct, ("s", slug));
+        await fresh.ExecuteAsync(
+            "INSERT INTO icerik.lugat_madde (source_id, basliksoz, basliksoz_norm, duzey, status, tanim_tr, origin, content_hash, data_version) VALUES (@s, 'ikinci', 'ikinci', 2, 'onayli', 'deneme tanimi', 'editor', repeat('b', 64), 'test')", ct, ("s", slug));
+
+        await fresh.MigrateAsync(ct);
+
+        Assert.Equal(2L, await fresh.ScalarAsync<long>("SELECT count(*) FROM icerik.lugat_madde WHERE anlam_no = 1", ct));
+        Assert.Equal("onayli", await fresh.ScalarAsync<string>("SELECT status::text FROM icerik.lugat_madde WHERE basliksoz = 'ikinci'", ct));
+        Assert.Equal("deneme tanimi", await fresh.ScalarAsync<string>("SELECT tanim_tr FROM icerik.lugat_madde WHERE basliksoz = 'ikinci'", ct));
+
+        // Yeni sema: ikinci anlam ve 'kaynak' koken girer.
+        await fresh.ExecuteAsync(
+            "INSERT INTO icerik.lugat_madde (source_id, basliksoz, basliksoz_norm, anlam_no, duzey, origin, tanim_tr, content_hash, data_version) VALUES (@s, 'birinci', 'birinci', 2, 1, 'kaynak', 'ikinci anlam', repeat('c', 64), 'test')", ct, ("s", slug));
+        await fresh.ExecuteAsync(
+            "INSERT INTO icerik.lugat_madde (source_id, basliksoz, basliksoz_norm, duzey, origin, tanim_tr, content_hash, data_version) VALUES (@s, 'ucuncu', 'ucuncu', 4, 'kaynak', 'kaynak tanimi', repeat('d', 64), 'test')", ct, ("s", slug));
+
+        await using (DbSession down = fresh.OpenSession())
+        {
+            await down.Context.GetService<IMigrator>().MigrateAsync(LugatTableMigration, ct);
+        }
+
+        // Eski sema ikinci anlami ve kaynak kokenini tasiyamaz; oteki satirlar ayni kalir ve eski tekillik geri gelir.
+        Assert.Equal(2L, await fresh.ScalarAsync<long>("SELECT count(*) FROM icerik.lugat_madde", ct));
+        Assert.Equal("onayli", await fresh.ScalarAsync<string>("SELECT status::text FROM icerik.lugat_madde WHERE basliksoz = 'ikinci'", ct));
+        Assert.Equal(0L, await fresh.ScalarAsync<long>(
+            "SELECT count(*) FROM information_schema.columns WHERE table_schema = 'icerik' AND table_name = 'lugat_madde' AND column_name = 'anlam_no'", ct));
+        PostgresException duplicate = await Assert.ThrowsAsync<PostgresException>(() => fresh.ExecuteAsync(
+            "INSERT INTO icerik.lugat_madde (source_id, basliksoz, basliksoz_norm, duzey, origin, content_hash, data_version) VALUES (@s, 'birinci', 'birinci', 1, 'hat', repeat('a', 64), 'test')", ct, ("s", slug)));
+        Assert.Equal("lugat_madde_source_id_basliksoz_key", duplicate.ConstraintName);
     }
 
     [Fact]

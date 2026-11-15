@@ -96,7 +96,7 @@ public static class LexicalKindLabels
 }
 
 /// <summary>
-/// P-09 satiri. quran_word_fix, lemma_gloss ve lugat_madde (Id: "{source_id}:{basliksoz}") durum sutunu tasir (Status). tr_root_index ve tr_form durum sutunu tasimaz,
+/// P-09 satiri. quran_word_fix, lemma_gloss ve lugat_madde (Id: "{source_id}:{anlam_no}:{basliksoz}") durum sutunu tasir (Status). tr_root_index ve tr_form durum sutunu tasimaz,
 /// yalniz onayli veri tasir; bagli Turkce lemma onayliysa girer (LinkedLemmaApproved).
 /// ApplyDefect: yalniz quran_word_fix icin; duzeltme uygulanamiyorsa (deger alan turune cevrilemiyor, gosterdigi root_id ya da lemma_id yok,
 /// kelime yok) kisa ASCII neden. Duzeltme bu derlemede uygulanacaksa (onayli) ve ApplyDefect doluysa yayin reddedilir (kural kodu yok).

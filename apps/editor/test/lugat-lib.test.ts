@@ -3,11 +3,11 @@ import { tr } from '@/i18n/tr';
 import { problemText, showsServerDetail } from '@/lib/problem-text';
 import { reviewListInit } from '@/review/queries';
 import { QUEUES, openCount } from '@/review/queues';
-import { isLugatEditable } from '@/review/rules';
+import { isLugatEditable, lugatSourceDefinition } from '@/review/rules';
 import { hasWaveOrder, isLemmaTab, lemmaFilter } from '@/screens/lemma/config';
-import { readFrequency, readLugatReference } from '@/screens/lemma/lugat-payload';
+import { parseLugatKey, readFrequency, readLugatReference } from '@/screens/lemma/lugat-payload';
 import { reviewItem, stats } from './fixtures';
-import { lugatItem } from './fixtures-lemma';
+import { lugatItem, lugatSourceDetail, lugatSourceText } from './fixtures-lemma';
 
 describe('lügat queue config', () => {
   it('lists lugat_madde + tanim_tr in descending frequency order whatever the wave order is', () => {
@@ -136,5 +136,50 @@ describe('problem text of the lügat decision', () => {
   it('labels the target and the field of the review', () => {
     expect(tr.labels.target.lugat_madde).toBe('Lügat maddesi');
     expect(tr.labels.field.tanim_tr).toBe('Tanım');
+  });
+});
+
+describe('parseLugatKey (K-51 madde 14)', () => {
+  it('splits the three-part key and keeps colons in the headword', () => {
+    expect(parseLugatKey('lugat-rnk:2:deneme')).toEqual({
+      source: 'lugat-rnk',
+      anlamNo: 2,
+      basliksoz: 'deneme',
+    });
+    expect(parseLugatKey('lugat-rnk:12:a:b')).toEqual({
+      source: 'lugat-rnk',
+      anlamNo: 12,
+      basliksoz: 'a:b',
+    });
+  });
+
+  it('reads the legacy two-part key as meaning 1', () => {
+    expect(parseLugatKey('risale-kelime-frekans:deneme')).toEqual({
+      source: 'risale-kelime-frekans',
+      anlamNo: 1,
+      basliksoz: 'deneme',
+    });
+    expect(parseLugatKey('risale-kelime-frekans:a:b:c')?.basliksoz).toBe('a:b:c');
+  });
+
+  it('gives null for an unreadable key or a non-canonical meaning number', () => {
+    for (const key of ['', 'deneme', ':x', 'a:', 'a:0:x', 'a:01:x', 'a:32768:x', 'a:2:', 'a:2:  ']) {
+      expect(parseLugatKey(key), key).toBeNull();
+    }
+  });
+});
+
+describe('lugatSourceDefinition', () => {
+  it('is the definition only for a madde that came from a source with a non-blank definition', () => {
+    expect(lugatSourceDefinition(lugatSourceDetail(301))).toBe(lugatSourceText(301));
+    expect(lugatSourceDefinition(lugatSourceDetail(301, { tanim: null }))).toBeNull();
+    const editor = lugatSourceDetail(301);
+    expect(
+      lugatSourceDefinition({ hedef: { ...editor.hedef, tablo: 'lugat_madde', origin: 'editor' } }),
+    ).toBeNull();
+    expect(
+      lugatSourceDefinition({ hedef: { ...editor.hedef, tablo: 'lugat_madde', tanim_tr: '   ' } }),
+    ).toBeNull();
+    expect(lugatSourceDefinition({ hedef: null })).toBeNull();
   });
 });

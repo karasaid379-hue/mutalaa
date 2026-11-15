@@ -90,7 +90,8 @@ public sealed record PackLemmaGlossRow(
     string Origin);
 
 /// <summary>
-/// lugat satiri (risale-dizin; K-51 madde 9): basliksoz kaynaktaki baytlarla, TanimTr editorun yazdigi (NFC) tanim (aday iken bos olabilir).
+/// lugat satiri (risale-dizin; K-51 madde 9, 10 ve 14): basliksoz kaynaktaki baytlarla; TanimTr lugat kaynagindan gelen (Origin "kaynak", bayt bayt) ya da editorun
+/// yazdigi (Origin "editor", NFC) tanim, tanimsiz adayda bos. Anahtar (Basliksoz, Kaynak, AnlamNo): Kaynak kaynagin source_id'si, AnlamNo kaynak sirasiyla anlam sirasi.
 /// Status 'onayli' ya da 'aday' (aday yalniz dev ve internal'da; "dogrulanmamis" durumdan turetilir); Version metindir. <c>kaynaklar</c> ve anlam basvurusu yoktur.
 /// </summary>
 public sealed record PackLugatRow(
@@ -99,6 +100,8 @@ public sealed record PackLugatRow(
     string? OsmanlicaYazim,
     string? KokenDil,
     string? TanimTr,
+    long AnlamNo,
+    string Kaynak,
     long Duzey,
     string Status,
     string Origin,

@@ -320,9 +320,12 @@ CREATE TABLE icerik.lugat_madde (
     data_version text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    anlam_no smallint DEFAULT 1 NOT NULL,
+    CONSTRAINT lugat_madde_anlam_no_check CHECK ((anlam_no >= 1)),
     CONSTRAINT lugat_madde_content_hash_check CHECK ((content_hash ~ '^[0-9a-f]{64}$'::text)),
+    CONSTRAINT lugat_madde_duzey_check CHECK (((duzey >= 1) AND (duzey <= 4))),
     CONSTRAINT lugat_madde_onayli_tanim_check CHECK (((status <> 'onayli'::icerik.xref_status) OR ((tanim_tr IS NOT NULL) AND (btrim(tanim_tr) <> ''::text)))),
-    CONSTRAINT lugat_madde_origin_check CHECK ((origin = ANY (ARRAY['hat'::text, 'editor'::text])))
+    CONSTRAINT lugat_madde_origin_check CHECK ((origin = ANY (ARRAY['hat'::text, 'editor'::text, 'kaynak'::text])))
 );
 
 
@@ -887,11 +890,11 @@ ALTER TABLE ONLY icerik.lugat_madde
 
 
 --
--- Name: lugat_madde lugat_madde_source_id_basliksoz_key; Type: CONSTRAINT; Schema: icerik; Owner: -
+-- Name: lugat_madde lugat_madde_source_id_basliksoz_anlam_no_key; Type: CONSTRAINT; Schema: icerik; Owner: -
 --
 
 ALTER TABLE ONLY icerik.lugat_madde
-    ADD CONSTRAINT lugat_madde_source_id_basliksoz_key UNIQUE (source_id, basliksoz);
+    ADD CONSTRAINT lugat_madde_source_id_basliksoz_anlam_no_key UNIQUE (source_id, basliksoz, anlam_no);
 
 
 --

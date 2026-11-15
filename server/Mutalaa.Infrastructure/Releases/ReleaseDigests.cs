@@ -249,6 +249,7 @@ public static class SourceDigests
                     slug,
                     madde.Basliksoz,
                     madde.BasliksozNorm,
+                    (long)madde.AnlamNo,
                     madde.OsmanlicaYazim,
                     madde.KokenDil,
                     madde.TanimTr,

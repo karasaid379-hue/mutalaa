@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { fieldLabel } from '@/i18n/labels';
+import { fieldLabel, labelOf } from '@/i18n/labels';
 import { tr } from '@/i18n/tr';
 import { trLemma } from '@/i18n/tr-lemma';
 import { trLugat } from '@/i18n/tr-lugat';
@@ -23,7 +23,7 @@ import {
 } from './config';
 import { LemmaCard } from './lemma-card';
 import { LugatCard } from './lugat-card';
-import { readFrequency } from './lugat-payload';
+import { parseLugatKey, readFrequency } from './lugat-payload';
 import { consistencyOf, isReadyCandidate, isShare, readConfidence } from './payload';
 import { WordFixCard } from './word-fix-card';
 
@@ -100,10 +100,20 @@ function OrderControl({ value, onChange }: OrderControlProps) {
 function GlossMeta({ item }: { item: ReviewItem }) {
   if (item.hedef_tablo === 'lugat_madde') {
     const frequency = readFrequency(item);
+    const key = parseLugatKey(item.hedef_anahtar);
     return (
-      <span className="text-xs text-muted-foreground" data-testid="lugat-item-frequency">
-        {frequency === null ? trLugat.list.noFrequency : trLugat.list.line(formatNumber(frequency))}
-      </span>
+      <>
+        <span className="text-xs text-muted-foreground" data-testid="lugat-item-frequency">
+          {frequency === null
+            ? trLugat.list.noFrequency
+            : trLugat.list.line(formatNumber(frequency))}
+        </span>
+        {key ? (
+          <span className="text-xs text-muted-foreground" data-testid="lugat-item-source">
+            {trLugat.list.meaningSource(labelOf(trLugat.sources, key.source), key.anlamNo)}
+          </span>
+        ) : null}
+      </>
     );
   }
   if (item.hedef_tablo === 'quran_word_fix') {

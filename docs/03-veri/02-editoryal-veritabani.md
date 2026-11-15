@@ -205,25 +205,26 @@ CREATE TABLE lemma_dalga (                         -- kelime anlamı dalgaları 
   data_version  text NOT NULL
 );
 
-CREATE TABLE lugat_madde (                         -- Risale lügat maddesi (K-51 madde 9 ve 10); hat başlık söz adayını yazar, tanımı editör yazar
+CREATE TABLE lugat_madde (                         -- Risale lügat maddesi (K-51 madde 9, 10 ve 14); hat kaynak tanımını ya da başlık söz adayını yazar, editör onaylar
   id               integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  source_id        text NOT NULL REFERENCES source(slug),   -- 'risale-kelime-frekans'
+  source_id        text NOT NULL REFERENCES source(slug),   -- 'lugat-rnk', 'lugat-sozluk-rganeyev', 'risale-kelime-frekans'
   basliksoz        text NOT NULL,                    -- üçüncü taraf, kaynaktaki baytlarla
   basliksoz_norm   text NOT NULL,                    -- arama anahtarı (ayrı sütun)
+  anlam_no         smallint NOT NULL DEFAULT 1 CHECK (anlam_no >= 1),   -- aynı kaynağın aynı başlığının n. anlamı (kaynak sırası, 1'den; K-51 madde 14)
   osmanlica_yazim  text,
   koken_dil        text,
-  tanim_tr         text,                             -- editörün yazdığı tanım; kendi metnimiz, ilk kayıtta NFC. Aday boş açılır
+  tanim_tr         text,                             -- origin 'kaynak': kaynaktaki tanım, bayt bayt (NFC yok; en çok 2000 kod noktası sınırı dosya kapısındadır); origin 'editor': editörün yazdığı tanım, ilk kayıtta NFC; origin 'hat': boş
   ar_kok_id        integer REFERENCES root(id),
   kaynaklar        jsonb NOT NULL DEFAULT '{}',      -- sıklık (siklik, int), kitap sıklıkları (kitaplar), sözlük isabetleri; anlam başvurusu burada DEĞİL, review.onerilen içinde durur
-  duzey            smallint NOT NULL,                -- okurun "Lügat: Kapalı/Az/Orta/Çok" ayarını besler
+  duzey            smallint NOT NULL CHECK (duzey BETWEEN 1 AND 4),   -- 1..3 Risale sıklığı (okurun "Lügat: Kapalı/Az/Orta/Çok" ayarını besler), 4 = Risale başlık söz listesinde yok
   status           xref_status NOT NULL DEFAULT 'aday',
-  origin           text NOT NULL CHECK (origin IN ('hat','editor')),
+  origin           text NOT NULL CHECK (origin IN ('hat','editor','kaynak')),   -- hat: tanımsız aday; kaynak: lügat kaynağından tanım; editor: editörün yazdığı ya da değiştirdiği tanım
   version          text NOT NULL DEFAULT '1',        -- lemma_gloss.version ile aynı tür; onayda +1
   content_hash     char(64) NOT NULL CHECK (content_hash ~ '^[0-9a-f]{64}$'),   -- sha256(basliksoz || LF || coalesce(tanim_tr, ''))
   data_version     text NOT NULL,
   created_at       timestamptz NOT NULL DEFAULT now(),
   updated_at       timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (source_id, basliksoz),
+  UNIQUE (source_id, basliksoz, anlam_no),         -- kısıt adı lugat_madde_source_id_basliksoz_anlam_no_key (hat ON CONFLICT ON CONSTRAINT ile hedefler)
   CHECK (status <> 'onayli' OR (tanim_tr IS NOT NULL AND btrim(tanim_tr) <> ''))
 );
 

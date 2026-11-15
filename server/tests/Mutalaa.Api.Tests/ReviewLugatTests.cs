@@ -43,19 +43,25 @@ public class ReviewLugatTests(EditorialDatabase<ReviewLugatTests> fixture)
         XrefStatus status = XrefStatus.Aday,
         string? tanim = null,
         string version = "1",
-        int siklik = 10)
+        int siklik = 10,
+        short anlamNo = 1,
+        string origin = LugatMaddeText.HatOrigin,
+        string? sourceId = null,
+        bool legacyKey = false,
+        string? hash = null)
     {
         LugatMadde madde = new()
         {
-            SourceId = SourceSlug,
+            SourceId = sourceId ?? SourceSlug,
             Basliksoz = basliksoz,
             BasliksozNorm = basliksoz,
+            AnlamNo = anlamNo,
             Duzey = 1,
             Status = status,
             TanimTr = tanim,
-            Origin = LugatMaddeText.HatOrigin,
+            Origin = origin,
             Version = version,
-            ContentHash = LugatMaddeText.ComputeHash(basliksoz, tanim),
+            ContentHash = hash ?? LugatMaddeText.ComputeHash(basliksoz, tanim),
             DataVersion = "test",
             Kaynaklar = kaynaklar ?? JsonSerializer.Serialize(new Dictionary<string, object>
             {
@@ -73,7 +79,9 @@ public class ReviewLugatTests(EditorialDatabase<ReviewLugatTests> fixture)
         Review review = await SaveReviewAsync(new Review
         {
             HedefTablo = ReviewTargets.LugatMadde,
-            HedefAnahtar = SourceSlug + ":" + basliksoz,
+            HedefAnahtar = legacyKey
+                ? (sourceId ?? SourceSlug) + ":" + basliksoz
+                : ReviewTargets.LugatKey(sourceId ?? SourceSlug, anlamNo, basliksoz),
             Alan = ReviewFields.TanimTr,
             Eylem = ReviewActions.Oner,
             Onerilen = Proposal(siklik),
@@ -83,14 +91,15 @@ public class ReviewLugatTests(EditorialDatabase<ReviewLugatTests> fixture)
         return (madde, review);
     }
 
-    private async Task<(string? Tanim, string ContentHash, string Version, string Origin, string Status, string Kaynaklar)> RowAsync(string basliksoz)
+    private async Task<(string? Tanim, string ContentHash, string Version, string Origin, string Status, string Kaynaklar)> RowAsync(string basliksoz, short anlamNo = 1, string? sourceId = null)
     {
         await using Npgsql.NpgsqlConnection connection = await Db.OpenRawConnectionAsync(Ct);
         await using Npgsql.NpgsqlCommand command = new(
-            "SELECT tanim_tr, content_hash, version, origin, status::text, kaynaklar::text FROM icerik.lugat_madde WHERE source_id = @s AND basliksoz = @b",
+            "SELECT tanim_tr, content_hash, version, origin, status::text, kaynaklar::text FROM icerik.lugat_madde WHERE source_id = @s AND basliksoz = @b AND anlam_no = @n",
             connection);
-        command.Parameters.AddWithValue("s", SourceSlug);
+        command.Parameters.AddWithValue("s", sourceId ?? SourceSlug);
         command.Parameters.AddWithValue("b", basliksoz);
+        command.Parameters.AddWithValue("n", anlamNo);
         await using Npgsql.NpgsqlDataReader reader = await command.ExecuteReaderAsync(Ct);
         Assert.True(await reader.ReadAsync(Ct));
         return (reader.IsDBNull(0) ? null : reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetString(5));
@@ -245,12 +254,13 @@ public class ReviewLugatTests(EditorialDatabase<ReviewLugatTests> fixture)
         JsonElement detail = await ApiFactory.ReadJsonAsync(await client.GetAsync($"/api/v1/reviews/{review.Id}", Ct), Ct);
 
         Assert.Equal("lugat_madde", detail.GetProperty("hedef_tablo").GetString());
-        Assert.Equal(SourceSlug + ":a:b-sozcuk", detail.GetProperty("hedef_anahtar").GetString());
+        Assert.Equal(SourceSlug + ":1:a:b-sozcuk", detail.GetProperty("hedef_anahtar").GetString());
         Assert.Equal(42, detail.GetProperty("onerilen").GetProperty("siklik").GetInt32());
         Assert.Equal("deneme basvurusu", detail.GetProperty("onerilen").GetProperty("anlam_basvuru")[0].GetProperty("anlam").GetString());
         JsonElement target = detail.GetProperty("hedef");
         Assert.Equal("lugat_madde", target.GetProperty("tablo").GetString());
         Assert.Equal(SourceSlug, target.GetProperty("source").GetString());
+        Assert.Equal(1, target.GetProperty("anlam_no").GetInt32());
         Assert.Equal("a:b-sozcuk", target.GetProperty("basliksoz").GetString());
         Assert.Equal("aday", target.GetProperty("status").GetString());
         Assert.Equal("hat", target.GetProperty("origin").GetString());
@@ -498,5 +508,150 @@ public class ReviewLugatTests(EditorialDatabase<ReviewLugatTests> fixture)
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         Assert.Equal("aday", (await RowAsync("deneme-sozcuk")).Status);
+    }
+
+    // ---- kaynak tanimi ve anlam_no (K-51 madde 10 ve 14) ----
+
+    private const string SecondSource = "lugat-deneme";
+
+    private async Task EnsureSecondSourceAsync()
+    {
+        await using DbSession session = Db.OpenSession();
+        Source source = TestData.NewSource(SecondSource);
+        source.Tur = SourceKind.Sozluk;
+        session.Context.Add(source);
+        await session.Context.SaveChangesAsync(Ct);
+    }
+
+    [Fact]
+    public async Task A_source_candidate_is_approved_unedited_keeping_origin_bytes_and_hash_and_bumping_the_version()
+    {
+        await EnsureSourceAsync();
+        await EnsureSecondSourceAsync();
+        // Bayt bayt kaynak tanimi: NFC'ye uymayan birlesik vurgu ve sondaki bosluk aynen kalir.
+        string source = "café deneme tanimi ";
+        string sourceHash = new('e', 64);
+        (_, Review review) = await SeedMaddeAsync("deneme-sozcuk", origin: LugatMaddeText.KaynakOrigin, sourceId: SecondSource, tanim: source, hash: sourceHash);
+        using HttpClient client = await ClientAsync();
+
+        using HttpResponseMessage response = await DecideAsync(client, review.Id, Etag(await XminAsync(review.Id)), Approve());
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        JsonElement body = await ApiFactory.ReadJsonAsync(response, Ct);
+        Assert.Equal("onaylandi", body.GetProperty("durum").GetString());
+        Assert.Equal("onayla", body.GetProperty("eylem").GetString());
+        Assert.Equal("onayli", body.GetProperty("hedef_durumu").GetString());
+        (string? tanim, string hash, string version, string origin, string status, _) = await RowAsync("deneme-sozcuk", sourceId: SecondSource);
+        Assert.Equal(source, tanim);
+        Assert.Equal(sourceHash, hash);
+        Assert.Equal("2", version);
+        Assert.Equal("kaynak", origin);
+        Assert.Equal("onayli", status);
+        JsonElement detail = await ApiFactory.ReadJsonAsync(await client.GetAsync($"/api/v1/reviews/{review.Id}", Ct), Ct);
+        Assert.Equal(SecondSource, detail.GetProperty("hedef").GetProperty("source").GetString());
+        Assert.Equal("kaynak", detail.GetProperty("hedef").GetProperty("origin").GetString());
+        Assert.Equal(source, detail.GetProperty("hedef").GetProperty("tanim_tr").GetString());
+        Assert.True(detail.GetProperty("dogrulanmis").GetBoolean());
+    }
+
+    [Fact]
+    public async Task Editing_a_source_candidate_turns_it_into_an_editor_text_in_NFC_with_a_new_hash()
+    {
+        await EnsureSourceAsync();
+        (_, Review review) = await SeedMaddeAsync("deneme-sozcuk", origin: LugatMaddeText.KaynakOrigin, tanim: "kaynak tanimi");
+        using HttpClient client = await ClientAsync();
+
+        using HttpResponseMessage response = await DecideAsync(client, review.Id, Etag(await XminAsync(review.Id)), Approve(duzenlenen: new { tanim_tr = "café duzeltilmis" }));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("duzenle_onayla", (await ApiFactory.ReadJsonAsync(response, Ct)).GetProperty("eylem").GetString());
+        (string? tanim, string hash, string version, string origin, string status, _) = await RowAsync("deneme-sozcuk");
+        Assert.Equal("café duzeltilmis", tanim);
+        Assert.Equal(LugatMaddeText.ComputeHash("deneme-sozcuk", "café duzeltilmis"), hash);
+        Assert.Equal("2", version);
+        Assert.Equal("editor", origin);
+        Assert.Equal("onayli", status);
+    }
+
+    [Fact]
+    public async Task A_hat_candidate_without_a_definition_still_cannot_be_approved_unedited_while_a_source_candidate_with_a_blank_definition_cannot_either()
+    {
+        await EnsureSourceAsync();
+        (_, Review hat) = await SeedMaddeAsync("a-sozcuk");
+        (_, Review blank) = await SeedMaddeAsync("b-sozcuk", origin: LugatMaddeText.KaynakOrigin, tanim: null);
+        using HttpClient client = await ClientAsync();
+
+        using HttpResponseMessage first = await DecideAsync(client, hat.Id, Etag(await XminAsync(hat.Id)), Approve());
+        using HttpResponseMessage second = await DecideAsync(client, blank.Id, Etag(await XminAsync(blank.Id)), Approve());
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, first.StatusCode);
+        Assert.Equal("inceleme-desteklenmiyor", await ProblemCodeAsync(first));
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, second.StatusCode);
+        Assert.Equal("aday", (await RowAsync("a-sozcuk")).Status);
+        Assert.Equal("aday", (await RowAsync("b-sozcuk")).Status);
+    }
+
+    [Fact]
+    public async Task The_same_headword_has_separate_rows_per_meaning_and_each_review_decides_only_its_own_row()
+    {
+        await EnsureSourceAsync();
+        (_, Review first) = await SeedMaddeAsync("deneme-sozcuk", anlamNo: 1, origin: LugatMaddeText.KaynakOrigin, tanim: "birinci anlam");
+        (_, Review second) = await SeedMaddeAsync("deneme-sozcuk", anlamNo: 2, origin: LugatMaddeText.KaynakOrigin, tanim: "ikinci anlam");
+        using HttpClient client = await ClientAsync();
+
+        JsonElement detail = await ApiFactory.ReadJsonAsync(await client.GetAsync($"/api/v1/reviews/{second.Id}", Ct), Ct);
+        Assert.Equal(SourceSlug + ":2:deneme-sozcuk", detail.GetProperty("hedef_anahtar").GetString());
+        Assert.Equal(2, detail.GetProperty("hedef").GetProperty("anlam_no").GetInt32());
+        Assert.Equal("ikinci anlam", detail.GetProperty("hedef").GetProperty("tanim_tr").GetString());
+
+        using HttpResponseMessage response = await DecideAsync(client, second.Id, Etag(await XminAsync(second.Id)), Approve());
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("onayli", (await RowAsync("deneme-sozcuk", anlamNo: 2)).Status);
+        Assert.Equal("aday", (await RowAsync("deneme-sozcuk", anlamNo: 1)).Status);
+        Assert.Equal("acik", (await ReviewRowAsync(first.Id)).Durum);
+    }
+
+    [Fact]
+    public async Task A_legacy_two_part_key_addresses_meaning_one_in_detail_queue_order_and_decision()
+    {
+        await EnsureSourceAsync();
+        (_, Review legacy) = await SeedMaddeAsync("a-sozcuk", siklik: 500, legacyKey: true);
+        (_, Review current) = await SeedMaddeAsync("b-sozcuk", siklik: 100);
+        (_, Review other) = await SeedMaddeAsync("c-sozcuk", siklik: 300, anlamNo: 2);
+        using HttpClient client = await ClientAsync();
+
+        long[] paged = await PageThroughAsync(client, "hedef_tablo=lugat_madde&sira=siklik", 50);
+        JsonElement detail = await ApiFactory.ReadJsonAsync(await client.GetAsync($"/api/v1/reviews/{legacy.Id}", Ct), Ct);
+        using HttpResponseMessage response = await DecideAsync(client, legacy.Id, Etag(await XminAsync(legacy.Id)), Approve(duzenlenen: new { tanim_tr = "eski anahtar tanimi" }));
+
+        Assert.Equal([legacy.Id, other.Id, current.Id], paged);
+        Assert.Equal(1, detail.GetProperty("hedef").GetProperty("anlam_no").GetInt32());
+        Assert.Equal("a-sozcuk", detail.GetProperty("hedef").GetProperty("basliksoz").GetString());
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("onayli", (await RowAsync("a-sozcuk")).Status);
+    }
+
+    [Fact]
+    public async Task A_review_for_a_meaning_that_does_not_exist_is_a_404_on_decision()
+    {
+        await EnsureSourceAsync();
+        (_, Review review) = await SeedMaddeAsync("deneme-sozcuk");
+        Review orphan = await SaveReviewAsync(new Review
+        {
+            HedefTablo = ReviewTargets.LugatMadde,
+            HedefAnahtar = ReviewTargets.LugatKey(SourceSlug, 7, "deneme-sozcuk"),
+            Alan = ReviewFields.TanimTr,
+            Eylem = ReviewActions.Oner,
+            Koken = XrefOrigin.Hat,
+            Oneren = "hat",
+        });
+        using HttpClient client = await ClientAsync();
+
+        using HttpResponseMessage response = await DecideAsync(client, orphan.Id, Etag(await XminAsync(orphan.Id)), Approve(duzenlenen: new { tanim_tr = "yeni" }));
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal("aday", (await RowAsync("deneme-sozcuk")).Status);
+        Assert.True(review.Id > 0);
     }
 }

@@ -132,7 +132,8 @@ public static class PackSelfCheck
         return new PackSelfCheckReport(expectations.PackId, expectations.Version, items);
     }
 
-    // lugat: durum yalniz onayli ya da aday, onayli maddenin tanimi dolu, public pakette aday yok (K-51 madde 9; red hicbir pakete girmez).
+    // lugat: durum yalniz onayli ya da aday, onayli maddenin tanimi dolu, public pakette aday yok (K-51 madde 9; red hicbir pakete girmez); anahtar (basliksoz, kaynak, anlam_no)
+    // birincil anahtardir, anlam_no >= 1, kaynak dolu ve tanimsiz satir ayni normalize basliksozde tanimli satir varken pakette bulunmaz (K-51 madde 14).
     private static SelfCheckItem LugatCheck(SqliteConnection connection, Dictionary<string, string> meta)
     {
         List<string> problems = [];
@@ -146,6 +147,21 @@ public static class PackSelfCheck
         if (emptyDefinition > 0)
         {
             problems.Add(Inv($"onayli-tanimsiz:{emptyDefinition}"));
+        }
+
+        long invalidMeaning = Scalar(connection, "SELECT count(*) FROM lugat WHERE anlam_no < 1 OR trim(kaynak) = ''");
+        if (invalidMeaning > 0)
+        {
+            problems.Add(Inv($"gecersiz-anlam-ya-da-kaynak:{invalidMeaning}"));
+        }
+
+        long shadowed = Scalar(
+            connection,
+            "SELECT count(*) FROM lugat u WHERE (u.tanim_tr IS NULL OR trim(u.tanim_tr) = '') "
+            + "AND EXISTS (SELECT 1 FROM lugat d WHERE d.basliksoz_norm = u.basliksoz_norm AND d.tanim_tr IS NOT NULL AND trim(d.tanim_tr) <> '')");
+        if (shadowed > 0)
+        {
+            problems.Add(Inv($"tanimsiz-ve-tanimli-ayni-norm:{shadowed}"));
         }
 
         long candidates = Scalar(connection, "SELECT count(*) FROM lugat WHERE status = 'aday'");

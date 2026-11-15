@@ -3364,6 +3364,13 @@
               "boolean"
             ]
           },
+          "anlam_no": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
           "basliksoz": {
             "type": [
               "null",

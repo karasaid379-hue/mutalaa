@@ -591,6 +591,11 @@ namespace Mutalaa.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
+                    b.Property<short>("AnlamNo")
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)1)
+                        .HasColumnName("anlam_no");
+
                     b.Property<int?>("ArKokId")
                         .HasColumnType("integer")
                         .HasColumnName("ar_kok_id");
@@ -679,16 +684,20 @@ namespace Mutalaa.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("lugat_madde_pkey");
 
-                    b.HasAlternateKey("SourceId", "Basliksoz")
-                        .HasName("lugat_madde_source_id_basliksoz_key");
+                    b.HasAlternateKey("SourceId", "Basliksoz", "AnlamNo")
+                        .HasName("lugat_madde_source_id_basliksoz_anlam_no_key");
 
                     b.ToTable("lugat_madde", "icerik", t =>
                         {
+                            t.HasCheckConstraint("lugat_madde_anlam_no_check", "anlam_no >= 1");
+
                             t.HasCheckConstraint("lugat_madde_content_hash_check", "content_hash ~ '^[0-9a-f]{64}$'");
+
+                            t.HasCheckConstraint("lugat_madde_duzey_check", "duzey BETWEEN 1 AND 4");
 
                             t.HasCheckConstraint("lugat_madde_onayli_tanim_check", "status <> 'onayli' OR (tanim_tr IS NOT NULL AND btrim(tanim_tr) <> '')");
 
-                            t.HasCheckConstraint("lugat_madde_origin_check", "origin IN ('hat','editor')");
+                            t.HasCheckConstraint("lugat_madde_origin_check", "origin IN ('hat','editor','kaynak')");
                         });
                 });
 

@@ -43,7 +43,16 @@ function Snapshot({ review }: { review: ReviewDetail }) {
               </span>
             </Row>
           ) : null}
-          {target.source ? <Row label={trLugat.snapshot.source}>{target.source}</Row> : null}
+          {target.source ? (
+            <Row label={trLugat.snapshot.source}>
+              <span data-testid="lugat-source">{labelOf(trLugat.sources, target.source)}</span>
+            </Row>
+          ) : null}
+          {target.anlam_no !== null && target.anlam_no !== undefined ? (
+            <Row label={trLugat.snapshot.meaning}>
+              <span data-testid="lugat-meaning">{trLugat.meaning(target.anlam_no)}</span>
+            </Row>
+          ) : null}
           {target.osmanlica_yazim ? (
             <Row label={trLugat.snapshot.ottoman}>{target.osmanlica_yazim}</Row>
           ) : null}
@@ -53,7 +62,13 @@ function Snapshot({ review }: { review: ReviewDetail }) {
           {target.duzey !== null && target.duzey !== undefined ? (
             <Row label={trLugat.snapshot.level}>{String(target.duzey)}</Row>
           ) : null}
-          <Row label={trLugat.snapshot.definition}>
+          <Row
+            label={
+              target.origin === 'kaynak'
+                ? trLugat.snapshot.sourceDefinition
+                : trLugat.snapshot.definition
+            }
+          >
             {target.tanim_tr ? (
               <span lang="tr">{target.tanim_tr}</span>
             ) : (
@@ -164,9 +179,10 @@ function Origin({ review }: { review: ReviewDetail }) {
 }
 
 /**
- * The card of one lügat madde review (`lugat_madde` + `tanim_tr`; K-51 madde 9 and 10): the madde as stored, the
- * reference data (labelled "Başvuru (onaysız)", never approved as the definition), the origin and the decision
- * form, whose approval carries the definition the editor writes ("Düzenle ve onayla", as in the lemma card).
+ * The card of one lügat madde review (`lugat_madde` + `tanim_tr`; K-51 madde 9, 10 and 14): the madde as stored (source name,
+ * meaning number, definition and origin badge), the reference data (labelled "Başvuru (onaysız)", never approved as the
+ * definition), the origin and the decision form: a definition that came from the source is approved unchanged ("Onayla")
+ * or edited ("Düzenle ve onayla"); a madde without one needs the definition the editor writes.
  * There is no AI draft here (`yz_modeli` is empty): the K-25 badge is drawn by the form's shared `dogrulanmamis` rule only.
  */
 export function LugatCard({ review, onDecided }: QueueDetailProps) {

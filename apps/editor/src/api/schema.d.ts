@@ -783,6 +783,8 @@ export interface components {
             kuran_anlamlari?: null | components["schemas"]["JsonElement"];
             turkce_es_kelime?: null | string;
             yalnizca_etimolojik?: null | boolean;
+            /** Format: int32 */
+            anlam_no?: null | number;
             basliksoz?: null | string;
             osmanlica_yazim?: null | string;
             koken_dil?: null | string;

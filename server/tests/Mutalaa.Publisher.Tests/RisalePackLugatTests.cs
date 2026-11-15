@@ -11,6 +11,8 @@ namespace Mutalaa.Publisher.Tests;
 public partial class RisalePackTests
 {
     private const string LugatSource = PackCatalog.RisaleLugatSlug;
+    private const string LugatRnkSource = PackCatalog.RisaleLugatRnkSlug;
+    private const string LugatSozlukSource = PackCatalog.RisaleLugatSozlukSlug;
     private const string LugatFixtureSource = PackCatalog.RisaleFixtureSourceSlug;
 
     private static LugatMaddeRow Madde(
@@ -20,8 +22,9 @@ public partial class RisalePackTests
         string? tanim = null,
         string origin = "hat",
         string version = "1",
-        string? norm = null) =>
-        new(source, basliksoz, norm ?? basliksoz, null, null, tanim, 1, status, origin, version, LugatMaddeHash(basliksoz, tanim));
+        string? norm = null,
+        int anlamNo = 1) =>
+        new(source, basliksoz, norm ?? basliksoz, anlamNo, null, null, tanim, 1, status, origin, version, LugatMaddeHash(basliksoz, tanim));
 
     private static string LugatMaddeHash(string basliksoz, string? tanim) =>
         Mutalaa.Domain.Text.ContentHash.Compute(basliksoz + "\n" + (tanim ?? string.Empty));
@@ -30,7 +33,7 @@ public partial class RisalePackTests
     private static EditorialSnapshot WithLugat(EditorialSnapshot basis, IReadOnlyList<LugatMaddeRow> rows)
     {
         // Fikstur kaynagi (test-risale-ornek) temel goruntude zaten vardir: birimleri, page_map ve lugat maddeleri tek kaynak adindadir.
-        List<SourceRow> sources = [.. basis.Sources, Src(LugatSource, "sozluk")];
+        List<SourceRow> sources = [.. basis.Sources, Src(LugatSource, "sozluk"), Src(LugatRnkSource, "sozluk"), Src(LugatSozlukSource, "sozluk")];
 
         return new EditorialSnapshot
         {
@@ -40,7 +43,7 @@ public partial class RisalePackTests
             QuranMarkers = basis.QuranMarkers,
             PageMaps = basis.PageMaps,
             Xrefs = basis.Xrefs,
-            Lexicals = [.. basis.Lexicals, .. rows.Select(r => new LexicalRow(LexicalKind.LugatMadde, r.SourceId + ":" + r.Basliksoz, r.Status, false))],
+            Lexicals = [.. basis.Lexicals, .. rows.Select(r => new LexicalRow(LexicalKind.LugatMadde, r.SourceId + ":" + r.AnlamNo.ToString(System.Globalization.CultureInfo.InvariantCulture) + ":" + r.Basliksoz, r.Status, false))],
             LugatMaddeler = rows,
         };
     }
@@ -56,10 +59,10 @@ public partial class RisalePackTests
     public void Lugat_table_columns_and_the_row_order_follow_the_contract_and_come_last()
     {
         Assert.Equal(
-            ["basliksoz", "basliksoz_norm", "osmanlica_yazim", "koken_dil", "tanim_tr", "duzey", "status", "origin", "version", "content_hash"],
+            ["basliksoz", "basliksoz_norm", "osmanlica_yazim", "koken_dil", "tanim_tr", "anlam_no", "kaynak", "duzey", "status", "origin", "version", "content_hash"],
             PackTables.Columns("lugat"));
         Assert.Equal("lugat", PackTables.Order[^1]);
-        Assert.DoesNotContain(PackTables.Columns("lugat"), c => c is "kaynaklar" or "siklik" or "kitaplar" or "anlam_basvuru" or "sozluk_isabet" or "source_id");
+        Assert.DoesNotContain(PackTables.Columns("lugat"), c => c is "kaynaklar" or "siklik" or "kitaplar" or "anlam_basvuru" or "sozluk_isabet" or "source_id" or "anlam");
 
         // Satir kayitlari ve anlik goruntu satiri basvuru verisi tasimaz (K-51 madde 10).
         foreach (Type type in new[] { typeof(PackLugatRow), typeof(LugatMaddeRow) })
@@ -123,8 +126,9 @@ public partial class RisalePackTests
         Assert.Contains(dev.SelfCheck.Items, i => i.Name == "lugat" && i.Passed && i.Detail.Contains("2 madde, 1 aday", StringComparison.Ordinal));
         using SqliteConnection connection = Open(dev.Path);
         Assert.Equal(
-            ["basliksoz", "basliksoz_norm", "osmanlica_yazim", "koken_dil", "tanim_tr", "duzey", "status", "origin", "version", "content_hash"],
+            ["basliksoz", "basliksoz_norm", "osmanlica_yazim", "koken_dil", "tanim_tr", "anlam_no", "kaynak", "duzey", "status", "origin", "version", "content_hash"],
             Strings(connection, "SELECT name FROM pragma_table_info('lugat') ORDER BY cid"));
+        Assert.Equal(["basliksoz", "kaynak", "anlam_no"], Strings(connection, "SELECT name FROM pragma_table_info('lugat') WHERE pk > 0 ORDER BY pk"));
         Assert.Equal(
             ["aday-sozcuk|aday|hat|1|", "onayli-sozcuk|onayli|editor|2|Deneme tanimi 1"],
             Strings(connection, "SELECT basliksoz || '|' || status || '|' || origin || '|' || version || '|' || coalesce(tanim_tr, '') FROM lugat ORDER BY basliksoz"));
@@ -157,7 +161,7 @@ public partial class RisalePackTests
 
         using (SqliteCommand insert = writable.CreateCommand())
         {
-            insert.CommandText = "INSERT INTO lugat(basliksoz, basliksoz_norm, duzey, status, origin, version, content_hash) VALUES ('elle-aday', 'elle-aday', 1, 'aday', 'hat', '1', $h)";
+            insert.CommandText = "INSERT INTO lugat(basliksoz, basliksoz_norm, anlam_no, kaynak, duzey, status, origin, version, content_hash) VALUES ('elle-aday', 'elle-aday', 1, 'deneme-kaynak', 1, 'aday', 'hat', '1', $h)";
             insert.Parameters.AddWithValue("$h", new string('a', 64));
             insert.ExecuteNonQuery();
         }
@@ -229,17 +233,169 @@ public partial class RisalePackTests
     }
 
     [Fact]
-    public void An_approved_madde_without_a_definition_and_a_headword_in_two_sources_are_inconsistent_input()
+    public void An_approved_madde_without_a_definition_and_the_same_key_twice_are_inconsistent_input()
     {
         EditorialSnapshot blank = WithLugat(Snapshot(), [Madde(LugatSource, "onayli-bos", "onayli", "   ")]);
         PackAssemblyException emptyDefinition = Assert.Throws<PackAssemblyException>(() => Assemble(BuildFlavor.Dev, blank, "risale-dizin"));
         Assert.Contains("tanimi bos", emptyDefinition.Message, StringComparison.Ordinal);
 
+        // Ayni (kaynak, basliksoz, anlam_no) iki kez gelirse hata kalir.
         EditorialSnapshot duplicate = WithLugat(
             Snapshot(),
-            [Madde(LugatSource, "ayni-sozcuk", "aday"), Madde(LugatFixtureSource, "ayni-sozcuk", "aday")]);
+            [Madde(LugatSource, "ayni-sozcuk", "aday"), Madde(LugatSource, "ayni-sozcuk", "aday")]);
         PackAssemblyException twice = Assert.Throws<PackAssemblyException>(() => Assemble(BuildFlavor.Dev, duplicate, "risale-dizin"));
-        Assert.Contains("iki kaynakta", twice.Message, StringComparison.Ordinal);
+        Assert.Contains("ayni anahtarla iki kez", twice.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_same_headword_may_come_from_two_sources_and_as_several_meanings()
+    {
+        EditorialSnapshot snapshot = WithLugat(
+            Snapshot(),
+            [
+                Madde(LugatRnkSource, "ayni-sozcuk", "onayli", "RNK birinci anlam", origin: "kaynak", anlamNo: 1),
+                Madde(LugatRnkSource, "ayni-sozcuk", "onayli", "RNK ikinci anlam", origin: "kaynak", anlamNo: 2),
+                Madde(LugatSozlukSource, "ayni-sozcuk", "onayli", "Sozluk anlami", origin: "kaynak", anlamNo: 1),
+            ]);
+
+        PackContent index = Assemble(BuildFlavor.Dev, snapshot, "risale-dizin");
+
+        Assert.Equal(
+            [("ayni-sozcuk", LugatRnkSource, 1L), ("ayni-sozcuk", LugatRnkSource, 2L), ("ayni-sozcuk", LugatSozlukSource, 1L)],
+            index.Lugat.Select(r => (r.Basliksoz, r.Kaynak, r.AnlamNo)).Order());
+        Assert.Contains(index.PackSources, s => s.SourceId == LugatRnkSource);
+        Assert.Contains(index.PackSources, s => s.SourceId == LugatSozlukSource);
+        Assert.Contains(index.Attributions, a => a.SourceId == LugatRnkSource);
+        Assert.Contains(index.Attributions, a => a.SourceId == LugatSozlukSource);
+    }
+
+    [Theory]
+    [InlineData(BuildFlavor.Dev, true)]
+    [InlineData(BuildFlavor.Internal, true)]
+    [InlineData(BuildFlavor.Public, false)]
+    public void A_source_candidate_follows_the_candidate_rule_with_its_definition_and_origin_kept_byte_for_byte(BuildFlavor flavor, bool visible)
+    {
+        // Kaynak tanimi NFC'ye uymaz (birlesik vurgu); pakete aynen yazilir.
+        string definition = "café kaynak tanimi";
+        EditorialSnapshot snapshot = WithLugat(Snapshot(), [Madde(LugatRnkSource, "kaynakli-sozcuk", "aday", definition, origin: "kaynak")]);
+
+        PackContent index = Assemble(flavor, snapshot, "risale-dizin");
+
+        if (!visible)
+        {
+            Assert.Empty(index.Lugat);
+            return;
+        }
+
+        PackLugatRow row = Assert.Single(index.Lugat);
+        Assert.Equal(("aday", "kaynak", definition, LugatRnkSource), (row.Status, row.Origin, row.TanimTr, row.Kaynak));
+    }
+
+    [Theory]
+    [InlineData(BuildFlavor.Dev)]
+    [InlineData(BuildFlavor.Internal)]
+    [InlineData(BuildFlavor.Public)]
+    public void An_approved_source_row_enters_every_flavor_and_a_red_one_none(BuildFlavor flavor)
+    {
+        EditorialSnapshot snapshot = WithLugat(
+            Snapshot(),
+            [
+                Madde(LugatRnkSource, "onayli-sozcuk", "onayli", "Onayli kaynak tanimi", origin: "kaynak", version: "2"),
+                Madde(LugatRnkSource, "red-sozcuk", "red", "Reddedilen kaynak tanimi", origin: "kaynak"),
+            ]);
+
+        PackContent index = Assemble(flavor, snapshot, "risale-dizin");
+
+        PackLugatRow row = Assert.Single(index.Lugat);
+        Assert.Equal(("onayli-sozcuk", "onayli", "kaynak", "2"), (row.Basliksoz, row.Status, row.Origin, row.Version));
+    }
+
+    [Fact]
+    public void A_definitionless_candidate_is_dropped_when_a_defined_row_shares_its_normalized_headword()
+    {
+        EditorialSnapshot snapshot = WithLugat(
+            Snapshot(),
+            [
+                Madde(LugatSource, "Deneme-Sozcuk", "aday", norm: "deneme-sozcuk"), // tanimsiz Kelime-Frekans adayi
+                Madde(LugatRnkSource, "deneme-sozcuk", "aday", "Kaynak tanimi", origin: "kaynak", norm: "deneme-sozcuk"),
+                Madde(LugatSource, "yalniz-sozcuk", "aday", norm: "yalniz-sozcuk"), // cakisan tanimli madde yok: kalir
+            ]);
+
+        PackContent dev = Assemble(BuildFlavor.Dev, snapshot, "risale-dizin");
+
+        Assert.Equal(["deneme-sozcuk", "yalniz-sozcuk"], dev.Lugat.Select(r => r.Basliksoz).Order(StringComparer.Ordinal));
+        Assert.DoesNotContain(dev.Lugat, r => r.Basliksoz == "Deneme-Sozcuk");
+
+        // Public'te aday yoktur: ne tanimli ne tanimsiz aday girer.
+        Assert.Empty(Assemble(BuildFlavor.Public, snapshot, "risale-dizin").Lugat);
+    }
+
+    [Fact]
+    public void A_definitionless_candidate_stays_when_the_defined_row_with_the_same_norm_is_not_in_the_pack()
+    {
+        // Tanimli madde reddedilmis: pakete girmez, bu yuzden tanimsiz adayi golgelemez.
+        EditorialSnapshot snapshot = WithLugat(
+            Snapshot(),
+            [
+                Madde(LugatSource, "tanimsiz-sozcuk", "aday", norm: "ortak-norm"),
+                Madde(LugatRnkSource, "tanimli-sozcuk", "red", "Kaynak tanimi", origin: "kaynak", norm: "ortak-norm"),
+            ]);
+
+        PackContent dev = Assemble(BuildFlavor.Dev, snapshot, "risale-dizin");
+
+        Assert.Equal(["tanimsiz-sozcuk"], dev.Lugat.Select(r => r.Basliksoz));
+    }
+
+    [Fact]
+    public void A_dropped_definitionless_candidate_does_not_list_its_source_but_the_defined_rows_source_is_listed()
+    {
+        EditorialSnapshot snapshot = WithLugat(
+            Snapshot(),
+            [
+                Madde(LugatSource, "deneme-sozcuk", "aday"),
+                Madde(LugatRnkSource, "deneme-sozcuk", "aday", "Kaynak tanimi", origin: "kaynak"),
+            ]);
+
+        PackContent dev = Assemble(BuildFlavor.Dev, snapshot, "risale-dizin");
+
+        Assert.DoesNotContain(dev.PackSources, s => s.SourceId == LugatSource);
+        Assert.Contains(dev.PackSources, s => s.SourceId == LugatRnkSource);
+    }
+
+    [Fact]
+    public void The_three_lugat_sources_are_bound_as_glossary_sources_of_the_index_pack()
+    {
+        PackDefinition index = Catalog.Get("risale-dizin");
+
+        foreach (string slug in new[] { LugatSource, LugatRnkSource, LugatSozlukSource })
+        {
+            PackSourceBinding binding = Assert.Single(index.Sources, b => b.Slug == slug);
+            Assert.Equal(PackSourceRole.Glossary, binding.Role);
+            Assert.False(binding.Required);
+        }
+    }
+
+    [Fact]
+    public async Task The_self_check_catches_a_definitionless_row_that_shares_a_norm_with_a_defined_row()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        using PackTestData.TempDir temp = new();
+        EditorialSnapshot snapshot = WithLugat(Snapshot(), [Madde(LugatRnkSource, "deneme-sozcuk", "aday", "Kaynak tanimi", origin: "kaynak")]);
+        PackFile dev = await Write(Assemble(BuildFlavor.Dev, snapshot, "risale-dizin"), snapshot, temp.Path, ct);
+        using SqliteConnection writable = Open(dev.Path, readOnly: false);
+        using (SqliteCommand insert = writable.CreateCommand())
+        {
+            insert.CommandText = "INSERT INTO lugat(basliksoz, basliksoz_norm, anlam_no, kaynak, duzey, status, origin, version, content_hash) VALUES ('golge', 'deneme-sozcuk', 1, 'x', 1, 'aday', 'hat', '1', $h)";
+            insert.Parameters.AddWithValue("$h", new string('a', 64));
+            insert.ExecuteNonQuery();
+        }
+
+        PackDefinitions definitions = PackTestData.Definitions();
+        PackSelfCheckReport report = PackSelfCheck.Run(
+            writable,
+            new PackSelfCheckExpectations("risale-dizin", "2026.11.0", definitions.ExpectedTables(definitions.Resolve("risale-dizin")), new Dictionary<string, string>(), []));
+
+        Assert.Contains(report.Items, i => i.Name == "lugat" && !i.Passed && i.Detail.Contains("tanimsiz-ve-tanimli-ayni-norm:1", StringComparison.Ordinal));
     }
 
     [Fact]

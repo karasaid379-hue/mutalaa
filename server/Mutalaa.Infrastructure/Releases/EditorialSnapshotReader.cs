@@ -305,15 +305,15 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
     }
 
     /// <summary>
-    /// Lugat maddeleri (butun durumlar; (source_id, basliksoz) bayt sirali). <c>kaynaklar</c> sutunu okunmaz: siklik, kitap ve anlam basvurusu pakete girmez
+    /// Lugat maddeleri (butun durumlar; (source_id, basliksoz, anlam_no) bayt sirali). <c>kaynaklar</c> sutunu okunmaz: siklik, kitap ve anlam basvurusu pakete girmez
     /// (K-51 madde 10). Tablo bossa satir uretmez.
     /// </summary>
     public async Task<IReadOnlyList<LugatMaddeRow>> ReadLugatMaddelerAsync(CancellationToken cancellationToken)
     {
         const string sql = $"""
-            SELECT source_id, basliksoz, basliksoz_norm, osmanlica_yazim, koken_dil, tanim_tr, duzey, status::text, origin, version, content_hash
+            SELECT source_id, basliksoz, basliksoz_norm, anlam_no, osmanlica_yazim, koken_dil, tanim_tr, duzey, status::text, origin, version, content_hash
             FROM {Schema}.lugat_madde
-            ORDER BY source_id COLLATE "C", basliksoz COLLATE "C"
+            ORDER BY source_id COLLATE "C", basliksoz COLLATE "C", anlam_no
             """;
 
         List<LugatMaddeRow> rows = [];
@@ -325,14 +325,15 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
                 reader.GetString(0),
                 reader.GetString(1),
                 reader.GetString(2),
-                Str(reader, 3),
+                reader.GetInt16(3),
                 Str(reader, 4),
                 Str(reader, 5),
-                reader.GetInt16(6),
-                reader.GetString(7),
+                Str(reader, 6),
+                reader.GetInt16(7),
                 reader.GetString(8),
                 reader.GetString(9),
-                reader.GetString(10)));
+                reader.GetString(10),
+                reader.GetString(11)));
         }
 
         return rows;
@@ -463,7 +464,7 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
             rows,
             cancellationToken);
         await ReadLexicalAsync(
-            $"SELECT source_id || ':' || basliksoz, status::text, false FROM {Schema}.lugat_madde ORDER BY source_id COLLATE \"C\", basliksoz COLLATE \"C\"",
+            $"SELECT source_id || ':' || anlam_no::text || ':' || basliksoz, status::text, false FROM {Schema}.lugat_madde ORDER BY source_id COLLATE \"C\", basliksoz COLLATE \"C\", anlam_no",
             LexicalKind.LugatMadde,
             rows,
             cancellationToken);

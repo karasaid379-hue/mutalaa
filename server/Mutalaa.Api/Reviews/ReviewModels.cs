@@ -182,7 +182,11 @@ public sealed record ReviewTargetSnapshot
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? YalnizcaEtimolojik { get; init; }
 
-    // lugat_madde (K-51 madde 9 ve 10): kaynak kimligi Source alaninda, siklik ve anlam basvurusu review.onerilen'dedir.
+    // lugat_madde (K-51 madde 9, 10 ve 14): kaynak kimligi Source alaninda, siklik ve anlam basvurusu review.onerilen'dedir.
+    /// <summary>lugat_madde: ayni basligin kaynak sirasiyla anlam sirasi (1'den).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? AnlamNo { get; init; }
+
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Basliksoz { get; init; }
 
@@ -192,7 +196,7 @@ public sealed record ReviewTargetSnapshot
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? KokenDil { get; init; }
 
-    /// <summary>lugat_madde: editorun yazdigi tanim (aday iken bos).</summary>
+    /// <summary>lugat_madde: kaynaktan gelen (origin kaynak) ya da editorun yazdigi tanim; tanimsiz aday (origin hat) iken bos.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? TanimTr { get; init; }
 

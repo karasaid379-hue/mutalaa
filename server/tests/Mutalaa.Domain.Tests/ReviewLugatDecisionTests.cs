@@ -53,17 +53,41 @@ public class ReviewLugatDecisionTests
     }
 
     [Theory]
-    [InlineData("risale-kelime-frekans:deneme", "risale-kelime-frekans", "deneme")]
-    [InlineData("risale-kelime-frekans:a:b:c", "risale-kelime-frekans", "a:b:c")]
-    [InlineData("a:b", "a", "b")]
-    public void Keys_split_at_the_first_colon_and_the_headword_may_hold_colons(string key, string sourceId, string word)
+    [InlineData("risale-kelime-frekans:deneme", "risale-kelime-frekans", 1, "deneme")]
+    [InlineData("risale-kelime-frekans:a:b:c", "risale-kelime-frekans", 1, "a:b:c")]
+    [InlineData("a:b", "a", 1, "b")]
+    [InlineData("lugat-rnk:1:deneme", "lugat-rnk", 1, "deneme")]
+    [InlineData("lugat-rnk:2:deneme", "lugat-rnk", 2, "deneme")]
+    [InlineData("lugat-rnk:12:a:b", "lugat-rnk", 12, "a:b")]
+    [InlineData("lugat-rnk:32767:deneme", "lugat-rnk", 32767, "deneme")]
+    public void Keys_split_at_the_first_two_colons_and_the_legacy_form_means_anlam_no_one(string key, string sourceId, int anlamNo, string word)
     {
         ReviewTarget target = ReviewTargets.Parse("lugat_madde", key);
 
         Assert.Equal("lugat_madde", target.Table);
         Assert.Equal(sourceId, target.SourceId);
+        Assert.Equal((short)anlamNo, target.AnlamNo);
         Assert.Equal(word, target.Basliksoz);
     }
+
+    [Fact]
+    public void The_key_builder_and_the_parser_round_trip()
+    {
+        string key = ReviewTargets.LugatKey("lugat-rnk", 3, "a:b");
+
+        Assert.Equal("lugat-rnk:3:a:b", key);
+        ReviewTarget target = ReviewTargets.Parse("lugat_madde", key);
+        Assert.Equal(("lugat-rnk", (short)3, "a:b"), (target.SourceId, target.AnlamNo, target.Basliksoz));
+    }
+
+    [Theory]
+    [InlineData("lugat-rnk:0:deneme")]
+    [InlineData("lugat-rnk:01:deneme")]
+    [InlineData("lugat-rnk:32768:deneme")]
+    [InlineData("lugat-rnk:2:")]
+    [InlineData("lugat-rnk:2:   ")]
+    public void A_numeric_second_part_must_be_a_canonical_meaning_number_with_a_headword(string key) =>
+        Assert.Equal(DomainErrorCodes.Dogrulama, CodeOf(() => ReviewTargets.Parse("lugat_madde", key)));
 
     [Theory]
     [InlineData("")]
@@ -96,6 +120,74 @@ public class ReviewLugatDecisionTests
             Assert.Equal("deneme tanimi", stored.RootElement.GetProperty("tanim_tr").GetString());
             Assert.Null(outcome.Gloss);
         });
+    }
+
+    private static ReviewTargetState SourceRow(string version = "1", string? tanim = "kaynak tanimi", string origin = "kaynak", string? hash = null) =>
+        ReviewTargetState.ForLugat(XrefStatus.Aday, new LugatReviewState(Word, version, origin, tanim, hash ?? LugatMaddeText.ComputeHash(Word, tanim)));
+
+    [Fact]
+    public void A_source_candidate_with_a_definition_is_approved_unedited_keeping_origin_text_and_hash_and_bumping_the_version()
+    {
+        CultureScope.For(true, () =>
+        {
+            // Bayt bayt kaynak tanimi: NFC'ye uymayan birlesik vurgu ve ozel bosluk kalir.
+            string source = "café tanimi";
+            string hash = new('c', 64);
+
+            ReviewOutcome outcome = ReviewDecisions.Approve(LugatReview(), Request(), SourceRow(version: "3", tanim: source, hash: hash));
+
+            Assert.Equal(ReviewStatus.Onaylandi, outcome.Durum);
+            Assert.Equal(ReviewActions.Onayla, outcome.Eylem);
+            Assert.Equal(XrefStatus.Onayli, outcome.TargetStatus);
+            LugatMaddeUpdate update = Assert.NotNull(outcome.Lugat);
+            Assert.Equal(source, update.TanimTr);
+            Assert.Equal(hash, update.ContentHash);
+            Assert.Equal("4", update.Version);
+            Assert.Equal("kaynak", update.Origin);
+            Assert.Null(outcome.Duzenlenen);
+        });
+    }
+
+    [Fact]
+    public void Editing_a_source_candidate_makes_it_an_editor_text_in_NFC_with_a_new_hash()
+    {
+        LugatMaddeUpdate update = Assert.NotNull(
+            ReviewDecisions.Approve(LugatReview(), Request(duzenlenen: Edit("café")), SourceRow()).Lugat);
+
+        Assert.Equal("café", update.TanimTr);
+        Assert.Equal(LugatMaddeText.ComputeHash(Word, "café"), update.ContentHash);
+        Assert.Equal("2", update.Version);
+        Assert.Equal("editor", update.Origin);
+        Assert.Equal(ReviewActions.DuzenleOnayla, ReviewDecisions.Approve(LugatReview(), Request(duzenlenen: Edit("x")), SourceRow()).Eylem);
+    }
+
+    [Theory]
+    [InlineData("hat", null)]
+    [InlineData("hat", "tanim var")]
+    [InlineData("editor", "tanim var")]
+    [InlineData("kaynak", null)]
+    [InlineData("kaynak", "   ")]
+    public void Unedited_approval_needs_a_source_origin_and_a_non_blank_definition(string origin, string? tanim) =>
+        Assert.Equal(
+            DomainErrorCodes.IncelemeDesteklenmiyor,
+            CodeOf(() => ReviewDecisions.Approve(LugatReview(), Request(), SourceRow(tanim: tanim, origin: origin))));
+
+    [Fact]
+    public void A_source_candidate_that_is_not_a_candidate_any_more_cannot_be_approved_unedited() =>
+        Assert.Equal(
+            DomainErrorCodes.DurumGecisiGecersiz,
+            CodeOf(() => ReviewDecisions.Approve(
+                LugatReview(),
+                Request(),
+                ReviewTargetState.ForLugat(XrefStatus.Onayli, new LugatReviewState(Word, "2", "kaynak", "kaynak tanimi")))));
+
+    [Fact]
+    public void A_source_candidate_can_be_rejected_without_changing_the_text()
+    {
+        ReviewOutcome outcome = ReviewDecisions.Reject(LugatReview(), Request(), SourceRow());
+
+        Assert.Equal(XrefStatus.Red, outcome.TargetStatus);
+        Assert.Null(outcome.Lugat);
     }
 
     [Fact]

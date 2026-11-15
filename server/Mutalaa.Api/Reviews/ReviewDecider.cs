@@ -233,9 +233,10 @@ internal static class ReviewDecider
                 {
                     string sourceId = target.SourceId!;
                     string basliksoz = target.Basliksoz!;
-                    LugatMadde row = await db.LugatMaddeler.SingleOrDefaultAsync(x => x.SourceId == sourceId && x.Basliksoz == basliksoz, cancellationToken)
+                    short anlamNo = target.AnlamNo ?? 1;
+                    LugatMadde row = await db.LugatMaddeler.SingleOrDefaultAsync(x => x.SourceId == sourceId && x.AnlamNo == anlamNo && x.Basliksoz == basliksoz, cancellationToken)
                         ?? throw Missing();
-                    return (row, ReviewTargetState.ForLugat(row.Status, new LugatReviewState(row.Basliksoz, row.Version)));
+                    return (row, ReviewTargetState.ForLugat(row.Status, new LugatReviewState(row.Basliksoz, row.Version, row.Origin, row.TanimTr, row.ContentHash)));
                 }
 
             default:

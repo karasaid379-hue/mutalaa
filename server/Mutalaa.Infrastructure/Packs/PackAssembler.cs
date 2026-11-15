@@ -2,6 +2,7 @@ using System.Globalization;
 using Mutalaa.Domain.Anchors;
 using Mutalaa.Domain.Releases;
 using Mutalaa.Domain.Releases.Gate;
+using Mutalaa.Domain.Reviews;
 using Mutalaa.Infrastructure.Releases;
 
 namespace Mutalaa.Infrastructure.Packs;
@@ -19,7 +20,8 @@ namespace Mutalaa.Infrastructure.Packs;
 /// ve sayfa eslemesi yoktur) ve dil ile yonu pack_meta'ya tasir. risale-dizin (IndexesBooks) unit yerine, kapidan giren her kitap paketinin birimleri icin
 /// unit_ref ve icerigi olmayan arama satirlari yazar (Osmanli ve Arapca kitaplarda yalniz ar_norm), bir ucu Risale olan baglantilari alir ve baski sayfa
 /// satirlarini yalniz iki ucu da kapsamdaki birimler icin yazar (K-47 ile ayni sarkan uc kurali; volume kitabin cildiyle ayni olmalidir). risale-dizin ayrica lugat
-/// tablosunu tasir (A20.6, K-51 madde 9 ve 10): Glossary kaynaklarinin kapidan giren (IncludedLexicals "lugat_madde:{source_id}:{basliksoz}") maddeleri; onayli her
+/// tablosunu tasir (A20.6, K-51 madde 9 ve 10): Glossary kaynaklarinin kapidan giren (IncludedLexicals "lugat_madde:{source_id}:{anlam_no}:{basliksoz}") maddeleri (K-51 madde 14: ayni basliksoz farkli kaynaktan ve/veya farkli anlam_no ile gelebilir;
+/// tanimsiz aday, ayni normalize basliksozde tanimli madde varsa pakete yazilmaz); onayli her
 /// derlemeye, aday yalniz dev ve internal'a (status 'aday'), red hicbirine girmez; test- onekli kaynak public'e girmez (kaynak karari, P-12). kaynaklar (siklik, kitaplar,
 /// sozluk isabeti) ve anlam basvurusu pakete yazilmaz.
 /// </summary>
@@ -278,9 +280,11 @@ public static class PackAssembler
     }
 
     /// <summary>
-    /// risale-dizin lugat tablosu (K-51 madde 9 ve 10). Satir yalniz kaynagi kapidan girmisse (P-01, P-12) ve madde P-09'dan gecmisse (IncludedLexicals) alinir; satir sirasi
-    /// PackRows'a aittir. Onayli maddenin tanimi dolu olmalidir (veritabani CHECK'i); bos ise ya da basliksoz iki kaynakta yinelenirse (anahtar basliksoz) girdi tutarsizdir.
-    /// Kaynak lugat satiri verdiyse kunye ve atif satiri listelenir (P-01, P-11).
+    /// risale-dizin lugat tablosu (K-51 madde 9, 10 ve 14). Satir yalniz kaynagi kapidan girmisse (P-01, P-12) ve madde P-09'dan gecmisse (IncludedLexicals) alinir; satir sirasi
+    /// PackRows'a aittir. Anahtar (basliksoz, kaynak, anlam_no): ayni basliksoz farkli kaynaktan ve/veya farkli anlam_no ile gelebilir; ayni anahtar iki kez gelirse girdi tutarsizdir.
+    /// Onayli maddenin tanimi dolu olmalidir (veritabani CHECK'i); bos ise girdi tutarsizdir. Tanimsiz (tanim_tr bos) aday, ayni normalize basliksozde (basliksoz_norm)
+    /// tanimli bir madde de pakete giriyorsa yazilmaz (gurultuyu onler; tanimsiz basliksoz tek basina dev ve internal'da gorunur). Kaynak lugat satiri verdiyse kunye ve
+    /// atif satiri listelenir (P-01, P-11); yazilmayan satirin kaynagi bu yuzden listelenmez.
     /// </summary>
     private static List<PackLugatRow> AssembleLugat(
         EditorialSnapshot snapshot,
@@ -288,24 +292,39 @@ public static class PackAssembler
         HashSet<string> glossarySlugs,
         HashSet<string> sourcesWithRows)
     {
-        List<PackLugatRow> rows = [];
-        Dictionary<string, string> owners = new(StringComparer.Ordinal);
+        List<LugatMaddeRow> admitted = [];
+        HashSet<(string Basliksoz, string Kaynak, int AnlamNo)> keys = [];
         foreach (LugatMaddeRow madde in snapshot.LugatMaddeler)
         {
             if (!glossarySlugs.Contains(madde.SourceId)
-                || !gate.IncludedLexicals.Contains("lugat_madde:" + madde.SourceId + ":" + madde.Basliksoz))
+                || !gate.IncludedLexicals.Contains("lugat_madde:" + ReviewTargets.LugatKey(madde.SourceId, madde.AnlamNo, madde.Basliksoz)))
             {
                 continue;
             }
 
             if (string.Equals(madde.Status, ApprovedLabel, StringComparison.Ordinal) && string.IsNullOrWhiteSpace(madde.TanimTr))
             {
-                throw new PackAssemblyException($"Onayli lugat maddesinin tanimi bos ({madde.SourceId}): {madde.Basliksoz}");
+                throw new PackAssemblyException($"Onayli lugat maddesinin tanimi bos ({madde.SourceId}, anlam {madde.AnlamNo.ToString(CultureInfo.InvariantCulture)}): {madde.Basliksoz}");
             }
 
-            if (!owners.TryAdd(madde.Basliksoz, madde.SourceId))
+            if (!keys.Add((madde.Basliksoz, madde.SourceId, madde.AnlamNo)))
             {
-                throw new PackAssemblyException($"Lugat basliksozu iki kaynakta yinelenir ({owners[madde.Basliksoz]} ve {madde.SourceId}): {madde.Basliksoz}");
+                throw new PackAssemblyException($"Lugat maddesi ayni anahtarla iki kez gelir ({madde.SourceId}, anlam {madde.AnlamNo.ToString(CultureInfo.InvariantCulture)}): {madde.Basliksoz}");
+            }
+
+            admitted.Add(madde);
+        }
+
+        HashSet<string> defined = new(
+            admitted.Where(m => !string.IsNullOrWhiteSpace(m.TanimTr)).Select(m => m.BasliksozNorm),
+            StringComparer.Ordinal);
+
+        List<PackLugatRow> rows = [];
+        foreach (LugatMaddeRow madde in admitted)
+        {
+            if (string.IsNullOrWhiteSpace(madde.TanimTr) && defined.Contains(madde.BasliksozNorm))
+            {
+                continue;
             }
 
             rows.Add(new PackLugatRow(
@@ -314,6 +333,8 @@ public static class PackAssembler
                 madde.OsmanlicaYazim,
                 madde.KokenDil,
                 madde.TanimTr,
+                madde.AnlamNo,
+                madde.SourceId,
                 madde.Duzey,
                 madde.Status,
                 madde.Origin,

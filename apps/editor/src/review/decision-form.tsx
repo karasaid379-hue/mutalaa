@@ -43,6 +43,7 @@ import {
   isFirstStageUnitText,
   isGlossEditable,
   isLugatEditable,
+  lugatSourceDefinition,
   proposedGloss,
   proposedText,
   type UnitEditInfo,
@@ -151,6 +152,8 @@ export function DecisionForm({
   const [edited, setEdited] = useState<string | null>(null);
   const [gloss, setGloss] = useState<string | null>(null);
   const [tanim, setTanim] = useState<string | null>(null);
+  // A lügat madde that carries a source definition (K-51 madde 10 and 14): approved unchanged unless the editor chooses to edit.
+  const [tanimEditing, setTanimEditing] = useState(false);
   const [problems, setProblems] = useState<FieldProblem[]>([]);
   const [error, setError] = useState<unknown>(null);
   const [stale, setStale] = useState<Stale | null>(null);
@@ -195,8 +198,13 @@ export function DecisionForm({
   const glossProblems = problems.filter((problem) => problem.fieldId === ids.gloss);
   // A lügat madde review (K-51 madde 10): approval needs a definition the editor writes; the reference meaning is never prefilled.
   const lugatAllowed = isLugatEditable(current) && !closed;
-  const showLugat = lugatAllowed && selected === 'onaylandi';
-  const tanimValue = tanim ?? '';
+  const sourceDefinition = lugatAllowed ? lugatSourceDefinition(current) : null;
+  const showLugatChoice = sourceDefinition !== null && selected === 'onaylandi';
+  const showLugat =
+    lugatAllowed && selected === 'onaylandi' && (sourceDefinition === null || tanimEditing);
+  const tanimValue = tanim ?? sourceDefinition ?? '';
+  // An edit that equals the source definition byte for byte is not an edit: the approval then stays unchanged.
+  const tanimSent = showLugat && (sourceDefinition === null || tanimValue !== sourceDefinition);
   const tanimCount = glossLength(tanimValue);
   const tanimProblems = problems.filter((problem) => problem.fieldId === ids.tanim);
 
@@ -291,7 +299,7 @@ export function DecisionForm({
     setStale(null);
     const sendEdit = canEdit && selected === 'onaylandi' && editedValue !== baseline;
     const sendGloss = glossChanged;
-    const sendTanim = showLugat;
+    const sendTanim = tanimSent;
     const snapshot = current;
     try {
       const result = await decide.mutateAsync({
@@ -478,6 +486,28 @@ export function DecisionForm({
                 ))}
               </div>
             ) : null}
+          </div>
+        ) : null}
+
+        {showLugatChoice ? (
+          <div className="flex flex-col gap-2" data-testid="tanim-choice">
+            {tanimEditing ? null : (
+              <p className="text-sm text-muted-foreground">{trLugat.edit.unchangedNote}</p>
+            )}
+            <div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                aria-pressed={tanimEditing}
+                onClick={() => {
+                  setTanimEditing((value) => !value);
+                  setTanim(null);
+                }}
+              >
+                {tanimEditing ? trLugat.edit.cancelEdit : trLugat.edit.editAndApprove}
+              </Button>
+            </div>
           </div>
         ) : null}
 

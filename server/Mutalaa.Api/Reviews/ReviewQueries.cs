@@ -159,7 +159,7 @@ internal static class ReviewQueries
         public int Sira { get; init; }
     }
 
-    /// <summary>lugat_madde'nin birlesim anahtari (<c>{source_id}:{basliksoz}</c>) ve siklik degeri (ham SQL projeksiyonu).</summary>
+    /// <summary>lugat_madde'nin birlesim anahtari (<c>{source_id}:{anlam_no}:{basliksoz}</c>; anlam_no = 1 icin eski <c>{source_id}:{basliksoz}</c> de) ve siklik degeri (ham SQL projeksiyonu).</summary>
     private sealed class FrequencyRow
     {
         public required string MaddeKey { get; init; }
@@ -170,7 +170,9 @@ internal static class ReviewQueries
     /// <summary>
     /// Lugat sirasi (K-51 madde 10): (siklik azalan, review.id artan). Siklik <c>kaynaklar-&gt;&gt;'siklik'</c> degeridir
     /// (<see cref="LugatMaddeText.SiklikKey"/>); sayi olmayan ya da eksik deger 0 sayilir (cast hatasi listeyi 500 yapmaz).
-    /// Birlesim metin karsilastirmasidir (<c>source_id || ':' || basliksoz = review.hedef_anahtar</c>). Madde satiri olmayan kayit siklik 0'dadir.
+    /// Birlesim metin karsilastirmasidir: yeni anahtar <c>source_id || ':' || anlam_no || ':' || basliksoz</c>, anlam_no = 1 satirlari icin eski
+    /// <c>source_id || ':' || basliksoz</c> da (K-51 madde 14, geriye uyum); iki biçimin cakistigi seyrek durumda en buyuk siklik alinir, satir coklanmaz.
+    /// Madde satiri olmayan kayit siklik 0'dadir.
     /// Anahtarlar once (kimlik, siklik) ile sayfalanir, sonra satirlar tek sorguyla okunup bu sirada dizilir.
     /// </summary>
     private static async Task<(List<Row> Rows, string? Next)> ListByFrequencyAsync(
@@ -181,7 +183,7 @@ internal static class ReviewQueries
         CancellationToken cancellationToken)
     {
         IQueryable<FrequencyRow> maddeler = db.Database.SqlQuery<FrequencyRow>(
-            $"SELECT source_id || ':' || basliksoz AS madde_key, CASE WHEN kaynaklar->>'siklik' ~ '^[0-9]{{1,9}}$' THEN (kaynaklar->>'siklik')::integer ELSE 0 END AS siklik FROM icerik.lugat_madde");
+            $"SELECT madde_key, max(siklik) AS siklik FROM (SELECT source_id || ':' || anlam_no::text || ':' || basliksoz AS madde_key, CASE WHEN kaynaklar->>'siklik' ~ '^[0-9]{{1,9}}$' THEN (kaynaklar->>'siklik')::integer ELSE 0 END AS siklik FROM icerik.lugat_madde UNION ALL SELECT source_id || ':' || basliksoz, CASE WHEN kaynaklar->>'siklik' ~ '^[0-9]{{1,9}}$' THEN (kaynaklar->>'siklik')::integer ELSE 0 END FROM icerik.lugat_madde WHERE anlam_no = 1) AS t GROUP BY madde_key");
         var keyed =
             from r in query
             join m in maddeler on r.HedefAnahtar equals m.MaddeKey into joined
@@ -592,13 +594,13 @@ internal static class ReviewQueries
                         List<string> words = [.. group.Select(t => t.Target.Basliksoz!).Distinct(StringComparer.Ordinal)];
                         var found = await db.LugatMaddeler.AsNoTracking()
                             .Where(x => sources.Contains(x.SourceId) && words.Contains(x.Basliksoz))
-                            .Select(x => new { x.SourceId, x.Basliksoz, x.Status })
+                            .Select(x => new { x.SourceId, x.AnlamNo, x.Basliksoz, x.Status })
                             .ToListAsync(cancellationToken);
                         MarkVerified(
                             verified,
                             group,
-                            found.ToDictionary(f => f.SourceId + ":" + f.Basliksoz, f => f.Status, StringComparer.Ordinal),
-                            t => t.Target.SourceId + ":" + t.Target.Basliksoz);
+                            found.ToDictionary(f => ReviewTargets.LugatKey(f.SourceId, f.AnlamNo, f.Basliksoz), f => f.Status, StringComparer.Ordinal),
+                            t => ReviewTargets.LugatKey(t.Target.SourceId!, t.Target.AnlamNo ?? 1, t.Target.Basliksoz!));
                         break;
                     }
             }
@@ -806,9 +808,10 @@ internal static class ReviewQueries
                 {
                     string sourceId = target.SourceId!;
                     string basliksoz = target.Basliksoz!;
+                    short anlamNo = target.AnlamNo ?? 1;
                     var row = await db.LugatMaddeler.AsNoTracking()
-                        .Where(x => x.SourceId == sourceId && x.Basliksoz == basliksoz)
-                        .Select(x => new { x.SourceId, x.Basliksoz, x.OsmanlicaYazim, x.KokenDil, x.TanimTr, x.Duzey, x.Origin, x.ContentHash, x.Version, x.Status })
+                        .Where(x => x.SourceId == sourceId && x.AnlamNo == anlamNo && x.Basliksoz == basliksoz)
+                        .Select(x => new { x.SourceId, x.AnlamNo, x.Basliksoz, x.OsmanlicaYazim, x.KokenDil, x.TanimTr, x.Duzey, x.Origin, x.ContentHash, x.Version, x.Status })
                         .SingleOrDefaultAsync(cancellationToken);
                     return row is null
                         ? TargetView.Empty
@@ -817,6 +820,7 @@ internal static class ReviewQueries
                             {
                                 Tablo = target.Table,
                                 Source = row.SourceId,
+                                AnlamNo = row.AnlamNo,
                                 Basliksoz = row.Basliksoz,
                                 OsmanlicaYazim = row.OsmanlicaYazim,
                                 KokenDil = row.KokenDil,
