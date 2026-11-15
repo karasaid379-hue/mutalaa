@@ -749,6 +749,20 @@
             }
           },
           {
+            "name": "sinif",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "onay_yolu",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "cursor",
             "in": "query",
             "schema": {
@@ -948,6 +962,16 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not Found",
             "content": {
@@ -1048,6 +1072,16 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not Found",
             "content": {
@@ -1080,6 +1114,369 @@
           },
           "422": {
             "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reviews/{id}/uzmana-gonder": {
+      "post": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Açık kaydı uzmana gönderir (durum uzmanda; özgün eylem korunur). Kararı yalnız uzman rolü verir.",
+        "operationId": "sendReviewToExpert",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "description": "Kaydın ETag değeri: \"{xmin}\" (yalnız güçlü ve tek etiket).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewReasonBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewHandoffResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Precondition Failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition Required",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reviews/{id}/ima": {
+      "post": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Bağlantı adayının kaynak ucundan aynı hedefe yeni bir ima satırı açar (editör, onaylı, güven 1); özgün aday korunur.",
+        "operationId": "markReviewLinkAsIma",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "description": "Kaydın ETag değeri: \"{xmin}\" (yalnız güçlü ve tek etiket).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewReasonBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImaMarkResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Precondition Failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition Required",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reviews/{id}/kalip": {
+      "post": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "İktibas adayının eşleşen dizisini kalıp listesine ekler (kapalı denetim kaydı) ve adayı reddeder.",
+        "operationId": "addReviewLinkToPatternList",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "description": "Kaydın ETag değeri: \"{xmin}\" (yalnız güçlü ve tek etiket).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewReasonBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatternAddResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Precondition Failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition Required",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1132,6 +1529,271 @@
           },
           "404": {
             "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lemmas/{id}/itiraz": {
+      "post": {
+        "tags": [
+          "lemmas"
+        ],
+        "summary": "Otomatik onaylı Türkçe lemma eşlemesine itiraz eder (editör incelemesi açar; başka bir editör onaylarsa lemma adaya döner).",
+        "operationId": "objectToLemmaApproval",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LemmaObjectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LemmaObjectionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lemmas/{id}/etimolojik-isaret": {
+      "post": {
+        "tags": [
+          "lemmas"
+        ],
+        "summary": "Onaylı Türkçe lemmanın 'yalnızca etimolojik' işaretini editör kararıyla değiştirir (otomatik onaylıda onay yolu, köken ve kanıt korunur; yalnız işaret değişir).",
+        "operationId": "markLemmaEtymological",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EtymologyMarkRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EtymologyMarkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Precondition Failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/word-fixes": {
+      "post": {
+        "tags": [
+          "word-fixes"
+        ],
+        "summary": "Kelime düzeltmesi adayı açar (quran_word_fix aday + inceleme kaydı). Değer alana göre doğrulanır.",
+        "operationId": "createWordFix",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WordFixRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WordFixResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1847,6 +2509,127 @@
               "null",
               "string"
             ]
+          },
+          "root_id": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "ar_lemma_id": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "etymological_only": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "dst_anchor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "dst_span": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "new_value": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "EtymologyMarkRequest": {
+        "required": [
+          "etymological_only",
+          "gerekce"
+        ],
+        "type": "object",
+        "properties": {
+          "etymological_only": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "gerekce": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "EtymologyMarkResponse": {
+        "required": [
+          "review_id",
+          "etymological_only",
+          "onay_yolu",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "review_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "etymological_only": {
+            "type": "boolean"
+          },
+          "onay_yolu": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ImaMarkResult": {
+        "required": [
+          "id",
+          "review_id",
+          "type",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "review_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "type": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -1907,6 +2690,16 @@
             "items": {
               "$ref": "#/components/schemas/LemmaKwicItem"
             }
+          },
+          "tr": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TrLemmaExtras"
+              }
+            ]
           }
         },
         "additionalProperties": false
@@ -1981,6 +2774,63 @@
           },
           "etymological_only": {
             "type": "boolean"
+          },
+          "onay_yolu": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ar_lemma_id": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "freq": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LemmaKanitSummary": {
+        "type": "object",
+        "properties": {
+          "kaynak_sayisi": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "qac_eslesme": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "karar": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "neden": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "politika_surumu": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "additionalProperties": false
@@ -2048,6 +2898,38 @@
             "type": "string"
           },
           "metin_durumu": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LemmaObjectionRequest": {
+        "required": [
+          "gerekce"
+        ],
+        "type": "object",
+        "properties": {
+          "gerekce": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "LemmaObjectionResponse": {
+        "required": [
+          "id",
+          "durum"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "durum": {
             "type": "string"
           }
         },
@@ -2182,6 +3064,41 @@
         },
         "additionalProperties": false
       },
+      "PatternAddResult": {
+        "required": [
+          "id",
+          "durum",
+          "eylem",
+          "xmin",
+          "anahtar",
+          "denetim_review_id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "durum": {
+            "type": "string"
+          },
+          "eylem": {
+            "type": "string"
+          },
+          "xmin": {
+            "type": "integer",
+            "format": "uint32"
+          },
+          "anahtar": {
+            "type": "string"
+          },
+          "denetim_review_id": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "PreviewReleaseRequest": {
         "required": [
           "derleme",
@@ -2225,7 +3142,7 @@
           },
           "kod": {
             "type": "string",
-            "description": "Makine tarafindan okunur hata kodu (type son parcasiyla ayni): dogrulama, capa-gecersiz, degistirilemez-metin, oturum-acilamadi, yetki-yok, bulunamadi, yontem-desteklenmiyor, durum-gecisi-gecersiz, cakisma, surum-uyusmazligi, surum-gerekli, inceleme-desteklenmiyor, yayin-suruyor, kalite-kapisi, onceki-yayin-bozuk, depo-erisilemiyor, hata, sunucu-hatasi."
+            "description": "Makine tarafindan okunur hata kodu (type son parcasiyla ayni): dogrulama, capa-gecersiz, degistirilemez-metin, oturum-acilamadi, yetki-yok, bulunamadi, yontem-desteklenmiyor, durum-gecisi-gecersiz, cakisma, surum-uyusmazligi, surum-gerekli, inceleme-desteklenmiyor, toplu-uygun-degil, yayin-suruyor, kalite-kapisi, onceki-yayin-bozuk, depo-erisilemiyor, hata, sunucu-hatasi."
           },
           "traceId": {
             "type": "string",
@@ -2530,6 +3447,23 @@
         },
         "additionalProperties": false
       },
+      "ReviewClassCount": {
+        "required": [
+          "sinif",
+          "acik"
+        ],
+        "type": "object",
+        "properties": {
+          "sinif": {
+            "type": "string"
+          },
+          "acik": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "ReviewDecisionResult": {
         "required": [
           "id",
@@ -2741,6 +3675,51 @@
           },
           "ikinci_onay_bekliyor": {
             "type": "boolean"
+          },
+          "sinif": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "dalga": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "onay_yolu": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ReviewHandoffResult": {
+        "required": [
+          "id",
+          "durum",
+          "eylem",
+          "xmin"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "durum": {
+            "type": "string"
+          },
+          "eylem": {
+            "type": "string"
+          },
+          "xmin": {
+            "type": "integer",
+            "format": "uint32"
           }
         },
         "additionalProperties": false
@@ -2886,6 +3865,25 @@
           },
           "ikinci_onay_bekliyor": {
             "type": "boolean"
+          },
+          "sinif": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "dalga": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "onay_yolu": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "additionalProperties": false
@@ -2933,10 +3931,27 @@
         },
         "additionalProperties": false
       },
+      "ReviewReasonBody": {
+        "required": [
+          "gerekce"
+        ],
+        "type": "object",
+        "properties": {
+          "gerekce": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
       "ReviewStatsResponse": {
         "required": [
           "kuyruklar",
-          "toplam_acik"
+          "toplam_acik",
+          "baglanti_siniflari",
+          "toplam_uzmanda"
         ],
         "type": "object",
         "properties": {
@@ -2947,6 +3962,16 @@
             }
           },
           "toplam_acik": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "baglanti_siniflari": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewClassCount"
+            }
+          },
+          "toplam_uzmanda": {
             "type": "integer",
             "format": "int32"
           }
@@ -3038,6 +4063,72 @@
             ]
           },
           "dst_anchor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "src_span": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "dst_span": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "score": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "float"
+          },
+          "confidence": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "float"
+          },
+          "evidence_ozeti": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/JsonElement"
+              }
+            ]
+          },
+          "vurgulu_dizi": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/VurguluDizi"
+              }
+            ]
+          },
+          "sinif": {
             "type": [
               "null",
               "string"
@@ -3157,6 +4248,57 @@
               "null",
               "string"
             ]
+          },
+          "onay_yolu": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "kanit_ozeti": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/LemmaKanitSummary"
+              }
+            ]
+          },
+          "root_letters": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ar_lemma_id": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "ar_lemma_text": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "freq": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "kwic": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/TrKwicItem"
+            }
           }
         },
         "additionalProperties": false
@@ -3302,6 +4444,79 @@
           "birim_sayisi": {
             "type": "integer",
             "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TrKwicItem": {
+        "required": [
+          "capa",
+          "sol",
+          "kelime",
+          "sag"
+        ],
+        "type": "object",
+        "properties": {
+          "capa": {
+            "type": "string"
+          },
+          "sol": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "kelime": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sag": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "TrLemmaExtras": {
+        "required": [
+          "kanit_ozeti",
+          "root_letters",
+          "ar_lemma_text",
+          "kwic"
+        ],
+        "type": "object",
+        "properties": {
+          "kanit_ozeti": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/LemmaKanitSummary"
+              }
+            ]
+          },
+          "root_letters": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ar_lemma_text": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "kwic": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrKwicItem"
+            }
           }
         },
         "additionalProperties": false
@@ -3574,6 +4789,93 @@
           }
         },
         "description": "400 dogrulama yaniti. errors yalniz alan dogrulamasinda dolu olur (alan adi snake_case; ic ice alan 'duzenlenen.metin' ve liste ogesi 'kararlar[0].gerekce' gibi yazilir); basliklar ve bozuk JSON gibi alansiz 400'lerde yoktur."
+      },
+      "VurguluDizi": {
+        "required": [
+          "sol",
+          "dizi",
+          "sag"
+        ],
+        "type": "object",
+        "properties": {
+          "sol": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "dizi": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sag": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "WordFixRequest": {
+        "required": [
+          "anchor",
+          "field",
+          "new_value",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "anchor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "field": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "new_value": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "reason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "WordFixResponse": {
+        "required": [
+          "id",
+          "review_id",
+          "durum"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "review_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "durum": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
       }
     }
   },
@@ -3598,6 +4900,9 @@
     },
     {
       "name": "lemmas"
+    },
+    {
+      "name": "word-fixes"
     },
     {
       "name": "releases"

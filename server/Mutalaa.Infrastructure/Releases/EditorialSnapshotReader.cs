@@ -61,6 +61,10 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
         IReadOnlyList<LemmaRow> lemmas = await ReadLemmasAsync(cancellationToken);
         IReadOnlyList<LemmaGlossRow> glosses = await ReadLemmaGlossesAsync(cancellationToken);
         IReadOnlyList<QuranWordFixRow> fixes = await ReadWordFixesAsync(cancellationToken);
+        IReadOnlyList<TrLemmaRow> trLemmas = await ReadTrLemmasAsync(cancellationToken);
+        IReadOnlyList<TrRootIndexRow> trRootIndex = await ReadTrRootIndexAsync(cancellationToken);
+        IReadOnlyList<TrFormRow> trForms = await ReadTrFormsAsync(cancellationToken);
+        IReadOnlyList<XrefGateRow> gates = await ReadXrefGatesAsync(cancellationToken);
         PreviousReleaseRow? previous = await ReadPreviousReleaseAsync(flavor, cancellationToken);
 
         return new EditorialSnapshot
@@ -77,6 +81,10 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
             Lemmas = lemmas,
             LemmaGlosses = glosses,
             WordFixes = fixes,
+            TrLemmas = trLemmas,
+            TrRootIndex = trRootIndex,
+            TrForms = trForms,
+            XrefGates = gates,
             PreviousRelease = previous,
         };
     }
@@ -369,7 +377,8 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
     {
         const string sql = $"""
             SELECT id, src_anchor, lower(src_span), upper(src_span), dst_anchor, lower(dst_span), upper(dst_span),
-                   type::text, score, confidence, evidence::text, status::text, data_version, evidence->>'lexicon_status'
+                   type::text, score, confidence, evidence::text, status::text, data_version, evidence->>'lexicon_status',
+                   evidence->>'src_hash', evidence->>'dst_hash', evidence->>'source_id'
             FROM {Schema}.xref
             ORDER BY id
             """;
@@ -392,14 +401,17 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
                 reader.GetString(10),
                 reader.GetString(11),
                 reader.GetString(12),
-                Str(reader, 13));
+                Str(reader, 13),
+                Str(reader, 14),
+                Str(reader, 15),
+                Str(reader, 16));
         }
     }
 
-    /// <summary>Acik (durum = acik) review satiri olan baglantilarin kimlikleri.</summary>
+    /// <summary>Acik (durum = acik ya da uzmanda) review satiri olan baglantilarin kimlikleri.</summary>
     public async Task<IReadOnlySet<Guid>> ReadOpenReviewXrefIdsAsync(CancellationToken cancellationToken)
     {
-        const string sql = $"SELECT DISTINCT xref_id FROM {Schema}.review WHERE durum = 'acik' AND xref_id IS NOT NULL";
+        const string sql = $"SELECT DISTINCT xref_id FROM {Schema}.review WHERE durum IN ('acik', 'uzmanda') AND xref_id IS NOT NULL";
 
         HashSet<Guid> ids = [];
         await using NpgsqlCommand command = new(sql, _connection);
@@ -412,7 +424,7 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
         return ids;
     }
 
-    /// <summary>P-09 durum satirlari: quran_word_fix, lemma_gloss, tr_root_index ve tr_form.</summary>
+    /// <summary>P-09 durum satirlari: quran_word_fix ve lemma_gloss (Turkce lemma, tr_root_index ve tr_form ayri okunur).</summary>
     public async Task<IReadOnlyList<LexicalRow>> ReadLexicalsAsync(CancellationToken cancellationToken)
     {
         List<LexicalRow> rows = [];
@@ -426,24 +438,119 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
             LexicalKind.LemmaGloss,
             rows,
             cancellationToken);
-        await ReadLexicalAsync(
-            $"""
-            SELECT r.anchor || '|' || r.span_start::text, NULL::text, COALESCE(l.status::text = 'onayli', false)
-            FROM {Schema}.tr_root_index r LEFT JOIN {Schema}.lemma l ON l.id = r.tr_lemma_id
-            ORDER BY r.anchor COLLATE "C", r.span_start
-            """,
-            LexicalKind.TrRootIndex,
-            rows,
-            cancellationToken);
-        await ReadLexicalAsync(
-            $"""
-            SELECT f.key_narrow || '|' || f.tr_lemma_id::text, NULL::text, COALESCE(l.status::text = 'onayli', false)
-            FROM {Schema}.tr_form f LEFT JOIN {Schema}.lemma l ON l.id = f.tr_lemma_id
-            ORDER BY f.key_narrow COLLATE "C", f.tr_lemma_id
-            """,
-            LexicalKind.TrForm,
-            rows,
-            cancellationToken);
+        return rows;
+    }
+
+    /// <summary>
+    /// Turkce lemmalar (lang = 'tr', butun durumlar; id sirali). kanit icerigi okunmaz: yalniz bir jsonb nesnesi olup olmadigi (K-51 madde 9).
+    /// </summary>
+    public async Task<IReadOnlyList<TrLemmaRow>> ReadTrLemmasAsync(CancellationToken cancellationToken)
+    {
+        const string sql = $"""
+            SELECT id, text, text_clean, root_id, occurrences, ar_lemma_id, etymological_only, freq, status::text, onay_yolu,
+                   COALESCE(jsonb_typeof(kanit) = 'object', false), origin, source_id, data_version
+            FROM {Schema}.lemma
+            WHERE lang = 'tr'
+            ORDER BY id
+            """;
+
+        List<TrLemmaRow> rows = [];
+        await using NpgsqlCommand command = new(sql, _connection);
+        await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            rows.Add(new TrLemmaRow(
+                reader.GetInt32(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                Int(reader, 3),
+                reader.GetInt32(4),
+                Int(reader, 5),
+                reader.GetBoolean(6),
+                Int(reader, 7),
+                reader.GetString(8),
+                Str(reader, 9),
+                reader.GetBoolean(10),
+                Str(reader, 11),
+                reader.GetString(12),
+                reader.GetString(13)));
+        }
+
+        return rows;
+    }
+
+    /// <summary>tr_root_index satirlari (anchor bayt sirasi, span_start). unit_hash char(16): bosluk yok, yine de kirpilir.</summary>
+    public async Task<IReadOnlyList<TrRootIndexRow>> ReadTrRootIndexAsync(CancellationToken cancellationToken)
+    {
+        const string sql = $"""
+            SELECT anchor, span_start, span_end, root_id, tr_lemma_id, etymological_only, unit_hash::text, data_version
+            FROM {Schema}.tr_root_index
+            ORDER BY anchor COLLATE "C", span_start
+            """;
+
+        List<TrRootIndexRow> rows = [];
+        await using NpgsqlCommand command = new(sql, _connection);
+        await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            rows.Add(new TrRootIndexRow(
+                reader.GetString(0),
+                reader.GetInt32(1),
+                reader.GetInt32(2),
+                reader.GetInt32(3),
+                reader.GetInt32(4),
+                reader.GetBoolean(5),
+                reader.GetString(6).Trim(),
+                reader.GetString(7)));
+        }
+
+        return rows;
+    }
+
+    /// <summary>tr_form satirlari (key_narrow bayt sirasi, tr_lemma_id).</summary>
+    public async Task<IReadOnlyList<TrFormRow>> ReadTrFormsAsync(CancellationToken cancellationToken)
+    {
+        const string sql = $"""
+            SELECT key_wide, key_narrow, tr_lemma_id, freq, data_version
+            FROM {Schema}.tr_form
+            ORDER BY key_narrow COLLATE "C", tr_lemma_id
+            """;
+
+        List<TrFormRow> rows = [];
+        await using NpgsqlCommand command = new(sql, _connection);
+        await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            rows.Add(new TrFormRow(reader.GetString(0), reader.GetString(1), reader.GetInt32(2), reader.GetInt32(3), reader.GetString(4)));
+        }
+
+        return rows;
+    }
+
+    /// <summary>xref_gate satirlari (tur, set_sinifi sirali). Tablo bossa satir uretmez: hicbir tur olculmemistir.</summary>
+    public async Task<IReadOnlyList<XrefGateRow>> ReadXrefGatesAsync(CancellationToken cancellationToken)
+    {
+        const string sql = $"""
+            SELECT tur::text, set_sinifi, sonuc, set_surumu, set_kaynaklari, rapor_sha256::text, olculdu_at
+            FROM {Schema}.xref_gate
+            ORDER BY tur::text COLLATE "C", set_sinifi COLLATE "C"
+            """;
+
+        List<XrefGateRow> rows = [];
+        await using NpgsqlCommand command = new(sql, _connection);
+        await using NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            rows.Add(new XrefGateRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetFieldValue<string[]>(4),
+                reader.GetString(5).Trim(),
+                reader.GetFieldValue<DateTime>(6)));
+        }
+
         return rows;
     }
 

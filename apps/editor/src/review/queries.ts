@@ -22,8 +22,20 @@ export const SESSION_QUERY_OPTIONS = {
   refetchOnWindowFocus: true,
 } as const;
 
-/** Order of a queue list (`sira`): `dalga` is the word wave order, only for `lemma` and `lemma_gloss` targets. */
-export type QueueOrder = 'olusturma' | 'dalga';
+/**
+ * Order of a queue list (`sira`): `dalga` is the word wave order, only for `lemma` and `lemma_gloss` targets;
+ * `sinif` is the link candidate class order (tutarsız, toplu, gri, diğer), only for the `xref` target.
+ */
+export type QueueOrder = 'olusturma' | 'dalga' | 'sinif';
+
+/** Status of the listed records: `acik` (default) or `uzmanda` (sent to an expert, K-51 madde 2). */
+export type QueueStatus = 'acik' | 'uzmanda';
+
+/** Link candidate class of the `sinif` filter (`xref` target only). */
+export type LinkClass = 'tutarsiz' | 'toplu' | 'gri' | 'diger';
+
+/** Approval path filter of the Turkish lemma mapping list (`onay_yolu`, `lemma` target only). */
+export type ApprovalParam = 'otomatik' | 'editor' | 'aday';
 
 export interface QueueFilter {
   hedef_tablo: string;
@@ -35,6 +47,12 @@ export interface QueueFilter {
   asama?: 'ilk' | 'ikinci';
   /** List order; left out for the API default (`olusturma`). A change gives a new query, so the cursor starts over. */
   sira?: QueueOrder;
+  /** Status of the records; left out for `acik`. */
+  durum?: QueueStatus;
+  /** Link candidate class (`xref` only); the server filters. */
+  sinif?: LinkClass;
+  /** Approval path of a Turkish lemma mapping (`lemma` only); the server filters. */
+  onay_yolu?: ApprovalParam;
 }
 
 /** Init of the queue list: open records of one target and field, optionally of one source and stage. */
@@ -44,10 +62,12 @@ export function reviewListInit(filter: QueueFilter, limit: number = QUEUE_PAGE_S
       query: {
         hedef_tablo: filter.hedef_tablo,
         ...(filter.alan !== undefined ? { alan: filter.alan } : {}),
-        durum: 'acik',
+        durum: filter.durum ?? 'acik',
         ...(filter.kaynak !== undefined ? { kaynak: filter.kaynak } : {}),
         ...(filter.asama !== undefined ? { asama: filter.asama } : {}),
         ...(filter.sira !== undefined ? { sira: filter.sira } : {}),
+        ...(filter.sinif !== undefined ? { sinif: filter.sinif } : {}),
+        ...(filter.onay_yolu !== undefined ? { onay_yolu: filter.onay_yolu } : {}),
         limit,
       },
     },
@@ -93,21 +113,40 @@ function mapPages(data: ListData, change: (items: ReviewItem[]) => ReviewItem[])
   return { ...data, pages: data.pages.map((page) => ({ ...page, items: change(page.items) })) };
 }
 
-/** Replaces the record in every cached queue list; a record that is no longer open leaves the lists. */
+/** Status a cached list was requested with (`durum` of its query; `acik` when the query names none). */
+function listStatus(queryKey: readonly unknown[]): string {
+  const init = queryKey[2];
+  if (typeof init === 'object' && init !== null) {
+    const query = (init as { params?: { query?: { durum?: unknown } } }).params?.query;
+    if (typeof query?.durum === 'string') return query.durum;
+  }
+  return 'acik';
+}
+
+/**
+ * Replaces the record in every cached queue list; a record whose status no longer matches the status of a list
+ * (`acik` list, `uzmanda` list) leaves that list.
+ */
 export function patchReviewInLists(
   queryClient: QueryClient,
   fresh: ReviewDetail | ReviewItem,
 ): void {
   const item: ReviewItem =
     'hedef' in fresh || 'dogrulanmis' in fresh ? toListItem(fresh as ReviewDetail) : fresh;
-  queryClient.setQueriesData<ListData>({ queryKey: ['get', REVIEWS_PATH] }, (old) => {
-    if (!isListData(old)) return old;
-    return mapPages(old, (items) =>
-      item.durum === 'acik'
-        ? items.map((existing) => (existing.id === item.id ? item : existing))
-        : items.filter((existing) => existing.id !== item.id),
+  for (const [key, old] of queryClient.getQueriesData<ListData>({
+    queryKey: ['get', REVIEWS_PATH],
+  })) {
+    if (!isListData(old)) continue;
+    const keep = item.durum === listStatus(key);
+    queryClient.setQueryData<ListData>(
+      key,
+      mapPages(old, (items) =>
+        keep
+          ? items.map((existing) => (existing.id === item.id ? item : existing))
+          : items.filter((existing) => existing.id !== item.id),
+      ),
     );
-  });
+  }
 }
 
 /** Removes records from every cached queue list. */

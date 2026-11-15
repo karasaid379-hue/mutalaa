@@ -33,6 +33,15 @@ describe('no A17 placeholder left in the source', () => {
     expect(text).toMatch(/phase:[^;]*'S-16'/);
   });
 
+  it('has no placeholder or closed "Açık soru" button left on the link candidates screen (A18.4)', () => {
+    for (const { path, text } of files) {
+      if (!path.includes('/screens/baglanti/') && !path.endsWith('tr-baglanti-sure.ts')) continue;
+      expect(text, path).not.toContain('MissingSection');
+      expect(text, path).not.toContain('OpenQuestionButton');
+      expect(text, path).not.toMatch(/phase=["'{]+A18/);
+    }
+  });
+
   it('shows no "not in the API yet" note on the lemma screen', () => {
     for (const { path, text } of files) {
       if (!path.includes('/screens/lemma/') && !path.endsWith('tr-lemma.ts')) continue;

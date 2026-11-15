@@ -22,7 +22,7 @@ public class PackDdlSmokeTests
         ["metin"] = [.. Common, "unit", "xref_idx", "tr_root_index", "unit_search", "unit_fts", "unit_tri", "page_map"],
         ["risale-kitap"] = [.. Common, "unit"],
         ["risale-dizin"] = [.. Common, "unit_ref", "xref_idx", "tr_root_index", "unit_fts", "unit_tri", "page_map"],
-        ["kelime-kok"] = [.. Common, "word_morph", "root", "lemma", "lemma_gloss", "tr_form", "tr_root_index"],
+        ["kelime-kok"] = [.. Common, "xref_idx", "word_morph", "root", "lemma", "lemma_gloss", "tr_form", "tr_root_index"],
         ["mushaf-a-cuz"] = [.. Common, "page_font", "page_line", "glyph_word"],
         ["mushaf-b"] = [.. Common, "page_image", "ayah_box", "page_map"],
         ["ses-katalog"] = [.. Common, "okuyucu", "kayit", "kayit_sure"],
@@ -290,6 +290,22 @@ public class PackDdlSmokeTests
                 ["lemma_id", "anlam_kisa", "kuran_anlamlari", "turkce_es_kelime", "yalnizca_etimolojik", "status", "origin"],
                 Strings(conn, "SELECT name FROM pragma_table_info('lemma_gloss') ORDER BY cid"));
             Assert.Equal(1, Scalar<int>(conn, "SELECT \"notnull\" FROM pragma_table_info('lemma_gloss') WHERE name = 'origin'"));
+        });
+    }
+
+    [Fact]
+    public void Kelime_kok_lemma_carries_a_not_null_approval_column_and_the_xref_idx_table_matches_the_other_packs()
+    {
+        // K-51 madde 3 ve 9: lemma.approval (editor | auto | qac) bos olamaz; xref_idx kelime-kok'te core ile ayni sutunlari tasir.
+        WithPack("kelime-kok", applyAfter: true, conn =>
+        {
+            Assert.Equal(
+                ["id", "lang", "text", "text_clean", "root_id", "occurrences", "ar_lemma_id", "etymological_only", "approval"],
+                Strings(conn, "SELECT name FROM pragma_table_info('lemma') ORDER BY cid"));
+            Assert.Equal(1, Scalar<int>(conn, "SELECT \"notnull\" FROM pragma_table_info('lemma') WHERE name = 'approval'"));
+            string[] core = [];
+            WithPack("core", applyAfter: true, coreConn => core = Strings(coreConn, "SELECT name FROM pragma_table_info('xref_idx') ORDER BY cid").ToArray());
+            Assert.Equal(core, Strings(conn, "SELECT name FROM pragma_table_info('xref_idx') ORDER BY cid"));
         });
     }
 

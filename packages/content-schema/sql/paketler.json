@@ -44,7 +44,7 @@
     },
     "kelime-kok": {
       "desen": "^kelime-kok$",
-      "ddl": ["00-ortak.sql", "40-kelime-kok.sql", "12-tr-root.sql"],
+      "ddl": ["00-ortak.sql", "40-kelime-kok.sql", "11-xref.sql", "12-tr-root.sql"],
       "sonra": []
     },
     "mushaf-a-cuz": {

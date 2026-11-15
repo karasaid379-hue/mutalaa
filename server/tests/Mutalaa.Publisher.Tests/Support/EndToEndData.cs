@@ -233,6 +233,10 @@ internal static class EndToEndData
             new("kok-dusuk", XrefId(6), "kok", "q:1:3", "q:1:4", "aday", 0.30f),
             new("iktibas-kucuk", XrefId(7), "iktibas", "q:1:1", KucukFirst, "aday", 0.80f),
             new("ima-tefsir", XrefId(8), "ima", "q:1:1", TefsirFirst, "onayli", 0.80f),
+            // K-51 madde 3 ve 5: benzer_ayet core'a, kok kelime-kok'e gider; otomatik aday public'e yalniz xref_gate acikken girer (fiksturde olcum yok).
+            new("benzer-yuksek", XrefId(9), "benzer_ayet", "q:1:1", "q:1:3", "aday", 0.90f),
+            new("benzer-onayli", XrefId(10), "benzer_ayet", "q:1:2", "q:1:4", "onayli", 0.80f),
+            new("kok-onayli", XrefId(11), "kok", "q:1:3", "q:1:5", "onayli", 0.80f),
         ];
         foreach (SeededXref xref in xrefs)
         {

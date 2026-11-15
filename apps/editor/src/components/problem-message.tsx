@@ -18,7 +18,7 @@ export interface ProblemMessageProps {
 }
 
 /**
- * Error summary for one ProblemDetails (or network) error: the Turkish message of the code (18 API codes
+ * Error summary for one ProblemDetails (or network) error: the Turkish message of the code (19 API codes
  * and the client codes `ag-hatasi`, `yanit-bozuk`), the server's own message where it adds information,
  * field errors, affected record ids, the open release and the trace id.
  */

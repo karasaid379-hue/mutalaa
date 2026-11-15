@@ -1,4 +1,5 @@
 using Mutalaa.Domain.Anchors;
+using Mutalaa.Domain.Links;
 using Mutalaa.Infrastructure.Packs;
 
 namespace Mutalaa.Publisher.Tests;
@@ -21,6 +22,7 @@ public class PackCatalogTests
             [
                 ("elmalili-meal", PackSourceRole.Content),
                 ("elmalili-sade-meal", PackSourceRole.Content),
+                ("qursim", PackSourceRole.Attribution),
                 ("tanzil-simple-clean", PackSourceRole.Attribution),
                 ("tanzil-ust-veri", PackSourceRole.Structure),
                 ("tanzil-uthmani", PackSourceRole.Content),
@@ -30,7 +32,7 @@ public class PackCatalogTests
         Assert.Equal(["tanzil-uthmani", "elmalili-meal", "elmalili-sade-meal"], core.ContentSources.Select(s => s.Slug));
 
         // K-49: mealler istege bagli (Required: false); Tanzil kaynaklari zorunlu kalir.
-        Assert.Equal(["elmalili-meal", "elmalili-sade-meal"], core.Sources.Where(s => !s.Required).Select(s => s.Slug).Order(StringComparer.Ordinal));
+        Assert.Equal(["elmalili-meal", "elmalili-sade-meal", "qursim"], core.Sources.Where(s => !s.Required).Select(s => s.Slug).Order(StringComparer.Ordinal));
         Assert.All(core.Sources.Where(s => s.Slug.StartsWith("tanzil-", StringComparison.Ordinal)), s => Assert.True(s.Required));
         Assert.Equal("Kur'an ve Elmalılı mealleri", core.Title);
     }
@@ -62,7 +64,7 @@ public class PackCatalogTests
         Assert.True(kelimeKok.CarriesLexicon);
         Assert.False(kelimeKok.CarriesQuranStructure);
         Assert.Equal(
-            [("qac-morfoloji", PackSourceRole.Dictionary, true), ("quranwbw-tr", PackSourceRole.Attribution, false)],
+            [("qac-morfoloji", PackSourceRole.Dictionary, true), ("quranwbw-tr", PackSourceRole.Attribution, false), ("kaikki-tr", PackSourceRole.Attribution, false)],
             kelimeKok.Sources.Select(s => (s.Slug, s.Role, s.Required)));
         Assert.Equal(["qac-morfoloji", "quranwbw-tr"], PackCatalog.LexiconSourceSlugs);
         Assert.DoesNotContain(Catalog.All, p => p.PackId.StartsWith("ses-", StringComparison.Ordinal));
@@ -132,6 +134,27 @@ public class PackCatalogTests
     {
         Assert.Equal(expected, Catalog.PackIdForXref(src, dst));
         Assert.Equal(expected, Catalog.PackIdForXref(dst, src));
+    }
+
+    [Theory]
+    [InlineData(XrefType.Kok, "q:2:255", "q:3:1", "kelime-kok")]
+    [InlineData(XrefType.Lemma, "q:2:255", "q:2:256", "kelime-kok")]
+    [InlineData(XrefType.BenzerAyet, "q:2:255", "q:3:1", "core")]
+    [InlineData(XrefType.BenzerAyet, "q:3:1", "q:2:255", "core")]
+    [InlineData(XrefType.Atif, "q:2:255", "q:3:1", "core")]
+    [InlineData(XrefType.Iktibas, "q:2:255", "k:test-kucuk:bolum-1:p1", "test-kucuk")]
+    [InlineData(XrefType.Atif, "q:2:255", "rn:sozler:soz-10:p1", "risale-dizin")]
+    [InlineData(XrefType.BenzerAyet, "q:2:255", "tf:test-ornek:2-255-255:p1", "tefsir-test-ornek")]
+    public void PackIdForXref_by_type_sends_kok_and_lemma_to_kelime_kok_and_benzer_ayet_to_core(XrefType type, string src, string dst, string expected)
+    {
+        Assert.Equal(expected, Catalog.PackIdForXref(type, src, dst));
+    }
+
+    [Fact]
+    public void PackIdForXref_by_type_returns_null_when_an_end_is_not_packable()
+    {
+        Assert.Null(Catalog.PackIdForXref(XrefType.Kok, "q:2:255", "konu:tevhid"));
+        Assert.Null(Catalog.PackIdForXref(XrefType.BenzerAyet, "???", "q:2:255"));
     }
 
     [Fact]

@@ -14,7 +14,10 @@ public sealed record LemmaInfo(
     int Occurrences,
     int? RootId,
     string? QacRef,
-    bool EtymologicalOnly);
+    bool EtymologicalOnly,
+    string? OnayYolu = null,
+    int? ArLemmaId = null,
+    int? Freq = null);
 
 /// <summary>Lemmanin koku (root satiri); kokusuz lemmada yanitta <c>kok</c> null'dir.</summary>
 public sealed record LemmaRootInfo(
@@ -55,10 +58,11 @@ public sealed record LemmaDetailResponse(
     LemmaFrequency Siklik,
     LemmaWaveInfo? Dalga,
     IReadOnlyList<LemmaSiblingGloss> AyniKokAnlamlari,
-    IReadOnlyList<LemmaKwicItem> Kwic);
+    IReadOnlyList<LemmaKwicItem> Kwic,
+    TrLemmaExtras? Tr = null);
 
 /// <summary>Lemma ucu (K-50, BC-56): salt okunur; yetki editor ya da admin. GET disindaki yontemler eslesmez (405).</summary>
-public static class LemmaEndpoints
+public static partial class LemmaEndpoints
 {
     public static RouteGroupBuilder MapLemmaEndpoints(this RouteGroupBuilder editor)
     {
@@ -71,6 +75,8 @@ public static class LemmaEndpoints
             .WithSummary("Lemma kartı: kök, sözcük türü dağılımı, sıklık, dalga ve sıra, aynı kökün onaylı anlamları ve KWIC örnekleri.")
             .Produces<LemmaDetailResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound);
+
+        MapLemmaDecisionEndpoints(lemmas);
 
         return editor;
     }

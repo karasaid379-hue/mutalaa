@@ -27,7 +27,7 @@ namespace Mutalaa.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "icerik", "derleme_turu", new[] { "dev", "internal", "public" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "icerik", "inceleme_durumu", new[] { "acik", "onaylandi", "reddedildi", "geri_alindi" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "icerik", "inceleme_durumu", new[] { "acik", "onaylandi", "reddedildi", "geri_alindi", "uzmanda" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "icerik", "metin_durumu", new[] { "taslak", "incelemede", "onayli" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "icerik", "source_kind", new[] { "kuran_metni", "meal", "tefsir", "hadis", "hadis_ceviri", "risale", "kitap", "morfoloji", "kelime_anlami", "sozluk", "mushaf_duzeni", "mushaf_gorseli", "font", "baski", "ses", "zamanlama", "baglanti_verisi" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "icerik", "surum_durumu", new[] { "hazirlaniyor", "dogrulandi", "yayinlandi", "basarisiz", "geri_cekildi" });
@@ -412,6 +412,10 @@ namespace Mutalaa.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("freq");
 
+                    b.Property<string>("Kanit")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("kanit");
+
                     b.Property<string>("Lang")
                         .IsRequired()
                         .HasColumnType("text")
@@ -421,6 +425,10 @@ namespace Mutalaa.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(0)
                         .HasColumnName("occurrences");
+
+                    b.Property<string>("OnayYolu")
+                        .HasColumnType("text")
+                        .HasColumnName("onay_yolu");
 
                     b.Property<string>("Origin")
                         .HasColumnType("text")
@@ -468,9 +476,20 @@ namespace Mutalaa.Infrastructure.Migrations
                         .HasDatabaseName("lemma_qac_ref_key")
                         .HasFilter("lang = 'ar'");
 
+                    b.HasIndex("Lang", "TextClean")
+                        .IsUnique()
+                        .HasDatabaseName("lemma_tr_text_clean_key")
+                        .HasFilter("lang = 'tr'");
+
                     b.ToTable("lemma", "icerik", t =>
                         {
                             t.HasCheckConstraint("lemma_lang_check", "lang IN ('ar','tr')");
+
+                            t.HasCheckConstraint("lemma_onay_yolu_check", "onay_yolu IS NULL OR onay_yolu IN ('editor','otomatik')");
+
+                            t.HasCheckConstraint("lemma_otomatik_kanit_check", "onay_yolu IS DISTINCT FROM 'otomatik' OR (kanit IS NOT NULL AND jsonb_typeof(kanit) = 'object')");
+
+                            t.HasCheckConstraint("lemma_tr_onayli_onay_yolu_check", "NOT (lang = 'tr' AND status = 'onayli') OR onay_yolu IS NOT NULL");
                         });
                 });
 
@@ -1097,6 +1116,11 @@ namespace Mutalaa.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("tr_lemma_id");
 
+                    b.Property<string>("DataVersion")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("data_version");
+
                     b.Property<int>("Freq")
                         .HasColumnType("integer")
                         .HasDefaultValue(0)
@@ -1155,6 +1179,11 @@ namespace Mutalaa.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("tr_lemma_id");
 
+                    b.Property<string>("UnitHash")
+                        .IsRequired()
+                        .HasColumnType("char(16)")
+                        .HasColumnName("unit_hash");
+
                     b.Property<uint>("xmin")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -1170,6 +1199,8 @@ namespace Mutalaa.Infrastructure.Migrations
                     b.ToTable("tr_root_index", "icerik", t =>
                         {
                             t.HasCheckConstraint("tr_root_index_check", "span_start < span_end");
+
+                            t.HasCheckConstraint("tr_root_index_unit_hash_check", "unit_hash ~ '^[0-9a-f]{16}$'");
                         });
                 });
 
@@ -1455,6 +1486,66 @@ namespace Mutalaa.Infrastructure.Migrations
                             t.HasCheckConstraint("xref_confidence_check", "confidence BETWEEN 0 AND 1");
 
                             t.HasCheckConstraint("xref_score_check", "score BETWEEN 0 AND 1");
+                        });
+                });
+
+            modelBuilder.Entity("Mutalaa.Domain.Links.XrefGate", b =>
+                {
+                    b.Property<XrefType>("Tur")
+                        .HasColumnType("icerik.xref_type")
+                        .HasColumnName("tur");
+
+                    b.Property<string>("SetSinifi")
+                        .HasColumnType("text")
+                        .HasColumnName("set_sinifi");
+
+                    b.Property<string>("DataVersion")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("data_version");
+
+                    b.Property<DateTime>("OlculduAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("olculdu_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("RaporSha256")
+                        .IsRequired()
+                        .HasColumnType("char(64)")
+                        .HasColumnName("rapor_sha256");
+
+                    b.PrimitiveCollection<string[]>("SetKaynaklari")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("set_kaynaklari");
+
+                    b.Property<string>("SetSurumu")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("set_surumu");
+
+                    b.Property<string>("Sonuc")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("sonuc");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Tur", "SetSinifi")
+                        .HasName("xref_gate_pkey");
+
+                    b.ToTable("xref_gate", "icerik", t =>
+                        {
+                            t.HasCheckConstraint("xref_gate_rapor_sha256_check", "rapor_sha256 ~ '^[0-9a-f]{64}$'");
+
+                            t.HasCheckConstraint("xref_gate_set_sinifi_check", "set_sinifi IN ('altin','silver','sentetik')");
+
+                            t.HasCheckConstraint("xref_gate_sonuc_check", "sonuc IN ('gecti','kaldi')");
                         });
                 });
 

@@ -267,6 +267,13 @@ public sealed partial class ReleasePipeline
         Say(Inv($"kapi {report.Flavor.ToLabel()}: girdi={entered} girmedi={skipped} ihlal={report.Violations.Count}"));
         foreach (GateReportRow row in report.Rows)
         {
+            if (row.Kind == GateSubjectKind.Kapi)
+            {
+                // K-51 madde 11: tur kapisinin sinifi ve sonucu ("silver ile olculdu" ya da "olculmedi") okunur yazilir.
+                Say(Inv($"  kapi {row.Id}: {DescribeGate(row)}"));
+                continue;
+            }
+
             string rule = row.Rule is null ? "-" : row.Rule.Value.ToCode();
             Say(Inv($"  {row.Kind.ToLabel()} {row.Id}: {row.Decision.ToLabel()} [{rule}] {row.Reason} x{row.Count}"));
         }
@@ -276,6 +283,24 @@ public sealed partial class ReleasePipeline
         {
             Say(line);
         }
+    }
+
+    // Kapi satiri gerekcesi: "{sinif}-ile-olculdu" | "kapi-olculmedi" | "kapi-gecmedi[:sinif]". Public'te kapi acik degilse bu turun aday satirlari girmez.
+    private static string DescribeGate(GateReportRow row)
+    {
+        if (row.Decision == GateDecision.Girdi && row.Reason.EndsWith(GateReasons.OlculduSoneki, StringComparison.Ordinal))
+        {
+            return row.Reason[..^GateReasons.OlculduSoneki.Length] + " ile olculdu (gecti)";
+        }
+
+        if (row.Reason.StartsWith(GateReasons.KapiGecmedi, StringComparison.Ordinal))
+        {
+            int cut = row.Reason.IndexOf(':', StringComparison.Ordinal);
+            string setClass = cut < 0 ? "?" : row.Reason[(cut + 1)..];
+            return setClass + " ile olculdu (kaldi): otomatik aday satirlar public'e girmez [P-07, P-09]";
+        }
+
+        return "olculmedi: otomatik aday satirlar public'e girmez [P-07, P-09]";
     }
 
     private static string SelfCheckJson(string surum, IReadOnlyList<PackSelfCheckReport> reports)

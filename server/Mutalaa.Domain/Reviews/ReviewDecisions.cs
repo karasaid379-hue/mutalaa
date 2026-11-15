@@ -14,6 +14,33 @@ public static class ReviewActions
     public const string Reddet = "reddet";
     public const string UzmanaGonder = "uzmana_gonder";
     public const string EtimolojikIsaretle = "etimolojik_isaretle";
+
+    /// <summary>Kapali denetim kaydi: eslesen dizi kalip listesine eklendi (A18.4); onerilen <c>{anahtar, gerekce}</c>.</summary>
+    public const string KalipEkle = "kalip_ekle";
+
+    /// <summary>Kapali denetim kaydi: baglanti ima olarak da isaretlendi (A18.4); yeni <c>ima</c> satiri acildi.</summary>
+    public const string ImaIsaretle = "ima_isaretle";
+}
+
+/// <summary>Inceleme kararinda yetkili rol adlari (K-51 madde 2); Identity rol adlariyla ayni dizgilerdir. Karar akisi bu sabitleri sonraki adimda kullanir.</summary>
+public static class ReviewRoles
+{
+    public const string Editor = "editor";
+    public const string Admin = "admin";
+
+    /// <summary>Yalniz <c>uzmanda</c> durumundaki incelemenin kararini verir.</summary>
+    public const string Uzman = "uzman";
+
+    /// <summary>
+    /// Karar yetkisi (K-51 madde 2): <c>uzmanda</c> kaydin kararini yalniz <c>uzman</c>, <c>acik</c> kaydin kararini yalniz editor ya da admin verir.
+    /// Karar verilmis kayitta rol sorulmaz (karar zaten 409 <c>durum-gecisi-gecersiz</c> alir).
+    /// </summary>
+    public static bool CanDecide(ReviewStatus durum, bool isEditorOrAdmin, bool isUzman) => durum switch
+    {
+        ReviewStatus.Uzmanda => isUzman,
+        ReviewStatus.Acik => isEditorOrAdmin,
+        _ => true,
+    };
 }
 
 /// <summary>review.alan degerleri (Backend API 4.1 kuyruk tablosu).</summary>
@@ -26,6 +53,9 @@ public static class ReviewFields
     public const string LemmaId = "lemma_id";
     public const string Pos = "pos";
     public const string Features = "features";
+
+    /// <summary>Turkce lemma kok eslemesi (K-51 madde 9): (lemma, kok_eslemesi); onerilen ve duzenlenen <c>{root_id, ar_lemma_id, etymological_only}</c>.</summary>
+    public const string KokEslemesi = "kok_eslemesi";
 }
 
 /// <summary>Onay ya da ret istegi. Now UTC olmali; saf islevler saati kendileri okumaz.</summary>
@@ -79,11 +109,28 @@ public readonly record struct ReviewTargetState
 
     public GlossReviewState? Gloss { get; init; }
 
+    /// <summary>lemma hedefinin satiri (dil, kok eslemesi, onay yolu); verilmezse lemma yalniz durum hedefi olarak islenir (onay yolu yazilmaz).</summary>
+    public LemmaReviewState? LemmaRow { get; init; }
+
+    /// <summary>xref hedefinin satiri (yalniz duzeltmeli onayda gerekir).</summary>
+    public LinkRowState? LinkRow { get; init; }
+
+    /// <summary>Duzeltmenin cozdugu hedef ucun olgulari (birim var mi, metin uzunlugu, kelime sayisi, ozet).</summary>
+    public LinkDstFacts? LinkDst { get; init; }
+
+    /// <summary>quran_word_fix new_value dogrulamasi icin olgular (kok var mi, lemma var mi ve dili).</summary>
+    public WordFixFacts? FixFacts { get; init; }
+
     public static ReviewTargetState ForStatus(XrefStatus status) => new() { Status = status };
 
-    public static ReviewTargetState ForFix(XrefStatus status, string field) => new() { Status = status, Field = field };
+    public static ReviewTargetState ForFix(XrefStatus status, string field, WordFixFacts? facts = null) => new() { Status = status, Field = field, FixFacts = facts };
+
+    /// <summary>Baglanti hedefi: satirin degerleri ve (duzeltme varsa) yeni hedef ucun olgulari.</summary>
+    public static ReviewTargetState ForLink(XrefStatus status, LinkRowState link, LinkDstFacts? dst = null) => new() { Status = status, LinkRow = link, LinkDst = dst };
 
     public static ReviewTargetState ForGloss(XrefStatus status, GlossReviewState gloss) => new() { Status = status, Gloss = gloss };
+
+    public static ReviewTargetState ForLemma(XrefStatus status, LemmaReviewState lemma) => new() { Status = status, LemmaRow = lemma };
 
     public static ReviewTargetState ForUnit(UnitReviewState unit) => new() { Unit = unit };
 }
@@ -137,6 +184,18 @@ public readonly record struct ReviewOutcome
     /// <summary>lemma_gloss'un duzenlenmis degerleri; null ise anlam degismez (durum onayi ya da ret).</summary>
     public LemmaGlossUpdate? Gloss { get; init; }
 
+    /// <summary>
+    /// lemma satirinin kok eslemesi alanlari (tam degistirme: kok, Arapca karsilik, etimolojik isaret, koken, onay yolu);
+    /// null ise lemma'da yalniz <see cref="TargetStatus"/> yazilir.
+    /// </summary>
+    public LemmaMappingUpdate? LemmaMapping { get; init; }
+
+    /// <summary>xref satirinin duzeltilmis alanlari (tur, hedef, aralik, koken, kanit); null ise baglanti degismez.</summary>
+    public LinkUpdate? Link { get; init; }
+
+    /// <summary>quran_word_fix.new_value yeni degeri; null ise degismez.</summary>
+    public string? WordFixNewValue { get; init; }
+
     /// <summary>Review satirinin karar alanlarini yazar (hedef degisiklikleri yazilmaz).</summary>
     public void ApplyTo(Review review)
     {
@@ -157,15 +216,19 @@ public readonly record struct ReviewOutcome
 /// Inceleme karari kurallari (K-48), saf islevler: veritabani, saat ve HTTP yok. Hata <see cref="DomainException"/>'dir.
 /// Kontrol sirasi: desteklenmeyen hedef (422), girdi (400), kayit durumu (409), dort goz (409), hedef durumu (409), degistirilemez metin (422), deger.
 /// </summary>
-public static class ReviewDecisions
+public static partial class ReviewDecisions
 {
     /// <summary>Gerekce uzunluk ust siniri (kod noktasi).</summary>
     public const int MaxGerekceLength = 2000;
 
-    /// <summary>Durum hedefleri: (surah_alias|xref|lemma, status), (lemma_gloss, anlam_kisa), (quran_word_fix, root_id|lemma_id|pos|features); birim metni: (unit, metin).</summary>
+    /// <summary>
+    /// Durum hedefleri: (surah_alias|xref|lemma, status), (lemma, kok_eslemesi; yalniz Turkce lemma, K-51 madde 9), (lemma_gloss, anlam_kisa),
+    /// (quran_word_fix, root_id|lemma_id|pos|features); birim metni: (unit, metin).
+    /// </summary>
     public static bool IsSupported(string? hedefTablo, string? alan) => hedefTablo switch
     {
-        ReviewTargets.SurahAlias or ReviewTargets.Xref or ReviewTargets.Lemma => alan is ReviewFields.Status,
+        ReviewTargets.SurahAlias or ReviewTargets.Xref => alan is ReviewFields.Status,
+        ReviewTargets.Lemma => alan is ReviewFields.Status or ReviewFields.KokEslemesi,
         ReviewTargets.LemmaGloss => alan is ReviewFields.AnlamKisa,
         ReviewTargets.QuranWordFix => alan is ReviewFields.RootId or ReviewFields.LemmaId or ReviewFields.Pos or ReviewFields.Features,
         ReviewTargets.Unit => alan is ReviewFields.Metin,
@@ -186,9 +249,32 @@ public static class ReviewDecisions
         RequireOpen(review);
         RequireNotOwnProposal(review, actor);
 
-        return string.Equals(review.HedefTablo, ReviewTargets.Unit, StringComparison.Ordinal)
-            ? ApproveUnitText(review, request, target, actor, gerekce)
-            : ApproveStatus(review, request, target, actor, gerekce);
+        if (string.Equals(review.HedefTablo, ReviewTargets.Unit, StringComparison.Ordinal))
+        {
+            return ApproveUnitText(review, request, target, actor, gerekce);
+        }
+
+        if (IsRootMapping(review))
+        {
+            return ApproveRootMapping(review, request, target, actor, gerekce);
+        }
+
+        if (IsRevalidation(review))
+        {
+            return ApproveRevalidation(request, target, actor, gerekce);
+        }
+
+        if (request.Duzenlenen is not null && IsLinkTarget(review))
+        {
+            return ApproveLink(review, request, target, actor, gerekce);
+        }
+
+        if (request.Duzenlenen is not null && string.Equals(review.HedefTablo, ReviewTargets.QuranWordFix, StringComparison.Ordinal))
+        {
+            return ApproveWordFix(review, request, target, actor, gerekce);
+        }
+
+        return ApproveStatus(review, request, target, actor, gerekce);
     }
 
     /// <summary>Acik kaydi reddeder. Ret her asamada verilebilir; hedefi degistirmez (durum sutunlu hedef Red olur, incelemede birim taslaga doner).</summary>
@@ -213,6 +299,16 @@ public static class ReviewDecisions
             {
                 UnitMetinDurumu = unit.MetinDurumu == TextStatus.Incelemede ? TextStatus.Taslak : null,
             };
+        }
+
+        if (IsRootMapping(review))
+        {
+            return RejectRootMapping(review, request, target, actor, gerekce);
+        }
+
+        if (IsRevalidation(review))
+        {
+            return RejectRevalidation(review, request, target, actor, gerekce);
         }
 
         RequireFieldMatch(review, target);
@@ -390,6 +486,9 @@ public static class ReviewDecisions
             Duzenlenen = stored,
             TargetStatus = XrefStatus.Onayli,
             Gloss = gloss,
+
+            // Turkce lemma durum onayi da editor onayidir: lemma_tr_onayli_onay_yolu_check onayli tr satirda onay yolunu zorunlu kilar.
+            LemmaMapping = target.LemmaRow is { IsTurkish: true } row ? row.ToUpdate(onayYolu: LemmaApprovalPaths.Editor) : null,
         };
     }
 
@@ -520,7 +619,7 @@ public static class ReviewDecisions
         };
     }
 
-    private static ReviewOutcome Rejected(Review review, ReviewDecisionRequest request, string actor, string gerekce, bool secondStage) =>
+    internal static ReviewOutcome Rejected(Review review, ReviewDecisionRequest request, string actor, string gerekce, bool secondStage) =>
         secondStage
             ? new ReviewOutcome
             {
@@ -554,7 +653,7 @@ public static class ReviewDecisions
         }
     }
 
-    private static string RequireActor(string? actor)
+    internal static string RequireActor(string? actor)
     {
         if (string.IsNullOrWhiteSpace(actor))
         {
@@ -564,7 +663,7 @@ public static class ReviewDecisions
         return actor;
     }
 
-    private static string RequireGerekce(string? gerekce)
+    internal static string RequireGerekce(string? gerekce)
     {
         if (string.IsNullOrWhiteSpace(gerekce))
         {
@@ -579,9 +678,10 @@ public static class ReviewDecisions
         return gerekce;
     }
 
-    private static void RequireOpen(Review review)
+    internal static void RequireOpen(Review review)
     {
-        if (review.Durum != ReviewStatus.Acik)
+        // uzmanda kayit karar icin acik gibi kabul edilir; kimin karar verecegi ReviewRoles.CanDecide ile (Api) sorulur.
+        if (review.Durum is not (ReviewStatus.Acik or ReviewStatus.Uzmanda))
         {
             throw new DomainException(DomainErrorCodes.DurumGecisiGecersiz, $"Yalniz acik kayda karar verilebilir (durum: {review.Durum.ToLabel()}).");
         }
@@ -596,7 +696,7 @@ public static class ReviewDecisions
         }
     }
 
-    private static void RequireCandidate(ReviewTargetState target)
+    internal static void RequireCandidate(ReviewTargetState target)
     {
         XrefStatus status = target.Status
             ?? throw new InvalidOperationException("Durum sutunlu hedef icin hedef durumu verilmeli.");

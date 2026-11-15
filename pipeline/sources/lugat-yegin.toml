@@ -1,0 +1,11 @@
+# A18.1 (2026-11-13) · kaynak: proje sahibinin önceliği (13 Kasım 2026), docs/04-icerik/01-kaynaklar.md §3.6 · karar: K-51 madde 12
+slug = "lugat-yegin"
+tur = "sozluk"
+baslik = "Osmanlıca - Türkçe İslami - İlmi - Edebi - Felsefi Yeni Lügat"
+yazar = "Abdullah Yeğin"
+atif_metni = "Abdullah Yeğin, Osmanlıca - Türkçe İslami - İlmi - Edebi - Felsefi Yeni Lügat."
+notlar = '''
+Aşama: A18 (ikinci sözlük kanıtı) ve A20.6 (lügat madde kartı). Öncelik: lügat kaynakları arasında proje sahibi bu eseri öncelikli kullanılacak lügat olarak belirledi (13 Kasım 2026); sıra lugat-yegin, sonra diğer lügatlardır.
+Baskı: Hizmet Vakfı, 1983 (ikinci el satış listesinden; baskı bilgisi Doğrulanacak).
+Dijital kopya: 13 Kasım 2026 araştırmasında makinece okunur ya da taranmış açık kopya bulunamadı (genel arama yalnız kütüphane kataloğu ve kitap satış listesi verdi; Internet Archive aramasında eser yok). Bu yüzden henüz veri indirilmedi ve kaynak çalışmada kullanılamaz; açık bir kopya bulununca ya da kullanıcı dosyayı proje klasörüne koyunca data/gelen/lugat-yegin/<YYYY-AA-GG>/ altına alınır, kayıt kaynak_url ve surum ile güncellenir.
+Kullanım: madde başı Osmanlıca yazım ve köken başvurusu; maddedeki Türkçe tanımlar bizim yazdığımız ya da editörce onaylanan metindir.'''

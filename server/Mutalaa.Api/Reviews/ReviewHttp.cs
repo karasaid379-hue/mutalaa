@@ -78,6 +78,57 @@ internal static class ReviewCursor
             CultureInfo.InvariantCulture,
             $"{WavePrefix}{cursor.Dalga}:{cursor.Sira}:{cursor.LemmaId}:{cursor.Id}")));
 
+    private const string ClassPrefix = "sinif:";
+
+    /// <summary>Sinif imleci (turu etiketli): <c>sinif:{sira}:{guvenin_bit_degeri}:{id}</c>, base64url; guven tam geri okunsun diye float'in bit degeridir.</summary>
+    public static string EncodeClass(ClassCursor cursor) =>
+        Base64Url.EncodeToString(Encoding.ASCII.GetBytes(string.Create(
+            CultureInfo.InvariantCulture,
+            $"{ClassPrefix}{cursor.Sinif}:{BitConverter.SingleToInt32Bits(cursor.Confidence)}:{cursor.Id}")));
+
+    public static bool TryDecodeClass(string? text, out ClassCursor cursor)
+    {
+        cursor = default;
+        if (string.IsNullOrEmpty(text) || text.Length > 128)
+        {
+            return false;
+        }
+
+        string decoded;
+        try
+        {
+            decoded = Encoding.ASCII.GetString(Base64Url.DecodeFromChars(text));
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+
+        if (!decoded.StartsWith(ClassPrefix, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        string[] parts = decoded[ClassPrefix.Length..].Split(':');
+        if (parts.Length != 3
+            || !int.TryParse(parts[0], NumberStyles.None, CultureInfo.InvariantCulture, out int sinif)
+            || !int.TryParse(parts[1], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out int bits)
+            || !long.TryParse(parts[2], NumberStyles.None, CultureInfo.InvariantCulture, out long id)
+            || sinif > ReviewQueries.NoClass)
+        {
+            return false;
+        }
+
+        float confidence = BitConverter.Int32BitsToSingle(bits);
+        if (float.IsNaN(confidence))
+        {
+            return false;
+        }
+
+        cursor = new ClassCursor(sinif, confidence, id);
+        return true;
+    }
+
     public static bool TryDecodeWave(string? text, out WaveCursor cursor)
     {
         cursor = default;
@@ -151,6 +202,9 @@ internal static class ReviewCursor
 
 /// <summary>Dalga sirasinin anahtar kumesi: (dalga, sira, lemma_id, review.id); dalgasiz kayitta dalga 5, sira en buyuk, lemma 0.</summary>
 internal readonly record struct WaveCursor(int Dalga, int Sira, int LemmaId, long Id);
+
+/// <summary>Sinif sirasinin anahtar kumesi: (sinif sirasi, guven, review.id); baglantisiz kayitta sinif 4, guven -1.</summary>
+internal readonly record struct ClassCursor(int Sinif, float Confidence, long Id);
 
 internal static class ReviewJson
 {

@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,9 +20,10 @@ import {
   trimGloss,
 } from '@/lib/text';
 import { problemCode, problemStatus, toProblem } from '@/lib/problem';
-import { canDecide } from '@/lib/roles';
+import { canDecideStatus } from '@/lib/roles';
 import { fieldA11y, type FieldProblem } from './field-errors';
 import { ProblemList } from './problem-list';
+import { RootMappingFields } from './root-mapping-fields';
 import { MAX_GLOSS_LENGTH, MAX_REASON_LENGTH } from './limits';
 import {
   ME_PATH,
@@ -41,12 +42,31 @@ import {
   canEditValue,
   isFirstStageUnitText,
   isGlossEditable,
+  isRootMappingEditable,
+  parseIdInput,
   proposedGloss,
+  proposedMapping,
   proposedText,
   type UnitEditInfo,
 } from './rules';
 import { StaleRecord } from './stale-record';
-import type { DecisionKind, DecisionResult, ReviewDetail } from './types';
+import type { DecisionEdit, DecisionKind, DecisionResult, ReviewDetail } from './types';
+
+/**
+ * An edit of the approval that a screen builds with fields of its own (the link target, span and type; the new
+ * value of a word fix): `value` is the `duzenlenen` body (null = a plain approval) and `problems` block the
+ * submit while the approval is chosen. The form sends it only with "Onayla".
+ */
+export interface ExtraEdit {
+  value: DecisionEdit | null;
+  problems: readonly FieldProblem[];
+}
+
+/** What `DecisionForm` hands to `extraFields` given as a function: the problems of the last submit and the id of their summary list. */
+export interface ExtraFieldsContext {
+  problems: readonly FieldProblem[];
+  summaryId: string;
+}
 
 export interface DecisionFormProps {
   /** The record being decided. Its `xmin` becomes the `If-Match` value. */
@@ -60,6 +80,15 @@ export interface DecisionFormProps {
   onDecided?: (result: DecisionResult, decision: DecisionKind) => void;
   /** Called with the fresh record after a 412 refresh. */
   onRefreshed?: (fresh: ReviewDetail) => void;
+  /** The screen's own edit of the approval (see `ExtraEdit`); its fields are `extraFields`. */
+  extraEdit?: ExtraEdit;
+  /**
+   * The screen's own edit fields, drawn inside the form under the decision choice. A function gets the problems of
+   * the last submit, so the fields can point to their messages in the summary (`fieldA11y`).
+   */
+  extraFields?: ReactNode | ((context: ExtraFieldsContext) => ReactNode);
+  /** Texts of the two decision choices when the screen words them differently (a re-validation). */
+  choiceLabels?: { approve: string; reject: string };
   className?: string;
 }
 
@@ -93,6 +122,19 @@ function glossProblemMessage(problem: ReturnType<typeof toProblem>): string | nu
 }
 
 /**
+ * The Turkish message of a server rejection of an edited root mapping: a 400 `dogrulama` that is not about the
+ * reason (root or Arabic lemma missing, the lemma is not Arabic, its root differs). The server's own message is
+ * kept next to it. null for everything else.
+ */
+function mappingProblemMessage(problem: ReturnType<typeof toProblem>): string | null {
+  if (problemStatus(problem) !== 400 || problemCode(problem) !== 'dogrulama') return null;
+  if (problem.errors !== undefined && Object.hasOwn(problem.errors, 'gerekce')) return null;
+  return problem.detail
+    ? `${trLemma.kok.edit.serverInvalid} ${tr.problem.detail}: ${problem.detail}`
+    : trLemma.kok.edit.serverInvalid;
+}
+
+/**
  * Decision form of one review (K-48): approve or reject must be chosen explicitly; `gerekce` is required
  * (at most 2.000 code points); the edited-text field exists only when `canEditValue` is true; NUL and lone
  * surrogates are reported and cleaned only by the button. The request carries `If-Match: "{xmin}"` and always
@@ -105,6 +147,9 @@ export function DecisionForm({
   unit,
   onDecided,
   onRefreshed,
+  extraEdit,
+  extraFields,
+  choiceLabels,
   className,
 }: DecisionFormProps) {
   const api = useApi();
@@ -122,12 +167,18 @@ export function DecisionForm({
     decision: useId(),
     summary: useId(),
     approveClosed: useId(),
+    mapRoot: useId(),
+    mapAr: useId(),
   };
 
   const [karar, setKarar] = useState<DecisionKind | ''>('');
   const [gerekce, setGerekce] = useState('');
   const [edited, setEdited] = useState<string | null>(null);
   const [gloss, setGloss] = useState<string | null>(null);
+  // A Turkish lemma mapping (K-51 madde 9): the typed root id, Arabic lemma id and switch; null = untouched.
+  const [mapRoot, setMapRoot] = useState<string | null>(null);
+  const [mapAr, setMapAr] = useState<string | null>(null);
+  const [mapEtym, setMapEtym] = useState<boolean | null>(null);
   const [problems, setProblems] = useState<FieldProblem[]>([]);
   const [error, setError] = useState<unknown>(null);
   const [stale, setStale] = useState<Stale | null>(null);
@@ -151,7 +202,7 @@ export function DecisionForm({
   const decide = api.$api.useMutation('post', '/api/v1/reviews/{id}/decision');
 
   const roles = me.data?.roller;
-  const roleMissing = me.data !== undefined && !canDecide(roles);
+  const roleMissing = me.data !== undefined && !canDecideStatus(roles, current.durum);
   const block = approveBlockReason(current, me.data?.kullanici.email);
   const closed = block === 'closed' || done !== null;
   const canEdit = canEditValue(current, unitInfo) && !closed;
@@ -170,6 +221,19 @@ export function DecisionForm({
   const glossChanged = showGloss && trimGloss(glossValue) !== trimGloss(glossBaseline);
   const glossCount = glossLength(glossValue);
   const glossProblems = problems.filter((problem) => problem.fieldId === ids.gloss);
+  // An open candidate mapping review: approval may carry an edited mapping; an edit equal to the proposal is not sent.
+  const baseMap = proposedMapping(current);
+  const rootText = mapRoot ?? (baseMap.rootId !== null ? String(baseMap.rootId) : '');
+  const arText = mapAr ?? (baseMap.arLemmaId !== null ? String(baseMap.arLemmaId) : '');
+  const etymValue = mapEtym ?? baseMap.etymologicalOnly ?? false;
+  const showMapping = isRootMappingEditable(current) && !closed && selected === 'onaylandi';
+  const parsedRoot = parseIdInput(rootText);
+  const parsedAr = parseIdInput(arText);
+  const mappingChanged =
+    showMapping &&
+    (parsedRoot !== baseMap.rootId ||
+      parsedAr !== baseMap.arLemmaId ||
+      etymValue !== (baseMap.etymologicalOnly ?? false));
 
   const unwritable = {
     gerekce: findUnwritable(gerekce),
@@ -218,6 +282,12 @@ export function DecisionForm({
         add(ids.gloss, trLemma.edit.unwritable);
       }
     }
+    if (extraEdit && selected === 'onaylandi') found.push(...extraEdit.problems);
+    if (showMapping) {
+      if (parsedRoot === 'invalid') add(ids.mapRoot, trLemma.kok.edit.rootInvalid);
+      else if (parsedRoot === null) add(ids.mapRoot, trLemma.kok.edit.rootRequired);
+      if (parsedAr === 'invalid') add(ids.mapAr, trLemma.kok.edit.arInvalid);
+    }
     return found;
   }
 
@@ -250,6 +320,8 @@ export function DecisionForm({
     setStale(null);
     const sendEdit = canEdit && selected === 'onaylandi' && editedValue !== baseline;
     const sendGloss = glossChanged;
+    const sendMapping = mappingChanged && typeof parsedRoot === 'number' && parsedAr !== 'invalid';
+    const sendExtra = selected === 'onaylandi' ? (extraEdit?.value ?? null) : null;
     const snapshot = current;
     try {
       const result = await decide.mutateAsync({
@@ -260,7 +332,9 @@ export function DecisionForm({
             ? { metin: editedValue }
             : sendGloss
               ? { anlam_kisa: glossValue }
-              : null,
+              : sendMapping
+                ? { root_id: parsedRoot, ar_lemma_id: parsedAr, etymological_only: etymValue }
+                : sendExtra,
           gerekce,
         },
       });
@@ -279,8 +353,12 @@ export function DecisionForm({
       const problem = toProblem(thrown);
       // A rejected edited meaning is shown next to its field (400 on the field, 409 for a target that is not a candidate).
       const glossMessage = sendGloss ? glossProblemMessage(problem) : null;
+      const mappingMessage = sendMapping ? mappingProblemMessage(problem) : null;
       if (glossMessage !== null) {
         setProblems([{ fieldId: ids.gloss, message: glossMessage }]);
+        setError(null);
+      } else if (mappingMessage !== null) {
+        setProblems([{ fieldId: ids.mapRoot, message: mappingMessage }]);
         setError(null);
       } else {
         setError(problem);
@@ -311,7 +389,9 @@ export function DecisionForm({
         <h3 id={ids.form} className="text-base font-medium">
           {tr.review.decisionHeading}
         </h3>
-        <p className="text-sm text-muted-foreground">{tr.review.noRole}</p>
+        <p className="text-sm text-muted-foreground" data-testid="decision-role-note">
+          {current.durum === 'uzmanda' ? tr.review.expertPending : tr.review.noRole}
+        </p>
       </section>
     );
   }
@@ -395,13 +475,17 @@ export function DecisionForm({
               disabled={closed || approveClosed}
               aria-describedby={approveClosed ? ids.approveClosed : undefined}
             />
-            {tr.review.approve}
+            {choiceLabels?.approve ?? tr.review.approve}
           </Label>
           <Label className="min-h-6 gap-2 font-normal">
             <RadioGroupItem value="reddedildi" disabled={closed} />
-            {tr.review.reject}
+            {choiceLabels?.reject ?? tr.review.reject}
           </Label>
         </RadioGroup>
+
+        {typeof extraFields === 'function'
+          ? extraFields({ problems, summaryId: ids.summary })
+          : extraFields}
 
         {showGloss ? (
           <div className="flex flex-col gap-1" data-testid="gloss-edit">
@@ -430,6 +514,22 @@ export function DecisionForm({
               </div>
             ) : null}
           </div>
+        ) : null}
+
+        {showMapping ? (
+          <RootMappingFields
+            rootFieldId={ids.mapRoot}
+            arFieldId={ids.mapAr}
+            summaryId={ids.summary}
+            problems={problems}
+            root={rootText}
+            arLemma={arText}
+            etymologicalOnly={etymValue}
+            onRoot={setMapRoot}
+            onArLemma={setMapAr}
+            onEtymologicalOnly={setMapEtym}
+            onKeyDown={onKeyDown}
+          />
         ) : null}
 
         {showEdit ? (

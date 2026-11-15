@@ -1,0 +1,5 @@
+# Baglam ipuclari (Iktibas tespiti §8): ADAY listeler; degerlendirme setinde olculur ve kalibre
+# edilir. Eslesme Turkce genis anahtarladir (sapka, kesme ve buyuk-kucuk harf gozetilmez);
+# ifade kelime dizisi olarak, dizinin yakininda (+-80 karakter) aranir.
+kuran = ["âyet", "âyet-i kerîme", "sırrınca", "fermanıyla", "nassı"]  # +0,10
+ters = ["hadîs", "hadîs-i şerif", "duâ", "münâcât"]  # -0,20

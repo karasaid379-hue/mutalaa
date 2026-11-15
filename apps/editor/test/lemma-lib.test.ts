@@ -22,6 +22,7 @@ import {
   readDistribution,
   readLemmaValue,
   readYzRecord,
+  splitScriptRuns,
 } from '@/screens/lemma/payload';
 import { formatPercent } from '@/lib/format';
 import { glossLength, trimGloss } from '@/lib/text';
@@ -207,8 +208,34 @@ describe('lemmaFilter', () => {
     });
     expect(lemmaFilter('duzeltme', 'dalga')).toEqual({ hedef_tablo: 'quran_word_fix' });
     expect(hasWaveOrder('duzeltme')).toBe(false);
+    expect(lemmaFilter('kok', 'dalga')).toEqual({ hedef_tablo: 'lemma', alan: 'kok_eslemesi' });
+    expect(hasWaveOrder('kok')).toBe(false);
     expect(isQueueOrder('dalga')).toBe(true);
     expect(isQueueOrder('baska')).toBe(false);
+  });
+
+  it('adds the server approval path filter (onay_yolu) on the Turkish mapping tab only; "hepsi" sends none', () => {
+    expect(lemmaFilter('kok', 'dalga', 'hepsi')).toEqual({
+      hedef_tablo: 'lemma',
+      alan: 'kok_eslemesi',
+    });
+    for (const path of ['otomatik', 'editor', 'aday'] as const) {
+      expect(lemmaFilter('kok', 'dalga', path)).toEqual({
+        hedef_tablo: 'lemma',
+        alan: 'kok_eslemesi',
+        onay_yolu: path,
+      });
+      expect(reviewListInit(lemmaFilter('kok', 'dalga', path)).params.query).toEqual({
+        hedef_tablo: 'lemma',
+        alan: 'kok_eslemesi',
+        durum: 'acik',
+        onay_yolu: path,
+        limit: 50,
+      });
+      // The other tabs never carry it (the API answers 400 for a target other than lemma).
+      expect(lemmaFilter('anlam', 'dalga', path)).not.toHaveProperty('onay_yolu');
+      expect(lemmaFilter('duzeltme', 'dalga', path)).not.toHaveProperty('onay_yolu');
+    }
   });
 
   it('makes a list request with and without alan and sira', () => {
@@ -232,8 +259,9 @@ describe('tabs', () => {
     expect(lemma?.filters).toEqual(LEMMA_TAB_IDS.map((id) => LEMMA_FILTERS[id]));
   });
 
-  it('knows its three ids only, in this order', () => {
-    expect(LEMMA_TAB_IDS).toEqual(['anlam', 'durum', 'duzeltme']);
+  it('knows its four ids only, in this order', () => {
+    expect(LEMMA_TAB_IDS).toEqual(['anlam', 'durum', 'duzeltme', 'kok']);
+    expect(isLemmaTab('kok')).toBe(true);
     expect(isLemmaTab('anlam')).toBe(true);
     expect(isLemmaTab('durum')).toBe(true);
     expect(isLemmaTab('duzeltme')).toBe(true);
@@ -307,5 +335,44 @@ describe('trimGloss and glossLength', () => {
     );
     expect(glossLength(String.fromCodePoint(0x1d7d8).repeat(5))).toBe(5);
     expect(glossLength('')).toBe(0);
+  });
+});
+
+describe('splitScriptRuns', () => {
+  const AR = String.fromCodePoint(0x0627, 0x0628, 0x062c);
+  const AR2 = String.fromCodePoint(0x0647, 0x0648, 0x0632);
+
+  it('has no runs for an empty text', () => {
+    expect(splitScriptRuns('')).toEqual([]);
+  });
+
+  it('keeps a Turkish text as one non-Arabic run', () => {
+    expect(splitScriptRuns('Deneme paragrafı 1')).toEqual([
+      { text: 'Deneme paragrafı 1', arabic: false },
+    ]);
+  });
+
+  it('keeps an Arabic text as one Arabic run, spaces between its words included', () => {
+    expect(splitScriptRuns(`${AR} ${AR2}`)).toEqual([{ text: `${AR} ${AR2}`, arabic: true }]);
+  });
+
+  it('splits a mixed text by script and gives the spaces to the Turkish side', () => {
+    expect(splitScriptRuns(`önce ${AR} ve ${AR2}.`)).toEqual([
+      { text: 'önce ', arabic: false },
+      { text: AR, arabic: true },
+      { text: ' ve ', arabic: false },
+      { text: AR2, arabic: true },
+      { text: '.', arabic: false },
+    ]);
+  });
+
+  it('never changes the text: the runs joined are the text', () => {
+    const text = `  ${AR}
+${AR2} 12 ${AR} `;
+    expect(
+      splitScriptRuns(text)
+        .map((run) => run.text)
+        .join(''),
+    ).toBe(text);
   });
 });

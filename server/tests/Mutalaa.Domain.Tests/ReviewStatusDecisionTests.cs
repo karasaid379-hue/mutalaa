@@ -118,7 +118,8 @@ public class ReviewStatusDecisionTests
     [Fact]
     public void An_editor_value_is_not_supported_on_status_targets()
     {
-        Review review = StatusReview();
+        // xref (baglanti duzeltmesi) ve quran_word_fix (new_value) artik deger kabul eder (A18.4); sure adi hedefi kabul etmez.
+        Review review = StatusReview(ReviewTargets.SurahAlias);
 
         Assert.Equal(
             DomainErrorCodes.IncelemeDesteklenmiyor,

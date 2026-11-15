@@ -48,6 +48,8 @@ public sealed class IcerikDbContext(DbContextOptions<IcerikDbContext> options)
 
     public DbSet<Xref> Xrefs => Set<Xref>();
 
+    public DbSet<XrefGate> XrefGates => Set<XrefGate>();
+
     public DbSet<Review> Reviews => Set<Review>();
 
     public DbSet<PageMap> PageMaps => Set<PageMap>();

@@ -9,10 +9,12 @@ import { trLemma } from '@/i18n/tr-lemma';
 import { formatNumber, formatPercent } from '@/lib/format';
 import { ReviewBadges } from '@/review/badges';
 import { DecisionForm } from '@/review/decision-form';
+import { EditorActionGate } from '@/review/role-gate';
 import type { QueueDetailProps } from '@/review/queue-layout';
 import type { ReviewDetail } from '@/review/types';
 import { JsonBlock } from '@/screens/catalog/json-block';
 import { LemmaInfo } from './lemma-info';
+import { WordFixCreate } from './word-fix-create';
 import {
   CONSISTENT_SHARE_THRESHOLD,
   consistencyOf,
@@ -21,6 +23,7 @@ import {
   isShare,
   readConfidence,
   readDistribution,
+  readLemmaId,
   readLemmaValue,
   readYzRecord,
   type LemmaValue,
@@ -36,15 +39,6 @@ function glossOriginLabel(origin: string): string {
 
 function yesNo(value: boolean): string {
   return value ? trLemma.snapshot.yes : trLemma.snapshot.no;
-}
-
-/** The lemma id of the review's target: the snapshot's `lemma_id`, else the numeric target key; null when neither is one. */
-function readLemmaId(review: ReviewDetail): number | null {
-  const fromTarget = review.hedef?.lemma_id;
-  if (typeof fromTarget === 'number') return fromTarget;
-  return /^[0-9]+$/.test(review.hedef_anahtar) && Number.isSafeInteger(Number(review.hedef_anahtar))
-    ? Number(review.hedef_anahtar)
-    : null;
 }
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
@@ -363,6 +357,9 @@ export function LemmaCard({ review, onDecided }: QueueDetailProps) {
         </div>
         <p className="text-xs text-muted-foreground">{trLemma.closedNote}</p>
       </section>
+      <EditorActionGate heading={trLemma.wordFixCreate.heading} testId="word-fix-create">
+        <WordFixCreate />
+      </EditorActionGate>
       <p className="text-sm text-muted-foreground">
         {shown.hedef_tablo === 'lemma' ? trLemma.decisionNote.durum : trLemma.decisionNote.anlam}
       </p>

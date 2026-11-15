@@ -99,6 +99,24 @@ public class UserEndpointsTests(EditorialDatabase<UserEndpointsTests> fixture)
     }
 
     [Fact]
+    public async Task An_admin_can_create_an_expert_user_and_change_a_role_to_uzman()
+    {
+        using HttpClient admin = await AdminClientAsync();
+
+        using HttpResponseMessage created = await CreateUserAsync(admin, "uzman-yeni@example.test", EditorPassword, "uzman");
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        JsonElement body = await ApiFactory.ReadJsonAsync(created, Ct);
+        Assert.Equal(["uzman"], body.GetProperty("roller").EnumerateArray().Select(e => e.GetString()));
+
+        using HttpResponseMessage editor = await CreateUserAsync(admin, EditorEmail, EditorPassword, "editor");
+        string id = (await ApiFactory.ReadJsonAsync(editor, Ct)).GetProperty("id").GetString()!;
+        using HttpResponseMessage changed = await admin.PutAsJsonAsync($"/api/v1/users/{id}/roles", new { roller = new[] { "editor", "uzman" } }, Ct);
+
+        Assert.Equal(HttpStatusCode.OK, changed.StatusCode);
+        Assert.Equal(["editor", "uzman"], (await ApiFactory.ReadJsonAsync(changed, Ct)).GetProperty("roller").EnumerateArray().Select(e => e.GetString()));
+    }
+
+    [Fact]
     public async Task A_short_password_is_a_400_with_the_identity_errors_and_creates_nothing()
     {
         using HttpClient admin = await AdminClientAsync();

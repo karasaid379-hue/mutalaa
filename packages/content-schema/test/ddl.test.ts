@@ -65,6 +65,7 @@ const BEKLENEN_TABLOLAR: Record<string, string[]> = {
   ],
   'kelime-kok': [
     ...ORTAK,
+    'xref_idx',
     'word_morph',
     'root',
     'lemma',
@@ -153,6 +154,7 @@ const BEKLENEN_SUTUNLAR: Record<string, string[]> = {
     'occurrences',
     'ar_lemma_id',
     'etymological_only',
+    'approval',
   ],
   lemma_gloss: [
     'lemma_id',
@@ -487,6 +489,40 @@ describe('DDL', () => {
         expect(rowidsiz, `${tur}/${tablo}`).not.toContain(tablo);
       }
     }
+  });
+
+  it('carries xref_idx in kelime-kok with the same columns as core (K-51 item 3) and benzer_ayet stays in core', () => {
+    const kelimeKok = yeniVeritabani('kelime-kok');
+    expect(sutunlar(kelimeKok, 'xref_idx')).toEqual(sutunlar(yeniVeritabani('core'), 'xref_idx'));
+    expect(tablolar(kelimeKok)).toContain('xref_idx');
+  });
+
+  it('declares lemma.approval NOT NULL in kelime-kok (editor | auto | qac, K-51 item 9)', () => {
+    const db = yeniVeritabani('kelime-kok');
+    const satirlar = db.prepare('PRAGMA table_info(lemma)').all() as {
+      name: string;
+      notnull: number;
+    }[];
+    const approval = satirlar.find((s) => s.name === 'approval');
+    expect(approval?.notnull).toBe(1);
+    db.exec(
+      "INSERT INTO lemma (id, lang, text, text_clean, occurrences, etymological_only, approval) VALUES (1, 'tr', 'deneme', 'deneme', 1, 0, 'auto')",
+    );
+    expect(() => {
+      db.exec(
+        "INSERT INTO lemma (id, lang, text, text_clean, occurrences, etymological_only) VALUES (2, 'tr', 'deneme', 'deneme', 1, 0)",
+      );
+    }).toThrow();
+  });
+
+  it('writes tr_root_index rows of one anchor without gaps (PRIMARY KEY (anchor, span_start))', () => {
+    const db = yeniVeritabani('kelime-kok');
+    db.exec(
+      "INSERT INTO tr_root_index VALUES ('meal:a:1:1', 0, 3, 1, 1, 0), ('meal:a:1:1', 4, 8, 1, 2, 1)",
+    );
+    expect(() => {
+      db.exec("INSERT INTO tr_root_index VALUES ('meal:a:1:1', 0, 3, 2, 3, 0)");
+    }).toThrow();
   });
 
   it('keeps tr_root_index out of core (K-44 item 3)', () => {

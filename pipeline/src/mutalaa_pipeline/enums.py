@@ -84,6 +84,7 @@ class IncelemeDurumu(StrEnum):
     ONAYLANDI = "onaylandi"
     REDDEDILDI = "reddedildi"
     GERI_ALINDI = "geri_alindi"
+    UZMANDA = "uzmanda"
 
 
 class SurumDurumu(StrEnum):

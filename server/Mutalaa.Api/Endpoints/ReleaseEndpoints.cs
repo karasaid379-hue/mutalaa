@@ -31,11 +31,13 @@ public static class ReleaseEndpoints
 
         releases.MapGet(string.Empty, ListAsync)
             .WithName("listReleases")
+            .RequireAuthorization(AuthPolicies.Editor)
             .Produces<ReleaseListResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         releases.MapGet("/{id:int}", GetAsync)
             .WithName("getRelease")
+            .RequireAuthorization(AuthPolicies.Editor)
             .Produces<ReleaseDetail>()
             .ProducesProblem(StatusCodes.Status404NotFound);
 

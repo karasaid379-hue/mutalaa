@@ -49,7 +49,8 @@ CREATE TYPE icerik.inceleme_durumu AS ENUM (
     'acik',
     'onaylandi',
     'reddedildi',
-    'geri_alindi'
+    'geri_alindi',
+    'uzmanda'
 );
 
 
@@ -261,7 +262,12 @@ CREATE TABLE icerik.lemma (
     freq integer,
     source_id text NOT NULL,
     data_version text NOT NULL,
-    CONSTRAINT lemma_lang_check CHECK ((lang = ANY (ARRAY['ar'::text, 'tr'::text])))
+    kanit jsonb,
+    onay_yolu text,
+    CONSTRAINT lemma_lang_check CHECK ((lang = ANY (ARRAY['ar'::text, 'tr'::text]))),
+    CONSTRAINT lemma_onay_yolu_check CHECK (((onay_yolu IS NULL) OR (onay_yolu = ANY (ARRAY['editor'::text, 'otomatik'::text])))),
+    CONSTRAINT lemma_otomatik_kanit_check CHECK (((onay_yolu IS DISTINCT FROM 'otomatik'::text) OR ((kanit IS NOT NULL) AND (jsonb_typeof(kanit) = 'object'::text)))),
+    CONSTRAINT lemma_tr_onayli_onay_yolu_check CHECK (((NOT ((lang = 'tr'::text) AND (status = 'onayli'::icerik.xref_status))) OR (onay_yolu IS NOT NULL)))
 );
 
 
@@ -562,7 +568,8 @@ CREATE TABLE icerik.tr_form (
     key_narrow text NOT NULL,
     tr_lemma_id integer NOT NULL,
     key_wide text NOT NULL,
-    freq integer DEFAULT 0 NOT NULL
+    freq integer DEFAULT 0 NOT NULL,
+    data_version text NOT NULL
 );
 
 
@@ -578,7 +585,9 @@ CREATE TABLE icerik.tr_root_index (
     tr_lemma_id integer NOT NULL,
     etymological_only boolean DEFAULT false NOT NULL,
     data_version text NOT NULL,
-    CONSTRAINT tr_root_index_check CHECK ((span_start < span_end))
+    unit_hash character(16) NOT NULL,
+    CONSTRAINT tr_root_index_check CHECK ((span_start < span_end)),
+    CONSTRAINT tr_root_index_unit_hash_check CHECK ((unit_hash ~ '^[0-9a-f]{16}$'::text))
 );
 
 
@@ -656,6 +665,25 @@ CREATE TABLE icerik.xref (
     data_version text NOT NULL,
     CONSTRAINT xref_confidence_check CHECK (((confidence >= (0)::double precision) AND (confidence <= (1)::double precision))),
     CONSTRAINT xref_score_check CHECK (((score >= (0)::double precision) AND (score <= (1)::double precision)))
+);
+
+
+--
+-- Name: xref_gate; Type: TABLE; Schema: icerik; Owner: -
+--
+
+CREATE TABLE icerik.xref_gate (
+    tur icerik.xref_type NOT NULL,
+    set_sinifi text NOT NULL,
+    set_surumu text NOT NULL,
+    sonuc text NOT NULL,
+    set_kaynaklari text[] NOT NULL,
+    rapor_sha256 character(64) NOT NULL,
+    data_version text NOT NULL,
+    olculdu_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT xref_gate_rapor_sha256_check CHECK ((rapor_sha256 ~ '^[0-9a-f]{64}$'::text)),
+    CONSTRAINT xref_gate_set_sinifi_check CHECK ((set_sinifi = ANY (ARRAY['altin'::text, 'silver'::text, 'sentetik'::text]))),
+    CONSTRAINT xref_gate_sonuc_check CHECK ((sonuc = ANY (ARRAY['gecti'::text, 'kaldi'::text])))
 );
 
 
@@ -949,6 +977,14 @@ ALTER TABLE ONLY icerik.unit
 
 
 --
+-- Name: xref_gate xref_gate_pkey; Type: CONSTRAINT; Schema: icerik; Owner: -
+--
+
+ALTER TABLE ONLY icerik.xref_gate
+    ADD CONSTRAINT xref_gate_pkey PRIMARY KEY (tur, set_sinifi);
+
+
+--
 -- Name: xref xref_natural_key; Type: CONSTRAINT; Schema: icerik; Owner: -
 --
 
@@ -1032,6 +1068,13 @@ CREATE INDEX lemma_dalga_dalga_sira ON icerik.lemma_dalga USING btree (dalga, si
 --
 
 CREATE UNIQUE INDEX lemma_qac_ref_key ON icerik.lemma USING btree (qac_ref) WHERE (lang = 'ar'::text);
+
+
+--
+-- Name: lemma_tr_text_clean_key; Type: INDEX; Schema: icerik; Owner: -
+--
+
+CREATE UNIQUE INDEX lemma_tr_text_clean_key ON icerik.lemma USING btree (lang, text_clean) WHERE (lang = 'tr'::text);
 
 
 --

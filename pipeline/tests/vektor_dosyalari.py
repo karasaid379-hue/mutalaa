@@ -34,12 +34,14 @@ NORMALIZE_TR: Final = "normalize/tr.jsonl"
 NORMALIZE_AR: Final = "normalize/ar.jsonl"
 NORMALIZE_TR_GOVDE: Final = "normalize/tr-govde.jsonl"
 EXTRACT_MEAL: Final = "extract/meal.jsonl"  # K-49 madde 13: cikarim vektoru, yalniz Python kosar
+TR_BOLME: Final = "enrich/tr-bolme.jsonl"  # A18.2: Turkce on bolme (hat ici), yalniz Python kosar
 
 # Kosucu test dosyasi -> yukledigi vektor dosyalari.
 KOSULAN: Final[dict[str, tuple[str, ...]]] = {
     "test_vectors.py": (VALID, INVALID, COMPARE, CONTAINS, ROUTE, OFFSETS, HASH),
     "test_normalize_vectors.py": (NORMALIZE_TR, NORMALIZE_AR, NORMALIZE_TR_GOVDE),
     "test_extract_meal.py": (EXTRACT_MEAL,),
+    "test_tr_bolme.py": (TR_BOLME,),
 }
 
 # Python'un kosmadigi dosya -> gerekce.
