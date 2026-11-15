@@ -33,7 +33,25 @@ from mutalaa_pipeline.runctx import RAPOR_KLASORU
 
 VERSIYON: Final = "gold1"
 GATE_TURLERI: Final = ("kok", "lemma", "benzer_ayet", "atif", "iktibas")
-CLI_TURLERI: Final = ("kok", "lemma", "benzer-ayet", "atif", "iktibas")
+# CLI turu -> (xref_gate.tur, xref_gate.alt_tur); anahtar (tur, alt_tur, set_sinifi) (K-51 madde 5).
+CLI_GATE: Final[Mapping[str, tuple[str, str]]] = {
+    "kok": ("kok", "tr_lemma"),
+    "kok-baglanti": ("kok", "xref"),
+    "lemma": ("lemma", ""),
+    "benzer-ayet": ("benzer_ayet", "sozluksel"),
+    "benzer-ayet-alim": ("benzer_ayet", "alim"),
+    "atif": ("atif", ""),
+    "iktibas": ("iktibas", ""),
+}
+CLI_TURLERI: Final = tuple(CLI_GATE)
+# Veritabani CHECK kisitiyla ayni: tur -> izinli alt turler.
+ALT_TURLER: Final[Mapping[str, frozenset[str]]] = {
+    "atif": frozenset({""}),
+    "iktibas": frozenset({""}),
+    "lemma": frozenset({""}),
+    "benzer_ayet": frozenset({"sozluksel", "alim"}),
+    "kok": frozenset({"tr_lemma", "xref"}),
+}
 RAPOR_SURUMU: Final = 1
 
 
@@ -41,7 +59,7 @@ RAPOR_SURUMU: Final = 1
 class TurSonucu:
     """Bir turun olcum sonucu (rapor ve `xref_gate` satiri bundan kurulur)."""
 
-    cli_tur: str  # kok | lemma | benzer-ayet | atif | iktibas
+    cli_tur: str  # CLI_GATE anahtarlarindan biri
     manifest: Mapping[str, object]
     sonuc: str  # gecti | kaldi
     olculer: dict[str, float]
@@ -58,7 +76,11 @@ class TurSonucu:
 
     @property
     def gate_tur(self) -> str:
-        return self.cli_tur.replace("-", "_")
+        return CLI_GATE[self.cli_tur][0]
+
+    @property
+    def alt_tur(self) -> str:
+        return CLI_GATE[self.cli_tur][1]
 
     @property
     def set_sinifi(self) -> str:
@@ -94,6 +116,7 @@ def rapor_govdesi(
         "rapor_surumu": RAPOR_SURUMU,
         "tur": s.cli_tur,
         "xref_gate_tur": s.gate_tur,
+        "xref_gate_alt_tur": s.alt_tur,
         "set": str(s.manifest["set"]),
         "set_surumu": s.set_surumu,
         "sinif": s.set_sinifi,
@@ -185,9 +208,10 @@ def onceki_olculer(rapor: Mapping[str, object] | None) -> dict[str, float] | Non
 
 UPSERT: Final = (
     "INSERT INTO icerik.xref_gate"
-    " (tur, set_sinifi, set_surumu, sonuc, set_kaynaklari, rapor_sha256, data_version, olculdu_at)"
-    " VALUES (%s::icerik.xref_type, %s, %s, %s, %s, %s, %s, now())"
-    " ON CONFLICT (tur, set_sinifi) DO UPDATE SET"
+    " (tur, alt_tur, set_sinifi, set_surumu, sonuc, set_kaynaklari, rapor_sha256, data_version,"
+    " olculdu_at)"
+    " VALUES (%s::icerik.xref_type, %s, %s, %s, %s, %s, %s, %s, now())"
+    " ON CONFLICT (tur, alt_tur, set_sinifi) DO UPDATE SET"
     " set_surumu = EXCLUDED.set_surumu, sonuc = EXCLUDED.sonuc,"
     " set_kaynaklari = EXCLUDED.set_kaynaklari, rapor_sha256 = EXCLUDED.rapor_sha256,"
     " data_version = EXCLUDED.data_version, olculdu_at = now()"
@@ -198,6 +222,7 @@ def xref_gate_yaz(
     conn: psycopg.Connection,
     *,
     tur: str,
+    alt_tur: str,
     set_sinifi: str,
     set_surumu: str,
     sonuc: str,
@@ -205,12 +230,26 @@ def xref_gate_yaz(
     rapor_sha256: str,
     data_version: str,
 ) -> None:
-    """`icerik.xref_gate` satirini (tur, set_sinifi) anahtariyla upsert eder (commit cagirana)."""
+    """`icerik.xref_gate` satirini (tur, alt_tur, set_sinifi) anahtariyla upsert eder (commit
+    cagirana). `alt_tur` bos olabilir YALNIZ atif, iktibas ve lemma icin (veritabani CHECK ile
+    ayni).
+    """
     if tur not in GATE_TURLERI:
         raise GirdiHatasi(f"xref_gate turu gecersiz: {tur}")
+    if alt_tur not in ALT_TURLER[tur]:
+        raise GirdiHatasi(f"xref_gate alt turu gecersiz: {tur}/{alt_tur}")
     if sonuc not in (GECTI, KALDI):
         raise GirdiHatasi("xref_gate sonucu gecti ya da kaldi olmali")
     conn.execute(
         UPSERT,
-        (tur, set_sinifi, set_surumu, sonuc, list(set_kaynaklari), rapor_sha256, data_version),
+        (
+            tur,
+            alt_tur,
+            set_sinifi,
+            set_surumu,
+            sonuc,
+            list(set_kaynaklari),
+            rapor_sha256,
+            data_version,
+        ),
     )

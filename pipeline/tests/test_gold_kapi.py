@@ -71,7 +71,7 @@ def test_data_version_ve_rapor_yolu(tmp_path: Path) -> None:
 def test_gate_tur_tire_altcizgi() -> None:
     s = _sonuc()
     s.cli_tur = "benzer-ayet"
-    assert s.gate_tur == "benzer_ayet"
+    assert s.gate_tur == "benzer_ayet" and s.alt_tur == "sozluksel"
 
 
 def test_rapor_yaz_oku_sha_ve_icerik_alanlari(tmp_path: Path) -> None:
@@ -139,6 +139,7 @@ def test_xref_gate_yaz_gecersiz_girdi_veritabanina_gitmeden_hata() -> None:
         kapi.xref_gate_yaz(
             None,  # type: ignore[arg-type]
             tur="anlamsal",
+            alt_tur="",
             set_sinifi="silver",
             set_surumu="s",
             sonuc="gecti",
@@ -150,6 +151,7 @@ def test_xref_gate_yaz_gecersiz_girdi_veritabanina_gitmeden_hata() -> None:
         kapi.xref_gate_yaz(
             None,  # type: ignore[arg-type]
             tur="kok",
+            alt_tur="tr_lemma",
             set_sinifi="silver",
             set_surumu="s",
             sonuc="belki",
@@ -157,6 +159,54 @@ def test_xref_gate_yaz_gecersiz_girdi_veritabanina_gitmeden_hata() -> None:
             rapor_sha256=SHA,
             data_version="d",
         )
+
+
+@pytest.mark.parametrize(
+    ("tur", "alt_tur"),
+    [
+        ("kok", ""),  # kok icin bos alt tur yok
+        ("kok", "alim"),
+        ("benzer_ayet", ""),
+        ("benzer_ayet", "xref"),
+        ("lemma", "tr_lemma"),
+        ("atif", "sozluksel"),
+        ("iktibas", "x"),
+    ],
+)
+def test_xref_gate_yaz_gecersiz_alt_tur_veritabanina_gitmeden_hata(tur: str, alt_tur: str) -> None:
+    with pytest.raises(GirdiHatasi, match="alt tur"):
+        kapi.xref_gate_yaz(
+            None,  # type: ignore[arg-type]
+            tur=tur,
+            alt_tur=alt_tur,
+            set_sinifi="silver",
+            set_surumu="s",
+            sonuc="gecti",
+            set_kaynaklari=[],
+            rapor_sha256=SHA,
+            data_version="d",
+        )
+
+
+def test_cli_gate_esleme_veritabani_check_ile_ayni() -> None:
+    assert kapi.CLI_GATE["kok"] == ("kok", "tr_lemma")
+    assert kapi.CLI_GATE["kok-baglanti"] == ("kok", "xref")
+    assert kapi.CLI_GATE["benzer-ayet"] == ("benzer_ayet", "sozluksel")
+    assert kapi.CLI_GATE["benzer-ayet-alim"] == ("benzer_ayet", "alim")
+    for ad in ("lemma", "atif", "iktibas"):
+        assert kapi.CLI_GATE[ad] == (ad, "")
+    for tur, alt in kapi.CLI_GATE.values():
+        assert alt in kapi.ALT_TURLER[tur]
+    assert tuple(kapi.CLI_GATE) == kapi.CLI_TURLERI
+
+
+def test_tur_sonucu_alt_tur() -> None:
+    s = _sonuc()
+    assert (s.gate_tur, s.alt_tur) == ("kok", "tr_lemma")
+    s.cli_tur = "benzer-ayet-alim"
+    assert (s.gate_tur, s.alt_tur) == ("benzer_ayet", "alim")
+    govde = kapi.rapor_govdesi(s, _an(10), [])
+    assert govde["xref_gate_tur"] == "benzer_ayet" and govde["xref_gate_alt_tur"] == "alim"
 
 
 # --- PG: xref_gate upsert ------------------------------------------------------------------------
@@ -193,6 +243,7 @@ def conn() -> Iterator[psycopg.Connection]:
 def _gate(conn: psycopg.Connection, **kw: object) -> None:
     arg: dict[str, object] = {
         "tur": "kok",
+        "alt_tur": "tr_lemma",
         "set_sinifi": "silver",
         "set_surumu": "2026-11-13-0123abcd",
         "sonuc": "kaldi",
@@ -207,12 +258,13 @@ def _gate(conn: psycopg.Connection, **kw: object) -> None:
 def test_xref_gate_upsert_ekler_sonra_gunceller(conn: psycopg.Connection) -> None:
     _gate(conn)
     satir = conn.execute(
-        "SELECT tur::text, set_sinifi, set_surumu, sonuc, set_kaynaklari, rapor_sha256,"
+        "SELECT tur::text, alt_tur, set_sinifi, set_surumu, sonuc, set_kaynaklari, rapor_sha256,"
         " data_version, olculdu_at IS NOT NULL FROM icerik.xref_gate"
     ).fetchall()
     assert satir == [
         (
             "kok",
+            "tr_lemma",
             "silver",
             "2026-11-13-0123abcd",
             "kaldi",
@@ -226,13 +278,13 @@ def test_xref_gate_upsert_ekler_sonra_gunceller(conn: psycopg.Connection) -> Non
     sonra = conn.execute("SELECT sonuc, set_surumu, rapor_sha256 FROM icerik.xref_gate").fetchall()
     assert sonra == [
         ("gecti", "2026-11-14-ffffffff", "b" * 64)
-    ]  # ayni (tur, set_sinifi): tek satir
+    ]  # ayni (tur, alt_tur, set_sinifi): tek satir
 
 
-def test_xref_gate_pk_tur_ve_set_sinifi(conn: psycopg.Connection) -> None:
+def test_xref_gate_pk_tur_alt_tur_ve_set_sinifi(conn: psycopg.Connection) -> None:
     _gate(conn, set_sinifi="silver")
     _gate(conn, set_sinifi="sentetik")
-    _gate(conn, tur="iktibas", set_sinifi="sentetik", sonuc="gecti")
+    _gate(conn, tur="iktibas", alt_tur="", set_sinifi="sentetik", sonuc="gecti")
     sayi = conn.execute("SELECT count(*) FROM icerik.xref_gate").fetchone()
     assert sayi is not None and sayi[0] == 3
     sentetik = conn.execute(
@@ -247,4 +299,52 @@ def test_xref_gate_check_kisitlari(conn: psycopg.Connection) -> None:
     conn.rollback()
     with pytest.raises(psycopg.errors.CheckViolation):
         _gate(conn, rapor_sha256="XYZ")
+    conn.rollback()
+
+
+def test_xref_gate_alt_tur_ayri_satir_ve_upsert_yalniz_kendi_satirini_gunceller(
+    conn: psycopg.Connection,
+) -> None:
+    """(tur, alt_tur, set_sinifi) anahtari: kok/benzer_ayet alt turleri ayri satirdir."""
+    _gate(conn, tur="kok", alt_tur="tr_lemma", set_sinifi="silver", sonuc="kaldi")
+    _gate(conn, tur="kok", alt_tur="xref", set_sinifi="altin", sonuc="gecti")
+    _gate(conn, tur="benzer_ayet", alt_tur="sozluksel", set_sinifi="altin", sonuc="kaldi")
+    _gate(conn, tur="benzer_ayet", alt_tur="alim", set_sinifi="altin", sonuc="gecti")
+    _gate(conn, tur="lemma", alt_tur="", set_sinifi="altin", sonuc="gecti")
+    # ayni anahtarla ikinci yazim guncelleme: (benzer_ayet, alim, altin) kaldi olur, digerleri durur
+    _gate(conn, tur="benzer_ayet", alt_tur="alim", set_sinifi="altin", sonuc="kaldi")
+    satirlar = conn.execute(
+        "SELECT tur::text, alt_tur, set_sinifi, sonuc FROM icerik.xref_gate ORDER BY 1, 2, 3"
+    ).fetchall()
+    assert satirlar == [
+        ("benzer_ayet", "alim", "altin", "kaldi"),
+        ("benzer_ayet", "sozluksel", "altin", "kaldi"),
+        ("kok", "tr_lemma", "silver", "kaldi"),
+        ("kok", "xref", "altin", "gecti"),
+        ("lemma", "", "altin", "gecti"),
+    ]
+
+
+def test_xref_gate_alt_tur_check_ihlali(conn: psycopg.Connection) -> None:
+    """Veritabani CHECK'i: kok icin '' ya da 'alim', benzer_ayet icin '' ya da 'xref', lemma icin
+    'tr_lemma' reddedilir (Python dogrulamasi atlanarak dogrudan SQL ile)."""
+    for tur, alt in (
+        ("kok", ""),
+        ("kok", "alim"),
+        ("benzer_ayet", ""),
+        ("benzer_ayet", "xref"),
+        ("lemma", "tr_lemma"),
+        ("atif", "sozluksel"),
+    ):
+        with pytest.raises(psycopg.errors.CheckViolation):
+            conn.execute(
+                kapi.UPSERT,
+                (tur, alt, "silver", "s", "gecti", [], SHA, "d"),
+            )
+        conn.rollback()
+
+
+def test_xref_gate_alt_tur_bos_olmayan_not_null(conn: psycopg.Connection) -> None:
+    with pytest.raises(psycopg.errors.NotNullViolation):
+        conn.execute(kapi.UPSERT, ("kok", None, "silver", "s", "gecti", [], SHA, "d"))
     conn.rollback()

@@ -35,7 +35,12 @@ class SahteBaglanti:
         pass
 
 
-def _sonuc(cli_tur: str, kesinlik: float, sinif: str = "silver") -> TurSonucu:
+def _sonuc(
+    cli_tur: str,
+    kesinlik: float,
+    sinif: str = "silver",
+    olculer: dict[str, float] | None = None,
+) -> TurSonucu:
     gecti = kesinlik >= 0.95
     return TurSonucu(
         cli_tur=cli_tur,
@@ -50,7 +55,7 @@ def _sonuc(cli_tur: str, kesinlik: float, sinif: str = "silver") -> TurSonucu:
             "uretim_komutu": "komut",
         },
         sonuc="gecti" if gecti else "kaldi",
-        olculer={"kesinlik": kesinlik, "duyarlilik": 0.9},
+        olculer=olculer or {"kesinlik": kesinlik, "duyarlilik": 0.9},
         esikler=ESIK,
         esik_sonuclari={"kesinlik": gecti, "duyarlilik": True},
         tahmin_ozeti=f"{kesinlik:.4f}".encode().hex().ljust(64, "0"),
@@ -129,16 +134,24 @@ def test_kapi_kaldi_olsa_bile_cikis_0_rapor_ve_xref_gate(
     r = kapi.rapor_oku(rapor)
     assert r["sonuc"] == "kaldi" and r["tur"] == "kok" and r["olculer"]["kesinlik"] == 0.6
     ((sorgu, parametre),) = baglanti.cagrilar
-    assert "icerik.xref_gate" in sorgu and "ON CONFLICT (tur, set_sinifi)" in sorgu
-    assert parametre[:4] == ("kok", "silver", "2026-11-13-0123abcd", "kaldi")
-    assert parametre[4] == ["kaynak-a"] and parametre[5] == r["rapor_sha256"]
-    assert parametre[6] == r["data_version"]
+    assert "icerik.xref_gate" in sorgu and "ON CONFLICT (tur, alt_tur, set_sinifi)" in sorgu
+    assert parametre[:5] == ("kok", "tr_lemma", "silver", "2026-11-13-0123abcd", "kaldi")
+    assert parametre[5] == ["kaynak-a"] and parametre[6] == r["rapor_sha256"]
+    assert parametre[7] == r["data_version"]
+    assert r["xref_gate_alt_tur"] == "tr_lemma"
 
 
 def test_iktibas_sentetik_set_sinifi_ve_tur_eslemesi(
     dunya: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    siniflar = {"benzer-ayet": "altin", "atif": "sentetik", "iktibas": "sentetik"}
+    siniflar = {
+        "benzer-ayet": "altin",
+        "benzer-ayet-alim": "altin",
+        "kok-baglanti": "altin",
+        "lemma": "altin",
+        "atif": "sentetik",
+        "iktibas": "sentetik",
+    }
     _sahte(
         monkeypatch,
         **{
@@ -148,11 +161,17 @@ def test_iktibas_sentetik_set_sinifi_ve_tur_eslemesi(
     )
     baglanti = SahteBaglanti()
     assert _calistir(dunya, "hepsi", baglanti=baglanti) == cikis.BASARILI
-    turler = [(p[0], p[1]) for _, p in baglanti.cagrilar]
-    assert ("benzer_ayet", "altin") in turler  # tire -> altcizgi
-    assert ("iktibas", "sentetik") in turler  # sentetik sinif yazilir, kapi acmaz
-    assert ("atif", "sentetik") in turler
-    assert len(turler) == 5
+    turler = [(p[0], p[1], p[2]) for _, p in baglanti.cagrilar]
+    # (tur, alt_tur, set_sinifi): her CLI turu kendi alt turunu yazar
+    assert turler == [
+        ("kok", "tr_lemma", "silver"),
+        ("kok", "xref", "altin"),
+        ("lemma", "", "altin"),
+        ("benzer_ayet", "sozluksel", "altin"),  # tire -> altcizgi
+        ("benzer_ayet", "alim", "altin"),
+        ("atif", "", "sentetik"),  # sentetik sinif yazilir, kapi acmaz
+        ("iktibas", "", "sentetik"),
+    ]
 
 
 def test_dry_run_hicbir_sey_yazmaz(
@@ -214,7 +233,7 @@ def test_esikler_tutsa_bile_gerileme_xref_gate_kaldi_yazar_cikis_1(
     assert "gerileme: kesinlik 0.9900 -> 0.9500" in str(son["kaldi_nedeni"])
     assert [g["olcu"] for g in son["gerileme"]] == ["kesinlik"]
     ((_, parametre),) = baglanti.cagrilar
-    assert parametre[3] == "kaldi" and parametre[5] == son["rapor_sha256"]
+    assert parametre[4] == "kaldi" and parametre[6] == son["rapor_sha256"]
     # kaldi rapor referans olmaz; kabul edilmis kosu hala 0,99
     onceki = kapi.onceki_kabul_edilmis(tmp_path / "data", "kok")
     assert onceki is not None and onceki["olculer"]["kesinlik"] == 0.99
@@ -304,7 +323,7 @@ def test_hata_diger_turleri_durdurmaz_cikis_2_yalniz_kaynak_adi(
     assert [p[0] for _, p in baglanti.cagrilar] == ["lemma"]
 
 
-def test_hepsi_sirayla_bes_tur(dunya: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_hepsi_sirayla_yedi_tur(dunya: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     sira: list[str] = []
 
     def kur(ad: str):  # type: ignore[no-untyped-def]
@@ -316,11 +335,37 @@ def test_hepsi_sirayla_bes_tur(dunya: Path, monkeypatch: pytest.MonkeyPatch) -> 
 
     _sahte(monkeypatch, **{t: kur(t) for t in kapi.CLI_TURLERI})
     assert _calistir(dunya, "hepsi") == cikis.BASARILI
-    assert sira == ["kok", "lemma", "benzer-ayet", "atif", "iktibas"]
+    assert sira == [
+        "kok",
+        "kok-baglanti",
+        "lemma",
+        "benzer-ayet",
+        "benzer-ayet-alim",
+        "atif",
+        "iktibas",
+    ]
+
+
+def test_kok_gerilemesi_yalniz_kesinlik_eski_rapordaki_duyarlilik_sayilmaz(
+    dunya: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Onceki kabul edilmis kok raporu duyarlilik de tasiyor (eski bicim); yeni kosu yalniz
+    kesinlik olcer: duyarlilik dususu gerileme sayilmaz (kapi kesinlige baglidir)."""
+    _sahte(
+        monkeypatch,
+        kok=lambda o: _sonuc("kok", 0.97, olculer={"kesinlik": 0.97, "duyarlilik": 0.9}),
+    )
+    assert _calistir(dunya) == cikis.BASARILI
+    _sahte(monkeypatch, kok=lambda o: _sonuc("kok", 0.97, olculer={"kesinlik": 0.97}))
+    assert _calistir(dunya) == cikis.BASARILI
+    son = max((kapi.rapor_oku(p) for p in _raporlar(tmp_path)), key=lambda r: str(r["olculdu_utc"]))
+    assert son["gerileme"] == [] and "kaldi_nedeni" not in son
 
 
 def test_turleri_coz() -> None:
     assert run.turleri_coz("hepsi") == kapi.CLI_TURLERI
+    assert run.turleri_coz("kok-baglanti") == ("kok-baglanti",)
+    assert run.turleri_coz("benzer-ayet-alim") == ("benzer-ayet-alim",)
     assert run.turleri_coz("benzer-ayet") == ("benzer-ayet",)
     with pytest.raises(GirdiHatasi):
         run.turleri_coz("benzer_ayet")

@@ -48,7 +48,8 @@ def test_adim_staged_satirlari_ve_siniflar(d: TrDunya) -> None:
         "tavan": ("onayli_otomatik", "kosullar_saglandi"),
         "dolap": ("onayli_otomatik", "kosullar_saglandi"),
         "emin": ("onayli_otomatik", "kosullar_saglandi"),
-        "pelin": ("onayli_otomatik", "kosullar_saglandi"),
+        # Osmanlica madde kaniti: yapisal ama surum 3 kombinasyonu (tr + ad) disinda
+        "pelin": ("aday", "kanit_kombinasyonu_disi"),
         "kalem": ("aday", "pos_uyusmazligi"),
         "bobin": ("aday", "homograf_madde_celisiyor"),
         "zorba": ("aday", "kok_cakismasi"),
@@ -83,10 +84,10 @@ def test_lemma_satirlari_kanit_kok_ve_siklik(d: TrDunya) -> None:
         "fisto",
     }
     onayli = {a for a, s in lm.items() if s["karar"] == "onayli_otomatik"}
-    assert onayli == {"tavan", "dolap", "emin", "pelin"}
+    assert onayli == {"tavan", "dolap", "emin"}
     for ad in onayli:
         k = lm[ad]["kanit"]
-        assert isinstance(k, dict) and k["politika_surumu"] == "2" and k["kaynaklar"]
+        assert isinstance(k, dict) and k["politika_surumu"] == "3" and k["kaynaklar"]
         assert lm[ad]["root_letters_bw"] is not None
     assert lm["dolap"]["ar_lemma_qac_ref"] == "samal" and lm["tavan"]["ar_lemma_qac_ref"] is None
     assert lm["tavan"]["freq"] == 3
@@ -120,7 +121,7 @@ def test_ayni_girdi_ayni_baytlar_ve_manifest(d: TrDunya) -> None:
     assert any(y.startswith("kaikki.org-dictionary-") for y in yollar)
     dosya = d.veri / "reports"
     yan = [json.loads(p.read_bytes()) for p in dosya.glob("*-tr-roots.json")]
-    assert len(yan) == 2 and yan[0]["istatistik"]["siniflar"]["onayli_otomatik"]["tur"] == 4
+    assert len(yan) == 2 and yan[0]["istatistik"]["siniflar"]["onayli_otomatik"]["tur"] == 3
 
 
 def test_hash_tohumu_manifest_ve_raporda_uyari_cikis_kodu_degismez(

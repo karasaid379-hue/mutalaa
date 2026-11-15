@@ -19,7 +19,8 @@ kullanilmaz.
 
 Dongusellik (K-51 madde 10): set manifestindeki `kanit` kaynaklari uretimin `kanit` kaynaklariyla
 kesisirse `GirdiHatasi` (cikis 2); iletide yalniz kaynak adlari yazilir. Denetim `olcum_turu =
-dogruluk` setlerinde zorunludur; `tutarlilik` ve `motor_testi` muaftir.
+dogruluk` setlerinde zorunludur; `tutarlilik`, `motor_testi` ve `kaynak` muaftir (`kaynak`: set
+uretimin kaynagidir; olculen sey kaynak butunlugudur, dogruluk degil).
 """
 
 import hashlib
@@ -35,12 +36,20 @@ from mutalaa_pipeline.export.ortak import GirdiHatasi
 
 SINIFLAR: Final = ("altin", "silver", "sentetik")
 ROLLER: Final = ("kanit", "sozluk", "arac")
-OLCUM_TURLERI: Final = ("dogruluk", "tutarlilik", "motor_testi")
-DONGUSELLIK_MUAF: Final = ("tutarlilik", "motor_testi")
+OLCUM_TURLERI: Final = ("dogruluk", "tutarlilik", "motor_testi", "kaynak")
+DONGUSELLIK_MUAF: Final = ("tutarlilik", "motor_testi", "kaynak")
 GOLD_KLASORU: Final = "gold"
 MANIFEST_ADI: Final = "manifest.json"
 ORNEKLER_ADI: Final = "ornekler.jsonl"
-SET_ADLARI: Final = ("kok", "lemma", "benzer-ayet", "atif", "iktibas")
+SET_ADLARI: Final = (
+    "kok",
+    "kok-baglanti",
+    "lemma",
+    "benzer-ayet",
+    "benzer-ayet-alim",
+    "atif",
+    "iktibas",
+)
 GELISTIRME_YUZDE: Final = 40
 VARSAYILAN_TOHUM: Final = 20261113
 SURUM_DESENI: Final = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9a-f]{8}")
@@ -148,9 +157,10 @@ def manifest_dongusellik_denetle(
 ) -> None:
     """Dongusellik denetimi `olcum_turu = dogruluk` setlerinde zorunludur.
 
-    `tutarlilik` (QAC lemma tutarliligi) ve `motor_testi` (sentetik set: Arapca dizileri uretimle
-    ayni Tanzil'den betikle alinir, kapi acmaz) turleri muaftir; manifest bunu `olcum_turu` ile
-    belirtir.
+    `tutarlilik` (QAC lemma ve kok tutarliligi), `motor_testi` (sentetik set: Arapca dizileri
+    uretimle ayni Tanzil'den betikle alinir, kapi acmaz) ve `kaynak` (alim kaynakli satirlarin
+    kaynak butunlugu: set uretim kaynaginin kendisidir) turleri muaftir; manifest bunu
+    `olcum_turu` ile belirtir.
     """
     if manifest.get("olcum_turu") in DONGUSELLIK_MUAF:
         return

@@ -38,6 +38,7 @@ from mutalaa_pipeline.qa.uyum import cohen_kappa
 
 IOU_ESIGI: Final = 0.5
 GERILEME_ESIGI: Final = 0.02
+KOK_DUYARLILIK_BILGI_ESIGI: Final = 0.80  # kapi sarti DEGIL; kapsam bilgisi olarak raporlanir
 GECTI: Final = "gecti"
 KALDI: Final = "kaldi"
 
@@ -215,9 +216,13 @@ def gerilemeleri_bul(
 
 # tur -> {olcu adi: alt sinir}; `>=` ile karsilastirilir (Test stratejisi §4 tablosu).
 ESIKLER: Final[Mapping[str, Mapping[str, float]]] = {
-    "kok": {"kesinlik": 0.95, "duyarlilik": 0.80},
+    # kok (tr_lemma): kapi YALNIZ kesinlige baglidir (proje sahibi karari, 15 Kasim 2026: public
+    # guvenligini kesinlik belirler, kapsam degil); duyarlilik kapsam bilgisi olarak raporlanir.
+    "kok": {"kesinlik": 0.95},
+    "kok_baglanti": {"tutarlilik": 1.0},
     "lemma": {"tutarlilik": 1.0},
     "benzer_ayet": {"kesinlik": 0.90},
+    "benzer_ayet_alim": {"kaynak_butunlugu": 1.0},
     "atif": {"kesinlik": 0.98, "duyarlilik": 0.90},
     "iktibas_uzun": {"kesinlik": 0.95, "duyarlilik": 0.85},
     "iktibas_kisa": {"kesinlik": 0.85},

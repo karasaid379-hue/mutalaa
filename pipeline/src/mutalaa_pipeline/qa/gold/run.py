@@ -1,7 +1,9 @@
 """`mutalaa qa gold`: degerlendirme setleri ve kapi olcumu (A18.5; K-51 madde 5, 10-12).
 
-`--type kok|lemma|benzer-ayet|atif|iktibas|hepsi` (hepsi sirayla). `--build` seti (yeniden) uretir
-ve `data/gold/<set>/<surum>/` altina yazar; yoksa var olan son set olculur. `--dry-run` hicbir sey
+`--type kok|kok-baglanti|lemma|benzer-ayet|benzer-ayet-alim|atif|iktibas|hepsi` (hepsi sirayla;
+her tur `xref_gate (tur, alt_tur, set_sinifi)` satirina yazar: bkz. `kapi.CLI_GATE`).
+`--build` seti (yeniden) uretir ve `data/gold/<set>/<surum>/` altina yazar; yoksa var olan son
+set olculur. `--dry-run` hicbir sey
 yazmaz (set, rapor, `xref_gate`): olcumu yapar ve ozeti yazdirir.
 
 Her tur icin: set (manifest dogrulamali) -> dongusellik denetimi -> olcum -> kapi karari -> gerileme
@@ -43,7 +45,16 @@ from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest import quranwbw
 from mutalaa_pipeline.ingest.meal_ortak import gelen_dizini, gelen_tarihi_coz
 from mutalaa_pipeline.komut_ortak import komutu_yurut
-from mutalaa_pipeline.qa.gold import araclar, benzer, kok, lemma, sentetik, setler
+from mutalaa_pipeline.qa.gold import (
+    alim,
+    araclar,
+    benzer,
+    kok,
+    kok_baglanti,
+    lemma,
+    sentetik,
+    setler,
+)
 from mutalaa_pipeline.qa.gold import motor as motor_modulu
 from mutalaa_pipeline.qa.gold.kapi import (
     CLI_TURLERI,
@@ -78,7 +89,7 @@ KARAR_TUTMADI: Final = (
 
 
 def turleri_coz(tur: str) -> tuple[str, ...]:
-    """`--type` degeri; `hepsi` sirayla bes tur. Gecersiz deger `GirdiHatasi`."""
+    """`--type` degeri; `hepsi` sirayla yedi tur. Gecersiz deger `GirdiHatasi`."""
     if tur == "hepsi":
         return CLI_TURLERI
     if tur not in CLI_TURLERI:
@@ -152,6 +163,31 @@ def lemma_seti_uret(ctx: RunContext) -> tuple[dict[str, object], list[dict[str, 
     surum = _surum(kayitlar, lemma.KAYNAK_QAC)
     ornekler = lemma.ornekleri_kur(lemma.qac_ayet_kumeleri(kelimeler), surum)
     return lemma.taslak(surum), ornekler
+
+
+def kok_baglanti_seti_uret(ctx: RunContext) -> tuple[dict[str, object], list[dict[str, object]]]:
+    """`(manifest taslagi, ornekler)`: QAC ayet basina kok kumeleri (`lemma` seti kalibi)."""
+    kayitlar = ctx.require_sources(kok_baglanti.KAYNAK_QAC)
+    qac = son_calisma(ctx, kok_baglanti.KAYNAK_QAC, ANCHOR_ADIMI, ipucu="once: enrich morphology")
+    saglam_olmali(ctx, qac)
+    kelimeler = [s.veri for s in kelimeler_oku(qac, "qac words.jsonl")]
+    surum = _surum(kayitlar, kok_baglanti.KAYNAK_QAC)
+    ornekler = kok_baglanti.ornekleri_kur(lemma.qac_ayet_kumeleri(kelimeler), surum)
+    return kok_baglanti.taslak(surum), ornekler
+
+
+def alim_seti_uret(
+    ctx: RunContext, conn: psycopg.Connection
+) -> tuple[dict[str, object], list[dict[str, object]]]:
+    """`(manifest taslagi, ornekler)`: QurSim cift kumesi (yalniz SS, SV, TS, TV, Label)."""
+    kayitlar = ctx.require_sources(alim.KAYNAK_QURSIM)
+    sirasi = benzer.ayet_sirasi_oku(conn)
+    capa = {v: k for k, v in sirasi.items()}
+    q_yol, _ = benzer.gelen_dosyasi(ctx.veri_kok, benzer.KAYNAK_QURSIM, benzer.QURSIM_DOSYASI)
+    qursim, q_sayac = benzer.qursim_cifti_oku(q_yol, sirasi)
+    surum = _surum(kayitlar, alim.KAYNAK_QURSIM)
+    ornekler = alim.ornekleri_kur(qursim, capa, surum)
+    return alim.taslak(surum, {"qursim": q_sayac, "ornek": len(ornekler)}), ornekler
 
 
 def benzer_seti_uret(
@@ -264,6 +300,38 @@ def olc_kok(o: Oturum) -> TurSonucu:
         seti = kok.kok_seti_oku(o.ctx.veri_kok)
     tahminler = kok.tahminleri_oku(o.conn)
     return kok.kok_olc(seti.manifest, seti.ornekler, seti.evren, tahminler)
+
+
+def olc_kok_baglanti(o: Oturum) -> TurSonucu:
+    if o.build:
+        taslak, ornekler = kok_baglanti_seti_uret(o.ctx)
+        manifest = set_kaydet(o.ctx, "kok-baglanti", taslak, ornekler)
+    else:
+        manifest, ornekler, _ = setler.set_oku(o.ctx.veri_kok, "kok-baglanti")
+    return kok_baglanti.kok_baglanti_olc(
+        manifest,
+        ornekler,
+        kok_baglanti.db_ayet_kok_kimlikleri(o.conn),
+        kok_baglanti.kok_xref_satirlari(o.conn),
+        kok_baglanti.kok_harfleri(o.conn),
+    )
+
+
+def olc_benzer_alim(o: Oturum) -> TurSonucu:
+    if o.build:
+        taslak, ornekler = alim_seti_uret(o.ctx, o.conn)
+        manifest = set_kaydet(o.ctx, "benzer-ayet-alim", taslak, ornekler)
+    else:
+        manifest, ornekler, _ = setler.set_oku(o.ctx.veri_kok, "benzer-ayet-alim")
+    satirlar, diger = alim.alim_satirlari(o.conn)
+    return alim.alim_olc(
+        manifest,
+        ornekler,
+        satirlar,
+        benzer.ayet_sirasi_oku(o.conn),
+        alim.kayitli_kaynaklar(o.conn),
+        alim_olmayan_satir=diger,
+    )
 
 
 def olc_lemma(o: Oturum) -> TurSonucu:
@@ -461,8 +529,10 @@ def hazir_araclar(
 
 TUR_ISLEVLERI: Final[Mapping[str, Callable[[Oturum], TurSonucu]]] = {
     "kok": olc_kok,
+    "kok-baglanti": olc_kok_baglanti,
     "lemma": olc_lemma,
     "benzer-ayet": olc_benzer,
+    "benzer-ayet-alim": olc_benzer_alim,
     "atif": olc_atif,
     "iktibas": olc_iktibas,
 }
@@ -494,6 +564,7 @@ def sonuclandir(o: Oturum, s: TurSonucu) -> None:
         xref_gate_yaz(
             o.conn,
             tur=s.gate_tur,
+            alt_tur=s.alt_tur,
             set_sinifi=s.set_sinifi,
             set_surumu=s.set_surumu,
             sonuc=s.sonuc,

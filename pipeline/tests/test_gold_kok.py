@@ -241,9 +241,11 @@ def test_kok_olc_kesinlik_duyarlilik_elle_hesap() -> None:
     # dondurulmus: 4 ornek, 3 tahminli, 2 dogru -> kesinlik 2/3; duyarlilik 2/4
     kapi = s.ayrintilar["dondurulmus_kapi_olcumu"]
     assert kapi["ornek"] == 4 and kapi["tahminli"] == 3 and kapi["dogru"] == 2  # type: ignore[index]
-    assert s.olculer["kesinlik"] == pytest.approx(2 / 3, abs=1e-6)
-    assert s.olculer["duyarlilik"] == pytest.approx(0.5, abs=1e-6)
-    assert s.sonuc == "kaldi" and s.esik_sonuclari == {"kesinlik": False, "duyarlilik": False}
+    assert s.olculer == {"kesinlik": pytest.approx(2 / 3, abs=1e-6)}  # gerileme yalniz kesinlikte
+    bilgi = s.ayrintilar["kapsam_bilgisi"]
+    assert bilgi["duyarlilik"] == pytest.approx(0.5, abs=1e-6)  # type: ignore[index]
+    assert bilgi["kapi_sarti"] is False and bilgi["bilgi_esigi"] == 0.80  # type: ignore[index]
+    assert s.sonuc == "kaldi" and s.esik_sonuclari == {"kesinlik": False}
     assert s.cli_tur == "kok" and s.gate_tur == "kok" and s.set_sinifi == "silver"
     assert s.olculen_ornek == 4
     # referanssiz tahminler ayri sayilir, olcume katilmaz
@@ -267,8 +269,32 @@ def test_kok_olc_kapi_gecer() -> None:
         don[3]: _tahmin(don[3], "k3x"),
     }
     s = kok_olc(manifest, ornekler, evren, tahminler)
-    assert s.olculer["kesinlik"] == 1.0 and s.olculer["duyarlilik"] == 1.0
+    assert s.olculer == {"kesinlik": 1.0}
+    assert s.ayrintilar["kapsam_bilgisi"]["duyarlilik"] == 1.0  # type: ignore[index]
     assert s.sonuc == "gecti"
+
+
+def test_kok_kapisi_yalniz_kesinlige_baglidir_duyarlilik_sonucu_etkilemez() -> None:
+    """Kesinlik 1,0 ama duyarlilik 0,25 (bilgi esigi 0,80'in cok altinda): kapi gecer; duyarlilik
+    `kapsam_bilgisi` alaninda bilgi olarak durur. Kesinlik esigin altindaysa duyarlilik 1,0 olsa da
+    kaldi."""
+    manifest, ornekler, evren = _olcum_dunyasi()
+    don = [str(o["id"]) for o in ornekler[:4]]
+    dusuk_duyarlilik = {don[0]: _tahmin(don[0], "k1x")}  # 1 tahmin, dogru; 3 ornek tahminsiz
+    s = kok_olc(manifest, ornekler, evren, dusuk_duyarlilik)
+    assert s.olculer == {"kesinlik": 1.0}
+    assert s.ayrintilar["kapsam_bilgisi"]["duyarlilik"] == pytest.approx(0.25)  # type: ignore[index]
+    assert s.ayrintilar["kapsam_bilgisi"]["bilgi_esigi_tuttu"] is False  # type: ignore[index]
+    assert s.sonuc == "gecti" and s.esik_sonuclari == {"kesinlik": True}
+    # kesinlik 0,5, duyarlilik 1,0 ... kesinlik esigin altinda: kaldi
+    yanlis = {
+        don[0]: _tahmin(don[0], "k1x"),
+        don[1]: _tahmin(don[1], "k3x"),  # yanlis
+        don[2]: _tahmin(don[2], "k2x"),
+        don[3]: _tahmin(don[3], "k3x"),
+    }
+    t = kok_olc(manifest, ornekler, evren, yanlis)
+    assert t.sonuc == "kaldi" and t.olculer["kesinlik"] < 0.95
 
 
 def test_kok_olc_kapi_yalniz_otomatik_onayli_tahminleri_olcer() -> None:
@@ -349,18 +375,19 @@ def test_kok_dongusellik_kaikki_ile_olculen_set_hata_yalniz_ad() -> None:
     kok_olc(manifest, ornekler, evren, {"x": _tahmin("x", "k1x", kaynak="kaikki-tr")})
 
 
-def test_daraltma_onerisi_ozellige_gore_kesinlik_elle_hesap() -> None:
-    # 30 tahmin "ikisi" (hepsi dogru), 30 tahmin "kok_harfleri" (15 dogru): oneri yalniz "ikisi"
+def test_daraltma_onerisi_yalniz_gelistirme_parcasi_ve_ozellige_gore_kesinlik() -> None:
+    # 300 lemma: ilk 150 "ikisi" (hepsi dogru), son 150 "kok_harfleri" (yarisi dogru). Dondurulmus
+    # parca (bolme) hesaba GIRMEZ: sayilar yalniz gelistirme lemmalarindan gelir.
     evren: dict[str, dict[str, object]] = {}
     tahminler: dict[str, Tahmin] = {}
-    for i in range(60):
+    for i in range(300):
         ad = f"t{i}"
         evren[ad] = {
             "lemma": ad,
             "toplam_kelime": 20,
             "referans_kokler": [{"letters_bw": "k1x", "destek": 5}],
         }
-        ikisi = i < 30
+        ikisi = i < 150
         dogru = ikisi or i % 2 == 0
         tahminler[ad] = Tahmin(
             ad,
@@ -371,11 +398,25 @@ def test_daraltma_onerisi_ozellige_gore_kesinlik_elle_hesap() -> None:
             frozenset({"tr:noun:etymology_templates.root"}),
         )
     tahminler["referanssiz"] = Tahmin("referanssiz", "k1x", "otomatik", frozenset({"kaikki-tr"}))
+    gel = [i for i in range(300) if setler.bolme("kok", f"t{i}") == setler.GELISTIRME]
+    gel_ikisi = [i for i in gel if i < 150]
+    gel_harf = [i for i in gel if i >= 150]
+    assert 0 < len(gel) < 300  # bolme gercekten ikiye ayirir
     sonuc = kok.daraltma_onerisi(tahminler, evren)
     tablo = sonuc["ozellige_gore_kesinlik"]
-    assert tablo["qac_eslesme"]["ikisi"] == {"tahmin": 30, "dogru": 30, "kesinlik": 1.0}  # type: ignore[index]
-    assert tablo["qac_eslesme"]["kok_harfleri"]["kesinlik"] == 0.5  # type: ignore[index]
-    assert tablo["root_sablonu"]["var"]["tahmin"] == 60  # type: ignore[index]  # referanssiz dahil degil
+    assert tablo["qac_eslesme"]["ikisi"] == {  # type: ignore[index]
+        "tahmin": len(gel_ikisi),
+        "dogru": len(gel_ikisi),
+        "kesinlik": 1.0,
+    }
+    assert tablo["qac_eslesme"]["kok_harfleri"]["tahmin"] == len(gel_harf)  # type: ignore[index]
+    assert tablo["qac_eslesme"]["kok_harfleri"]["dogru"] == sum(1 for i in gel_harf if i % 2 == 0)  # type: ignore[index]
+    # dondurulmus lemma hicbir grupta sayilmaz
+    assert sum(v["tahmin"] for v in tablo["qac_eslesme"].values()) == len(gel)  # type: ignore[union-attr]
+    assert tablo["root_sablonu"]["var"]["tahmin"] == len(gel)  # type: ignore[index]  # referanssiz yok
     adaylar = sonuc["esigi_gecen_gruplar_en_az_20_tahmin"]
-    assert adaylar == [{"ozellik": "qac_eslesme", "deger": "ikisi", "tahmin": 30, "kesinlik": 1.0}]
+    assert adaylar == [
+        {"ozellik": "qac_eslesme", "deger": "ikisi", "tahmin": len(gel_ikisi), "kesinlik": 1.0}
+    ]
     assert "qac_eslesme=ikisi" in str(sonuc["oneri"])
+    assert "dondurulmus" in str(sonuc["olcut"])

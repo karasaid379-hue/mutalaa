@@ -187,8 +187,12 @@ def test_gerileme_artis_ve_ortak_olmayan_olcu_kirmaz() -> None:
 
 
 def test_esik_tablosu_test_stratejisi_4() -> None:
-    assert olcum.ESIKLER["kok"] == {"kesinlik": 0.95, "duyarlilik": 0.80}
+    # kok kapisi yalniz kesinlige baglidir (15 Kasim 2026); duyarlilik 0,80 yalniz bilgi esigidir
+    assert olcum.ESIKLER["kok"] == {"kesinlik": 0.95}
+    assert olcum.KOK_DUYARLILIK_BILGI_ESIGI == 0.80
+    assert olcum.ESIKLER["kok_baglanti"] == {"tutarlilik": 1.0}
     assert olcum.ESIKLER["lemma"] == {"tutarlilik": 1.0}
+    assert olcum.ESIKLER["benzer_ayet_alim"] == {"kaynak_butunlugu": 1.0}
     assert olcum.ESIKLER["benzer_ayet"] == {"kesinlik": 0.90}
     assert olcum.ESIKLER["atif"] == {"kesinlik": 0.98, "duyarlilik": 0.90}
     assert olcum.ESIKLER["iktibas_uzun"] == {"kesinlik": 0.95, "duyarlilik": 0.85}
@@ -197,13 +201,11 @@ def test_esik_tablosu_test_stratejisi_4() -> None:
 
 def test_kapi_karari_esik_ve_sinir() -> None:
     esik = olcum.ESIKLER["kok"]
-    assert olcum.kapi_karari(esik, {"kesinlik": 0.95, "duyarlilik": 0.80}) == "gecti"  # esit
+    assert olcum.kapi_karari(esik, {"kesinlik": 0.95}) == "gecti"  # esit
     assert olcum.kapi_karari(esik, {"kesinlik": 0.9499, "duyarlilik": 0.99}) == "kaldi"
-    assert olcum.kapi_karari(esik, {"kesinlik": 0.99, "duyarlilik": 0.7999}) == "kaldi"
-    assert olcum.esik_degerlendir(esik, {"kesinlik": 0.99, "duyarlilik": 0.5}) == {
-        "kesinlik": True,
-        "duyarlilik": False,
-    }
+    # duyarlilik sonucu etkilemez: dusuk duyarlilikla da gecer (kapsam bilgisi, kapi sarti degil)
+    assert olcum.kapi_karari(esik, {"kesinlik": 0.99, "duyarlilik": 0.0}) == "gecti"
+    assert olcum.esik_degerlendir(esik, {"kesinlik": 0.99, "duyarlilik": 0.5}) == {"kesinlik": True}
 
 
 def test_kapi_karari_lemma_yuzde_yuz() -> None:

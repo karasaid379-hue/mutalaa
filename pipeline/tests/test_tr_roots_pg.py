@@ -196,12 +196,12 @@ def test_ilk_yukleme_lemma_review_indeks_ve_formlar(d: TrDunya, conn: psycopg.Co
         ("kalem", "aday", None),
         ("kelin", "aday", None),
         ("morta", "aday", None),
-        ("pelin", "onayli", "otomatik"),
+        ("pelin", "aday", None),  # Osmanlica madde kaniti: surum 3 kombinasyonu disi (aday)
         ("tavan", "onayli", "otomatik"),
         ("zorba", "aday", None),
     ]  # K-51 madde 9: kok onerisi olmayan adaylar da satir ve editor kuyrugu alir
     assert s["lemma_eklenen"] == 10 and s["lemma_aday_kok_onerisiz_eklenen"] == 4
-    assert s["span_hata"] == 0 and s["onayli_lemma"] == 4
+    assert s["span_hata"] == 0 and s["onayli_lemma"] == 3
 
     kimlik, durum, yol, koken, kok, ar, etim, kanit, freq, kaynak = tr_lemma(conn, "dolap")
     assert (durum, yol, koken, kaynak, etim, freq) == (
@@ -214,7 +214,7 @@ def test_ilk_yukleme_lemma_review_indeks_ve_formlar(d: TrDunya, conn: psycopg.Co
     )
     assert kok == ROOT_ID["Sml"] and ar == AR_ID["samal"]
     assert isinstance(kanit, dict) and kanit["qac"]["root_id"] == kok  # type: ignore[index]
-    assert kanit["qac"]["ar_lemma_id"] == ar and kanit["politika_surumu"] == "2"  # type: ignore[index]
+    assert kanit["qac"]["ar_lemma_id"] == ar and kanit["politika_surumu"] == "3"  # type: ignore[index]
     tavan = tr_lemma(conn, "tavan")
     assert tavan[4] == ROOT_ID["bnr"] and tavan[5] is None and tavan[6] is False
     # aday: kok onerisi lemma satirinda DEGIL (review ve kanit icinde)
@@ -324,9 +324,16 @@ def test_review_yalniz_esigi_gecen_adaya_acilir(d: TrDunya, conn: psycopg.Connec
         "SELECT hedef_tablo, hedef_anahtar, alan, eylem, durum::text, koken::text, oneren, guven,"
         " onceki, onerilen FROM icerik.review"
     ).fetchall()
-    assert len(satirlar) == 1  # kalem (siklik 3); bobin ve 4 oneri-siz aday siklik 1 < 2
-    tablo, anahtar, alan, eylem, durum, koken, oneren, guven, onceki, onerilen = satirlar[0]
+    # kalem (siklik 3) ve pelin (siklik 2, kanit kombinasyonu disi); bobin ve 3 oneri-siz aday
+    # siklik 1 < 2
+    assert len(satirlar) == 2
+    pelin_id = tr_lemma(conn, "pelin")[0]
+    (pelin_satiri,) = [x for x in satirlar if x[1] == str(pelin_id)]
+    assert pelin_satiri[9]["neden"] == "kanit_kombinasyonu_disi"
+    assert pelin_satiri[9]["root_id"] == ROOT_ID["Sml"]  # tek kok onerisi editore tasinir
     kalem_id = tr_lemma(conn, "kalem")[0]
+    (kalem_satiri,) = [x for x in satirlar if x[1] == str(kalem_id)]
+    tablo, anahtar, alan, eylem, durum, koken, oneren, guven, onceki, onerilen = kalem_satiri
     assert (tablo, anahtar, alan, eylem) == ("lemma", str(kalem_id), "kok_eslemesi", "oner")
     assert (durum, koken, oneren, guven, onceki) == ("acik", "hat", "hat", None, None)
     assert onerilen["root_id"] == ROOT_ID["bnr"] and onerilen["ar_lemma_id"] is None
@@ -343,13 +350,13 @@ def test_review_yalniz_esigi_gecen_adaya_acilir(d: TrDunya, conn: psycopg.Connec
 def test_tr_root_index_aralik_hash_ve_guncel_metin(d: TrDunya, conn: psycopg.Connection) -> None:
     tohumla(conn)
     assert hepsi(d, conn) == 0
-    assert sayilar(d)["tri_eklenen"] == 10  # tavan 3, dolap 3, emin 2, pelin 2
+    assert sayilar(d)["tri_eklenen"] == 8  # tavan 3, dolap 3, emin 2 (pelin aday: indekse girmez)
     satirlar = conn.execute(
         "SELECT t.anchor, t.span_start, t.span_end, t.root_id, t.tr_lemma_id, t.etymological_only,"
         " t.unit_hash, u.metin, u.content_hash, l.text_clean FROM icerik.tr_root_index t"
         " JOIN icerik.unit u ON u.anchor = t.anchor JOIN icerik.lemma l ON l.id = t.tr_lemma_id"
     ).fetchall()
-    assert len(satirlar) == 10
+    assert len(satirlar) == 8
     for _capa, bas, son, kok, _lemma_id, etim, ozet, metin, tam_ozet, lemma in satirlar:
         assert 0 <= bas < son <= len(metin)  # yari acik, metin uzunlugu icinde
         assert lower_turkish(metin[bas:son]) == lemma  # kod noktasi dilimi lemmanin bicimi
@@ -379,7 +386,6 @@ def test_tr_form_onayli_lemmalarin_bicimleri(d: TrDunya, conn: psycopg.Connectio
     assert [tuple(r) for r in satirlar] == [
         ("dolap", "dolap", 3, "dolap"),
         ("emin", "emin", 2, "emin"),
-        ("pelin", "pelin", 2, "pelin"),
         ("tavan", "tavan", 3, "tavan"),
     ]
 
@@ -415,7 +421,7 @@ def test_ikinci_yukleme_sifir_degisiklik(d: TrDunya, conn: psycopg.Connection) -
         "form_guncellenen",
     ):
         assert s[ad] == 0, ad
-    assert s["tri_degismeyen"] == 10 and s["form_degismeyen"] == 4
+    assert s["tri_degismeyen"] == 8 and s["form_degismeyen"] == 3
     assert goruntu(conn) == ilk
 
 
@@ -439,6 +445,42 @@ def _kaikki_degistir(d: TrDunya, *, tavan_kanitsiz: bool = False, bobin_tek: boo
     if bobin_tek:
         tr = [s for s in tr if not (s["word"] == "bobin" and not s["etymology_templates"])]
     kaikki_yaz(d, tr, kaikki_ota_satirlari())
+
+
+def test_surum_2_otomatik_onayi_kombinasyon_disiysa_surum_3te_adaya_doner(
+    d: TrDunya, conn: psycopg.Connection
+) -> None:
+    """Surum 2 ile otomatik onaylanmis ama kanit kombinasyonu (tr + ad) disindaki esleme (Osmanlica
+    madde kaniti) surum 3 yuklemesinde `aday` olur, onay yolu temizlenir ve review acilir."""
+    tohumla(conn)
+    assert hepsi(d, conn) == 0
+    pelin = tr_lemma(conn, "pelin")
+    assert pelin[1] == "aday"
+    # surum 2 durumunu kur: otomatik onayli, review yok
+    conn.execute(
+        "UPDATE icerik.lemma SET status = 'onayli', onay_yolu = 'otomatik', root_id = %s,"
+        " kanit = jsonb_set(kanit, '{politika_surumu}', '\"2\"')"
+        " WHERE lang = 'tr' AND text_clean = 'pelin'",
+        (ROOT_ID["Sml"],),
+    )
+    conn.execute("DELETE FROM icerik.review WHERE hedef_anahtar = %s", (str(pelin[0]),))
+    assert hepsi(d, conn) == 0
+    simdi = tr_lemma(conn, "pelin")
+    assert simdi[1] == "aday" and simdi[2] is None
+    assert simdi[7]["neden"] == "kanit_kombinasyonu_disi"  # type: ignore[index]
+    assert simdi[7]["politika_surumu"] == "3"  # type: ignore[index]
+    s = sayilar(d)
+    assert s["lemma_adaya_donen"] == 1 and s["review_eklenen"] == 1
+    review = conn.execute(
+        "SELECT onceki, onerilen, durum::text FROM icerik.review WHERE hedef_anahtar = %s",
+        (str(pelin[0]),),
+    ).fetchall()
+    assert len(review) == 1 and review[0][2] == "acik"
+    assert review[0][1]["neden"] == "kanit_kombinasyonu_disi"
+    assert review[0][1]["root_id"] == ROOT_ID["Sml"]  # tek kok onerisi editore tasinir
+    # ikinci kosu: degisiklik yok
+    assert hepsi(d, conn) == 0
+    assert sayilar(d)["lemma_adaya_donen"] == 0 and sayilar(d)["review_eklenen"] == 0
 
 
 def test_editor_satirina_hic_dokunulmaz(d: TrDunya, conn: psycopg.Connection) -> None:
@@ -525,7 +567,7 @@ def test_ayni_hedef_icin_herhangi_durumda_review_varsa_yenisi_acilmaz(
         (durum,),
     )
     assert hepsi(d, conn) == 0
-    assert say(conn, "SELECT count(*) FROM icerik.review WHERE hedef_tablo = 'lemma'") == 1
+    assert say(conn, "SELECT count(*) FROM icerik.review WHERE hedef_tablo = 'lemma'") == 2
     assert sayilar(d)["review_eklenen"] == 0
 
 
@@ -586,7 +628,7 @@ def test_g_cap_uzantisi_metin_disi_ve_birim_yok_ihlallerini_yakalar(
     assert hepsi(d, conn) == 0
     conn.execute(
         "UPDATE icerik.unit SET metin = 'Deneme', content_hash = %s"
-        " WHERE anchor = 'meal:elmalili:1:2'",
+        " WHERE anchor = 'meal:elmalili-sade:1:2'",
         (content_hash("Deneme"),),
     )
     assert span_hatalari(conn)["metin_disi"] >= 1
