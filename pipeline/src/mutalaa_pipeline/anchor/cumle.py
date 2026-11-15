@@ -1,5 +1,5 @@
 # ruff: noqa: RUF001
-"""Kural tabanli cumle ayirici (K-51 madde 8, BC-48).
+"""Kural tabanli cumle ayirici (K-52 madde 8, BC-48).
 
 Bir paragraf metnini cumlelere boler ve her cumle icin Unicode kod noktasi araligi
 `[bas, son)` verir (yari acik; Capa semasi bolum 8). Aralik cumlenin ilk bosluk olmayan

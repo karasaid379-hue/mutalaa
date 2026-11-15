@@ -56,7 +56,7 @@ public sealed record RisaleBookApproveBody(string? Gerekce, bool? OrnekOkumaYapi
 public sealed record RisaleBookApproveResult(string Kitap, long ReviewId, int OnaylananBirimSayisi, string Ozet);
 
 /// <summary>
-/// Risale kitap uclari (K-51 madde 11). Okuma (liste, ayrinti) editor; kitabi toplu onaylama yalniz admin. Onay kurali
+/// Risale kitap uclari (K-52 madde 11). Okuma (liste, ayrinti) editor; kitabi toplu onaylama yalniz admin. Onay kurali
 /// <c>Mutalaa.Domain.Reviews.RisaleBookApproval</c>'dadir; burada katalog cozumu, If-Match, tek islem ve yazma vardir. Ikinci onay kurali
 /// Risale'ye uygulanmaz (K-48: yalniz meal ve tefsir).
 /// </summary>

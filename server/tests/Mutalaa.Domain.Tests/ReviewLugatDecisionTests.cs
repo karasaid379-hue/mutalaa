@@ -8,7 +8,7 @@ using static Mutalaa.Domain.Tests.Support.ReviewFixtures;
 namespace Mutalaa.Domain.Tests;
 
 /// <summary>
-/// Lugat maddesi incelemesi (K-51 madde 9 ve 10; K-50 madde 6 deseni): hedef anahtari, Duzenle ve onayla, bos tanimla onay yok,
+/// Lugat maddesi incelemesi (K-52 madde 9 ve 10; K-50 madde 6 deseni): hedef anahtari, Duzenle ve onayla, bos tanimla onay yok,
 /// anlam basvurusunun hedefe uygulanmamasi. Sentetik basliksozler; Turk kulturunde de calisir.
 /// </summary>
 public class ReviewLugatDecisionTests
@@ -193,7 +193,7 @@ public class ReviewLugatDecisionTests
     [Fact]
     public void Approval_without_a_tanim_is_unprocessable_even_when_a_reference_meaning_is_proposed()
     {
-        // K-51 madde 10: onerilen.anlam_basvuru salt basvurudur; tanim olarak onaylanmaz.
+        // K-52 madde 10: onerilen.anlam_basvuru salt basvurudur; tanim olarak onaylanmaz.
         Assert.Equal(DomainErrorCodes.IncelemeDesteklenmiyor, CodeOf(() => ReviewDecisions.Approve(LugatReview(), Request(), Row())));
     }
 

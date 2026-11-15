@@ -1,4 +1,4 @@
-"""Risale ayet atif dizini QA kapilari (A20.7b; K-51 madde 13): `risale-atif-dizini`.
+"""Risale ayet atif dizini QA kapilari (A20.7b; K-52 madde 13): `risale-atif-dizini`.
 
 Kapi islevleri bellekteki `AtifGirdisi` uzerinde calisir (`qa/run_risale_atif.py` yukler).
 Bulgular ASCII ve kisadir: yalniz satir numarasi, capa, sayi ve alan adi tasir; metin asla.

@@ -1,4 +1,4 @@
-"""Risale kaynaklari: tek kayit modulu (A20.1, K-51 madde 2).
+"""Risale kaynaklari: tek kayit modulu (A20.1, K-52 madde 2).
 
 Kaynak kimligine bagdastiriciyi, kilit dosyasini ve kapi kumesini eslestiren TEK yerdir; `cli.py`
 (ingest), `qa/run.py` (`qa run` yonlendirmesi) bu modulden turer. Modul hafiftir (yalniz standart
@@ -6,7 +6,7 @@ kitaplik): `qa` paketi onu ice aktarabilir.
 
     risale-asil-nusha   Diyanet "asil nusha" (GitHub zip): KARSILASTIRMA ve dogrulama verisi.
                         `data/staged` altinda kalir; `export pg` ile veritabanina YUKLENMEZ
-                        (K-51 madde 2: birincil metin RNK'dir).
+                        (K-52 madde 2: birincil metin RNK'dir).
 
     risale-rnk-metin    RNK Neşriyat `txt` + `json` (A20.1b): BIRINCIL metin; bagdastirici
                         `risale_rnk_kaynaklari`. `data/staged` birimleri `export pg` ile
@@ -16,7 +16,7 @@ kitaplik): `qa` paketi onu ice aktarabilir.
                         normalize, anchor ve qa `ingest/risale_ornek.py`, `adimlar/risale_ornek.py`
                         ve `qa/run_risale_ornek.py` modullerindedir (`yukleme = True`).
 
-    risale-baski-rnk    RNK baski sayfa esleme (A20.3, K-51 madde 6 ve 7): `tur = "baski"`. Bir
+    risale-baski-rnk    RNK baski sayfa esleme (A20.3, K-52 madde 6 ve 7): `tur = "baski"`. Bir
                         INGEST kaynagi degildir (`KAYNAKLAR`da yoktur): `risale-rnk-metin`
                         zincirinden `anchor --source risale-baski-rnk` adimiyla `page_map`
                         satirlari uretir; `export pg` onlari yukler (`export/pg_risale_sayfa.py`).

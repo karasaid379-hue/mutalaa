@@ -1,4 +1,4 @@
--- risale-dizin paketinin lugat tablosu (Icerik paketleri 3.4; K-51 madde 9, 10 ve 14). Basliksoz kaynaktaki baytlarla; tanim_tr lugat kaynagindan gelen
+-- risale-dizin paketinin lugat tablosu (Icerik paketleri 3.4; K-52 madde 9, 10 ve 14). Basliksoz kaynaktaki baytlarla; tanim_tr lugat kaynagindan gelen
 -- (origin 'kaynak', bayt bayt) ya da editorun yazdigi (origin 'editor', NFC) tanimdir (tanimsiz aday icin NULL; onayli maddede doludur). Ayni basliksoz
 -- farkli kaynaktan ve/veya farkli anlam_no ile birden cok satir olabilir: anahtar (basliksoz, kaynak, anlam_no); kaynak kaynagin source_id'sidir.
 -- status yalniz 'onayli' ya da 'aday'dir: aday yalniz dev ve internal paketlerinde bulunur ve uygulamada "dogrulanmamis" isaretini status sutunundan

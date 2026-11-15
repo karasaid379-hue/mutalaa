@@ -96,7 +96,7 @@ function Snapshot({ review }: { review: ReviewDetail }) {
 
 /**
  * The reference data of the candidate (`onerilen`: frequency, books, dictionary meanings), labelled "Başvuru
- * (onaysız)". It is shown and never applied: it is not offered as the definition (K-51 madde 10).
+ * (onaysız)". It is shown and never applied: it is not offered as the definition (K-52 madde 10).
  */
 function Reference({ review }: { review: ReviewDetail }) {
   const headingId = useId();
@@ -179,7 +179,7 @@ function Origin({ review }: { review: ReviewDetail }) {
 }
 
 /**
- * The card of one lügat madde review (`lugat_madde` + `tanim_tr`; K-51 madde 9, 10 and 14): the madde as stored (source name,
+ * The card of one lügat madde review (`lugat_madde` + `tanim_tr`; K-52 madde 9, 10 and 14): the madde as stored (source name,
  * meaning number, definition and origin badge), the reference data (labelled "Başvuru (onaysız)", never approved as the
  * definition), the origin and the decision form: a definition that came from the source is approved unchanged ("Onayla")
  * or edited ("Düzenle ve onayla"); a madde without one needs the definition the editor writes.

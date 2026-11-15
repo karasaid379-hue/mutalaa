@@ -1,4 +1,4 @@
-"""Diyanet Obsidian markdown ayristirmasi (A20.1, K-51 madde 2): yapi bilgisi, metin DEGIL.
+"""Diyanet Obsidian markdown ayristirmasi (A20.1, K-52 madde 2): yapi bilgisi, metin DEGIL.
 
 Birim METNI `txt` satirlarindan gelir; bu modul yalniz markdown'un tasidigi ek bilgiyi cikarir:
 

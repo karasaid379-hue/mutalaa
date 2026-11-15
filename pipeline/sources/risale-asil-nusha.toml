@@ -1,4 +1,4 @@
-# A06 (2026-10-26) · A20.0 (2026-11-12) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3 · karar: K-51
+# A06 (2026-10-26) · A20.0 (2026-11-12) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3 · karar: K-52
 slug = "risale-asil-nusha"
 tur = "risale"
 baslik = "Diyanet \"asıl nüsha\" (karşılaştırma ve doğrulama verisi)"
@@ -8,7 +8,7 @@ provider = "github"
 kaynak_url = "https://github.com/alitekdemir/Risale-i-Nur-Diyanet"
 atif_metni = "Risale-i Nur Külliyatı, Said Nursî; karşılaştırma ve doğrulama için kullanılan Diyanet \"asıl nüsha\" metni (GitHub alitekdemir/Risale-i-Nur-Diyanet deposu; depo README'sine göre metin Hizmet Vakfı'nın Diyanet sayfalarından kopyalanmıştır)."
 notlar = '''
-K-51 madde 2 (13 Kasım 2026 kararı: RNK yayınlarına öncelik): birim kaynağı değildir; birimler ve çapalar risale-rnk-metin kaynağından gelir. Bu depo karşılaştırma, doğrulama ve eksik dipnot yedeğidir; birim olarak yüklenmez. Diyanet ile RNK kelime dizisi örtüşmesi kitap başına rapora yazılır; Diyanet'te olup RNK'da bulunmayan ya da farklı olan kısım raporlanır, metne eklenmez.
+K-52 madde 2 (13 Kasım 2026 kararı: RNK yayınlarına öncelik): birim kaynağı değildir; birimler ve çapalar risale-rnk-metin kaynağından gelir. Bu depo karşılaştırma, doğrulama ve eksik dipnot yedeğidir; birim olarak yüklenmez. Diyanet ile RNK kelime dizisi örtüşmesi kitap başına rapora yazılır; Diyanet'te olup RNK'da bulunmayan ya da farklı olan kısım raporlanır, metne eklenmez.
 Kapsam: 15 büyük kitap ve Küçük Kitaplar klasöründeki 11 eser.
 Sürüm: sürüm etiketi yoktur; surum alanı commit SHA'sıdır (12 Kasım 2026'da HEAD). Kilit zip özetine değil, zip üyelerinin özetlerine bağlanır (ingest/risale.lock.json).
 Alma: data/gelen/risale-asil-nusha/2026-11-12/ (zip, SHA256SUMS).

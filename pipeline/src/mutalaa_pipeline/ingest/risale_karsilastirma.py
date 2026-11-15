@@ -1,4 +1,4 @@
-"""Diyanet <-> RNK kelime dizisi karsilastirmasi (A20.1, K-51 madde 2). Rapor METIN ICERMEZ.
+"""Diyanet <-> RNK kelime dizisi karsilastirmasi (A20.1, K-52 madde 2). Rapor METIN ICERMEZ.
 
 Diyanet deposu (`risale-asil-nusha`) karsilastirma verisidir; birim olarak yuklenmez. Bu modul
 Diyanet'in `diyanet_karsiligi == "diyanet"` olan kitaplarinda staged Diyanet birimleri ile staged

@@ -1,4 +1,4 @@
-"""Risale (Diyanet) QA kapilari (A20.1, K-51 madde 2 ve 5): G-KAY ve G-BUT.
+"""Risale (Diyanet) QA kapilari (A20.1, K-52 madde 2 ve 5): G-KAY ve G-BUT.
 
 Kapi islevleri bellekteki `RisaleGirdisi` uzerinde calisir; ham zip, staged satirlari ve ingest
 manifesti `qa/run_risale.py` tarafindan yuklenir. Bulgu listesi bos ise kapi `gecti`. Bulgular
@@ -22,7 +22,7 @@ capalariyla birlikte). Bu adimdaki capalar karsilastirma verisinin adresidir.
     oneki disinda); `md` kaynagi yalniz dipnotta kullanilir;
   * karakter kurali: kilit disi Cf, Cc, Cs, Co, Cn ve bosluk turu (Zs, Zl, Zp; U+0020 haric)
     karakter ya da U+FFFD kapiyi kaldirir; kilitli karakterlerin kitap basina sayilari staged
-    birimlerde kilitle ayni (K-51 madde 5: "yasak karakter yok" degil, kilitli sayilar).
+    birimlerde kilitle ayni (K-52 madde 5: "yasak karakter yok" degil, kilitli sayilar).
 """
 
 from collections import Counter

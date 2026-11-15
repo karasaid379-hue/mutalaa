@@ -466,7 +466,7 @@ def test_g_cap_onceki_calisma_yoksa_atlanir_varsa_capalar_ve_hash_tutar() -> Non
 
 
 def test_g_cap_ayristirici_surumu_degisince_hash_farki_kabul_edilir() -> None:
-    """Kilit ayni, ayristirici duzeltildi (K-51 md 2): hash farki kabul; kaybolan capa kalir."""
+    """Kilit ayni, ayristirici duzeltildi (K-52 md 2): hash farki kabul; kaybolan capa kalir."""
     g = capa_girdisi()
     ozetler = {a["anchor"]: a["content_hash"] for a in g.anchor()}  # type: ignore[misc]
     ilk = next(iter(ozetler))

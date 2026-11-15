@@ -182,7 +182,7 @@ export const tr = {
     gateReport: 'Kalite kapısı raporu yanıtla birlikte geldi.',
     anchorCode: 'Çapa hata kodu',
     missingHeading: 'Eksik önkoşullar',
-    /** `eksikler` codes of the 422 `on-kosul-eksik` answer of the Risale book approval (K-51 madde 11). */
+    /** `eksikler` codes of the 422 `on-kosul-eksik` answer of the Risale book approval (K-52 madde 11). */
     prerequisites: {
       'gbut-kaniti-yok':
         'Kaynakla bayt eşitliği (G-BUT) kanıtı yok: kitabın bütün birimleri dört kapıyı geçmiş bir hat yüklemesinden gelmeli.',
@@ -192,8 +192,8 @@ export const tr = {
     } as Readonly<Record<string, string>>,
     /** Verbatim (A15.3): shown for 422 inceleme-desteklenmiyor on a unit with offset data. */
     offsetUnsupported:
-      'Bu birimin ofsetli alanları (işaretler, cümleler) var; üçüncü taraf Risale metni düzeltilmez (K-51)',
-    /** Verbatim: shown for 422 inceleme-desteklenmiyor when a lügat madde is approved without a definition (K-51 madde 10). */
+      'Bu birimin ofsetli alanları (işaretler, cümleler) var; üçüncü taraf Risale metni düzeltilmez (K-52)',
+    /** Verbatim: shown for 422 inceleme-desteklenmiyor when a lügat madde is approved without a definition (K-52 madde 10). */
     lugatDefinitionRequired:
       'Lügat maddesi tanım yazılmadan onaylanamaz: kaynaktan gelen bir tanımı yok. Anlam başvurusu (onaysız) tanım olarak onaylanmaz; tanımı kendiniz yazın.',
     /** Per-operation overrides of the generic message. */

@@ -1,4 +1,4 @@
-"""Sozluk OCR metinlerinde baslik soz arama (A20.6, K-51 madde 9): `{sozluk, bulundu, satir_no}`.
+"""Sozluk OCR metinlerinde baslik soz arama (A20.6, K-52 madde 9): `{sozluk, bulundu, satir_no}`.
 
 Uc sozluk (`lugat-redhouse-1890`, `lugat-kamus-i-turki`, `lugat-naci`) `_djvu.txt` OCR dosyasi
 olarak gelir (guvenilmeyen veri; yalniz bayt olarak okunur). Arama SONUCU yalniz konumdur:

@@ -49,7 +49,7 @@ const APPROVE_PATH = '/api/v1/risale/books/{kitap}/approve' as const;
 /** Largest `gerekce` in code points (the same limit as the review decisions). */
 const MAX_REASON_LENGTH = 2000;
 
-/** The source that carries every Risale book (K-51 madde 2); the book list is shown in its detail. */
+/** The source that carries every Risale book (K-52 madde 2); the book list is shown in its detail. */
 export const RISALE_TEXT_SOURCE = 'risale-rnk-metin';
 
 function reasonProblem(reason: string): string | null {
@@ -254,7 +254,7 @@ function ApprovalDialog({ book, onClose, onApproved }: ApprovalDialogProps) {
 }
 
 /**
- * Book list of the Risale text source with the "kitabı onayla" button (A20.8, K-51 madde 11): counts per book from
+ * Book list of the Risale text source with the "kitabı onayla" button (A20.8, K-52 madde 11): counts per book from
  * `GET /risale/books`; the button shows only for admins and only where a draft unit exists, and opens the
  * confirmation dialog. The server decides (403 for a non-admin, 422 for missing prerequisites).
  */

@@ -152,7 +152,7 @@ export function DecisionForm({
   const [edited, setEdited] = useState<string | null>(null);
   const [gloss, setGloss] = useState<string | null>(null);
   const [tanim, setTanim] = useState<string | null>(null);
-  // A lügat madde that carries a source definition (K-51 madde 10 and 14): approved unchanged unless the editor chooses to edit.
+  // A lügat madde that carries a source definition (K-52 madde 10 and 14): approved unchanged unless the editor chooses to edit.
   const [tanimEditing, setTanimEditing] = useState(false);
   const [problems, setProblems] = useState<FieldProblem[]>([]);
   const [error, setError] = useState<unknown>(null);
@@ -196,7 +196,7 @@ export function DecisionForm({
   const glossChanged = showGloss && trimGloss(glossValue) !== trimGloss(glossBaseline);
   const glossCount = glossLength(glossValue);
   const glossProblems = problems.filter((problem) => problem.fieldId === ids.gloss);
-  // A lügat madde review (K-51 madde 10): approval needs a definition the editor writes; the reference meaning is never prefilled.
+  // A lügat madde review (K-52 madde 10): approval needs a definition the editor writes; the reference meaning is never prefilled.
   const lugatAllowed = isLugatEditable(current) && !closed;
   const sourceDefinition = lugatAllowed ? lugatSourceDefinition(current) : null;
   const showLugatChoice = sourceDefinition !== null && selected === 'onaylandi';

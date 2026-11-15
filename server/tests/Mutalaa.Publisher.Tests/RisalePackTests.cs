@@ -12,7 +12,7 @@ using Mutalaa.Infrastructure.Releases;
 namespace Mutalaa.Publisher.Tests;
 
 /// <summary>
-/// Risale paketleri (A20.4, K-51): katalogun shared/data/risale-kitaplar.json ile senkronu, risale-{kitap} (yalniz unit), risale-dizin (unit_ref, icerigi olmayan
+/// Risale paketleri (A20.4, K-52): katalogun shared/data/risale-kitaplar.json ile senkronu, risale-{kitap} (yalniz unit), risale-dizin (unit_ref, icerigi olmayan
 /// unit_fts ve unit_tri, xref_idx, page_map), etiket, gorunurluk ve kapi kurallari. Girdi tamamen sentetiktir: "Deneme paragrafi N", uydurma Arapca harf dizisi;
 /// gercek Risale metni yoktur (kitap basliklari katalogdan okunur). Docker gerektirmez.
 /// </summary>

@@ -11,7 +11,7 @@ using Mutalaa.Domain.Text;
 namespace Mutalaa.Api.Tests;
 
 /// <summary>
-/// Lugat maddesi incelemesi (K-51 madde 9 ve 10): kuyruk (azalan siklik sirasi), ayrinti, Duzenle ve onayla, bos tanimla onay yok,
+/// Lugat maddesi incelemesi (K-52 madde 9 ve 10): kuyruk (azalan siklik sirasi), ayrinti, Duzenle ve onayla, bos tanimla onay yok,
 /// anlam basvurusunun hedefe yazilmamasi, If-Match ve toplu karar. Sentetik basliksozler (Docker'li).
 /// </summary>
 public class ReviewLugatTests(EditorialDatabase<ReviewLugatTests> fixture)
@@ -296,7 +296,7 @@ public class ReviewLugatTests(EditorialDatabase<ReviewLugatTests> fixture)
         Assert.Equal("2", version);
         Assert.Equal("editor", origin);
         Assert.Equal("onayli", status);
-        // Basvuru (kaynaklar ve onerilen.anlam_basvuru) maddeye uygulanmaz (K-51 madde 10).
+        // Basvuru (kaynaklar ve onerilen.anlam_basvuru) maddeye uygulanmaz (K-52 madde 10).
         Assert.Equal(sourcesBefore, sources);
         Assert.DoesNotContain("anlam_basvuru", sources, StringComparison.Ordinal);
         Assert.DoesNotContain("deneme basvurusu", tanim, StringComparison.Ordinal);
@@ -510,7 +510,7 @@ public class ReviewLugatTests(EditorialDatabase<ReviewLugatTests> fixture)
         Assert.Equal("aday", (await RowAsync("deneme-sozcuk")).Status);
     }
 
-    // ---- kaynak tanimi ve anlam_no (K-51 madde 10 ve 14) ----
+    // ---- kaynak tanimi ve anlam_no (K-52 madde 10 ve 14) ----
 
     private const string SecondSource = "lugat-deneme";
 

@@ -47,7 +47,7 @@ describe('ProblemMessage', () => {
     );
     expect(
       screen.getByText(
-        'Bu birimin ofsetli alanları (işaretler, cümleler) var; üçüncü taraf Risale metni düzeltilmez (K-51)',
+        'Bu birimin ofsetli alanları (işaretler, cümleler) var; üçüncü taraf Risale metni düzeltilmez (K-52)',
       ),
     ).toBeInTheDocument();
   });

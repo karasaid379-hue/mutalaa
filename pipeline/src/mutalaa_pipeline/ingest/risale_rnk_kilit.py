@@ -1,4 +1,4 @@
-"""RNK kilidi (`risale_rnk.lock.json`): bicim, uretim ve okuma (A20.1b, K-51 madde 5 ve 7).
+"""RNK kilidi (`risale_rnk.lock.json`): bicim, uretim ve okuma (A20.1b, K-52 madde 5 ve 7).
 
 Kilit kitap basina dosyalarin sabit kimligini ve yalnizca SAYILARI tutar (metin yok):
 
@@ -7,7 +7,7 @@ Kilit kitap basina dosyalarin sabit kimligini ve yalnizca SAYILARI tutar (metin 
 * `#n` sayisi, ilk ve son sayfa, baslik satiri (`<&€∑` ile baslayip `>` ile biten) sayisi;
 * her isaret karakterinin sayisi (`isaretler`; virgul icin satir basi sayisi);
 * denetlenen karakterlerin sayisi (`karakterler`: S12 kumesi ve kontrol, bicim, bosluk, ozel
-  kullanim siniflari; K-51 madde 5) ve ozel kullanim karakterlerinin tek tek yeri;
+  kullanim siniflari; K-52 madde 5) ve ozel kullanim karakterlerinin tek tek yeri;
 * NFC olmayan satir sayisi (bilgi; NFC uygulanmaz).
 
 Kilit yalniz `/karar` ile degisir: gelen dosya kilitle tutmazsa `ingest` 2 ile durur. `kilit_uret`

@@ -91,7 +91,7 @@ export function isGlossEditable(review: ReviewItem): boolean {
 }
 
 /**
- * The definition a lügat madde carries from its source (`hedef.origin = 'kaynak'`, non-blank `tanim_tr`; K-51 madde 10 and 14), or
+ * The definition a lügat madde carries from its source (`hedef.origin = 'kaynak'`, non-blank `tanim_tr`; K-52 madde 10 and 14), or
  * null. Such a candidate can be approved unchanged; every other candidate needs a definition the editor writes.
  */
 export function lugatSourceDefinition(review: Pick<ReviewDetail, 'hedef'>): string | null {
@@ -101,7 +101,7 @@ export function lugatSourceDefinition(review: Pick<ReviewDetail, 'hedef'>): stri
   return typeof definition === 'string' && definition.trim() !== '' ? definition : null;
 }
 
-/** An open lügat madde review (`lugat_madde` + `tanim_tr`): approval carries the source definition unchanged or the one the editor writes (K-51 madde 10 and 14). */
+/** An open lügat madde review (`lugat_madde` + `tanim_tr`): approval carries the source definition unchanged or the one the editor writes (K-52 madde 10 and 14). */
 export function isLugatEditable(review: ReviewItem): boolean {
   return (
     review.hedef_tablo === 'lugat_madde' && review.alan === 'tanim_tr' && review.durum === 'acik'

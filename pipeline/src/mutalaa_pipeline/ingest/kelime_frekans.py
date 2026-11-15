@@ -1,4 +1,4 @@
-"""Kelime-Frekans lugat baslik soz listesi (A20.6, K-51 madde 9 ve 10): gelen -> raw -> staged.
+"""Kelime-Frekans lugat baslik soz listesi (A20.6, K-52 madde 9 ve 10): gelen -> raw -> staged.
 
 `alitekdemir/Risale-i-Nur-Kelime-Frekans` deposunun sabit commit zip'i (`data/gelen/
 risale-kelime-frekans/<tarih>/`) DISKE ACILMAZ; uyeler `ingest/risale_zip.py` ile bellekte okunur
@@ -10,7 +10,7 @@ risale-kelime-frekans/<tarih>/`) DISKE ACILMAZ; uyeler `ingest/risale_zip.py` il
   dosyadakinden kucuk ya da esit olan dosya alt kumedir (cift sayilmaz). Gercek zipte 15 kitap
   ve 5 Soz alt kumesi cikar.
 * `data/eRisale/raw/<ad>.csv` (`"kelime","anlam"`): YALNIZ `anlam` sutunu editor basvurusudur
-  (K-51 madde 10): `onerilen_basvuru`ya gider; madde sutunlarina, `kaynaklar`a ve pakete YAZILMAZ.
+  (K-52 madde 10): `onerilen_basvuru`ya gider; madde sutunlarina, `kaynaklar`a ve pakete YAZILMAZ.
   `terkipli/` klasorune ve `SorularlaRisale/` agacina dokunulmaz (karar bekler).
 
 Cikti `staged/risale-kelime-frekans/<run_id>/lugat.jsonl` (alanlar `ingest/lugat_madde.py`'de;

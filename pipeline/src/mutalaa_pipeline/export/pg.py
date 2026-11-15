@@ -29,12 +29,12 @@ Meal (A16.4, K-49): `elmalili-meal` ve `elmalili-sade-meal` birimleri `taslak` g
 biriminin metnine hic yazmaz ve her birim icin bir inceleme kaydi acar (`export/pg_meal.py`).
 Tanik kaynagi yuklenmez.
 
-RNK Risale (A20.2b, K-51): `risale-rnk-metin` birimleri `taslak` girer; hat Risale metnine hic
+RNK Risale (A20.2b, K-52): `risale-rnk-metin` birimleri `taslak` girer; hat Risale metnine hic
 yazmaz, yalniz taslak ve ayni `content_hash` birimde turetilmis sutunlari gunceller
 (`export/pg_risale.py`). Diyanet (`risale-asil-nusha`) karsilastirma verisidir: `export pg` onu
 reddeder (cikis 2).
 
-RNK baski sayfa esleme (A20.3, K-51 madde 6 ve 7): `risale-baski-rnk` satirlari `page_map` tablosuna
+RNK baski sayfa esleme (A20.3, K-52 madde 6 ve 7): `risale-baski-rnk` satirlari `page_map` tablosuna
 upsert edilir; hat satir silmez (`export/pg_risale_sayfa.py`). `risale-rnk-metin` onceden
 yuklenmis olmali: capa `unit`te yoksa islem geri alinir (cikis 1).
 
@@ -43,7 +43,7 @@ kurallar), kendi `page_map` satirlari (`source_id = test-risale-ornek`) AYNI isl
 sonra `pg_risale_sayfa.py` ile, fiksturun iki `xref` satiri `pg_risale_atif.py` ile yuklenir
 (A20.7b; hedef ayet `unit`te yoksa xref yazilmaz, uyari verilir).
 
-Risale ayet atif dizini (A20.7b, K-51 madde 13): `risale-atif-dizini` adaylari `icerik.xref`
+Risale ayet atif dizini (A20.7b, K-52 madde 13): `risale-atif-dizini` adaylari `icerik.xref`
 tablosuna upsert edilir; hat yalniz `origin = 'hat'` ve `status = 'aday'` satirin turetilmis
 sutunlarini gunceller, silme `--prune` ve `--yedek-alindi` ister (`export/pg_risale_atif.py`).
 

@@ -1,4 +1,4 @@
-"""RNK baski sayfa esleme QA kapilari (A20.3; K-51 madde 6 ve 7): `risale-baski-rnk`.
+"""RNK baski sayfa esleme QA kapilari (A20.3; K-52 madde 6 ve 7): `risale-baski-rnk`.
 
 Kapi islevleri bellekteki `SayfaGirdisi` uzerinde calisir (`qa/run_risale_sayfa.py` yukler).
 Bulgular ASCII ve kisadir: yalniz dosya (`raf/uid`), sayfa, sayi ve capa tasir; metin asla.

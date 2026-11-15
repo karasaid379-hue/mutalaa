@@ -22,11 +22,11 @@ public static class ReviewFields
     public const string Status = "status";
     public const string Metin = "metin";
 
-    /// <summary>Kitap onayi (hedef_tablo = source, hedef_anahtar = risale:{kitap}; K-51 madde 11); karar ucu bu alani desteklemez.</summary>
+    /// <summary>Kitap onayi (hedef_tablo = source, hedef_anahtar = risale:{kitap}; K-52 madde 11); karar ucu bu alani desteklemez.</summary>
     public const string MetinDurumu = "metin_durumu";
     public const string AnlamKisa = "anlam_kisa";
 
-    /// <summary>Lugat maddesi (hedef_tablo = lugat_madde; K-51 madde 10).</summary>
+    /// <summary>Lugat maddesi (hedef_tablo = lugat_madde; K-52 madde 10).</summary>
     public const string TanimTr = "tanim_tr";
     public const string RootId = "root_id";
     public const string LemmaId = "lemma_id";
@@ -71,7 +71,7 @@ public readonly record struct UnitReviewState(
 public readonly record struct GlossReviewState(string AnlamKisa, string Version, string Origin);
 
 /// <summary>
-/// <c>lugat_madde</c> hedefinin karar anindaki satiri (K-51 madde 10 ve 14): basliksoz (ozet girdisi), guncel surum, koken
+/// <c>lugat_madde</c> hedefinin karar anindaki satiri (K-52 madde 10 ve 14): basliksoz (ozet girdisi), guncel surum, koken
 /// (<c>hat</c>, <c>kaynak</c>, <c>editor</c>), mevcut tanim ve ozet. Kaynak tanimini degistirmeden onay koken, tanim ve ozeti oldugu gibi birakir.
 /// </summary>
 public readonly record struct LugatReviewState(string Basliksoz, string Version, string Origin = LugatMaddeText.HatOrigin, string? TanimTr = null, string? ContentHash = null);
@@ -253,7 +253,7 @@ public static class ReviewDecisions
     /// (2) uygulanacak metin duzenlenen, yoksa onerilen; ikisi de bossa (yalniz durum onayi) metin degismez, null doner;
     /// (3) metin degisiyorsa Canonicalize, ContentHash, rev + 1 ve arama anahtarlari (tr_stem NULL). Ozet degismiyorsa null doner.
     /// Degistirilemez metin (ayet, kuran_metni) 422 <c>degistirilemez-metin</c>.
-    /// Ofsetli turev alanlar (marks, sentences) metin degisimiyle kayar; K-51 madde 8 korumayi KALICI yapar (Risale metni duzeltilmez):
+    /// Ofsetli turev alanlar (marks, sentences) metin degisimiyle kayar; K-52 madde 8 korumayi KALICI yapar (Risale metni duzeltilmez):
     /// metin GERCEKTEN degisiyorsa ve birimde ofsetli alan varsa 422 <c>inceleme-desteklenmiyor</c>.
     /// Birlesik mealin izleyen biriminde (<c>attrs.birlesik_ile</c> dolu; K-49 madde 8) metin degistiren her karar da ayni kodla 422 verir.
     /// Durum onayi (metin degismez) ve ret serbesttir.
@@ -374,7 +374,7 @@ public static class ReviewDecisions
         {
             throw new DomainException(
                 DomainErrorCodes.IncelemeDesteklenmiyor,
-                "Ofsetli alanlarin (marks, sentences) bulundugu birimde metin degisimi desteklenmiyor: Risale metni ucuncu taraf kanonik metindir ve duzeltilmez (K-51 madde 8); metni degistiren onay yapilamaz.");
+                "Ofsetli alanlarin (marks, sentences) bulundugu birimde metin degisimi desteklenmiyor: Risale metni ucuncu taraf kanonik metindir ve duzeltilmez (K-52 madde 8); metni degistiren onay yapilamaz.");
         }
     }
 
@@ -407,7 +407,7 @@ public static class ReviewDecisions
         bool lugatUnedited = false;
         if (isLugat)
         {
-            // K-51 madde 10 ve 14: kaynak tanimi dolu aday duzenlemesiz onaylanabilir (koken ve bayt bayt tanim ayni); tanimsiz aday
+            // K-52 madde 10 ve 14: kaynak tanimi dolu aday duzenlemesiz onaylanabilir (koken ve bayt bayt tanim ayni); tanimsiz aday
             // bos tanimla onaylanmaz. onerilen.anlam_basvuru salt basvurudur ve hicbir zaman uygulanmaz.
             string? edit = request.Duzenlenen;
             if (edit is null)
@@ -440,7 +440,7 @@ public static class ReviewDecisions
     }
 
     /// <summary>
-    /// Duzenlemesiz onay (lugat_madde, K-51 madde 10 ve 14): yalniz <c>origin = 'kaynak'</c> ve dolu tanimli aday icin; tanim, ozet ve
+    /// Duzenlemesiz onay (lugat_madde, K-52 madde 10 ve 14): yalniz <c>origin = 'kaynak'</c> ve dolu tanimli aday icin; tanim, ozet ve
     /// koken oldugu gibi kalir, surum bir artar. Tanimsiz ya da baska kokenli aday 422 <c>inceleme-desteklenmiyor</c>.
     /// </summary>
     private static LugatMaddeUpdate ResolveLugatUnedited(ReviewTargetState target)
@@ -463,7 +463,7 @@ public static class ReviewDecisions
     }
 
     /// <summary>
-    /// Duzenle ve onayla (lugat_madde, K-51 madde 10): editor tanimi kanonikilestirilir (NFC); ozet <c>sha256(basliksoz + LF + tanim_tr)</c>
+    /// Duzenle ve onayla (lugat_madde, K-52 madde 10): editor tanimi kanonikilestirilir (NFC); ozet <c>sha256(basliksoz + LF + tanim_tr)</c>
     /// olur, surum bir artar, koken <c>editor</c> olur. <c>onerilen</c> (anlam_basvuru, siklik, kitaplar) okunmaz ve hedefe uygulanmaz.
     /// Donen ikinci deger review.duzenlenen jsonb'sidir.
     /// </summary>

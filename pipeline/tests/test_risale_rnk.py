@@ -324,7 +324,7 @@ def _girintili_kitap(girinti: str) -> list[str]:
 
 @pytest.mark.parametrize("girinti", ["", " "])
 def test_rnk_girinti_0_ve_1_ayni_siniflandirma(girinti: str) -> None:
-    """Tek bosluk girintili `,...>` ve `<...>` satiri girintisizle ayni sonucu verir (K-51 md 2)."""
+    """Tek bosluk girintili `,...>` ve `<...>` satiri girintisizle ayni sonucu verir (K-52 md 2)."""
     txt = sentetik_txt(_girintili_kitap(girinti))
     a = R.ayristir(txt, "tr_k")
     assert [(b.tur, b.metin) for b in a.birimler] == [

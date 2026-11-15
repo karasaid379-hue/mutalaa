@@ -11,7 +11,7 @@ using Npgsql;
 namespace Mutalaa.Api.Tests;
 
 /// <summary>
-/// AddLugatMadde ve AddLugatAnlam (K-51 madde 9, 10 ve 14): tablonun sutunlari, varsayilanlari ve kisitlari (anlam_no, origin 'kaynak',
+/// AddLugatMadde ve AddLugatAnlam (K-52 madde 9, 10 ve 14): tablonun sutunlari, varsayilanlari ve kisitlari (anlam_no, origin 'kaynak',
 /// duzey 1..4, tekillik (source_id, basliksoz, anlam_no)), <c>review.hedef_tablo</c> CHECK'ine ek ve mevcut verinin korunmasi (Docker'li, Testcontainers postgres:18.6-trixie). Sentetik basliksozler.
 /// </summary>
 public class LugatMaddeSchemaTests(EditorialDatabase<LugatMaddeSchemaTests> fixture, PostgresFixture postgres)

@@ -12,7 +12,7 @@ export const LEMMA_TAB_IDS: readonly LemmaTabId[] = ['anlam', 'durum', 'duzeltme
  * default; `durum` is the lemma status (`lemma` + `status`); `duzeltme` is the root and lemma correction
  * (`quran_word_fix`, every field: `root_id`, `lemma_id`, `pos`, `features`; BÇ-12, K-13). All three take a
  * status decision (A14); only `anlam` also takes an edited meaning (K-50 madde 6). `lugat` is the Risale lügat
- * (`lugat_madde` + `tanim_tr`; K-51 madde 9 and 10): its approval needs a definition the editor writes, and it is
+ * (`lugat_madde` + `tanim_tr`; K-52 madde 9 and 10): its approval needs a definition the editor writes, and it is
  * listed in descending frequency order (`sira=siklik`).
  */
 export const LEMMA_FILTERS: Readonly<Record<LemmaTabId, QueueFilter>> = {

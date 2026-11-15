@@ -173,7 +173,7 @@ def test_ingest_staged_alanlari_ve_sayilari(kk: LugatKoku) -> None:
             1,
             KAYNAK,
         )
-        assert s["tanim_tr"] is None  # K-51 madde 10: HER ZAMAN bos
+        assert s["tanim_tr"] is None  # K-52 madde 10: HER ZAMAN bos
         assert s["osmanlica_yazim"] is None and s["koken_dil"] is None
         assert s["ar_kok_id"] is None
         assert s["data_version"] == f"{KAYNAK}@{COMMIT}"

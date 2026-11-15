@@ -108,7 +108,7 @@ export const trc = {
     updatedAt: 'Güncelleme',
     showUnits: 'Bu kaynağın birimlerini göster',
   },
-  /** Risale book approval (A20.8, K-51 madde 11): the book list inside the detail of the Risale text source. */
+  /** Risale book approval (A20.8, K-52 madde 11): the book list inside the detail of the Risale text source. */
   risale: {
     heading: 'Risale kitapları',
     intro:

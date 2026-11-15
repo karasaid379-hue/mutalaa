@@ -236,7 +236,7 @@ public static class SourceDigests
         }
     }
 
-    // Lugat maddeleri (K-51 madde 9): kaynagin butun satirlari, butun durumlar; aday -> onayli gecisi (tanim, ozet ve surum) ozeti degistirir, P-14 terfide yakalar.
+    // Lugat maddeleri (K-52 madde 9): kaynagin butun satirlari, butun durumlar; aday -> onayli gecisi (tanim, ozet ve surum) ozeti degistirir, P-14 terfide yakalar.
     // kaynaklar (siklik, kitaplar, anlam basvurusu) ozete girmez: pakete de girmez.
     private static void AddLugatLines(EditorialSnapshot snapshot, string slug, List<string> lines)
     {

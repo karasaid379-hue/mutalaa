@@ -1,4 +1,4 @@
-"""`risale-rnk-metin` kaynagi: RNK `txt` + `json` bagdastiricisi ve komutu (A20.1b, K-51 madde 2).
+"""`risale-rnk-metin` kaynagi: RNK `txt` + `json` bagdastiricisi ve komutu (A20.1b, K-52 madde 2).
 
 `mutalaa ingest risale --source risale-rnk-metin` icin hazir govde (CLI kaydi `cli_risale.py`'de
 yapilir):
@@ -14,7 +14,7 @@ yapilir):
    yan dosyalar: `sayfalar.jsonl` (sayfa kirilma konumlari, A20.3 `page_map` girdisi),
    `yapi.jsonl` (bos ve ayirac satirlari), `kitaplar.jsonl` (dosya duzeyi bilgi ve sayilar).
 
-K-51 madde 2: bu kaynak 85 RNK dosyasinin (87 kitap) tamaminin birimlerini uretir; Diyanet
+K-52 madde 2: bu kaynak 85 RNK dosyasinin (87 kitap) tamaminin birimlerini uretir; Diyanet
 birim olarak yuklenmez. Hata iletileri metin tasimaz.
 """
 

@@ -1,7 +1,7 @@
 import { isRecord, readArray, readNumber, readString } from '@/lib/payload';
 import type { ReviewItem } from '@/review/types';
 
-// Readers of the opaque `onerilen` of a lügat madde review (K-51 madde 10):
+// Readers of the opaque `onerilen` of a lügat madde review (K-52 madde 10):
 // `{anlam_basvuru: [{anlam, sayi}], siklik, kitaplar}`. It is reference data only. Nothing is trusted: a reader
 // returns null or an empty list instead of throwing, and the card also offers the raw value.
 
@@ -64,7 +64,7 @@ export interface LugatKey {
 const MAX_ANLAM_NO = 32767;
 
 /**
- * Splits a lügat `hedef_anahtar` the way the server does (K-51 madde 14): `{source_id}:{anlam_no}:{basliksoz}`; a second
+ * Splits a lügat `hedef_anahtar` the way the server does (K-52 madde 14): `{source_id}:{anlam_no}:{basliksoz}`; a second
  * part that is not all ASCII digits makes it the legacy `{source_id}:{basliksoz}` (meaning 1). null when unreadable.
  */
 export function parseLugatKey(key: string): LugatKey | null {

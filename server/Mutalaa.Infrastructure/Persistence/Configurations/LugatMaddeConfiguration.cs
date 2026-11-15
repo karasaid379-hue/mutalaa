@@ -16,7 +16,7 @@ internal sealed class LugatMaddeConfiguration : IEntityTypeConfiguration<LugatMa
             t.HasCheckConstraint("lugat_madde_duzey_check", "duzey BETWEEN 1 AND 4");
             t.HasCheckConstraint("lugat_madde_content_hash_check", "content_hash ~ '^[0-9a-f]{64}$'");
 
-            // K-51 madde 10: onayli maddenin tanimi dolu olur; aday bos tanimla acilir.
+            // K-52 madde 10: onayli maddenin tanimi dolu olur; aday bos tanimla acilir.
             t.HasCheckConstraint("lugat_madde_onayli_tanim_check", "status <> 'onayli' OR (tanim_tr IS NOT NULL AND btrim(tanim_tr) <> '')");
         });
         b.HasKey(x => x.Id);

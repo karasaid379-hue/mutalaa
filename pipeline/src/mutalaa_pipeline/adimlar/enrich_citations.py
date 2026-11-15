@@ -1,4 +1,4 @@
-"""Risale ayet atif aday adimi (A20.7b; K-51 madde 13): `mutalaa enrich citations --source ...`.
+"""Risale ayet atif aday adimi (A20.7b; K-52 madde 13): `mutalaa enrich citations --source ...`.
 
 Girdi `risale-rnk-metin` anchor calismasinin `units.jsonl` dosyasidir (satir satir akitilir,
 413 MB'lik dosya bellege alinmaz) ve Tanzil Uthmani ile Simple Clean metni (`enrich/kuran_metni`:

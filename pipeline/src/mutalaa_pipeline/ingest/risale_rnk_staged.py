@@ -1,4 +1,4 @@
-"""RNK ayristirmasindan capali `StagedUnit` uretimi (A20.1b, K-51 madde 2, 3 ve 6).
+"""RNK ayristirmasindan capali `StagedUnit` uretimi (A20.1b, K-52 madde 2, 3 ve 6).
 
 `risale_rnk.ayristir` kitap dosyasini ham birimlere boler; bu modul onlara `rn:` capasi verir:
 

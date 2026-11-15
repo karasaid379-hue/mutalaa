@@ -418,7 +418,7 @@ public static partial class GateEvaluator
     }
 
     /// <summary>
-    /// P-09 (K-50 madde 8, K-46 madde 7, K-51 madde 9). quran_word_fix her derlemede yalniz onayli ile girer. lemma_gloss ve lugat_madde: onayli her derlemeye ("uygun"), aday yalniz
+    /// P-09 (K-50 madde 8, K-46 madde 7, K-52 madde 9). quran_word_fix her derlemede yalniz onayli ile girer. lemma_gloss ve lugat_madde: onayli her derlemeye ("uygun"), aday yalniz
     /// dev ve internal'a ("aday"; public'te "aday-public" ile girmez), red hicbirine girmez ("red"). tr_root_index ve tr_form bagli Turkce lemma
     /// onayliysa girer. Sonuc gerekcesi rapor satirinin gerekcesidir.
     /// </summary>

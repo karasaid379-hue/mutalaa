@@ -1,4 +1,4 @@
-// Risale book approval in the editor (A20.8, K-51 madde 11): the book list inside the Risale text source, the
+// Risale book approval in the editor (A20.8, K-52 madde 11): the book list inside the Risale text source, the
 // admin-only "kitabı onayla" button, the confirmation dialog with If-Match, the problem texts and an axe pass.
 // Data is synthetic ("Deneme kitap"); there is no Risale text.
 import { screen, waitFor, within } from '@testing-library/react';

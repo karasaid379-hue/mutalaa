@@ -18,7 +18,7 @@ public enum PackSourceRole
     /// <summary>Sozluk verisi: root, lemma ve quran_word'un QAC sutunlarini verir (kelime-kok'te qac-morfoloji; K-50 madde 3 ve 4).</summary>
     Dictionary = 3,
 
-    /// <summary>Lugat maddesi kaynagi (risale-dizin'de lugat-rnk, lugat-sozluk-rganeyev ve risale-kelime-frekans; K-51 madde 9 ve 14): kaynagin lugat_madde satirlari pakete lugat tablosuna girer.</summary>
+    /// <summary>Lugat maddesi kaynagi (risale-dizin'de lugat-rnk, lugat-sozluk-rganeyev ve risale-kelime-frekans; K-52 madde 9 ve 14): kaynagin lugat_madde satirlari pakete lugat tablosuna girer.</summary>
     Glossary = 4,
 }
 
@@ -93,22 +93,22 @@ public sealed class PackCatalog
     /// <summary>Risale uclu baglantilarin, arama indeksinin ve baski sayfa eslemesinin gittigi paket (Icerik paketleri 3.4 ve 4 madde 2).</summary>
     public const string RisaleIndexPackId = "risale-dizin";
 
-    /// <summary>Risale metninin tek kaynagi: 87 kitabin birimleri buradan gelir (K-51 madde 2).</summary>
+    /// <summary>Risale metninin tek kaynagi: 87 kitabin birimleri buradan gelir (K-52 madde 2).</summary>
     public const string RisaleTextSlug = "risale-rnk-metin";
 
-    /// <summary>Risale baski sayfa eslemesinin kaynagi (RNK Neşriyat en son baski; K-51 madde 6 ve 7): risale-dizin'de Structure rolunde.</summary>
+    /// <summary>Risale baski sayfa eslemesinin kaynagi (RNK Neşriyat en son baski; K-52 madde 6 ve 7): risale-dizin'de Structure rolunde.</summary>
     public const string RisalePageSlug = "risale-baski-rnk";
 
     /// <summary>Risale baglanti dizininin kaynagi (xref satirlari): risale-dizin'de atif rolunde, yalniz xref satiri varsa listelenir.</summary>
     public const string RisaleLinkSlug = "risale-atif-dizini";
 
-    /// <summary>Risale lugat maddelerinin kaynagi (Kelime-Frekans basliksoz listesi; K-51 madde 9 ve 10): risale-dizin'de Glossary rolunde, Required: false.</summary>
+    /// <summary>Risale lugat maddelerinin kaynagi (Kelime-Frekans basliksoz listesi; K-52 madde 9 ve 10): risale-dizin'de Glossary rolunde, Required: false.</summary>
     public const string RisaleLugatSlug = "risale-kelime-frekans";
 
-    /// <summary>RNK lugati (K-51 madde 14): tanimli lugat maddeleri; risale-dizin'de Glossary rolunde, Required: false. Atif satiri kaynagin kendi adidir.</summary>
+    /// <summary>RNK lugati (K-52 madde 14): tanimli lugat maddeleri; risale-dizin'de Glossary rolunde, Required: false. Atif satiri kaynagin kendi adidir.</summary>
     public const string RisaleLugatRnkSlug = "lugat-rnk";
 
-    /// <summary>Ikinci lugat kaynagi (GitHub rganeyev/Sozluk; K-51 madde 14): yalniz RNK lugatinda bulunmayan basliklar; risale-dizin'de Glossary rolunde, Required: false.</summary>
+    /// <summary>Ikinci lugat kaynagi (GitHub rganeyev/Sozluk; K-52 madde 14): yalniz RNK lugatinda bulunmayan basliklar; risale-dizin'de Glossary rolunde, Required: false.</summary>
     public const string RisaleLugatSozlukSlug = "lugat-sozluk-rganeyev";
 
     /// <summary>risale-dizin page_map satirlarinin duzen adi (RNK baskisi; core'da "medine-604").</summary>
@@ -214,7 +214,7 @@ public sealed class PackCatalog
     ]);
 
     /// <summary>
-    /// Risale paketleri (A20.4, K-51): risale-dizin, kitap tablosundan (shared/data/risale-kitaplar.json, gomulu) uretilen her kitap icin risale-{kitap}
+    /// Risale paketleri (A20.4, K-52): risale-dizin, kitap tablosundan (shared/data/risale-kitaplar.json, gomulu) uretilen her kitap icin risale-{kitap}
     /// ve sentetik fikstur risale-test-ornek. Katalog elle yazilmaz; kitap eklemek dosyaya satir eklemektir. Kitap ve dizin paketleri baska pakete bagli degildir
     /// (kitaplar istek aninda baglanir, dizin kitap olmadan da acilir; Icerik paketleri 2). Fikstur kaynagi test- onekli oldugu icin public'e girmez (P-12).
     /// </summary>

@@ -6,7 +6,7 @@ using Mutalaa.Domain.Tests.Support;
 namespace Mutalaa.Domain.Tests;
 
 /// <summary>
-/// Kitap bazinda toplu onay kurali (K-51 madde 11): kitap ozeti, onkosul degerlendirmesi, karar sirasi, ETag bicimi. Girdiler sentetiktir
+/// Kitap bazinda toplu onay kurali (K-52 madde 11): kitap ozeti, onkosul degerlendirmesi, karar sirasi, ETag bicimi. Girdiler sentetiktir
 /// (capalar <c>rn:test-deneme:...</c>, ozetler sabit onaltilik dizgiler). Her sinama tr-TR kulturunde de calisir.
 /// </summary>
 public class RisaleBookApprovalTests

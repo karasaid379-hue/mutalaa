@@ -1,4 +1,4 @@
-"""Lugat maddesi staged satiri (A20.6, K-51 madde 9 ve 10): ortak kurucu ve sabitler.
+"""Lugat maddesi staged satiri (A20.6, K-52 madde 9 ve 10): ortak kurucu ve sabitler.
 
 `lugat.jsonl` satiri (kayit turu: lugat maddesi; `units.jsonl` DEGIL; capa yoktur). Kelime-Frekans
 kaynagi (`ingest/kelime_frekans.py`) ve sentetik fikstur (`ingest/risale_ornek_lugat.py`) ayni
@@ -10,7 +10,7 @@ Alanlar (sunucu gocu `lugat_madde` sutunlariyla bire bir; `id` veritabaninda ure
 
 * `source_id`, `basliksoz` (kaynaktaki yazim, bayt bayt; NFC UYGULANMAZ), `basliksoz_norm`
   (`tr_narrow` arama anahtari; bos ise `ar_norm`), `osmanlica_yazim`, `koken_dil`, `ar_kok_id`
-  (hepsi `null`: editor doldurur), `tanim_tr` (Kelime-Frekans maddesinde HER ZAMAN `null`; K-51
+  (hepsi `null`: editor doldurur), `tanim_tr` (Kelime-Frekans maddesinde HER ZAMAN `null`; K-52
   madde 10: tanimi editor yazar, yapay zeka taslagi yok, K-50 madde 1), `kaynaklar` (jsonb),
   `duzey`, `status = "aday"`, `origin = "hat"`, `version = 1`, `content_hash`, `data_version`.
 * `onerilen_basvuru`: `review.onerilen`e gidecek nesne; madde sutunlarina YAZILMAZ. Kelime-Frekans
@@ -57,12 +57,12 @@ MADDE_ALANLARI: Final = (
 )
 
 
-# Lugat kaynagindan gelen madde (A20.6b, K-51 madde 10 ve 14): `lugat-rnk` ve
+# Lugat kaynagindan gelen madde (A20.6b, K-52 madde 10 ve 14): `lugat-rnk` ve
 # `lugat-sozluk-rganeyev`. Alan kumesi Kelime-Frekans maddesinden `anlam_no` (yeni) ve
 # `onerilen_basvuru` (yok) ile ayrilir; `tanim_tr` kaynak satirindan bayt bayt gelir (NFC yok;
 # yalniz bas ve sondaki U+0020/U+0009 kirpilir, bkz. `ingest/lugat_kaynak.py`).
 KOKEN_KAYNAK: Final = "kaynak"
-DUZEY_RISALEDE_YOK: Final = 4  # Risale baslik soz listesinde yok (K-51 madde 14)
+DUZEY_RISALEDE_YOK: Final = 4  # Risale baslik soz listesinde yok (K-52 madde 14)
 MADDE_ALANLARI_KAYNAK: Final = (
     "source_id",
     "basliksoz",

@@ -1,4 +1,4 @@
-"""`export pg --source risale-atif-dizini`: Risale ayet atif adaylari, `xref` (A20.7b; K-51).
+"""`export pg --source risale-atif-dizini`: Risale ayet atif adaylari, `xref` (A20.7b; K-52).
 
 `export/pg.py` ile ayni akis (dosya onkosullari -> tek veritabani islemi, advisory kilit,
 `source` satiri `pg._source_satirlari` ile); sablon `pg_risale_sayfa.py`'dir. Dosya tarafi: kaynak

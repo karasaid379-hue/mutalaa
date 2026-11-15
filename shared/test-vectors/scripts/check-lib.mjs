@@ -583,7 +583,7 @@ function extractMealRule(line, out) {
 }
 
 /**
- * extract/risale-cumle (K-51 item 8): the sentence splitter of a Risale paragraph. Ranges are
+ * extract/risale-cumle (K-52 item 8): the sentence splitter of a Risale paragraph. Ranges are
  * Unicode code points and half open [start, end): in the text, ascending and disjoint; the
  * optional input.ar ranges (marks t = "ar") follow the same rules.
  * @param {Record<string, unknown>} line
@@ -765,7 +765,7 @@ const KINDS = new Map([
       extra: extractMealRule,
     },
   ],
-  // Risale sentence splitter (K-51 item 8): synthetic paragraph -> sentence ranges; only Python runs it.
+  // Risale sentence splitter (K-52 item 8): synthetic paragraph -> sentence ranges; only Python runs it.
   [
     'extract/risale-cumle.jsonl',
     {

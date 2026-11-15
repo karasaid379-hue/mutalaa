@@ -1,7 +1,7 @@
 """A20.7a atif araci olcum duzenegi: orneklem, kosu ve rapor (hat tarafi; veritabani yok).
 
 Uc aday arac (`ijaza` 2.0.0, `quran-detector` 0.0.2, `quran-toolkit` 0.1.0; QDetect elendi) ayni
-girdi ve ayni Tanzil metni uzerinde, her biri ayri bir surecte olculdu (13 Kasim 2026; K-51 madde
+girdi ve ayni Tanzil metni uzerinde, her biri ayri bir surecte olculdu (13 Kasim 2026; K-52 madde
 13). Kazanan `quran-toolkit` 0.1.0'dir ve proje bagimliligidir; `ijaza` ve `quran-detector`
 sarmalayicilari silindi: bu duzenek bugun yalniz `quran-toolkit` kosar, rapor birlestirme kodu
 olcum kaydini okumak icin kalir:
@@ -361,7 +361,7 @@ def _sarmalayici(
 
     del calisma  # arac dosya yazmaz (kuran_metni: bellekte jeton listesi)
     if arac != s.ARAC_ADI:
-        raise GirdiHatasi("bu arac sarmalayicisi kaldirildi (K-51 madde 13: kazanan quran-toolkit)")
+        raise GirdiHatasi("bu arac sarmalayicisi kaldirildi (K-52 madde 13: kazanan quran-toolkit)")
     kuran = ayetleri_kur(
         [(sure, ayet, uthmani) for sure, ayet, uthmani, _ in ayetler],
         [(sure, ayet, basit) for sure, ayet, _, basit in ayetler],

@@ -1,4 +1,4 @@
-# A06 (2026-10-26) · A20.0 (2026-11-12) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3 · karar: K-51
+# A06 (2026-10-26) · A20.0 (2026-11-12) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3 · karar: K-52
 slug = "risale-kelime-frekans"
 tur = "sozluk"
 baslik = "Kelime-Frekans deposu, sıklık sütunları"
@@ -7,7 +7,7 @@ provider = "github"
 kaynak_url = "https://github.com/alitekdemir/Risale-i-Nur-Kelime-Frekans"
 atif_metni = "Kelime sıklıkları: Risale-i-Nur-Kelime-Frekans deposu."
 notlar = '''
-`anlam` sütunu erisale.com gibi sitelerden derlenmiş; maddeye ve pakete yazılmaz, yalnız editör kartında başvuru olarak görünür (K-51 madde 10).
+`anlam` sütunu erisale.com gibi sitelerden derlenmiş; maddeye ve pakete yazılmaz, yalnız editör kartında başvuru olarak görünür (K-52 madde 10).
 Depodaki sıklık dosyalarının başlığı "frekans" (2026-10-26 okuması); ham CSV'de "anlam" sütunu var. Sürüm etiketi yok; surum alanı commit SHA'sıdır (12 Kasım 2026'da HEAD).
 KULLANICI KARARI (2026-10-26): tur = sozluk; kitap içi anlamlar kendi yazımımızdan ya da lügatlerden gelecek.
 Alma: data/gelen/risale-kelime-frekans/2026-11-12/ (zip, SHA256SUMS).'''

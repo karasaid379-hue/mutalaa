@@ -1,4 +1,4 @@
-"""Lugat kaynagi (`lugat-rnk`, `lugat-sozluk-rganeyev`) QA kapilari (A20.6b, K-51 madde 10, 14).
+"""Lugat kaynagi (`lugat-rnk`, `lugat-sozluk-rganeyev`) QA kapilari (A20.6b, K-52 madde 10, 14).
 
 Kapi islevleri bellekteki `KaynakGirdisi` uzerinde calisir; ham dosyalar, kilitler, staged
 Kelime-Frekans satirlari ve staged `lugat.jsonl` `qa/run_risale_lugat.py` tarafindan yuklenir.
@@ -251,7 +251,7 @@ def _madde_bulgulari(g: KaynakGirdisi) -> list[str]:
         "hash": "content_hash basliksoz ve tanimdan hesaplananla ayni degil",
         "anlam_no": "anlam_no tam sayi degil ya da aralik disinda",
         "kaynaklar": "kaynaklar bicimi bozuk (bayrak, siklik, kitaplar, risale_basliksoz)",
-        "anlam": "kaynaklar icinde anlam ya da tanim dizesi var (K-51 madde 10)",
+        "anlam": "kaynaklar icinde anlam ya da tanim dizesi var (K-52 madde 10)",
         "duzey": "duzey eslesmeye gore (1-3, yoksa 4) hesaplananla ayni degil",
     }
     bulgular: list[str] = []

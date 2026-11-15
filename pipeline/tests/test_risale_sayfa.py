@@ -178,7 +178,7 @@ def test_bolum_sayfa_ortasinda_ya_da_ayni_sayfada_ikinci_satir_yazilmaz_rapora_s
 
 
 def test_bolumun_sayfasi_gercek_sayfadir_json_pageno_degil_fark_raporlanir() -> None:
-    # json pageNo 5, gercek #n sayfasi 2: gercek sayfa esas alinir (K-51 madde 6)
+    # json pageNo 5, gercek #n sayfasi 2: gercek sayfa esas alinir (K-52 madde 6)
     birimler = [birim(P1, 14, 2, bolum=1, sayfa=1), birim(P2, 14, 3, bolum=5, sayfa=2)]
     sonuc = uret(birimler, [kayit(1, P1), kayit(2, P2)])
     r = sonuc.rapor

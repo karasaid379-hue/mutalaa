@@ -1,4 +1,4 @@
-"""Diyanet Risale metni alimi (A20.1, K-51 madde 2 ve 5): zip -> staged (karsilastirma verisi).
+"""Diyanet Risale metni alimi (A20.1, K-52 madde 2 ve 5): zip -> staged (karsilastirma verisi).
 
 `mutalaa ingest risale --source risale-asil-nusha`:
 
@@ -16,7 +16,7 @@
    `txt`'de karsiligi olmayan markdown tanimi `provenance.kaynak = "md"` ile alinir.
 4. Capalar: `rn:{kitap}[:{bolum}]:p{n}` (`n` dosyadaki birim sirasi, 1'den) ve dipnot icin
    `rn:{kitap}[:{bolum}]:hasiye-{n}:p{m}`. Bu capalar KARSILASTIRMA verisinin adresidir; son
-   yapi A20.2b ve RNK metni (K-51 madde 2) ile belirlenir.
+   yapi A20.2b ve RNK metni (K-52 madde 2) ile belirlenir.
 5. Ham kopya `data/raw/risale-asil-nusha/<tarih>/` (zip islenmeden, degismez), staged
    `units.jsonl` ve manifest. Hicbir sey veritabanina yazilmaz.
 
@@ -90,7 +90,7 @@ SAYI_ANAHTARLARI: Final = (
     "yalniz_bosluk_satir",
     "ayirici_satir",
 )
-# Metinde olduklari gibi kalan, kitap basina SAYISI kilitli karakter siniflari (K-51 madde 5).
+# Metinde olduklari gibi kalan, kitap basina SAYISI kilitli karakter siniflari (K-52 madde 5).
 KILITLI_KATEGORILER: Final = frozenset({"Cf", "Cc", "Cs", "Co", "Cn", "Zs", "Zl", "Zp"})
 
 

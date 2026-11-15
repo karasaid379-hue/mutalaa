@@ -8,7 +8,7 @@ export type ProblemContext =
 type MessageTable = Readonly<Record<string, string>>;
 
 const OFFSET_MARKER = 'Ofsetli';
-/** Start of the server's 422 message for a lügat madde approved without a definition (K-51 madde 10). */
+/** Start of the server's 422 message for a lügat madde approved without a definition (K-52 madde 10). */
 const LUGAT_MARKER = 'Lugat maddesi';
 
 /** `kod` of a problem; taken from `type` when the body has no `kod`; '' when neither is usable. */

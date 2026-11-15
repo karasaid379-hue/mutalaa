@@ -1,4 +1,4 @@
-"""Risale kitap tablosu `shared/data/risale-kitaplar.json` (A20.2a, K-51 madde 1 ve 4).
+"""Risale kitap tablosu `shared/data/risale-kitaplar.json` (A20.2a, K-52 madde 1 ve 4).
 
 Bu testler `data/` klasorune BAGLI DEGILDIR (CI'da yok): RNK katalogunun 85 kitap kimligi ve
 Diyanet deposunun dosya sayilari asagida sabit olarak tutulur (kimlikler ve sayilar; metin yok);
@@ -25,7 +25,7 @@ from mutalaa_pipeline.anchor.risale import (
     paket_kimligi,
 )
 
-# RNK katalogu (shelves.json, 12 Kasim 2026): raf -> kitap kimlikleri (K-51 madde 1: bes raf).
+# RNK katalogu (shelves.json, 12 Kasim 2026): raf -> kitap kimlikleri (K-52 madde 1: bes raf).
 RNK_KATALOG: dict[str, tuple[str, ...]] = {
     "tr": (
         "asamusa", "barla", "emirdag1", "emirdag2", "imankufur", "isarat", "kastamonu",
@@ -119,7 +119,7 @@ def test_dosya_bicimi_ve_kanonik_yazim() -> None:
 
 def test_87_kitap_ve_dagilim() -> None:
     assert len(TUM) == 87
-    assert Counter(k.metin_kaynagi for k in TUM) == {"rnk": 87}  # K-51 madde 2: RNK birincil
+    assert Counter(k.metin_kaynagi for k in TUM) == {"rnk": 87}  # K-52 madde 2: RNK birincil
     assert Counter(k.diyanet_karsiligi for k in TUM) == {"diyanet": 25, "derleme": 34, "rnk": 28}
     assert Counter(k.dil for k in TUM) == {"tr": 61, "ota": 12, "ar": 14}
     assert Counter(k.yon for k in TUM) == {"ltr": 61, "rtl": 26}
@@ -166,7 +166,7 @@ def test_her_rnk_kitabi_baglidir_yetim_yok() -> None:
     beklenen = {(raf, uid) for raf, uidler in RNK_KATALOG.items() for uid in uidler}
     baglanan = {_rnk(k) for k in TUM}
     assert baglanan == beklenen
-    assert all(k.rnk is not None for k in TUM)  # her kitabin RNK karsiligi var (K-51 madde 1)
+    assert all(k.rnk is not None for k in TUM)  # her kitabin RNK karsiligi var (K-52 madde 1)
 
 
 def test_bir_rnk_kitabi_yalniz_bolunen_icin_birden_cok_satira_baglanir() -> None:
@@ -296,7 +296,7 @@ def test_dosya_adi_guvenligi() -> None:
 
 
 # ---------------------------------------------------------------------------
-# dil, yon ve slug ekleri (K-51 madde 4)
+# dil, yon ve slug ekleri (K-52 madde 4)
 
 
 def test_dil_yon_slug_eki_ve_raf() -> None:

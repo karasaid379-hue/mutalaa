@@ -16,11 +16,11 @@ namespace Mutalaa.Infrastructure.Packs;
 /// kapidan gecen (IncludedLexicals) onayli quran_word_fix; root ve lemma yalniz Dictionary kaynaklarindan (kaynak kapidan girmis olmali: P-12) ve lemma
 /// yalniz lang = 'ar' ve onayli; lemma_gloss kapidan gecenler (onayli, ve dev/internal'da aday: status satirda 'aday' kalir) ve yalniz pakete giren lemmalara
 /// bagli. Uygulanamayan onayli duzeltme (WordMorphFixes) atlanir; kapi bunu zaten yayin reddi sayar. tr_form ve tr_root_index A18'e kadar bostur.
-/// Risale (A20.4, K-51): risale-{kitap} (PackDefinition.Book) yalniz kendi capa onekli birimlerini unit olarak alir (etiket RisaleLabels; arama satiri, baglanti
+/// Risale (A20.4, K-52): risale-{kitap} (PackDefinition.Book) yalniz kendi capa onekli birimlerini unit olarak alir (etiket RisaleLabels; arama satiri, baglanti
 /// ve sayfa eslemesi yoktur) ve dil ile yonu pack_meta'ya tasir. risale-dizin (IndexesBooks) unit yerine, kapidan giren her kitap paketinin birimleri icin
 /// unit_ref ve icerigi olmayan arama satirlari yazar (Osmanli ve Arapca kitaplarda yalniz ar_norm), bir ucu Risale olan baglantilari alir ve baski sayfa
 /// satirlarini yalniz iki ucu da kapsamdaki birimler icin yazar (K-47 ile ayni sarkan uc kurali; volume kitabin cildiyle ayni olmalidir). risale-dizin ayrica lugat
-/// tablosunu tasir (A20.6, K-51 madde 9 ve 10): Glossary kaynaklarinin kapidan giren (IncludedLexicals "lugat_madde:{source_id}:{anlam_no}:{basliksoz}") maddeleri (K-51 madde 14: ayni basliksoz farkli kaynaktan ve/veya farkli anlam_no ile gelebilir;
+/// tablosunu tasir (A20.6, K-52 madde 9 ve 10): Glossary kaynaklarinin kapidan giren (IncludedLexicals "lugat_madde:{source_id}:{anlam_no}:{basliksoz}") maddeleri (K-52 madde 14: ayni basliksoz farkli kaynaktan ve/veya farkli anlam_no ile gelebilir;
 /// tanimsiz aday, ayni normalize basliksozde tanimli madde varsa pakete yazilmaz); onayli her
 /// derlemeye, aday yalniz dev ve internal'a (status 'aday'), red hicbirine girmez; test- onekli kaynak public'e girmez (kaynak karari, P-12). kaynaklar (siklik, kitaplar,
 /// sozluk isabeti) ve anlam basvurusu pakete yazilmaz.
@@ -280,7 +280,7 @@ public static class PackAssembler
     }
 
     /// <summary>
-    /// risale-dizin lugat tablosu (K-51 madde 9, 10 ve 14). Satir yalniz kaynagi kapidan girmisse (P-01, P-12) ve madde P-09'dan gecmisse (IncludedLexicals) alinir; satir sirasi
+    /// risale-dizin lugat tablosu (K-52 madde 9, 10 ve 14). Satir yalniz kaynagi kapidan girmisse (P-01, P-12) ve madde P-09'dan gecmisse (IncludedLexicals) alinir; satir sirasi
     /// PackRows'a aittir. Anahtar (basliksoz, kaynak, anlam_no): ayni basliksoz farkli kaynaktan ve/veya farkli anlam_no ile gelebilir; ayni anahtar iki kez gelirse girdi tutarsizdir.
     /// Onayli maddenin tanimi dolu olmalidir (veritabani CHECK'i); bos ise girdi tutarsizdir. Tanimsiz (tanim_tr bos) aday, ayni normalize basliksozde (basliksoz_norm)
     /// tanimli bir madde de pakete giriyorsa yazilmaz (gurultuyu onler; tanimsiz basliksoz tek basina dev ve internal'da gorunur). Kaynak lugat satiri verdiyse kunye ve
@@ -347,7 +347,7 @@ public static class PackAssembler
     }
 
     /// <summary>
-    /// Dizin arama satiri: Turkce kitapta tr_wide, tr_stem ve ar_norm; Osmanlica ve Arapca kitapta yalniz ar_norm (tr_* NULL; K-51 madde 4). Birimde bulunmayan
+    /// Dizin arama satiri: Turkce kitapta tr_wide, tr_stem ve ar_norm; Osmanlica ve Arapca kitapta yalniz ar_norm (tr_* NULL; K-52 madde 4). Birimde bulunmayan
     /// sutun NULL kalir; sutunlar yazilirken yeniden hesaplanmaz.
     /// </summary>
     private static PackUnitSearchRow IndexSearchRow(RisaleBook book, UnitRow unit) =>

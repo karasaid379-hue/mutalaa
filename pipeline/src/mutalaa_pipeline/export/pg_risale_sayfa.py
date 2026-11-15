@@ -1,4 +1,4 @@
-"""`export pg --source risale-baski-rnk`: RNK baski sayfa esleme `page_map` yukleme (A20.3, K-51).
+"""`export pg --source risale-baski-rnk`: RNK baski sayfa esleme `page_map` yukleme (A20.3, K-52).
 
 `export/pg.py` ile ayni akis (dosya onkosullari -> tek veritabani islemi, advisory kilit,
 `source` satiri `pg._source_satirlari` ile); sablon `pg_yapi.py`'dir. Dosya tarafi: kaynak kaydi
@@ -6,7 +6,7 @@
 -> `risale-rnk-metin` anchor -> normalize -> ingest), QA raporu (DORT kapi: G-KAY, G-BUT, G-CAP,
 G-NOR; kalan kapida yukleme yapilmaz) ve satirlarin kati okunmasi.
 
-Yazma kurali (K-51 madde 6; Editoryal veritabani 9.1):
+Yazma kurali (K-52 madde 6; Editoryal veritabani 9.1):
 
 * `page_map` upsert'i: `INSERT ... ON CONFLICT (source_id, volume, page, line) DO UPDATE`; yalniz
   TURETILMIS sutunlar (`start_anchor`, `start_offset`, `end_anchor`, `end_offset`, `data_version`)

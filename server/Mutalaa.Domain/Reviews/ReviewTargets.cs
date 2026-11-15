@@ -7,7 +7,7 @@ namespace Mutalaa.Domain.Reviews;
 /// review.hedef_tablo degerleri (Editoryal veritabani 8, CHECK listesiyle ayni) ve hedef_anahtar ayristirma.
 /// Anahtar bicimi hedefe gore degisir: unit = capa, surah_alias = <c>{surah_no}:{alias}</c> (ilk ':' ile bolunur),
 /// xref ve quran_word_fix = Guid, lemma ve lemma_gloss = tamsayi lemma_id, lugat_madde = <c>{source_id}:{anlam_no}:{basliksoz}</c>
-/// (K-51 madde 14; ilk iki ':' kaynak kimligini ve anlam sirasini ayirir, basliksoz ':' tasiyabilir). Eski bicim
+/// (K-52 madde 14; ilk iki ':' kaynak kimligini ve anlam sirasini ayirir, basliksoz ':' tasiyabilir). Eski bicim
 /// <c>{source_id}:{basliksoz}</c> (ikinci parca yalniz rakam degilse) <c>anlam_no = 1</c> sayilir.
 /// </summary>
 public static class ReviewTargets

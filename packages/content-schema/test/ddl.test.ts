@@ -234,7 +234,7 @@ const BELGELI_ROWIDSIZ = [
 ];
 
 /**
- * WITHOUT ROWID tables of the mushaf and audio packs and the Risale lugat table (K-51 madde 9; its table options
+ * WITHOUT ROWID tables of the mushaf and audio packs and the Risale lugat table (K-52 madde 9; its table options
  * follow the other keyed lookup tables). The documents give no table options for
  * the mushaf and audio tables (Mobil mimari 11 marks its page_line / glyph_word draft as a proposal, without the
  * option); the DDL files declare them WITHOUT ROWID and this list pins that.
@@ -524,13 +524,13 @@ describe('DDL', () => {
     expect(tablolar(yeniVeritabani('risale-dizin'))).not.toContain('unit_search');
   });
 
-  it('carries the lugat table in risale-dizin only (K-51 madde 9)', () => {
+  it('carries the lugat table in risale-dizin only (K-52 madde 9)', () => {
     for (const tur of TURLER) {
       expect(tablolar(yeniVeritabani(tur)).includes('lugat'), tur).toBe(tur === 'risale-dizin');
     }
   });
 
-  it('keeps the lugat table free of the reference data (siklik, kitaplar, anlam basvurusu; K-51 madde 10)', () => {
+  it('keeps the lugat table free of the reference data (siklik, kitaplar, anlam basvurusu; K-52 madde 10)', () => {
     const adlar = sutunlar(yeniVeritabani('risale-dizin'), 'lugat');
     for (const yasak of ['kaynaklar', 'siklik', 'kitaplar', 'anlam_basvuru', 'sozluk_isabet']) {
       expect(adlar).not.toContain(yasak);

@@ -1,4 +1,4 @@
-"""Lugat kaynaklari: RNK ve rganeyev/Sozluk (A20.6b, K-51 madde 10 ve 14): gelen -> raw -> staged.
+"""Lugat kaynaklari: RNK ve rganeyev/Sozluk (A20.6b, K-52 madde 10 ve 14): gelen -> raw -> staged.
 
 Iki kaynak, iki biçim (guvenilmeyen veri; yalniz bayt olarak okunur, hicbir sey calistirilmaz):
 

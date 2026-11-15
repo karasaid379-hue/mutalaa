@@ -2006,7 +2006,7 @@ const extractMealRejected = [
   ],
 ];
 
-// extract/risale-cumle.jsonl (K-51 item 8): synthetic paragraph, code point ranges, half open.
+// extract/risale-cumle.jsonl (K-52 item 8): synthetic paragraph, code point ranges, half open.
 // The file must carry Arabic and BMP-external characters as escapes (escapes rule), so the
 // accepted cases write every non-ASCII UTF-16 code unit as \uXXXX.
 /**

@@ -21,7 +21,7 @@ internal enum ReviewStage
 
 /// <summary>
 /// Kuyruk siralamasi (<c>sira</c>): olusturma (varsayilan, created_at ve id), kelime anlami dalgasi (K-50 madde 7) ya da lugat maddesi
-/// siklik sirasi (azalan <c>kaynaklar.siklik</c>, K-51 madde 9 ve 10).
+/// siklik sirasi (azalan <c>kaynaklar.siklik</c>, K-52 madde 9 ve 10).
 /// </summary>
 internal enum ReviewSort
 {
@@ -168,10 +168,10 @@ internal static class ReviewQueries
     }
 
     /// <summary>
-    /// Lugat sirasi (K-51 madde 10): (siklik azalan, review.id artan). Siklik <c>kaynaklar-&gt;&gt;'siklik'</c> degeridir
+    /// Lugat sirasi (K-52 madde 10): (siklik azalan, review.id artan). Siklik <c>kaynaklar-&gt;&gt;'siklik'</c> degeridir
     /// (<see cref="LugatMaddeText.SiklikKey"/>); sayi olmayan ya da eksik deger 0 sayilir (cast hatasi listeyi 500 yapmaz).
     /// Birlesim metin karsilastirmasidir: yeni anahtar <c>source_id || ':' || anlam_no || ':' || basliksoz</c>, anlam_no = 1 satirlari icin eski
-    /// <c>source_id || ':' || basliksoz</c> da (K-51 madde 14, geriye uyum); iki biçimin cakistigi seyrek durumda en buyuk siklik alinir, satir coklanmaz.
+    /// <c>source_id || ':' || basliksoz</c> da (K-52 madde 14, geriye uyum); iki biçimin cakistigi seyrek durumda en buyuk siklik alinir, satir coklanmaz.
     /// Madde satiri olmayan kayit siklik 0'dadir.
     /// Anahtarlar once (kimlik, siklik) ile sayfalanir, sonra satirlar tek sorguyla okunup bu sirada dizilir.
     /// </summary>

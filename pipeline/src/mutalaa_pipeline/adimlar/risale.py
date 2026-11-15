@@ -1,4 +1,4 @@
-"""RNK Risale normalize ve capa adimlari (A20.2b, K-51 madde 2, 4 ve 8): `risale-rnk-metin`.
+"""RNK Risale normalize ve capa adimlari (A20.2b, K-52 madde 2, 4 ve 8): `risale-rnk-metin`.
 
 Iskelet `adimlar/fikstur.py` ile aynidir; birimler cok buyuk oldugu icin dosyalar satir satir
 akitilir (`staged.satirlari_akit`) ve bellekte yalniz tek satirin nesnesi ile siralanacak satir
@@ -9,7 +9,7 @@ alanlari ekler. Kanonik metin (`text`) hicbir donusumden gecmez (K-26: ucuncu ta
 `mutalaa normalize --source risale-rnk-metin`: son ingest calismasini okur, arama anahtarlarini
 ekler. Turkce (`dil = tr`) kitapta `tr_narrow`, `tr_wide`, `tr_stem` ve `ar_norm` (Arapca bloklar,
 yoksa `null`); Osmanlica (`ota`) ve Arapca (`ar`) kitapta YALNIZ `ar_norm` (`tr_*` `null`;
-K-51 madde 4). Anahtarlar `search_keys` ve `normalize_ar` ile uretilir.
+K-52 madde 4). Anahtarlar `search_keys` ve `normalize_ar` ile uretilir.
 
 `mutalaa anchor --source risale-rnk-metin`: son normalize calismasina `export pg` icin alanlari
 ekler ve `units.jsonl` yazar:
@@ -180,7 +180,7 @@ def normalize_satiri(slug: str, satir: Satir) -> dict[str, object]:
             tr_stem=anahtarlar.tr_stem,
             ar_norm=anahtarlar.ar_norm or None,
         )
-    else:  # Osmanlica ve Arapca: yalniz ar_norm (K-51 madde 4)
+    else:  # Osmanlica ve Arapca: yalniz ar_norm (K-52 madde 4)
         cikti.update(
             tr_narrow=None,
             tr_wide=None,

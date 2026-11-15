@@ -3,7 +3,7 @@ using Mutalaa.Domain.Links;
 namespace Mutalaa.Domain.Content;
 
 /// <summary>
-/// icerik.lugat_madde satiri (Editoryal veritabani 5; K-51 madde 9, 10 ve 14): Risale lugat maddesi. Hat, lugat kaynagindan tanimli
+/// icerik.lugat_madde satiri (Editoryal veritabani 5; K-52 madde 9, 10 ve 14): Risale lugat maddesi. Hat, lugat kaynagindan tanimli
 /// (<c>origin = 'kaynak'</c>, bayt bayt) ya da yalniz Risale basliksozunden tanimsiz (<c>origin = 'hat'</c>) <c>aday</c> acar;
 /// editor kaynak tanimini degistirmeden onaylar ya da duzenleyip onaylar (<c>origin = 'editor'</c>), tanimsiz adayin tanimini yazar.
 /// </summary>
@@ -19,7 +19,7 @@ public sealed class LugatMadde
 
     public required string BasliksozNorm { get; set; }
 
-    /// <summary>Ayni (kaynak, basliksoz) icin kaynak sirasiyla anlam sirasi (1'den; K-51 madde 14). Veritabani varsayilani 1.</summary>
+    /// <summary>Ayni (kaynak, basliksoz) icin kaynak sirasiyla anlam sirasi (1'den; K-52 madde 14). Veritabani varsayilani 1.</summary>
     public short AnlamNo { get; set; } = 1;
 
     public string? OsmanlicaYazim { get; set; }
@@ -34,7 +34,7 @@ public sealed class LugatMadde
 
     public int? ArKokId { get; set; }
 
-    /// <summary>jsonb: <c>siklik</c> (int), <c>kitaplar</c>, sozluk isabetleri ... salt basvuru; paketlenmez. Anlam basvurusu (<c>anlam_basvuru</c>) burada DEGIL, <c>review.onerilen</c> icindedir (K-51 madde 10).</summary>
+    /// <summary>jsonb: <c>siklik</c> (int), <c>kitaplar</c>, sozluk isabetleri ... salt basvuru; paketlenmez. Anlam basvurusu (<c>anlam_basvuru</c>) burada DEGIL, <c>review.onerilen</c> icindedir (K-52 madde 10).</summary>
     public string Kaynaklar { get; set; } = "{}";
 
     /// <summary>Risale siklik duzeyi: 1..3 siklik, 4 = Risale baslik soz listesinde yok (CHECK 1..4).</summary>

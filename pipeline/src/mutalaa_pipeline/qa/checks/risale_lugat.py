@@ -1,4 +1,4 @@
-"""Risale lugat (Kelime-Frekans) QA kapilari (A20.6, K-51 madde 9, 10): G-KAY, G-BUT, G-CAP, G-NOR.
+"""Risale lugat (Kelime-Frekans) QA kapilari (A20.6, K-52 madde 9, 10): G-KAY, G-BUT, G-CAP, G-NOR.
 
 Lugat kaynaklari `lugat-rnk` ve `lugat-sozluk-rganeyev` (A20.6b) icin ayni dort kapi
 `qa/checks/risale_lugat_kaynak.py` dosyasindadir (burada `KAYNAK_KAPI_ISLEVLERI` olarak
@@ -234,7 +234,7 @@ def _madde_bulgulari(g: LugatGirdisi, anlamlar: set[str]) -> list[str]:
         "hash": "content_hash basliksoz ve bos tanimdan hesaplananla ayni degil",
         "duzey": "duzey siklik esiklerinden hesaplananla ayni degil",
         "kaynaklar": "kaynaklar ya da onerilen_basvuru bicimi bozuk (siklik, kitaplar, sozluk)",
-        "anlam": "anlam dizesi maddeye gecmis (K-51 madde 10)",
+        "anlam": "anlam dizesi maddeye gecmis (K-52 madde 10)",
         "sozluk": "sozluk_isabet kaydi bozuk",
     }
     bulgular: list[str] = []

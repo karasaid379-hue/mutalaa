@@ -31,7 +31,7 @@ shared/test-vectors/
   content-hash/hash.jsonl   # kanonik metin özeti
   fts-query/query.jsonl     # sorgu → FTS5 MATCH ifadesi (doğruluk; Arama §3); yalnız TypeScript koşar (fq-); Arapça fq-ar- satırları --fts-ornekleri ile üretilir
   extract/meal.jsonl        # meal çıkarımı (ex-); yalnız Python koşar (K-49 madde 13)
-  extract/risale-cumle.jsonl # sentetik Risale cümle sınırları (rc-; kod noktası, yarı açık aralık); yalnız Python koşar, C# koşucusu atlama kaydıyla geçer (K-51 madde 8)
+  extract/risale-cumle.jsonl # sentetik Risale cümle sınırları (rc-; kod noktası, yarı açık aralık); yalnız Python koşar, C# koşucusu atlama kaydıyla geçer (K-52 madde 8)
   arama/olcum.jsonl         # arama ölçüm kümesi (bölüm 10); vektör değildir, koşucular okumaz
 ```
 

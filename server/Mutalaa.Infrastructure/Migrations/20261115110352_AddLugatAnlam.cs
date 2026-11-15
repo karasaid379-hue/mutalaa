@@ -10,7 +10,7 @@ namespace Mutalaa.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // K-51 madde 14. Genislet: anlam_no DEFAULT 1 mevcut satirlarin hepsini 1 yapar (tasima); daralt: tekillik
+            // K-52 madde 14. Genislet: anlam_no DEFAULT 1 mevcut satirlarin hepsini 1 yapar (tasima); daralt: tekillik
             // (source_id, basliksoz, anlam_no) olur, origin CHECK'ine 'kaynak' eklenir. Ayni transaction'da calisir.
             migrationBuilder.DropUniqueConstraint(
                 name: "lugat_madde_source_id_basliksoz_key",
@@ -58,7 +58,7 @@ namespace Mutalaa.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // Eski sema ikinci anlami ve 'kaynak' kokenini tasiyamaz: bu satirlar hat tarafindan yeniden yuklenebilir (K-51 madde 14).
+            // Eski sema ikinci anlami ve 'kaynak' kokenini tasiyamaz: bu satirlar hat tarafindan yeniden yuklenebilir (K-52 madde 14).
             migrationBuilder.Sql("DELETE FROM icerik.lugat_madde WHERE anlam_no > 1 OR origin = 'kaynak';");
 
             migrationBuilder.DropUniqueConstraint(

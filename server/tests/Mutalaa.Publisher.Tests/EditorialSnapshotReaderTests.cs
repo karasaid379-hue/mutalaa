@@ -477,7 +477,7 @@ public partial class EditorialSnapshotReaderTests(EditorialDatabase<EditorialSna
             """;
         await Db.ExecuteAsync(insert, ct, ("s", slug), ("b", "deneme:sozcuk"), ("n", "deneme sozcuk"), ("o", DBNull.Value), ("k", "deneme dili"), ("t", "Deneme tanimi"), ("kay", kaynaklar), ("st", "onayli"), ("or", "editor"), ("v", "3"), ("h", HashA));
         await Db.ExecuteAsync(insert, ct, ("s", slug), ("b", "aday-sozcuk"), ("n", "aday sozcuk"), ("o", "osmanlica"), ("k", DBNull.Value), ("t", DBNull.Value), ("kay", kaynaklar), ("st", "aday"), ("or", "hat"), ("v", "1"), ("h", HashB));
-        // Ayni baslik, ikinci anlam ve kaynak kokeni (K-51 madde 14).
+        // Ayni baslik, ikinci anlam ve kaynak kokeni (K-52 madde 14).
         await Db.ExecuteAsync(
             "INSERT INTO icerik.lugat_madde (source_id, basliksoz, basliksoz_norm, anlam_no, tanim_tr, duzey, status, origin, version, content_hash, data_version) VALUES (@s, 'aday-sozcuk', 'aday sozcuk', 2, 'Kaynak tanimi', 4, 'aday', 'kaynak', '1', @h, 'test')",
             ct,

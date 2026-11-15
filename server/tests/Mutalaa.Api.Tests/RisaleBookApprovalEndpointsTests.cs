@@ -14,7 +14,7 @@ using Mutalaa.Infrastructure.Packs;
 namespace Mutalaa.Api.Tests;
 
 /// <summary>
-/// POST /api/v1/risale/books/{kitap}/approve ile GET /risale/books ve /risale/books/{kitap} (K-51 madde 11; Docker'li): onkosullar (422),
+/// POST /api/v1/risale/books/{kitap}/approve ile GET /risale/books ve /risale/books/{kitap} (K-52 madde 11; Docker'li): onkosullar (422),
 /// If-Match kitap ozeti (428, 400, 412), yetki, tek islemde toplu onay, metnin degismemesi ve tek review satiri. Veriler sentetiktir
 /// ("Deneme paragrafi N"); gercek Risale metni yoktur. Kitap katalogu testte degistirilir (dogrulanmis kitap), 87 kitabin JSON'u okunmaz.
 /// </summary>

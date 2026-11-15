@@ -4,7 +4,7 @@ Akis: kaynak kaydi (`risale-asil-nusha`), son `ingest` calismasi ya da `--run`, 
 ciktilari (saglam ve manifestteki ozetle ayni), ham zip (`data/raw`, manifestteki ozetle) ve
 kilit; sonra G-KAY ve G-BUT (`qa/checks/risale.py`). G-CAP ve G-NOR bu adimda yoktur (G-CAP:
 A20.2b; arama metni uretilmez). `export pg` bu kaynak icin YOKTUR: Diyanet metni karsilastirma
-verisidir (K-51 madde 2), veritabanina yuklenmez.
+verisidir (K-52 madde 2), veritabanina yuklenmez.
 
 Rapor `data/reports/{run_id}.json`: `kaynak`, `ingest_run_id`, `units_sha256`, `kapilar`,
 `kapi_bulgulari`, `kapi_sayilari`, `olcumler`, `zincir`. Rapor ve bulgular metin tasimaz.

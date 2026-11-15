@@ -31,7 +31,7 @@ public static class ProblemCodes
     public const string OncekiYayinBozuk = "onceki-yayin-bozuk";
     public const string DepoErisilemiyor = "depo-erisilemiyor";
 
-    // Risale kitap onayi (K-51 madde 11): 422 on-kosul-eksik (eksikler uzantisi) ve 422 onaylanacak-birim-yok.
+    // Risale kitap onayi (K-52 madde 11): 422 on-kosul-eksik (eksikler uzantisi) ve 422 onaylanacak-birim-yok.
     public const string OnKosulEksik = "on-kosul-eksik";
     public const string OnaylanacakBirimYok = "onaylanacak-birim-yok";
 

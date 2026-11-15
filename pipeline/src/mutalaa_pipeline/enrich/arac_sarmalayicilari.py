@@ -1,4 +1,4 @@
-"""Atif araci sarmalayicisi: `quran-toolkit` 0.1.0 (K-51 madde 13; A20.7a olcumu sonrasi).
+"""Atif araci sarmalayicisi: `quran-toolkit` 0.1.0 (K-52 madde 13; A20.7a olcumu sonrasi).
 
 `ijaza` 2.0.0 ve `quran-detector` 0.0.2 elendi; sarmalayicilari ve import'lari silindi. Arac
 Kur'an verisini kendi paketinden degil Tanzil Simple Clean metninden alir (`kuran_metni`): her

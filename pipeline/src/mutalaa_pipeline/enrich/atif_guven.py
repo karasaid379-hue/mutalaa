@@ -1,6 +1,6 @@
 """Iktibas adayinin `score` ve `confidence` hesabi (A20.7b; Baglanti modeli §6, Iktibas §7-8).
 
-Hesap araca degil bize aittir (K-51 madde 13): arac yalniz eslesmeyi ve kelime konumlarini
+Hesap araca degil bize aittir (K-52 madde 13): arac yalniz eslesmeyi ve kelime konumlarini
 verir. Butun degerler "binde" tam sayidir (0..1000): staged JSON ondalik sayi tasimaz
 (`export/ortak.kati_json`); veritabaninda `score` ve `confidence` `binde / 1000` olur.
 

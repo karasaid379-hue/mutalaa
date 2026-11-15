@@ -139,7 +139,7 @@ function GlossMeta({ item }: { item: ReviewItem }) {
 /**
  * Route `kuyruk/lemma` (Kelime anlamları §6, K-13): the word meaning drafts (`lemma_gloss` + `anlam_kisa`),
  * the lemma status (`lemma` + `status`), the root and lemma corrections (`quran_word_fix`, every field) and the
- * Risale lügat (`lugat_madde` + `tanim_tr`, descending frequency, K-51) on four tabs; the filter is screen state. The first two are listed in wave order (`sira=dalga`, the default)
+ * Risale lügat (`lugat_madde` + `tanim_tr`, descending frequency, K-52) on four tabs; the filter is screen state. The first two are listed in wave order (`sira=dalga`, the default)
  * or in creation order; changing the order is a new query, so the cursor starts over (the API's cursors are
  * typed by order). The correction tab has no order (the API answers 400).
  */

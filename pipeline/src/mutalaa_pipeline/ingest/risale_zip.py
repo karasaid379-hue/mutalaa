@@ -1,4 +1,4 @@
-"""Risale zip'inin bellekte guvenli okunmasi (A20.1, K-51 madde 2).
+"""Risale zip'inin bellekte guvenli okunmasi (A20.1, K-52 madde 2).
 
 Indirilen zip guvenilmeyen veridir: diske ACILMAZ, hicbir uyesi calistirilmaz; uyeler yalniz bayt
 olarak bellekte okunur. Acilista butun uye adlari ve boyutlari denetlenir:

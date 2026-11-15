@@ -1,4 +1,4 @@
-// Visible text of the Risale lügat tab (kuyruk/lemma, fourth tab; K-51 madde 9, 10 and 14), Turkish. Same rules as
+// Visible text of the Risale lügat tab (kuyruk/lemma, fourth tab; K-52 madde 9, 10 and 14), Turkish. Same rules as
 // tr.ts: screens carry no literals. The reference meanings are unapproved reference data: they are shown with
 // that label and are never offered as the definition.
 

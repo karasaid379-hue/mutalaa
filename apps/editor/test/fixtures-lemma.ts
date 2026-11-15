@@ -210,7 +210,7 @@ export function lemmaInfo(over: Partial<S['LemmaDetailResponse']> = {}): S['Lemm
 /** The headword of a synthetic lügat madde (made-up, not Risale text). */
 export const lugatWord = (id: number) => `deneme-sozcuk-${id}`;
 
-/** A Risale lügat madde review (`lugat_madde` + `tanim_tr`); the key is `{source_id}:{basliksoz}` (K-51 madde 10). */
+/** A Risale lügat madde review (`lugat_madde` + `tanim_tr`); the key is `{source_id}:{basliksoz}` (K-52 madde 10). */
 export function lugatItem(id: number, over: Partial<S['ReviewItemDto']> = {}): S['ReviewItemDto'] {
   return reviewItem({
     id,
@@ -254,7 +254,7 @@ export function lugatDetail(
 export const lugatSourceText = (id: number) => `Deneme kaynak tanımı ${id}`;
 
 /**
- * A lügat madde review of a lügat source (K-51 madde 14): the key is `{source_id}:{anlam_no}:{basliksoz}`, the madde carries the
+ * A lügat madde review of a lügat source (K-52 madde 14): the key is `{source_id}:{anlam_no}:{basliksoz}`, the madde carries the
  * source definition (`origin = 'kaynak'`) unless `tanim` is null (a candidate without a definition, `origin = 'hat'`).
  */
 export function lugatSourceDetail(

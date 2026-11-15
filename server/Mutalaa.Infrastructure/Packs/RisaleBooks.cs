@@ -5,12 +5,12 @@ using System.Text.RegularExpressions;
 namespace Mutalaa.Infrastructure.Packs;
 
 /// <summary>
-/// Risale kitabi (shared/data/risale-kitaplar.json satiri). Paket kimligi <c>risale-{slug}</c>, capa oneki <c>rn:{slug}</c> (K-51 madde 4).
+/// Risale kitabi (shared/data/risale-kitaplar.json satiri). Paket kimligi <c>risale-{slug}</c>, capa oneki <c>rn:{slug}</c> (K-52 madde 4).
 /// Language: <c>tr</c>, <c>ota</c> (Osmanlica) ya da <c>ar</c>; Direction: <c>ltr</c> ya da <c>rtl</c> (Osmanlica ve Arapca kitaplarda rtl).
 /// Volume: RNK dosyasinin kalici cilt numarasi (page_map.volume, smallint; ayni dosyadan bolunen kitaplar ayni cildi paylasir); null yalniz
 /// katalogdaki sentetik fikstur kitabinda (sayfa eslemesi yok).
 /// Verified: JSON'daki <c>dogrulandi</c> (i-24: kitap kunyesi, icindekiler ve sayfa verisi editorce denetlendi); kitap onayi ucu bunu on kosul sayar
-/// (K-51 madde 11). Alan yoksa false.
+/// (K-52 madde 11). Alan yoksa false.
 /// </summary>
 public sealed record RisaleBook(string Slug, string Title, string Language, string Direction, int? Volume, bool Verified = false)
 {
@@ -22,7 +22,7 @@ public sealed record RisaleBook(string Slug, string Title, string Language, stri
 /// <summary>
 /// Risale kitap tablosu: <c>shared/data/risale-kitaplar.json</c> dosyasi Infrastructure'a gomulu kaynak olarak girer (csproj, LogicalName
 /// <c>risale-kitaplar.json</c>) ve katalog buradan URETILIR; slug, dil, yon ve cilt baska yerde elle tekrarlanmaz. Dosya ile katalogun esitligi
-/// RisalePackTests'tedir. Kurallar (Capa semasi 5, K-51 madde 4 ve 12): slug kucuk harf ASCII, rakam ve tire, en cok 64 karakter, benzersiz,
+/// RisalePackTests'tedir. Kurallar (Capa semasi 5, K-52 madde 4 ve 12): slug kucuk harf ASCII, rakam ve tire, en cok 64 karakter, benzersiz,
 /// <c>dizin</c> olamaz (risale-dizin paketiyle cakisir) ve <c>test-</c> ile baslayamaz (fikstur kitaplari katalogda ayridir).
 /// </summary>
 public static class RisaleBookTable

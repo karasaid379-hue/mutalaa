@@ -1,4 +1,4 @@
-"""`risale-baski-rnk` QA girdisinin yuklenmesi ve kapilarin kosulmasi (A20.3, K-51 madde 6-7).
+"""`risale-baski-rnk` QA girdisinin yuklenmesi ve kapilarin kosulmasi (A20.3, K-52 madde 6-7).
 
 Zincir: `anchor --source risale-baski-rnk` calismasi (`page_map.jsonl`), onun girdisi olan
 `risale-rnk-metin` anchor ve ingest calismalari (`units.jsonl`, `sayfalar.jsonl`, `kitaplar.jsonl`).

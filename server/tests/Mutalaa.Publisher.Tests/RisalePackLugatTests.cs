@@ -6,7 +6,7 @@ using Mutalaa.Infrastructure.Releases;
 
 namespace Mutalaa.Publisher.Tests;
 
-// Lugat (A20.6, K-51 madde 9 ve 10): risale-dizin'in lugat tablosu. RisalePackTests ile ayni sinif (kismi): sentetik Risale anlik goruntusunu ve
+// Lugat (A20.6, K-52 madde 9 ve 10): risale-dizin'in lugat tablosu. RisalePackTests ile ayni sinif (kismi): sentetik Risale anlik goruntusunu ve
 // yardimcilarini paylasir. Girdi tamamen sentetiktir ("deneme-sozcuk", "Deneme tanimi"); gercek Risale ya da sozluk metni yoktur. Docker gerektirmez.
 public partial class RisalePackTests
 {
@@ -64,7 +64,7 @@ public partial class RisalePackTests
         Assert.Equal("lugat", PackTables.Order[^1]);
         Assert.DoesNotContain(PackTables.Columns("lugat"), c => c is "kaynaklar" or "siklik" or "kitaplar" or "anlam_basvuru" or "sozluk_isabet" or "source_id" or "anlam");
 
-        // Satir kayitlari ve anlik goruntu satiri basvuru verisi tasimaz (K-51 madde 10).
+        // Satir kayitlari ve anlik goruntu satiri basvuru verisi tasimaz (K-52 madde 10).
         foreach (Type type in new[] { typeof(PackLugatRow), typeof(LugatMaddeRow) })
         {
             Assert.DoesNotContain(type.GetProperties(), p => p.Name is "Kaynaklar" or "Siklik" or "Kitaplar" or "AnlamBasvuru");

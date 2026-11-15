@@ -1,5 +1,5 @@
 # ruff: noqa: RUF001
-"""Risale adres dogrulayicisi (A20.2a, Capa semasi bolum 5, K-51 madde 4 ve 12).
+"""Risale adres dogrulayicisi (A20.2a, Capa semasi bolum 5, K-52 madde 4 ve 12).
 
 Girdiler sentetiktir; gercek Risale metni yoktur. Kitap adlari yalniz ad olarak (metin degil)
 yer alir; gorunmeyen karakterler (birlesen isaretler) `chr()` ile acik yazilir.

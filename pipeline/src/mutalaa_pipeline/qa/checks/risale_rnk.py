@@ -1,4 +1,4 @@
-"""RNK metin QA kapilari (A20.1b, A20.2b; K-51): G-KAY, G-BUT, G-CAP, G-NOR (`risale-rnk-metin`).
+"""RNK metin QA kapilari (A20.1b, A20.2b; K-52): G-KAY, G-BUT, G-CAP, G-NOR (`risale-rnk-metin`).
 
 Kapi islevleri bellekteki `RnkGirdisi` uzerinde calisir; yukleyici `girdi_yukle` staged klasorunu
 ve ham dosyalari okur. Bulgular ASCII ve kisadir: yalniz dosya (`raf/uid`), capa, sayi ve alan

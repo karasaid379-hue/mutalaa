@@ -9,7 +9,7 @@ namespace Mutalaa.Infrastructure.Reviews;
 public sealed record RisaleBookCounts(string Slug, long Total, long Draft, long Approved);
 
 /// <summary>
-/// Kitap onayi sorgulari ve toplu yazma (K-51 madde 11). Birim capasi <c>AnchorRef</c> donusturuculu oldugu icin esleme ham SQL ile yapilir
+/// Kitap onayi sorgulari ve toplu yazma (K-52 madde 11). Birim capasi <c>AnchorRef</c> donusturuculu oldugu icin esleme ham SQL ile yapilir
 /// (yalniz sutunlar; kullanici girdisi parametredir). Kitap = <c>kind = 'risale'</c>, <c>status = 'etkin'</c> ve capa oneki <c>rn:{slug}:</c>
 /// olan birimler; oneke slug'i izleyen <c>:</c> dahildir, boylece <c>sozler</c> ile <c>sozler-osmanlica</c> karismaz.
 /// </summary>

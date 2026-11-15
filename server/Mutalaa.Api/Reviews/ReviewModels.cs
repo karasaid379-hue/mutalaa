@@ -182,7 +182,7 @@ public sealed record ReviewTargetSnapshot
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? YalnizcaEtimolojik { get; init; }
 
-    // lugat_madde (K-51 madde 9, 10 ve 14): kaynak kimligi Source alaninda, siklik ve anlam basvurusu review.onerilen'dedir.
+    // lugat_madde (K-52 madde 9, 10 ve 14): kaynak kimligi Source alaninda, siklik ve anlam basvurusu review.onerilen'dedir.
     /// <summary>lugat_madde: ayni basligin kaynak sirasiyla anlam sirasi (1'den).</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? AnlamNo { get; init; }
@@ -218,7 +218,7 @@ public sealed record ReviewStatsResponse(IReadOnlyList<ReviewQueueCount> Kuyrukl
 
 /// <summary>
 /// Editorun duzenledigi deger: birim metni onayinda <c>metin</c>, lemma_gloss onayinda <c>anlam_kisa</c> (K-50 madde 6),
-/// lugat_madde onayinda <c>tanim_tr</c> (K-51 madde 10); hedefe gore yalniz biri verilir, ote hedeflerde duzenlenen deger
+/// lugat_madde onayinda <c>tanim_tr</c> (K-52 madde 10); hedefe gore yalniz biri verilir, ote hedeflerde duzenlenen deger
 /// 422 <c>inceleme-desteklenmiyor</c> alir.
 /// </summary>
 public sealed record DecisionEdit(string? Metin = null, string? AnlamKisa = null, string? TanimTr = null);

@@ -306,7 +306,7 @@ public sealed class EditorialSnapshotReader : IAsyncDisposable
 
     /// <summary>
     /// Lugat maddeleri (butun durumlar; (source_id, basliksoz, anlam_no) bayt sirali). <c>kaynaklar</c> sutunu okunmaz: siklik, kitap ve anlam basvurusu pakete girmez
-    /// (K-51 madde 10). Tablo bossa satir uretmez.
+    /// (K-52 madde 10). Tablo bossa satir uretmez.
     /// </summary>
     public async Task<IReadOnlyList<LugatMaddeRow>> ReadLugatMaddelerAsync(CancellationToken cancellationToken)
     {

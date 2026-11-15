@@ -139,7 +139,7 @@ describe('problem text of the lügat decision', () => {
   });
 });
 
-describe('parseLugatKey (K-51 madde 14)', () => {
+describe('parseLugatKey (K-52 madde 14)', () => {
   it('splits the three-part key and keeps colons in the headword', () => {
     expect(parseLugatKey('lugat-rnk:2:deneme')).toEqual({
       source: 'lugat-rnk',

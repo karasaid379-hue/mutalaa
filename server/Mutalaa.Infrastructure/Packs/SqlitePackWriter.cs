@@ -16,7 +16,7 @@ public static class PackMetaKeys
     /// </summary>
     public const string WordFixCount = "word_fix_count";
 
-    /// <summary>Risale kitap paketinin dili: <c>tr</c>, <c>ota</c> (Osmanlica) ya da <c>ar</c> (K-51 madde 4). Diger paketlerde anahtar yoktur.</summary>
+    /// <summary>Risale kitap paketinin dili: <c>tr</c>, <c>ota</c> (Osmanlica) ya da <c>ar</c> (K-52 madde 4). Diger paketlerde anahtar yoktur.</summary>
     public const string Language = "dil";
 
     /// <summary>Risale kitap paketinin yazi yonu: <c>ltr</c> ya da <c>rtl</c> (Osmanlica ve Arapca kitaplarda rtl). Diger paketlerde anahtar yoktur.</summary>
@@ -390,7 +390,7 @@ public sealed class SqlitePackWriter
             ["unit_count"] = (content.Units.Count + content.UnitRefs.Count).ToString(CultureInfo.InvariantCulture),
         };
 
-        // Risale kitap paketi: dil ve yon (K-51 madde 4); diger paketlerde anahtar yoktur.
+        // Risale kitap paketi: dil ve yon (K-52 madde 4); diger paketlerde anahtar yoktur.
         if (content.Language is { } language)
         {
             meta[PackMetaKeys.Language] = language;

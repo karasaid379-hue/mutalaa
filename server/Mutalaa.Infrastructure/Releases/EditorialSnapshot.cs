@@ -97,7 +97,7 @@ public sealed record LemmaGlossRow(
     string Version);
 
 /// <summary>
-/// lugat_madde satiri (K-51 madde 9, 10 ve 14): paketlenen sutunlar; AnlamNo ayni (kaynak, basliksoz) icin kaynak sirasiyla anlam sirasidir. <c>kaynaklar</c> (siklik, kitaplar, sozluk isabeti) ve anlam basvurusu BILEREK okunmaz:
+/// lugat_madde satiri (K-52 madde 9, 10 ve 14): paketlenen sutunlar; AnlamNo ayni (kaynak, basliksoz) icin kaynak sirasiyla anlam sirasidir. <c>kaynaklar</c> (siklik, kitaplar, sozluk isabeti) ve anlam basvurusu BILEREK okunmaz:
 /// basvuru pakete ve maddeye yazilmaz. Version metindir ('1', onayda +1); Status 'onayli', 'aday' ya da 'red'.
 /// </summary>
 public sealed record LugatMaddeRow(

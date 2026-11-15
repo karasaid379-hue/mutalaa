@@ -1,7 +1,7 @@
 # ruff: noqa: RUF001
 """Risale (`rn:`) kitap ve bolum adlari: dogrulayici, kaliplar, slug turetme, kitap tablosu.
 
-Davranis Capa semasi bolum 5 (slug kurallari), K-26, K-51 madde 4 ve madde 12 ile belirlidir.
+Davranis Capa semasi bolum 5 (slug kurallari), K-26, K-52 madde 4 ve madde 12 ile belirlidir.
 Capa ayristirma, bicimleme ve siralama `anchor.capa` uygulamasindadir; bu dosya onlari
 yeniden yazmaz, yalniz adlari dogrular ve `rn:` capasini `capa.format` ile uretir.
 
@@ -73,13 +73,13 @@ _KANONIK_SAYI: Final = re.compile("[1-9][0-9]*")
 
 DILLER: Final = ("tr", "ota", "ar")
 YONLER: Final = ("ltr", "rtl")
-# K-51 madde 2: butun kitaplarin metni RNK'dandir (13 Kasim 2026); Diyanet yalniz karsilastirmadir.
+# K-52 madde 2: butun kitaplarin metni RNK'dandir (13 Kasim 2026); Diyanet yalniz karsilastirmadir.
 METIN_KAYNAKLARI: Final = ("rnk",)
 # Eski siniflama: kitabin Diyanet'teki karsiligi (diyanet: ayni ad; derleme: bolum derlemesi;
 # rnk: Diyanet'te yok). Karsilastirma ve rapor icin saklanir; metin kaynagini belirlemez.
 DIYANET_KARSILIKLARI: Final = ("diyanet", "derleme", "rnk")
 RNK_RAFLARI: Final = ("tr", "tr_k", "osm", "ar", "ar_k")
-# Dil -> RNK rafi (K-51 madde 1) ve slug eki.
+# Dil -> RNK rafi (K-52 madde 1) ve slug eki.
 _DIL_RAFLARI: Final[dict[str, tuple[str, ...]]] = {
     "tr": ("tr", "tr_k"),
     "ota": ("osm",),
@@ -456,7 +456,7 @@ class BolunmeParcasi:
 
 @dataclass(frozen=True, slots=True)
 class Bolunme:
-    """Bir RNK kitabinin birden cok slug'a bolunmesi (K-51 madde 1)."""
+    """Bir RNK kitabinin birden cok slug'a bolunmesi (K-52 madde 1)."""
 
     son_sayfa: int
     parcalar: tuple[BolunmeParcasi, ...]
@@ -468,7 +468,7 @@ class RnkBaglanti:
     uid: str
     ad: str
     bolunme: Bolunme | None = None
-    cilt: int | None = None  # kalici cilt numarasi (`page_map.volume`, K-51 madde 6)
+    cilt: int | None = None  # kalici cilt numarasi (`page_map.volume`, K-52 madde 6)
 
 
 @dataclass(frozen=True, slots=True)
@@ -639,7 +639,7 @@ def _tutarlilik(kitap: Kitap, nerede: str) -> None:
     if kitap.yon != beklenen_yon:
         raise _hata(f"{nerede}: dil {kitap.dil} icin yon {beklenen_yon} olmali")
     if (kitap.dil == "ota") != ek_osmanlica or (kitap.dil == "ar") != ek_arapca:
-        raise _hata(f"{nerede}: slug eki dille uyusmuyor (K-51 madde 4)")
+        raise _hata(f"{nerede}: slug eki dille uyusmuyor (K-52 madde 4)")
     if kitap.dil != "tr" and (kitap.diyanet_karsiligi != "rnk" or kitap.diyanet is not None):
         raise _hata(f"{nerede}: Osmanlica ve Arapca kitabin Diyanet karsiligi yoktur")
     if (kitap.diyanet_karsiligi == "diyanet") != (kitap.diyanet is not None):
@@ -647,7 +647,7 @@ def _tutarlilik(kitap: Kitap, nerede: str) -> None:
             f"{nerede}: diyanet alani yalniz diyanet_karsiligi=diyanet olan kitapta dolu olur"
         )
     if kitap.rnk is None:
-        raise _hata(f"{nerede}: her kitap bir RNK kitabina baglidir (K-51 madde 1)")
+        raise _hata(f"{nerede}: her kitap bir RNK kitabina baglidir (K-52 madde 1)")
     if kitap.rnk.raf not in _DIL_RAFLARI[kitap.dil]:
         raise _hata(f"{nerede}: RNK rafi dille uyusmuyor")
     bolunme = kitap.rnk.bolunme

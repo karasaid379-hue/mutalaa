@@ -123,7 +123,7 @@ public static class PackSelfCheck
             PackSourceCheck(connection, tableSet, expectations.Sources),
         ];
 
-        // Lugat (yalniz risale-dizin; K-51 madde 9): maddesi olmayan paketlerin madde listesi degismez.
+        // Lugat (yalniz risale-dizin; K-52 madde 9): maddesi olmayan paketlerin madde listesi degismez.
         if (tableSet.Contains("lugat"))
         {
             items.Add(LugatCheck(connection, meta));
@@ -132,8 +132,8 @@ public static class PackSelfCheck
         return new PackSelfCheckReport(expectations.PackId, expectations.Version, items);
     }
 
-    // lugat: durum yalniz onayli ya da aday, onayli maddenin tanimi dolu, public pakette aday yok (K-51 madde 9; red hicbir pakete girmez); anahtar (basliksoz, kaynak, anlam_no)
-    // birincil anahtardir, anlam_no >= 1, kaynak dolu ve tanimsiz satir ayni normalize basliksozde tanimli satir varken pakette bulunmaz (K-51 madde 14).
+    // lugat: durum yalniz onayli ya da aday, onayli maddenin tanimi dolu, public pakette aday yok (K-52 madde 9; red hicbir pakete girmez); anahtar (basliksoz, kaynak, anlam_no)
+    // birincil anahtardir, anlam_no >= 1, kaynak dolu ve tanimsiz satir ayni normalize basliksozde tanimli satir varken pakette bulunmaz (K-52 madde 14).
     private static SelfCheckItem LugatCheck(SqliteConnection connection, Dictionary<string, string> meta)
     {
         List<string> problems = [];

@@ -1,11 +1,11 @@
-"""`export pg --source risale-rnk-metin`: RNK Risale birimleri (A20.2b, K-51).
+"""`export pg --source risale-rnk-metin`: RNK Risale birimleri (A20.2b, K-52).
 
 `export/pg.py` ile ayni akis (dosya onkosullari -> tek veritabani islemi, advisory kilit,
 `source` satiri `pg._source_satirlari` ile); sablonlar `pg_fikstur.py` ve `pg_meal.py`'dir. Dosya
 tarafi: kaynak kaydi (G-KAY), son `anchor` calismasi (`units.jsonl`), zincir (anchor -> normalize
 -> ingest), QA raporu (DORT kapi: G-KAY, G-BUT, G-CAP, G-NOR; kalan kapida yukleme yapilmaz) ve
 satirlarin kati okunmasi. Diyanet (`risale-asil-nusha`) karsilastirma verisidir: `export pg` onu
-REDDEDER (cikis 2; K-51 madde 2).
+REDDEDER (cikis 2; K-52 madde 2).
 
 BOYUT: `units.jsonl` yuzlerce MB, ~139 bin satirdir. Dosya hicbir yerde bellege toptan alinmaz:
 `hazirla` satir satir akitip dogrular (bellekte yalniz capa kumesi), `yukle` ayni dosyayi yeniden
@@ -13,7 +13,7 @@ akitir ve `staging_risale` gecici tablosuna `COPY` ile PARTI PARTI (`PARTI`) yaz
 ve sonraki ifadeler TEK islem icindedir, hata hepsini geri alir. Yuklemeden once dosya ozeti
 yeniden hesaplanir (hazirlik ile yukleme arasinda dosya degismemeli).
 
-BIRIM KURALLARI (K-51 madde 8 ve 11, K-26; hat Risale metnini DUZELTMEZ):
+BIRIM KURALLARI (K-52 madde 8 ve 11, K-26; hat Risale metnini DUZELTMEZ):
 
 * Capa yoksa `metin_durumu = 'taslak'` ve `status = 'etkin'` ile eklenir (`role`, `parent_path`,
   `ord`, `marks`, `sentences`, `attrs`, `tr_*`, `ar_norm`, `provenance` dahil).
@@ -31,7 +31,7 @@ BIRIM KURALLARI (K-51 madde 8 ve 11, K-26; hat Risale metnini DUZELTMEZ):
   olmayan capa (capa durur kurali) islemi geri aldirir (cikis 1).
 * Turkce (`attrs.dil = 'tr'`) taslak birimde `tr_stem IS NULL` ise `tr_stem` veritabanindaki
   metinden hesaplanir (`pg_meal._tr_stem_doldur` kalibi; yalniz bu sutun). Osmanlica ve Arapca
-  kitapta `tr_*` hep NULL'dur; yalniz `ar_norm` dolar (K-51 madde 4).
+  kitapta `tr_*` hep NULL'dur; yalniz `ar_norm` dolar (K-52 madde 4).
 
 Iletiler ve rapor yalniz sayi, capa ve alan adi tasir; metin yazilmaz. Sayaclar: `staging`,
 `kitap`, `eklenen`, `ayni_kalan`, `guncellenen`, `metin_degisti`, `atlanan_onayli`,
@@ -135,7 +135,7 @@ def kaynak_denetle(source_id: str) -> None:
     if kayit is None or not kayit.yukleme:
         raise GirdiHatasi(
             f"{source_id}: karsilastirma verisi, export pg birim yuklemez"
-            f" (K-51 madde 2: birincil metin {KAYNAK_RNK})"
+            f" (K-52 madde 2: birincil metin {KAYNAK_RNK})"
         )
 
 

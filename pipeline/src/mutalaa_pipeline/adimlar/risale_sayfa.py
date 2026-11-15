@@ -1,4 +1,4 @@
-"""RNK baski sayfa esleme adimi (A20.3, K-51 madde 6 ve 7): `risale-baski-rnk`.
+"""RNK baski sayfa esleme adimi (A20.3, K-52 madde 6 ve 7): `risale-baski-rnk`.
 
 `mutalaa anchor --source risale-baski-rnk`: `risale-rnk-metin` zincirinin iki ciktisini okur ve
 `page_map` satirlarini `staged/risale-baski-rnk/{run_id}/` altina yazar:
@@ -11,14 +11,14 @@ Cikti `page_map.jsonl` (yalniz sayi ve capa; METIN YOK) ve kitap basina `page_ma
 Her satir `start_hash` ve `end_hash` (uc birimlerin `content_hash` degeri) tasir: `page_map`
 tablosuna yazilmaz, `export pg` yukleme anindaki birim ozeti denetimi icindir.
 
-SATIR KURALLARI (K-51 madde 6; Editoryal veritabani 9.1):
+SATIR KURALLARI (K-52 madde 6; Editoryal veritabani 9.1):
 
 * Tek tablo: `source_id = risale-baski-rnk`, `volume` RNK dosyasinin (`{raf}/{uid}`) cilt
   numarasidir, `page` basili sayfa numarasidir (`#n`), `line` NULL'dur. Anahtar
   `(source_id, volume, page, line)` oldugu icin bir sayfa en cok bir satirdir.
 * `volume` DDL'de `smallint`tir; RNK kitap kimligi (`uid`) metindir. Bu yuzden `volume`,
   `risale-kitaplar.json` `rnk.cilt` alanindaki KALICI cilt numarasidir (1'den; bir kez verilir,
-  degismez, yeni RNK dosyasi sona eklenir; K-51 madde 6). Numara <-> `{raf}/{uid}` eslesmesi her
+  degismez, yeni RNK dosyasi sona eklenir; K-52 madde 6). Numara <-> `{raf}/{uid}` eslesmesi her
   kosuda manifestte (`ayrintilar.cilt`) yazilidir.
 * Gercek sayfa satiri: `start_anchor` sayfanin ILK metin karakterinin ait oldugu birimin capasi
   (sayfa tam birim basinda ise `start_offset = 0`, birim ortasinda `ofs`); `end_anchor` bir
@@ -109,7 +109,7 @@ TUR_ICERIK_YOK: Final = "icerik-yok"
 def cilt_tablosu(tablo: tuple[Kitap, ...] | None = None) -> dict[str, int]:
     """`{raf}/{uid}` -> kalici cilt numarasi (`volume`): `risale-kitaplar.json` `rnk.cilt`.
 
-    Numara bir kez verilir ve degismez; yeni RNK dosyasi sona eklenir (K-51 madde 6). Bolunen
+    Numara bir kez verilir ve degismez; yeni RNK dosyasi sona eklenir (K-52 madde 6). Bolunen
     dosyada (sunuhat) uc slug ayni numarayi tasir. Tablo yukleyicisi tekilligi ve araligi da
     denetler; burada tablo disaridan verilebildigi icin yeniden sinanir.
     """
@@ -356,7 +356,7 @@ def dosya_satirlari(
     for sira_b, b in enumerate(birimler):
         if b.bolum_sayfasi is None:
             continue  # json dugumuyle eslesen baslik degil
-        p = b.sayfa  # bolumun sayfasi gercek `#n` sayfasidir (K-51 madde 6), json pageNo degil
+        p = b.sayfa  # bolumun sayfasi gercek `#n` sayfasidir (K-52 madde 6), json pageNo degil
         if p is None:
             sayfasiz += 1  # ilk `#n` isaretinden once ya da sayfa isaretsiz dosya: rapor
             continue

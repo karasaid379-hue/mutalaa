@@ -1,4 +1,4 @@
-"""`export pg --source risale-kelime-frekans`: Risale lugat adaylari (A20.6, K-51 madde 9 ve 10).
+"""`export pg --source risale-kelime-frekans`: Risale lugat adaylari (A20.6, K-52 madde 9 ve 10).
 
 `export/pg.py` ile ayni akis (dosya onkosullari -> tek veritabani islemi, advisory kilit,
 `source` satiri `pg._source_satirlari` ile); sablonlar `pg_glosses.py` (hazir kaynaktan aday +
@@ -12,7 +12,7 @@ Sentetik fikstur (`test-risale-ornek`): 15 uydurma madde ayni kaynak adinda, `in
 calismasinin `lugat.jsonl` dosyasindadir; `pg_risale.hazirla` onu `calismadan_oku` ile okur ve
 `pg._yukle` birimlerden sonra AYNI islemde `yukle` ile yazar (yalniz `dev`e girer; P-12).
 
-YAZMA KURALI (K-51 madde 9 ve 10, Editoryal veritabani 5; hat insan kararina dokunmaz):
+YAZMA KURALI (K-52 madde 9 ve 10, Editoryal veritabani 5; hat insan kararina dokunmaz):
 
 * Upsert `ON CONFLICT ON CONSTRAINT lugat_madde_source_id_basliksoz_anlam_no_key` (`CONSTRAINT`;
   A20.6b'den once `..._basliksoz_key`). Madde yoksa eklenir:
@@ -38,7 +38,7 @@ Sayaclar: `lugat_staging`, `lugat_eklenen`, `lugat_ayni_kalan`, `lugat_guncellen
 `lugat_atlanan_editor`, `lugat_review_acilan`, `lugat_review_acik_nedeniyle_atlanan`,
 `lugat_veritabaninda_fazla`.
 
-LUGAT KAYNAKLARI (A20.6b; `lugat-rnk`, `lugat-sozluk-rganeyev`; K-51 madde 10 ve 14): ayri yol
+LUGAT KAYNAKLARI (A20.6b; `lugat-rnk`, `lugat-sozluk-rganeyev`; K-52 madde 10 ve 14): ayri yol
 (`hazirla_kaynakli`, `yukle_kaynakli`), Kelime-Frekans yoluna DOKUNMAZ (yalniz cakisma kisiti
 adi `lugat_madde_source_id_basliksoz_anlam_no_key` olur: eski kisit sunucu gocuyle dusurulur;
 Kelime-Frekans satirlari `anlam_no = 1`, `origin = 'hat'` kalir):
@@ -51,7 +51,7 @@ Kelime-Frekans satirlari `anlam_no = 1`, `origin = 'hat'` kalir):
   sutunlar (`kaynaklar`, `duzey`, `data_version`, `basliksoz_norm`, `updated_at = now()`) ve
   yalniz degeri farkliysa guncellenir. `tanim_tr` ve `content_hash` var olan satirda HIC
   yazilmaz: kaynak dosyasi degisip staged tanim veritabanindakinden farkliysa satir degismez,
-  `lugat_metin_degisti` sayilir (Risale metni kurali, K-51). `origin = 'editor'` ya da
+  `lugat_metin_degisti` sayilir (Risale metni kurali, K-52). `origin = 'editor'` ya da
   `status <> 'aday'` satira HIC yazilmaz. Satir silinmez.
 * `review`: YALNIZ `duzey` 1-3 olan (Risale'de gecen) maddeler icin (`hedef_tablo =
   'lugat_madde'`, `hedef_anahtar = '{source_id}:{anlam_no}:{basliksoz}'`, `alan = 'tanim_tr'`,

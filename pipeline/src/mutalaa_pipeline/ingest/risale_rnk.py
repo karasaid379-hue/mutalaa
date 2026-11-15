@@ -1,4 +1,4 @@
-"""RNK `txt` ayristirici (A20.1b, K-51 madde 2 ve 5): saf islevler, dosya ya da veritabani yok.
+"""RNK `txt` ayristirici (A20.1b, K-52 madde 2 ve 5): saf islevler, dosya ya da veritabani yok.
 
 RNK Neşriyat kitap dosyasi (`{raf}/{uid}.txt`) satir satir ayristirilir:
 
@@ -81,7 +81,7 @@ AR_RAFLARI: Final = frozenset({"ar", "ar_k"})
 _CUMLE_SONLARI: Final = ".?!\u2026\u061f\u06dd"
 _KAPANIS: Final = "\"')]}\u00bb\u201d\u2019\ufd3e"
 
-# Metinde olduğu gibi kalan, denetlenen karakterler (K-51 madde 5).
+# Metinde olduğu gibi kalan, denetlenen karakterler (K-52 madde 5).
 S12_KUMESI: Final = frozenset(
     {
         0x00A0,
@@ -566,7 +566,7 @@ class _Ayristirici:
             girinti >= 3
             or (girinti == 2 and ilk in "\\\u222b")
             or (girinti == 0 and ilk in YENI_PARAGRAF_ISARETLERI)
-            or (kenar and ilk == ",")  # ortali paragraf: `,...>` (K-51 madde 2); ayirac degil
+            or (kenar and ilk == ",")  # ortali paragraf: `,...>` (K-52 madde 2); ayirac degil
         )
         if girinti == 2 and not yeni_baslangic:
             yeni_baslangic = True

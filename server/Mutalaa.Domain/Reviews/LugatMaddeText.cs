@@ -5,7 +5,7 @@ using Mutalaa.Domain.Text;
 namespace Mutalaa.Domain.Reviews;
 
 /// <summary>
-/// <c>lugat_madde.tanim_tr</c> editor degeri (K-51 madde 10, K-50 madde 6 deseni): editorun yazdigi ya da degistirdigi tanim kendi
+/// <c>lugat_madde.tanim_tr</c> editor degeri (K-52 madde 10, K-50 madde 6 deseni): editorun yazdigi ya da degistirdigi tanim kendi
 /// urettigimiz metindir, ilk kayitta kanonikilestirilir (NFC). Lugat kaynagindan gelen tanim (<c>origin = 'kaynak'</c>) bayt bayt
 /// saklanir ve burada islenmez. Saf islevler; hata <see cref="DomainException"/> (<c>dogrulama</c>).
 /// </summary>
@@ -17,7 +17,7 @@ public static class LugatMaddeText
     /// <summary><c>lugat_madde.origin</c>: hattin actigi aday.</summary>
     public const string HatOrigin = "hat";
 
-    /// <summary><c>lugat_madde.origin</c>: lugat kaynagindan gelen tanim (bayt bayt; K-51 madde 10 ve 14).</summary>
+    /// <summary><c>lugat_madde.origin</c>: lugat kaynagindan gelen tanim (bayt bayt; K-52 madde 10 ve 14).</summary>
     public const string KaynakOrigin = "kaynak";
 
     /// <summary><c>lugat_madde.origin</c>: editorun yazdigi ya da degistirdigi tanim.</summary>

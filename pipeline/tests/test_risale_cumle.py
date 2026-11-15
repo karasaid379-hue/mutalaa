@@ -1,5 +1,5 @@
 # ruff: noqa: RUF001
-"""Risale cumle ayirici (A20.2a, K-51 madde 8): ortak vektor kosucusu ve birim testleri.
+"""Risale cumle ayirici (A20.2a, K-52 madde 8): ortak vektor kosucusu ve birim testleri.
 
 Girdiler ACIKCA SENTETIKTIR ("Deneme cumlesi N", Arap alfabe harfleri): hicbir Kuran, hadis ya
 da Risale metni yoktur. `extract/risale-cumle.jsonl` yalniz Python'da kosar (cumle sinirlari

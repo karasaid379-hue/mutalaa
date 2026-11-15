@@ -10,7 +10,7 @@ export interface QueueDef {
   filters: readonly QueueFilter[];
 }
 
-/** The four review screens (BÇ-12: `kuyruk/sure-adi` is the eighth route). `quran_word_fix` is the third and the Risale lügat (`lugat_madde`, K-51) the fourth tab of `lemma` (A17, A20, BÇ-12; K-13 adds no route). */
+/** The four review screens (BÇ-12: `kuyruk/sure-adi` is the eighth route). `quran_word_fix` is the third and the Risale lügat (`lugat_madde`, K-52) the fourth tab of `lemma` (A17, A20, BÇ-12; K-13 adds no route). */
 export const QUEUES: readonly QueueDef[] = [
   { id: 'ocr', path: '/kuyruk/ocr', filters: [{ hedef_tablo: 'unit', alan: 'metin' }] },
   {

@@ -33,7 +33,7 @@ LUGAT_KAYNAGI: Final = "risale-kelime-frekans"
 LUGAT_KAPILARI: Final = ("G-KAY", "G-BUT", "G-CAP", "G-NOR")
 # Lugat kaynaklari (A20.6b): RNK lugati ve rganeyev/Sozluk; ayni dort kapi (G-CAP uygulanmaz).
 LUGAT_KAYNAK_KIMLIKLERI: Final = ("lugat-rnk", "lugat-sozluk-rganeyev")
-# Risale ayet atif dizini (A20.7b; K-51 madde 13): `enrich citations` ciktisi, dort kapi.
+# Risale ayet atif dizini (A20.7b; K-52 madde 13): `enrich citations` ciktisi, dort kapi.
 # G-NOR "uygulanmaz" olarak gecer (satirlar metin tasimaz), ama kaynak kapisi sayilir.
 ATIF_KAYNAGI: Final = "risale-atif-dizini"
 ATIF_KAPILARI: Final = ("G-KAY", "G-BUT", "G-CAP", "G-NOR")

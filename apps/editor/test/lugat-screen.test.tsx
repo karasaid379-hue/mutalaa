@@ -23,7 +23,7 @@ import { renderApp, renderInRouter } from './render-app';
 type Item = components['schemas']['ReviewItemDto'];
 type Detail = components['schemas']['ReviewDetailDto'];
 
-// Synthetic lügat maddeleri (K-51 madde 9 and 10): made-up headwords and definitions, never Risale or dictionary text.
+// Synthetic lügat maddeleri (K-52 madde 9 and 10): made-up headwords and definitions, never Risale or dictionary text.
 
 describe('Lügat tab of LemmaQueue', () => {
   const fake = useFakeApi();
@@ -308,7 +308,7 @@ describe('Lügat tab of LemmaQueue', () => {
     });
   });
 
-  describe('source definition (K-51 madde 10 and 14)', () => {
+  describe('source definition (K-52 madde 10 and 14)', () => {
     const editButton = () => screen.getByRole('button', { name: trLugat.edit.editAndApprove });
 
     it('shows the source name, the meaning number, the source definition and the origin badge', async () => {

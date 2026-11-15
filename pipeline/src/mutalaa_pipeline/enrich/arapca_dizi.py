@@ -1,8 +1,8 @@
 """Arapca dizi cikarimi, `ar_norm` kelimeleri ve baglam penceresi (A20.7a; Iktibas tespiti §3-§4).
 
 Arac secimine bagli degildir: hangi arac kazanirsa kazansin dizi cikarimi, normalizasyon ve baglam
-katmanlari bizde kalir (K-51 guncellemesi). Girdi bir Risale biriminin metni ve `marks` dizisidir
-(`t: "ar"` araliklari, `tur`: `blok` ya da `alinti`; K-51 madde 2). Butun ofsetler birim metninde
+katmanlari bizde kalir (K-52 guncellemesi). Girdi bir Risale biriminin metni ve `marks` dizisidir
+(`t: "ar"` araliklari, `tur`: `blok` ya da `alinti`; K-52 madde 2). Butun ofsetler birim metninde
 Unicode kod noktasidir ve aralik yari aciktir `[bas, son)` (K-26).
 
 Osmanli ve Arapca kitaplarda butun metin Arap harflidir; bu yuzden `ham` dizi cikarimi (Arap harfli

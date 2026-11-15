@@ -5,7 +5,7 @@ using Mutalaa.Domain.Text;
 
 namespace Mutalaa.Domain.Reviews;
 
-/// <summary>Kitap onayinin onkosul kodlari (422 <c>on-kosul-eksik</c> yanitinin <c>eksikler</c> listesi; K-51 madde 11).</summary>
+/// <summary>Kitap onayinin onkosul kodlari (422 <c>on-kosul-eksik</c> yanitinin <c>eksikler</c> listesi; K-52 madde 11).</summary>
 public static class RisaleApprovalPrerequisites
 {
     /// <summary>Tur 1: kitabin birimlerinden en az biri, G-BUT dahil dort kapidan gecmis bir hat yuklemesinden gelmiyor.</summary>
@@ -61,7 +61,7 @@ public enum RisaleApprovalOutcome
 public readonly record struct RisaleApprovalVerdict(RisaleApprovalOutcome Outcome, IReadOnlyList<string> Missing);
 
 /// <summary>
-/// Kitap bazinda toplu onay kurali (K-51 madde 11), saf islevler: veritabani, saat ve HTTP yok.
+/// Kitap bazinda toplu onay kurali (K-52 madde 11), saf islevler: veritabani, saat ve HTTP yok.
 /// <para>
 /// Kitap ozeti: kitabin etkin birimlerinin <c>anchor</c> ve <c>content_hash</c> cifti <see cref="ContentDigest"/> ile ozetlenir
 /// (capa BAYT sirasi, her satir <c>anchor TAB content_hash LF</c>, SHA-256, 64 kucuk harf onaltilik; K-46 kaynak ozetiyle ayni algoritma).
