@@ -76,6 +76,7 @@ from mutalaa_pipeline.export import pg_kelime
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kati_json
 from mutalaa_pipeline.ingest import fikstur as fikstur_uretec
 from mutalaa_pipeline.ingest.kelime_frekans import KAYNAK as LUGAT_KAYNAGI
+from mutalaa_pipeline.ingest.lugat_kaynak import KAYNAKLAR as LUGAT_KAYNAKLARI
 from mutalaa_pipeline.ingest.meal_kaynaklari import MEAL_KAYNAKLARI, meal_mi
 from mutalaa_pipeline.ingest.risale_kaynaklari import (
     KAYNAK_BASKI,
@@ -120,6 +121,9 @@ EK_KAYNAKLAR: Final[Mapping[str, tuple[str, ...]]] = {
     KAYNAK_BASKI: (),  # A20.3: RNK baski sayfa esleme, page_map (pg_risale_sayfa.py)
     KAYNAK_ORNEK: (),  # A20.5a: sentetik Risale fiksturu: birim, page_map, lugat (pg_risale.py)
     LUGAT_KAYNAGI: (),  # A20.6: Risale lugat adaylari ve review (pg_lugat.py)
+    **{
+        slug: () for slug in LUGAT_KAYNAKLARI
+    },  # A20.6b: lugat-rnk, lugat-sozluk-rganeyev (pg_lugat.py)
     ATIF_KAYNAGI: (),  # A20.7b: Risale ayet atif adaylari, xref (pg_risale_atif.py)
 }
 # Birim degil yapi satiri yukleyen kaynaklar (K-43 madde 3): units.jsonl yerine markers/pages.
@@ -192,7 +196,7 @@ SELECT_SOURCE: Final = sql.SQL("SELECT {} FROM icerik.source WHERE slug = %s FOR
 BAGLANTI = Callable[[], psycopg.Connection]
 
 if TYPE_CHECKING:
-    from mutalaa_pipeline.export.pg_lugat import LugatSatiri
+    from mutalaa_pipeline.export.pg_lugat import LugatKaynakSatiri, LugatSatiri
     from mutalaa_pipeline.export.pg_risale import RisaleGirdisi
     from mutalaa_pipeline.export.pg_risale_atif import XrefYuk
 
@@ -378,7 +382,7 @@ class Hazirlik:
     meal_satirlari: list[MealSatiri] = field(default_factory=list)
     risale: "RisaleGirdisi | None" = None  # dolu: RNK Risale birimleri akitilarak yuklenir
     risale_sayfa: list[RisaleSayfaSatiri] = field(default_factory=list)  # dolu: page_map upsert'i
-    lugat: "list[LugatSatiri]" = field(default_factory=list)  # dolu: lugat adaylari (pg_lugat.py)
+    lugat: "Sequence[LugatSatiri | LugatKaynakSatiri]" = field(default_factory=list)  # pg_lugat
     xref: "list[XrefYuk]" = field(default_factory=list)  # dolu: xref adaylari (pg_risale_atif.py)
     xref_prune: bool = False  # True: staged'de olmayan hat+aday xref silinir (--prune, onayli)
 
@@ -781,7 +785,7 @@ def hazirla(
         from mutalaa_pipeline.export import pg_sure_adlari
 
         return pg_sure_adlari.hazirla(ctx, source_id, run, ek_kaynaklar)
-    if source_id == LUGAT_KAYNAGI:  # A20.6: Risale lugat adaylari (lugat_madde + review)
+    if source_id == LUGAT_KAYNAGI or source_id in LUGAT_KAYNAKLARI:  # A20.6, A20.6b: lugat
         from mutalaa_pipeline.export import pg_lugat
 
         return pg_lugat.hazirla(ctx, source_id, run, ek_kaynaklar)

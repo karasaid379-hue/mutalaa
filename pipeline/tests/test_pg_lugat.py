@@ -206,8 +206,11 @@ def upsert_sql() -> str:
 
 def test_upsert_sql_cakisma_kisiti_ve_yalniz_hat_aday_satiri_gunceller() -> None:
     sql = upsert_sql()
-    assert "ON CONFLICT ON CONSTRAINT lugat_madde_source_id_basliksoz_key DO UPDATE SET" in sql
-    assert pg_lugat.CONSTRAINT == "lugat_madde_source_id_basliksoz_key"
+    assert (
+        "ON CONFLICT ON CONSTRAINT lugat_madde_source_id_basliksoz_anlam_no_key DO UPDATE SET"
+        in sql
+    )
+    assert pg_lugat.CONSTRAINT == "lugat_madde_source_id_basliksoz_anlam_no_key"
     # guncelleme yalniz origin = 'hat' AND status = 'aday' satirda ve yalniz degeri farkliysa
     kosul = sql.split(" WHERE ", 1)[1].split(" WHERE ")[-1]
     assert "icerik.lugat_madde.origin = 'hat'" in kosul

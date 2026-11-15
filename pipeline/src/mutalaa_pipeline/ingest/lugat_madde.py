@@ -57,6 +57,33 @@ MADDE_ALANLARI: Final = (
 )
 
 
+# Lugat kaynagindan gelen madde (A20.6b, K-51 madde 10 ve 14): `lugat-rnk` ve
+# `lugat-sozluk-rganeyev`. Alan kumesi Kelime-Frekans maddesinden `anlam_no` (yeni) ve
+# `onerilen_basvuru` (yok) ile ayrilir; `tanim_tr` kaynak satirindan bayt bayt gelir (NFC yok;
+# yalniz bas ve sondaki U+0020/U+0009 kirpilir, bkz. `ingest/lugat_kaynak.py`).
+KOKEN_KAYNAK: Final = "kaynak"
+DUZEY_RISALEDE_YOK: Final = 4  # Risale baslik soz listesinde yok (K-51 madde 14)
+MADDE_ALANLARI_KAYNAK: Final = (
+    "source_id",
+    "basliksoz",
+    "anlam_no",
+    "basliksoz_norm",
+    "osmanlica_yazim",
+    "koken_dil",
+    "tanim_tr",
+    "ar_kok_id",
+    "kaynaklar",
+    "duzey",
+    "status",
+    "origin",
+    "version",
+    "content_hash",
+    "data_version",
+)
+MADDE_ANAHTARI_KAYNAK: Final = ("basliksoz", "anlam_no")
+EN_COK_ANLAM_NO: Final = 32767  # smallint
+
+
 def basliksoz_norm(basliksoz: str) -> str:
     """Arama anahtari: `tr_narrow`; Turkce harf yoksa `ar_norm`. Harfsiz sozde bos kalir."""
     anahtarlar = search_keys(basliksoz)
@@ -108,6 +135,49 @@ def madde_satiri(
         "content_hash": madde_hash(basliksoz, tanim_tr),
         "data_version": data_version,
         "onerilen_basvuru": dict(onerilen_basvuru),
+    }
+
+
+def madde_satiri_kaynak(
+    *,
+    source_id: str,
+    basliksoz: str,
+    anlam_no: int,
+    tanim_tr: str,
+    duzey: int,
+    kaynaklar: Mapping[str, object],
+    data_version: str,
+) -> dict[str, object]:
+    """Lugat kaynagindan gelen bir maddenin staged satiri (alan kumesi `MADDE_ALANLARI_KAYNAK`).
+
+    `status = aday`, `origin = kaynak`, `version = 1`; tanim dolu olmali. Kelime-Frekans
+    `anlam` degeri bu satira hicbir yoldan girmez (`kaynaklar` anlam dizesi tasimaz).
+    """
+    if basliksoz == "":
+        raise GirdiHatasi("lugat: bos baslik soz")
+    if tanim_tr == "":
+        raise GirdiHatasi("lugat: bos tanim")
+    if not 1 <= anlam_no <= EN_COK_ANLAM_NO:
+        raise GirdiHatasi("lugat: anlam_no aralik disi")
+    norm = basliksoz_norm(basliksoz)
+    if norm == "":
+        raise GirdiHatasi("lugat: baslik soz normalize edilemedi (harf ya da rakam yok)")
+    return {
+        "source_id": source_id,
+        "basliksoz": basliksoz,
+        "anlam_no": anlam_no,
+        "basliksoz_norm": norm,
+        "osmanlica_yazim": None,
+        "koken_dil": None,
+        "tanim_tr": tanim_tr,
+        "ar_kok_id": None,
+        "kaynaklar": dict(kaynaklar),
+        "duzey": duzey,
+        "status": DURUM_ADAY,
+        "origin": KOKEN_KAYNAK,
+        "version": SURUM_1,
+        "content_hash": madde_hash(basliksoz, tanim_tr),
+        "data_version": data_version,
     }
 
 

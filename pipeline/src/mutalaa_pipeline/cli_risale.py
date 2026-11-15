@@ -114,7 +114,12 @@ def kaydet(ingest_app: typer.Typer) -> None:
             str,
             typer.Option(
                 "--source",
-                help="Lugat kaynagi: risale-kelime-frekans (Kelime-Frekans baslik soz listesi).",
+                help=(
+                    "Lugat kaynagi: risale-kelime-frekans (Kelime-Frekans baslik soz listesi),"
+                    " lugat-rnk (RNK lugati, tanimli maddeler) ya da lugat-sozluk-rganeyev"
+                    " (yalniz RNK'da olmayan basliklar; once lugat-rnk ve"
+                    " risale-kelime-frekans alinmis olmali)."
+                ),
             ),
         ],
         gelen_tarih: Annotated[
@@ -122,8 +127,8 @@ def kaydet(ingest_app: typer.Typer) -> None:
             typer.Option(
                 "--gelen-tarih",
                 help=(
-                    "data/gelen/risale-kelime-frekans altindaki tarih klasoru (YYYY-AA-GG);"
-                    " yoksa en yenisi. Uc sozluk OCR dosyasi da bu tarihten alinir."
+                    "data/gelen/<kaynak> altindaki tarih klasoru (YYYY-AA-GG); yoksa en yenisi."
+                    " Kelime-Frekans icin uc sozluk OCR dosyasi da bu tarihten alinir."
                 ),
             ),
         ] = None,
@@ -145,33 +150,53 @@ def kaydet(ingest_app: typer.Typer) -> None:
         ] = None,
         kok: KokSecenegi = None,
     ) -> None:
-        """Kelime-Frekans lugat baslik soz listesini kilitle karsilastirir, staged uretir.
+        """Lugat kaynagini kilitle karsilastirir, staged uretir (cikis 0 ya da 2).
 
-        Maddeler `aday` ve `hat` kokenli, tanimsiz uretilir (tanimi editor yazar); `anlam`
-        sutunu yalniz editor basvurusudur. Cikis 0 ya da 2.
+        `risale-kelime-frekans`: maddeler `aday`, `hat` kokenli ve tanimsiz.
+
+        `lugat-rnk`, `lugat-sozluk-rganeyev`: tanim maddeye bayt bayt, `aday` ve `kaynak`
+        kokenli yazilir; ayni basligin birden cok satiri ayri anlamdir (`anlam_no`).
+
+        Risale baslik sozleriyle eslesme icin once `risale-kelime-frekans` alinmis olmali.
         """
         from mutalaa_pipeline.config import ayarlar_yukle
-        from mutalaa_pipeline.ingest import kelime_frekans
+        from mutalaa_pipeline.ingest import kelime_frekans, lugat_kaynak
 
         try:
-            if source != kelime_frekans.KAYNAK:
+            if source not in (kelime_frekans.KAYNAK, *lugat_kaynak.KAYNAKLAR):
                 raise GirdiHatasi(
-                    f"ingest lugat: bilinmeyen lugat kaynagi (yalniz {kelime_frekans.KAYNAK})"
+                    "ingest lugat: bilinmeyen lugat kaynagi"
+                    f" ({kelime_frekans.KAYNAK}, {', '.join(lugat_kaynak.KAYNAKLAR)})"
                 )
             if kilit_oner:
                 if dry_run or force:
                     raise GirdiHatasi("--kilit-oner ile --dry-run ve --force verilmez")
-                metin = kelime_frekans.kilit_oner_metni(
-                    ayarlar_yukle(config).veri_kok, kok_coz(kok), gelen_tarih
-                )
+                if source == kelime_frekans.KAYNAK:
+                    metin = kelime_frekans.kilit_oner_metni(
+                        ayarlar_yukle(config).veri_kok, kok_coz(kok), gelen_tarih
+                    )
+                else:
+                    metin = lugat_kaynak.kilit_oner_metni(
+                        ayarlar_yukle(config).veri_kok, kok_coz(kok), source, gelen_tarih
+                    )
                 sys.stdout.buffer.write(metin.encode("utf-8"))  # LF (Windows CRLF yazar)
                 sys.stdout.buffer.flush()
                 return
         except GirdiHatasi as hata:
             typer.echo(f"hata: {hata}", err=True)
             raise typer.Exit(code=cikis.GIRDI_HATASI) from hata
-        kod = kelime_frekans.komut_ingest_lugat(
-            gelen_tarih=gelen_tarih, dry_run=dry_run, force=force, config=config, kok=kok
-        )
+        if source == kelime_frekans.KAYNAK:
+            kod = kelime_frekans.komut_ingest_lugat(
+                gelen_tarih=gelen_tarih, dry_run=dry_run, force=force, config=config, kok=kok
+            )
+        else:
+            kod = lugat_kaynak.komut_ingest_lugat_kaynak(
+                source=source,
+                gelen_tarih=gelen_tarih,
+                dry_run=dry_run,
+                force=force,
+                config=config,
+                kok=kok,
+            )
         if kod != cikis.BASARILI:
             raise typer.Exit(code=kod)

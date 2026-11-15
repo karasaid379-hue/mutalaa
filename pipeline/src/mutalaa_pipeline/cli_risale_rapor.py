@@ -5,6 +5,8 @@ cagirir.
   (`qa/risale_raporlari.py`) -> `data/reports/a20/icindekiler-karsilastirma.json`.
 * `diyanet`: Diyanet <-> RNK kelime dizisi karsilastirmasi (`ingest/risale_karsilastirma.py`)
   -> `data/reports/a20/diyanet-rnk-karsilastirma.json`.
+* `lugat`: lugat kapsama raporu (`qa/lugat_kapsama.py`) -> `data/reports/a20/lugat-kapsama.json`
+  (yalniz sayi) ve yerel `lugat-karsiliksiz.txt` (A20.6b); `hepsi` bunu icermez.
 
 Girdi yalniz `data/staged` ve `data/gelen` altindan okunur; veritabani yoktur. Raporlar METIN
 ICERMEZ. `shared/data/risale-kitaplar.json` degismez (`dogrulandi` onerisi insan adimidir, I-24).
@@ -32,7 +34,7 @@ KOMUT: Final = "qa risale-rapor"
 RAPOR_KLASORU: Final = ("reports", "a20")
 ICINDEKILER_DOSYASI: Final = "icindekiler-karsilastirma.json"
 DIYANET_DOSYASI: Final = "diyanet-rnk-karsilastirma.json"
-TURLER: Final = ("icindekiler", "diyanet", "hepsi")
+TURLER: Final = ("icindekiler", "diyanet", "lugat", "hepsi")
 RNK_METIN: Final = "risale-rnk-metin"
 DIYANET_METIN: Final = "risale-asil-nusha"
 RNK_BASKI: Final = "risale-baski-rnk"
@@ -139,7 +141,7 @@ def komut_risale_rapor(
 
     def govde(ctx: RunContext) -> int:
         if rapor not in TURLER:
-            raise GirdiHatasi("--rapor icindekiler, diyanet ya da hepsi olmali")
+            raise GirdiHatasi("--rapor icindekiler, diyanet, lugat ya da hepsi olmali")
         if rapor in ("icindekiler", "hepsi"):
             r = icindekiler_raporu(ctx, rnk_run, rnk_tarih, erisale_tarih)
             if not dry_run:
@@ -151,6 +153,15 @@ def komut_risale_rapor(
             if not dry_run:
                 ctx.rapor_ek["diyanet"] = _yaz(ctx, DIYANET_DOSYASI, json_baytlari(d))
             sys.stdout.write(f"qa risale-rapor diyanet: {d['toplam']}\n")
+        if rapor == "lugat":  # `hepsi` lugat'i icermez: lugat kaynaklari once alinmis olmali
+            from mutalaa_pipeline.qa import lugat_kapsama
+
+            lr, karsiliksiz = lugat_kapsama.rapor_uret(ctx)
+            if not dry_run:
+                rapor_yolu, liste_yolu = lugat_kapsama.raporu_yaz(ctx, lr, karsiliksiz)
+                ctx.rapor_ek["lugat"] = rapor_yolu
+                ctx.rapor_ek["lugat_karsiliksiz"] = liste_yolu
+            sys.stdout.write(f"qa risale-rapor lugat: {lugat_kapsama.ozet_satiri(lr)}\n")
         if dry_run:
             sys.stdout.write("[dry-run: dosya yazilmadi]\n")
         return cikis.BASARILI
@@ -173,7 +184,14 @@ def kaydet(qa_app: typer.Typer) -> None:
     @qa_app.command("risale-rapor")
     def risale_rapor(
         rapor: Annotated[
-            str, typer.Option("--rapor", help="icindekiler, diyanet ya da hepsi.")
+            str,
+            typer.Option(
+                "--rapor",
+                help=(
+                    "icindekiler, diyanet, lugat (lugat kapsama raporu; hepsi'ne dahil degil)"
+                    " ya da hepsi."
+                ),
+            ),
         ] = "hepsi",
         rnk_run: Annotated[
             str | None, typer.Option("--rnk-run", help="Staged RNK run_id; yoksa en yenisi.")
@@ -203,7 +221,7 @@ def kaydet(qa_app: typer.Typer) -> None:
             ),
         ] = None,
     ) -> None:
-        """Risale karsilastirma raporlari (icindekiler, Diyanet-RNK). Cikis 0 ya da 2."""
+        """Risale karsilastirma raporlari (icindekiler, Diyanet-RNK, lugat kapsama). Cikis 0, 2."""
         kod = komut_risale_rapor(
             rapor=rapor,
             rnk_run=rnk_run,

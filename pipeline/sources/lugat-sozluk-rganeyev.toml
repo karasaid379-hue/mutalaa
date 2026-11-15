@@ -1,0 +1,14 @@
+# A20.6b (2026-11-15) · kaynak: docs/04-icerik/01-kaynaklar.md §3.6 · karar: K-51 madde 14
+slug = "lugat-sozluk-rganeyev"
+tur = "sozluk"
+baslik = "GitHub rganeyev/Sozluk lügat dosyası"
+surum = "67a5ccc7bfb341fe58bc82810a9619ec26e67ffd"
+provider = "github"
+kaynak_url = "https://github.com/rganeyev/Sozluk"
+atif_metni = "Lügat: GitHub rganeyev/Sozluk deposu, SozlukValidator/words.txt (eser adı depoda beyan edilmemiştir)."
+notlar = '''
+K-51 madde 14: ikinci lügat kaynağı; yalnız lugat-rnk'de bulunmayan normalize başlıklar alınır (yaklaşık 1.900); RNK'da olan başlık bu dosyadan alınmaz.
+Biçim: UTF-8, satır başına başlık: tanım (56.541 satır, 50.385 normalize benzersiz başlık); 4 satırda ayraç yok.
+Sürüm: sabit commit (25 Nisan 2017 tarihli); sürüm etiketi yok. Alma: data/gelen/lugat-sozluk-rganeyev/2026-11-15/ (words.txt, SHA256SUMS).
+Bilinen kusur: bazı sözlerde i yerine î yazılmış ("îstek", "îndirme"); düzeltilmez, kaynak bayt bayt saklanır, rapora sayılır. Anlamlar arasında * ayracı korunmuş.
+Eser kimliği: depo eser adı beyan etmez. Abdullah Yeğin'in Yeni Lûgat'ı (Hizmet Vakfı, 1997; kaynak kaydı lugat-yegin-yeni-lugat) ile örneklemde tanımlar örtüşüyor; tanıklıktır, eser adı olarak yazılmaz (Doğrulanacak: İ-28).'''

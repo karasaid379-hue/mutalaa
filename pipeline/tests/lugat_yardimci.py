@@ -89,6 +89,7 @@ def sentetik_zip(
     csvler: Mapping[str, list[tuple[str, str]]] | None = None,
     csv_ek: Mapping[str, str] | None = None,
     ekstra: Mapping[str, bytes] | None = None,
+    terkipli: Mapping[str, str] | None = None,
     commit: str = COMMIT,
 ) -> bytes:
     """Gercek zipin yapisini taklit eden sentetik zip (frekans, CSV, terkipli, betik, README)."""
@@ -115,7 +116,8 @@ def sentetik_zip(
             z.writestr(f"{kok}/data/eRisale/analysis/terkipsiz/{ad}_analiz.txt", "Deneme analiz")
             # `terkipli/` ve `SorularlaRisale/` agaci okunmaz: bozuk icerik sorun cikarmamali.
             z.writestr(
-                f"{kok}/data/eRisale/analysis/terkipli/{ad}_frekans.txt", "bozuk,bozuk,bozuk\n"
+                f"{kok}/data/eRisale/analysis/terkipli/{ad}_frekans.txt",
+                (terkipli or {}).get(ad, "bozuk,bozuk,bozuk\n"),
             )
             z.writestr(f"{kok}/data/SorularlaRisale/raw/{ad}.csv", "bozuk")
         for ad, satirlar in csvler.items():

@@ -1,0 +1,16 @@
+# A20.6b (2026-11-15) · kaynak: docs/04-icerik/01-kaynaklar.md §3.6 · karar: K-51 madde 14, 15
+slug = "lugat-yegin-yeni-lugat"
+tur = "sozluk"
+baslik = "Abdullah Yeğin, Yeni Lûgat (İslâmî-İlmî-Edebî-Felsefî), 1997 baskısı (tarama)"
+yazar = "Abdullah Yeğin"
+surum = "sha256-447c39be3c25-2026-11-15"
+provider = "scribd (kullanıcının ilettiği dosya)"
+kaynak_url = "https://www.scribd.com/document/959165811/Yegin-Abdullah-Yeni-Lugat"
+atif_metni = "Abdullah Yeğin, Yeni Lûgat (İslâmî-İlmî-Edebî-Felsefî), Hizmet Vakfı Yayıncılık, İstanbul 1997."
+baski_bilgisi = { yayinevi = "Hizmet Vakfı Yayıncılık İnşaat ve Ticaret İşletmeciliği", yil = "1997", yer = "İstanbul", sayfa = "815 (dosya)" }
+notlar = '''
+K-51 madde 14 ve 15: yalnız künye ve tanık kaydıdır; madde kaynağı değildir. Dosyayı proje sahibi kendisi indirip iletti (Scribd giriş ister).
+Dosya: 959165811-Yegin-Abdullah-Yeni-Lugat.pdf, 219.693.397 bayt, SHA-256 447c39be3c25d8ee6f128ecf0b635ab2fb0f1936350ccb571128ab6391a7dcb2, 815 sayfa. Metin katmanı yoktur: her sayfa dört JPEG şeridinden oluşan yaklaşık 144 dpi'lik bir taramadır. Alma: data/gelen/lugat-yegin-yeni-lugat/2026-11-15/.
+Baskı: künye sayfasına göre Hizmet Vakfı Yayıncılık İnşaat ve Ticaret İşletmeciliği, İstanbul, 1997. 27.665 kelimelik genişletilmiş baskı (Envar Neşriyat, 2022, 1.120 sayfa, ISBN 9789759903206) değildir; onun dijital kopyası bulunamadı.
+Kullanım: madde aktarımı için OCR gerekir ve OCR proje sonuna bırakılmıştır (K-49, S-15). Bu dosya, açık lügat kaynaklarının (lugat-rnk, lugat-sozluk-rganeyev) bu eserle örtüşüp örtüşmediğini görmek için örneklemle kullanılır: kitabın 282. sayfasındaki maddelerin tanımları iki açık kaynakta da aynı metinle bulundu.
+Dosya Mutalaa paketlerine girmez.'''

@@ -1,5 +1,9 @@
 """Risale lugat (Kelime-Frekans) QA kapilari (A20.6, K-51 madde 9, 10): G-KAY, G-BUT, G-CAP, G-NOR.
 
+Lugat kaynaklari `lugat-rnk` ve `lugat-sozluk-rganeyev` (A20.6b) icin ayni dort kapi
+`qa/checks/risale_lugat_kaynak.py` dosyasindadir (burada `KAYNAK_KAPI_ISLEVLERI` olarak
+yeniden disa aktarilir).
+
 Kapi islevleri bellekteki `LugatGirdisi` uzerinde calisir; ham zip, sozluk OCR dosyalari ve staged
 `lugat.jsonl` `qa/run_risale_lugat.py` tarafindan yuklenir. Bulgu listesi bos ise kapi `gecti`.
 Bulgular ASCII ve kisadir; yalniz sayi, satir numarasi ve alan adi tasir; baslik soz, anlam ve OCR
@@ -46,6 +50,11 @@ from mutalaa_pipeline.ingest.lugat_madde import (
 )
 from mutalaa_pipeline.ingest.risale_zip import GuvenliZip
 from mutalaa_pipeline.lineage import sha256_bayt
+from mutalaa_pipeline.qa.checks.risale_lugat_kaynak import (
+    KAPI_ISLEVLERI as KAYNAK_KAPI_ISLEVLERI,
+)
+from mutalaa_pipeline.qa.checks.risale_lugat_kaynak import KaynakGirdisi
+from mutalaa_pipeline.qa.checks.risale_lugat_kaynak import olcumler as kaynak_olcumler
 from mutalaa_pipeline.qa.checks.tanzil import KapiSonucu
 from mutalaa_pipeline.sources.kayit import Kaynak
 from mutalaa_pipeline.staged import Satir, yapi_baytlari
@@ -377,4 +386,12 @@ def olcumler(g: LugatGirdisi) -> dict[str, object]:
     }
 
 
-__all__ = ["KAPILAR", "KAPI_ISLEVLERI", "LugatGirdisi", "olcumler"]
+__all__ = [
+    "KAPILAR",
+    "KAPI_ISLEVLERI",
+    "KAYNAK_KAPI_ISLEVLERI",
+    "KaynakGirdisi",
+    "LugatGirdisi",
+    "kaynak_olcumler",
+    "olcumler",
+]

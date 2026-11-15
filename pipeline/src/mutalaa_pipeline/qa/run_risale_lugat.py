@@ -9,24 +9,37 @@ anchor adimi yoktur), `units_sha256` (= `lugat.jsonl` ozeti), `kapilar`, `kapi_b
 `kapi_sayilari`, `olcumler`, `zincir`; rapor ve bulgular baslik soz, anlam ya da OCR metni
 tasimaz. Cikis kodlari: 0 dort kapi gecti, 1 bir kapi kaldi, 2 girdi ya da zincir hatasi.
 `--gate` kismi kosusu `export pg`ye yetmez (`qa/rapor.py`).
+
+A20.6b: ayni komut `lugat-rnk` ve `lugat-sozluk-rganeyev` kaynaklarini da kosar
+(`yukle_kaynak`, `run_qa_kaynak`; kapilar `qa/checks/risale_lugat_kaynak.py`). Bu kaynaklarda
+manifestteki ham girdiler kaynagin kendi dosyasi (rganeyev icin RNK dosyasi da) ve staged
+Kelime-Frekans `lugat.jsonl` girdisidir; her biri ozetle dogrulanir.
 """
 
 import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from mutalaa_pipeline import cikis, lineage
+from mutalaa_pipeline import cikis, lineage, zincir
 from mutalaa_pipeline.export.ortak import GirdiHatasi
-from mutalaa_pipeline.ingest import kelime_frekans, sozluk_ocr
+from mutalaa_pipeline.ingest import kelime_frekans, lugat_kaynak, sozluk_ocr
 from mutalaa_pipeline.ingest.kelime_frekans import KAYNAK
 from mutalaa_pipeline.ingest.lugat_madde import LUGAT_ADI
 from mutalaa_pipeline.komut_ortak import komutu_yurut
 from mutalaa_pipeline.lineage import OZET_DESENI
 from mutalaa_pipeline.qa import GECTI, KALDI, KAPILAR, QA_KOMUTU
-from mutalaa_pipeline.qa.checks.risale_lugat import KAPI_ISLEVLERI, LugatGirdisi, olcumler
+from mutalaa_pipeline.qa.checks.risale_lugat import (
+    KAPI_ISLEVLERI,
+    KAYNAK_KAPI_ISLEVLERI,
+    KaynakGirdisi,
+    LugatGirdisi,
+    kaynak_olcumler,
+    olcumler,
+)
 from mutalaa_pipeline.qa.checks.tanzil import KapiSonucu
 from mutalaa_pipeline.runctx import QaKaldi, RunContext
 from mutalaa_pipeline.sources.kayit import SLUG_DESENI, Kaynak
+from mutalaa_pipeline.staged import Satir, satirlari_oku
 from mutalaa_pipeline.zincir import (
     INGEST_ADIMI,
     RAW_ONEK,
@@ -52,9 +65,11 @@ def kapilari_sec(gate: Sequence[str] | None) -> tuple[str, ...]:
     return tuple(k for k in KAPILAR if k in gate)
 
 
-def _ham_girdiler(ctx: RunContext, ingest: Calisma) -> dict[str, bytes]:
+def _ham_girdiler(
+    ctx: RunContext, ingest: Calisma, beklenen: set[str] | None = None
+) -> dict[str, bytes]:
     """Ingest manifestindeki ham girdiler: `{kaynak kimligi: bayt}`; ozet manifestle tutmali."""
-    beklenen = {KAYNAK, *sozluk_ocr.SOZLUKLER}
+    beklenen = beklenen if beklenen is not None else {KAYNAK, *sozluk_ocr.SOZLUKLER}
     sonuc: dict[str, bytes] = {}
     for yol, ozet in girdiler(ingest.manifest):
         if not yol.startswith(RAW_ONEK):
@@ -79,7 +94,9 @@ def _ham_girdiler(ctx: RunContext, ingest: Calisma) -> dict[str, bytes]:
             raise GirdiHatasi(f"ham dosya ozeti manifestle tutmuyor: {yol}")
         sonuc[parcalar[1]] = veri
     if set(sonuc) != beklenen:
-        raise GirdiHatasi(f"ingest manifestinde dort ham girdi bekleniyor: {ingest.run_id}")
+        raise GirdiHatasi(
+            f"ingest manifestinde {len(beklenen)} ham girdi bekleniyor: {ingest.run_id}"
+        )
     return sonuc
 
 
@@ -140,16 +157,126 @@ def run_qa(
     return sonuclar
 
 
+def _risale_staged_girdisi(ctx: RunContext, ingest: Calisma) -> tuple[Sequence[Satir], str]:
+    """Ingest manifestindeki staged Kelime-Frekans girdisi: `(satirlar, run_id)`; ozet tutmali."""
+    adaylar = [
+        (yol, ozet)
+        for yol, ozet in girdiler(ingest.manifest)
+        if yol.startswith(f"staged/{KAYNAK}/")
+    ]
+    if len(adaylar) != 1:
+        raise GirdiHatasi(f"ingest manifestinde bir staged {KAYNAK} girdisi bekleniyor")
+    yol, ozet = adaylar[0]
+    parcalar = yol.split("/")
+    if (
+        len(parcalar) != 4
+        or parcalar[3] != LUGAT_ADI
+        or not zincir.run_id_gecerli(parcalar[2])
+        or ozet is None
+        or OZET_DESENI.fullmatch(ozet) is None
+    ):
+        raise GirdiHatasi(f"staged {KAYNAK} girdisinin yolu ya da ozeti gecersiz")
+    try:
+        veri = (ctx.veri_kok / yol).read_bytes()
+    except OSError:
+        raise GirdiHatasi(f"staged {KAYNAK} dosyasi okunamadi") from None
+    if lineage.sha256_bayt(veri) != ozet:
+        raise GirdiHatasi(f"staged {KAYNAK} dosyasinin ozeti manifestle tutmuyor")
+    return satirlari_oku(veri, f"{KAYNAK} {LUGAT_ADI}"), parcalar[2]
+
+
+def yukle_kaynak(
+    ctx: RunContext, slug: str, kayitlar: dict[str, Kaynak], *, run: str | None
+) -> tuple[KaynakGirdisi, Calisma]:
+    """Lugat kaynagi (`lugat-rnk`, `lugat-sozluk-rganeyev`) zincirini yukler; bozuk zincir
+    `GirdiHatasi` (cikis 2)."""
+    bicim = lugat_kaynak.BICIMLER[slug]
+    ingest = (
+        calisma_bul(ctx, slug, run, INGEST_ADIMI)
+        if run is not None
+        else son_calisma(ctx, slug, INGEST_ADIMI, ipucu=f"once: ingest lugat --source {slug}")
+    )
+    ctx.rapor_ek["anchor_run_id"] = ingest.run_id
+    ozet = ingest.cikti_ozeti(LUGAT_ADI)
+    if ozet is not None:
+        ctx.rapor_ek["units_sha256"] = ozet
+    saglam_olmali(ctx, ingest)
+    gerekli = {slug, lugat_kaynak.KAYNAK_RNK} if bicim.rnk_bagimli else {slug}
+    ham = _ham_girdiler(ctx, ingest, gerekli)
+    risale_satirlari, risale_run = _risale_staged_girdisi(ctx, ingest)
+    ctx.rapor_ek["risale_kelime_frekans_run_id"] = risale_run
+    girdi = KaynakGirdisi(
+        slug=slug,
+        kayit=kayitlar[slug],
+        bagimli_kayit=kayitlar.get(lugat_kaynak.KAYNAK_RNK) if bicim.rnk_bagimli else None,
+        kilit=lugat_kaynak.kilit_yukle(slug),
+        rnk_kilit=lugat_kaynak.kilit_yukle(lugat_kaynak.KAYNAK_RNK) if bicim.rnk_bagimli else None,
+        ham=ham[slug],
+        rnk_ham=ham.get(lugat_kaynak.KAYNAK_RNK) if bicim.rnk_bagimli else None,
+        risale_satirlari=risale_satirlari,
+        satirlar=dosya_oku(ingest, LUGAT_ADI, f"ingest {slug} {LUGAT_ADI}"),
+    )
+    return girdi, ingest
+
+
+def kaynak_idleri(source: str) -> list[str]:
+    """Komutun kaynak kayitlari: lugat kaynagi (ve rganeyev icin RNK) ya da Kelime-Frekans."""
+    if source == KAYNAK:
+        return [KAYNAK, *sozluk_ocr.SOZLUKLER]
+    if lugat_kaynak.BICIMLER[source].rnk_bagimli:
+        return [source, lugat_kaynak.KAYNAK_RNK]
+    return [source]
+
+
+def run_qa_kaynak(
+    ctx: RunContext, slug: str, *, run: str | None = None, kapilar: Sequence[str] = KAPILAR
+) -> dict[str, KapiSonucu]:
+    """Lugat kaynagi icin kapilari kosar, `ctx.rapor_ek` alanlarini doldurur."""
+    ctx.rapor_ek["kaynak"] = slug
+    kayitlar = ctx.require_sources(kaynak_idleri(slug))
+    ctx.gunluk.yaz("INFO", "qa_basla", source_id=slug)
+    girdi, ingest = yukle_kaynak(ctx, slug, kayitlar, run=run)
+    ctx.rapor_ek["zincir"] = {"ingest": ingest.run_id}
+    sonuclar = {kapi: KAYNAK_KAPI_ISLEVLERI[kapi](girdi) for kapi in kapilar}
+    ctx.rapor_ek["kapilar"] = {k: GECTI if s.gecti else KALDI for k, s in sonuclar.items()}
+    ctx.rapor_ek["kapi_bulgulari"] = {
+        k: list(s.bulgular[:EN_COK_BULGU]) for k, s in sonuclar.items()
+    }
+    ctx.rapor_ek["kapi_sayilari"] = {k: s.sayilar for k, s in sonuclar.items()}
+    ctx.rapor_ek["olcumler"] = kaynak_olcumler(girdi)
+    for kapi, sonuc in sonuclar.items():
+        ctx.sayi(f"bulgu_{kapi}", len(sonuc.bulgular))
+        ctx.gunluk.yaz(
+            "INFO" if sonuc.gecti else "ERROR",
+            "qa_kapi",
+            source_id=slug,
+            sayilar={"bulgu": len(sonuc.bulgular)},
+            kapi=kapi,
+        )
+    ctx.sayi("madde", len(girdi.satirlar))
+    return sonuclar
+
+
 def komut_qa_run_lugat(
-    *, run: str | None, gate: Sequence[str] | None, config: Path | None, kok: Path | None
+    *,
+    run: str | None,
+    gate: Sequence[str] | None,
+    config: Path | None,
+    kok: Path | None,
+    source: str = KAYNAK,
 ) -> int:
-    """`qa run --source risale-kelime-frekans` komutu; cikis kodunu dondurur."""
+    """`qa run --source risale-kelime-frekans|lugat-rnk|lugat-sozluk-rganeyev`; cikis kodu."""
 
     def govde(ctx: RunContext) -> int:
-        sonuclar = run_qa(ctx, run=run, kapilar=kapilari_sec(gate))
+        if source == KAYNAK:
+            sonuclar = run_qa(ctx, run=run, kapilar=kapilari_sec(gate))
+        elif source in lugat_kaynak.KAYNAKLAR:
+            sonuclar = run_qa_kaynak(ctx, source, run=run, kapilar=kapilari_sec(gate))
+        else:
+            raise GirdiHatasi("qa run: bilinmeyen lugat kaynagi")
         durumlar = ", ".join(f"{k} {GECTI if s.gecti else KALDI}" for k, s in sonuclar.items())
         sys.stdout.write(
-            f"qa run {KAYNAK}: {durumlar} (ingest run {ctx.rapor_ek['anchor_run_id']})\n"
+            f"qa run {source}: {durumlar} (ingest run {ctx.rapor_ek['anchor_run_id']})\n"
         )
         for kapi, s in sonuclar.items():
             for bulgu in s.bulgular[:EN_COK_BULGU]:
@@ -159,7 +286,7 @@ def komut_qa_run_lugat(
             raise QaKaldi("QA kapisi kaldi: " + ", ".join(kalanlar))
         return cikis.BASARILI
 
-    parametreler: dict[str, object] = {"source": KAYNAK}
+    parametreler: dict[str, object] = {"source": source}
     if run is not None:
         parametreler["run"] = run
     if gate:
@@ -167,7 +294,7 @@ def komut_qa_run_lugat(
     return komutu_yurut(
         komut=QA_KOMUTU,
         adim=QA_ADIMI,
-        kaynaklar=[KAYNAK, *sozluk_ocr.SOZLUKLER],
+        kaynaklar=kaynak_idleri(source),
         config=config,
         kok=kok,
         govde=govde,
