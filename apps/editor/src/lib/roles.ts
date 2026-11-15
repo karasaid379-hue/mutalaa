@@ -46,3 +46,8 @@ export function canPublish(roles: Roles): boolean {
 export function canManageUsers(roles: Roles): boolean {
   return has(roles, ROLE_ADMIN);
 }
+
+/** Admin policy: approving all the draft units of a Risale book at once (K-52 madde 11). */
+export function canApproveBooks(roles: Roles): boolean {
+  return has(roles, ROLE_ADMIN);
+}

@@ -13,6 +13,7 @@ from mutalaa_pipeline.staged import (
     UNITS_ADI,
     Satir,
     satir_baytlari,
+    satirlari_akit,
     satirlari_oku,
     units_baytlari,
     units_yaz,
@@ -104,6 +105,29 @@ def test_okuma_baytlar_kati_denetlenir() -> None:
     ):
         with pytest.raises(GirdiHatasi, match=parca):
             satirlari_oku(bozuk, "d")
+
+
+def test_akitma_okuma_satirlari_oku_ile_ayni_ve_kati(tmp_path: Path) -> None:
+    """`satirlari_akit` dosyayi satir satir okur; kurallar `satirlari_oku` ile aynidir."""
+    yol = tmp_path / "units.jsonl"
+    gecerli = b'{"a":1}\n{"a":2}\n'
+    yol.write_bytes(gecerli)
+    akit = list(satirlari_akit(yol, "d"))
+    assert [(s.no, s.veri) for s in akit] == [(s.no, s.veri) for s in satirlari_oku(gecerli, "d")]
+    for bozuk, parca in (
+        (b"", "bos"),
+        (b'{"a":1}', "LF ile bitmiyor"),
+        (b'{"a":1}\r\n', "CR"),
+        (b'{"a":1}\n\n', "satir 2: JSON gecersiz"),
+        (b'{"a":1.5}\n', "satir 1: JSON gecersiz"),
+        (b"[1]\n", "satir 1: nesne degil"),
+        (b'{"a":1}\n{\xff}\n', "satir 2: UTF-8"),
+    ):
+        yol.write_bytes(bozuk)
+        with pytest.raises(GirdiHatasi, match=parca):
+            list(satirlari_akit(yol, "d"))
+    with pytest.raises(GirdiHatasi, match="okunamadi"):
+        list(satirlari_akit(tmp_path / "yok.jsonl", "d"))
 
 
 def test_okuma_iletisi_icerik_tasimaz() -> None:

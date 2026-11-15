@@ -29,7 +29,10 @@ Config = Annotated[Path | None, typer.Option("--config", help="Baska bir mutalaa
 
 def kaydet(app: typer.Typer, ingest_app: typer.Typer) -> None:
     """`ingest qac` komutunu ve `enrich` grubunu (`enrich morphology`) uygulamaya ekler."""
-    enrich_app = typer.Typer(no_args_is_help=True, help="Zenginlestirme: QAC morfolojisi.")
+    enrich_app = typer.Typer(
+        no_args_is_help=True,
+        help="Zenginlestirme: QAC morfolojisi, kelime anlamlari, atif adaylari.",
+    )
     app.add_typer(enrich_app, name="enrich")
     from mutalaa_pipeline import cli_quranwbw  # dairesel ice aktarma olmasin: islev icinde
 
@@ -43,6 +46,9 @@ def kaydet(app: typer.Typer, ingest_app: typer.Typer) -> None:
     from mutalaa_pipeline import cli_citations
 
     cli_citations.kaydet(enrich_app)  # A18.4: enrich citations
+    from mutalaa_pipeline import cli_atif
+
+    cli_atif.kaydet(enrich_app)  # A20.7b: enrich risale-citations
 
     @ingest_app.command("qac")
     def ingest_qac(

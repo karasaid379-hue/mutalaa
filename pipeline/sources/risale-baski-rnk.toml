@@ -1,0 +1,17 @@
+# A20.0 (2026-11-12) · kaynak: docs/04-icerik/01-kaynaklar.md §3.5 · karar: K-52 madde 6 ve 7
+slug = "risale-baski-rnk"
+tur = "baski"
+baslik = "RNK Neşriyat, Risale-i Nur Külliyatı, güncel baskı (sayfa eşlemesi)"
+yazar = "Said Nursî"
+surum = "katalog-sha256-55634c134c99-2026-11-12"
+provider = "rnknesriyat.com"
+kaynak_url = "https://rnknesriyat.com/res/metinler/json_files/shelves.json"
+atif_metni = "Basılı sayfa numaraları: RNK Neşriyat, Risale-i Nur Külliyatı baskısı (RNK uygulaması içeriği)."
+baski_bilgisi = { yayinevi = "RNK Neşriyat" }
+notlar = '''
+K-52 madde 6 ve 7: sayfa eşlemesi RNK'nın en son güncel baskısından yapılır. Veri RNK uygulamasının (rnk.tr web uygulaması) giriş istemeyen statik içerik dosyalarıdır: kitap başına {raf}/{kitap}/{kitap}.txt (#n satırı basılı sayfa başıdır) ve .json (içindekiler, pageNo). Raflar: tr, tr_k, osm, ar, ar_k.
+Sürüm: surum alanı kataloğun (shelves.json) SHA-256 özetidir; kitap başına MD5 katalogdaki hash_txt ve hash_json ile eşleşir ve ingest/risale_rnk.lock.json dosyasında kilitlidir.
+Künye: yıl, ISBN, boy, cilt takımı ve metin esası RNK verisinde yoktur; boş bırakılır, editör doldurur (İ-24). Yazı (latin, osmanlica, arapca) kitap düzeyinde rafa göre belli olur (shared/data/risale-kitaplar.json), bu yüzden baski_bilgisi içinde yazi alanı yoktur.
+RNK metni sayfa eşlemesinde yalnız hizalama girdisidir; metin olarak yalnız risale-rnk-metin kaynağından girer.
+Yedek: Hizmet Vakfı (risalekulliyati.com, Envar Latin baskısı; Sözler 872 sayfa), risale.online.
+Alma: data/gelen/risale-baski-rnk/2026-11-12/ (SHA256SUMS).'''

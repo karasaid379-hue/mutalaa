@@ -167,6 +167,49 @@ internal static class ReviewCursor
         return true;
     }
 
+    private const string SiklikPrefix = "siklik:";
+
+    /// <summary>Siklik imleci (turu etiketli): <c>siklik:{siklik}:{id}</c>, base64url.</summary>
+    public static string EncodeSiklik(SiklikCursor cursor) =>
+        Base64Url.EncodeToString(Encoding.ASCII.GetBytes(string.Create(
+            CultureInfo.InvariantCulture,
+            $"{SiklikPrefix}{cursor.Siklik}:{cursor.Id}")));
+
+    public static bool TryDecodeSiklik(string? text, out SiklikCursor cursor)
+    {
+        cursor = default;
+        if (string.IsNullOrEmpty(text) || text.Length > 128)
+        {
+            return false;
+        }
+
+        string decoded;
+        try
+        {
+            decoded = Encoding.ASCII.GetString(Base64Url.DecodeFromChars(text));
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+
+        if (!decoded.StartsWith(SiklikPrefix, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        string[] parts = decoded[SiklikPrefix.Length..].Split(':');
+        if (parts.Length != 2
+            || !int.TryParse(parts[0], NumberStyles.None, CultureInfo.InvariantCulture, out int siklik)
+            || !long.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out long id))
+        {
+            return false;
+        }
+
+        cursor = new SiklikCursor(siklik, id);
+        return true;
+    }
+
     public static bool TryDecode(string? text, out DateTime createdAt, out long id)
     {
         createdAt = default;
@@ -202,6 +245,9 @@ internal static class ReviewCursor
 
 /// <summary>Dalga sirasinin anahtar kumesi: (dalga, sira, lemma_id, review.id); dalgasiz kayitta dalga 5, sira en buyuk, lemma 0.</summary>
 internal readonly record struct WaveCursor(int Dalga, int Sira, int LemmaId, long Id);
+
+/// <summary>Lugat siklik sirasinin anahtar kumesi: (siklik azalan, review.id artan).</summary>
+internal readonly record struct SiklikCursor(int Siklik, long Id);
 
 /// <summary>Sinif sirasinin anahtar kumesi: (sinif sirasi, guven, review.id); baglantisiz kayitta sinif 4, guven -1.</summary>
 internal readonly record struct ClassCursor(int Sinif, float Confidence, long Id);

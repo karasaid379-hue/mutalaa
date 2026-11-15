@@ -1,10 +1,12 @@
-# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3 · A20.0 (2026-11-12)
 slug = "lugat-redhouse-1890"
 tur = "sozluk"
 baslik = "Redhouse, A Turkish and English Lexicon"
 yazar = "James W. Redhouse"
-kaynak_url = "https://catalog.hathitrust.org/Record/001771732"
+provider = "archive.org"
+kaynak_url = "https://archive.org/details/aturkishandenglishlexicon1"
 atif_metni = "James W. Redhouse, A Turkish and English Lexicon, 1890."
 notlar = '''
 HathiTrust API: Full view, Michigan State University, Google sayısallaştırması.
-Türkçe tanımları biz yazarız.'''
+Türkçe tanımları biz yazarız.
+Alınan dosya: archive.org aturkishandenglishlexicon1, OCR metni (_djvu.txt, 8.447.120 bayt; SHA-1 arşiv kaydıyla eşleşti). Alma: data/gelen/lugat-redhouse-1890/2026-11-12/. HathiTrust kaydı yedektir: https://catalog.hathitrust.org/Record/001771732'''

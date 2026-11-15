@@ -15,6 +15,7 @@ public static class PackTables
     public const string PackSource = "pack_source";
     public const string Attribution = "attribution";
     public const string Unit = "unit";
+    public const string UnitRef = "unit_ref";
     public const string UnitSearch = "unit_search";
     public const string XrefIdx = "xref_idx";
     public const string QuranWord = "quran_word";
@@ -27,16 +28,22 @@ public static class PackTables
     public const string Lemma = "lemma";
     public const string LemmaGloss = "lemma_gloss";
     public const string TrForm = "tr_form";
+    public const string Lugat = "lugat";
 
-    /// <summary>Ozet ve yazim sirasi (K-46 madde 1: kelime-kok tablolari tr_root_index'ten sonra gelir; Icerik paketleri 6).</summary>
+    /// <summary>
+    /// Ozet ve yazim sirasi (K-46 madde 1: kelime-kok tablolari tr_root_index'ten sonra gelir; Icerik paketleri 6). unit_ref (yalniz risale-dizin, A20.4)
+    /// unit'ten hemen sonra gelir; dizinde unit_search satirlari icerigi olmayan unit_fts ve unit_tri tablolarina yazilir. Bu tablolarin satiri olmayan
+    /// paketlerin ozeti degismez. lugat (yalniz risale-dizin, A20.6) en sondadir.
+    /// </summary>
     public static IReadOnlyList<string> Order { get; } =
-        [PackSource, Attribution, Unit, UnitSearch, XrefIdx, QuranWord, QuranMarker, PageMap, Sure, TrRootIndex, WordMorph, Root, Lemma, LemmaGloss, TrForm];
+        [PackSource, Attribution, Unit, UnitRef, UnitSearch, XrefIdx, QuranWord, QuranMarker, PageMap, Sure, TrRootIndex, WordMorph, Root, Lemma, LemmaGloss, TrForm, Lugat];
 
     private static readonly Dictionary<string, string[]> ColumnMap = new(StringComparer.Ordinal)
     {
         [PackSource] = ["source_id"],
         [Attribution] = ["source_id", "title", "version", "source_url", "required_credit", "notice_text"],
         [Unit] = ["anchor", "kind", "role", "parent_path", "ord", "ayah_first", "ayah_last", "label", "text", "marks", "sentences", "attrs", "content_hash", "status", "approved", "successors"],
+        [UnitRef] = ["anchor", "pack_id", "ord", "label"],
         [UnitSearch] = ["anchor", "tr_wide", "tr_stem", "ar_norm"],
         [XrefIdx] = ["id", "src_anchor", "src_start", "src_end", "dst_anchor", "dst_start", "dst_end", "type", "score", "confidence", "approved", "folded", "evidence", "data_version"],
         [QuranWord] = ["anchor", "ayah_index", "word", "text_uthmani", "norm", "char_start", "char_end"],
@@ -49,6 +56,7 @@ public static class PackTables
         [Lemma] = ["id", "lang", "text", "text_clean", "root_id", "occurrences", "ar_lemma_id", "etymological_only", "approval"],
         [LemmaGloss] = ["lemma_id", "anlam_kisa", "kuran_anlamlari", "turkce_es_kelime", "yalnizca_etimolojik", "status", "origin"],
         [TrForm] = ["key_wide", "key_narrow", "tr_lemma_id", "freq"],
+        [Lugat] = ["basliksoz", "basliksoz_norm", "osmanlica_yazim", "koken_dil", "tanim_tr", "anlam_no", "kaynak", "duzey", "status", "origin", "version", "content_hash"],
     };
 
     /// <summary>Tablonun satir degeri sutunlari (unit'te rowid yok; unit_search'te ilk sutun capa).</summary>
@@ -62,8 +70,8 @@ public readonly record struct PackRow(string Table, object?[] Values);
 /// <summary>
 /// Tek kanonik satir sayici. Hem <see cref="PackDigest"/> hem <see cref="SqlitePackWriter"/> bu akisi kullanir: tablolar <see cref="PackTables.Order"/> sirasinda,
 /// satirlar tablonun anahtarina gore UTF-8 bayt sirasinda (giris listesinin sirasi onemsizdir) akar. Anahtarlar: pack_source ve attribution source_id;
-/// unit, unit_search ve quran_word anchor; xref_idx id; quran_marker (kind, no); page_map (layout, volume, page, line, start_anchor, end_anchor);
-/// sure no; tr_root_index (anchor, span_start); word_morph anchor; root id; lemma id; lemma_gloss lemma_id; tr_form (key_narrow, tr_lemma_id).
+/// unit, unit_ref, unit_search ve quran_word anchor; xref_idx id; quran_marker (kind, no); page_map (layout, volume, page, line, start_anchor, end_anchor);
+/// sure no; tr_root_index (anchor, span_start); word_morph anchor; root id; lemma id; lemma_gloss lemma_id; tr_form (key_narrow, tr_lemma_id); lugat (basliksoz, kaynak, anlam_no).
 /// </summary>
 public static class PackRows
 {
@@ -101,6 +109,11 @@ public static class PackRows
             yield return new PackRow(
                 PackTables.Unit,
                 [r.Anchor, r.Kind, r.Role, r.ParentPath, r.Ord, r.AyahFirst, r.AyahLast, r.Label, r.Text, r.Marks, r.Sentences, r.Attrs, r.ContentHash, r.Status, r.Approved, r.Successors]);
+        }
+
+        foreach (PackUnitRefRow r in content.UnitRefs.OrderBy(r => r.Anchor, Utf8Order.Instance))
+        {
+            yield return new PackRow(PackTables.UnitRef, [r.Anchor, r.PackId, r.Ord, r.Label]);
         }
 
         foreach (PackUnitSearchRow r in content.UnitSearch.OrderBy(r => r.Anchor, Utf8Order.Instance))
@@ -171,6 +184,13 @@ public static class PackRows
         {
             yield return new PackRow(PackTables.TrForm, [r.KeyWide, r.KeyNarrow, r.TrLemmaId, r.Freq]);
         }
+
+        foreach (PackLugatRow r in content.Lugat.OrderBy(r => r.Basliksoz, Utf8Order.Instance).ThenBy(r => r.Kaynak, Utf8Order.Instance).ThenBy(r => r.AnlamNo))
+        {
+            yield return new PackRow(
+                PackTables.Lugat,
+                [r.Basliksoz, r.BasliksozNorm, r.OsmanlicaYazim, r.KokenDil, r.TanimTr, r.AnlamNo, r.Kaynak, r.Duzey, r.Status, r.Origin, r.Version, r.ContentHash]);
+        }
     }
 
     /// <summary>Tablo basina satir sayisi (satirsiz tablolar 0 ile yer alir; PackTables.Order sirasinda).</summary>
@@ -183,6 +203,7 @@ public static class PackRows
             [PackTables.PackSource] = content.PackSources.Count,
             [PackTables.Attribution] = content.Attributions.Count,
             [PackTables.Unit] = content.Units.Count,
+            [PackTables.UnitRef] = content.UnitRefs.Count,
             [PackTables.UnitSearch] = content.UnitSearch.Count,
             [PackTables.XrefIdx] = content.Xrefs.Count,
             [PackTables.QuranWord] = content.QuranWords.Count,
@@ -195,6 +216,7 @@ public static class PackRows
             [PackTables.Lemma] = content.Lemmas.Count,
             [PackTables.LemmaGloss] = content.LemmaGlosses.Count,
             [PackTables.TrForm] = content.TrForms.Count,
+            [PackTables.Lugat] = content.Lugat.Count,
         };
     }
 

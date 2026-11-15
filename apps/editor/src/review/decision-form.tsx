@@ -11,6 +11,7 @@ import { useAnnounce } from '@/app/announce-context';
 import { useApi } from '@/app/api-context';
 import { tr } from '@/i18n/tr';
 import { trLemma } from '@/i18n/tr-lemma';
+import { trLugat } from '@/i18n/tr-lugat';
 import { formatIfMatch } from '@/lib/etag';
 import {
   codePointCount,
@@ -24,7 +25,7 @@ import { canDecideStatus } from '@/lib/roles';
 import { fieldA11y, type FieldProblem } from './field-errors';
 import { ProblemList } from './problem-list';
 import { RootMappingFields } from './root-mapping-fields';
-import { MAX_GLOSS_LENGTH, MAX_REASON_LENGTH } from './limits';
+import { MAX_GLOSS_LENGTH, MAX_REASON_LENGTH, MAX_TANIM_LENGTH } from './limits';
 import {
   ME_PATH,
   REVIEWS_PATH,
@@ -42,7 +43,9 @@ import {
   canEditValue,
   isFirstStageUnitText,
   isGlossEditable,
+  isLugatEditable,
   isRootMappingEditable,
+  lugatSourceDefinition,
   parseIdInput,
   proposedGloss,
   proposedMapping,
@@ -122,6 +125,23 @@ function glossProblemMessage(problem: ReturnType<typeof toProblem>): string | nu
 }
 
 /**
+ * The Turkish message of a server rejection that belongs to the written lügat definition: a 400 `dogrulama` with
+ * an error on `duzenlenen.tanim_tr`, or a 409 (the madde is not a candidate or the decision rule is broken).
+ */
+function lugatProblemMessage(problem: ReturnType<typeof toProblem>): string | null {
+  const status = problemStatus(problem);
+  if (status === 409) return trLugat.edit.notCandidate;
+  if (
+    status === 400 &&
+    problem.errors !== undefined &&
+    Object.hasOwn(problem.errors, 'duzenlenen.tanim_tr')
+  ) {
+    return trLugat.edit.serverInvalid;
+  }
+  return null;
+}
+
+/**
  * The Turkish message of a server rejection of an edited root mapping: a 400 `dogrulama` that is not about the
  * reason (root or Arabic lemma missing, the lemma is not Arabic, its root differs). The server's own message is
  * kept next to it. null for everything else.
@@ -164,6 +184,9 @@ export function DecisionForm({
     gloss: useId(),
     glossHint: useId(),
     glossError: useId(),
+    tanim: useId(),
+    tanimHint: useId(),
+    tanimError: useId(),
     decision: useId(),
     summary: useId(),
     approveClosed: useId(),
@@ -175,6 +198,9 @@ export function DecisionForm({
   const [gerekce, setGerekce] = useState('');
   const [edited, setEdited] = useState<string | null>(null);
   const [gloss, setGloss] = useState<string | null>(null);
+  const [tanim, setTanim] = useState<string | null>(null);
+  // A lügat madde that carries a source definition (K-52 madde 10 and 14): approved unchanged unless the editor chooses to edit.
+  const [tanimEditing, setTanimEditing] = useState(false);
   // A Turkish lemma mapping (K-51 madde 9): the typed root id, Arabic lemma id and switch; null = untouched.
   const [mapRoot, setMapRoot] = useState<string | null>(null);
   const [mapAr, setMapAr] = useState<string | null>(null);
@@ -221,6 +247,17 @@ export function DecisionForm({
   const glossChanged = showGloss && trimGloss(glossValue) !== trimGloss(glossBaseline);
   const glossCount = glossLength(glossValue);
   const glossProblems = problems.filter((problem) => problem.fieldId === ids.gloss);
+  // A lügat madde review (K-52 madde 10): approval needs a definition the editor writes; the reference meaning is never prefilled.
+  const lugatAllowed = isLugatEditable(current) && !closed;
+  const sourceDefinition = lugatAllowed ? lugatSourceDefinition(current) : null;
+  const showLugatChoice = sourceDefinition !== null && selected === 'onaylandi';
+  const showLugat =
+    lugatAllowed && selected === 'onaylandi' && (sourceDefinition === null || tanimEditing);
+  const tanimValue = tanim ?? sourceDefinition ?? '';
+  // An edit that equals the source definition byte for byte is not an edit: the approval then stays unchanged.
+  const tanimSent = showLugat && (sourceDefinition === null || tanimValue !== sourceDefinition);
+  const tanimCount = glossLength(tanimValue);
+  const tanimProblems = problems.filter((problem) => problem.fieldId === ids.tanim);
   // An open candidate mapping review: approval may carry an edited mapping; an edit equal to the proposal is not sent.
   const baseMap = proposedMapping(current);
   const rootText = mapRoot ?? (baseMap.rootId !== null ? String(baseMap.rootId) : '');
@@ -242,6 +279,7 @@ export function DecisionForm({
         ? findUnwritable(editedValue)
         : { nul: false, loneSurrogate: false },
     gloss: showGloss ? findUnwritable(glossValue) : { nul: false, loneSurrogate: false },
+    tanim: showLugat ? findUnwritable(tanimValue) : { nul: false, loneSurrogate: false },
   };
   const hasUnwritable =
     unwritable.gerekce.nul ||
@@ -249,7 +287,9 @@ export function DecisionForm({
     unwritable.edited.nul ||
     unwritable.edited.loneSurrogate ||
     unwritable.gloss.nul ||
-    unwritable.gloss.loneSurrogate;
+    unwritable.gloss.loneSurrogate ||
+    unwritable.tanim.nul ||
+    unwritable.tanim.loneSurrogate;
 
   useEffect(() => {
     if (focusTick > 0) summaryRef.current?.focus();
@@ -280,6 +320,15 @@ export function DecisionForm({
       }
       if (unwritable.gloss.nul || unwritable.gloss.loneSurrogate) {
         add(ids.gloss, trLemma.edit.unwritable);
+      }
+    }
+    if (showLugat) {
+      if (trimGloss(tanimValue) === '') add(ids.tanim, trLugat.edit.empty);
+      else if (tanimCount > MAX_TANIM_LENGTH) {
+        add(ids.tanim, trLugat.edit.tooLong(tanimCount, MAX_TANIM_LENGTH));
+      }
+      if (unwritable.tanim.nul || unwritable.tanim.loneSurrogate) {
+        add(ids.tanim, trLugat.edit.unwritable);
       }
     }
     if (extraEdit && selected === 'onaylandi') found.push(...extraEdit.problems);
@@ -320,6 +369,7 @@ export function DecisionForm({
     setStale(null);
     const sendEdit = canEdit && selected === 'onaylandi' && editedValue !== baseline;
     const sendGloss = glossChanged;
+    const sendTanim = tanimSent;
     const sendMapping = mappingChanged && typeof parsedRoot === 'number' && parsedAr !== 'invalid';
     const sendExtra = selected === 'onaylandi' ? (extraEdit?.value ?? null) : null;
     const snapshot = current;
@@ -332,9 +382,11 @@ export function DecisionForm({
             ? { metin: editedValue }
             : sendGloss
               ? { anlam_kisa: glossValue }
-              : sendMapping
-                ? { root_id: parsedRoot, ar_lemma_id: parsedAr, etymological_only: etymValue }
-                : sendExtra,
+              : sendTanim
+                ? { tanim_tr: tanimValue }
+                : sendMapping
+                  ? { root_id: parsedRoot, ar_lemma_id: parsedAr, etymological_only: etymValue }
+                  : sendExtra,
           gerekce,
         },
       });
@@ -353,9 +405,13 @@ export function DecisionForm({
       const problem = toProblem(thrown);
       // A rejected edited meaning is shown next to its field (400 on the field, 409 for a target that is not a candidate).
       const glossMessage = sendGloss ? glossProblemMessage(problem) : null;
+      const lugatMessage = sendTanim ? lugatProblemMessage(problem) : null;
       const mappingMessage = sendMapping ? mappingProblemMessage(problem) : null;
       if (glossMessage !== null) {
         setProblems([{ fieldId: ids.gloss, message: glossMessage }]);
+        setError(null);
+      } else if (lugatMessage !== null) {
+        setProblems([{ fieldId: ids.tanim, message: lugatMessage }]);
         setError(null);
       } else if (mappingMessage !== null) {
         setProblems([{ fieldId: ids.mapRoot, message: mappingMessage }]);
@@ -381,6 +437,7 @@ export function DecisionForm({
     setGerekce((value) => stripUnwritable(value));
     if (canEdit) setEdited(stripUnwritable(editedValue));
     if (showGloss) setGloss(stripUnwritable(glossValue));
+    if (showLugat) setTanim(stripUnwritable(tanimValue));
   }
 
   if (roleMissing) {
@@ -507,6 +564,59 @@ export function DecisionForm({
             {glossProblems.length > 0 ? (
               <div id={ids.glossError} className="flex flex-col gap-0.5">
                 {glossProblems.map((problem) => (
+                  <p key={problem.message} className="text-xs font-medium text-destructive">
+                    {problem.message}
+                  </p>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
+        {showLugatChoice ? (
+          <div className="flex flex-col gap-2" data-testid="tanim-choice">
+            {tanimEditing ? null : (
+              <p className="text-sm text-muted-foreground">{trLugat.edit.unchangedNote}</p>
+            )}
+            <div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                aria-pressed={tanimEditing}
+                onClick={() => {
+                  setTanimEditing((value) => !value);
+                  setTanim(null);
+                }}
+              >
+                {tanimEditing ? trLugat.edit.cancelEdit : trLugat.edit.editAndApprove}
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
+        {showLugat ? (
+          <div className="flex flex-col gap-1" data-testid="tanim-edit">
+            <Label htmlFor={ids.tanim}>{trLugat.edit.label}</Label>
+            <Textarea
+              id={ids.tanim}
+              lang="tr"
+              value={tanimValue}
+              onChange={(event) => setTanim(event.target.value)}
+              onKeyDown={onKeyDown}
+              aria-required="true"
+              aria-invalid={tanimProblems.length > 0 ? true : undefined}
+              aria-describedby={
+                tanimProblems.length > 0 ? `${ids.tanimHint} ${ids.tanimError}` : ids.tanimHint
+              }
+              rows={5}
+            />
+            <p id={ids.tanimHint} className="text-xs text-muted-foreground">
+              {`${trLugat.edit.hint} ${trLugat.edit.count(tanimCount, MAX_TANIM_LENGTH)}`}
+            </p>
+            {tanimProblems.length > 0 ? (
+              <div id={ids.tanimError} className="flex flex-col gap-0.5">
+                {tanimProblems.map((problem) => (
                   <p key={problem.message} className="text-xs font-medium text-destructive">
                     {problem.message}
                   </p>

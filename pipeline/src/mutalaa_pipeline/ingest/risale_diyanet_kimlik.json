@@ -1,0 +1,1718 @@
+{
+ "surum": 1,
+ "kitaplar": [
+  {
+   "slug": "sozler",
+   "txt_klasor": "01 S\u00f6zler",
+   "md_klasor": "01 S\u00f6zler",
+   "dosyalar": [
+    {
+     "txt": "S\u00f6zler-01-Birinci S\u00f6z.txt",
+     "md": "01 Birinci S\u00f6z.md",
+     "bolum": "soz-1"
+    },
+    {
+     "txt": "S\u00f6zler-02-\u0130kinci S\u00f6z.txt",
+     "md": "02 \u0130kinci S\u00f6z.md",
+     "bolum": "soz-2"
+    },
+    {
+     "txt": "S\u00f6zler-03-\u00dc\u00e7\u00fcnc\u00fc S\u00f6z.txt",
+     "md": "03 \u00dc\u00e7\u00fcnc\u00fc S\u00f6z.md",
+     "bolum": "soz-3"
+    },
+    {
+     "txt": "S\u00f6zler-04-D\u00f6rd\u00fcnc\u00fc S\u00f6z.txt",
+     "md": "04 D\u00f6rd\u00fcnc\u00fc S\u00f6z.md",
+     "bolum": "soz-4"
+    },
+    {
+     "txt": "S\u00f6zler-05-Be\u015finci S\u00f6z.txt",
+     "md": "05 Be\u015finci S\u00f6z.md",
+     "bolum": "soz-5"
+    },
+    {
+     "txt": "S\u00f6zler-06-Alt\u0131nc\u0131 S\u00f6z.txt",
+     "md": "06 Alt\u0131nc\u0131 S\u00f6z.md",
+     "bolum": "soz-6"
+    },
+    {
+     "txt": "S\u00f6zler-07-Yedinci S\u00f6z.txt",
+     "md": "07 Yedinci S\u00f6z.md",
+     "bolum": "soz-7"
+    },
+    {
+     "txt": "S\u00f6zler-08-Sekizinci S\u00f6z.txt",
+     "md": "08 Sekizinci S\u00f6z.md",
+     "bolum": "soz-8"
+    },
+    {
+     "txt": "S\u00f6zler-09-Dokuzuncu S\u00f6z.txt",
+     "md": "09 Dokuzuncu S\u00f6z.md",
+     "bolum": "soz-9"
+    },
+    {
+     "txt": "S\u00f6zler-10-Onuncu S\u00f6z.txt",
+     "md": "10 Onuncu S\u00f6z.md",
+     "bolum": "soz-10"
+    },
+    {
+     "txt": "S\u00f6zler-11-On Birinci S\u00f6z.txt",
+     "md": "11 On Birinci S\u00f6z.md",
+     "bolum": "soz-11"
+    },
+    {
+     "txt": "S\u00f6zler-12-On \u0130kinci S\u00f6z.txt",
+     "md": "12 On \u0130kinci S\u00f6z.md",
+     "bolum": "soz-12"
+    },
+    {
+     "txt": "S\u00f6zler-13-On \u00dc\u00e7\u00fcnc\u00fc S\u00f6z.txt",
+     "md": "13 On \u00dc\u00e7\u00fcnc\u00fc S\u00f6z.md",
+     "bolum": "soz-13"
+    },
+    {
+     "txt": "S\u00f6zler-14-On D\u00f6rd\u00fcnc\u00fc S\u00f6z.txt",
+     "md": "14 On D\u00f6rd\u00fcnc\u00fc S\u00f6z.md",
+     "bolum": "soz-14"
+    },
+    {
+     "txt": "S\u00f6zler-15-On Be\u015finci S\u00f6z.txt",
+     "md": "15 On Be\u015finci S\u00f6z.md",
+     "bolum": "soz-15"
+    },
+    {
+     "txt": "S\u00f6zler-16-On Alt\u0131nc\u0131 S\u00f6z.txt",
+     "md": "16 On Alt\u0131nc\u0131 S\u00f6z.md",
+     "bolum": "soz-16"
+    },
+    {
+     "txt": "S\u00f6zler-17-On Yedinci S\u00f6z.txt",
+     "md": "17 On Yedinci S\u00f6z.md",
+     "bolum": "soz-17"
+    },
+    {
+     "txt": "S\u00f6zler-18-On Sekizinci S\u00f6z.txt",
+     "md": "18 On Sekizinci S\u00f6z.md",
+     "bolum": "soz-18"
+    },
+    {
+     "txt": "S\u00f6zler-19-On Dokuzuncu S\u00f6z.txt",
+     "md": "19 On Dokuzuncu S\u00f6z.md",
+     "bolum": "soz-19"
+    },
+    {
+     "txt": "S\u00f6zler-20-Yirminci S\u00f6z.txt",
+     "md": "20 Yirminci S\u00f6z.md",
+     "bolum": "soz-20"
+    },
+    {
+     "txt": "S\u00f6zler-21-Yirmi Birinci S\u00f6z.txt",
+     "md": "21 Yirmi Birinci S\u00f6z.md",
+     "bolum": "soz-21"
+    },
+    {
+     "txt": "S\u00f6zler-22-Yirmi \u0130kinci S\u00f6z.txt",
+     "md": "22 Yirmi \u0130kinci S\u00f6z.md",
+     "bolum": "soz-22"
+    },
+    {
+     "txt": "S\u00f6zler-23-Yirmi \u00dc\u00e7\u00fcnc\u00fc S\u00f6z.txt",
+     "md": "23 Yirmi \u00dc\u00e7\u00fcnc\u00fc S\u00f6z.md",
+     "bolum": "soz-23"
+    },
+    {
+     "txt": "S\u00f6zler-24-Yirmi D\u00f6rd\u00fcnc\u00fc S\u00f6z.txt",
+     "md": "24 Yirmi D\u00f6rd\u00fcnc\u00fc S\u00f6z.md",
+     "bolum": "soz-24"
+    },
+    {
+     "txt": "S\u00f6zler-25-Yirmi Be\u015finci S\u00f6z.txt",
+     "md": "25 Yirmi Be\u015finci S\u00f6z.md",
+     "bolum": "soz-25"
+    },
+    {
+     "txt": "S\u00f6zler-26-Yirmi Alt\u0131nc\u0131 S\u00f6z.txt",
+     "md": "26 Yirmi Alt\u0131nc\u0131 S\u00f6z.md",
+     "bolum": "soz-26"
+    },
+    {
+     "txt": "S\u00f6zler-27-Yirmi Yedinci S\u00f6z.txt",
+     "md": "27 Yirmi Yedinci S\u00f6z.md",
+     "bolum": "soz-27"
+    },
+    {
+     "txt": "S\u00f6zler-28-Yirmi Sekizinci S\u00f6z.txt",
+     "md": "28 Yirmi Sekizinci S\u00f6z.md",
+     "bolum": "soz-28"
+    },
+    {
+     "txt": "S\u00f6zler-29-Yirmi Dokuzuncu S\u00f6z.txt",
+     "md": "29 Yirmi Dokuzuncu S\u00f6z.md",
+     "bolum": "soz-29"
+    },
+    {
+     "txt": "S\u00f6zler-30-Otuzuncu S\u00f6z.txt",
+     "md": "30 Otuzuncu S\u00f6z.md",
+     "bolum": "soz-30"
+    },
+    {
+     "txt": "S\u00f6zler-31-Otuz Birinci S\u00f6z.txt",
+     "md": "31 Otuz Birinci S\u00f6z.md",
+     "bolum": "soz-31"
+    },
+    {
+     "txt": "S\u00f6zler-32-Otuz \u0130kinci S\u00f6z.txt",
+     "md": "32 Otuz \u0130kinci S\u00f6z.md",
+     "bolum": "soz-32"
+    },
+    {
+     "txt": "S\u00f6zler-33-Otuz \u00dc\u00e7\u00fcnc\u00fc S\u00f6z.txt",
+     "md": "33 Otuz \u00dc\u00e7\u00fcnc\u00fc S\u00f6z.md",
+     "bolum": "soz-33"
+    },
+    {
+     "txt": "S\u00f6zler-34-Lemaat (S\u00f6zler).txt",
+     "md": "34 Lemaat (S\u00f6zler).md",
+     "bolum": "lemaat-sozler"
+    },
+    {
+     "txt": "S\u00f6zler-35-Konferans (S\u00f6zler).txt",
+     "md": "35 Konferans (S\u00f6zler).md",
+     "bolum": "konferans-sozler"
+    },
+    {
+     "txt": "S\u00f6zler-36-Fihrist (S\u00f6zler).txt",
+     "md": "36 Fihrist (S\u00f6zler).md",
+     "bolum": "fihrist-sozler"
+    }
+   ]
+  },
+  {
+   "slug": "mektubat",
+   "txt_klasor": "02 Mektubat",
+   "md_klasor": "02 Mektubat",
+   "dosyalar": [
+    {
+     "txt": "Mektubat-01-Birinci Mektup.txt",
+     "md": "01 Birinci Mektup.md",
+     "bolum": "mektup-1"
+    },
+    {
+     "txt": "Mektubat-02-\u0130kinci Mektup.txt",
+     "md": "02 \u0130kinci Mektup.md",
+     "bolum": "mektup-2"
+    },
+    {
+     "txt": "Mektubat-03-\u00dc\u00e7\u00fcnc\u00fc Mektup.txt",
+     "md": "03 \u00dc\u00e7\u00fcnc\u00fc Mektup.md",
+     "bolum": "mektup-3"
+    },
+    {
+     "txt": "Mektubat-04-D\u00f6rd\u00fcnc\u00fc Mektup.txt",
+     "md": "04 D\u00f6rd\u00fcnc\u00fc Mektup.md",
+     "bolum": "mektup-4"
+    },
+    {
+     "txt": "Mektubat-05-Be\u015finci Mektup.txt",
+     "md": "05 Be\u015finci Mektup.md",
+     "bolum": "mektup-5"
+    },
+    {
+     "txt": "Mektubat-06-Alt\u0131nc\u0131 Mektup.txt",
+     "md": "06 Alt\u0131nc\u0131 Mektup.md",
+     "bolum": "mektup-6"
+    },
+    {
+     "txt": "Mektubat-07-Yedinci Mektup.txt",
+     "md": "07 Yedinci Mektup.md",
+     "bolum": "mektup-7"
+    },
+    {
+     "txt": "Mektubat-08-Sekizinci Mektup.txt",
+     "md": "08 Sekizinci Mektup.md",
+     "bolum": "mektup-8"
+    },
+    {
+     "txt": "Mektubat-09-Dokuzuncu Mektup.txt",
+     "md": "09 Dokuzuncu Mektup.md",
+     "bolum": "mektup-9"
+    },
+    {
+     "txt": "Mektubat-10-Onuncu Mektup.txt",
+     "md": "10 Onuncu Mektup.md",
+     "bolum": "mektup-10"
+    },
+    {
+     "txt": "Mektubat-11-On Birinci Mektup.txt",
+     "md": "11 On Birinci Mektup.md",
+     "bolum": "mektup-11"
+    },
+    {
+     "txt": "Mektubat-12-On \u0130kinci Mektup.txt",
+     "md": "12 On \u0130kinci Mektup.md",
+     "bolum": "mektup-12"
+    },
+    {
+     "txt": "Mektubat-13-On \u00dc\u00e7\u00fcnc\u00fc Mektup.txt",
+     "md": "13 On \u00dc\u00e7\u00fcnc\u00fc Mektup.md",
+     "bolum": "mektup-13"
+    },
+    {
+     "txt": "Mektubat-14-On D\u00f6rd\u00fcnc\u00fc Mektup.txt",
+     "md": "14 On D\u00f6rd\u00fcnc\u00fc Mektup.md",
+     "bolum": "mektup-14"
+    },
+    {
+     "txt": "Mektubat-15-On Be\u015finci Mektup.txt",
+     "md": "15 On Be\u015finci Mektup.md",
+     "bolum": "mektup-15"
+    },
+    {
+     "txt": "Mektubat-16-On Alt\u0131nc\u0131 Mektup.txt",
+     "md": "16 On Alt\u0131nc\u0131 Mektup.md",
+     "bolum": "mektup-16"
+    },
+    {
+     "txt": "Mektubat-17-On Yedinci Mektup.txt",
+     "md": "17 On Yedinci Mektup.md",
+     "bolum": "mektup-17"
+    },
+    {
+     "txt": "Mektubat-18-On Sekizinci Mektup.txt",
+     "md": "18 On Sekizinci Mektup.md",
+     "bolum": "mektup-18"
+    },
+    {
+     "txt": "Mektubat-19-On Dokuzuncu Mektup.txt",
+     "md": "19 On Dokuzuncu Mektup.md",
+     "bolum": "mektup-19"
+    },
+    {
+     "txt": "Mektubat-20-Yirminci Mektup.txt",
+     "md": "20 Yirminci Mektup.md",
+     "bolum": "mektup-20"
+    },
+    {
+     "txt": "Mektubat-21-Yirmi Birinci Mektup.txt",
+     "md": "21 Yirmi Birinci Mektup.md",
+     "bolum": "mektup-21"
+    },
+    {
+     "txt": "Mektubat-22-Yirmi \u0130kinci Mektup.txt",
+     "md": "22 Yirmi \u0130kinci Mektup.md",
+     "bolum": "mektup-22"
+    },
+    {
+     "txt": "Mektubat-23-Yirmi \u00dc\u00e7\u00fcnc\u00fc Mektup.txt",
+     "md": "23 Yirmi \u00dc\u00e7\u00fcnc\u00fc Mektup.md",
+     "bolum": "mektup-23"
+    },
+    {
+     "txt": "Mektubat-24-Yirmi D\u00f6rd\u00fcnc\u00fc Mektup.txt",
+     "md": "24 Yirmi D\u00f6rd\u00fcnc\u00fc Mektup.md",
+     "bolum": "mektup-24"
+    },
+    {
+     "txt": "Mektubat-25-Yirmi Be\u015finci Mektup.txt",
+     "md": "25 Yirmi Be\u015finci Mektup.md",
+     "bolum": "mektup-25"
+    },
+    {
+     "txt": "Mektubat-26-Yirmi Alt\u0131nc\u0131 Mektup.txt",
+     "md": "26 Yirmi Alt\u0131nc\u0131 Mektup.md",
+     "bolum": "mektup-26"
+    },
+    {
+     "txt": "Mektubat-27-Yirmi Yedinci Mektup.txt",
+     "md": "27 Yirmi Yedinci Mektup.md",
+     "bolum": "mektup-27"
+    },
+    {
+     "txt": "Mektubat-28-Yirmi Sekizinci Mektup.txt",
+     "md": "28 Yirmi Sekizinci Mektup.md",
+     "bolum": "mektup-28"
+    },
+    {
+     "txt": "Mektubat-29-Yirmi Dokuzuncu Mektup.txt",
+     "md": "29 Yirmi Dokuzuncu Mektup.md",
+     "bolum": "mektup-29"
+    },
+    {
+     "txt": "Mektubat-30-Otuzuncu Mektup.txt",
+     "md": "30 Otuzuncu Mektup.md",
+     "bolum": "mektup-30"
+    },
+    {
+     "txt": "Mektubat-31-Otuz Birinci Mektup.txt",
+     "md": "31 Otuz Birinci Mektup.md",
+     "bolum": "mektup-31"
+    },
+    {
+     "txt": "Mektubat-32-Otuz \u0130kinci Mektup.txt",
+     "md": "32 Otuz \u0130kinci Mektup.md",
+     "bolum": "mektup-32"
+    },
+    {
+     "txt": "Mektubat-33-Otuz \u00dc\u00e7\u00fcnc\u00fc Mektup.txt",
+     "md": "33 Otuz \u00dc\u00e7\u00fcnc\u00fc Mektup.md",
+     "bolum": "mektup-33"
+    },
+    {
+     "txt": "Mektubat-34-\u0130\u015farat-\u0131 Gaybiye Hakk\u0131nda Bir Takriz.txt",
+     "md": "34 \u0130\u015farat-\u0131 Gaybiye Hakk\u0131nda Bir Takriz.md",
+     "bolum": "isarat-i-gaybiye-hakkinda-bir-takriz"
+    },
+    {
+     "txt": "Mektubat-35-Hakikat \u00c7ekirdekleri.txt",
+     "md": "35 Hakikat \u00c7ekirdekleri.md",
+     "bolum": "hakikat-cekirdekleri"
+    },
+    {
+     "txt": "Mektubat-36-G\u00f6n\u00fcller Fatihi B\u00fcy\u00fck \u00dcstada.txt",
+     "md": "36 G\u00f6n\u00fcller Fatihi B\u00fcy\u00fck \u00dcstada.md",
+     "bolum": "gonuller-fatihi-buyuk-ustada"
+    },
+    {
+     "txt": "Mektubat-37-Fihriste-i Mektubat.txt",
+     "md": "37 Fihriste-i Mektubat.md",
+     "bolum": "fihriste-i-mektubat"
+    },
+    {
+     "txt": "Mektubat-38-Hakikat I\u015f\u0131klar\u0131.txt",
+     "md": "38 Hakikat I\u015f\u0131klar\u0131.md",
+     "bolum": "hakikat-isiklari"
+    },
+    {
+     "txt": "Mektubat-39-Dua (Mektubat).txt",
+     "md": "39 Dua (Mektubat).md",
+     "bolum": "dua-mektubat"
+    }
+   ]
+  },
+  {
+   "slug": "lemalar",
+   "txt_klasor": "03 Lem'alar",
+   "md_klasor": "03 Lem'alar",
+   "dosyalar": [
+    {
+     "txt": "Lem'alar-01-Birinci Lem'a.txt",
+     "md": "01 Birinci Lem\u2019a.md",
+     "bolum": "lema-1"
+    },
+    {
+     "txt": "Lem'alar-02-\u0130kinci Lem'a.txt",
+     "md": "02 \u0130kinci Lem\u2019a.md",
+     "bolum": "lema-2"
+    },
+    {
+     "txt": "Lem'alar-03-\u00dc\u00e7\u00fcnc\u00fc Lem'a.txt",
+     "md": "03 \u00dc\u00e7\u00fcnc\u00fc Lem\u2019a.md",
+     "bolum": "lema-3"
+    },
+    {
+     "txt": "Lem'alar-04-D\u00f6rd\u00fcnc\u00fc Lem'a.txt",
+     "md": "04 D\u00f6rd\u00fcnc\u00fc Lem\u2019a.md",
+     "bolum": "lema-4"
+    },
+    {
+     "txt": "Lem'alar-05-Be\u015finci Lem'a.txt",
+     "md": "05 Be\u015finci Lem\u2019a.md",
+     "bolum": "lema-5"
+    },
+    {
+     "txt": "Lem'alar-06-Alt\u0131nc\u0131 Lem'a.txt",
+     "md": "06 Alt\u0131nc\u0131 Lem\u2019a.md",
+     "bolum": "lema-6"
+    },
+    {
+     "txt": "Lem'alar-07-Yedinci Lem'a.txt",
+     "md": "07 Yedinci Lem\u2019a.md",
+     "bolum": "lema-7"
+    },
+    {
+     "txt": "Lem'alar-08-Sekizinci Lem'a.txt",
+     "md": "08 Sekizinci Lem\u2019a.md",
+     "bolum": "lema-8"
+    },
+    {
+     "txt": "Lem'alar-09-Dokuzuncu Lem'a.txt",
+     "md": "09 Dokuzuncu Lem\u2019a.md",
+     "bolum": "lema-9"
+    },
+    {
+     "txt": "Lem'alar-10-Onuncu Lem'a.txt",
+     "md": "10 Onuncu Lem\u2019a.md",
+     "bolum": "lema-10"
+    },
+    {
+     "txt": "Lem'alar-11-On Birinci Lem'a.txt",
+     "md": "11 On Birinci Lem\u2019a.md",
+     "bolum": "lema-11"
+    },
+    {
+     "txt": "Lem'alar-12-On \u0130kinci Lem'a.txt",
+     "md": "12 On \u0130kinci Lem\u2019a.md",
+     "bolum": "lema-12"
+    },
+    {
+     "txt": "Lem'alar-13-On \u00dc\u00e7\u00fcnc\u00fc Lem'a.txt",
+     "md": "13 On \u00dc\u00e7\u00fcnc\u00fc Lem\u2019a.md",
+     "bolum": "lema-13"
+    },
+    {
+     "txt": "Lem'alar-14-On D\u00f6rd\u00fcnc\u00fc Lem'a.txt",
+     "md": "14 On D\u00f6rd\u00fcnc\u00fc Lem\u2019a.md",
+     "bolum": "lema-14"
+    },
+    {
+     "txt": "Lem'alar-15-On Be\u015finci Lem'a.txt",
+     "md": "15 On Be\u015finci Lem\u2019a.md",
+     "bolum": "lema-15"
+    },
+    {
+     "txt": "Lem'alar-16-On Alt\u0131nc\u0131 Lem'a.txt",
+     "md": "16 On Alt\u0131nc\u0131 Lem\u2019a.md",
+     "bolum": "lema-16"
+    },
+    {
+     "txt": "Lem'alar-17-On Yedinci Lem'a.txt",
+     "md": "17 On Yedinci Lem\u2019a.md",
+     "bolum": "lema-17"
+    },
+    {
+     "txt": "Lem'alar-18-On Sekizinci Lem'a.txt",
+     "md": "18 On Sekizinci Lem\u2019a.md",
+     "bolum": "lema-18"
+    },
+    {
+     "txt": "Lem'alar-19-On Dokuzuncu Lem'a.txt",
+     "md": "19 On Dokuzuncu Lem\u2019a.md",
+     "bolum": "lema-19"
+    },
+    {
+     "txt": "Lem'alar-20-Yirminci Lem'a.txt",
+     "md": "20 Yirminci Lem\u2019a.md",
+     "bolum": "lema-20"
+    },
+    {
+     "txt": "Lem'alar-21-Yirmi Birinci Lem'a.txt",
+     "md": "21 Yirmi Birinci Lem\u2019a.md",
+     "bolum": "lema-21"
+    },
+    {
+     "txt": "Lem'alar-22-Yirmi \u0130kinci Lem'a.txt",
+     "md": "22 Yirmi \u0130kinci Lem\u2019a.md",
+     "bolum": "lema-22"
+    },
+    {
+     "txt": "Lem'alar-23-Yirmi \u00dc\u00e7\u00fcnc\u00fc Lem'a.txt",
+     "md": "23 Yirmi \u00dc\u00e7\u00fcnc\u00fc Lem\u2019a.md",
+     "bolum": "lema-23"
+    },
+    {
+     "txt": "Lem'alar-24-Yirmi D\u00f6rd\u00fcnc\u00fc Lem'a.txt",
+     "md": "24 Yirmi D\u00f6rd\u00fcnc\u00fc Lem\u2019a.md",
+     "bolum": "lema-24"
+    },
+    {
+     "txt": "Lem'alar-25-Yirmi Be\u015finci Lem'a.txt",
+     "md": "25 Yirmi Be\u015finci Lem\u2019a.md",
+     "bolum": "lema-25"
+    },
+    {
+     "txt": "Lem'alar-26-Yirmi Alt\u0131nc\u0131 Lem'a.txt",
+     "md": "26 Yirmi Alt\u0131nc\u0131 Lem\u2019a.md",
+     "bolum": "lema-26"
+    },
+    {
+     "txt": "Lem'alar-27-Yirmi Yedinci Lem'a.txt",
+     "md": "27 Yirmi Yedinci Lem\u2019a.md",
+     "bolum": "lema-27"
+    },
+    {
+     "txt": "Lem'alar-28-Yirmi Sekizinci Lem'a.txt",
+     "md": "28 Yirmi Sekizinci Lem\u2019a.md",
+     "bolum": "lema-28"
+    },
+    {
+     "txt": "Lem'alar-29-Yirmi Dokuzuncu Lem'a.txt",
+     "md": "29 Yirmi Dokuzuncu Lem\u2019a.md",
+     "bolum": "lema-29"
+    },
+    {
+     "txt": "Lem'alar-30-Otuzuncu Lem'a.txt",
+     "md": "30 Otuzuncu Lem\u2019a.md",
+     "bolum": "lema-30"
+    },
+    {
+     "txt": "Lem'alar-31-Otuz Birinci Lem'a.txt",
+     "md": "31 Otuz Birinci Lem\u2019a.md",
+     "bolum": "lema-31"
+    },
+    {
+     "txt": "Lem'alar-32-Otuz \u0130kinci Lem'a.txt",
+     "md": "32 Otuz \u0130kinci Lem\u2019a.md",
+     "bolum": "lema-32"
+    },
+    {
+     "txt": "Lem'alar-33-Otuz \u00dc\u00e7\u00fcnc\u00fc Lem'a.txt",
+     "md": "33 Otuz \u00dc\u00e7\u00fcnc\u00fc Lem\u2019a.md",
+     "bolum": "lema-33"
+    },
+    {
+     "txt": "Lem'alar-34-M\u00fcn\u00e2cat (Lem'alar).txt",
+     "md": "34 M\u00fcn\u00e2cat (Lem\u2019alar).md",
+     "bolum": "munacat-lemalar"
+    },
+    {
+     "txt": "Lem'alar-35-Fihrist (Lem'alar).txt",
+     "md": "35 Fihrist (Lem\u2019alar).md",
+     "bolum": "fihrist-lemalar"
+    },
+    {
+     "txt": "Lem'alar-36-Dua (Lem'alar).txt",
+     "md": "36 Dua (Lem\u2019alar).md",
+     "bolum": "dua-lemalar"
+    }
+   ]
+  },
+  {
+   "slug": "sualar",
+   "txt_klasor": "04 \u015eu\u00e2lar",
+   "md_klasor": "04 \u015eu\u00e2lar",
+   "dosyalar": [
+    {
+     "txt": "\u015eu\u00e2lar-01-Birinci \u015eu\u00e2.txt",
+     "md": "01 Birinci \u015eu\u00e2.md",
+     "bolum": "sua-1"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-02-\u0130kinci \u015eu\u00e2.txt",
+     "md": "02 \u0130kinci \u015eu\u00e2.md",
+     "bolum": "sua-2"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-03-\u00dc\u00e7\u00fcnc\u00fc \u015eu\u00e2.txt",
+     "md": "03 \u00dc\u00e7\u00fcnc\u00fc \u015eu\u00e2.md",
+     "bolum": "sua-3"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-04-D\u00f6rd\u00fcnc\u00fc \u015eu\u00e2.txt",
+     "md": "04 D\u00f6rd\u00fcnc\u00fc \u015eu\u00e2.md",
+     "bolum": "sua-4"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-05-Be\u015finci \u015eu\u00e2.txt",
+     "md": "05 Be\u015finci \u015eu\u00e2.md",
+     "bolum": "sua-5"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-06-Alt\u0131nc\u0131 \u015eu\u00e2.txt",
+     "md": "06 Alt\u0131nc\u0131 \u015eu\u00e2.md",
+     "bolum": "sua-6"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-07-Yedinci \u015eu\u00e2.txt",
+     "md": "07 Yedinci \u015eu\u00e2.md",
+     "bolum": "sua-7"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-08-Sekizinci \u015eu\u00e2.txt",
+     "md": "08 Sekizinci \u015eu\u00e2.md",
+     "bolum": "sua-8"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-09-Dokuzuncu \u015eu\u00e2.txt",
+     "md": "09 Dokuzuncu \u015eu\u00e2.md",
+     "bolum": "sua-9"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-10-On Birinci \u015eu\u00e2.txt",
+     "md": "10 On Birinci \u015eu\u00e2.md",
+     "bolum": "sua-11"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-11-On \u0130kinci \u015eu\u00e2.txt",
+     "md": "11 On \u0130kinci \u015eu\u00e2.md",
+     "bolum": "sua-12"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-12-On \u00dc\u00e7\u00fcnc\u00fc \u015eu\u00e2.txt",
+     "md": "12 On \u00dc\u00e7\u00fcnc\u00fc \u015eu\u00e2.md",
+     "bolum": "sua-13"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-13-On D\u00f6rd\u00fcnc\u00fc \u015eu\u00e2.txt",
+     "md": "13 On D\u00f6rd\u00fcnc\u00fc \u015eu\u00e2.md",
+     "bolum": "sua-14"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-14-On Be\u015finci \u015eu\u00e2.txt",
+     "md": "14 On Be\u015finci \u015eu\u00e2.md",
+     "bolum": "sua-15"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-15-Yirmi Dokuzuncu Lem'a'dan \u0130kinci Bab.txt",
+     "md": "15 Yirmi Dokuzuncu Lem\u2019a\u2019dan \u0130kinci Bab.md",
+     "bolum": "yirmi-dokuzuncu-lemadan-ikinci-bab"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-16-Edd\u00e2\u00ee.txt",
+     "md": "16 Edd\u00e2\u00ee.md",
+     "bolum": "eddai"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-17-Dua (\u015eu\u00e2lar).txt",
+     "md": "17 Dua (\u015eu\u00e2lar).md",
+     "bolum": "dua-sualar"
+    },
+    {
+     "txt": "\u015eu\u00e2lar-18-\u0130\u00e7indekiler (\u015eu\u00e2lar).txt",
+     "md": "18 \u0130\u00e7indekiler (\u015eu\u00e2lar).md",
+     "bolum": "icindekiler-sualar"
+    }
+   ]
+  },
+  {
+   "slug": "tarihce-i-hayat",
+   "txt_klasor": "05 Tarih\u00e7e-i Hayat",
+   "md_klasor": "05 Tarih\u00e7e-i Hayat",
+   "dosyalar": [
+    {
+     "txt": "Tarih\u00e7e-i Hayat-01-\u00d6n s\u00f6z.txt",
+     "md": "01 \u00d6n s\u00f6z.md",
+     "bolum": "on-soz"
+    },
+    {
+     "txt": "Tarih\u00e7e-i Hayat-02-Giri\u015f.txt",
+     "md": null,
+     "bolum": "giris"
+    },
+    {
+     "txt": "Tarih\u00e7e-i Hayat-03-\u0130lk Hayat\u0131.txt",
+     "md": "02 \u0130lk Hayat\u0131.md",
+     "bolum": "ilk-hayati"
+    },
+    {
+     "txt": "Tarih\u00e7e-i Hayat-04-Barla Hayat\u0131.txt",
+     "md": "03 Barla Hayat\u0131.md",
+     "bolum": "barla-hayati"
+    },
+    {
+     "txt": "Tarih\u00e7e-i Hayat-05-Eski\u015fehir Hayat\u0131.txt",
+     "md": "04 Eski\u015fehir Hayat\u0131.md",
+     "bolum": "eskisehir-hayati"
+    },
+    {
+     "txt": "Tarih\u00e7e-i Hayat-06-Kastamonu Hayat\u0131.txt",
+     "md": "05 Kastamonu Hayat\u0131.md",
+     "bolum": "kastamonu-hayati"
+    },
+    {
+     "txt": "Tarih\u00e7e-i Hayat-07-Denizli Hayat\u0131.txt",
+     "md": "06 Denizli Hayat\u0131.md",
+     "bolum": "denizli-hayati"
+    },
+    {
+     "txt": "Tarih\u00e7e-i Hayat-08-Emirda\u011f Hayat\u0131.txt",
+     "md": "07 Emirda\u011f Hayat\u0131.md",
+     "bolum": "emirdag-hayati"
+    },
+    {
+     "txt": "Tarih\u00e7e-i Hayat-09-Afyon Hayat\u0131.txt",
+     "md": "08 Afyon Hayat\u0131.md",
+     "bolum": "afyon-hayati"
+    },
+    {
+     "txt": "Tarih\u00e7e-i Hayat-10-Isparta Hayat\u0131.txt",
+     "md": "09 Isparta Hayat\u0131.md",
+     "bolum": "isparta-hayati"
+    },
+    {
+     "txt": "Tarih\u00e7e-i Hayat-11-Hari\u00e7 Memleketler.txt",
+     "md": "10 Hari\u00e7 Memleketler.md",
+     "bolum": "haric-memleketler"
+    },
+    {
+     "txt": "Tarih\u00e7e-i Hayat-12-Bed\u00ee\u00fczzaman ve Risale-i Nur.txt",
+     "md": "11 Bed\u00ee\u00fczzaman ve Risale-i Nur.md",
+     "bolum": "bediuzzaman-ve-risale-i-nur"
+    },
+    {
+     "txt": "Tarih\u00e7e-i Hayat-13-Dua (Tarih\u00e7e-i Hayat\u0131).txt",
+     "md": "12 Dua (Tarih\u00e7e-i Hayat\u0131).md",
+     "bolum": "dua-tarihce-i-hayati"
+    },
+    {
+     "txt": "Tarih\u00e7e-i Hayat-14-\u0130\u00e7indekiler.txt",
+     "md": null,
+     "bolum": "icindekiler"
+    }
+   ]
+  },
+  {
+   "slug": "mesnevi-i-nuriye",
+   "txt_klasor": "06 Mesnev\u00ee-i Nuriye",
+   "md_klasor": "06 Mesnev\u00ee-i Nuriye",
+   "dosyalar": [
+    {
+     "txt": "Mesnev\u00ee-i Nuriye-01-\u0130'tizar.txt",
+     "md": "01 \u0130\u2019tizar.md",
+     "bolum": "itizar"
+    },
+    {
+     "txt": "Mesnev\u00ee-i Nuriye-02-Mukaddime.txt",
+     "md": "02 Mukaddime.md",
+     "bolum": "mukaddime"
+    },
+    {
+     "txt": "Mesnev\u00ee-i Nuriye-03-Lem'alar Risalesi.txt",
+     "md": "03 Lem\u2019alar Risalesi.md",
+     "bolum": "lemalar-risalesi"
+    },
+    {
+     "txt": "Mesnev\u00ee-i Nuriye-04-Re\u015fhalar.txt",
+     "md": "04 Re\u015fhalar.md",
+     "bolum": "reshalar"
+    },
+    {
+     "txt": "Mesnev\u00ee-i Nuriye-05-L\u00e2siyyemalar.txt",
+     "md": "05 L\u00e2siyyemalar.md",
+     "bolum": "lasiyyemalar"
+    },
+    {
+     "txt": "Mesnev\u00ee-i Nuriye-06-Katre.txt",
+     "md": "06 Katre.md",
+     "bolum": "katre"
+    },
+    {
+     "txt": "Mesnev\u00ee-i Nuriye-07-Hubab.txt",
+     "md": "07 Hubab.md",
+     "bolum": "hubab"
+    },
+    {
+     "txt": "Mesnev\u00ee-i Nuriye-08-Habbe.txt",
+     "md": "08 Habbe.md",
+     "bolum": "habbe"
+    },
+    {
+     "txt": "Mesnev\u00ee-i Nuriye-09-Z\u00fchre.txt",
+     "md": "09 Z\u00fchre.md",
+     "bolum": "zuhre"
+    },
+    {
+     "txt": "Mesnev\u00ee-i Nuriye-10-Zerre.txt",
+     "md": "10 Zerre.md",
+     "bolum": "zerre"
+    },
+    {
+     "txt": "Mesnev\u00ee-i Nuriye-11-\u015eemme Risalesi.txt",
+     "md": "11 \u015eemme Risalesi.md",
+     "bolum": "semme-risalesi"
+    },
+    {
+     "txt": "Mesnev\u00ee-i Nuriye-12-Onuncu Risale.txt",
+     "md": "12 Onuncu Risale.md",
+     "bolum": "onuncu-risale"
+    },
+    {
+     "txt": "Mesnev\u00ee-i Nuriye-13-\u015eule.txt",
+     "md": "13 \u015eule.md",
+     "bolum": "sule"
+    },
+    {
+     "txt": "Mesnev\u00ee-i Nuriye-14-Nokta.txt",
+     "md": "14 Nokta.md",
+     "bolum": "nokta"
+    },
+    {
+     "txt": "Mesnev\u00ee-i Nuriye-15-M\u00fcnderecat Hakk\u0131nda.txt",
+     "md": "15 M\u00fcnderecat Hakk\u0131nda.md",
+     "bolum": "munderecat-hakkinda"
+    },
+    {
+     "txt": "Mesnev\u00ee-i Nuriye-16-Fihrist (Mesnev\u00ee).txt",
+     "md": "16 Fihrist (Mesnev\u00ee).md",
+     "bolum": "fihrist-mesnevi"
+    }
+   ]
+  },
+  {
+   "slug": "isaratul-icaz",
+   "txt_klasor": "07 \u0130\u015farat\u00fc'l-i'caz",
+   "md_klasor": "07 \u0130\u015farat\u00fc'l-i'caz",
+   "dosyalar": [
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-01-Tenbih.txt",
+     "md": "01 Tenbih.md",
+     "bolum": "tenbih"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-02-\u0130fadet\u00fc'l-Meram.txt",
+     "md": "02 \u0130fadet\u00fc\u2019l-Meram.md",
+     "bolum": "ifadetul-meram"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-03-Kur'an'\u0131n Tarifi.txt",
+     "md": "03 Kur\u2019an\u2019\u0131n Tarifi.md",
+     "bolum": "kuranin-tarifi"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-04-Fatiha Suresi.txt",
+     "md": "04 Fatiha Suresi.md",
+     "bolum": "fatiha-suresi"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-05-Bakara Suresi 1- 2- 3. \u00e2yetler.txt",
+     "md": "05 Bakara Suresi 1- 2- 3. \u00e2yetler.md",
+     "bolum": "bakara-suresi-1-2-3-ayetler"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-06-Bakara Suresi 4-5. \u00e2yetler.txt",
+     "md": "06 Bakara Suresi 4-5. \u00e2yetler.md",
+     "bolum": "bakara-suresi-4-5-ayetler"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-07-Bakara Suresi 6. \u00e2yet.txt",
+     "md": "07 Bakara Suresi 6. \u00e2yet.md",
+     "bolum": "bakara-suresi-6-ayet"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-08-Bakara Suresi 7. \u00e2yet.txt",
+     "md": "08 Bakara Suresi 7. \u00e2yet.md",
+     "bolum": "bakara-suresi-7-ayet"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-09-Bakara Suresi 8. \u00e2yet.txt",
+     "md": "09 Bakara Suresi 8. \u00e2yet.md",
+     "bolum": "bakara-suresi-8-ayet"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-10-Bakara Suresi 9-10. \u00e2yetler.txt",
+     "md": "10 Bakara Suresi 9-10. \u00e2yetler.md",
+     "bolum": "bakara-suresi-9-10-ayetler"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-11-Bakara Suresi 11-12. \u00e2yetler.txt",
+     "md": "11 Bakara Suresi 11-12. \u00e2yetler.md",
+     "bolum": "bakara-suresi-11-12-ayetler"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-12-Bakara Suresi 13. \u00e2yet.txt",
+     "md": "12 Bakara Suresi 13. \u00e2yet.md",
+     "bolum": "bakara-suresi-13-ayet"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-13-Bakara Suresi 14-15. \u00e2yetler.txt",
+     "md": "13 Bakara Suresi 14-15. \u00e2yetler.md",
+     "bolum": "bakara-suresi-14-15-ayetler"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-14-Bakara Suresi 16. \u00e2yet.txt",
+     "md": "14 Bakara Suresi 16. \u00e2yet.md",
+     "bolum": "bakara-suresi-16-ayet"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-15-Bakara Suresi 17-18-19-20. \u00e2yetler.txt",
+     "md": "15 Bakara Suresi 17-18-19-20. \u00e2yetler.md",
+     "bolum": "bakara-suresi-17-18-19-20-ayetler"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-16-Bakara Suresi 21-22. \u00e2yetler.txt",
+     "md": "16 Bakara Suresi 21-22. \u00e2yetler.md",
+     "bolum": "bakara-suresi-21-22-ayetler"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-17-Bakara Suresi 23-24. \u00e2yetler.txt",
+     "md": "17 Bakara Suresi 23-24. \u00e2yetler.md",
+     "bolum": "bakara-suresi-23-24-ayetler"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-18-Bakara Suresi 25. \u00e2yet.txt",
+     "md": "18 Bakara Suresi 25. \u00e2yet.md",
+     "bolum": "bakara-suresi-25-ayet"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-19-Bakara Suresi 26-27. \u00e2yetler.txt",
+     "md": "19 Bakara Suresi 26-27. \u00e2yetler.md",
+     "bolum": "bakara-suresi-26-27-ayetler"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-20-Bakara Suresi 28. \u00e2yet.txt",
+     "md": "20 Bakara Suresi 28. \u00e2yet.md",
+     "bolum": "bakara-suresi-28-ayet"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-21-Bakara Suresi 29. \u00e2yet.txt",
+     "md": "21 Bakara Suresi 29. \u00e2yet.md",
+     "bolum": "bakara-suresi-29-ayet"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-22-Bakara Suresi 30. \u00e2yet.txt",
+     "md": "22 Bakara Suresi 30. \u00e2yet.md",
+     "bolum": "bakara-suresi-30-ayet"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-23-Bakara Suresi 31-32-33. \u00e2yetler.txt",
+     "md": "23 Bakara Suresi 31-32-33. \u00e2yetler.md",
+     "bolum": "bakara-suresi-31-32-33-ayetler"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-24-Ecnebi Feylesoflar\u0131n Kur'an Hakk\u0131ndaki Beyanatlar\u0131.txt",
+     "md": "24 Ecnebi Feylesoflar\u0131n Kur\u2019an Hakk\u0131ndaki Beyanatlar\u0131.md",
+     "bolum": "ecnebi-feylesoflarin-kuran-hakkindaki-beyanatlari"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-25-Mehmed Kayalar'\u0131n Bir M\u00fcdafaas\u0131.txt",
+     "md": "25 Mehmed Kayalar\u2019\u0131n Bir M\u00fcdafaas\u0131.md",
+     "bolum": "mehmed-kayalarin-bir-mudafaasi"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-26-Dua (\u0130\u015farat\u00fc'l-\u0130'caz).txt",
+     "md": "26 Dua (\u0130\u015farat\u00fc\u2019l-\u0130\u2019caz).md",
+     "bolum": "dua-isaratul-icaz"
+    },
+    {
+     "txt": "\u0130\u015farat\u00fc'l-i'caz-27-Fihrist (\u0130\u015farat\u00fc'l-\u0130'caz).txt",
+     "md": "27 Fihrist (\u0130\u015farat\u00fc\u2019l-\u0130\u2019caz).md",
+     "bolum": "fihrist-isaratul-icaz"
+    }
+   ]
+  },
+  {
+   "slug": "sikke-i-tasdik-i-gaybi",
+   "txt_klasor": "08 Sikke-i Tasdik-i Gayb\u00ee",
+   "md_klasor": "08 Sikke-i Tasdik-i Gayb\u00ee",
+   "dosyalar": [
+    {
+     "txt": "Sikke-i Tasdik-i Gayb\u00ee-01-Parlak F\u0131kralar ve G\u00fczel Mektuplar 1.txt",
+     "md": "01 Parlak F\u0131kralar ve G\u00fczel Mektuplar 1.md",
+     "bolum": "parlak-fikralar-ve-guzel-mektuplar-1"
+    },
+    {
+     "txt": "Sikke-i Tasdik-i Gayb\u00ee-02-Birinci \u015eu\u00e2.txt",
+     "md": "02 Birinci \u015eu\u00e2.md",
+     "bolum": "sua-1"
+    },
+    {
+     "txt": "Sikke-i Tasdik-i Gayb\u00ee-03-Sekizinci \u015eu\u00e2.txt",
+     "md": "03 Sekizinci \u015eu\u00e2.md",
+     "bolum": "sua-8"
+    },
+    {
+     "txt": "Sikke-i Tasdik-i Gayb\u00ee-04-On Sekizinci Lem'a.txt",
+     "md": "04 On Sekizinci Lem\u2019a.md",
+     "bolum": "lema-18"
+    },
+    {
+     "txt": "Sikke-i Tasdik-i Gayb\u00ee-05-Yirmi Sekizinci Lem'a.txt",
+     "md": "05 Yirmi Sekizinci Lem\u2019a.md",
+     "bolum": "lema-28"
+    },
+    {
+     "txt": "Sikke-i Tasdik-i Gayb\u00ee-06-Sekizinci Lem'a.txt",
+     "md": "06 Sekizinci Lem\u2019a.md",
+     "bolum": "lema-8"
+    },
+    {
+     "txt": "Sikke-i Tasdik-i Gayb\u00ee-07-Parlak F\u0131kralar ve G\u00fczel Mektuplar 2.txt",
+     "md": "07 Parlak F\u0131kralar ve G\u00fczel Mektuplar 2.md",
+     "bolum": "parlak-fikralar-ve-guzel-mektuplar-2"
+    },
+    {
+     "txt": "Sikke-i Tasdik-i Gayb\u00ee-08-Dua (Sikke-i Tasdik-i Gayb\u00ee).txt",
+     "md": "08 Dua (Sikke-i Tasdik-i Gayb\u00ee).md",
+     "bolum": "dua-sikke-i-tasdik-i-gaybi"
+    }
+   ]
+  },
+  {
+   "slug": "barla-lahikasi",
+   "txt_klasor": "09 Barla L\u00e2hikas\u0131",
+   "md_klasor": "09 Barla L\u00e2hikas\u0131",
+   "dosyalar": [
+    {
+     "txt": "Barla L\u00e2hikas\u0131-01-Barla L\u00e2hikas\u0131 - Takdim.txt",
+     "md": "01 Barla L\u00e2hikas\u0131 - Takdim.md",
+     "bolum": "barla-lahikasi-takdim"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-02-Barla L\u00e2hikas\u0131 - Yedinci Risale.txt",
+     "md": "02 Barla L\u00e2hikas\u0131 - Yedinci Risale.md",
+     "bolum": "barla-lahikasi-yedinci-risale"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-03-Barla L\u00e2hikas\u0131 s.21-39.txt",
+     "md": "03 Barla L\u00e2hikas\u0131 s.21-39.md",
+     "bolum": "parca-3"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-04-Barla L\u00e2hikas\u0131 s.40-58.txt",
+     "md": "04 Barla L\u00e2hikas\u0131 s.40-58.md",
+     "bolum": "parca-4"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-05-Barla L\u00e2hikas\u0131 s.59-80.txt",
+     "md": "05 Barla L\u00e2hikas\u0131 s.59-80.md",
+     "bolum": "parca-5"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-06-Barla L\u00e2hikas\u0131 s.80-102.txt",
+     "md": "06 Barla L\u00e2hikas\u0131 s.80-102.md",
+     "bolum": "parca-6"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-07-Barla L\u00e2hikas\u0131 s.103-121.txt",
+     "md": "07 Barla L\u00e2hikas\u0131 s.103-121.md",
+     "bolum": "parca-7"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-08-Barla L\u00e2hikas\u0131 s.121-146.txt",
+     "md": "08 Barla L\u00e2hikas\u0131 s.121-146.md",
+     "bolum": "parca-8"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-09-Barla L\u00e2hikas\u0131 s.146-159.txt",
+     "md": "09 Barla L\u00e2hikas\u0131 s.146-159.md",
+     "bolum": "parca-9"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-10-Barla L\u00e2hikas\u0131 s.160-180.txt",
+     "md": "10 Barla L\u00e2hikas\u0131 s.160-180.md",
+     "bolum": "parca-10"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-11-Barla L\u00e2hikas\u0131 s.181-201.txt",
+     "md": "11 Barla L\u00e2hikas\u0131 s.181-201.md",
+     "bolum": "parca-11"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-12-Barla L\u00e2hikas\u0131 s.202-221.txt",
+     "md": "12 Barla L\u00e2hikas\u0131 s.202-221.md",
+     "bolum": "parca-12"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-13-Barla L\u00e2hikas\u0131 s.221-240.txt",
+     "md": "13 Barla L\u00e2hikas\u0131 s.221-240.md",
+     "bolum": "parca-13"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-14-Barla L\u00e2hikas\u0131 s.241-261.txt",
+     "md": "14 Barla L\u00e2hikas\u0131 s.241-261.md",
+     "bolum": "parca-14"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-15-Barla L\u00e2hikas\u0131 s.262-280.txt",
+     "md": "15 Barla L\u00e2hikas\u0131 s.262-280.md",
+     "bolum": "parca-15"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-16-Barla L\u00e2hikas\u0131 s.280-299.txt",
+     "md": "16 Barla L\u00e2hikas\u0131 s.280-299.md",
+     "bolum": "parca-16"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-17-Barla L\u00e2hikas\u0131 s.300-321.txt",
+     "md": "17 Barla L\u00e2hikas\u0131 s.300-321.md",
+     "bolum": "parca-17"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-18-Barla L\u00e2hikas\u0131 s.321-340.txt",
+     "md": "18 Barla L\u00e2hikas\u0131 s.321-340.md",
+     "bolum": "parca-18"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-19-Barla L\u00e2hikas\u0131 s.340-362.txt",
+     "md": "19 Barla L\u00e2hikas\u0131 s.340-362.md",
+     "bolum": "parca-19"
+    },
+    {
+     "txt": "Barla L\u00e2hikas\u0131-20-Barla L\u00e2hikas\u0131 s.363-392.txt",
+     "md": "20 Barla L\u00e2hikas\u0131 s.363-392.md",
+     "bolum": "parca-20"
+    }
+   ]
+  },
+  {
+   "slug": "kastamonu-lahikasi",
+   "txt_klasor": "10 Kastamonu L\u00e2hikas\u0131",
+   "md_klasor": "10 Kastamonu L\u00e2hikas\u0131",
+   "dosyalar": [
+    {
+     "txt": "Kastamonu L\u00e2hikas\u0131-01-Kastamonu L\u00e2hikas\u0131 - Takdim.txt",
+     "md": "01 Kastamonu L\u00e2hikas\u0131 - Takdim.md",
+     "bolum": "kastamonu-lahikasi-takdim"
+    },
+    {
+     "txt": "Kastamonu L\u00e2hikas\u0131-02-Kastamonu L\u00e2hikas\u0131 s.10-30.txt",
+     "md": "02 Kastamonu L\u00e2hikas\u0131 s.10-30.md",
+     "bolum": "parca-2"
+    },
+    {
+     "txt": "Kastamonu L\u00e2hikas\u0131-03-Kastamonu L\u00e2hikas\u0131 s.30-51.txt",
+     "md": "03 Kastamonu L\u00e2hikas\u0131 s.30-51.md",
+     "bolum": "parca-3"
+    },
+    {
+     "txt": "Kastamonu L\u00e2hikas\u0131-04-Kastamonu L\u00e2hikas\u0131 s.52-69.txt",
+     "md": "04 Kastamonu L\u00e2hikas\u0131 s.52-69.md",
+     "bolum": "parca-4"
+    },
+    {
+     "txt": "Kastamonu L\u00e2hikas\u0131-05-Kastamonu L\u00e2hikas\u0131 s.70-91.txt",
+     "md": "05 Kastamonu L\u00e2hikas\u0131 s.70-91.md",
+     "bolum": "parca-5"
+    },
+    {
+     "txt": "Kastamonu L\u00e2hikas\u0131-06-Kastamonu L\u00e2hikas\u0131 s.91-109.txt",
+     "md": "06 Kastamonu L\u00e2hikas\u0131 s.91-109.md",
+     "bolum": "parca-6"
+    },
+    {
+     "txt": "Kastamonu L\u00e2hikas\u0131-07-Kastamonu L\u00e2hikas\u0131 s.110-129.txt",
+     "md": "07 Kastamonu L\u00e2hikas\u0131 s.110-129.md",
+     "bolum": "parca-7"
+    },
+    {
+     "txt": "Kastamonu L\u00e2hikas\u0131-08-Kastamonu L\u00e2hikas\u0131 s.130-149.txt",
+     "md": "08 Kastamonu L\u00e2hikas\u0131 s.130-149.md",
+     "bolum": "parca-8"
+    },
+    {
+     "txt": "Kastamonu L\u00e2hikas\u0131-09-Kastamonu L\u00e2hikas\u0131 s.150-166 (Lemaat'tan).txt",
+     "md": "09 Kastamonu L\u00e2hikas\u0131 s.150-166 (Lemaat\u2019tan).md",
+     "bolum": "parca-9"
+    },
+    {
+     "txt": "Kastamonu L\u00e2hikas\u0131-10-Kastamonu L\u00e2hikas\u0131 s.167-189.txt",
+     "md": "10 Kastamonu L\u00e2hikas\u0131 s.167-189.md",
+     "bolum": "parca-10"
+    },
+    {
+     "txt": "Kastamonu L\u00e2hikas\u0131-11-Kastamonu L\u00e2hikas\u0131 s.190-210.txt",
+     "md": "11 Kastamonu L\u00e2hikas\u0131 s.190-210.md",
+     "bolum": "parca-11"
+    },
+    {
+     "txt": "Kastamonu L\u00e2hikas\u0131-12-Kastamonu L\u00e2hikas\u0131 s.211-230.txt",
+     "md": "12 Kastamonu L\u00e2hikas\u0131 s.211-230.md",
+     "bolum": "parca-12"
+    },
+    {
+     "txt": "Kastamonu L\u00e2hikas\u0131-13-Kastamonu L\u00e2hikas\u0131 s.231-255.txt",
+     "md": "13 Kastamonu L\u00e2hikas\u0131 s.231-255.md",
+     "bolum": "parca-13"
+    }
+   ]
+  },
+  {
+   "slug": "emirdag-lahikasi-1",
+   "txt_klasor": "11 Emirda\u011f L\u00e2hikas\u0131 1",
+   "md_klasor": "11 Emirda\u011f L\u00e2hikas\u0131 1",
+   "dosyalar": [
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 1-01-Emirda\u011f L\u00e2hikas\u0131 - I - Takdim.txt",
+     "md": "01 Emirda\u011f L\u00e2hikas\u0131 - I - Takdim.md",
+     "bolum": "emirdag-lahikasi-i-takdim"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 1-02-Emirda\u011f L\u00e2hikas\u0131 - I s.10-31.txt",
+     "md": "02 Emirda\u011f L\u00e2hikas\u0131 - I s.10-31.md",
+     "bolum": "parca-2"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 1-03-Emirda\u011f L\u00e2hikas\u0131 - I s.31-50.txt",
+     "md": "03 Emirda\u011f L\u00e2hikas\u0131 - I s.31-50.md",
+     "bolum": "parca-3"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 1-04-Emirda\u011f L\u00e2hikas\u0131 - I s.50-69.txt",
+     "md": "04 Emirda\u011f L\u00e2hikas\u0131 - I s.50-69.md",
+     "bolum": "parca-4"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 1-05-Emirda\u011f L\u00e2hikas\u0131 - I s.70-90.txt",
+     "md": "05 Emirda\u011f L\u00e2hikas\u0131 - I s.70-90.md",
+     "bolum": "parca-5"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 1-06-Emirda\u011f L\u00e2hikas\u0131 - I s.90-110.txt",
+     "md": "06 Emirda\u011f L\u00e2hikas\u0131 - I s.90-110.md",
+     "bolum": "parca-6"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 1-07-Emirda\u011f L\u00e2hikas\u0131 - I s.110-130.txt",
+     "md": "07 Emirda\u011f L\u00e2hikas\u0131 - I s.110-130.md",
+     "bolum": "parca-7"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 1-08-Emirda\u011f L\u00e2hikas\u0131 - I s.131-150.txt",
+     "md": "08 Emirda\u011f L\u00e2hikas\u0131 - I s.131-150.md",
+     "bolum": "parca-8"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 1-09-Emirda\u011f L\u00e2hikas\u0131 - I s.150-170.txt",
+     "md": "09 Emirda\u011f L\u00e2hikas\u0131 - I s.150-170.md",
+     "bolum": "parca-9"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 1-10-Emirda\u011f L\u00e2hikas\u0131 - I s.170-190.txt",
+     "md": "10 Emirda\u011f L\u00e2hikas\u0131 - I s.170-190.md",
+     "bolum": "parca-10"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 1-11-Emirda\u011f L\u00e2hikas\u0131 - I s.190-211.txt",
+     "md": "11 Emirda\u011f L\u00e2hikas\u0131 - I s.190-211.md",
+     "bolum": "parca-11"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 1-12-Emirda\u011f L\u00e2hikas\u0131 - I s.212-230.txt",
+     "md": "12 Emirda\u011f L\u00e2hikas\u0131 - I s.212-230.md",
+     "bolum": "parca-12"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 1-13-Emirda\u011f L\u00e2hikas\u0131 - I s.230-251.txt",
+     "md": "13 Emirda\u011f L\u00e2hikas\u0131 - I s.230-251.md",
+     "bolum": "parca-13"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 1-14-Emirda\u011f L\u00e2hikas\u0131 - I s.251-270.txt",
+     "md": "14 Emirda\u011f L\u00e2hikas\u0131 - I s.251-270.md",
+     "bolum": "parca-14"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 1-15-Emirda\u011f L\u00e2hikas\u0131 - I s.271-288.txt",
+     "md": "15 Emirda\u011f L\u00e2hikas\u0131 - I s.271-288.md",
+     "bolum": "parca-15"
+    }
+   ]
+  },
+  {
+   "slug": "emirdag-lahikasi-2",
+   "txt_klasor": "12 Emirda\u011f L\u00e2hikas\u0131 2",
+   "md_klasor": "12 Emirda\u011f L\u00e2hikas\u0131 2",
+   "dosyalar": [
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 2-01-Emirda\u011f L\u00e2hikas\u0131 - I.txt",
+     "md": null,
+     "bolum": "emirdag-lahikasi-i"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 2-02-Emirda\u011f L\u00e2hikas\u0131 - II s.6-26.txt",
+     "md": "01 Emirda\u011f L\u00e2hikas\u0131 - II s.6-26.md",
+     "bolum": "parca-2"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 2-03-Emirda\u011f L\u00e2hikas\u0131 - II s.27-50.txt",
+     "md": "02 Emirda\u011f L\u00e2hikas\u0131 - II s.27-50.md",
+     "bolum": "parca-3"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 2-04-Emirda\u011f L\u00e2hikas\u0131 - II s.51-70.txt",
+     "md": "03 Emirda\u011f L\u00e2hikas\u0131 - II s.51-70.md",
+     "bolum": "parca-4"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 2-05-Emirda\u011f L\u00e2hikas\u0131 - II s.70-90.txt",
+     "md": "04 Emirda\u011f L\u00e2hikas\u0131 - II s.70-90.md",
+     "bolum": "parca-5"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 2-06-Emirda\u011f L\u00e2hikas\u0131 - II s.91-109.txt",
+     "md": "05 Emirda\u011f L\u00e2hikas\u0131 - II s.91-109.md",
+     "bolum": "parca-6"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 2-07-Emirda\u011f L\u00e2hikas\u0131 - II s.110-128.txt",
+     "md": "06 Emirda\u011f L\u00e2hikas\u0131 - II s.110-128.md",
+     "bolum": "parca-7"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 2-08-Emirda\u011f L\u00e2hikas\u0131 - II s.129-148.txt",
+     "md": "07 Emirda\u011f L\u00e2hikas\u0131 - II s.129-148.md",
+     "bolum": "parca-8"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 2-09-Emirda\u011f L\u00e2hikas\u0131 - II s.149-170.txt",
+     "md": "08 Emirda\u011f L\u00e2hikas\u0131 - II s.149-170.md",
+     "bolum": "parca-9"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 2-10-Emirda\u011f L\u00e2hikas\u0131 - II s.171-189.txt",
+     "md": "09 Emirda\u011f L\u00e2hikas\u0131 - II s.171-189.md",
+     "bolum": "parca-10"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 2-11-Emirda\u011f L\u00e2hikas\u0131 - II s.190-210.txt",
+     "md": "10 Emirda\u011f L\u00e2hikas\u0131 - II s.190-210.md",
+     "bolum": "parca-11"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 2-12-Emirda\u011f L\u00e2hikas\u0131 - II s.210-229.txt",
+     "md": "11 Emirda\u011f L\u00e2hikas\u0131 - II s.210-229.md",
+     "bolum": "parca-12"
+    },
+    {
+     "txt": "Emirda\u011f L\u00e2hikas\u0131 2-13-Emirda\u011f L\u00e2hikas\u0131 - II s.230-247.txt",
+     "md": "12 Emirda\u011f L\u00e2hikas\u0131 - II s.230-247.md",
+     "bolum": "parca-13"
+    }
+   ]
+  },
+  {
+   "slug": "asa-yi-musa",
+   "txt_klasor": "13 As\u00e2-y\u0131 Musa",
+   "md_klasor": "13 As\u00e2-y\u0131 Musa",
+   "dosyalar": [
+    {
+     "txt": "As\u00e2-y\u0131 Musa-01-Mukaddimat.txt",
+     "md": null,
+     "bolum": "mukaddimat"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-02-As\u00e2-y\u0131 Musa'dan Birinci K\u0131s\u0131m.txt",
+     "md": "100 As\u00e2-y\u0131 Musa\u2019dan Birinci K\u0131s\u0131m.md",
+     "bolum": "asa-yi-musadan-birinci-kisim"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-03-Birinci Mesele.txt",
+     "md": "101 Birinci Mesele.md",
+     "bolum": "mesele-1"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-04-\u0130kinci Mesele.txt",
+     "md": "102 \u0130kinci Mesele.md",
+     "bolum": "mesele-2"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-05-\u00dc\u00e7\u00fcnc\u00fc Mesele.txt",
+     "md": "103 \u00dc\u00e7\u00fcnc\u00fc Mesele.md",
+     "bolum": "mesele-3"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-06-D\u00f6rd\u00fcnc\u00fc Mesele.txt",
+     "md": "104 D\u00f6rd\u00fcnc\u00fc Mesele.md",
+     "bolum": "mesele-4"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-07-Be\u015finci Mesele.txt",
+     "md": "105 Be\u015finci Mesele.md",
+     "bolum": "mesele-5"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-08-Alt\u0131nc\u0131 Mesele.txt",
+     "md": "106 Alt\u0131nc\u0131 Mesele.md",
+     "bolum": "mesele-6"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-09-Yedinci Mesele.txt",
+     "md": "107 Yedinci Mesele.md",
+     "bolum": "mesele-7"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-10-Sekizinci Mesele.txt",
+     "md": "108 Sekizinci Mesele.md",
+     "bolum": "mesele-8"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-11-Dokuzuncu Mesele.txt",
+     "md": "109 Dokuzuncu Mesele.md",
+     "bolum": "mesele-9"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-12-Onuncu Mesele.txt",
+     "md": "110 Onuncu Mesele.md",
+     "bolum": "mesele-10"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-13-On Birinci Mesele.txt",
+     "md": "111 On Birinci Mesele.md",
+     "bolum": "mesele-11"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-14-As\u00e2-y\u0131 Musa'dan \u0130kinci K\u0131s\u0131m.txt",
+     "md": "200 As\u00e2-y\u0131 Musa\u2019dan \u0130kinci K\u0131s\u0131m.md",
+     "bolum": "asa-yi-musadan-ikinci-kisim"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-15-Birinci H\u00fcccet-i \u0130maniye.txt",
+     "md": "201 Birinci H\u00fcccet-i \u0130maniye.md",
+     "bolum": "birinci-huccet-i-imaniye"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-16-\u0130kinci H\u00fcccet-i \u0130maniye.txt",
+     "md": "202 \u0130kinci H\u00fcccet-i \u0130maniye.md",
+     "bolum": "ikinci-huccet-i-imaniye"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-17-\u00dc\u00e7\u00fcnc\u00fc H\u00fcccet-i \u0130maniye.txt",
+     "md": "203 \u00dc\u00e7\u00fcnc\u00fc H\u00fcccet-i \u0130maniye.md",
+     "bolum": "ucuncu-huccet-i-imaniye"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-18-D\u00f6rd\u00fcnc\u00fc H\u00fcccet-i \u0130maniye.txt",
+     "md": "204 D\u00f6rd\u00fcnc\u00fc H\u00fcccet-i \u0130maniye.md",
+     "bolum": "dorduncu-huccet-i-imaniye"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-19-Be\u015finci H\u00fcccet-i \u0130maniye.txt",
+     "md": "205 Be\u015finci H\u00fcccet-i \u0130maniye.md",
+     "bolum": "besinci-huccet-i-imaniye"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-20-Alt\u0131nc\u0131 H\u00fcccet-i \u0130maniye.txt",
+     "md": "206 Alt\u0131nc\u0131 H\u00fcccet-i \u0130maniye.md",
+     "bolum": "altinci-huccet-i-imaniye"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-21-Yedinci H\u00fcccet-i \u0130maniye.txt",
+     "md": "207 Yedinci H\u00fcccet-i \u0130maniye.md",
+     "bolum": "yedinci-huccet-i-imaniye"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-22-Sekizinci H\u00fcccet-i \u0130maniye.txt",
+     "md": "208 Sekizinci H\u00fcccet-i \u0130maniye.md",
+     "bolum": "sekizinci-huccet-i-imaniye"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-23-Dokuzuncu H\u00fcccet-i \u0130maniye.txt",
+     "md": "209 Dokuzuncu H\u00fcccet-i \u0130maniye.md",
+     "bolum": "dokuzuncu-huccet-i-imaniye"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-24-Onuncu H\u00fcccet-i \u0130maniye.txt",
+     "md": "210 Onuncu H\u00fcccet-i \u0130maniye.md",
+     "bolum": "onuncu-huccet-i-imaniye"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-25-On Birinci H\u00fcccet-i \u0130maniye.txt",
+     "md": "211 On Birinci H\u00fcccet-i \u0130maniye.md",
+     "bolum": "on-birinci-huccet-i-imaniye"
+    },
+    {
+     "txt": "As\u00e2-y\u0131 Musa-26-Fihrist (As\u00e2-y\u0131 Musa).txt",
+     "md": "212 Fihrist (As\u00e2-y\u0131 Musa).md",
+     "bolum": "fihrist-asa-yi-musa"
+    }
+   ]
+  },
+  {
+   "slug": "muhakemat",
+   "txt_klasor": "15 Muhakemat",
+   "md_klasor": "14 Muhakemat",
+   "dosyalar": [
+    {
+     "txt": "Muhakemat-01-Giri\u015f.txt",
+     "md": "00 Mukaddeme.md",
+     "bolum": "giris"
+    },
+    {
+     "txt": "Muhakemat-02-Birinci Makale.txt",
+     "md": "01 Birinci Makale.md",
+     "bolum": "birinci-makale"
+    },
+    {
+     "txt": "Muhakemat-03-\u0130kinci Makale.txt",
+     "md": "02 \u0130kinci Makale.md",
+     "bolum": "ikinci-makale"
+    },
+    {
+     "txt": "Muhakemat-04-\u00dc\u00e7\u00fcnc\u00fc Makale.txt",
+     "md": "03 \u00dc\u00e7\u00fcnc\u00fc Makale.md",
+     "bolum": "ucuncu-makale"
+    },
+    {
+     "txt": "Muhakemat-05-Fihrist (Muhakemat).txt",
+     "md": "04 Fihrist (Muhakemat).md",
+     "bolum": "fihrist-muhakemat"
+    },
+    {
+     "txt": "Muhakemat-06-Takriz.txt",
+     "md": "05 Takriz.md",
+     "bolum": "takriz"
+    }
+   ]
+  },
+  {
+   "slug": "divan-i-harb-i-orfi",
+   "txt_klasor": "14 K\u00fc\u00e7\u00fck Kitaplar",
+   "md_klasor": "15 K\u00fc\u00e7\u00fck Kitaplar",
+   "dosyalar": [
+    {
+     "txt": "Di\u0307van-i Harb-i\u0307 \u00d6rf\u00ee.txt",
+     "md": "06 D\u0130VAN-I HARB-\u0130 \u00d6RF\u00ce.md",
+     "bolum": null
+    }
+   ]
+  },
+  {
+   "slug": "genclik-rehberi",
+   "txt_klasor": "14 K\u00fc\u00e7\u00fck Kitaplar",
+   "md_klasor": "15 K\u00fc\u00e7\u00fck Kitaplar",
+   "dosyalar": [
+    {
+     "txt": "Gen\u00e7li\u0307k Rehberi\u0307.txt",
+     "md": "09 GEN\u00c7L\u0130K REHBER\u0130.md",
+     "bolum": null
+    }
+   ]
+  },
+  {
+   "slug": "hanimlar-rehberi",
+   "txt_klasor": "14 K\u00fc\u00e7\u00fck Kitaplar",
+   "md_klasor": "15 K\u00fc\u00e7\u00fck Kitaplar",
+   "dosyalar": [
+    {
+     "txt": "Hanimlar Rehberi\u0307.txt",
+     "md": "10 HANIMLAR REHBER\u0130.md",
+     "bolum": null
+    }
+   ]
+  },
+  {
+   "slug": "hutbe-i-samiye",
+   "txt_klasor": "14 K\u00fc\u00e7\u00fck Kitaplar",
+   "md_klasor": "15 K\u00fc\u00e7\u00fck Kitaplar",
+   "dosyalar": [
+    {
+     "txt": "Hutbe-i\u0307 \u015eami\u0307ye.txt",
+     "md": "07 HUTBE-\u0130 \u015eAM\u0130YE.md",
+     "bolum": null
+    }
+   ]
+  },
+  {
+   "slug": "isarat",
+   "txt_klasor": "14 K\u00fc\u00e7\u00fck Kitaplar",
+   "md_klasor": "15 K\u00fc\u00e7\u00fck Kitaplar",
+   "dosyalar": [
+    {
+     "txt": "I\u0307\u015farat.txt",
+     "md": "02 \u0130\u015eARAT.md",
+     "bolum": null
+    }
+   ]
+  },
+  {
+   "slug": "konferans",
+   "txt_klasor": "14 K\u00fc\u00e7\u00fck Kitaplar",
+   "md_klasor": "15 K\u00fc\u00e7\u00fck Kitaplar",
+   "dosyalar": [
+    {
+     "txt": "Konferans.txt",
+     "md": "11 KONFERANS.md",
+     "bolum": null
+    }
+   ]
+  },
+  {
+   "slug": "munazarat",
+   "txt_klasor": "14 K\u00fc\u00e7\u00fck Kitaplar",
+   "md_klasor": "15 K\u00fc\u00e7\u00fck Kitaplar",
+   "dosyalar": [
+    {
+     "txt": "M\u00fcnazarat.txt",
+     "md": "08 M\u00dcNAZARAT.md",
+     "bolum": null
+    }
+   ]
+  },
+  {
+   "slug": "nur-cesmesi",
+   "txt_klasor": "14 K\u00fc\u00e7\u00fck Kitaplar",
+   "md_klasor": "15 K\u00fc\u00e7\u00fck Kitaplar",
+   "dosyalar": [
+    {
+     "txt": "Nur \u00c7e\u015fmesi\u0307.txt",
+     "md": "05 NUR \u00c7E\u015eMES\u0130.md",
+     "bolum": null
+    }
+   ]
+  },
+  {
+   "slug": "nurun-ilk-kapisi",
+   "txt_klasor": "14 K\u00fc\u00e7\u00fck Kitaplar",
+   "md_klasor": "15 K\u00fc\u00e7\u00fck Kitaplar",
+   "dosyalar": [
+    {
+     "txt": "Nur'un I\u0307lk Kap\u0131s\u0131.txt",
+     "md": "04 NUR\u2019UN \u0130LK KAPISI.md",
+     "bolum": null
+    }
+   ]
+  },
+  {
+   "slug": "sunuhat",
+   "txt_klasor": "14 K\u00fc\u00e7\u00fck Kitaplar",
+   "md_klasor": "15 K\u00fc\u00e7\u00fck Kitaplar",
+   "dosyalar": [
+    {
+     "txt": "S\u00fcnuhat.txt",
+     "md": "01 S\u00dcNUHAT.md",
+     "bolum": null
+    }
+   ]
+  },
+  {
+   "slug": "tuluat",
+   "txt_klasor": "14 K\u00fc\u00e7\u00fck Kitaplar",
+   "md_klasor": "15 K\u00fc\u00e7\u00fck Kitaplar",
+   "dosyalar": [
+    {
+     "txt": "Tul\u00fbat.txt",
+     "md": "03 TUL\u00dbAT.md",
+     "bolum": null
+    }
+   ]
+  }
+ ],
+ "md_yalniz": {
+  "01 S\u00f6zler": [
+   "00 S\u00d6ZLER.md"
+  ],
+  "02 Mektubat": [
+   "00 MEKTUBAT.md"
+  ],
+  "03 Lem'alar": [
+   "00 LEM\u2019ALAR.md"
+  ],
+  "04 \u015eu\u00e2lar": [
+   "00 \u015eU\u00c2LAR.md"
+  ],
+  "05 Tarih\u00e7e-i Hayat": [
+   "00 TAR\u0130H\u00c7E-\u0130 HAYAT.md"
+  ],
+  "06 Mesnev\u00ee-i Nuriye": [
+   "00 MESNEV\u00ce-\u0130 NUR\u0130YE.md"
+  ],
+  "07 \u0130\u015farat\u00fc'l-i'caz": [
+   "00 \u0130\u015eARAT\u00dc\u2019L-\u0130\u2019CAZ.md"
+  ],
+  "08 Sikke-i Tasdik-i Gayb\u00ee": [
+   "00 S\u0130KKE-\u0130 TASD\u0130K-\u0130 GAYB\u00ce.md"
+  ],
+  "09 Barla L\u00e2hikas\u0131": [
+   "00 BARLA L\u00c2H\u0130KASI.md"
+  ],
+  "10 Kastamonu L\u00e2hikas\u0131": [
+   "00 KASTAMONU L\u00c2H\u0130KASI.md"
+  ],
+  "11 Emirda\u011f L\u00e2hikas\u0131 1": [
+   "00 EM\u0130RDA\u011e L\u00c2H\u0130KASI - I.md"
+  ],
+  "12 Emirda\u011f L\u00e2hikas\u0131 2": [
+   "00 EM\u0130RDA\u011e L\u00c2H\u0130KASI - II.md"
+  ],
+  "13 As\u00e2-y\u0131 Musa": [
+   "000 AS\u00c2-YI MUSA.md"
+  ],
+  "14 Muhakemat": [
+   "00 MUHAKEMAT.md"
+  ],
+  "15 K\u00fc\u00e7\u00fck Kitaplar": [
+   "00 K\u00dc\u00c7\u00dcK K\u0130TAPLAR.md",
+   "12 T\u0131ls\u0131mlar.md"
+  ]
+ }
+}

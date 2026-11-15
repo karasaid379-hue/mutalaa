@@ -29,6 +29,9 @@ public sealed record PackUnitRow(
     long Approved,
     string? Successors);
 
+/// <summary>unit_ref satiri (yalniz risale-dizin): birimin kitap paketi (pack_id), kitap icindeki okuma sirasi ve okunabilir etiket. rowid yaziciya aittir (icerigi olmayan FTS satir kimligi).</summary>
+public sealed record PackUnitRefRow(string Anchor, string PackId, long Ord, string Label);
+
 public sealed record PackUnitSearchRow(string Anchor, string? TrWide, string? TrStem, string? ArNorm);
 
 /// <summary>xref_idx satiri. Start/End editoryal yari acik aralik sinirlari aynen (src_start = lower, src_end = upper).</summary>
@@ -98,6 +101,25 @@ public sealed record PackLemmaGlossRow(
     string Status,
     string Origin);
 
+/// <summary>
+/// lugat satiri (risale-dizin; K-52 madde 9, 10 ve 14): basliksoz kaynaktaki baytlarla; TanimTr lugat kaynagindan gelen (Origin "kaynak", bayt bayt) ya da editorun
+/// yazdigi (Origin "editor", NFC) tanim, tanimsiz adayda bos. Anahtar (Basliksoz, Kaynak, AnlamNo): Kaynak kaynagin source_id'si, AnlamNo kaynak sirasiyla anlam sirasi.
+/// Status 'onayli' ya da 'aday' (aday yalniz dev ve internal'da; "dogrulanmamis" durumdan turetilir); Version metindir. <c>kaynaklar</c> ve anlam basvurusu yoktur.
+/// </summary>
+public sealed record PackLugatRow(
+    string Basliksoz,
+    string BasliksozNorm,
+    string? OsmanlicaYazim,
+    string? KokenDil,
+    string? TanimTr,
+    long AnlamNo,
+    string Kaynak,
+    long Duzey,
+    string Status,
+    string Origin,
+    string Version,
+    string ContentHash);
+
 /// <summary>tr_form satiri (kelime-kok).</summary>
 public sealed record PackTrFormRow(string KeyWide, string KeyNarrow, long TrLemmaId, long Freq);
 
@@ -118,6 +140,9 @@ public sealed class PackContent
     public IReadOnlyList<PackAttributionRow> Attributions { get; init; } = [];
 
     public IReadOnlyList<PackUnitRow> Units { get; init; } = [];
+
+    /// <summary>risale-dizin'in unit_ref satirlari; bu pakette UnitSearch satirlari icerigi olmayan unit_fts ve unit_tri'ye (rowid = unit_ref.rowid) yazilir.</summary>
+    public IReadOnlyList<PackUnitRefRow> UnitRefs { get; init; } = [];
 
     public IReadOnlyList<PackUnitSearchRow> UnitSearch { get; init; } = [];
 
@@ -143,11 +168,20 @@ public sealed class PackContent
 
     public IReadOnlyList<PackTrFormRow> TrForms { get; init; } = [];
 
+    /// <summary>risale-dizin'in lugat satirlari (K-52 madde 9); baska pakette bos.</summary>
+    public IReadOnlyList<PackLugatRow> Lugat { get; init; } = [];
+
     /// <summary>
     /// Uygulanan onayli quran_word_fix sayisi (yalniz kelime-kok; diger paketlerde null). pack_meta'da <see cref="PackMetaKeys.WordFixCount"/>
     /// anahtariyla tasinir; paket ozetine girmez (ozet satirlardan turer, duzeltme sayisi word_morph satirlarinda zaten gorunur).
     /// </summary>
     public int? WordFixCount { get; init; }
+
+    /// <summary>Risale kitap paketinin dili (<c>tr</c>, <c>ota</c>, <c>ar</c>); pack_meta <see cref="PackMetaKeys.Language"/>. Kitap paketi degilse null.</summary>
+    public string? Language { get; init; }
+
+    /// <summary>Risale kitap paketinin yazi yonu (<c>ltr</c> ya da <c>rtl</c>); pack_meta <see cref="PackMetaKeys.Direction"/>. Kitap paketi degilse null.</summary>
+    public string? Direction { get; init; }
 
     /// <summary>
     /// Kapi ozeti (pack_meta <see cref="PackMetaKeys.GateSummary"/>; K-51 madde 5 ve 11): RFC 8785 kanonik JSON <c>{"kok":{"set_sinifi":"silver","sonuc":"gecti"}}</c>;

@@ -587,6 +587,47 @@ public partial class EditorialSnapshotReaderTests(EditorialDatabase<EditorialSna
     }
 
     [Fact]
+    public async Task It_reads_the_lugat_maddeler_without_the_reference_data_and_lists_them_as_p09_rows()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        string slug = Unique("lugat-");
+        await InsertSourceAsync(slug, "sozluk", ct: ct);
+        string kaynaklar = "{\"siklik\": 120, \"kitaplar\": {\"deneme-kitap\": 3}, \"sozluk_isabet\": [{\"sozluk\": \"deneme\", \"bulundu\": true, \"satir_no\": 4}]}";
+        const string insert =
+            """
+            INSERT INTO icerik.lugat_madde (source_id, basliksoz, basliksoz_norm, osmanlica_yazim, koken_dil, tanim_tr, kaynaklar, duzey, status, origin, version, content_hash, data_version)
+            VALUES (@s, @b, @n, @o, @k, @t, @kay::jsonb, 2, @st::icerik.xref_status, @or, @v, @h, 'test')
+            """;
+        await Db.ExecuteAsync(insert, ct, ("s", slug), ("b", "deneme:sozcuk"), ("n", "deneme sozcuk"), ("o", DBNull.Value), ("k", "deneme dili"), ("t", "Deneme tanimi"), ("kay", kaynaklar), ("st", "onayli"), ("or", "editor"), ("v", "3"), ("h", HashA));
+        await Db.ExecuteAsync(insert, ct, ("s", slug), ("b", "aday-sozcuk"), ("n", "aday sozcuk"), ("o", "osmanlica"), ("k", DBNull.Value), ("t", DBNull.Value), ("kay", kaynaklar), ("st", "aday"), ("or", "hat"), ("v", "1"), ("h", HashB));
+        // Ayni baslik, ikinci anlam ve kaynak kokeni (K-52 madde 14).
+        await Db.ExecuteAsync(
+            "INSERT INTO icerik.lugat_madde (source_id, basliksoz, basliksoz_norm, anlam_no, tanim_tr, duzey, status, origin, version, content_hash, data_version) VALUES (@s, 'aday-sozcuk', 'aday sozcuk', 2, 'Kaynak tanimi', 4, 'aday', 'kaynak', '1', @h, 'test')",
+            ct,
+            ("s", slug),
+            ("h", HashB));
+
+        await using EditorialSnapshotReader reader = await EditorialSnapshotReader.OpenAsync(Db.ConnectionString, ct);
+        EditorialSnapshot snapshot = await reader.LoadAsync(BuildFlavor.Dev, ct);
+
+        LugatMaddeRow[] rows = [.. snapshot.LugatMaddeler.Where(r => r.SourceId == slug)];
+        Assert.Equal([("aday-sozcuk", 1), ("aday-sozcuk", 2), ("deneme:sozcuk", 1)], rows.Select(r => (r.Basliksoz, r.AnlamNo)));
+        Assert.Equal(
+            (slug, "deneme:sozcuk", "deneme sozcuk", null, "deneme dili", "Deneme tanimi", 2, "onayli", "editor", "3", HashA),
+            (rows[2].SourceId, rows[2].Basliksoz, rows[2].BasliksozNorm, rows[2].OsmanlicaYazim, rows[2].KokenDil, rows[2].TanimTr, rows[2].Duzey, rows[2].Status, rows[2].Origin, rows[2].Version, rows[2].ContentHash));
+        Assert.Equal(("osmanlica", null, null, "aday", "hat", "1"), (rows[0].OsmanlicaYazim, rows[0].KokenDil, rows[0].TanimTr, rows[0].Status, rows[0].Origin, rows[0].Version));
+        Assert.Equal(("Kaynak tanimi", 4, "kaynak"), (rows[1].TanimTr, rows[1].Duzey, rows[1].Origin));
+
+        // P-09 satirlari: kimlik "{source_id}:{anlam_no}:{basliksoz}", durum metni.
+        Assert.Equal(
+            [(slug + ":1:aday-sozcuk", "aday"), (slug + ":1:deneme:sozcuk", "onayli"), (slug + ":2:aday-sozcuk", "aday")],
+            snapshot.Lexicals.Where(l => l.Kind == LexicalKind.LugatMadde && l.Id.StartsWith(slug, StringComparison.Ordinal)).OrderBy(l => l.Id, StringComparer.Ordinal).Select(l => (l.Id, l.Status)));
+
+        // Basvuru verisi (siklik, kitaplar, sozluk isabeti) anlik goruntude yoktur.
+        Assert.DoesNotContain(typeof(LugatMaddeRow).GetProperties(), p => p.Name is "Kaynaklar" or "Siklik");
+    }
+
+    [Fact]
     public async Task It_reads_the_latest_published_release_of_the_requested_flavor()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;

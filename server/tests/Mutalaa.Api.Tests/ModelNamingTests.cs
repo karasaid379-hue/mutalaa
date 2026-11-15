@@ -43,17 +43,17 @@ public partial class ModelNamingTests
         model.GetEntityTypes().Where(e => e.GetTableName() is not null && string.Equals(Schema(e, model), schema, StringComparison.Ordinal));
 
     [Fact]
-    public void Content_schema_has_22_tables_and_identity_schema_7()
+    public void Content_schema_has_23_tables_and_identity_schema_7()
     {
         OnAllModels(model =>
         {
             string[] content = [.. TableEntities(model, ContentSchema).Select(e => e.GetTableName()!).Order(StringComparer.Ordinal)];
             string[] identity = [.. TableEntities(model, IdentitySchema).Select(e => e.GetTableName()!).Order(StringComparer.Ordinal)];
 
-            Assert.Equal(22, content.Length);
+            Assert.Equal(23, content.Length);
             Assert.Equal(content.Length, content.Distinct(StringComparer.Ordinal).Count());
             Assert.Equal(IdentityTables, identity);
-            Assert.Equal(29, model.GetEntityTypes().Count());
+            Assert.Equal(30, model.GetEntityTypes().Count());
         });
     }
 
@@ -170,6 +170,7 @@ public partial class ModelNamingTests
             "unit_check", "quran_word_check", "tr_root_index_check", "ayah_box_check", "audio_timing_check",
             "review_yz_kaydi_check", "quran_marker_kind_check", "quran_marker_secde_turu_check", "quran_marker_check",
             "release_talep_check", "source_dosya_sha256_check", "audio_timing_file_sha256_check", "lemma_gloss_content_hash_check", "lemma_dalga_dalga_check",
+            "lugat_madde_origin_check", "lugat_madde_content_hash_check", "lugat_madde_onayli_tanim_check", "lugat_madde_anlam_no_check", "lugat_madde_duzey_check",
             "lemma_onay_yolu_check", "lemma_tr_onayli_onay_yolu_check", "lemma_otomatik_kanit_check", "tr_root_index_unit_hash_check",
             "xref_gate_set_sinifi_check", "xref_gate_sonuc_check", "xref_gate_rapor_sha256_check",
         ];

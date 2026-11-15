@@ -48,7 +48,13 @@ public static class ReviewFields
 {
     public const string Status = "status";
     public const string Metin = "metin";
+
+    /// <summary>Kitap onayi (hedef_tablo = source, hedef_anahtar = risale:{kitap}; K-52 madde 11); karar ucu bu alani desteklemez.</summary>
+    public const string MetinDurumu = "metin_durumu";
     public const string AnlamKisa = "anlam_kisa";
+
+    /// <summary>Lugat maddesi (hedef_tablo = lugat_madde; K-52 madde 10).</summary>
+    public const string TanimTr = "tanim_tr";
     public const string RootId = "root_id";
     public const string LemmaId = "lemma_id";
     public const string Pos = "pos";
@@ -95,6 +101,12 @@ public readonly record struct UnitReviewState(
 public readonly record struct GlossReviewState(string AnlamKisa, string Version, string Origin);
 
 /// <summary>
+/// <c>lugat_madde</c> hedefinin karar anindaki satiri (K-52 madde 10 ve 14): basliksoz (ozet girdisi), guncel surum, koken
+/// (<c>hat</c>, <c>kaynak</c>, <c>editor</c>), mevcut tanim ve ozet. Kaynak tanimini degistirmeden onay koken, tanim ve ozeti oldugu gibi birakir.
+/// </summary>
+public readonly record struct LugatReviewState(string Basliksoz, string Version, string Origin = LugatMaddeText.HatOrigin, string? TanimTr = null, string? ContentHash = null);
+
+/// <summary>
 /// Hedefin karar anindaki durumu: durum sutunlu hedeflerde Status, birimde Unit. <c>quran_word_fix</c> icin <see cref="Field"/>
 /// (duzeltmenin alani; review.alan ile eslesmeli), <c>lemma_gloss</c> icin <see cref="Gloss"/> dolu olmalidir.
 /// </summary>
@@ -108,6 +120,9 @@ public readonly record struct ReviewTargetState
     public string? Field { get; init; }
 
     public GlossReviewState? Gloss { get; init; }
+
+    /// <summary>lugat_madde hedefinin satiri (K-52 madde 10 ve 14); yalniz lugat_madde incelemesinde gerekir.</summary>
+    public LugatReviewState? Lugat { get; init; }
 
     /// <summary>lemma hedefinin satiri (dil, kok eslemesi, onay yolu); verilmezse lemma yalniz durum hedefi olarak islenir (onay yolu yazilmaz).</summary>
     public LemmaReviewState? LemmaRow { get; init; }
@@ -130,6 +145,8 @@ public readonly record struct ReviewTargetState
 
     public static ReviewTargetState ForGloss(XrefStatus status, GlossReviewState gloss) => new() { Status = status, Gloss = gloss };
 
+    public static ReviewTargetState ForLugat(XrefStatus status, LugatReviewState lugat) => new() { Status = status, Lugat = lugat };
+
     public static ReviewTargetState ForLemma(XrefStatus status, LemmaReviewState lemma) => new() { Status = status, LemmaRow = lemma };
 
     public static ReviewTargetState ForUnit(UnitReviewState unit) => new() { Unit = unit };
@@ -147,6 +164,13 @@ public readonly record struct UnitTextUpdate(string Metin, string ContentHash, i
 /// Metin degismediyse surum ayni kalir.
 /// </summary>
 public readonly record struct LemmaGlossUpdate(string AnlamKisa, string ContentHash, string Version, string Origin);
+
+/// <summary>
+/// lugat_madde satirinin onaydan sonraki degerleri: tanim, <c>sha256(basliksoz + LF + tanim_tr)</c>, surum (+1) ve koken.
+/// Duzenlenmis onayda tanim kanonik (NFC) ve koken <c>editor</c>; kaynak tanimini degistirmeden onayda tanim, ozet ve koken
+/// (<c>kaynak</c>) satirdakiyle aynidir (bayt bayt).
+/// </summary>
+public readonly record struct LugatMaddeUpdate(string TanimTr, string ContentHash, string Version, string Origin);
 
 /// <summary>
 /// Kararin sonucu: review satirinin yeni alanlari ve hedefe yazilacak degisiklikler. Hedef degisikligi olmayan alan null'dir
@@ -183,6 +207,9 @@ public readonly record struct ReviewOutcome
 
     /// <summary>lemma_gloss'un duzenlenmis degerleri; null ise anlam degismez (durum onayi ya da ret).</summary>
     public LemmaGlossUpdate? Gloss { get; init; }
+
+    /// <summary>lugat_madde'nin onaylanan degerleri; ret ve (gecerli) onay disinda null.</summary>
+    public LugatMaddeUpdate? Lugat { get; init; }
 
     /// <summary>
     /// lemma satirinin kok eslemesi alanlari (tam degistirme: kok, Arapca karsilik, etimolojik isaret, koken, onay yolu);
@@ -230,6 +257,7 @@ public static partial class ReviewDecisions
         ReviewTargets.SurahAlias or ReviewTargets.Xref => alan is ReviewFields.Status,
         ReviewTargets.Lemma => alan is ReviewFields.Status or ReviewFields.KokEslemesi,
         ReviewTargets.LemmaGloss => alan is ReviewFields.AnlamKisa,
+        ReviewTargets.LugatMadde => alan is ReviewFields.TanimTr,
         ReviewTargets.QuranWordFix => alan is ReviewFields.RootId or ReviewFields.LemmaId or ReviewFields.Pos or ReviewFields.Features,
         ReviewTargets.Unit => alan is ReviewFields.Metin,
         _ => false,
@@ -322,8 +350,8 @@ public static partial class ReviewDecisions
     /// (2) uygulanacak metin duzenlenen, yoksa onerilen; ikisi de bossa (yalniz durum onayi) metin degismez, null doner;
     /// (3) metin degisiyorsa Canonicalize, ContentHash, rev + 1 ve arama anahtarlari (tr_stem NULL). Ozet degismiyorsa null doner.
     /// Degistirilemez metin (ayet, kuran_metni) 422 <c>degistirilemez-metin</c>.
-    /// Ofsetli turev alanlar (marks, sentences) metin degisimiyle kayar; yeniden hesaplari BC-59'dadir (A20):
-    /// metin GERCEKTEN degisiyorsa ve birimde ofsetli alan varsa 422 <c>inceleme-desteklenmiyor</c> (K-48 degismez; kisitlama BC-59'da kalkar).
+    /// Ofsetli turev alanlar (marks, sentences) metin degisimiyle kayar; K-52 madde 8 korumayi KALICI yapar (Risale metni duzeltilmez):
+    /// metin GERCEKTEN degisiyorsa ve birimde ofsetli alan varsa 422 <c>inceleme-desteklenmiyor</c>.
     /// Birlesik mealin izleyen biriminde (<c>attrs.birlesik_ile</c> dolu; K-49 madde 8) metin degistiren her karar da ayni kodla 422 verir.
     /// Durum onayi (metin degismez) ve ret serbesttir.
     /// </summary>
@@ -443,7 +471,7 @@ public static partial class ReviewDecisions
         {
             throw new DomainException(
                 DomainErrorCodes.IncelemeDesteklenmiyor,
-                "Ofsetli alanlarin (marks, sentences) yeniden hesabi BC-59'da (A20) yapilana kadar bu birimde metin degisimi desteklenmiyor; metni degistiren onay yapilamaz.");
+                "Ofsetli alanlarin (marks, sentences) bulundugu birimde metin degisimi desteklenmiyor: Risale metni ucuncu taraf kanonik metindir ve duzeltilmez (K-52 madde 8); metni degistiren onay yapilamaz.");
         }
     }
 
@@ -461,7 +489,8 @@ public static partial class ReviewDecisions
     private static ReviewOutcome ApproveStatus(Review review, ReviewDecisionRequest request, ReviewTargetState target, string actor, string gerekce)
     {
         bool isGloss = string.Equals(review.HedefTablo, ReviewTargets.LemmaGloss, StringComparison.Ordinal);
-        if (request.Duzenlenen is not null && !isGloss)
+        bool isLugat = string.Equals(review.HedefTablo, ReviewTargets.LugatMadde, StringComparison.Ordinal);
+        if (request.Duzenlenen is not null && !isGloss && !isLugat)
         {
             throw new DomainException(DomainErrorCodes.IncelemeDesteklenmiyor, "Bu hedefte editor degeri duzenlenemez; onayla ya da reddet.");
         }
@@ -470,8 +499,25 @@ public static partial class ReviewDecisions
         RequireCandidate(target);
 
         LemmaGlossUpdate? gloss = null;
+        LugatMaddeUpdate? lugat = null;
         string? stored = review.Duzenlenen;
-        if (request.Duzenlenen is not null)
+        bool lugatUnedited = false;
+        if (isLugat)
+        {
+            // K-52 madde 10 ve 14: kaynak tanimi dolu aday duzenlemesiz onaylanabilir (koken ve bayt bayt tanim ayni); tanimsiz aday
+            // bos tanimla onaylanmaz. onerilen.anlam_basvuru salt basvurudur ve hicbir zaman uygulanmaz.
+            string? edit = request.Duzenlenen;
+            if (edit is null)
+            {
+                lugat = ResolveLugatUnedited(target);
+                lugatUnedited = true;
+            }
+            else
+            {
+                (lugat, stored) = ResolveLugatEdit(edit, target);
+            }
+        }
+        else if (request.Duzenlenen is not null)
         {
             (gloss, stored) = ResolveGlossEdit(review, request.Duzenlenen, target);
         }
@@ -479,17 +525,57 @@ public static partial class ReviewDecisions
         return new ReviewOutcome
         {
             Durum = ReviewStatus.Onaylandi,
-            Eylem = gloss is null ? ReviewActions.Onayla : ReviewActions.DuzenleOnayla,
+            Eylem = (gloss is null && lugat is null) || lugatUnedited ? ReviewActions.Onayla : ReviewActions.DuzenleOnayla,
             Inceleyen = actor,
             IncelendiAt = request.Now,
             Gerekce = gerekce,
             Duzenlenen = stored,
             TargetStatus = XrefStatus.Onayli,
             Gloss = gloss,
+            Lugat = lugat,
 
             // Turkce lemma durum onayi da editor onayidir: lemma_tr_onayli_onay_yolu_check onayli tr satirda onay yolunu zorunlu kilar.
             LemmaMapping = target.LemmaRow is { IsTurkish: true } row ? row.ToUpdate(onayYolu: LemmaApprovalPaths.Editor) : null,
         };
+    }
+
+    /// <summary>
+    /// Duzenlemesiz onay (lugat_madde, K-52 madde 10 ve 14): yalniz <c>origin = 'kaynak'</c> ve dolu tanimli aday icin; tanim, ozet ve
+    /// koken oldugu gibi kalir, surum bir artar. Tanimsiz ya da baska kokenli aday 422 <c>inceleme-desteklenmiyor</c>.
+    /// </summary>
+    private static LugatMaddeUpdate ResolveLugatUnedited(ReviewTargetState target)
+    {
+        LugatReviewState row = target.Lugat
+            ?? throw new InvalidOperationException("lugat_madde hedefi icin satir durumu verilmeli.");
+
+        if (!string.Equals(row.Origin, LugatMaddeText.KaynakOrigin, StringComparison.Ordinal) || string.IsNullOrWhiteSpace(row.TanimTr))
+        {
+            throw new DomainException(
+                DomainErrorCodes.IncelemeDesteklenmiyor,
+                "Lugat maddesi bos tanimla onaylanamaz; duzenlenen.tanim_tr ile tanimi yazin. Anlam basvurusu (onaysiz) tanim olarak onaylanmaz.");
+        }
+
+        return new LugatMaddeUpdate(
+            row.TanimTr,
+            row.ContentHash ?? LugatMaddeText.ComputeHash(row.Basliksoz, row.TanimTr),
+            LugatMaddeText.NextVersion(row.Version),
+            LugatMaddeText.KaynakOrigin);
+    }
+
+    /// <summary>
+    /// Duzenle ve onayla (lugat_madde, K-52 madde 10): editor tanimi kanonikilestirilir (NFC); ozet <c>sha256(basliksoz + LF + tanim_tr)</c>
+    /// olur, surum bir artar, koken <c>editor</c> olur. <c>onerilen</c> (anlam_basvuru, siklik, kitaplar) okunmaz ve hedefe uygulanmaz.
+    /// Donen ikinci deger review.duzenlenen jsonb'sidir.
+    /// </summary>
+    private static (LugatMaddeUpdate Update, string Stored) ResolveLugatEdit(string duzenlenen, ReviewTargetState target)
+    {
+        LugatReviewState row = target.Lugat
+            ?? throw new InvalidOperationException("lugat_madde hedefi icin satir durumu verilmeli.");
+
+        string canonical = LugatMaddeText.Normalize(ReviewPayload.ReadString(duzenlenen, "tanim_tr", "duzenlenen"), "duzenlenen.tanim_tr");
+        return (
+            new LugatMaddeUpdate(canonical, LugatMaddeText.ComputeHash(row.Basliksoz, canonical), LugatMaddeText.NextVersion(row.Version), LugatMaddeText.EditorOrigin),
+            LugatMaddeText.ToPayload(canonical));
     }
 
     /// <summary>

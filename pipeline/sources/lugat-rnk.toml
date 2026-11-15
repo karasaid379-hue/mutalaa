@@ -1,0 +1,14 @@
+# A20.6b (2026-11-15) · kaynak: docs/04-icerik/01-kaynaklar.md §3.6 · karar: K-52 madde 10, 14
+slug = "lugat-rnk"
+tur = "sozluk"
+baslik = "RNK Neşriyat uygulaması lügat dosyası"
+surum = "hash-lugat-5d4f755e3d88-2026-11-15"
+provider = "rnknesriyat.com"
+kaynak_url = "https://rnknesriyat.com/res/metinler/diger/lugat.txt"
+atif_metni = "Lügat: RNK Neşriyat uygulaması lügat dosyası (eser adı dosyada beyan edilmemiştir)."
+notlar = '''
+K-52 madde 14: birinci lügat kaynağı; 76.293 maddenin tamamı kaynağıyla ve aday olarak alınır (tanım bayt bayt, NFC yok).
+Biçim: UTF-8, LF, satır başına BAŞLIK|tanım; 73.519 benzersiz ham başlık (baştaki ve sondaki boşluk kırpıldıktan sonra; kırpmadan önce 73.520) ve 67.403 benzersiz eşleme anahtarı; aynı başlık birden çok satırda olabilir (ayrı anlam, anlam_no); 22.464 çok sözcüklü başlık (kırpma sonrası, terkip). Tanımlarda Gr:, Huk:, Tıb:, Mc:, Bak:, Edb:, Fık: gibi alan etiketleri ve (Zamm. dan) gibi kök göstermeleri var.
+Sürüm: shelves.json diger.hash_lugat (dosyanın MD5'i; indirmede doğrulandı). Alma: data/gelen/lugat-rnk/2026-11-15/ (lugat.txt, SHA256SUMS).
+Eser kimliği: dosya eser adı beyan etmez. Abdullah Yeğin'in Yeni Lûgat'ı (Hizmet Vakfı, İstanbul 1997; kaynak kaydı lugat-yegin-yeni-lugat) ile 12 maddelik örneklemde (kitabın 282. sayfası) tanımlar örtüşüyor; bu bir tanıklıktır, eser adı olarak yazılmaz (Doğrulanacak: İ-28).
+Arap harfli yazım (osmanlica_yazim) ve köken dili dosyada yoktur; boş kalır.'''

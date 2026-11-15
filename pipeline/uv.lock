@@ -58,6 +58,18 @@ wheels = [
 ]
 
 [[package]]
+name = "arabing"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "regex" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0d/a1/192772050de9d273c3af64ad6cc4f255cf7cb3a873767b4012f1c6b43f8e/arabing-0.1.0.tar.gz", hash = "sha256:f8441a613f86d59a80db087274849b5c6e43f76ccf68a79db05b52c83c78e19d", size = 17661, upload-time = "2026-10-06T19:27:38.999Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9a/69/b14fe19d5daa0aee75e7340631e8f00fef2b8dbf7f34c329985c57878963/arabing-0.1.0-py3-none-any.whl", hash = "sha256:b629c132e88af2e83fe09a4ae3098b38feaeb8e68db0ede97e0bfefa94208d6f", size = 19631, upload-time = "2026-10-06T19:27:37.179Z" },
+]
+
+[[package]]
 name = "ast-serialize"
 version = "0.13.1"
 source = { registry = "https://pypi.org/simple" }
@@ -696,6 +708,7 @@ dependencies = [
     { name = "mwparserfromhell" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pydantic-settings" },
+    { name = "quran-toolkit" },
     { name = "rapidfuzz" },
     { name = "regex" },
     { name = "scikit-learn" },
@@ -731,6 +744,7 @@ requires-dist = [
     { name = "mwparserfromhell", specifier = "==0.7.2" },
     { name = "psycopg", extras = ["binary"] },
     { name = "pydantic-settings" },
+    { name = "quran-toolkit", specifier = "==0.1.0" },
     { name = "rapidfuzz" },
     { name = "regex" },
     { name = "scikit-learn", specifier = ">=1.9.1,<2" },
@@ -1236,6 +1250,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a5/1e/dae3dc7a73719b90c2a6addba3c301aa1caf896098f07dc41d49d61b349b/quran_search_in_text-0.1.3.tar.gz", hash = "sha256:401307197c83f431c67007a24d722eaba54e96d5554fc2c246f881171ef95251", size = 296423, upload-time = "2024-11-18T19:54:21.619Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/be/9c/f061d891bdcbc44a476b40aaa2e85b8f3db25090d3b30f21cc6fc4b6272e/quran_search_in_text-0.1.3-py3-none-any.whl", hash = "sha256:cf03985a53ac22a57b679cc8015ae35974d523092d09fbb29be2cfd375f61a63", size = 306587, upload-time = "2024-11-18T19:54:16.445Z" },
+]
+
+[[package]]
+name = "quran-toolkit"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "arabing" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/06/14/f6a9321da54c44aa3fe95571fdcd7a17dd142aeb1c134e10031f428a7e4f/quran_toolkit-0.1.0.tar.gz", hash = "sha256:95ed993dbdf2dd12c2810ce0eea8793fb382dc9578b6844b25fe76c617f94dce", size = 750043, upload-time = "2026-10-07T23:08:49.264Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1f/76/d30d8824a981c2481e58d0f3ec53078eebca7a2d8755ac2019a3bcd3d8a5/quran_toolkit-0.1.0-py3-none-any.whl", hash = "sha256:fa4d40673abba8a34e8749858ad7c2a4bbee753ec20d7f0874c5b0b31747b71e", size = 761665, upload-time = "2026-10-07T23:08:31.728Z" },
 ]
 
 [[package]]

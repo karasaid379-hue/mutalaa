@@ -29,6 +29,24 @@ Meal (A16.4, K-49): `elmalili-meal` ve `elmalili-sade-meal` birimleri `taslak` g
 biriminin metnine hic yazmaz ve her birim icin bir inceleme kaydi acar (`export/pg_meal.py`).
 Tanik kaynagi yuklenmez.
 
+RNK Risale (A20.2b, K-52): `risale-rnk-metin` birimleri `taslak` girer; hat Risale metnine hic
+yazmaz, yalniz taslak ve ayni `content_hash` birimde turetilmis sutunlari gunceller
+(`export/pg_risale.py`). Diyanet (`risale-asil-nusha`) karsilastirma verisidir: `export pg` onu
+reddeder (cikis 2).
+
+RNK baski sayfa esleme (A20.3, K-52 madde 6 ve 7): `risale-baski-rnk` satirlari `page_map` tablosuna
+upsert edilir; hat satir silmez (`export/pg_risale_sayfa.py`). `risale-rnk-metin` onceden
+yuklenmis olmali: capa `unit`te yoksa islem geri alinir (cikis 1).
+
+Sentetik Risale fiksturu (A20.5a): `test-risale-ornek` birimleri `pg_risale.py` ile (RNK ile ayni
+kurallar), kendi `page_map` satirlari (`source_id = test-risale-ornek`) AYNI islemde birimlerden
+sonra `pg_risale_sayfa.py` ile, fiksturun iki `xref` satiri `pg_risale_atif.py` ile yuklenir
+(A20.7b; hedef ayet `unit`te yoksa xref yazilmaz, uyari verilir).
+
+Risale ayet atif dizini (A20.7b, K-52 madde 13): `risale-atif-dizini` adaylari `icerik.xref`
+tablosuna upsert edilir; hat yalniz `origin = 'hat'` ve `status = 'aday'` satirin turetilmis
+sutunlarini gunceller, silme `--prune` ve `--yedek-alindi` ister (`export/pg_risale_atif.py`).
+
 Cikis kodlari: 0 basarili, 1 QA kapisi/ozet farki/eksik capa, 2 girdi ve yapilandirma (kayitsiz
 ya da gecersiz kaynak kaydi dahil). Iletilere satir icerigi ve baglanti dizesi yazilmaz; yalniz
 capa, sayi, ozet ve alan adi.
@@ -39,7 +57,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import psycopg
 from psycopg import sql
@@ -57,7 +75,16 @@ from mutalaa_pipeline.enums import SourceKind
 from mutalaa_pipeline.export import pg_kelime
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kati_json
 from mutalaa_pipeline.ingest import fikstur as fikstur_uretec
+from mutalaa_pipeline.ingest.kelime_frekans import KAYNAK as LUGAT_KAYNAGI
+from mutalaa_pipeline.ingest.lugat_kaynak import KAYNAKLAR as LUGAT_KAYNAKLARI
 from mutalaa_pipeline.ingest.meal_kaynaklari import MEAL_KAYNAKLARI, meal_mi
+from mutalaa_pipeline.ingest.risale_kaynaklari import (
+    KAYNAK_BASKI,
+    KAYNAK_ORNEK,
+    KAYNAK_RNK,
+    baski_mi,
+    risale_mi,
+)
 from mutalaa_pipeline.lineage import (
     KELIMELER_ADI,
     NOTICE_ADI,
@@ -65,6 +92,7 @@ from mutalaa_pipeline.lineage import (
     RUN_ID_DESENI,
     UNITS_ADI,
 )
+from mutalaa_pipeline.qa import ATIF_KAYNAGI
 from mutalaa_pipeline.qa.rapor import QaRaporlari
 from mutalaa_pipeline.runctx import QaKaldi, RunContext, komut_calistir
 from mutalaa_pipeline.sources.kayit import Kaynak
@@ -92,6 +120,14 @@ EK_KAYNAKLAR: Final[Mapping[str, tuple[str, ...]]] = {
     "test-ses": (),  # sentetik ses fiksturu: yalniz source satiri (A13.6)
     # Iki meal (A16.4; pg_meal.py). Tanik `elmalili-meal-epub` yuklenmez: tabloda yoktur.
     **{slug: () for slug in MEAL_KAYNAKLARI},
+    KAYNAK_RNK: (),  # A20.2b: RNK Risale metni (pg_risale.py); Diyanet karsilastirmadir, yuklenmez
+    KAYNAK_BASKI: (),  # A20.3: RNK baski sayfa esleme, page_map (pg_risale_sayfa.py)
+    KAYNAK_ORNEK: (),  # A20.5a: sentetik Risale fiksturu: birim, page_map, lugat (pg_risale.py)
+    LUGAT_KAYNAGI: (),  # A20.6: Risale lugat adaylari ve review (pg_lugat.py)
+    **{
+        slug: () for slug in LUGAT_KAYNAKLARI
+    },  # A20.6b: lugat-rnk, lugat-sozluk-rganeyev (pg_lugat.py)
+    ATIF_KAYNAGI: (),  # A20.7b: Risale ayet atif adaylari, xref (pg_risale_atif.py)
 }
 # Birim degil yapi satiri yukleyen kaynaklar (K-43 madde 3): units.jsonl yerine markers/pages.
 YAPI_KAYNAKLARI: Final = frozenset({"tanzil-ust-veri"})
@@ -162,6 +198,11 @@ SELECT_SOURCE: Final = sql.SQL("SELECT {} FROM icerik.source WHERE slug = %s FOR
 
 BAGLANTI = Callable[[], psycopg.Connection]
 
+if TYPE_CHECKING:
+    from mutalaa_pipeline.export.pg_lugat import LugatKaynakSatiri, LugatSatiri
+    from mutalaa_pipeline.export.pg_risale import RisaleGirdisi
+    from mutalaa_pipeline.export.pg_risale_atif import XrefYuk
+
 
 @dataclass(frozen=True)
 class Satir:
@@ -219,6 +260,23 @@ class SayfaSatiri:
     end_anchor: str
     source_id: str
     data_version: str
+
+
+@dataclass(frozen=True)
+class RisaleSayfaSatiri:
+    """`page_map.jsonl` satiri (RNK baski sayfa esleme; `line`, `line_type`, `glyphs` NULL)."""
+
+    volume: int
+    page: int
+    start_anchor: str
+    start_offset: int
+    end_anchor: str
+    end_offset: int
+    source_id: str
+    data_version: str
+    # Yukleme on kosulu (veritabanina yazilmaz): uc birimlerin staged `content_hash` degeri.
+    start_hash: str
+    end_hash: str
 
 
 @dataclass(frozen=True)
@@ -325,6 +383,11 @@ class Hazirlik:
     yalniz_kaynak: bool = False  # True: yalniz source satiri yuklenir (zincir ve birim yok)
     meal: bool = False  # True: taslak meal birimleri ve inceleme kuyrugu (pg_meal.py)
     meal_satirlari: list[MealSatiri] = field(default_factory=list)
+    risale: "RisaleGirdisi | None" = None  # dolu: RNK Risale birimleri akitilarak yuklenir
+    risale_sayfa: list[RisaleSayfaSatiri] = field(default_factory=list)  # dolu: page_map upsert'i
+    lugat: "Sequence[LugatSatiri | LugatKaynakSatiri]" = field(default_factory=list)  # pg_lugat
+    xref: "list[XrefYuk]" = field(default_factory=list)  # dolu: xref adaylari (pg_risale_atif.py)
+    xref_prune: bool = False  # True: staged'de olmayan hat+aday xref silinir (--prune, onayli)
 
 
 # --- yardimcilar -------------------------------------------------------------------------
@@ -725,6 +788,22 @@ def hazirla(
         from mutalaa_pipeline.export import pg_sure_adlari
 
         return pg_sure_adlari.hazirla(ctx, source_id, run, ek_kaynaklar)
+    if source_id == LUGAT_KAYNAGI or source_id in LUGAT_KAYNAKLARI:  # A20.6, A20.6b: lugat
+        from mutalaa_pipeline.export import pg_lugat
+
+        return pg_lugat.hazirla(ctx, source_id, run, ek_kaynaklar)
+    if source_id == ATIF_KAYNAGI:  # A20.7b: Risale ayet atif adaylari (xref)
+        from mutalaa_pipeline.export import pg_risale_atif
+
+        return pg_risale_atif.hazirla(ctx, source_id, run, ek_kaynaklar)
+    if baski_mi(source_id):  # A20.3: RNK baski sayfa esleme (page_map)
+        from mutalaa_pipeline.export import pg_risale_sayfa
+
+        return pg_risale_sayfa.hazirla(ctx, source_id, run, ek_kaynaklar)
+    if risale_mi(source_id):  # A20.2b: Diyanet burada reddedilir (cikis 2)
+        from mutalaa_pipeline.export import pg_risale
+
+        return pg_risale.hazirla(ctx, source_id, run, ek_kaynaklar)
     if meal_mi(source_id):
         from mutalaa_pipeline.export import pg_meal
 
@@ -1125,6 +1204,34 @@ def _yukle(conn: psycopg.Connection, ctx: RunContext, h: Hazirlik) -> dict[str, 
         from mutalaa_pipeline.export import pg_meal
 
         sayilar.update(pg_meal.yukle(conn, ctx, h))
+    elif h.risale is not None:
+        from mutalaa_pipeline.export import pg_risale
+
+        sayilar.update(pg_risale.yukle(conn, ctx, h))
+        if h.risale_sayfa:  # fikstur (A20.5a): page_map ayni islemde, birimlerden sonra
+            from mutalaa_pipeline.export import pg_risale_sayfa
+
+            sayilar.update(pg_risale_sayfa.yukle(conn, h))
+        if h.lugat:  # fikstur (A20.6): lugat maddeleri ayni islemde, birimlerden sonra
+            from mutalaa_pipeline.export import pg_lugat
+
+            sayilar.update(pg_lugat.yukle(conn, ctx, h))
+        if h.xref:  # fikstur (A20.7b): xref ayni islemde, birimlerden sonra
+            from mutalaa_pipeline.export import pg_risale_atif
+
+            sayilar.update(pg_risale_atif.yukle(conn, ctx, h))
+    elif h.xref:  # A20.7b: Risale ayet atif adaylari (kaynak satiri yukarida yazildi)
+        from mutalaa_pipeline.export import pg_risale_atif
+
+        sayilar.update(pg_risale_atif.yukle(conn, ctx, h))
+    elif h.lugat:  # A20.6: gercek Kelime-Frekans lugati (kaynak satiri yukarida yazildi)
+        from mutalaa_pipeline.export import pg_lugat
+
+        sayilar.update(pg_lugat.yukle(conn, ctx, h))
+    elif h.risale_sayfa:
+        from mutalaa_pipeline.export import pg_risale_sayfa
+
+        sayilar.update(pg_risale_sayfa.yukle(conn, h))
     elif h.yalniz_kaynak:
         pass  # yalniz `source` satiri (yukarida yazildi): unit, review ve xref yok
     else:
@@ -1200,6 +1307,8 @@ def komut_export_pg(
     force: bool = False,
     kayit: Mapping[str, tuple[str, ...]] | None = None,
     baglanti: BAGLANTI | None = None,
+    prune: bool = False,
+    yedek_alindi: bool = False,
 ) -> int:
     """`export pg` komutu; cikis kodunu dondurur (rapor `data/reports/{run_id}.json`).
 
@@ -1219,11 +1328,19 @@ def komut_export_pg(
     )
 
     def govde(c: RunContext) -> int:
+        if risale_mi(source):  # Diyanet karsilastirma verisidir: acik hata, cikis 2
+            from mutalaa_pipeline.export import pg_risale
+
+            pg_risale.kaynak_denetle(source)
         if ek is None:
             raise GirdiHatasi("tanimsiz kaynak: export pg icin kayit yok")
+        from mutalaa_pipeline.export import pg_risale_atif
+
+        pg_risale_atif.prune_denetle(source, prune, yedek_alindi, run)
         if force:
             c.uyar("--force export pg icin etkisiz: parmak izi atlamasi yok (K-39 madde 8)")
         h = hazirla(c, source, run, ek)
+        h.xref_prune = prune
         kapat = baglanti is None
         conn = baglanti() if baglanti is not None else baglan(ayarlar, autocommit=True)
         try:

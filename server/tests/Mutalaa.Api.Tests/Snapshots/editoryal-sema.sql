@@ -305,6 +305,51 @@ CREATE TABLE icerik.lemma_gloss (
 
 
 --
+-- Name: lugat_madde; Type: TABLE; Schema: icerik; Owner: -
+--
+
+CREATE TABLE icerik.lugat_madde (
+    id integer NOT NULL,
+    source_id text NOT NULL,
+    basliksoz text NOT NULL,
+    basliksoz_norm text NOT NULL,
+    osmanlica_yazim text,
+    koken_dil text,
+    tanim_tr text,
+    ar_kok_id integer,
+    kaynaklar jsonb DEFAULT '{}'::jsonb NOT NULL,
+    duzey smallint NOT NULL,
+    status icerik.xref_status DEFAULT 'aday'::icerik.xref_status NOT NULL,
+    origin text NOT NULL,
+    version text DEFAULT '1'::text NOT NULL,
+    content_hash character(64) NOT NULL,
+    data_version text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    anlam_no smallint DEFAULT 1 NOT NULL,
+    CONSTRAINT lugat_madde_anlam_no_check CHECK ((anlam_no >= 1)),
+    CONSTRAINT lugat_madde_content_hash_check CHECK ((content_hash ~ '^[0-9a-f]{64}$'::text)),
+    CONSTRAINT lugat_madde_duzey_check CHECK (((duzey >= 1) AND (duzey <= 4))),
+    CONSTRAINT lugat_madde_onayli_tanim_check CHECK (((status <> 'onayli'::icerik.xref_status) OR ((tanim_tr IS NOT NULL) AND (btrim(tanim_tr) <> ''::text)))),
+    CONSTRAINT lugat_madde_origin_check CHECK ((origin = ANY (ARRAY['hat'::text, 'editor'::text, 'kaynak'::text])))
+);
+
+
+--
+-- Name: lugat_madde_id_seq; Type: SEQUENCE; Schema: icerik; Owner: -
+--
+
+ALTER TABLE icerik.lugat_madde ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME icerik.lugat_madde_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
 -- Name: page_map; Type: TABLE; Schema: icerik; Owner: -
 --
 
@@ -483,7 +528,7 @@ CREATE TABLE icerik.review (
     duzenlenen jsonb,
     ikinci_gerekce text,
     ikinci_incelendi_at timestamp with time zone,
-    CONSTRAINT review_hedef_tablo_check CHECK ((hedef_tablo = ANY (ARRAY['source'::text, 'unit'::text, 'quran_word_fix'::text, 'lemma'::text, 'lemma_gloss'::text, 'root'::text, 'tr_root_index'::text, 'tr_form'::text, 'surah_alias'::text, 'xref'::text, 'page_map'::text, 'ayah_box'::text, 'audio_timing'::text]))),
+    CONSTRAINT review_hedef_tablo_check CHECK ((hedef_tablo = ANY (ARRAY['source'::text, 'unit'::text, 'quran_word_fix'::text, 'lemma'::text, 'lemma_gloss'::text, 'root'::text, 'tr_root_index'::text, 'tr_form'::text, 'surah_alias'::text, 'xref'::text, 'page_map'::text, 'ayah_box'::text, 'audio_timing'::text, 'lugat_madde'::text]))),
     CONSTRAINT review_yz_kaydi_check CHECK ((((yz_modeli IS NULL) AND (yz_kaydi IS NULL)) OR ((yz_modeli IS NOT NULL) AND (yz_kaydi IS NOT NULL) AND (jsonb_typeof(yz_kaydi) = 'object'::text) AND (yz_kaydi ?& ARRAY['prompt_id'::text, 'prompt_sha256'::text, 'input_sha256'::text]) AND (COALESCE((yz_kaydi ->> 'prompt_sha256'::text), ''::text) ~ '^[0-9a-f]{64}$'::text) AND (COALESCE((yz_kaydi ->> 'input_sha256'::text), ''::text) ~ '^[0-9a-f]{64}$'::text))))
 );
 
@@ -862,6 +907,22 @@ ALTER TABLE ONLY icerik.lemma_gloss
 
 ALTER TABLE ONLY icerik.lemma
     ADD CONSTRAINT lemma_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: lugat_madde lugat_madde_pkey; Type: CONSTRAINT; Schema: icerik; Owner: -
+--
+
+ALTER TABLE ONLY icerik.lugat_madde
+    ADD CONSTRAINT lugat_madde_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: lugat_madde lugat_madde_source_id_basliksoz_anlam_no_key; Type: CONSTRAINT; Schema: icerik; Owner: -
+--
+
+ALTER TABLE ONLY icerik.lugat_madde
+    ADD CONSTRAINT lugat_madde_source_id_basliksoz_anlam_no_key UNIQUE (source_id, basliksoz, anlam_no);
 
 
 --
@@ -1348,6 +1409,22 @@ ALTER TABLE ONLY icerik.lemma
 
 ALTER TABLE ONLY icerik.lemma
     ADD CONSTRAINT lemma_source_id_fkey FOREIGN KEY (source_id) REFERENCES icerik.source(slug);
+
+
+--
+-- Name: lugat_madde lugat_madde_ar_kok_id_fkey; Type: FK CONSTRAINT; Schema: icerik; Owner: -
+--
+
+ALTER TABLE ONLY icerik.lugat_madde
+    ADD CONSTRAINT lugat_madde_ar_kok_id_fkey FOREIGN KEY (ar_kok_id) REFERENCES icerik.root(id);
+
+
+--
+-- Name: lugat_madde lugat_madde_source_id_fkey; Type: FK CONSTRAINT; Schema: icerik; Owner: -
+--
+
+ALTER TABLE ONLY icerik.lugat_madde
+    ADD CONSTRAINT lugat_madde_source_id_fkey FOREIGN KEY (source_id) REFERENCES icerik.source(slug);
 
 
 --

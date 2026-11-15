@@ -78,6 +78,8 @@ internal static class ExpectedEndpoints
         new("POST", "/api/v1/lemmas/{id:int}/etimolojik-isaret", Access.Editor, "/api/v1/lemmas/1/etimolojik-isaret", EmptyJson),
         new("GET", "/api/v1/releases", Access.Editor, "/api/v1/releases"),
         new("GET", "/api/v1/releases/{id:int}", Access.Editor, "/api/v1/releases/1"),
+        new("GET", "/api/v1/risale/books", Access.Editor, "/api/v1/risale/books"),
+        new("GET", "/api/v1/risale/books/{kitap}", Access.Editor, "/api/v1/risale/books/yok"),
 
         // Admin.
         new("GET", "/api/v1/users", Access.Admin, "/api/v1/users"),
@@ -87,6 +89,7 @@ internal static class ExpectedEndpoints
         new("POST", "/api/v1/releases/preview", Access.Admin, "/api/v1/releases/preview", InvalidDerleme),
         new("POST", "/api/v1/releases/{id:int}/promote", Access.Admin, "/api/v1/releases/1/promote"),
         new("POST", "/api/v1/releases/{id:int}/rollback", Access.Admin, "/api/v1/releases/1/rollback"),
+        new("POST", "/api/v1/risale/books/{kitap}/approve", Access.Admin, "/api/v1/risale/books/yok/approve", EmptyJson),
     ];
 
     public static bool IsHealth(ExpectedEndpoint row) => row.Pattern.StartsWith("/health/", StringComparison.Ordinal);

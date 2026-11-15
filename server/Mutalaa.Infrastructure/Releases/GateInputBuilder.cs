@@ -14,7 +14,9 @@ namespace Mutalaa.Infrastructure.Releases;
 /// <item>Kaynak kaydi = source tablosunda satir VE <c>{sourcesDir}/{slug}.toml</c> dosyasi (dosya yoksa kayitsiz sayilir; icerigi okunmaz).
 /// Kapiya giren kaynaklar: butun source satirlari + icerigi olan paketlerin zorunlu kaynaklari (satiri yoksa kayitsiz, P-01).</item>
 /// <item>Paket: icerigi (birim, yapi satiri ya da sozluk verisi: kok, lemma, anlam, QAC kelime morfolojisi) yoksa HasContent = false ("icerik-yok"; kaynaklari kapiya sokulmaz). Zorunlu olmayan kaynak yalniz
-/// satiri varsa pakete bagli sayilir.</item>
+/// satiri varsa pakete bagli sayilir. Capa onekli paket (Risale kitap paketi, PackDefinition.AnchorPrefix) icin birim sayimi (onek, kaynak) ciftine bakar: 87 kitap
+/// ayni kaynaktan (risale-rnk-metin) beslenir ve her kitap yalniz kendi birimlerine sahiptir. risale-dizin yapi satiri (sayfa eslemesi) tek basina icerik sayilmaz:
+/// metin yoksa dizin de yoktur.</item>
 /// <item>Birim: IsAiDraft = onaysiz birimin yz_modeli dolu review satiri var; HasSuccessors = successors en az bir ogeli dizi ('[]' ve JSON null bos sayilir).</item>
 /// <item>Sozluk (P-09): quran_word_fix satirinda ApplyDefect, duzeltmenin uygulanamama nedenidir (WordMorphFixes; deger cevrilemiyor, kelimenin QAC satiri yok,
 /// gosterdigi root_id ya da lemma_id yok); kapi onayli ve kusurlu duzeltmeyi yayin reddi sayar.</item>
@@ -55,10 +57,17 @@ public static class GateInputBuilder
         // Kaynak basina birim sayisi (paketin icerigi var mi) ve kaynak slug'i -> tur.
         Dictionary<string, int> unitCounts = new(StringComparer.Ordinal);
         Dictionary<string, UnitRow> unitByAnchor = new(StringComparer.Ordinal);
+        Dictionary<(string Prefix, string Slug), int> prefixCounts = [];
+        HashSet<string> prefixes = new(catalog.All.Where(p => p.AnchorPrefix is not null).Select(p => p.AnchorPrefix!), StringComparer.Ordinal);
         List<GateUnit> units = [];
         foreach (UnitRow unit in snapshot.Units)
         {
             unitCounts[unit.SourceId] = unitCounts.GetValueOrDefault(unit.SourceId) + 1;
+            if (prefixes.Count > 0 && GatePack.PrefixOf(unit.Anchor) is { } prefix && prefixes.Contains(prefix))
+            {
+                prefixCounts[(prefix, unit.SourceId)] = prefixCounts.GetValueOrDefault((prefix, unit.SourceId)) + 1;
+            }
+
             unitByAnchor.TryAdd(unit.Anchor, unit);
             units.Add(ToGateUnit(unit));
         }
@@ -68,7 +77,7 @@ public static class GateInputBuilder
         HashSet<string> requiredSlugs = new(StringComparer.Ordinal);
         foreach (PackDefinition pack in catalog.All)
         {
-            bool hasContent = HasContent(pack, snapshot, unitCounts);
+            bool hasContent = HasContent(pack, snapshot, unitCounts, prefixCounts);
             List<string> slugs = [];
             if (hasContent)
             {
@@ -85,7 +94,7 @@ public static class GateInputBuilder
                 }
             }
 
-            packs.Add(new GatePack(pack.PackId, pack.DependsOn, slugs, hasContent, HasStructure(pack, snapshot)));
+            packs.Add(new GatePack(pack.PackId, pack.DependsOn, slugs, hasContent, HasStructure(pack, snapshot), pack.AnchorPrefix));
         }
 
         // Kaynaklar: butun satirlar + icerigi olan paketlerin zorunlu kaynaklari (satirsiz olanlar kayitsiz).
@@ -207,8 +216,17 @@ public static class GateInputBuilder
     private static bool HasStructure(PackDefinition pack, EditorialSnapshot snapshot) =>
         pack.CarriesQuranStructure && (snapshot.QuranWords.Count > 0 || snapshot.QuranMarkers.Count > 0 || snapshot.PageMaps.Count > 0);
 
-    private static bool HasContent(PackDefinition pack, EditorialSnapshot snapshot, Dictionary<string, int> unitCounts)
+    private static bool HasContent(
+        PackDefinition pack,
+        EditorialSnapshot snapshot,
+        Dictionary<string, int> unitCounts,
+        Dictionary<(string Prefix, string Slug), int> prefixCounts)
     {
+        if (pack.AnchorPrefix is { } prefix)
+        {
+            return pack.ContentSources.Any(b => prefixCounts.GetValueOrDefault((prefix, b.Slug)) > 0);
+        }
+
         if (pack.ContentSources.Any(b => unitCounts.GetValueOrDefault(b.Slug) > 0))
         {
             return true;

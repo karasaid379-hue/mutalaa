@@ -24,9 +24,10 @@ export const SESSION_QUERY_OPTIONS = {
 
 /**
  * Order of a queue list (`sira`): `dalga` is the word wave order, only for `lemma` and `lemma_gloss` targets;
+ * `siklik` is the descending frequency order of the Risale lügat, only for the `lugat_madde` target.
  * `sinif` is the link candidate class order (tutarsız, toplu, gri, diğer), only for the `xref` target.
  */
-export type QueueOrder = 'olusturma' | 'dalga' | 'sinif';
+export type QueueOrder = 'olusturma' | 'dalga' | 'siklik' | 'sinif';
 
 /** Status of the listed records: `acik` (default) or `uzmanda` (sent to an expert, K-51 madde 2). */
 export type QueueStatus = 'acik' | 'uzmanda';

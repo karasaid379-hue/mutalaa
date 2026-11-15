@@ -144,8 +144,8 @@ describe('label tables', () => {
     expect(labelOf(tr.labels.status, 'toString')).toBe('toString');
   });
 
-  it('cover all 13 review target tables and the five statuses', () => {
-    expect(Object.keys(tr.labels.target)).toHaveLength(13);
+  it('cover all 14 review target tables and the five statuses', () => {
+    expect(Object.keys(tr.labels.target)).toHaveLength(14);
     expect(Object.keys(tr.labels.status)).toEqual([
       'acik',
       'onaylandi',

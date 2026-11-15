@@ -1,7 +1,7 @@
 # Test stratejisi
 
-> **Sürüm:** 1.16 · **Tarih:** 13 Kasım 2026 · **Durum:** Taslak
-> **Bağlı kararlar:** [K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) · [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
+> **Sürüm:** 1.17 · **Tarih:** 15 Kasım 2026 · **Durum:** Taslak
+> **Bağlı kararlar:** [K-52](../00-ozet/02-karar-defteri.md#k-52--risale-altyapısı-kapsam-metin-baskı-sayfası-ve-onay-yolu) · [K-51](../00-ozet/02-karar-defteri.md#k-51--bağlantı-katmanı-ofsetli-tabloların-korunması-otomatik-türkçe--kök-onayı-değerlendirme-setleri-ve-yayın-kapısı) · [K-50](../00-ozet/02-karar-defteri.md#k-50--yapay-zekâ-işlerinin-proje-sonuna-ertelenmesi-hazır-anlam-adayları-qac-sözlüğü-ve-kelime-anlamı-görünürlüğü) · [K-41](../00-ozet/02-karar-defteri.md#k-41--ses-sistemi-hazır-kayıtlar-ayna-ve-çevrimiçi-öncelikli-dinleme) · [K-37](../00-ozet/02-karar-defteri.md#k-37--editoryal-şema-ayrıntıları) · [K-42](../00-ozet/02-karar-defteri.md#k-42--kaynak-ilkesi-ve-kalite-temelli-görünürlük) · [K-17](../00-ozet/02-karar-defteri.md#k-17--arama-sqlite-fts5) · [K-18](../00-ozet/02-karar-defteri.md#k-18--depolama-yöneticisi-v1de) · [K-26](../00-ozet/02-karar-defteri.md#k-26--kalıcı-adresler-çapa-şeması) · [K-35](../00-ozet/02-karar-defteri.md#k-35--çapa-api-ayrıntıları) · [K-36](../00-ozet/02-karar-defteri.md#k-36--arama-normalizasyonu-ayrıntıları) · [K-27](../00-ozet/02-karar-defteri.md#k-27--tek-bağlantı-tablosu) · [K-33](../00-ozet/02-karar-defteri.md#k-33--net-test-çalıştırıcısı-xunitv3--microsofttestingplatform) · [K-39](../00-ozet/02-karar-defteri.md#k-39--tanzil-alımı-simple-cleanin-yeri-kanonik-kaynakta-hat-yazma-kuralı-kilit)
 
 Bu dosya neyin, hangi araçla, ne zaman test edildiğini tanımlar. Eşik değerlerinin çoğu bu dosyanın önerisidir; ilk ölçümden sonra kalibre edilir ve öyle işaretlidir.
 
@@ -19,7 +19,7 @@ Bu dosya neyin, hangi araçla, ne zaman test edildiğini tanımlar. Eşik değer
 
 ## 2. Ortak test vektörleri
 
-Normalizasyon ve çapa kuralları tek yerde tanımlıdır ve Python, TypeScript ve C# uygulamaları aynı dosyalarla kilitlenir. Vektör dosyası şartnamedir: bir dosya değişirse onu koşan uygulamalar aynı PR'da geçmek zorundadır. Çoğu dosyayı üç uygulama da koşar; iki istisna vardır ve koşucuda gerekçesiyle açıkça atlanır: `fts-query/query.jsonl` yalnız TypeScript'te koşar (sorgu kurucu `packages/search` içindedir), `normalize/tr-govde.jsonl` TypeScript ve Python'da koşar (C# gövdeleme yapmaz). Atlanan dosyalar `pipeline/tests/vektor_dosyalari.py` ve `server/tests/Mutalaa.Domain.Tests/VectorCoverageTests.cs` içindeki listede durur; listede olmayan yeni `.jsonl` dosyası pytest ve xUnit'i kırar. Yeni vektör dosyası eklerken önce bu listeler güncellenir.
+Normalizasyon ve çapa kuralları tek yerde tanımlıdır ve Python, TypeScript ve C# uygulamaları aynı dosyalarla kilitlenir. Vektör dosyası şartnamedir: bir dosya değişirse onu koşan uygulamalar aynı PR'da geçmek zorundadır. Çoğu dosyayı üç uygulama da koşar; üç istisna vardır ve koşucuda gerekçesiyle açıkça atlanır: `fts-query/query.jsonl` yalnız TypeScript'te koşar (sorgu kurucu `packages/search` içindedir), `normalize/tr-govde.jsonl` TypeScript ve Python'da koşar (C# gövdeleme yapmaz), `extract/` altındaki dosyalar (`meal.jsonl`, `risale-cumle.jsonl`) yalnız Python'da koşar (çıkarım ve cümle sınırları yalnız hatta hesaplanır; C# atlaması `VectorCoverageTests.cs` içindeki gerekçeli listededir). Atlanan dosyalar `pipeline/tests/vektor_dosyalari.py` ve `server/tests/Mutalaa.Domain.Tests/VectorCoverageTests.cs` içindeki listede durur; listede olmayan yeni `.jsonl` dosyası pytest ve xUnit'i kırar. Yeni vektör dosyası eklerken önce bu listeler güncellenir.
 
 ```text
 shared/test-vectors/
@@ -30,6 +30,8 @@ shared/test-vectors/
   offsets/offsets.jsonl     # kod noktası ofsetleri ve snapSpan
   content-hash/hash.jsonl   # kanonik metin özeti
   fts-query/query.jsonl     # sorgu → FTS5 MATCH ifadesi (doğruluk; Arama §3); yalnız TypeScript koşar (fq-); Arapça fq-ar- satırları --fts-ornekleri ile üretilir
+  extract/meal.jsonl        # meal çıkarımı (ex-); yalnız Python koşar (K-49 madde 13)
+  extract/risale-cumle.jsonl # sentetik Risale cümle sınırları (rc-; kod noktası, yarı açık aralık); yalnız Python koşar, C# koşucusu atlama kaydıyla geçer (K-52 madde 8)
   arama/olcum.jsonl         # arama ölçüm kümesi (bölüm 10); vektör değildir, koşucular okumaz
 ```
 

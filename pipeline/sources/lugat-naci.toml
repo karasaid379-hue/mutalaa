@@ -1,11 +1,14 @@
-# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3
+# A06 (2026-10-26) · kaynak: docs/04-icerik/01-kaynaklar.md §2-§3 · A20.0 (2026-11-12)
 slug = "lugat-naci"
 tur = "sozluk"
 baslik = "Lugat-ı Nâci"
 yazar = "Muallim Nâci; Müstecâbîzâde İsmet Bey"
+provider = "archive.org"
+kaynak_url = "https://archive.org/details/lugati-naci"
 atif_metni = "Muallim Nâci; Müstecâbîzâde İsmet Bey, Lugat-ı Nâci."
 notlar = '''
 İki yazarlı eser: Muallim Nâci; tamamlayan Müstecâbîzâde İsmet Bey.
 Baskı: hicrî 1322 baskısında (miladi karşılığı ve baskı tarihi Doğrulanacak) Tâhirülmevlevî maddeleri alfabetik dizdi, bazılarını değiştirdi ve örnek ekledi; yalnız Nâci ve İsmet Bey'in metnini taşıyan 1317 ya da 1318 baskısı önerilir.
 Tarama: archive.org lgatnaci0001na (Duke kopyası, Internet Archive'ın kendi Scribe taraması, 400 ppi, 832 görüntü, Asır Matbaası 1900). IA yazar ve matbaa alanlarında Türkçe karakterler bozuktur ve yazar olarak yalnız Muallim Nâci geçer; atıfta bu alanlar olduğu gibi kullanılmaz.
+Alınan dosya: archive.org lugati-naci, OCR metni (_djvu.txt, 2.585.323 bayt; SHA-1 arşiv kaydıyla eşleşti). Alma: data/gelen/lugat-naci/2026-11-12/.
 Dijital kopya kaynağı ve baskı seçimi: Doğrulanacak.'''

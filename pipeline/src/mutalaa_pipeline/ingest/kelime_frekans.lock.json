@@ -1,0 +1,297 @@
+{
+ "alinma_tarihi": "2026-11-12",
+ "birlesik": {
+  "benzersiz_kelime": 21494,
+  "elenen_noktalama_siklik": 12,
+  "elenen_noktalama_soz": 8,
+  "toplam_frekans": 496535
+ },
+ "commit": "7a6617a4953bd553504e00ff9ffdcde4e2a9764e",
+ "depo_url": "https://github.com/alitekdemir/Risale-i-Nur-Kelime-Frekans",
+ "dosyalar": {
+  "1-10 S\u00f6z": {
+   "csv_sha256": "e951e779f4042b024403c72e72458ad93034de2ad0b20d9738394128daa7b166",
+   "frekans_sha256": "d5b18ce19be5bc2146caecf2272ae045dece97e8cdfc504d37861eb31b3f3250",
+   "sayilar": {
+    "benzersiz_kelime": 1702,
+    "csv_benzersiz_kelime": 1981,
+    "csv_bozuk": 0,
+    "csv_kayit": 4905,
+    "frekans_satir": 1702,
+    "toplam_frekans": 5968
+   },
+   "ust": "1-S\u00f6zler"
+  },
+  "1-S\u00f6zler": {
+   "csv_sha256": "77c66dd321d91fe6fa70cf0ac7547594796857bcfde2fb0d6b2d7a340f93bb99",
+   "frekans_sha256": "2da15373ddee1f25b1b245733016c42019c9a3d30f364f64347d81c130bb7820",
+   "sayilar": {
+    "benzersiz_kelime": 7991,
+    "csv_benzersiz_kelime": 13723,
+    "csv_bozuk": 6,
+    "csv_kayit": 56378,
+    "frekans_satir": 7991,
+    "toplam_frekans": 70543
+   },
+   "ust": null
+  },
+  "1-ilk 10 S\u00f6z": {
+   "csv_sha256": "50dc04462aa59d4b724da237ec89a3ca6aeaf0437e3d3e05280cbf75e8ab8aa8",
+   "frekans_sha256": "c884dac3cbbda37ef6542a6c3ef62bcb749e262488d804e07592a519df91a99d",
+   "sayilar": {
+    "benzersiz_kelime": 2446,
+    "csv_benzersiz_kelime": 2982,
+    "csv_bozuk": 1,
+    "csv_kayit": 7663,
+    "frekans_satir": 2446,
+    "toplam_frekans": 9474
+   },
+   "ust": "1-S\u00f6zler"
+  },
+  "1-ilk 12 S\u00f6z": {
+   "csv_sha256": "ae6b583cf3c5e10b4ae486db85fff7459fe904cec605824f7e913b2c0760a966",
+   "frekans_sha256": "7c517992b03616c55c0a101da154aaf6c962d0ca04a3640ee4a7a920f2b2f8a6",
+   "sayilar": {
+    "benzersiz_kelime": 2715,
+    "csv_benzersiz_kelime": 3400,
+    "csv_bozuk": 0,
+    "csv_kayit": 8986,
+    "frekans_satir": 2715,
+    "toplam_frekans": 11149
+   },
+   "ust": "1-S\u00f6zler"
+  },
+  "1-ilk 20 S\u00f6z": {
+   "csv_sha256": "53f84aa341e0575f36661ad89f0487a94905aa613b94a7dd4c478c69dadb34a9",
+   "frekans_sha256": "8ebb661685eb63ecad0eda1c668fdfb60017fbe2ee5887782f7b69736aec8472",
+   "sayilar": {
+    "benzersiz_kelime": 4188,
+    "csv_benzersiz_kelime": 5758,
+    "csv_bozuk": 0,
+    "csv_kayit": 16691,
+    "frekans_satir": 4188,
+    "toplam_frekans": 21029
+   },
+   "ust": "1-S\u00f6zler"
+  },
+  "1-ilk 9 S\u00f6z": {
+   "csv_sha256": "740149e75563fe8ab07110fe99fe01415663a54bf7a720fd308347a231bf1a8b",
+   "frekans_sha256": "bea9a55806b1b76f0224da2e3aa32266204bd7beefcbda354ff5be789b910356",
+   "sayilar": {
+    "benzersiz_kelime": 1366,
+    "csv_benzersiz_kelime": 1478,
+    "csv_bozuk": 0,
+    "csv_kayit": 2758,
+    "frekans_satir": 1366,
+    "toplam_frekans": 3506
+   },
+   "ust": "1-S\u00f6zler"
+  },
+  "10-Emirda\u011f L\u00e2hikas\u0131": {
+   "csv_sha256": "f78d271bf2d9f0fccd01365ddc7f8e4fa0bc04f46510175b80ebc67dcbaff33c",
+   "frekans_sha256": "0ca68061ac7fc251e23d347fac049096df0bd0e222c44638d2bec4d087bd4cbc",
+   "sayilar": {
+    "benzersiz_kelime": 5093,
+    "csv_benzersiz_kelime": 6718,
+    "csv_bozuk": 4,
+    "csv_kayit": 29171,
+    "frekans_satir": 5093,
+    "toplam_frekans": 36133
+   },
+   "ust": null
+  },
+  "11-\u0130man ve K\u00fcf\u00fcr Muvazeneleri": {
+   "csv_sha256": "9d5bcc50b505dbcd79fe50d4ee98ab783f61a7f995f5b3e0081fb134eb3132c9",
+   "frekans_sha256": "fafa43df9fc8db607d277efdae140a60e552b8e4bf28b372f74a84d7a5a26cc3",
+   "sayilar": {
+    "benzersiz_kelime": 3485,
+    "csv_benzersiz_kelime": 4393,
+    "csv_bozuk": 0,
+    "csv_kayit": 12218,
+    "frekans_satir": 3485,
+    "toplam_frekans": 15015
+   },
+   "ust": null
+  },
+  "12-Sikke-i Tasd\u00eek-\u0131 Gayb\u00ee": {
+   "csv_sha256": "f813fd29aa225fc4a053bc29c4b7e8410f21dbe244686fc7080c928bca08b95a",
+   "frekans_sha256": "8bfa2a719efca759804e61c43cebff832f4d03a7baa0a190a5de3176ebcff586",
+   "sayilar": {
+    "benzersiz_kelime": 4196,
+    "csv_benzersiz_kelime": 5302,
+    "csv_bozuk": 0,
+    "csv_kayit": 14928,
+    "frekans_satir": 4196,
+    "toplam_frekans": 19387
+   },
+   "ust": null
+  },
+  "13-Muhakemat": {
+   "csv_sha256": "8deed57223ca095b12fa9d633ae6f1b8710a02640a3e62663faada8d3c3959a9",
+   "frekans_sha256": "2da68ccb6fd4aff620ee59e23f9ff6c821177cbe7dc8e869f00dde7ada12e012",
+   "sayilar": {
+    "benzersiz_kelime": 4221,
+    "csv_benzersiz_kelime": 5132,
+    "csv_bozuk": 2,
+    "csv_kayit": 9990,
+    "frekans_satir": 4221,
+    "toplam_frekans": 13134
+   },
+   "ust": null
+  },
+  "14-Tarih\u00e7e-i Hayat": {
+   "csv_sha256": "1367e944cf5715f7b961b4e3d12a2cf26b3ea1134aa182dce7c172420436793a",
+   "frekans_sha256": "6eefb632028bad90391d34cd65cab1c9eab1657430e80b1074eed110da290c2e",
+   "sayilar": {
+    "benzersiz_kelime": 7018,
+    "csv_benzersiz_kelime": 9797,
+    "csv_bozuk": 2,
+    "csv_kayit": 39719,
+    "frekans_satir": 7018,
+    "toplam_frekans": 48680
+   },
+   "ust": null
+  },
+  "15-\u0130lk D\u00f6nem Eserleri": {
+   "csv_sha256": "db65dbebccd2c9db5400146c70e9474296aace91970546c97d0c403b1e2d9d04",
+   "frekans_sha256": "b7780e81a76ff5782da46c6e947542eb821c90c780cc06e8ae5e7f2459cc1077",
+   "sayilar": {
+    "benzersiz_kelime": 8102,
+    "csv_benzersiz_kelime": 11397,
+    "csv_bozuk": 4,
+    "csv_kayit": 29211,
+    "frekans_satir": 8102,
+    "toplam_frekans": 37565
+   },
+   "ust": null
+  },
+  "2-Mektubat": {
+   "csv_sha256": "e45d37c6d251e54a4ab2b5b7d1ad44ab26122e551ddd98b83ef67187b8639267",
+   "frekans_sha256": "a1600987f852e5abaad4ecbfe69a39ebeb0a5c5aa94a43497cf829599a573623",
+   "sayilar": {
+    "benzersiz_kelime": 6275,
+    "csv_benzersiz_kelime": 9504,
+    "csv_bozuk": 0,
+    "csv_kayit": 33332,
+    "frekans_satir": 6275,
+    "toplam_frekans": 43502
+   },
+   "ust": null
+  },
+  "3-Lem'alar": {
+   "csv_sha256": "e1646b08694776ea6e715baab94bc05d89e5a15bf810cc161912fc9efdf4ca38",
+   "frekans_sha256": "cc89521114b7d1dc946301487310b80e47eb91c57ad36e553df1338d74758bf5",
+   "sayilar": {
+    "benzersiz_kelime": 5658,
+    "csv_benzersiz_kelime": 8214,
+    "csv_bozuk": 0,
+    "csv_kayit": 32288,
+    "frekans_satir": 5658,
+    "toplam_frekans": 39988
+   },
+   "ust": null
+  },
+  "4-\u015eu\u00e2lar": {
+   "csv_sha256": "576da506fbccaba3de955781cc430b204d061e7355d886629d15c5e10a6b3e2a",
+   "frekans_sha256": "edd4576ef5e111f99faf9a0a56994bbe31ac5d1099e3be6ec5c24a9937c99821",
+   "sayilar": {
+    "benzersiz_kelime": 6388,
+    "csv_benzersiz_kelime": 9291,
+    "csv_bozuk": 3,
+    "csv_kayit": 46142,
+    "frekans_satir": 6388,
+    "toplam_frekans": 55815
+   },
+   "ust": null
+  },
+  "5-Mesnev\u00ee-i Nuriye": {
+   "csv_sha256": "3f1fc34d8ed5f70eefc9c9f21b5ee070cd465809a02c39a67110bd6b0334be55",
+   "frekans_sha256": "b78e70bae0503a857a0e3ebaa83f26793aee4a4bf9ad551d5c045fe44c832e5f",
+   "sayilar": {
+    "benzersiz_kelime": 4677,
+    "csv_benzersiz_kelime": 6083,
+    "csv_bozuk": 0,
+    "csv_kayit": 19858,
+    "frekans_satir": 4677,
+    "toplam_frekans": 23878
+   },
+   "ust": null
+  },
+  "6-\u0130\u015f\u00e2r\u00e2t\u00fc'l-\u0130'c\u00e2z": {
+   "csv_sha256": "9a7e35e5ee96640aa423b9ec32045abecbf410ca1d2ce7a71af6d8dba0d5316b",
+   "frekans_sha256": "1ceaf65f56c6503663f59c34bdd071f7a816cd69e7a3c99d29657c067af59f47",
+   "sayilar": {
+    "benzersiz_kelime": 4561,
+    "csv_benzersiz_kelime": 5656,
+    "csv_bozuk": 4,
+    "csv_kayit": 19582,
+    "frekans_satir": 4561,
+    "toplam_frekans": 22727
+   },
+   "ust": null
+  },
+  "7-As\u00e2-y\u0131 M\u00fbs\u00e2": {
+   "csv_sha256": "51a7f52aed298c8ce41aad241f263b6b189a213db7d367b2715577d7d2f8d13e",
+   "frekans_sha256": "ebb2232b85bc2efd8eaf2e6ce2dc4b612a01f870c6ef50f14c29a2bf965dd3e4",
+   "sayilar": {
+    "benzersiz_kelime": 3797,
+    "csv_benzersiz_kelime": 4870,
+    "csv_bozuk": 0,
+    "csv_kayit": 17228,
+    "frekans_satir": 3797,
+    "toplam_frekans": 20813
+   },
+   "ust": null
+  },
+  "8-Barla L\u00e2hikas\u0131": {
+   "csv_sha256": "d53514a1243ab5f413a293de908c5dab85857370c23384c6c115300ad4ca8393",
+   "frekans_sha256": "12f687403abe7e2d1a7bea9ffd7884f4eb683a6c87a01dfb0a52741591080b6c",
+   "sayilar": {
+    "benzersiz_kelime": 6063,
+    "csv_benzersiz_kelime": 8005,
+    "csv_bozuk": 1,
+    "csv_kayit": 23343,
+    "frekans_satir": 6063,
+    "toplam_frekans": 30187
+   },
+   "ust": null
+  },
+  "9-Kastamonu L\u00e2hikas\u0131": {
+   "csv_sha256": "61db5aad56b5a1d740a1bcaac7dcdea4a158a663e46b7701d14db11e38222ef5",
+   "frekans_sha256": "dd8e8aedbad4b78b8bd1c25dd8bf17a23839ef274c8f9fd596efc022cebaf4c8",
+   "sayilar": {
+    "benzersiz_kelime": 3915,
+    "csv_benzersiz_kelime": 4870,
+    "csv_bozuk": 0,
+    "csv_kayit": 15358,
+    "frekans_satir": 3915,
+    "toplam_frekans": 19168
+   },
+   "ust": null
+  }
+ },
+ "kaynak": "risale-kelime-frekans",
+ "sozlukler": {
+  "lugat-kamus-i-turki": {
+   "boyut": 5969007,
+   "satir": 200058,
+   "sha256": "9fa6dddf29f89bb03e2a1437f52def32ac0277d2c62dc22f7d6fa4be79e0da48"
+  },
+  "lugat-naci": {
+   "boyut": 2585323,
+   "satir": 146370,
+   "sha256": "404b7ad712c900a3e83b32c80664366876bbac5523b73335fbc8b028ac37b199"
+  },
+  "lugat-redhouse-1890": {
+   "boyut": 8447120,
+   "satir": 356448,
+   "sha256": "d417baecfd9f13cab0e3d8a6048facf0aceb04f1c60cb9a212bff05c74d49617"
+  }
+ },
+ "surum": 1,
+ "url": "https://github.com/alitekdemir/Risale-i-Nur-Kelime-Frekans/archive/7a6617a4953bd553504e00ff9ffdcde4e2a9764e.zip",
+ "uye_sayisi": 241,
+ "zip_ad": "Risale-i-Nur-Kelime-Frekans-7a6617a4953bd553504e00ff9ffdcde4e2a9764e.zip",
+ "zip_boyut": 9006858,
+ "zip_sha256": "94b8146f907fa01f01049467005fd61c110e88f76eb8d5d70b44e1279a81ed6d"
+}

@@ -13,7 +13,7 @@ internal sealed class ReviewConfiguration : IEntityTypeConfiguration<Review>
         {
             t.HasCheckConstraint(
                 "review_hedef_tablo_check",
-                "hedef_tablo IN ('source','unit','quran_word_fix','lemma','lemma_gloss','root','tr_root_index','tr_form','surah_alias','xref','page_map','ayah_box','audio_timing')");
+                "hedef_tablo IN ('source','unit','quran_word_fix','lemma','lemma_gloss','root','tr_root_index','tr_form','surah_alias','xref','page_map','ayah_box','audio_timing','lugat_madde')");
 
             // K-37: G-YZ kaydi. yz_modeli ile yz_kaydi ya ikisi birden bos ya da ikisi birden dolu; doluysa uc anahtarli nesne.
             t.HasCheckConstraint(

@@ -26,6 +26,7 @@ public static class EditorEndpoints
         editor.MapLemmaEndpoints();
         editor.MapWordFixEndpoints();
         editor.MapReleaseEndpoints();
+        editor.MapRisaleBookEndpoints();
 
         return editor;
     }

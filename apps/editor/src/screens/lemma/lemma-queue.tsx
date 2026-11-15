@@ -4,10 +4,11 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { fieldLabel } from '@/i18n/labels';
+import { fieldLabel, labelOf } from '@/i18n/labels';
 import { tr } from '@/i18n/tr';
 import { trLemma } from '@/i18n/tr-lemma';
-import { formatPercent } from '@/lib/format';
+import { trLugat } from '@/i18n/tr-lugat';
+import { formatNumber, formatPercent } from '@/lib/format';
 import { QueueLayout } from '@/review/queue-layout';
 import { isRootMappingReview } from '@/review/rules';
 import type { ReviewItem } from '@/review/types';
@@ -21,10 +22,12 @@ import {
   isLemmaTab,
   isQueueOrder,
   lemmaFilter,
-  type LemmaOrder,
   type LemmaTabId,
+  type WaveOrder,
 } from './config';
 import { LemmaCard } from './lemma-card';
+import { LugatCard } from './lugat-card';
+import { parseLugatKey, readFrequency } from './lugat-payload';
 import { consistencyOf, isReadyCandidate, isShare, readConfidence } from './payload';
 import { TrLemmaCard } from './tr-lemma-card';
 import { WordFixCard } from './word-fix-card';
@@ -63,8 +66,8 @@ function LemmaTabs({ value, onChange }: LemmaTabsProps) {
 }
 
 interface OrderControlProps {
-  value: LemmaOrder;
-  onChange: (value: LemmaOrder) => void;
+  value: WaveOrder;
+  onChange: (value: WaveOrder) => void;
 }
 
 /** "Sıra: Dalga | Oluşturma": the wave and root order of the editorial work, or the creation order. */
@@ -163,6 +166,24 @@ function WaveBadge({ item }: { item: ReviewItem }) {
 /** Under a word meaning candidate in the list: the wave and the consistent or inconsistent mark of its dominant share. */
 function GlossMeta({ item }: { item: ReviewItem }) {
   if (isRootMappingReview(item)) return <MappingMeta item={item} />;
+  if (item.hedef_tablo === 'lugat_madde') {
+    const frequency = readFrequency(item);
+    const key = parseLugatKey(item.hedef_anahtar);
+    return (
+      <>
+        <span className="text-xs text-muted-foreground" data-testid="lugat-item-frequency">
+          {frequency === null
+            ? trLugat.list.noFrequency
+            : trLugat.list.line(formatNumber(frequency))}
+        </span>
+        {key ? (
+          <span className="text-xs text-muted-foreground" data-testid="lugat-item-source">
+            {trLugat.list.meaningSource(labelOf(trLugat.sources, key.source), key.anlamNo)}
+          </span>
+        ) : null}
+      </>
+    );
+  }
   if (item.hedef_tablo === 'quran_word_fix') {
     return (
       <span className="text-xs text-muted-foreground">
@@ -194,13 +215,15 @@ function GlossMeta({ item }: { item: ReviewItem }) {
 /**
  * Route `kuyruk/lemma` (Kelime anlamları §6, K-13): the word meaning drafts (`lemma_gloss` + `anlam_kisa`),
  * the lemma status (`lemma` + `status`), the root and lemma corrections (`quran_word_fix`, every field) and the
- * Turkish lemma root mappings (`lemma` + `kok_eslemesi`, A18.2) on four tabs; the filter is screen state. The first two are listed in wave order (`sira=dalga`, the default)
- * or in creation order; changing the order is a new query, so the cursor starts over (the API's cursors are
- * typed by order). The correction tab has no order (the API answers 400).
+ * Turkish lemma root mappings (`lemma` + `kok_eslemesi`, A18.2) and the Risale lügat (`lugat_madde` + `tanim_tr`,
+ * descending frequency, K-52) on five tabs; the filter is screen state. The first two are listed in wave order
+ * (`sira=dalga`, the default) or in creation order; changing the order is a new query, so the cursor starts over
+ * (the API's cursors are typed by order). The correction, mapping and lügat tabs have no order switch (the API
+ * answers 400 for the correction target; the lügat queue is always in frequency order).
  */
 export function LemmaQueue() {
   const [tab, setTab] = useState<LemmaTabId>('anlam');
-  const [order, setOrder] = useState<LemmaOrder>(DEFAULT_LEMMA_ORDER);
+  const [order, setOrder] = useState<WaveOrder>(DEFAULT_LEMMA_ORDER);
   const [approval, setApproval] = useState<ApprovalFilter>('hepsi');
   return (
     <QueueLayout
@@ -218,6 +241,8 @@ export function LemmaQueue() {
       renderDetail={(props) =>
         props.review.hedef_tablo === 'quran_word_fix' ? (
           <WordFixCard key={props.review.id} {...props} />
+        ) : props.review.hedef_tablo === 'lugat_madde' ? (
+          <LugatCard key={props.review.id} {...props} />
         ) : isRootMappingReview(props.review) ? (
           <TrLemmaCard key={props.review.id} {...props} />
         ) : (

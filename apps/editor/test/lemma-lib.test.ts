@@ -259,9 +259,10 @@ describe('tabs', () => {
     expect(lemma?.filters).toEqual(LEMMA_TAB_IDS.map((id) => LEMMA_FILTERS[id]));
   });
 
-  it('knows its four ids only, in this order', () => {
-    expect(LEMMA_TAB_IDS).toEqual(['anlam', 'durum', 'duzeltme', 'kok']);
+  it('knows its five ids only, in this order', () => {
+    expect(LEMMA_TAB_IDS).toEqual(['anlam', 'durum', 'duzeltme', 'kok', 'lugat']);
     expect(isLemmaTab('kok')).toBe(true);
+    expect(isLemmaTab('lugat')).toBe(true);
     expect(isLemmaTab('anlam')).toBe(true);
     expect(isLemmaTab('durum')).toBe(true);
     expect(isLemmaTab('duzeltme')).toBe(true);

@@ -583,6 +583,56 @@ function extractMealRule(line, out) {
 }
 
 /**
+ * extract/risale-cumle (K-52 item 8): the sentence splitter of a Risale paragraph. Ranges are
+ * Unicode code points and half open [start, end): in the text, ascending and disjoint; the
+ * optional input.ar ranges (marks t = "ar") follow the same rules.
+ * @param {Record<string, unknown>} line
+ * @param {string[]} out
+ */
+function risaleSentenceRule(line, out) {
+  const input = line['input'];
+  const expected = line['expected'];
+  if (!isRecord(input) || !isRecord(expected)) {
+    return;
+  }
+  const text = input['metin'];
+  if (typeof text !== 'string') {
+    return;
+  }
+  const length = [...text].length;
+  /**
+   * @param {unknown} ranges
+   * @param {string} path
+   */
+  const check = (ranges, path) => {
+    if (!Array.isArray(ranges)) {
+      return;
+    }
+    let previousEnd = 0;
+    ranges.forEach((range, index) => {
+      if (
+        !Array.isArray(range) ||
+        range.length !== 2 ||
+        !Number.isInteger(range[0]) ||
+        !Number.isInteger(range[1])
+      ) {
+        return; // the shape rule reports it
+      }
+      const [start, end] = /** @type {[number, number]} */ (range);
+      const where = `${path}[${index}]`;
+      if (start >= end || end > length) {
+        out.push(`${where}: must satisfy start < end <= ${length} (code points of input.metin)`);
+      } else if (start < previousEnd) {
+        out.push(`${where}: must start at or after the end of the previous range`);
+      }
+      previousEnd = Math.max(previousEnd, end);
+    });
+  };
+  check(input['ar'], 'input.ar');
+  check(expected['cumleler'], 'expected.cumleler');
+}
+
+/**
  * normalize/ar: the key has no leading, trailing or doubled U+0020.
  * @param {Record<string, unknown>} line
  * @param {string[]} out
@@ -713,6 +763,16 @@ const KINDS = new Map([
         hata: opt(boolean),
       }),
       extra: extractMealRule,
+    },
+  ],
+  // Risale sentence splitter (K-52 item 8): synthetic paragraph -> sentence ranges; only Python runs it.
+  [
+    'extract/risale-cumle.jsonl',
+    {
+      input: object({ metin: req(string), ar: opt(arrayOf(countPair)) }),
+      expected: object({ cumleler: req(arrayOf(countPair)) }),
+      extra: risaleSentenceRule,
+      escapes: true,
     },
   ],
   // FTS5 query builder (Arama 3). stems and sures are the fixed lookups the test injects.

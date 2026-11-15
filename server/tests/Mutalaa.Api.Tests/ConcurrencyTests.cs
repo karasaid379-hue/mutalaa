@@ -134,16 +134,16 @@ public class ConcurrencyTests(EditorialDatabase<ConcurrencyTests> fixture) : ICl
     }
 
     [Fact]
-    public async Task The_only_column_named_version_is_the_documented_lemma_gloss_text_column_not_a_concurrency_token()
+    public async Task The_only_columns_named_version_are_the_documented_lemma_gloss_and_lugat_madde_text_columns_not_concurrency_tokens()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
 
-        // Editoryal veritabani 5: lemma_gloss.version kelime anlami surumudur (text); eszamanlilik belirteci degildir.
+        // Editoryal veritabani 5: lemma_gloss.version kelime anlami, lugat_madde.version lugat maddesi surumudur (text); eszamanlilik belirteci degildir.
         IReadOnlyList<string> columns = await Db.ColumnAsync(
             "SELECT table_schema || '.' || table_name || '.' || column_name || ':' || data_type FROM information_schema.columns "
             + "WHERE table_schema IN ('icerik', 'kimlik') AND column_name = 'version' ORDER BY 1",
             ct);
 
-        Assert.Equal(["icerik.lemma_gloss.version:text"], columns);
+        Assert.Equal(["icerik.lemma_gloss.version:text", "icerik.lugat_madde.version:text"], columns);
     }
 }

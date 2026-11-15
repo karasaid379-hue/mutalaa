@@ -97,6 +97,24 @@ public sealed record LemmaGlossRow(
     string Version);
 
 /// <summary>
+/// lugat_madde satiri (K-52 madde 9, 10 ve 14): paketlenen sutunlar; AnlamNo ayni (kaynak, basliksoz) icin kaynak sirasiyla anlam sirasidir. <c>kaynaklar</c> (siklik, kitaplar, sozluk isabeti) ve anlam basvurusu BILEREK okunmaz:
+/// basvuru pakete ve maddeye yazilmaz. Version metindir ('1', onayda +1); Status 'onayli', 'aday' ya da 'red'.
+/// </summary>
+public sealed record LugatMaddeRow(
+    string SourceId,
+    string Basliksoz,
+    string BasliksozNorm,
+    int AnlamNo,
+    string? OsmanlicaYazim,
+    string? KokenDil,
+    string? TanimTr,
+    int Duzey,
+    string Status,
+    string Origin,
+    string Version,
+    string ContentHash);
+
+/// <summary>
 /// lemma satiri (lang = 'tr'; K-51 madde 9): Turkce lemma. Status onayli/aday/red metnidir; OnayYolu editor ya da otomatik (onayli satirda dolu);
 /// HasKanit: kanit sutunu bir jsonb nesnesi (icerigi okunmaz). Freq kulliyat sikligidir (pakette occurrences olur). Origin kaikki/editor/...
 /// </summary>
@@ -174,9 +192,10 @@ public sealed record XrefRow(
     string? EvidenceSourceId = null);
 
 /// <summary>
-/// P-09 kapsamindaki satir: quran_word_fix ve lemma_gloss durum sutunu (Status) tasir. Okuyucu yalniz bu iki tabloyu satir olarak getirir; Turkce lemma,
-/// tr_root_index ve tr_form snapshot'ta kendi listelerindedir (TrLemmas, TrRootIndex, TrForms) ve kapi girdisine GateInputBuilder'da donusur. tr_root_index ve
-/// tr_form icin LinkedLemmaApproved eski (listesiz) kurulum icindir. Id anahtari: quran_word_fix id, lemma_gloss lemma_id.
+/// P-09 kapsamindaki satir: quran_word_fix, lemma_gloss ve lugat_madde (Id "{source_id}:{anlam_no}:{basliksoz}") durum sutunu (Status) tasir. Okuyucu yalniz bu
+/// uc tabloyu satir olarak getirir; Turkce lemma, tr_root_index ve tr_form snapshot'ta kendi listelerindedir (TrLemmas, TrRootIndex, TrForms) ve kapi girdisine
+/// GateInputBuilder'da donusur. tr_root_index ve tr_form icin LinkedLemmaApproved eski (listesiz) kurulum icindir. Id anahtari: quran_word_fix id,
+/// lemma_gloss lemma_id, lugat_madde "{source_id}:{anlam_no}:{basliksoz}".
 /// </summary>
 public sealed record LexicalRow(LexicalKind Kind, string Id, string? Status, bool LinkedLemmaApproved);
 
@@ -214,6 +233,9 @@ public sealed class EditorialSnapshot
 
     /// <summary>Arapca sozluk lemmalarina bagli kelime anlamlari (butun durumlar; kapi derleme turune gore secer).</summary>
     public IReadOnlyList<LemmaGlossRow> LemmaGlosses { get; init; } = [];
+
+    /// <summary>Butun lugat maddeleri (durum ne olursa olsun; kapi derleme turune gore secer). basliksoz bayt sirasinda (source_id, basliksoz, anlam_no).</summary>
+    public IReadOnlyList<LugatMaddeRow> LugatMaddeler { get; init; } = [];
 
     /// <summary>Butun quran_word_fix satirlari (durum ne olursa olsun; kapi yalniz onayliyi uygular).</summary>
     public IReadOnlyList<QuranWordFixRow> WordFixes { get; init; } = [];

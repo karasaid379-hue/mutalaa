@@ -601,6 +601,125 @@ namespace Mutalaa.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Mutalaa.Domain.Content.LugatMadde", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<short>("AnlamNo")
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)1)
+                        .HasColumnName("anlam_no");
+
+                    b.Property<int?>("ArKokId")
+                        .HasColumnType("integer")
+                        .HasColumnName("ar_kok_id");
+
+                    b.Property<string>("Basliksoz")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("basliksoz");
+
+                    b.Property<string>("BasliksozNorm")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("basliksoz_norm");
+
+                    b.Property<string>("ContentHash")
+                        .IsRequired()
+                        .HasColumnType("char(64)")
+                        .HasColumnName("content_hash");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("DataVersion")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("data_version");
+
+                    b.Property<short>("Duzey")
+                        .HasColumnType("smallint")
+                        .HasColumnName("duzey");
+
+                    b.Property<string>("Kaynaklar")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasDefaultValue("{}")
+                        .HasColumnName("kaynaklar");
+
+                    b.Property<string>("KokenDil")
+                        .HasColumnType("text")
+                        .HasColumnName("koken_dil");
+
+                    b.Property<string>("Origin")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("origin");
+
+                    b.Property<string>("OsmanlicaYazim")
+                        .HasColumnType("text")
+                        .HasColumnName("osmanlica_yazim");
+
+                    b.Property<string>("SourceId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("source_id");
+
+                    b.Property<XrefStatus>("Status")
+                        .HasColumnType("icerik.xref_status")
+                        .HasDefaultValue(XrefStatus.Aday)
+                        .HasColumnName("status");
+
+                    b.Property<string>("TanimTr")
+                        .HasColumnType("text")
+                        .HasColumnName("tanim_tr");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasDefaultValue("1")
+                        .HasColumnName("version");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("lugat_madde_pkey");
+
+                    b.HasAlternateKey("SourceId", "Basliksoz", "AnlamNo")
+                        .HasName("lugat_madde_source_id_basliksoz_anlam_no_key");
+
+                    b.ToTable("lugat_madde", "icerik", t =>
+                        {
+                            t.HasCheckConstraint("lugat_madde_anlam_no_check", "anlam_no >= 1");
+
+                            t.HasCheckConstraint("lugat_madde_content_hash_check", "content_hash ~ '^[0-9a-f]{64}$'");
+
+                            t.HasCheckConstraint("lugat_madde_duzey_check", "duzey BETWEEN 1 AND 4");
+
+                            t.HasCheckConstraint("lugat_madde_onayli_tanim_check", "status <> 'onayli' OR (tanim_tr IS NOT NULL AND btrim(tanim_tr) <> '')");
+
+                            t.HasCheckConstraint("lugat_madde_origin_check", "origin IN ('hat','editor','kaynak')");
+                        });
+                });
+
             modelBuilder.Entity("Mutalaa.Domain.Content.PageMap", b =>
                 {
                     b.Property<long>("Id")
@@ -1825,7 +1944,7 @@ namespace Mutalaa.Infrastructure.Migrations
 
                     b.ToTable("review", "icerik", t =>
                         {
-                            t.HasCheckConstraint("review_hedef_tablo_check", "hedef_tablo IN ('source','unit','quran_word_fix','lemma','lemma_gloss','root','tr_root_index','tr_form','surah_alias','xref','page_map','ayah_box','audio_timing')");
+                            t.HasCheckConstraint("review_hedef_tablo_check", "hedef_tablo IN ('source','unit','quran_word_fix','lemma','lemma_gloss','root','tr_root_index','tr_form','surah_alias','xref','page_map','ayah_box','audio_timing','lugat_madde')");
 
                             t.HasCheckConstraint("review_yz_kaydi_check", "(yz_modeli IS NULL AND yz_kaydi IS NULL) OR (yz_modeli IS NOT NULL AND yz_kaydi IS NOT NULL AND jsonb_typeof(yz_kaydi) = 'object' AND yz_kaydi ?& ARRAY['prompt_id','prompt_sha256','input_sha256'] AND coalesce(yz_kaydi->>'prompt_sha256','') ~ '^[0-9a-f]{64}$' AND coalesce(yz_kaydi->>'input_sha256','') ~ '^[0-9a-f]{64}$')");
                         });
@@ -2029,6 +2148,22 @@ namespace Mutalaa.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("lemma_gloss_lemma_id_fkey");
+                });
+
+            modelBuilder.Entity("Mutalaa.Domain.Content.LugatMadde", b =>
+                {
+                    b.HasOne("Mutalaa.Domain.Content.Root", null)
+                        .WithMany()
+                        .HasForeignKey("ArKokId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("lugat_madde_ar_kok_id_fkey");
+
+                    b.HasOne("Mutalaa.Domain.Content.Source", null)
+                        .WithMany()
+                        .HasForeignKey("SourceId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("lugat_madde_source_id_fkey");
                 });
 
             modelBuilder.Entity("Mutalaa.Domain.Content.PageMap", b =>

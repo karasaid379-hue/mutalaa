@@ -1,0 +1,1846 @@
+{
+  "surum": 1,
+  "kitaplar": [
+    {
+      "slug": "sozler",
+      "baslik": "Sözler",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "01 Sözler",
+        "dosyalar": [
+          "Sözler-01-Birinci Söz.txt",
+          "Sözler-02-İkinci Söz.txt",
+          "Sözler-03-Üçüncü Söz.txt",
+          "Sözler-04-Dördüncü Söz.txt",
+          "Sözler-05-Beşinci Söz.txt",
+          "Sözler-06-Altıncı Söz.txt",
+          "Sözler-07-Yedinci Söz.txt",
+          "Sözler-08-Sekizinci Söz.txt",
+          "Sözler-09-Dokuzuncu Söz.txt",
+          "Sözler-10-Onuncu Söz.txt",
+          "Sözler-11-On Birinci Söz.txt",
+          "Sözler-12-On İkinci Söz.txt",
+          "Sözler-13-On Üçüncü Söz.txt",
+          "Sözler-14-On Dördüncü Söz.txt",
+          "Sözler-15-On Beşinci Söz.txt",
+          "Sözler-16-On Altıncı Söz.txt",
+          "Sözler-17-On Yedinci Söz.txt",
+          "Sözler-18-On Sekizinci Söz.txt",
+          "Sözler-19-On Dokuzuncu Söz.txt",
+          "Sözler-20-Yirminci Söz.txt",
+          "Sözler-21-Yirmi Birinci Söz.txt",
+          "Sözler-22-Yirmi İkinci Söz.txt",
+          "Sözler-23-Yirmi Üçüncü Söz.txt",
+          "Sözler-24-Yirmi Dördüncü Söz.txt",
+          "Sözler-25-Yirmi Beşinci Söz.txt",
+          "Sözler-26-Yirmi Altıncı Söz.txt",
+          "Sözler-27-Yirmi Yedinci Söz.txt",
+          "Sözler-28-Yirmi Sekizinci Söz.txt",
+          "Sözler-29-Yirmi Dokuzuncu Söz.txt",
+          "Sözler-30-Otuzuncu Söz.txt",
+          "Sözler-31-Otuz Birinci Söz.txt",
+          "Sözler-32-Otuz İkinci Söz.txt",
+          "Sözler-33-Otuz Üçüncü Söz.txt",
+          "Sözler-34-Lemaat (Sözler).txt",
+          "Sözler-35-Konferans (Sözler).txt",
+          "Sözler-36-Fihrist (Sözler).txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr",
+        "uid": "sozler",
+        "ad": "Sözler",
+        "cilt": 1
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "mektubat",
+      "baslik": "Mektubat",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "02 Mektubat",
+        "dosyalar": [
+          "Mektubat-01-Birinci Mektup.txt",
+          "Mektubat-02-İkinci Mektup.txt",
+          "Mektubat-03-Üçüncü Mektup.txt",
+          "Mektubat-04-Dördüncü Mektup.txt",
+          "Mektubat-05-Beşinci Mektup.txt",
+          "Mektubat-06-Altıncı Mektup.txt",
+          "Mektubat-07-Yedinci Mektup.txt",
+          "Mektubat-08-Sekizinci Mektup.txt",
+          "Mektubat-09-Dokuzuncu Mektup.txt",
+          "Mektubat-10-Onuncu Mektup.txt",
+          "Mektubat-11-On Birinci Mektup.txt",
+          "Mektubat-12-On İkinci Mektup.txt",
+          "Mektubat-13-On Üçüncü Mektup.txt",
+          "Mektubat-14-On Dördüncü Mektup.txt",
+          "Mektubat-15-On Beşinci Mektup.txt",
+          "Mektubat-16-On Altıncı Mektup.txt",
+          "Mektubat-17-On Yedinci Mektup.txt",
+          "Mektubat-18-On Sekizinci Mektup.txt",
+          "Mektubat-19-On Dokuzuncu Mektup.txt",
+          "Mektubat-20-Yirminci Mektup.txt",
+          "Mektubat-21-Yirmi Birinci Mektup.txt",
+          "Mektubat-22-Yirmi İkinci Mektup.txt",
+          "Mektubat-23-Yirmi Üçüncü Mektup.txt",
+          "Mektubat-24-Yirmi Dördüncü Mektup.txt",
+          "Mektubat-25-Yirmi Beşinci Mektup.txt",
+          "Mektubat-26-Yirmi Altıncı Mektup.txt",
+          "Mektubat-27-Yirmi Yedinci Mektup.txt",
+          "Mektubat-28-Yirmi Sekizinci Mektup.txt",
+          "Mektubat-29-Yirmi Dokuzuncu Mektup.txt",
+          "Mektubat-30-Otuzuncu Mektup.txt",
+          "Mektubat-31-Otuz Birinci Mektup.txt",
+          "Mektubat-32-Otuz İkinci Mektup.txt",
+          "Mektubat-33-Otuz Üçüncü Mektup.txt",
+          "Mektubat-34-İşarat-ı Gaybiye Hakkında Bir Takriz.txt",
+          "Mektubat-35-Hakikat Çekirdekleri.txt",
+          "Mektubat-36-Gönüller Fatihi Büyük Üstada.txt",
+          "Mektubat-37-Fihriste-i Mektubat.txt",
+          "Mektubat-38-Hakikat Işıkları.txt",
+          "Mektubat-39-Dua (Mektubat).txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr",
+        "uid": "mektubat",
+        "ad": "Mektubat",
+        "cilt": 2
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "lemalar",
+      "baslik": "Lem'alar",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "03 Lem'alar",
+        "dosyalar": [
+          "Lem'alar-01-Birinci Lem'a.txt",
+          "Lem'alar-02-İkinci Lem'a.txt",
+          "Lem'alar-03-Üçüncü Lem'a.txt",
+          "Lem'alar-04-Dördüncü Lem'a.txt",
+          "Lem'alar-05-Beşinci Lem'a.txt",
+          "Lem'alar-06-Altıncı Lem'a.txt",
+          "Lem'alar-07-Yedinci Lem'a.txt",
+          "Lem'alar-08-Sekizinci Lem'a.txt",
+          "Lem'alar-09-Dokuzuncu Lem'a.txt",
+          "Lem'alar-10-Onuncu Lem'a.txt",
+          "Lem'alar-11-On Birinci Lem'a.txt",
+          "Lem'alar-12-On İkinci Lem'a.txt",
+          "Lem'alar-13-On Üçüncü Lem'a.txt",
+          "Lem'alar-14-On Dördüncü Lem'a.txt",
+          "Lem'alar-15-On Beşinci Lem'a.txt",
+          "Lem'alar-16-On Altıncı Lem'a.txt",
+          "Lem'alar-17-On Yedinci Lem'a.txt",
+          "Lem'alar-18-On Sekizinci Lem'a.txt",
+          "Lem'alar-19-On Dokuzuncu Lem'a.txt",
+          "Lem'alar-20-Yirminci Lem'a.txt",
+          "Lem'alar-21-Yirmi Birinci Lem'a.txt",
+          "Lem'alar-22-Yirmi İkinci Lem'a.txt",
+          "Lem'alar-23-Yirmi Üçüncü Lem'a.txt",
+          "Lem'alar-24-Yirmi Dördüncü Lem'a.txt",
+          "Lem'alar-25-Yirmi Beşinci Lem'a.txt",
+          "Lem'alar-26-Yirmi Altıncı Lem'a.txt",
+          "Lem'alar-27-Yirmi Yedinci Lem'a.txt",
+          "Lem'alar-28-Yirmi Sekizinci Lem'a.txt",
+          "Lem'alar-29-Yirmi Dokuzuncu Lem'a.txt",
+          "Lem'alar-30-Otuzuncu Lem'a.txt",
+          "Lem'alar-31-Otuz Birinci Lem'a.txt",
+          "Lem'alar-32-Otuz İkinci Lem'a.txt",
+          "Lem'alar-33-Otuz Üçüncü Lem'a.txt",
+          "Lem'alar-34-Münâcat (Lem'alar).txt",
+          "Lem'alar-35-Fihrist (Lem'alar).txt",
+          "Lem'alar-36-Dua (Lem'alar).txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr",
+        "uid": "lemalar",
+        "ad": "Lem'alar",
+        "cilt": 3
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "sualar",
+      "baslik": "Şualar",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "04 Şuâlar",
+        "dosyalar": [
+          "Şuâlar-01-Birinci Şuâ.txt",
+          "Şuâlar-02-İkinci Şuâ.txt",
+          "Şuâlar-03-Üçüncü Şuâ.txt",
+          "Şuâlar-04-Dördüncü Şuâ.txt",
+          "Şuâlar-05-Beşinci Şuâ.txt",
+          "Şuâlar-06-Altıncı Şuâ.txt",
+          "Şuâlar-07-Yedinci Şuâ.txt",
+          "Şuâlar-08-Sekizinci Şuâ.txt",
+          "Şuâlar-09-Dokuzuncu Şuâ.txt",
+          "Şuâlar-10-On Birinci Şuâ.txt",
+          "Şuâlar-11-On İkinci Şuâ.txt",
+          "Şuâlar-12-On Üçüncü Şuâ.txt",
+          "Şuâlar-13-On Dördüncü Şuâ.txt",
+          "Şuâlar-14-On Beşinci Şuâ.txt",
+          "Şuâlar-15-Yirmi Dokuzuncu Lem'a'dan İkinci Bab.txt",
+          "Şuâlar-16-Eddâî.txt",
+          "Şuâlar-17-Dua (Şuâlar).txt",
+          "Şuâlar-18-İçindekiler (Şuâlar).txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr",
+        "uid": "sualar",
+        "ad": "Şualar",
+        "cilt": 4
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "tarihce-i-hayat",
+      "baslik": "Tarihçe-i Hayat",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "05 Tarihçe-i Hayat",
+        "dosyalar": [
+          "Tarihçe-i Hayat-01-Ön söz.txt",
+          "Tarihçe-i Hayat-02-Giriş.txt",
+          "Tarihçe-i Hayat-03-İlk Hayatı.txt",
+          "Tarihçe-i Hayat-04-Barla Hayatı.txt",
+          "Tarihçe-i Hayat-05-Eskişehir Hayatı.txt",
+          "Tarihçe-i Hayat-06-Kastamonu Hayatı.txt",
+          "Tarihçe-i Hayat-07-Denizli Hayatı.txt",
+          "Tarihçe-i Hayat-08-Emirdağ Hayatı.txt",
+          "Tarihçe-i Hayat-09-Afyon Hayatı.txt",
+          "Tarihçe-i Hayat-10-Isparta Hayatı.txt",
+          "Tarihçe-i Hayat-11-Hariç Memleketler.txt",
+          "Tarihçe-i Hayat-12-Bedîüzzaman ve Risale-i Nur.txt",
+          "Tarihçe-i Hayat-13-Dua (Tarihçe-i Hayatı).txt",
+          "Tarihçe-i Hayat-14-İçindekiler.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr",
+        "uid": "tarihce",
+        "ad": "Tarihçe-i Hayat",
+        "cilt": 5
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "mesnevi-i-nuriye",
+      "baslik": "Mesnevi-i Nuriye",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "06 Mesnevî-i Nuriye",
+        "dosyalar": [
+          "Mesnevî-i Nuriye-01-İ'tizar.txt",
+          "Mesnevî-i Nuriye-02-Mukaddime.txt",
+          "Mesnevî-i Nuriye-03-Lem'alar Risalesi.txt",
+          "Mesnevî-i Nuriye-04-Reşhalar.txt",
+          "Mesnevî-i Nuriye-05-Lâsiyyemalar.txt",
+          "Mesnevî-i Nuriye-06-Katre.txt",
+          "Mesnevî-i Nuriye-07-Hubab.txt",
+          "Mesnevî-i Nuriye-08-Habbe.txt",
+          "Mesnevî-i Nuriye-09-Zühre.txt",
+          "Mesnevî-i Nuriye-10-Zerre.txt",
+          "Mesnevî-i Nuriye-11-Şemme Risalesi.txt",
+          "Mesnevî-i Nuriye-12-Onuncu Risale.txt",
+          "Mesnevî-i Nuriye-13-Şule.txt",
+          "Mesnevî-i Nuriye-14-Nokta.txt",
+          "Mesnevî-i Nuriye-15-Münderecat Hakkında.txt",
+          "Mesnevî-i Nuriye-16-Fihrist (Mesnevî).txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr",
+        "uid": "mesnevi",
+        "ad": "Mesnevi-i Nuriye",
+        "cilt": 6
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "isaratul-icaz",
+      "baslik": "İşârâtü'l-İ'caz",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "07 İşaratü'l-i'caz",
+        "dosyalar": [
+          "İşaratü'l-i'caz-01-Tenbih.txt",
+          "İşaratü'l-i'caz-02-İfadetü'l-Meram.txt",
+          "İşaratü'l-i'caz-03-Kur'an'ın Tarifi.txt",
+          "İşaratü'l-i'caz-04-Fatiha Suresi.txt",
+          "İşaratü'l-i'caz-05-Bakara Suresi 1- 2- 3. âyetler.txt",
+          "İşaratü'l-i'caz-06-Bakara Suresi 4-5. âyetler.txt",
+          "İşaratü'l-i'caz-07-Bakara Suresi 6. âyet.txt",
+          "İşaratü'l-i'caz-08-Bakara Suresi 7. âyet.txt",
+          "İşaratü'l-i'caz-09-Bakara Suresi 8. âyet.txt",
+          "İşaratü'l-i'caz-10-Bakara Suresi 9-10. âyetler.txt",
+          "İşaratü'l-i'caz-11-Bakara Suresi 11-12. âyetler.txt",
+          "İşaratü'l-i'caz-12-Bakara Suresi 13. âyet.txt",
+          "İşaratü'l-i'caz-13-Bakara Suresi 14-15. âyetler.txt",
+          "İşaratü'l-i'caz-14-Bakara Suresi 16. âyet.txt",
+          "İşaratü'l-i'caz-15-Bakara Suresi 17-18-19-20. âyetler.txt",
+          "İşaratü'l-i'caz-16-Bakara Suresi 21-22. âyetler.txt",
+          "İşaratü'l-i'caz-17-Bakara Suresi 23-24. âyetler.txt",
+          "İşaratü'l-i'caz-18-Bakara Suresi 25. âyet.txt",
+          "İşaratü'l-i'caz-19-Bakara Suresi 26-27. âyetler.txt",
+          "İşaratü'l-i'caz-20-Bakara Suresi 28. âyet.txt",
+          "İşaratü'l-i'caz-21-Bakara Suresi 29. âyet.txt",
+          "İşaratü'l-i'caz-22-Bakara Suresi 30. âyet.txt",
+          "İşaratü'l-i'caz-23-Bakara Suresi 31-32-33. âyetler.txt",
+          "İşaratü'l-i'caz-24-Ecnebi Feylesofların Kur'an Hakkındaki Beyanatları.txt",
+          "İşaratü'l-i'caz-25-Mehmed Kayalar'ın Bir Müdafaası.txt",
+          "İşaratü'l-i'caz-26-Dua (İşaratü'l-İ'caz).txt",
+          "İşaratü'l-i'caz-27-Fihrist (İşaratü'l-İ'caz).txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr",
+        "uid": "isarat",
+        "ad": "İşârâtü'l-İ'caz",
+        "cilt": 7
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "sikke-i-tasdik-i-gaybi",
+      "baslik": "Sikke-i Tasdik-i Gaybî",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "08 Sikke-i Tasdik-i Gaybî",
+        "dosyalar": [
+          "Sikke-i Tasdik-i Gaybî-01-Parlak Fıkralar ve Güzel Mektuplar 1.txt",
+          "Sikke-i Tasdik-i Gaybî-02-Birinci Şuâ.txt",
+          "Sikke-i Tasdik-i Gaybî-03-Sekizinci Şuâ.txt",
+          "Sikke-i Tasdik-i Gaybî-04-On Sekizinci Lem'a.txt",
+          "Sikke-i Tasdik-i Gaybî-05-Yirmi Sekizinci Lem'a.txt",
+          "Sikke-i Tasdik-i Gaybî-06-Sekizinci Lem'a.txt",
+          "Sikke-i Tasdik-i Gaybî-07-Parlak Fıkralar ve Güzel Mektuplar 2.txt",
+          "Sikke-i Tasdik-i Gaybî-08-Dua (Sikke-i Tasdik-i Gaybî).txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr",
+        "uid": "sikke",
+        "ad": "Sikke-i Tasdik-i Gaybî",
+        "cilt": 8
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "barla-lahikasi",
+      "baslik": "Barla Lâhikası",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "09 Barla Lâhikası",
+        "dosyalar": [
+          "Barla Lâhikası-01-Barla Lâhikası - Takdim.txt",
+          "Barla Lâhikası-02-Barla Lâhikası - Yedinci Risale.txt",
+          "Barla Lâhikası-03-Barla Lâhikası s.21-39.txt",
+          "Barla Lâhikası-04-Barla Lâhikası s.40-58.txt",
+          "Barla Lâhikası-05-Barla Lâhikası s.59-80.txt",
+          "Barla Lâhikası-06-Barla Lâhikası s.80-102.txt",
+          "Barla Lâhikası-07-Barla Lâhikası s.103-121.txt",
+          "Barla Lâhikası-08-Barla Lâhikası s.121-146.txt",
+          "Barla Lâhikası-09-Barla Lâhikası s.146-159.txt",
+          "Barla Lâhikası-10-Barla Lâhikası s.160-180.txt",
+          "Barla Lâhikası-11-Barla Lâhikası s.181-201.txt",
+          "Barla Lâhikası-12-Barla Lâhikası s.202-221.txt",
+          "Barla Lâhikası-13-Barla Lâhikası s.221-240.txt",
+          "Barla Lâhikası-14-Barla Lâhikası s.241-261.txt",
+          "Barla Lâhikası-15-Barla Lâhikası s.262-280.txt",
+          "Barla Lâhikası-16-Barla Lâhikası s.280-299.txt",
+          "Barla Lâhikası-17-Barla Lâhikası s.300-321.txt",
+          "Barla Lâhikası-18-Barla Lâhikası s.321-340.txt",
+          "Barla Lâhikası-19-Barla Lâhikası s.340-362.txt",
+          "Barla Lâhikası-20-Barla Lâhikası s.363-392.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr",
+        "uid": "barla",
+        "ad": "Barla Lâhikası",
+        "cilt": 9
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "kastamonu-lahikasi",
+      "baslik": "Kastamonu Lâhikası",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "10 Kastamonu Lâhikası",
+        "dosyalar": [
+          "Kastamonu Lâhikası-01-Kastamonu Lâhikası - Takdim.txt",
+          "Kastamonu Lâhikası-02-Kastamonu Lâhikası s.10-30.txt",
+          "Kastamonu Lâhikası-03-Kastamonu Lâhikası s.30-51.txt",
+          "Kastamonu Lâhikası-04-Kastamonu Lâhikası s.52-69.txt",
+          "Kastamonu Lâhikası-05-Kastamonu Lâhikası s.70-91.txt",
+          "Kastamonu Lâhikası-06-Kastamonu Lâhikası s.91-109.txt",
+          "Kastamonu Lâhikası-07-Kastamonu Lâhikası s.110-129.txt",
+          "Kastamonu Lâhikası-08-Kastamonu Lâhikası s.130-149.txt",
+          "Kastamonu Lâhikası-09-Kastamonu Lâhikası s.150-166 (Lemaat'tan).txt",
+          "Kastamonu Lâhikası-10-Kastamonu Lâhikası s.167-189.txt",
+          "Kastamonu Lâhikası-11-Kastamonu Lâhikası s.190-210.txt",
+          "Kastamonu Lâhikası-12-Kastamonu Lâhikası s.211-230.txt",
+          "Kastamonu Lâhikası-13-Kastamonu Lâhikası s.231-255.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr",
+        "uid": "kastamonu",
+        "ad": "Kastamonu Lâhikası",
+        "cilt": 10
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "emirdag-lahikasi-1",
+      "baslik": "Emirdağ Lâhikası 1",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "11 Emirdağ Lâhikası 1",
+        "dosyalar": [
+          "Emirdağ Lâhikası 1-01-Emirdağ Lâhikası - I - Takdim.txt",
+          "Emirdağ Lâhikası 1-02-Emirdağ Lâhikası - I s.10-31.txt",
+          "Emirdağ Lâhikası 1-03-Emirdağ Lâhikası - I s.31-50.txt",
+          "Emirdağ Lâhikası 1-04-Emirdağ Lâhikası - I s.50-69.txt",
+          "Emirdağ Lâhikası 1-05-Emirdağ Lâhikası - I s.70-90.txt",
+          "Emirdağ Lâhikası 1-06-Emirdağ Lâhikası - I s.90-110.txt",
+          "Emirdağ Lâhikası 1-07-Emirdağ Lâhikası - I s.110-130.txt",
+          "Emirdağ Lâhikası 1-08-Emirdağ Lâhikası - I s.131-150.txt",
+          "Emirdağ Lâhikası 1-09-Emirdağ Lâhikası - I s.150-170.txt",
+          "Emirdağ Lâhikası 1-10-Emirdağ Lâhikası - I s.170-190.txt",
+          "Emirdağ Lâhikası 1-11-Emirdağ Lâhikası - I s.190-211.txt",
+          "Emirdağ Lâhikası 1-12-Emirdağ Lâhikası - I s.212-230.txt",
+          "Emirdağ Lâhikası 1-13-Emirdağ Lâhikası - I s.230-251.txt",
+          "Emirdağ Lâhikası 1-14-Emirdağ Lâhikası - I s.251-270.txt",
+          "Emirdağ Lâhikası 1-15-Emirdağ Lâhikası - I s.271-288.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr",
+        "uid": "emirdag1",
+        "ad": "Emirdağ Lâhikası 1",
+        "cilt": 11
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "emirdag-lahikasi-2",
+      "baslik": "Emirdağ Lâhikası 2",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "12 Emirdağ Lâhikası 2",
+        "dosyalar": [
+          "Emirdağ Lâhikası 2-01-Emirdağ Lâhikası - I.txt",
+          "Emirdağ Lâhikası 2-02-Emirdağ Lâhikası - II s.6-26.txt",
+          "Emirdağ Lâhikası 2-03-Emirdağ Lâhikası - II s.27-50.txt",
+          "Emirdağ Lâhikası 2-04-Emirdağ Lâhikası - II s.51-70.txt",
+          "Emirdağ Lâhikası 2-05-Emirdağ Lâhikası - II s.70-90.txt",
+          "Emirdağ Lâhikası 2-06-Emirdağ Lâhikası - II s.91-109.txt",
+          "Emirdağ Lâhikası 2-07-Emirdağ Lâhikası - II s.110-128.txt",
+          "Emirdağ Lâhikası 2-08-Emirdağ Lâhikası - II s.129-148.txt",
+          "Emirdağ Lâhikası 2-09-Emirdağ Lâhikası - II s.149-170.txt",
+          "Emirdağ Lâhikası 2-10-Emirdağ Lâhikası - II s.171-189.txt",
+          "Emirdağ Lâhikası 2-11-Emirdağ Lâhikası - II s.190-210.txt",
+          "Emirdağ Lâhikası 2-12-Emirdağ Lâhikası - II s.210-229.txt",
+          "Emirdağ Lâhikası 2-13-Emirdağ Lâhikası - II s.230-247.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr",
+        "uid": "emirdag2",
+        "ad": "Emirdağ Lâhikası 2",
+        "cilt": 12
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "asa-yi-musa",
+      "baslik": "Asâ-yı Musa",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "13 Asâ-yı Musa",
+        "dosyalar": [
+          "Asâ-yı Musa-01-Mukaddimat.txt",
+          "Asâ-yı Musa-02-Asâ-yı Musa'dan Birinci Kısım.txt",
+          "Asâ-yı Musa-03-Birinci Mesele.txt",
+          "Asâ-yı Musa-04-İkinci Mesele.txt",
+          "Asâ-yı Musa-05-Üçüncü Mesele.txt",
+          "Asâ-yı Musa-06-Dördüncü Mesele.txt",
+          "Asâ-yı Musa-07-Beşinci Mesele.txt",
+          "Asâ-yı Musa-08-Altıncı Mesele.txt",
+          "Asâ-yı Musa-09-Yedinci Mesele.txt",
+          "Asâ-yı Musa-10-Sekizinci Mesele.txt",
+          "Asâ-yı Musa-11-Dokuzuncu Mesele.txt",
+          "Asâ-yı Musa-12-Onuncu Mesele.txt",
+          "Asâ-yı Musa-13-On Birinci Mesele.txt",
+          "Asâ-yı Musa-14-Asâ-yı Musa'dan İkinci Kısım.txt",
+          "Asâ-yı Musa-15-Birinci Hüccet-i İmaniye.txt",
+          "Asâ-yı Musa-16-İkinci Hüccet-i İmaniye.txt",
+          "Asâ-yı Musa-17-Üçüncü Hüccet-i İmaniye.txt",
+          "Asâ-yı Musa-18-Dördüncü Hüccet-i İmaniye.txt",
+          "Asâ-yı Musa-19-Beşinci Hüccet-i İmaniye.txt",
+          "Asâ-yı Musa-20-Altıncı Hüccet-i İmaniye.txt",
+          "Asâ-yı Musa-21-Yedinci Hüccet-i İmaniye.txt",
+          "Asâ-yı Musa-22-Sekizinci Hüccet-i İmaniye.txt",
+          "Asâ-yı Musa-23-Dokuzuncu Hüccet-i İmaniye.txt",
+          "Asâ-yı Musa-24-Onuncu Hüccet-i İmaniye.txt",
+          "Asâ-yı Musa-25-On Birinci Hüccet-i İmaniye.txt",
+          "Asâ-yı Musa-26-Fihrist (Asâ-yı Musa).txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr",
+        "uid": "asamusa",
+        "ad": "Asâ-yı Musa",
+        "cilt": 13
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "muhakemat",
+      "baslik": "Muhakemat",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "15 Muhakemat",
+        "dosyalar": [
+          "Muhakemat-01-Giriş.txt",
+          "Muhakemat-02-Birinci Makale.txt",
+          "Muhakemat-03-İkinci Makale.txt",
+          "Muhakemat-04-Üçüncü Makale.txt",
+          "Muhakemat-05-Fihrist (Muhakemat).txt",
+          "Muhakemat-06-Takriz.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr",
+        "uid": "muhakemat",
+        "ad": "Muhakemat",
+        "cilt": 14
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "divan-i-harb-i-orfi",
+      "baslik": "Divan-ı Harb-i Örfî",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "14 Küçük Kitaplar",
+        "dosyalar": [
+          "Di̇van-i Harb-i̇ Örfî.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "dvan",
+        "ad": "Divan-ı Harb-i Örfî",
+        "cilt": 15
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "genclik-rehberi",
+      "baslik": "Gençlik Rehberi",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "14 Küçük Kitaplar",
+        "dosyalar": [
+          "Gençli̇k Rehberi̇.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "gencreh",
+        "ad": "Gençlik Rehberi",
+        "cilt": 16
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "hanimlar-rehberi",
+      "baslik": "Hanımlar Rehberi",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "14 Küçük Kitaplar",
+        "dosyalar": [
+          "Hanimlar Rehberi̇.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "hanimreh",
+        "ad": "Hanımlar Rehberi",
+        "cilt": 17
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "hutbe-i-samiye",
+      "baslik": "Hutbe-i Şamiye",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "14 Küçük Kitaplar",
+        "dosyalar": [
+          "Hutbe-i̇ Şami̇ye.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "hutbe",
+        "ad": "Hutbe-i Şamiye",
+        "cilt": 18
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "isarat",
+      "baslik": "İşarat",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "14 Küçük Kitaplar",
+        "dosyalar": [
+          "İşarat.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "sunuhat",
+        "ad": "Sünuhat Tuluat İşârat",
+        "cilt": 19,
+        "bolunme": {
+          "son_sayfa": 111,
+          "parcalar": [
+            {
+              "slug": "sunuhat",
+              "baslangic_sayfasi": 5
+            },
+            {
+              "slug": "tuluat",
+              "baslangic_sayfasi": 71
+            },
+            {
+              "slug": "isarat",
+              "baslangic_sayfasi": 95
+            }
+          ]
+        }
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "konferans",
+      "baslik": "Konferans",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "14 Küçük Kitaplar",
+        "dosyalar": [
+          "Konferans.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "konferans",
+        "ad": "Konferans",
+        "cilt": 20
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "munazarat",
+      "baslik": "Münâzarat",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "14 Küçük Kitaplar",
+        "dosyalar": [
+          "Münazarat.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "munazarat",
+        "ad": "Münâzarat",
+        "cilt": 21
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "nur-cesmesi",
+      "baslik": "Nur Çeşmesi",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "14 Küçük Kitaplar",
+        "dosyalar": [
+          "Nur Çeşmesi̇.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "nurcesme",
+        "ad": "Nur Çeşmesi",
+        "cilt": 22
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "nurun-ilk-kapisi",
+      "baslik": "Nur'un İlk Kapısı",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "14 Küçük Kitaplar",
+        "dosyalar": [
+          "Nur'un İlk Kapısı.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "nurilkka",
+        "ad": "Nur'un İlk Kapısı",
+        "cilt": 23
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "sunuhat",
+      "baslik": "Sünuhat",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "14 Küçük Kitaplar",
+        "dosyalar": [
+          "Sünuhat.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "sunuhat",
+        "ad": "Sünuhat Tuluat İşârat",
+        "cilt": 19,
+        "bolunme": {
+          "son_sayfa": 111,
+          "parcalar": [
+            {
+              "slug": "sunuhat",
+              "baslangic_sayfasi": 5
+            },
+            {
+              "slug": "tuluat",
+              "baslangic_sayfasi": 71
+            },
+            {
+              "slug": "isarat",
+              "baslangic_sayfasi": 95
+            }
+          ]
+        }
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "tuluat",
+      "baslik": "Tulûat",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "diyanet",
+      "diyanet": {
+        "klasor": "14 Küçük Kitaplar",
+        "dosyalar": [
+          "Tulûat.txt"
+        ]
+      },
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "sunuhat",
+        "ad": "Sünuhat Tuluat İşârat",
+        "cilt": 19,
+        "bolunme": {
+          "son_sayfa": 111,
+          "parcalar": [
+            {
+              "slug": "sunuhat",
+              "baslangic_sayfasi": 5
+            },
+            {
+              "slug": "tuluat",
+              "baslangic_sayfasi": 71
+            },
+            {
+              "slug": "isarat",
+              "baslangic_sayfasi": 95
+            }
+          ]
+        }
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "iman-ve-kufur-muvazeneleri",
+      "baslik": "İman ve Küfür Muvazeneleri",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr",
+        "uid": "imankufur",
+        "ad": "İman ve Küfür Muvazeneleri",
+        "cilt": 24
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "asar-i-bediiyye",
+      "baslik": "Asâr-ı Bedîiyye",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr",
+        "uid": "abed",
+        "ad": "Asâr-ı Bedîiyye",
+        "cilt": 25
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "ilk-eserler",
+      "baslik": "İlk Eserler",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr",
+        "uid": "ilkeserler",
+        "ad": "İlk Eserler",
+        "cilt": 26
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "ayetul-kubra",
+      "baslik": "Âyetü'l-Kübra",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "ayetkubra",
+        "ad": "Âyetü'l-Kübra",
+        "cilt": 27
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "bediuzzaman-cevap-veriyor",
+      "baslik": "Bediüzzaman Cevap Veriyor",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "bcevab",
+        "ad": "Bediüzzaman Cevap Veriyor",
+        "cilt": 28
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "elhuccetuzzehra",
+      "baslik": "Elhüccetüzzehra",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "elhuccet",
+        "ad": "Elhüccetüzzehra",
+        "cilt": 29
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "ene-ve-zerre",
+      "baslik": "Ene ve Zerre",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "enezerre",
+        "ad": "Ene ve Zerre",
+        "cilt": 30
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "hakikat-nurlari",
+      "baslik": "Hakikat Nurları",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "haknurlari",
+        "ad": "Hakikat Nurları",
+        "cilt": 31
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "hasir-risalesi",
+      "baslik": "Haşir Risalesi",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "hasir",
+        "ad": "Haşir Risalesi",
+        "cilt": 32
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "hastalar-risalesi",
+      "baslik": "Hastalar Risalesi",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "hastalar",
+        "ad": "Hastalar Risalesi",
+        "cilt": 33
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "hizmet-rehberi",
+      "baslik": "Hizmet Rehberi",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "hizmetreh",
+        "ad": "Hizmet Rehberi",
+        "cilt": 34
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "ihlas-risaleleri",
+      "baslik": "İhlas Risaleleri",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "ihlas",
+        "ad": "İhlas Risaleleri",
+        "cilt": 35
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "ihtiyarlar-risalesi",
+      "baslik": "İhtiyarlar Risalesi",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "ihtiyarlar",
+        "ad": "İhtiyarlar Risalesi",
+        "cilt": 36
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "ikinci-sua",
+      "baslik": "İkinci Şua",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "ikincisua",
+        "ad": "İkinci Şua",
+        "cilt": 37
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "iman-hakikatleri",
+      "baslik": "İman Hakikatleri",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "imanhak",
+        "ad": "İman Hakikatleri",
+        "cilt": 38
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "kucuk-sozler",
+      "baslik": "Küçük Sözler",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "ksozler",
+        "ad": "Küçük Sözler",
+        "cilt": 39
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "latif-nukteler",
+      "baslik": "Latif Nükteler",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "latifnukte",
+        "ad": "Latif Nükteler",
+        "cilt": 40
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "meyve-risalesi",
+      "baslik": "Meyve Risalesi",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "meyve",
+        "ad": "Meyve Risalesi",
+        "cilt": 41
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "miftahul-iman",
+      "baslik": "Miftahu'l-İman",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "miftah",
+        "ad": "Miftahu'l-İman",
+        "cilt": 42
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "mirac-ve-sakk-i-kamer",
+      "baslik": "Mirac ve Şakk-ı Kamer",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "mirackamer",
+        "ad": "Mirac ve Şakk-ı Kamer",
+        "cilt": 43
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "mirkatus-sunnet",
+      "baslik": "Mirkatü's-Sünnet",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "mirkatsunnet",
+        "ad": "Mirkatü's-Sünnet",
+        "cilt": 44
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "mucizat-i-ahmediye",
+      "baslik": "Mu'cizât-ı Ahmediye",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "muahmed",
+        "ad": "Mu'cizât-ı Ahmediye",
+        "cilt": 45
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "mucizat-i-kuraniye",
+      "baslik": "Mu'cizat-ı Kur'âniye",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "mukuran",
+        "ad": "Mu'cizat-ı Kur'âniye",
+        "cilt": 46
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "munacat",
+      "baslik": "Münâcat",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "munacat",
+        "ad": "Münâcat",
+        "cilt": 47
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "nur-aleminin-bir-anahtari",
+      "baslik": "Nur Aleminin bir Anahtarı",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "nuralemi",
+        "ad": "Nur Aleminin bir Anahtarı",
+        "cilt": 48
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "on-ucuncu-sua",
+      "baslik": "On Üçüncü Şua",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "onucsua",
+        "ad": "On Üçüncü Şua",
+        "cilt": 49
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "otuzuncu-lema",
+      "baslik": "Otuzuncu Lem'a",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "otuzlema",
+        "ad": "Otuzuncu Lem'a",
+        "cilt": 50
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "otuz-uc-pencere",
+      "baslik": "Otuz Üç Pencere",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "otuzuc",
+        "ad": "Otuz Üç Pencere",
+        "cilt": 51
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "rahmet-ve-sefkat-ilaclari",
+      "baslik": "Rahmet ve Şefkat İlaçları",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "rahmetsefkat",
+        "ad": "Rahmet ve Şefkat İlaçları",
+        "cilt": 52
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "ramazan-iktisat-sukur",
+      "baslik": "Ramazan İktisat Şükür",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "ramazan",
+        "ad": "Ramazan İktisat Şükür",
+        "cilt": 53
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "tabiat-risalesi",
+      "baslik": "Tabiat Risalesi",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "tabiat",
+        "ad": "Tabiat Risalesi",
+        "cilt": 54
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "uhuvvet-risalesi",
+      "baslik": "Uhuvvet Risalesi",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "uhuvvet",
+        "ad": "Uhuvvet Risalesi",
+        "cilt": 55
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "vesvese-ve-hikmetul-istiaze",
+      "baslik": "Vesvese ve Hikmetü'l-İstiâze",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "vesvese",
+        "ad": "Vesvese ve Hikmetü'l-İstiâze",
+        "cilt": 56
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "yirmi-dorduncu-mektup",
+      "baslik": "Yirmi Dördüncü Mektup",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "yirmidortmek",
+        "ad": "Yirmi Dördüncü Mektup",
+        "cilt": 57
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "yirmi-ucuncu-soz",
+      "baslik": "Yirmi Üçüncü Söz",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "yirmiuc",
+        "ad": "Yirmi Üçüncü Söz",
+        "cilt": 58
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "zuhretun-nur",
+      "baslik": "Zühretü'n-Nur",
+      "dil": "tr",
+      "yon": "ltr",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "derleme",
+      "diyanet": null,
+      "rnk": {
+        "raf": "tr_k",
+        "uid": "zuhretunnur",
+        "ad": "Zühretü'n-Nur",
+        "cilt": 59
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "asa-yi-musa-osmanlica",
+      "baslik": "Asâ-yı Musa (Osmanlıca)",
+      "dil": "ota",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "osm",
+        "uid": "osm_asamusa",
+        "ad": "عصاىِ موسى",
+        "cilt": 60
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "barla-lahikasi-osmanlica",
+      "baslik": "Barla Lâhikası (Osmanlıca)",
+      "dil": "ota",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "osm",
+        "uid": "osm_barla",
+        "ad": "بارلا لاحقه‌سى",
+        "cilt": 61
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "emirdag-lahikasi-1-osmanlica",
+      "baslik": "Emirdağ Lâhikası 1 (Osmanlıca)",
+      "dil": "ota",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "osm",
+        "uid": "osm_emirdag1",
+        "ad": "أميرطاغ لاحقه‌سى-١",
+        "cilt": 62
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "emirdag-lahikasi-2-osmanlica",
+      "baslik": "Emirdağ Lâhikası 2 (Osmanlıca)",
+      "dil": "ota",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "osm",
+        "uid": "osm_emirdag2",
+        "ad": "أميرطاغ لاحقه‌سى-٢",
+        "cilt": 63
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "isaratul-icaz-osmanlica",
+      "baslik": "İşârâtü'l-İ'caz (Osmanlıca)",
+      "dil": "ota",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "osm",
+        "uid": "osm_isarat",
+        "ad": "إشاراتُ ‌الإعجاز",
+        "cilt": 64
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "kastamonu-lahikasi-osmanlica",
+      "baslik": "Kastamonu Lâhikası (Osmanlıca)",
+      "dil": "ota",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "osm",
+        "uid": "osm_kastamonu",
+        "ad": "قسطمونى لاحقه‌سى",
+        "cilt": 65
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "lemalar-osmanlica",
+      "baslik": "Lem'alar (Osmanlıca)",
+      "dil": "ota",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "osm",
+        "uid": "osm_lemalar",
+        "ad": "لمعه‌لر",
+        "cilt": 66
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "mektubat-osmanlica",
+      "baslik": "Mektubat (Osmanlıca)",
+      "dil": "ota",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "osm",
+        "uid": "osm_mektubat",
+        "ad": "مكتوبات",
+        "cilt": 67
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "mesnevi-i-nuriye-osmanlica",
+      "baslik": "Mesnevi-i Nuriye (Osmanlıca)",
+      "dil": "ota",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "osm",
+        "uid": "osm_mesnevi",
+        "ad": "مثنوئِ نوريه",
+        "cilt": 68
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "sozler-osmanlica",
+      "baslik": "Sözler (Osmanlıca)",
+      "dil": "ota",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "osm",
+        "uid": "osm_sozler",
+        "ad": "سوزلر",
+        "cilt": 69
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "sualar-osmanlica",
+      "baslik": "Şualar (Osmanlıca)",
+      "dil": "ota",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "osm",
+        "uid": "osm_sualar",
+        "ad": "شعاعلر",
+        "cilt": 70
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "tarihce-i-hayat-osmanlica",
+      "baslik": "Tarihçe-i Hayat (Osmanlıca)",
+      "dil": "ota",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "osm",
+        "uid": "osm_tarihce",
+        "ad": "تاريخچۀِ حيات",
+        "cilt": 71
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "asa-yi-musa-arapca",
+      "baslik": "Asâ-yı Musa (Arapça)",
+      "dil": "ar",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "ar",
+        "uid": "ar_asamusa",
+        "ad": "عصا موسى",
+        "cilt": 72
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "iman-ve-kufur-muvazeneleri-arapca",
+      "baslik": "İman ve Küfür Muvazeneleri (Arapça)",
+      "dil": "ar",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "ar",
+        "uid": "ar_imankufur",
+        "ad": "الموازنات",
+        "cilt": 73
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "isaratul-icaz-arapca",
+      "baslik": "İşârâtü'l-İ'caz (Arapça)",
+      "dil": "ar",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "ar",
+        "uid": "ar_isarat",
+        "ad": "إشارات الإعجاز",
+        "cilt": 74
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "lemalar-arapca",
+      "baslik": "Lem'alar (Arapça)",
+      "dil": "ar",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "ar",
+        "uid": "ar_lemalar",
+        "ad": "اللمعات",
+        "cilt": 75
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "mektubat-arapca",
+      "baslik": "Mektubat (Arapça)",
+      "dil": "ar",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "ar",
+        "uid": "ar_mektubat",
+        "ad": "المكتوبات",
+        "cilt": 76
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "melahik-arapca",
+      "baslik": "Melâhık (Arapça)",
+      "dil": "ar",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "ar",
+        "uid": "ar_melahik",
+        "ad": "الملاحق",
+        "cilt": 77
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "mesnevi-i-nuriye-arapca",
+      "baslik": "Mesnevi-i Nuriye (Arapça)",
+      "dil": "ar",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "ar",
+        "uid": "ar_mesnevi",
+        "ad": "المثنوي العربي النوري",
+        "cilt": 78
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "saykalul-islam-arapca",
+      "baslik": "Saykalü'l-İslâm (Arapça)",
+      "dil": "ar",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "ar",
+        "uid": "ar_saykal",
+        "ad": "صيقل الإسلام",
+        "cilt": 79
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "sozler-arapca",
+      "baslik": "Sözler (Arapça)",
+      "dil": "ar",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "ar",
+        "uid": "ar_sozler",
+        "ad": "الكلمات",
+        "cilt": 80
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "sualar-arapca",
+      "baslik": "Şualar (Arapça)",
+      "dil": "ar",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "ar",
+        "uid": "ar_sualar",
+        "ad": "الشعاعات",
+        "cilt": 81
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "hasir-risalesi-arapca",
+      "baslik": "Haşir Risalesi (Arapça)",
+      "dil": "ar",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "ar_k",
+        "uid": "ar_hasir",
+        "ad": "رسالة الحشر",
+        "cilt": 82
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "hastalar-risalesi-arapca",
+      "baslik": "Hastalar Risalesi (Arapça)",
+      "dil": "ar",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "ar_k",
+        "uid": "ar_hastalar",
+        "ad": "رسالة إلى كل مريض ومبتلى",
+        "cilt": 83
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "kucuk-sozler-arapca",
+      "baslik": "Küçük Sözler (Arapça)",
+      "dil": "ar",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "ar_k",
+        "uid": "ar_ksozler",
+        "ad": "كلمات صغيرة",
+        "cilt": 84
+      },
+      "dogrulandi": false
+    },
+    {
+      "slug": "yirmi-ucuncu-soz-arapca",
+      "baslik": "Yirmi Üçüncü Söz (Arapça)",
+      "dil": "ar",
+      "yon": "rtl",
+      "metin_kaynagi": "rnk",
+      "diyanet_karsiligi": "rnk",
+      "diyanet": null,
+      "rnk": {
+        "raf": "ar_k",
+        "uid": "ar_yirmiuc",
+        "ad": "الإيمان وتكامل الانسان",
+        "cilt": 85
+      },
+      "dogrulandi": false
+    }
+  ]
+}

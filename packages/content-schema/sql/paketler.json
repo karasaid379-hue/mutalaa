@@ -35,6 +35,7 @@
       "ddl": [
         "00-ortak.sql",
         "50-risale-dizin.sql",
+        "51-lugat.sql",
         "11-xref.sql",
         "12-tr-root.sql",
         "21-arama-iceriksiz.sql",

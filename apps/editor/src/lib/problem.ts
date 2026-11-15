@@ -7,7 +7,7 @@ export type Problem = components['schemas']['ProblemDetails'] & {
   errors?: Record<string, string[]>;
 };
 
-/** The 19 codes of the API (ProblemDetails.kod, Backend API 6; same list as OpenApiSetup.cs). */
+/** The 21 codes of the API (ProblemDetails.kod, Backend API 6; same list as OpenApiSetup.cs). */
 export const API_PROBLEM_CODES = [
   'dogrulama',
   'capa-gecersiz',
@@ -26,6 +26,8 @@ export const API_PROBLEM_CODES = [
   'kalite-kapisi',
   'onceki-yayin-bozuk',
   'depo-erisilemiyor',
+  'on-kosul-eksik',
+  'onaylanacak-birim-yok',
   'hata',
   'sunucu-hatasi',
 ] as const;

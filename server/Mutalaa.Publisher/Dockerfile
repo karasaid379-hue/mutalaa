@@ -10,6 +10,8 @@ COPY server/Mutalaa.Infrastructure/Mutalaa.Infrastructure.csproj server/Mutalaa.
 COPY server/Mutalaa.Publisher/Mutalaa.Publisher.csproj server/Mutalaa.Publisher/packages.lock.json server/Mutalaa.Publisher/
 RUN dotnet restore server/Mutalaa.Publisher/Mutalaa.Publisher.csproj --locked-mode
 
+# Risale kitap tablosu Infrastructure icine gomulur (Mutalaa.Infrastructure.csproj EmbeddedResource).
+COPY shared/data/risale-kitaplar.json shared/data/risale-kitaplar.json
 COPY server/Mutalaa.Domain server/Mutalaa.Domain
 COPY server/Mutalaa.Infrastructure server/Mutalaa.Infrastructure
 COPY server/Mutalaa.Publisher server/Mutalaa.Publisher

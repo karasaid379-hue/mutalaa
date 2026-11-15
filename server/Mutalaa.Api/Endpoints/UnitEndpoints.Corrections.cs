@@ -126,14 +126,14 @@ public static partial class UnitEndpoints
                 "Birleşik meal izleyen birimi (birlesik_ile) kendi metnini taşımaz; metni başlangıç birimde düzeltin.");
         }
 
-        // Ofsetli turev alanlar (marks, sentences) metin degisimini BÇ-59'a (A20) kadar tasimaz: oneri acilip uygulama aninda
+        // Ofsetli turev alanlar (marks, sentences) metin degisimini K-52 madde 8 geregi KALICI olarak tasimaz: oneri acilip uygulama aninda
         // reddedilmesin, kullanici simdi 422 ile bilgilensin (karar ucu da ayni kosulda ayni kodu verir).
         if (ReviewDecisions.HasOffsetData(target.Marks, target.Sentences?.Length ?? 0))
         {
             return ApiProblem.Create(
                 StatusCodes.Status422UnprocessableEntity,
                 DomainErrorCodes.IncelemeDesteklenmiyor,
-                "Ofsetli alanların (marks, sentences) yeniden hesabı BÇ-59'da (A20) yapılana kadar bu birimde metin değişimi desteklenmiyor.");
+                "Ofsetli alanların (marks, sentences) bulunduğu birimde metin değişimi desteklenmiyor: Risale metni üçüncü taraf kanonik metindir ve düzeltilmez (K-52 madde 8).");
         }
 
         string? proposer = user.Identity?.Name ?? user.FindFirstValue(ClaimTypes.Email);

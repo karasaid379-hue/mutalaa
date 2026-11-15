@@ -97,7 +97,7 @@ describe('LemmaQueue', () => {
       );
     });
 
-    it('has four tabs in this order and opens the correction queue without alan and sira', async () => {
+    it('has five tabs in this order and opens the correction queue without alan and sira', async () => {
       const { user, router } = setup({ route: '/?kayit=201' });
       await screen.findByTestId('fix-card');
       expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
@@ -105,6 +105,7 @@ describe('LemmaQueue', () => {
         trLemma.tabs.durum,
         trLemma.tabs.duzeltme,
         trLemma.tabs.kok,
+        trLemma.tabs.lugat,
       ]);
       await user.click(screen.getByRole('tab', { name: trLemma.tabs.duzeltme }));
       await screen.findByRole('link', { name: new RegExp(`^${fixItem(201).hedef_anahtar}`) });

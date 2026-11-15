@@ -29,12 +29,21 @@ from mutalaa_pipeline.anchor.ayet_sayilari import AYET_SAYILARI
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest import fikstur, tanzil, tanzil_bicim
 from mutalaa_pipeline.ingest.meal_kaynaklari import meal_mi
+from mutalaa_pipeline.ingest.risale_kaynaklari import (
+    KAYNAK_BASKI,
+    KAYNAK_ORNEK,
+    KAYNAK_RNK,
+    risale_mi,
+)
 from mutalaa_pipeline.komut_ortak import komutu_yurut
 from mutalaa_pipeline.lineage import NOTICE_ADI
 from mutalaa_pipeline.qa import (
+    ATIF_KAYNAGI,
     GECTI,
     KALDI,
     KAPILAR,
+    LUGAT_KAYNAGI,
+    LUGAT_KAYNAK_KIMLIKLERI,
     QA_KOMUTU,
     QAC_KAYNAGI,
     QURANWBW_KAYNAGI,
@@ -316,6 +325,31 @@ def komut_qa_run(
         from mutalaa_pipeline.qa.run_quranwbw import komut_qa_run_quranwbw
 
         return komut_qa_run_quranwbw(run=run, gate=gate, config=config, kok=kok)
+    if source == KAYNAK_RNK:  # RNK Risale metni: G-KAY, G-BUT, G-CAP, G-NOR (A20.1b, A20.2b)
+        from mutalaa_pipeline.qa.run_risale_rnk import komut_qa_run_risale_rnk
+
+        return komut_qa_run_risale_rnk(run=run, gate=gate, config=config, kok=kok)
+    if source == KAYNAK_BASKI:  # RNK baski sayfa esleme: G-KAY, G-BUT, G-CAP, G-NOR (A20.3)
+        from mutalaa_pipeline.qa.run_risale_sayfa import komut_qa_run_risale_sayfa
+
+        return komut_qa_run_risale_sayfa(run=run, gate=gate, config=config, kok=kok)
+    if source == KAYNAK_ORNEK:  # sentetik Risale fiksturu: dort kapi (A20.5a)
+        from mutalaa_pipeline.qa.run_risale_ornek import komut_qa_run_ornek
+
+        return komut_qa_run_ornek(run=run, gate=gate, config=config, kok=kok)
+    if source == LUGAT_KAYNAGI or source in LUGAT_KAYNAK_KIMLIKLERI:
+        # Risale lugat adaylari ve lugat kaynaklari: G-KAY, G-BUT, G-CAP, G-NOR (A20.6, A20.6b)
+        from mutalaa_pipeline.qa.run_risale_lugat import komut_qa_run_lugat
+
+        return komut_qa_run_lugat(run=run, gate=gate, config=config, kok=kok, source=source)
+    if source == ATIF_KAYNAGI:  # Risale ayet atif dizini: G-KAY, G-BUT, G-CAP, G-NOR (A20.7b)
+        from mutalaa_pipeline.qa.run_risale_atif import komut_qa_run_risale_atif
+
+        return komut_qa_run_risale_atif(run=run, gate=gate, config=config, kok=kok)
+    if risale_mi(source):  # Diyanet Risale (karsilastirma verisi): G-KAY, G-BUT (A20.1)
+        from mutalaa_pipeline.qa.run_risale import komut_qa_run_risale
+
+        return komut_qa_run_risale(run=run, gate=gate, config=config, kok=kok)
     if meal_mi(source):  # iki meal: bes kapi (G-HIZ dahil; A16.3)
         from mutalaa_pipeline.qa.run_meal import komut_qa_run_meal
 

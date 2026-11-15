@@ -231,7 +231,28 @@ public sealed record ReviewTargetSnapshot
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? YalnizcaEtimolojik { get; init; }
 
-    /// <summary>lemma_gloss: icerik surumu ('1', her duzenlemede +1).</summary>
+    // lugat_madde (K-52 madde 9, 10 ve 14): kaynak kimligi Source alaninda, siklik ve anlam basvurusu review.onerilen'dedir.
+    /// <summary>lugat_madde: ayni basligin kaynak sirasiyla anlam sirasi (1'den).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? AnlamNo { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Basliksoz { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? OsmanlicaYazim { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? KokenDil { get; init; }
+
+    /// <summary>lugat_madde: kaynaktan gelen (origin kaynak) ya da editorun yazdigi tanim; tanimsiz aday (origin hat) iken bos.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TanimTr { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? Duzey { get; init; }
+
+    /// <summary>lemma_gloss ve lugat_madde: icerik surumu ('1', her duzenlemede +1).</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Version { get; init; }
 
@@ -289,6 +310,7 @@ public sealed record ReviewStatsResponse(
 
 /// <summary>
 /// Editorun duzenledigi deger: birim metni onayinda <c>metin</c>, lemma_gloss onayinda <c>anlam_kisa</c> (K-50 madde 6),
+/// lugat_madde onayinda <c>tanim_tr</c> (K-52 madde 10),
 /// Turkce lemma kok eslemesi onayinda <c>root_id</c>, <c>ar_lemma_id</c> ve <c>etymological_only</c> (K-51 madde 9);
 /// hedefe gore yalniz o hedefin alanlari verilir (baska alan 400), ote hedeflerde duzenlenen deger 422 <c>inceleme-desteklenmiyor</c> alir.
 /// Kok eslemesinde <c>root_id</c> ve <c>etymological_only</c> zorunludur; <c>ar_lemma_id</c> yoksa ya da null ise Arapca karsilik yoktur.
@@ -305,7 +327,8 @@ public sealed record DecisionEdit(
     string? DstAnchor = null,
     int[]? DstSpan = null,
     string? Type = null,
-    string? NewValue = null);
+    string? NewValue = null,
+    string? TanimTr = null);
 
 /// <summary>Uzmana gonder, kalip ve ima gibi gerekce isteyen eylem govdesi.</summary>
 public sealed record ReviewReasonBody(string? Gerekce);

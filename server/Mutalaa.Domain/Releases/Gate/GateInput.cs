@@ -46,13 +46,35 @@ public sealed record GateXref(
 /// <summary>
 /// Paket adayi. HasContent: pakete yazilacak veri var (yoksa "girmedi · icerik-yok", kural kodu yok). HasStructure: paket yapi satiri (kelime, isaret,
 /// sayfa; core) tasiyor ve bu satirlar var; yapi satirlari birim suzmesinden (P-08/P-10) etkilenmeden paket icerigi sayilir. Geriye uyumlu: varsayilan false.
+/// AnchorPrefix: paketin birimlerini yalniz bu iki parcali capa onekiyle ("rn:sozler") taniyan paket (kaynagi baska paketlerle paylasir); null ise birim
+/// sayimi kaynak duzeyindedir. Dolu ise HasContent ve "icerik-yok" karari yalniz o onekli birimlere bakar (Risale kitap paketleri, K-52 madde 3).
 /// </summary>
 public sealed record GatePack(
     string PackId,
     IReadOnlyList<string> DependsOn,
     IReadOnlyList<string> SourceSlugs,
     bool HasContent,
-    bool HasStructure = false);
+    bool HasStructure = false,
+    string? AnchorPrefix = null)
+{
+    /// <summary>
+    /// Capanin ilk iki parcasi ("rn:sozler:soz-10:p1" icin "rn:sozler"; tek parcali capa kendisi). Kaynagi paylasan paketlerde (87 Risale kitabi tek
+    /// kaynaktan, risale-rnk-metin, gelir) birimin hangi pakete ait oldugunu belirler; capa ayristirilmaz, yalniz dizgi kesilir.
+    /// </summary>
+    public static string PrefixOf(string anchor)
+    {
+        ArgumentNullException.ThrowIfNull(anchor);
+
+        int first = anchor.IndexOf(':', StringComparison.Ordinal);
+        if (first < 0)
+        {
+            return anchor;
+        }
+
+        int second = anchor.IndexOf(':', first + 1);
+        return second < 0 ? anchor : anchor[..second];
+    }
+}
 
 /// <summary>P-09 kapsamindaki sozluk ve duzeltme tablolari.</summary>
 public enum LexicalKind
@@ -64,6 +86,9 @@ public enum LexicalKind
 
     /// <summary>Turkce lemma (lemma tablosu, lang = 'tr'; K-51 madde 9). Pakette kelime-kok lemma satiri olur.</summary>
     TrLemma = 4,
+
+    /// <summary>Risale lugat maddesi (K-52 madde 9): lemma_gloss ile ayni goruntulenme kurali (onayli her derleme, aday dev ve internal, red hicbiri).</summary>
+    LugatMadde = 5,
 }
 
 /// <summary>LexicalKind icin tablo etiketi (rapor satiri kimligi). Acik switch; tanimsiz deger ArgumentOutOfRangeException atar.</summary>
@@ -76,12 +101,13 @@ public static class LexicalKindLabels
         LexicalKind.TrRootIndex => "tr_root_index",
         LexicalKind.TrForm => "tr_form",
         LexicalKind.TrLemma => "lemma_tr",
+        LexicalKind.LugatMadde => "lugat_madde",
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
     };
 }
 
 /// <summary>
-/// P-09 satiri. quran_word_fix ve lemma_gloss durum sutunu tasir (Status). tr_root_index ve tr_form durum sutunu tasimaz,
+/// P-09 satiri. quran_word_fix, lemma_gloss ve lugat_madde (Id: "{source_id}:{anlam_no}:{basliksoz}") durum sutunu tasir (Status). tr_root_index ve tr_form durum sutunu tasimaz,
 /// yalniz onayli veri tasir; bagli Turkce lemma onayliysa girer (LinkedLemmaApproved).
 /// ApplyDefect: yalniz quran_word_fix icin; duzeltme uygulanamiyorsa (deger alan turune cevrilemiyor, gosterdigi root_id ya da lemma_id yok,
 /// kelime yok) kisa ASCII neden. Duzeltme bu derlemede uygulanacaksa (onayli) ve ApplyDefect doluysa yayin reddedilir (kural kodu yok).

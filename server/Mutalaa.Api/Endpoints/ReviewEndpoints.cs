@@ -160,9 +160,17 @@ public static partial class ReviewEndpoints
                     errors["sira"] = ["sira=sinif yalnız hedef_tablo xref iken geçerlidir."];
                 }
             }
+            else if (string.Equals(sira, "siklik", StringComparison.Ordinal))
+            {
+                sort = ReviewSort.Siklik;
+                if (!string.Equals(hedefTablo, ReviewTargets.LugatMadde, StringComparison.Ordinal))
+                {
+                    errors["sira"] = ["sira=siklik yalnız hedef_tablo lugat_madde iken geçerlidir."];
+                }
+            }
             else if (!string.Equals(sira, "olusturma", StringComparison.Ordinal))
             {
-                errors["sira"] = ["Geçersiz sira. İzin verilenler: olusturma, dalga, sinif."];
+                errors["sira"] = ["Geçersiz sira. İzin verilenler: olusturma, dalga, sinif, siklik."];
             }
         }
 
@@ -216,6 +224,7 @@ public static partial class ReviewEndpoints
         (DateTime CreatedAt, long Id)? after = null;
         WaveCursor? waveAfter = null;
         ClassCursor? classAfter = null;
+        SiklikCursor? siklikAfter = null;
         if (cursor is not null)
         {
             if (sort == ReviewSort.Sinif)
@@ -223,6 +232,17 @@ public static partial class ReviewEndpoints
                 if (ReviewCursor.TryDecodeClass(cursor, out ClassCursor classCursor))
                 {
                     classAfter = classCursor;
+                }
+                else
+                {
+                    errors["cursor"] = ["İmleç geçersiz."];
+                }
+            }
+            else if (sort == ReviewSort.Siklik)
+            {
+                if (ReviewCursor.TryDecodeSiklik(cursor, out SiklikCursor frequency))
+                {
+                    siklikAfter = frequency;
                 }
                 else
                 {
@@ -257,7 +277,7 @@ public static partial class ReviewEndpoints
         }
 
         return TypedResults.Ok(await ReviewQueries.ListAsync(
-            db, hedefTablo, alan, status, kaynak, stage, sort, wantedClass, wantedPath, after, waveAfter, classAfter, take, cancellationToken));
+            db, hedefTablo, alan, status, kaynak, stage, sort, wantedClass, wantedPath, after, waveAfter, classAfter, siklikAfter, take, cancellationToken));
     }
 
     private static async Task<IResult> StatsAsync(IcerikDbContext db, CancellationToken cancellationToken) =>

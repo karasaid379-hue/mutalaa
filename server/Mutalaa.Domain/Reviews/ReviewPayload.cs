@@ -36,6 +36,13 @@ internal static class ReviewPayload
         return document is null ? null : ReadString(document.RootElement, "anlam_kisa", name);
     }
 
+    /// <summary>Verilen alan (<c>lugat_madde</c> duzenlenen degeri: <c>tanim_tr</c>); nesne ya da alan yoksa null. Alan varsa dizgi olmali.</summary>
+    public static string? ReadString(string? json, string property, string name)
+    {
+        using JsonDocument? document = Parse(json, name);
+        return document is null ? null : ReadString(document.RootElement, property, name);
+    }
+
     /// <summary>"content_hash" alani; deger (nesnenin kendisi) yoksa null. Nesne var ama alan yoksa hata.</summary>
     public static string? ReadContentHash(string? json, string name)
     {

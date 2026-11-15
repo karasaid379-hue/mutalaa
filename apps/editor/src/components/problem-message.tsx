@@ -18,7 +18,7 @@ export interface ProblemMessageProps {
 }
 
 /**
- * Error summary for one ProblemDetails (or network) error: the Turkish message of the code (19 API codes
+ * Error summary for one ProblemDetails (or network) error: the Turkish message of the code (21 API codes
  * and the client codes `ag-hatasi`, `yanit-bozuk`), the server's own message where it adds information,
  * field errors, affected record ids, the open release and the trace id.
  */
@@ -36,6 +36,9 @@ export function ProblemMessage({
   const yayin = isRecord(problem.yayin) ? problem.yayin : null;
   const yayinId = readNumber(yayin, 'id');
   const anchorCode = readString(problem, 'capa_hata_kodu');
+  const missing = Array.isArray(problem.eksikler)
+    ? problem.eksikler.filter((code): code is string => typeof code === 'string')
+    : [];
   const kimlik = readNumber(problem, 'kimlik');
   const status = typeof problem.status === 'number' && problem.status > 0 ? problem.status : null;
   const meta = [
@@ -62,6 +65,20 @@ export function ProblemMessage({
               {errors.map(([field, messages]) => (
                 <li key={field}>
                   {`${field}: ${Array.isArray(messages) ? messages.join(' ') : String(messages)}`}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {missing.length > 0 ? (
+          <div>
+            <p className="font-medium">{tr.problem.missingHeading}</p>
+            <ul className="list-disc pl-5">
+              {missing.map((code) => (
+                <li key={code} data-missing-code={code}>
+                  {Object.hasOwn(tr.problem.prerequisites, code)
+                    ? tr.problem.prerequisites[code]
+                    : code}
                 </li>
               ))}
             </ul>

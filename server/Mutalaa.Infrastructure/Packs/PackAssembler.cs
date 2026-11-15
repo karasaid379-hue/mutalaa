@@ -7,6 +7,7 @@ using Mutalaa.Domain.Anchors;
 using Mutalaa.Domain.Links;
 using Mutalaa.Domain.Releases;
 using Mutalaa.Domain.Releases.Gate;
+using Mutalaa.Domain.Reviews;
 using Mutalaa.Infrastructure.Releases;
 
 namespace Mutalaa.Infrastructure.Packs;
@@ -21,6 +22,14 @@ namespace Mutalaa.Infrastructure.Packs;
 /// yalniz lang = 'ar' ve onayli; lemma_gloss kapidan gecenler (onayli, ve dev/internal'da aday: status satirda 'aday' kalir) ve yalniz pakete giren lemmalara
 /// bagli. Uygulanamayan onayli duzeltme (WordMorphFixes) atlanir; kapi bunu zaten yayin reddi sayar. Turkce lemma (lang = 'tr', K-51 madde 9: yalniz kapidan gecen, approval editor | auto), tr_root_index ve tr_form da kapidan gecen Turkce lemmalara bagli satirlarla yazilir (yalniz kelime-kok).
 /// Baglanti satiri tur dahil dagitilir (PackCatalog.PackIdForXref: kok ve lemma kelime-kok'e, benzer_ayet core'a). pack_meta gate_summary (GateSummary) kok, lemma ve benzer_ayet icin xref_gate sonucudur.
+/// Risale (A20.4, K-52): risale-{kitap} (PackDefinition.Book) yalniz kendi capa onekli birimlerini unit olarak alir (etiket RisaleLabels; arama satiri, baglanti
+/// ve sayfa eslemesi yoktur) ve dil ile yonu pack_meta'ya tasir. risale-dizin (IndexesBooks) unit yerine, kapidan giren her kitap paketinin birimleri icin
+/// unit_ref ve icerigi olmayan arama satirlari yazar (Osmanli ve Arapca kitaplarda yalniz ar_norm), bir ucu Risale olan baglantilari alir ve baski sayfa
+/// satirlarini yalniz iki ucu da kapsamdaki birimler icin yazar (K-47 ile ayni sarkan uc kurali; volume kitabin cildiyle ayni olmalidir). risale-dizin ayrica lugat
+/// tablosunu tasir (A20.6, K-52 madde 9 ve 10): Glossary kaynaklarinin kapidan giren (IncludedLexicals "lugat_madde:{source_id}:{anlam_no}:{basliksoz}") maddeleri (K-52 madde 14: ayni basliksoz farkli kaynaktan ve/veya farkli anlam_no ile gelebilir;
+/// tanimsiz aday, ayni normalize basliksozde tanimli madde varsa pakete yazilmaz); onayli her
+/// derlemeye, aday yalniz dev ve internal'a (status 'aday'), red hicbirine girmez; test- onekli kaynak public'e girmez (kaynak karari, P-12). kaynaklar (siklik, kitaplar,
+/// sozluk isabeti) ve anlam basvurusu pakete yazilmaz.
 /// </summary>
 public static class PackAssembler
 {
@@ -54,6 +63,7 @@ public static class PackAssembler
 
         HashSet<string> contentSlugs = new(StringComparer.Ordinal);
         HashSet<string> dictionarySlugs = new(StringComparer.Ordinal);
+        HashSet<string> glossarySlugs = new(StringComparer.Ordinal);
         Dictionary<string, string> layouts = new(StringComparer.Ordinal);
         foreach (PackSourceBinding binding in pack.Sources)
         {
@@ -65,10 +75,24 @@ public static class PackAssembler
             if (binding.Role == PackSourceRole.Content)
             {
                 contentSlugs.Add(binding.Slug);
+                if (binding.AlsoGlossary)
+                {
+                    glossarySlugs.Add(binding.Slug);
+                }
+
+                if (binding.PageMapLayout is { } contentLayout)
+                {
+                    // Icerik kaynagi kendi sayfa eslemesini de tasir (risale-dizin'de fikstur kaynagi).
+                    layouts[binding.Slug] = contentLayout;
+                }
             }
             else if (binding.Role == PackSourceRole.Dictionary)
             {
                 dictionarySlugs.Add(binding.Slug);
+            }
+            else if (binding.Role == PackSourceRole.Glossary)
+            {
+                glossarySlugs.Add(binding.Slug);
             }
             else if (binding.Role == PackSourceRole.Structure)
             {
@@ -77,8 +101,10 @@ public static class PackAssembler
             }
         }
 
+        RisaleBook? book = pack.Book;
         List<PackUnitRow> units = [];
         List<PackUnitSearchRow> search = [];
+        List<PackUnitRefRow> unitRefs = [];
         HashSet<string> sourcesWithRows = new(StringComparer.Ordinal);
         foreach (UnitRow unit in snapshot.Units)
         {
@@ -87,8 +113,35 @@ public static class PackAssembler
                 continue;
             }
 
-            units.Add(ToPackUnit(unit));
-            search.Add(new PackUnitSearchRow(unit.Anchor, unit.TrWide, unit.TrStem, unit.ArNorm));
+            if (pack.IndexesBooks)
+            {
+                // Dizin: birim kitap paketine aittir ve o paket kapidan girmistir; kaynak o kitabin icerik kaynagi olmalidir (rn:test-ornek yalniz fikstur kaynagindan).
+                if (!catalog.TryGetByAnchorPrefix(GatePack.PrefixOf(unit.Anchor), out PackDefinition? bookPack)
+                    || bookPack.Book is not { } indexed
+                    || !gate.IncludedPacks.Contains(bookPack.PackId)
+                    || !bookPack.ContentSources.Any(b => string.Equals(b.Slug, unit.SourceId, StringComparison.Ordinal)))
+                {
+                    continue;
+                }
+
+                unitRefs.Add(new PackUnitRefRow(unit.Anchor, bookPack.PackId, unit.Ord, RisaleLabels.Build(indexed, unit)));
+                search.Add(IndexSearchRow(indexed, unit));
+                sourcesWithRows.Add(unit.SourceId);
+                continue;
+            }
+
+            if (pack.AnchorPrefix is { } prefix && !string.Equals(GatePack.PrefixOf(unit.Anchor), prefix, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            units.Add(ToPackUnit(unit, book));
+            if (book is null)
+            {
+                // Kitap paketi arama tablosu tasimaz; arama risale-dizin'dedir (K-44 madde 3).
+                search.Add(new PackUnitSearchRow(unit.Anchor, unit.TrWide, unit.TrStem, unit.ArNorm));
+            }
+
             sourcesWithRows.Add(unit.SourceId);
         }
 
@@ -125,6 +178,11 @@ public static class PackAssembler
             }
         }
 
+        if (pack.IndexesBooks)
+        {
+            AddBookPages(pack, snapshot, gate, catalog, layouts, pages, sourcesWithRows);
+        }
+
         HashSet<string> boundSlugs = new(
             pack.Sources.Where(b => gate.IncludedSources.Contains(b.Slug) && sourceRows.ContainsKey(b.Slug)).Select(b => b.Slug),
             StringComparer.Ordinal);
@@ -138,6 +196,8 @@ public static class PackAssembler
                 sourcesWithRows.Add(binding.Slug);
             }
         }
+
+        List<PackLugatRow> lugat = pack.IndexesBooks ? AssembleLugat(snapshot, gate, glossarySlugs, sourcesWithRows) : [];
 
         List<PackXrefRow> xrefs = [];
         HashSet<string> xrefSources = new(StringComparer.Ordinal);
@@ -182,6 +242,12 @@ public static class PackAssembler
                 xref.DataVersion));
         }
 
+        if (pack.IndexesBooks && xrefs.Count > 0)
+        {
+            // Risale baglantilari ayri dizin kaynaginin kaydiyla listelenir (P-01, P-11; Icerik paketleri 7).
+            sourcesWithRows.Add(PackCatalog.RisaleLinkSlug);
+        }
+
         // Baglanti satirinin veri kaynagi (evidence.source_id) pakete atif rolunde bagliysa (core'da qursim) kunye ve atif satiri listelenir (P-01, P-11).
         foreach (PackSourceBinding binding in pack.Sources.Where(b => b.Role == PackSourceRole.Attribution && !b.Required && xrefSources.Contains(b.Slug)))
         {
@@ -221,6 +287,7 @@ public static class PackAssembler
             PackSources = packSources,
             Attributions = attributions,
             Units = units,
+            UnitRefs = unitRefs,
             UnitSearch = search,
             Xrefs = xrefs,
             QuranWords = words,
@@ -233,9 +300,120 @@ public static class PackAssembler
             Lemmas = lexicon.Lemmas,
             LemmaGlosses = lexicon.LemmaGlosses,
             TrForms = lexicon.TrForms,
+            Lugat = lugat,
             WordFixCount = pack.CarriesLexicon ? lexicon.AppliedFixes : null,
+            Language = book?.Language,
+            Direction = book?.Direction,
             GateSummary = GateSummaryFor(pack, snapshot),
         };
+    }
+
+    /// <summary>
+    /// risale-dizin lugat tablosu (K-52 madde 9, 10 ve 14). Satir yalniz kaynagi kapidan girmisse (P-01, P-12) ve madde P-09'dan gecmisse (IncludedLexicals) alinir; satir sirasi
+    /// PackRows'a aittir. Anahtar (basliksoz, kaynak, anlam_no): ayni basliksoz farkli kaynaktan ve/veya farkli anlam_no ile gelebilir; ayni anahtar iki kez gelirse girdi tutarsizdir.
+    /// Onayli maddenin tanimi dolu olmalidir (veritabani CHECK'i); bos ise girdi tutarsizdir. Tanimsiz (tanim_tr bos) aday, ayni normalize basliksozde (basliksoz_norm)
+    /// tanimli bir madde de pakete giriyorsa yazilmaz (gurultuyu onler; tanimsiz basliksoz tek basina dev ve internal'da gorunur). Kaynak lugat satiri verdiyse kunye ve
+    /// atif satiri listelenir (P-01, P-11); yazilmayan satirin kaynagi bu yuzden listelenmez.
+    /// </summary>
+    private static List<PackLugatRow> AssembleLugat(
+        EditorialSnapshot snapshot,
+        GateResult gate,
+        HashSet<string> glossarySlugs,
+        HashSet<string> sourcesWithRows)
+    {
+        List<LugatMaddeRow> admitted = [];
+        HashSet<(string Basliksoz, string Kaynak, int AnlamNo)> keys = [];
+        foreach (LugatMaddeRow madde in snapshot.LugatMaddeler)
+        {
+            if (!glossarySlugs.Contains(madde.SourceId)
+                || !gate.IncludedLexicals.Contains("lugat_madde:" + ReviewTargets.LugatKey(madde.SourceId, madde.AnlamNo, madde.Basliksoz)))
+            {
+                continue;
+            }
+
+            if (string.Equals(madde.Status, ApprovedLabel, StringComparison.Ordinal) && string.IsNullOrWhiteSpace(madde.TanimTr))
+            {
+                throw new PackAssemblyException($"Onayli lugat maddesinin tanimi bos ({madde.SourceId}, anlam {madde.AnlamNo.ToString(CultureInfo.InvariantCulture)}): {madde.Basliksoz}");
+            }
+
+            if (!keys.Add((madde.Basliksoz, madde.SourceId, madde.AnlamNo)))
+            {
+                throw new PackAssemblyException($"Lugat maddesi ayni anahtarla iki kez gelir ({madde.SourceId}, anlam {madde.AnlamNo.ToString(CultureInfo.InvariantCulture)}): {madde.Basliksoz}");
+            }
+
+            admitted.Add(madde);
+        }
+
+        HashSet<string> defined = new(
+            admitted.Where(m => !string.IsNullOrWhiteSpace(m.TanimTr)).Select(m => m.BasliksozNorm),
+            StringComparer.Ordinal);
+
+        List<PackLugatRow> rows = [];
+        foreach (LugatMaddeRow madde in admitted)
+        {
+            if (string.IsNullOrWhiteSpace(madde.TanimTr) && defined.Contains(madde.BasliksozNorm))
+            {
+                continue;
+            }
+
+            rows.Add(new PackLugatRow(
+                madde.Basliksoz,
+                madde.BasliksozNorm,
+                madde.OsmanlicaYazim,
+                madde.KokenDil,
+                madde.TanimTr,
+                madde.AnlamNo,
+                madde.SourceId,
+                madde.Duzey,
+                madde.Status,
+                madde.Origin,
+                madde.Version,
+                madde.ContentHash));
+            sourcesWithRows.Add(madde.SourceId);
+        }
+
+        return rows;
+    }
+
+    /// <summary>
+    /// Dizin arama satiri: Turkce kitapta tr_wide, tr_stem ve ar_norm; Osmanlica ve Arapca kitapta yalniz ar_norm (tr_* NULL; K-52 madde 4). Birimde bulunmayan
+    /// sutun NULL kalir; sutunlar yazilirken yeniden hesaplanmaz.
+    /// </summary>
+    private static PackUnitSearchRow IndexSearchRow(RisaleBook book, UnitRow unit) =>
+        string.Equals(book.Language, TurkishLang, StringComparison.Ordinal)
+            ? new PackUnitSearchRow(unit.Anchor, unit.TrWide, unit.TrStem, unit.ArNorm)
+            : new PackUnitSearchRow(unit.Anchor, null, null, unit.ArNorm);
+
+    // risale-dizin page_map: Structure kaynaginin satiri, iki ucu da bu derlemenin kapsamindaki birimler (aksi halde sarkan sayfa satiri olurdu).
+    private static void AddBookPages(
+        PackDefinition pack,
+        EditorialSnapshot snapshot,
+        GateResult gate,
+        PackCatalog catalog,
+        Dictionary<string, string> layouts,
+        List<PackPageMapRow> pages,
+        HashSet<string> sourcesWithRows)
+    {
+        foreach (PageMapRow page in snapshot.PageMaps)
+        {
+            if (!layouts.TryGetValue(page.SourceId, out string? layout)
+                || !gate.IncludedUnits.Contains(page.StartAnchor)
+                || !gate.IncludedUnits.Contains(page.EndAnchor))
+            {
+                continue;
+            }
+
+            if (catalog.TryGetByAnchorPrefix(GatePack.PrefixOf(page.StartAnchor), out PackDefinition? bookPack)
+                && bookPack.Book?.Volume is { } volume
+                && page.Volume != volume)
+            {
+                throw new PackAssemblyException(
+                    $"page_map cildi kitabin cildiyle uyusmuyor ({pack.PackId}): {page.StartAnchor} sayfa {page.Page.ToString(CultureInfo.InvariantCulture)}");
+            }
+
+            pages.Add(new PackPageMapRow(layout, page.Volume, page.Page, page.Line, page.StartAnchor, page.StartOffset, page.EndAnchor, page.EndOffset));
+            sourcesWithRows.Add(page.SourceId);
+        }
     }
 
     private sealed record Lexicon(
@@ -466,7 +644,7 @@ public static class PackAssembler
         return anchor;
     }
 
-    private static PackUnitRow ToPackUnit(UnitRow unit) => new(
+    private static PackUnitRow ToPackUnit(UnitRow unit, RisaleBook? book) => new(
         unit.Anchor,
         unit.Kind,
         unit.Role,
@@ -474,7 +652,7 @@ public static class PackAssembler
         unit.Ord,
         unit.AyahLo,
         unit.AyahLo is null || unit.AyahHi is null ? null : unit.AyahHi - 1,
-        LabelOf(unit.Kind, unit.Anchor),
+        book is null ? LabelOf(unit.Kind, unit.Anchor) : RisaleLabels.Build(book, unit),
         unit.Metin,
         unit.Marks,
         unit.SentencesJson,

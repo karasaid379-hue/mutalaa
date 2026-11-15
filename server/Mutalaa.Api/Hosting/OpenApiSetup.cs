@@ -135,7 +135,8 @@ public static class OpenApiSetup
                 Type = JsonSchemaType.String,
                 Description = "Makine tarafindan okunur hata kodu (type son parcasiyla ayni): dogrulama, capa-gecersiz, degistirilemez-metin, "
                     + "oturum-acilamadi, yetki-yok, bulunamadi, yontem-desteklenmiyor, durum-gecisi-gecersiz, cakisma, surum-uyusmazligi, "
-                    + "surum-gerekli, inceleme-desteklenmiyor, toplu-uygun-degil, yayin-suruyor, kalite-kapisi, onceki-yayin-bozuk, depo-erisilemiyor, hata, sunucu-hatasi.",
+                    + "surum-gerekli, inceleme-desteklenmiyor, toplu-uygun-degil, yayin-suruyor, kalite-kapisi, onceki-yayin-bozuk, depo-erisilemiyor, on-kosul-eksik, "
+                    + "onaylanacak-birim-yok, hata, sunucu-hatasi.",
             },
             ["traceId"] = new OpenApiSchema { Type = JsonSchemaType.String, Description = "Istek izleme kimligi (gunluk iliskilendirme)." },
             ["kapi_raporu"] = new OpenApiSchema
@@ -161,6 +162,12 @@ public static class OpenApiSetup
                 Type = JsonSchemaType.Integer,
                 Format = "int64",
                 Description = "Toplu karar: hataya yol acan inceleme kaydi (400, 409, 422).",
+            },
+            ["eksikler"] = new OpenApiSchema
+            {
+                Type = JsonSchemaType.Array,
+                Items = new OpenApiSchema { Type = JsonSchemaType.String },
+                Description = "on-kosul-eksik (422): eksik kitap onayi onkosullari (gbut-kaniti-yok, slug-dogrulanmadi, ornek-okuma-yok), sabit sirada.",
             },
             ["hatalar"] = new OpenApiSchema
             {

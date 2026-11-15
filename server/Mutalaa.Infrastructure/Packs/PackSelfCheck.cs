@@ -83,7 +83,9 @@ public sealed record PackSelfCheckExpectations(
 /// Paket oz denetimi (Backend API 10.4 adim 5, Icerik paketleri 8 madde 5). Yazicinin kapanmadan once calistirdigi denetimler; ayni sinif verify
 /// komutunda dosya uzerinde de calisir. Maddeler: integrity_check, user_version, tablo kumesi, pack_meta, unit sayisi, yoklama capasi
 /// (q:2:255 varsa o, yoksa ilk capa; tam 1 satir), FTS sorgusu (paketin unit_search ilk satirindan turetilen belirtec; metin elle yazilmaz),
-/// attribution gidis-donusu (Domain VerifyP11Attribution ve VerifyP11Notice) ve pack_source kayitlari. unit_search yoksa FTS maddesi atlanir.
+/// attribution gidis-donusu (Domain VerifyP11Attribution ve VerifyP11Notice) ve pack_source kayitlari. unit_search yoksa FTS maddesi atlanir; risale-dizin'de
+/// (unit_ref ve icerigi olmayan unit_fts) madde icerigi okuyamaz, bu yuzden her unit_ref satirinin FTS satiri (rowid) ve satir sayilarinin esitligi denetlenir;
+/// unit_count bu pakette unit_ref satir sayisidir.
 /// </summary>
 public static class PackSelfCheck
 {
@@ -120,7 +122,56 @@ public static class PackSelfCheck
             AttributionCheck(connection, tableSet, expectations.Sources),
             PackSourceCheck(connection, tableSet, expectations.Sources),
         ];
+
+        // Lugat (yalniz risale-dizin; K-52 madde 9): maddesi olmayan paketlerin madde listesi degismez.
+        if (tableSet.Contains("lugat"))
+        {
+            items.Add(LugatCheck(connection, meta));
+        }
+
         return new PackSelfCheckReport(expectations.PackId, expectations.Version, items);
+    }
+
+    // lugat: durum yalniz onayli ya da aday, onayli maddenin tanimi dolu, public pakette aday yok (K-52 madde 9; red hicbir pakete girmez); anahtar (basliksoz, kaynak, anlam_no)
+    // birincil anahtardir, anlam_no >= 1, kaynak dolu ve tanimsiz satir ayni normalize basliksozde tanimli satir varken pakette bulunmaz (K-52 madde 14).
+    private static SelfCheckItem LugatCheck(SqliteConnection connection, Dictionary<string, string> meta)
+    {
+        List<string> problems = [];
+        long invalidStatus = Scalar(connection, "SELECT count(*) FROM lugat WHERE status NOT IN ('onayli', 'aday')");
+        if (invalidStatus > 0)
+        {
+            problems.Add(Inv($"gecersiz-durum:{invalidStatus}"));
+        }
+
+        long emptyDefinition = Scalar(connection, "SELECT count(*) FROM lugat WHERE status = 'onayli' AND (tanim_tr IS NULL OR trim(tanim_tr) = '')");
+        if (emptyDefinition > 0)
+        {
+            problems.Add(Inv($"onayli-tanimsiz:{emptyDefinition}"));
+        }
+
+        long invalidMeaning = Scalar(connection, "SELECT count(*) FROM lugat WHERE anlam_no < 1 OR trim(kaynak) = ''");
+        if (invalidMeaning > 0)
+        {
+            problems.Add(Inv($"gecersiz-anlam-ya-da-kaynak:{invalidMeaning}"));
+        }
+
+        long shadowed = Scalar(
+            connection,
+            "SELECT count(*) FROM lugat u WHERE (u.tanim_tr IS NULL OR trim(u.tanim_tr) = '') "
+            + "AND EXISTS (SELECT 1 FROM lugat d WHERE d.basliksoz_norm = u.basliksoz_norm AND d.tanim_tr IS NOT NULL AND trim(d.tanim_tr) <> '')");
+        if (shadowed > 0)
+        {
+            problems.Add(Inv($"tanimsiz-ve-tanimli-ayni-norm:{shadowed}"));
+        }
+
+        long candidates = Scalar(connection, "SELECT count(*) FROM lugat WHERE status = 'aday'");
+        if (candidates > 0 && meta.TryGetValue("flavor", out string? flavor) && string.Equals(flavor, "public", StringComparison.Ordinal))
+        {
+            problems.Add(Inv($"public-aday:{candidates}"));
+        }
+
+        bool ok = problems.Count == 0;
+        return new SelfCheckItem("lugat", ok, ok ? Inv($"{Scalar(connection, "SELECT count(*) FROM lugat")} madde, {candidates} aday") : string.Join(",", problems));
     }
 
     private static SelfCheckItem IntegrityCheck(SqliteConnection connection)
@@ -184,12 +235,13 @@ public static class PackSelfCheck
 
     private static SelfCheckItem UnitCountCheck(SqliteConnection connection, HashSet<string> tables, Dictionary<string, string> meta)
     {
-        if (!tables.Contains("unit"))
+        string table = tables.Contains("unit") ? "unit" : tables.Contains("unit_ref") ? "unit_ref" : string.Empty;
+        if (table.Length == 0)
         {
             return new SelfCheckItem("unit_count", true, "atlandi: unit tablosu yok");
         }
 
-        long count = Scalar(connection, "SELECT count(*) FROM unit");
+        long count = Scalar(connection, "SELECT count(*) FROM " + table);
         bool parsed = meta.TryGetValue("unit_count", out string? raw)
             && long.TryParse(raw, NumberStyles.None, CultureInfo.InvariantCulture, out long declared)
             && declared == count;
@@ -233,6 +285,11 @@ public static class PackSelfCheck
 
     private static SelfCheckItem FtsCheck(SqliteConnection connection, HashSet<string> tables)
     {
+        if (tables.Contains("unit_ref") && tables.Contains("unit_fts") && !tables.Contains("unit_search"))
+        {
+            return ContentlessFtsCheck(connection, tables);
+        }
+
         if (!tables.Contains("unit_search") || !tables.Contains("unit_fts"))
         {
             return new SelfCheckItem("fts_query", true, "atlandi: unit_search yok");
@@ -292,6 +349,30 @@ public static class PackSelfCheck
         }
 
         return new SelfCheckItem("fts_query", !any, any ? "belirtec arama sonucunda bulunamadi" : "atlandi: unit_search ilk satirinda belirtec yok");
+    }
+
+    // risale-dizin: icerigi olmayan tabloda metin okunamaz; unit_ref ile FTS rowid kumesi ayni olmali (ilk ve son satirin FTS satiri var, sayilar esit).
+    private static SelfCheckItem ContentlessFtsCheck(SqliteConnection connection, HashSet<string> tables)
+    {
+        long refs = Scalar(connection, "SELECT count(*) FROM unit_ref");
+        if (refs == 0)
+        {
+            return new SelfCheckItem("fts_query", true, "atlandi: unit_ref bos");
+        }
+
+        List<string> problems = [];
+        foreach (string table in tables.Contains("unit_tri") ? new[] { "unit_fts", "unit_tri" } : new[] { "unit_fts" })
+        {
+            long rows = Scalar(connection, "SELECT count(*) FROM " + table);
+            long matched = Scalar(connection, "SELECT count(*) FROM unit_ref WHERE rowid IN (SELECT rowid FROM " + table + ")");
+            if (rows != refs || matched != refs)
+            {
+                problems.Add(table + Inv($":satir={rows},eslesen={matched}"));
+            }
+        }
+
+        bool ok = problems.Count == 0;
+        return new SelfCheckItem("fts_query", ok, ok ? Inv($"unit_ref={refs} unit_fts=unit_ref") : "unit_ref ile FTS satirlari uyusmuyor: " + string.Join(",", problems));
     }
 
     private static SelfCheckItem AttributionCheck(SqliteConnection connection, HashSet<string> tables, IReadOnlyList<SourceRow> sources)

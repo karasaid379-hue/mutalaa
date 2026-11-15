@@ -35,6 +35,8 @@ const OPEN_API_SETUP_CODES = [
   'kalite-kapisi',
   'onceki-yayin-bozuk',
   'depo-erisilemiyor',
+  'on-kosul-eksik',
+  'onaylanacak-birim-yok',
   'hata',
   'sunucu-hatasi',
 ];
@@ -42,9 +44,9 @@ const OPEN_API_SETUP_CODES = [
 const MARKER = 'Makine tarafindan okunur hata kodu (type son parcasiyla ayni): ';
 
 describe('problem code list', () => {
-  it('is the fixed list of OpenApiSetup.cs (19 codes)', () => {
+  it('is the fixed list of OpenApiSetup.cs (21 codes)', () => {
     expect([...API_PROBLEM_CODES]).toEqual(OPEN_API_SETUP_CODES);
-    expect(OPEN_API_SETUP_CODES).toHaveLength(19);
+    expect(OPEN_API_SETUP_CODES).toHaveLength(21);
   });
 
   it('is still the list in the server source', () => {
@@ -120,7 +122,7 @@ describe('problemText', () => {
       'decision',
     );
     expect(offset).toBe(
-      "Bu birimin ofsetli alanları (işaretler, cümleler) var; metin düzeltmesi A20'de desteklenecek",
+      'Bu birimin ofsetli alanları (işaretler, cümleler) var; üçüncü taraf Risale metni düzeltilmez (K-52)',
     );
     // Another reason for the same code keeps the generic wording.
     expect(

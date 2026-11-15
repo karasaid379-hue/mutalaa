@@ -6,7 +6,15 @@ from typing import Annotated
 
 import typer
 
-from mutalaa_pipeline import cikis, cli_gloss_ornek, cli_gold, cli_qac, sources
+from mutalaa_pipeline import (
+    cikis,
+    cli_gloss_ornek,
+    cli_gold,
+    cli_qac,
+    cli_risale,
+    cli_risale_rapor,
+    sources,
+)
 from mutalaa_pipeline.export import ayet_sayilari, ic_kesme, test_vectors
 from mutalaa_pipeline.export.ortak import GirdiHatasi, kok_coz
 from mutalaa_pipeline.ingest import meal_kaynaklari
@@ -218,6 +226,21 @@ def export_pg_komutu(
     force: Annotated[
         bool, typer.Option("--force", help="Kabul edilir; export pg parmak izi atlamaz (K-39).")
     ] = False,
+    prune: Annotated[
+        bool,
+        typer.Option(
+            "--prune",
+            help=(
+                "YALNIZ risale-atif-dizini: staged'de olmayan hat+aday xref satirlarini SILER."
+                " Kullanici onayi ve yedek gerekir; --yedek-alindi ile birlikte verilir;"
+                " --run ile verilmez (yalniz en yeni calisma)."
+            ),
+        ),
+    ] = False,
+    yedek_alindi: Annotated[
+        bool,
+        typer.Option("--yedek-alindi", help="--prune icin: yedek alindigini ve onayi dogrular."),
+    ] = False,
     config: Annotated[Path | None, typer.Option("--config", help="Baska bir mutalaa.toml.")] = None,
     kok: KokSecenegi = None,
 ) -> None:
@@ -232,7 +255,14 @@ def export_pg_komutu(
     except GirdiHatasi as hata:
         raise _hata(hata) from hata
     kod = pg.komut_export_pg(
-        ayarlar, depo_kok=depo, source=source, run=run, dry_run=dry_run, force=force
+        ayarlar,
+        depo_kok=depo,
+        source=source,
+        run=run,
+        dry_run=dry_run,
+        force=force,
+        prune=prune,
+        yedek_alindi=yedek_alindi,
     )
     if kod != cikis.BASARILI:
         raise typer.Exit(code=kod)
@@ -467,6 +497,27 @@ def _fikstur_mu(source: str) -> bool:
     return source in KAYNAKLAR
 
 
+def _risale_rnk_mi(source: str) -> bool:
+    """RNK Risale metni mi (A20.2b); ice aktarma: Risale adimlari tembel yuklenir."""
+    from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_RNK
+
+    return source == KAYNAK_RNK
+
+
+def _risale_ornek_mi(source: str) -> bool:
+    """Sentetik Risale fiksturu mu (A20.5a); normalize ve anchor kendi modulundedir."""
+    from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_ORNEK
+
+    return source == KAYNAK_ORNEK
+
+
+def _risale_sayfa_mi(source: str) -> bool:
+    """RNK baski sayfa esleme kaynagi mi (A20.3); `anchor` adimi `page_map` satirlari uretir."""
+    from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_BASKI
+
+    return source == KAYNAK_BASKI
+
+
 def _limit_reddet(limit: int | None) -> None:
     """Tanzil adimlarinda kismi calisma kabul edilmez (G-BUT ve capa kumesi bozulur)."""
     if limit is not None:
@@ -501,6 +552,18 @@ def normalize_komutu(
         from mutalaa_pipeline.adimlar import fikstur as fikstur_adimlari
 
         kod = fikstur_adimlari.komut_normalize(
+            source=source, dry_run=dry_run, force=force, config=config, kok=kok
+        )
+    elif _risale_ornek_mi(source):  # sentetik Risale fiksturu: ayni normalize kodu (A20.5a)
+        from mutalaa_pipeline.adimlar import risale_ornek as risale_ornek_adimlari
+
+        kod = risale_ornek_adimlari.komut_normalize(
+            source=source, dry_run=dry_run, force=force, config=config, kok=kok
+        )
+    elif _risale_rnk_mi(source):  # RNK Risale: tr ve ar_norm anahtarlari (A20.2b)
+        from mutalaa_pipeline.adimlar import risale as risale_adimlari
+
+        kod = risale_adimlari.komut_normalize(
             source=source, dry_run=dry_run, force=force, config=config, kok=kok
         )
     elif meal_kaynaklari.kayitli_mi(source):  # iki meal: Turkce arama anahtarlari (A16.3)
@@ -554,6 +617,24 @@ def anchor_komutu(
         from mutalaa_pipeline.adimlar import fikstur as fikstur_adimlari
 
         kod = fikstur_adimlari.komut_anchor(
+            source=source, dry_run=dry_run, force=force, config=config, kok=kok
+        )
+    elif _risale_ornek_mi(source):  # sentetik Risale fiksturu: capa, page_map, xref (A20.5a)
+        from mutalaa_pipeline.adimlar import risale_ornek as risale_ornek_adimlari
+
+        kod = risale_ornek_adimlari.komut_anchor(
+            source=source, dry_run=dry_run, force=force, config=config, kok=kok
+        )
+    elif _risale_rnk_mi(source):  # RNK Risale: capa, ord, marks, sentences (A20.2b)
+        from mutalaa_pipeline.adimlar import risale as risale_adimlari
+
+        kod = risale_adimlari.komut_anchor(
+            source=source, dry_run=dry_run, force=force, config=config, kok=kok
+        )
+    elif _risale_sayfa_mi(source):  # RNK baski sayfa esleme: page_map satirlari (A20.3)
+        from mutalaa_pipeline.adimlar import risale_sayfa
+
+        kod = risale_sayfa.komut_anchor(
             source=source, dry_run=dry_run, force=force, config=config, kok=kok
         )
     elif meal_kaynaklari.kayitli_mi(source):  # iki meal: capa, ord, tanik skoru (A16.3)
@@ -718,4 +799,6 @@ def sources_check(kok: KokSecenegi = None) -> None:
 
 cli_qac.kaydet(app, ingest_app)  # A17: ingest qac, enrich morphology
 cli_gloss_ornek.kaydet(qa_app)  # A17.6: qa gloss-sample, qa gloss-score
+cli_risale.kaydet(ingest_app)  # A20.1: ingest risale
+cli_risale_rapor.kaydet(qa_app)  # A20.2b: qa risale-rapor
 cli_gold.kaydet(qa_app)  # A18.5: qa gold

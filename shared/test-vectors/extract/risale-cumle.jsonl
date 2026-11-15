@@ -1,0 +1,40 @@
+{"id":"rc-0001","input":{"metin":"Deneme c\u00fcmlesi 1. Deneme c\u00fcmlesi 2. Deneme c\u00fcmlesi 3."},"expected":{"cumleler":[[0,17],[18,35],[36,53]]},"note":"nokta; uc cumle, aralarinda tek bosluk"}
+{"id":"rc-0002","input":{"metin":"Deneme soru mu? Deneme \u00fcnlem! Deneme d\u00fcz."},"expected":{"cumleler":[[0,15],[16,29],[30,41]]},"note":"soru ve unlem isareti de cumleyi bitirir"}
+{"id":"rc-0003","input":{"metin":"Deneme?! Deneme sonu."},"expected":{"cumleler":[[0,8],[9,21]]},"note":"art arda isaretler tek kume; kume cumleye dahil"}
+{"id":"rc-0004","input":{"metin":"Deneme... Deneme sonra."},"expected":{"cumleler":[[0,9],[10,23]]},"note":"uc nokta + buyuk harf: cumle biter"}
+{"id":"rc-0005","input":{"metin":"Deneme... devam eder."},"expected":{"cumleler":[[0,21]]},"note":"uc nokta + kucuk harf: bolunmez"}
+{"id":"rc-0006","input":{"metin":"Deneme\u2026 Deneme sonra."},"expected":{"cumleler":[[0,7],[8,21]]},"note":"U+2026 uc nokta karakteri bitis isaretidir"}
+{"id":"rc-0007","input":{"metin":"Deneme.. Deneme sonra."},"expected":{"cumleler":[[0,8],[9,22]]},"note":"iki nokta kumesi: kisaltma kurallari uygulanmaz, bolunur"}
+{"id":"rc-0008","input":{"metin":"Deneme \"deneme c\u00fcmlesi.\" Deneme sonra."},"expected":{"cumleler":[[0,24],[25,38]]},"note":"kapanis tirnagi cumleye dahil"}
+{"id":"rc-0009","input":{"metin":"Deneme (deneme sonu.) Deneme 2."},"expected":{"cumleler":[[0,21],[22,31]]},"note":"kapanis parantezi cumleye dahil"}
+{"id":"rc-0010","input":{"metin":"Deneme dedi. \"Deneme geldi.\""},"expected":{"cumleler":[[0,12],[13,28]]},"note":"acilis tirnagi yeni cumlenin parcasi; sonraki harf buyuk"}
+{"id":"rc-0011","input":{"metin":"Deneme dedi. \u2014 Deneme geldi."},"expected":{"cumleler":[[0,12],[13,28]]},"note":"cumle basinda tire; tireden sonraki harf buyuk"}
+{"id":"rc-0012","input":{"metin":"Deneme soru mu? diye sordu."},"expected":{"cumleler":[[0,27]]},"note":"soru isaretinden sonra kucuk harf: bolunmez"}
+{"id":"rc-0013","input":{"metin":"Deneme nokta. deneme k\u00fc\u00e7\u00fck harf."},"expected":{"cumleler":[[0,32]]},"note":"nokta + kucuk harf: bolunmez"}
+{"id":"rc-0014","input":{"metin":"Deneme soru mu? I\u015f\u0131k deneme."},"expected":{"cumleler":[[0,15],[16,28]]},"note":"buyuk I (noktasiz) buyuk harftir: bolunur"}
+{"id":"rc-0015","input":{"metin":"Deneme soru mu? \u0131\u015f\u0131k deneme."},"expected":{"cumleler":[[0,28]]},"note":"kucuk noktasiz i (U+0131) kucuk harftir: bolunmez"}
+{"id":"rc-0016","input":{"metin":"Hz. Deneme geldi."},"expected":{"cumleler":[[0,17]]},"note":"kisaltma Hz.: bolunmez"}
+{"id":"rc-0017","input":{"metin":"Deneme Dr. Deneme geldi. Deneme sonra."},"expected":{"cumleler":[[0,24],[25,38]]},"note":"kisaltma Dr. bolunmez; sonraki gercek bitis boler"}
+{"id":"rc-0018","input":{"metin":"A. Deneme geldi."},"expected":{"cumleler":[[0,16]]},"note":"tek harf bas harf: bolunmez"}
+{"id":"rc-0019","input":{"metin":"Deneme (s.a.v.) Deneme geldi."},"expected":{"cumleler":[[0,29]]},"note":"noktali bas harf dizisi: bolunmez"}
+{"id":"rc-0020","input":{"metin":"Deneme (Hz. Deneme) geldi."},"expected":{"cumleler":[[0,26]]},"note":"parantez icinde kisaltma"}
+{"id":"rc-0021","input":{"metin":"1. Deneme birinci. 2. Deneme ikinci."},"expected":{"cumleler":[[0,18],[19,36]]},"note":"1-3 haneli madde numarasindan sonra bolunmez"}
+{"id":"rc-0022","input":{"metin":"Deneme 12. Deneme sonra."},"expected":{"cumleler":[[0,10],[11,24]]},"note":"cumle sonundaki sayi madde numarasi degildir: bolunur"}
+{"id":"rc-0023","input":{"metin":"Deneme 1925. Deneme sonra."},"expected":{"cumleler":[[0,12],[13,26]]},"note":"dort haneli sayidan sonra bolunebilir"}
+{"id":"rc-0024","input":{"metin":"Deneme 3.5 deneme. Deneme 2."},"expected":{"cumleler":[[0,18],[19,28]]},"note":"ondalik nokta bosluk tasimaz: bolmez"}
+{"id":"rc-0025","input":{"metin":"Deneme.Deneme"},"expected":{"cumleler":[[0,13]]},"note":"noktadan sonra bosluk yok: bolunmez"}
+{"id":"rc-0026","input":{"metin":"Deneme 1. Deneme sonu"},"expected":{"cumleler":[[0,9],[10,21]]},"note":"son cumle bitis isareti tasimayabilir"}
+{"id":"rc-0027","input":{"metin":"Deneme"},"expected":{"cumleler":[[0,6]]},"note":"tek cumle, bitis isareti yok"}
+{"id":"rc-0028","input":{"metin":"  Deneme 1.   Deneme 2.  "},"expected":{"cumleler":[[2,11],[14,23]]},"note":"bastaki, aradaki ve sondaki bosluk cumleye girmez"}
+{"id":"rc-0029","input":{"metin":"Deneme 1.\u00a0Deneme 2."},"expected":{"cumleler":[[0,9],[10,19]]},"note":"U+00A0 bosluk sayilir"}
+{"id":"rc-0030","input":{"metin":"Deneme 1.\nDeneme 2."},"expected":{"cumleler":[[0,9],[10,19]]},"note":"satir sonu bosluk sayilir"}
+{"id":"rc-0031","input":{"metin":""},"expected":{"cumleler":[]},"note":"bos metin: cumle yok"}
+{"id":"rc-0032","input":{"metin":"   "},"expected":{"cumleler":[]},"note":"yalniz bosluk: cumle yok"}
+{"id":"rc-0033","input":{"metin":"\n"},"expected":{"cumleler":[]},"note":"yalniz satir sonu: cumle yok"}
+{"id":"rc-0034","input":{"metin":"Deneme \ud835\udc00 c\u00fcmle. Deneme 2."},"expected":{"cumleler":[[0,15],[16,25]]},"note":"BMP disi karakter bir kod noktasidir (UTF-16'da iki birim)"}
+{"id":"rc-0035","input":{"metin":"Dene\u0302me 1. Deneme 2."},"expected":{"cumleler":[[0,10],[11,20]]},"note":"ayrik birlesen isaret kod noktasi sayilir"}
+{"id":"rc-0036","input":{"metin":"Deneme \u0627\u0628. \u062a\u062b Deneme sonra."},"expected":{"cumleler":[[0,10],[11,27]]},"note":"ar araligi verilmezse Arap harfinden once gelen nokta boler (Arap harfi buyuk harf degildir)"}
+{"id":"rc-0037","input":{"metin":"Deneme \u0627\u0628. \u062a\u062b Deneme sonra.","ar":[[7,13]]},"expected":{"cumleler":[[0,27]]},"note":"ar araligi icindeki nokta bolmez: tek cumle"}
+{"id":"rc-0038","input":{"metin":"Deneme \u0627\u0628\u062a\u062b. Deneme sonra.","ar":[[7,11]]},"expected":{"cumleler":[[0,12],[13,26]]},"note":"ar araligi bitince gelen nokta boler; aralik bitis isaretini icermez"}
+{"id":"rc-0039","input":{"metin":"\u0627\u0628\u062a\u062b\u061f \u062c\u062d\u062e."},"expected":{"cumleler":[[0,5],[6,10]]},"note":"Arapca soru isareti U+061F ve nokta; sonraki Arap harfi buyuk harf degildir"}
+{"id":"rc-0040","input":{"metin":"\u0627\u0628\u062a\u062b. \u062c\u062d\u062e! \u0627\u0628"},"expected":{"cumleler":[[0,5],[6,10],[11,13]]},"note":"Arap harfli metinde nokta, unlem ve bitis isaretsiz son cumle"}
