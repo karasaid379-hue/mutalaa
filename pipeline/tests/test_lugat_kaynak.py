@@ -115,6 +115,29 @@ def test_tanim_bayt_bayt_yalniz_bosluk_ve_sekme_kirpilir() -> None:
             assert tanim.encode() == kaynak[baslik].strip(" \t").encode()
 
 
+def test_uzun_tanim_kilitte_sayilir_ama_alinir_ve_kesilmez() -> None:
+    sinir = lugat_kaynak.TANIM_ESIGI
+    uzun = "u" * (sinir + 1)
+    ayr = parcala(
+        [
+            f"denemea|{uzun}",
+            f"denemeb|{'t' * sinir}",  # tam sinirda: uzun degil
+            # 2 bayt/harf: sayilan kod noktasidir, bayt degil
+            f"denemec|{'\N{LATIN SMALL LETTER C WITH CEDILLA}' * sinir}",
+            f"denemed|{TANIM_RNK}-1",
+        ]
+    )
+    secilen = sec(RNK, ayr, None)
+    assert secilen[0].tanim == uzun  # sinir kaynak tanimina uygulanmaz, kesilmez
+    assert len(secilen) == 4
+    assert sayilari_hesapla(ayr, secilen)["uzun_tanim"] == 1
+    # rganeyev'de yalniz RNK'da olmayan maddeler sayilir: RNK'da bulunan uzun tanim sayilmaz
+    rg = parcala([f"denemea: {uzun}", f"denemee: {uzun}"], RG)
+    secilen_rg = sec(RG, rg, frozenset({esleme_anahtari("denemea")}))
+    assert [m.baslik for m in secilen_rg] == ["denemee"]
+    assert sayilari_hesapla(rg, secilen_rg)["uzun_tanim"] == 1
+
+
 def test_rganeyev_ayraci_ilk_iki_nokta_ve_ayractan_sonraki_tek_bosluk() -> None:
     ayr = parcala(RG_SATIRLARI, RG)
     assert ayr.bozuk["ayracsiz"] == 1

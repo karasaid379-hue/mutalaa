@@ -7,8 +7,8 @@ provider = "github"
 kaynak_url = "https://github.com/rganeyev/Sozluk"
 atif_metni = "Lügat: GitHub rganeyev/Sozluk deposu, SozlukValidator/words.txt (eser adı depoda beyan edilmemiştir)."
 notlar = '''
-K-51 madde 14: ikinci lügat kaynağı; yalnız lugat-rnk'de bulunmayan normalize başlıklar alınır (yaklaşık 1.900); RNK'da olan başlık bu dosyadan alınmaz.
-Biçim: UTF-8, satır başına başlık: tanım (56.541 satır, 50.385 normalize benzersiz başlık); 4 satırda ayraç yok.
+K-51 madde 14: ikinci lügat kaynağı; yalnız lugat-rnk'de bulunmayan normalize başlıklar alınır (1.999 madde, 1.928 başlık); RNK'da olan başlık bu dosyadan alınmaz.
+Biçim: UTF-8, satır başına başlık: tanım (56.541 satır, 56.537 geçerli madde, 50.382 benzersiz eşleme anahtarı); 4 satırda ayraç yok. Alınan 1.999 maddenin 3'ünün tanımı 2.000 kod noktasından uzundur (kilitte `uzun_tanim`): düzenlemesiz onaylanabilir, düzenlenecekse editör kısaltır.
 Sürüm: sabit commit (25 Nisan 2017 tarihli); sürüm etiketi yok. Alma: data/gelen/lugat-sozluk-rganeyev/2026-11-15/ (words.txt, SHA256SUMS).
 Bilinen kusur: bazı sözlerde i yerine î yazılmış ("îstek", "îndirme"); düzeltilmez, kaynak bayt bayt saklanır, rapora sayılır. Anlamlar arasında * ayracı korunmuş.
 Eser kimliği: depo eser adı beyan etmez. Abdullah Yeğin'in Yeni Lûgat'ı (Hizmet Vakfı, 1997; kaynak kaydı lugat-yegin-yeni-lugat) ile örneklemde tanımlar örtüşüyor; tanıklıktır, eser adı olarak yazılmaz (Doğrulanacak: İ-28).'''

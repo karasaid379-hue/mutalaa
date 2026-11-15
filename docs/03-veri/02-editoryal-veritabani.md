@@ -213,7 +213,7 @@ CREATE TABLE lugat_madde (                         -- Risale lügat maddesi (K-5
   anlam_no         smallint NOT NULL DEFAULT 1 CHECK (anlam_no >= 1),   -- aynı kaynağın aynı başlığının n. anlamı (kaynak sırası, 1'den; K-51 madde 14)
   osmanlica_yazim  text,
   koken_dil        text,
-  tanim_tr         text,                             -- origin 'kaynak': kaynaktaki tanım, bayt bayt (NFC yok; en çok 2000 kod noktası sınırı dosya kapısındadır); origin 'editor': editörün yazdığı tanım, ilk kayıtta NFC; origin 'hat': boş
+  tanim_tr         text,                             -- origin 'kaynak': kaynaktaki tanım, bayt bayt (NFC yok; uzunluk sınırı yok, 2000 kod noktasından uzun olan kaynak tanımı kilitte `uzun_tanim` diye sayılır ve yalnız düzenlemesiz onaylanır); origin 'editor': editörün yazdığı tanım, en çok 2000 kod noktası, ilk kayıtta NFC; origin 'hat': boş
   ar_kok_id        integer REFERENCES root(id),
   kaynaklar        jsonb NOT NULL DEFAULT '{}',      -- sıklık (siklik, int), kitap sıklıkları (kitaplar), sözlük isabetleri; anlam başvurusu burada DEĞİL, review.onerilen içinde durur
   duzey            smallint NOT NULL CHECK (duzey BETWEEN 1 AND 4),   -- 1..3 Risale sıklığı (okurun "Lügat: Kapalı/Az/Orta/Çok" ayarını besler), 4 = Risale başlık söz listesinde yok

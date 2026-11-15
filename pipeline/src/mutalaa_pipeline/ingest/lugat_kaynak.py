@@ -70,6 +70,11 @@ KAYNAKLAR: Final = (KAYNAK_RNK, KAYNAK_RGANEYEV)
 KILIT_SURUMU: Final = 1
 EN_BUYUK_BAYT: Final = 32 << 20  # gercek dosyalar 5,2 MB ve 4,7 MB
 KIRPILAN: Final = " \t"
+# Editorun yazdigi ya da duzenledigi tanimin sunucudaki ust siniri (`LugatMaddeText.MaxLength`,
+# kod noktasi). Kaynak tanimina ingest'te sinir uygulanmaz (bayt bayt alinir); bu esigi asan
+# tanim kilitte `uzun_tanim` olarak SAYILIR: duzenlemesiz onaylanabilir, duzenlenecekse editor
+# kisaltmalidir.
+TANIM_ESIGI: Final = 2000
 BOM: Final = b"\xef\xbb\xbf"
 UYARI: Final = "Yeni lugat surumu kilit guncellenerek (/karar) alinir."
 
@@ -127,6 +132,7 @@ SAYI_ANAHTARLARI: Final = (
     "alinan_madde",
     "alinan_ham_baslik",
     "anahtarsiz_madde",
+    "uzun_tanim",
     "i_sapkali_baslik",
     "i_sapkali_sozcuk_basi",
 )
@@ -292,6 +298,7 @@ def sayilari_hesapla(ayr: Ayristirma, secilen: Sequence[Madde]) -> dict[str, int
         "alinan_madde": len(secilen),
         "alinan_ham_baslik": len(alinan_ham),
         "anahtarsiz_madde": sum(1 for m in secilen if m.anahtar == ""),
+        "uzun_tanim": sum(1 for m in secilen if len(m.tanim) > TANIM_ESIGI),
         "i_sapkali_baslik": sum(1 for b in alinan_ham if I_SAPKALI in b),
         "i_sapkali_sozcuk_basi": sum(
             1 for b in alinan_ham if any(s.startswith(I_SAPKALI) for s in b.split())
