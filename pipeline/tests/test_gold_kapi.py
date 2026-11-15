@@ -51,6 +51,7 @@ def _sonuc(
         olculen_ornek=6,
         notlar=["not"],
         uretim_kaynaklari=["kaynak-z"],
+        min_ornek=kapi.KOK_MIN_REFERANSLI_TAHMIN,
     )
 
 
@@ -118,6 +119,30 @@ def test_onceki_kabul_yalniz_gecti_ve_en_son(tmp_path: Path) -> None:
     assert kapi.onceki_olculer(onceki) == {"duyarlilik": 0.86, "kesinlik": 0.97}
     assert kapi.onceki_kabul_edilmis(tmp_path, "lemma") is None  # baska tur
     assert kapi.onceki_olculer(None) is None
+
+
+def test_onceki_kabul_kok_icin_orneklem_sarti_oncesi_gecti_raporu_sayilmaz(
+    tmp_path: Path,
+) -> None:
+    """kok/tr_lemma: en az 30 referansli tahmin sarti getirilmeden once yazilmis `gecti` rapor
+    (alani yok) yeni sarta gore kabul edilmis degildir; gerileme referansi olmaz. Sartli rapor
+    olur."""
+    eski = _sonuc({"kesinlik": 1.0}, "gecti", "1" * 64)
+    eski.min_ornek = None  # sart oncesi bicim: `min_referansli_tahmin` alani yok
+    kapi.rapor_yaz(tmp_path, eski, kapi.rapor_govdesi(eski, _an(9), []))
+    assert "min_referansli_tahmin" not in kapi.rapor_govdesi(eski, _an(9), [])
+    assert kapi.onceki_kabul_edilmis(tmp_path, "kok") is None
+    yeni = _sonuc({"kesinlik": 0.97}, "gecti", "2" * 64)
+    kapi.rapor_yaz(tmp_path, yeni, kapi.rapor_govdesi(yeni, _an(10), []))
+    onceki = kapi.onceki_kabul_edilmis(tmp_path, "kok")
+    assert onceki is not None and onceki["min_referansli_tahmin"] == 30
+    assert onceki["data_version"] == yeni.data_version
+    # baska turler bu sarttan etkilenmez (alan aranmaz)
+    lemma = _sonuc({"tutarlilik": 1.0}, "gecti", "3" * 64)
+    lemma.cli_tur = "lemma"
+    lemma.min_ornek = None
+    kapi.rapor_yaz(tmp_path, lemma, kapi.rapor_govdesi(lemma, _an(11), []))
+    assert kapi.onceki_kabul_edilmis(tmp_path, "lemma") is not None
 
 
 def test_onceki_kabul_bozuk_rapor_sessizce_atlanmaz(tmp_path: Path) -> None:

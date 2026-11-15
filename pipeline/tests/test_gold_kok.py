@@ -259,40 +259,117 @@ def test_kok_olc_kesinlik_duyarlilik_elle_hesap() -> None:
     assert "Kur'an'da gecen" in str(kapsam["not"])
 
 
-def test_kok_olc_kapi_gecer() -> None:
-    manifest, ornekler, evren = _olcum_dunyasi()
-    don = [str(o["id"]) for o in ornekler[:4]]
-    tahminler = {
-        don[0]: _tahmin(don[0], "k1x"),
-        don[1]: _tahmin(don[1], "k1x"),
-        don[2]: _tahmin(don[2], "k2x"),
-        don[3]: _tahmin(don[3], "k3x"),
+def _buyuk_dunya(
+    n_ornek: int, n_tahmin: int, n_dogru: int
+) -> tuple[
+    dict[str, object], list[dict[str, object]], dict[str, dict[str, object]], dict[str, Tahmin]
+]:
+    """`n_ornek` dondurulmus ornek (hepsinin referansi `k1x`); ilk `n_tahmin` ornek tahminli,
+    bunlarin ilk `n_dogru` tanesi dogru (`k1x`), kalani yanlis (`k2x`)."""
+    adlar = [f"l{i}" for i in range(4000) if setler.bolme("kok", f"l{i}", 3) == "dondurulmus"]
+    adlar = adlar[:n_ornek]
+    assert len(adlar) == n_ornek
+    ornekler: list[dict[str, object]] = [
+        {
+            "id": ad,
+            "sinif": "silver",
+            "kaynak": {"source_id": "quranwbw-tr", "surum": "v", "madde": "m"},
+            "dogrulama_yontemi": "d",
+            "uretim_komutu": "u",
+            "tr_lemma": ad,
+            "siklik_bandi": "orta",
+            "toplam_kelime": 20,
+            "referans_kokler": [{"letters_bw": "k1x", "destek": 10}],
+        }
+        for ad in adlar
+    ]
+    manifest, _ = setler.set_hazirla(
+        "kok",
+        {
+            "sinif": "silver",
+            "olcum_turu": "dogruluk",
+            "kaynak": kok.set_kaynaklari("v", "q", "z"),
+            "dogrulama_yontemi": "d",
+            "uretim_komutu": "u",
+            "tohum": 3,
+        },
+        ornekler,
+    )
+    evren = {
+        ad: {"lemma": ad, "toplam_kelime": 20, "referans_kokler": ornekler[i]["referans_kokler"]}
+        for i, ad in enumerate(adlar)
     }
+    tahminler = {
+        ad: _tahmin(ad, "k1x" if i < n_dogru else "k2x") for i, ad in enumerate(adlar[:n_tahmin])
+    }
+    return manifest, ornekler, evren, tahminler
+
+
+def test_kok_olc_kapi_gecer_orneklem_yeterliyse() -> None:
+    manifest, ornekler, evren, tahminler = _buyuk_dunya(40, 40, 40)
     s = kok_olc(manifest, ornekler, evren, tahminler)
     assert s.olculer == {"kesinlik": 1.0}
     assert s.ayrintilar["kapsam_bilgisi"]["duyarlilik"] == 1.0  # type: ignore[index]
-    assert s.sonuc == "gecti"
+    assert s.sonuc == "gecti" and s.kaldi_nedeni is None
+    assert s.min_ornek == 30
+    assert s.ayrintilar["olculemedi_bilgi"] is None
+    assert s.ayrintilar["orneklem_sarti"] == {  # type: ignore[comparison-overlap]
+        "min_referansli_tahmin": 30,
+        "referansli_tahmin": 40,
+        "saglandi": True,
+    }
+
+
+def test_kok_orneklem_sarti_30_alti_kesinlik_1_olsa_bile_kaldi() -> None:
+    """Proje sahibi karari (15 Kasim 2026): en az 30 referansli tahmin. 29 tahminin 29'u dogru
+    (kesinlik 1,0, esik 0,95) olsa da kapi `kaldi`: kanit yetersiz (Wilson alt siniri ~0,88)."""
+    manifest, ornekler, evren, tahminler = _buyuk_dunya(40, 29, 29)
+    s = kok_olc(manifest, ornekler, evren, tahminler)
+    assert s.olculer == {"kesinlik": 1.0}  # kesinlik yine hesaplanir ve yazilir
+    assert s.esik_sonuclari == {"kesinlik": True}  # esik tutar; sart ayrica uygulanir
+    assert s.sonuc == "kaldi" and s.kaldi_nedeni == "orneklem_yetersiz"
+    bilgi = s.ayrintilar["olculemedi_bilgi"]
+    assert bilgi["referansli_tahmin"] == 29 and bilgi["esik"] == 30  # type: ignore[index]
+    assert bilgi["kesinlik_bilgi"] == 1.0  # type: ignore[index]
+    assert s.ayrintilar["orneklem_sarti"]["saglandi"] is False  # type: ignore[index]
+
+
+def test_kok_orneklem_siniri_tam_30_yeterli() -> None:
+    manifest, ornekler, evren, tahminler = _buyuk_dunya(40, 30, 30)
+    s = kok_olc(manifest, ornekler, evren, tahminler)
+    assert s.sonuc == "gecti" and s.kaldi_nedeni is None
+    assert s.ayrintilar["orneklem_sarti"]["referansli_tahmin"] == 30  # type: ignore[index]
+
+
+def test_kok_orneklem_yeterli_ama_kesinlik_095_altinda_kaldi() -> None:
+    # 30 tahmin, 28 dogru: 0,9333 < 0,95; neden kesinlik (orneklem_yetersiz DEGIL)
+    manifest, ornekler, evren, tahminler = _buyuk_dunya(40, 30, 28)
+    s = kok_olc(manifest, ornekler, evren, tahminler)
+    assert s.sonuc == "kaldi" and s.kaldi_nedeni is None
+    assert s.olculer["kesinlik"] == pytest.approx(28 / 30, abs=1e-6)
+    assert s.esik_sonuclari == {"kesinlik": False}
+    assert s.ayrintilar["olculemedi_bilgi"] is None
+
+
+def test_kok_orneklem_yeterli_kesinlik_tam_095_gecer() -> None:
+    # 40 tahmin, 38 dogru: 0,95 (sinir, esit gecer)
+    manifest, ornekler, evren, tahminler = _buyuk_dunya(40, 40, 38)
+    s = kok_olc(manifest, ornekler, evren, tahminler)
+    assert s.olculer["kesinlik"] == pytest.approx(0.95) and s.sonuc == "gecti"
 
 
 def test_kok_kapisi_yalniz_kesinlige_baglidir_duyarlilik_sonucu_etkilemez() -> None:
-    """Kesinlik 1,0 ama duyarlilik 0,25 (bilgi esigi 0,80'in cok altinda): kapi gecer; duyarlilik
-    `kapsam_bilgisi` alaninda bilgi olarak durur. Kesinlik esigin altindaysa duyarlilik 1,0 olsa da
-    kaldi."""
-    manifest, ornekler, evren = _olcum_dunyasi()
-    don = [str(o["id"]) for o in ornekler[:4]]
-    dusuk_duyarlilik = {don[0]: _tahmin(don[0], "k1x")}  # 1 tahmin, dogru; 3 ornek tahminsiz
-    s = kok_olc(manifest, ornekler, evren, dusuk_duyarlilik)
+    """Orneklem yeterli (30 referansli tahmin), kesinlik 1,0 ama duyarlilik 0,15 (bilgi esigi
+    0,80'in cok altinda): kapi gecer; duyarlilik `kapsam_bilgisi` alaninda bilgi olarak durur.
+    Kesinlik esigin altindaysa duyarlilik yuksek olsa da kaldi."""
+    manifest, ornekler, evren, tahminler = _buyuk_dunya(200, 30, 30)
+    s = kok_olc(manifest, ornekler, evren, tahminler)
     assert s.olculer == {"kesinlik": 1.0}
-    assert s.ayrintilar["kapsam_bilgisi"]["duyarlilik"] == pytest.approx(0.25)  # type: ignore[index]
+    assert s.ayrintilar["kapsam_bilgisi"]["duyarlilik"] == pytest.approx(0.15)  # type: ignore[index]
     assert s.ayrintilar["kapsam_bilgisi"]["bilgi_esigi_tuttu"] is False  # type: ignore[index]
     assert s.sonuc == "gecti" and s.esik_sonuclari == {"kesinlik": True}
-    # kesinlik 0,5, duyarlilik 1,0 ... kesinlik esigin altinda: kaldi
-    yanlis = {
-        don[0]: _tahmin(don[0], "k1x"),
-        don[1]: _tahmin(don[1], "k3x"),  # yanlis
-        don[2]: _tahmin(don[2], "k2x"),
-        don[3]: _tahmin(don[3], "k3x"),
-    }
+    # kesinlik 0,5 (duyarlilik 0,15 ayni): kesinlik esigin altinda -> kaldi
+    manifest, ornekler, evren, yanlis = _buyuk_dunya(40, 40, 20)
     t = kok_olc(manifest, ornekler, evren, yanlis)
     assert t.sonuc == "kaldi" and t.olculer["kesinlik"] < 0.95
 

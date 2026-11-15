@@ -549,10 +549,12 @@ def sonuclandir(o: Oturum, s: TurSonucu) -> None:
         o.regresyonlar.append(f"{s.cli_tur}.{g.olcu} {g.onceki:.4f} -> {g.simdiki:.4f}")
     if gerileme:
         # esikler tutsa bile gerileme kabul edilmis sonucu bozar: kapi `kaldi` (cikis 1 de korunur)
-        s.kaldi_nedeni = "gerileme: " + ", ".join(
+        neden = "gerileme: " + ", ".join(
             f"{g.olcu} {g.onceki:.4f} -> {g.simdiki:.4f}" for g in gerileme
         )
-        s.notlar.append(f"Sonuc kaldi: {s.kaldi_nedeni} (esik 0,02'den fazla dusus).")
+        # onceden konmus bir neden (orneklem_yetersiz) korunur
+        s.kaldi_nedeni = neden if s.kaldi_nedeni is None else f"{s.kaldi_nedeni}; {neden}"
+        s.notlar.append(f"Sonuc kaldi: {neden} (esik 0,02'den fazla dusus).")
         s.sonuc = KALDI
     govde = rapor_govdesi(
         s,

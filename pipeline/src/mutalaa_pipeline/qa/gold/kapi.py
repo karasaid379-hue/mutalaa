@@ -12,7 +12,8 @@ yeniden serilestir ve ozeti al.
 
 ONCEKI KABUL EDILMIS KOSU: ayni `tur` icin `sonuc = gecti` olan en son rapor (`olculdu_utc`);
 gerileme kurali yalniz bununla karsilastirir. `kaldi` raporlar ve `--dry-run` (rapor yazmaz)
-referans olmaz.
+referans olmaz. `kok` icin ayrica rapor `min_referansli_tahmin = 30` sartini tasimali: sart
+getirilmeden once yazilmis `gecti` rapor kabul edilmis sayilmaz.
 """
 
 import hashlib
@@ -53,6 +54,14 @@ ALT_TURLER: Final[Mapping[str, frozenset[str]]] = {
     "kok": frozenset({"tr_lemma", "xref"}),
 }
 RAPOR_SURUMU: Final = 1
+# YALNIZ kok/tr_lemma kapisina ozgu en az ornek sarti (proje sahibi karari, 15 Kasim 2026; karar
+# olcum SONRASI, kasitli ve onayli): dondurulmus parcada en az 30 REFERANSLI tahmin olculmedikce
+# kesinlik kaniti sayilmaz ve sonuc `kaldi` yazilir (`kaldi_nedeni = orneklem_yetersiz`).
+# Gerekce: 7 tahminle olculen 1,0 kesinligin Wilson %95 alt siniri 0,65'tir; bu `public` kapisini
+# acmak icin yetersiz bir kanittir. Diger kapilar (lemma, kok/xref, benzer_ayet, atif, iktibas)
+# bu sarta tabi DEGILDIR.
+KOK_MIN_REFERANSLI_TAHMIN: Final = 30
+ORNEKLEM_YETERSIZ: Final = "orneklem_yetersiz"
 
 
 @dataclass
@@ -73,6 +82,9 @@ class TurSonucu:
     alt_sonuclar: dict[str, str] = field(default_factory=dict)
     uretim_kaynaklari: list[str] = field(default_factory=list)
     kaldi_nedeni: str | None = None  # kapi esikleri tutsa bile sonucun `kaldi` yazilma nedeni
+    min_ornek: int | None = (
+        None  # yalniz kok/tr_lemma: en az referansli tahmin sarti (rapora yazilir)
+    )
 
     @property
     def gate_tur(self) -> str:
@@ -141,6 +153,8 @@ def rapor_govdesi(
     }
     if s.kaldi_nedeni is not None:  # yalniz doluysa yazilir: eski raporlarin bicimi degismez
         govde["kaldi_nedeni"] = s.kaldi_nedeni
+    if s.min_ornek is not None:  # yalniz kok/tr_lemma: raporun hangi sarta gore kabul edildigi
+        govde["min_referansli_tahmin"] = s.min_ornek
     return govde
 
 
@@ -188,8 +202,13 @@ def onceki_kabul_edilmis(veri_kok: Path, cli_tur: str) -> dict[str, object] | No
     adaylar: list[dict[str, object]] = []
     for yol in sorted(klasor.glob(f"*-gold-{cli_tur}.json")):
         rapor = rapor_oku(yol)
-        if rapor.get("tur") == cli_tur and rapor.get("sonuc") == GECTI:
-            adaylar.append(rapor)
+        if rapor.get("tur") != cli_tur or rapor.get("sonuc") != GECTI:
+            continue
+        if cli_tur == "kok" and rapor.get("min_referansli_tahmin") != KOK_MIN_REFERANSLI_TAHMIN:
+            # kok/tr_lemma: en az ornek sarti getirilmeden once `gecti` yazilmis rapor yeni sarta
+            # gore kabul edilmis sayilmaz (sarti hic saglamamis olabilir); gerileme referansi olmaz.
+            continue
+        adaylar.append(rapor)
     if not adaylar:
         return None
     return max(adaylar, key=lambda r: str(r.get("olculdu_utc")))

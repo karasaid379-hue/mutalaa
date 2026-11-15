@@ -61,6 +61,7 @@ def _sonuc(
         tahmin_ozeti=f"{kesinlik:.4f}".encode().hex().ljust(64, "0"),
         olculen_ornek=6,
         uretim_kaynaklari=["kaynak-b"],
+        min_ornek=kapi.KOK_MIN_REFERANSLI_TAHMIN if cli_tur == "kok" else None,
     )
 
 
@@ -360,6 +361,41 @@ def test_kok_gerilemesi_yalniz_kesinlik_eski_rapordaki_duyarlilik_sayilmaz(
     assert _calistir(dunya) == cikis.BASARILI
     son = max((kapi.rapor_oku(p) for p in _raporlar(tmp_path)), key=lambda r: str(r["olculdu_utc"]))
     assert son["gerileme"] == [] and "kaldi_nedeni" not in son
+
+
+def test_orneklem_yetersiz_kaldi_nedeni_rapora_yazilir_ve_gerileme_ile_birlesir(
+    dunya: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """kok kapisi `orneklem_yetersiz` ile `kaldi` yazildiysa rapor bu nedeni tasir; ayni kosuda
+    gerileme de varsa neden ezilmez, birlestirilir (cikis 1)."""
+
+    def yetersiz(kesinlik: float):  # type: ignore[no-untyped-def]
+        def f(o: object) -> TurSonucu:
+            s = _sonuc("kok", kesinlik, olculer={"kesinlik": kesinlik})
+            s.sonuc = "kaldi"
+            s.kaldi_nedeni = "orneklem_yetersiz"
+            return s
+
+        return f
+
+    _sahte(monkeypatch, kok=yetersiz(1.0))
+    baglanti = SahteBaglanti()
+    assert _calistir(dunya, baglanti=baglanti) == cikis.BASARILI
+    (rapor,) = _raporlar(tmp_path)
+    r = kapi.rapor_oku(rapor)
+    assert r["sonuc"] == "kaldi" and r["kaldi_nedeni"] == "orneklem_yetersiz"
+    assert r["min_referansli_tahmin"] == 30
+    assert baglanti.cagrilar[0][1][4] == "kaldi"
+    # kaldi rapor referans olmaz: sonraki yetersiz kosuda gerileme yok
+    _sahte(monkeypatch, kok=yetersiz(0.5))
+    assert _calistir(dunya) == cikis.BASARILI
+    # kabul edilmis (sartli, gecti) kosu varsa ve kesinlik 0,02'den fazla duserse neden birlesir
+    _sahte(monkeypatch, kok=lambda o: _sonuc("kok", 0.99))
+    assert _calistir(dunya) == cikis.BASARILI
+    _sahte(monkeypatch, kok=yetersiz(0.5))
+    assert _calistir(dunya) == cikis.QA_KALDI
+    son = max((kapi.rapor_oku(p) for p in _raporlar(tmp_path)), key=lambda x: str(x["olculdu_utc"]))
+    assert str(son["kaldi_nedeni"]).startswith("orneklem_yetersiz; gerileme: kesinlik 0.9900")
 
 
 def test_turleri_coz() -> None:
