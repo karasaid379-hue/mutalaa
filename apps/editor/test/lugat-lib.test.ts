@@ -163,7 +163,17 @@ describe('parseLugatKey (K-51 madde 14)', () => {
   });
 
   it('gives null for an unreadable key or a non-canonical meaning number', () => {
-    for (const key of ['', 'deneme', ':x', 'a:', 'a:0:x', 'a:01:x', 'a:32768:x', 'a:2:', 'a:2:  ']) {
+    for (const key of [
+      '',
+      'deneme',
+      ':x',
+      'a:',
+      'a:0:x',
+      'a:01:x',
+      'a:32768:x',
+      'a:2:',
+      'a:2:  ',
+    ]) {
       expect(parseLugatKey(key), key).toBeNull();
     }
   });

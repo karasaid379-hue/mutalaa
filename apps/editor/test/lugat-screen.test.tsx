@@ -377,7 +377,11 @@ describe('Lügat tab of LemmaQueue', () => {
       reason();
       await submit(user);
       await waitFor(() => expect(decisionCalls()).toHaveLength(1));
-      expect(decisionCalls()[0]!.json).toEqual({ karar: 'onaylandi', duzenlenen: null, gerekce: 'Uygun' });
+      expect(decisionCalls()[0]!.json).toEqual({
+        karar: 'onaylandi',
+        duzenlenen: null,
+        gerekce: 'Uygun',
+      });
     });
 
     it('refuses an emptied definition while editing a source definition', async () => {
@@ -393,7 +397,10 @@ describe('Lügat tab of LemmaQueue', () => {
     });
 
     it('offers no unchanged approval for a madde without a source definition: only the field', async () => {
-      const { user } = setup({ route: '/?kayit=301', detail: lugatSourceDetail(301, { tanim: null }) });
+      const { user } = setup({
+        route: '/?kayit=301',
+        detail: lugatSourceDetail(301, { tanim: null }),
+      });
       await card();
       await approve(user);
       expect(field()).toHaveValue('');
@@ -407,7 +414,9 @@ describe('Lügat tab of LemmaQueue', () => {
       const { user } = setup({ route: '/?kayit=301', detail: lugatSourceDetail(301) });
       await card();
       await user.click(await screen.findByRole('radio', { name: tr.review.reject }));
-      expect(screen.queryByRole('button', { name: trLugat.edit.editAndApprove })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: trLugat.edit.editAndApprove }),
+      ).not.toBeInTheDocument();
       reason('Uygun değil');
       await submit(user);
       await waitFor(() => expect(decisionCalls()).toHaveLength(1));
@@ -420,10 +429,7 @@ describe('Lügat tab of LemmaQueue', () => {
 
     it('shows the source name and the meaning number under each madde of the list (legacy key: meaning 1)', async () => {
       const { user } = setup({
-        items: [
-          lugatItem(301, { hedef_anahtar: `lugat-rnk:2:${lugatWord(301)}` }),
-          lugatItem(302),
-        ],
+        items: [lugatItem(301, { hedef_anahtar: `lugat-rnk:2:${lugatWord(301)}` }), lugatItem(302)],
       });
       await openLugat(user);
       await screen.findAllByTestId('lugat-item-source');
@@ -436,7 +442,10 @@ describe('Lügat tab of LemmaQueue', () => {
     it('has no axe violations with the source definition card and the edit field open', async () => {
       fake.get('/api/v1/reviews/{id}', ok(lugatSourceDetail(301)));
       signedIn(fake);
-      fake.get('/api/v1/reviews', ok(page([lugatItem(301, { hedef_anahtar: `lugat-rnk:1:${lugatWord(301)}` })])));
+      fake.get(
+        '/api/v1/reviews',
+        ok(page([lugatItem(301, { hedef_anahtar: `lugat-rnk:1:${lugatWord(301)}` })])),
+      );
       const { container, user } = renderApp(fake, '/kuyruk/lemma?kayit=301');
       await user.click(await screen.findByRole('tab', { name: trLemma.tabs.lugat }));
       await user.click(

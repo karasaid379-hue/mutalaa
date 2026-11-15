@@ -110,7 +110,7 @@ export const trOcr = {
     openHint:
       'Düzeltmek için karar formunda Onayla’yı seçin; Düzenlenen metin alanı açılır ve metin düzenlenmiş haliyle onaylanır.',
     offsetBlocked:
-      "Bu birimin ofsetli alanları (işaretler, cümleler) var; metin değişince ofsetler kayar. Üçüncü taraf Risale metni düzeltilmez (K-51); düzeltme kapalıdır.",
+      'Bu birimin ofsetli alanları (işaretler, cümleler) var; metin değişince ofsetler kayar. Üçüncü taraf Risale metni düzeltilmez (K-51); düzeltme kapalıdır.',
     notAvailable: 'Bu kayıtta metin düzeltmesi yapılamaz (ikinci onay aşaması ya da kapalı kayıt).',
     immutable: 'Âyet metni düzenlenemez.',
   },
