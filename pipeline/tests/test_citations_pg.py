@@ -25,6 +25,7 @@ from citations_yardimci import (
     paragraf,
     tohumla,
 )
+from hat_yardimci import ansisiz
 from links_yardimci import sozcuk
 
 from mutalaa_pipeline.anchor import content_hash
@@ -702,6 +703,7 @@ def test_komut_kaydi_ve_target_zorunlu() -> None:
     from mutalaa_pipeline.cli import app
 
     yardim = CliRunner().invoke(app, ["enrich", "citations", "--help"])
-    assert yardim.exit_code == 0 and "--target" in yardim.output
+    # CI renkli cikti uretir; secenek adini kacis dizileri boler (hat_yardimci.ansisiz).
+    assert yardim.exit_code == 0 and "--target" in ansisiz(yardim.output)
     eksik = CliRunner().invoke(app, ["enrich", "citations"])
     assert eksik.exit_code == 2  # --target zorunlu (kullanim hatasi)
