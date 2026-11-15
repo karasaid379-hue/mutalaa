@@ -571,6 +571,21 @@ def test_g_but_bitisiklik_ofset_ve_capa_kalir(bk: RnkKoku) -> None:
     assert "dosya sonunda" in kalan(bozulmus(g, lambda s: s[3].update(end_offset=1)), "G-BUT")
 
 
+def test_g_cap_satir_birim_ozetleri_tasir_ve_birimle_ayni_olmali(bk: RnkKoku) -> None:
+    """`start_hash`/`end_hash`: 64 haneli onaltilik ve anchor ciktisindaki ozetle ayni."""
+    assert bk.zincir() == 0 and baski(bk) == 0
+    g = girdi_yukle(bk)
+    assert all(
+        len(str(s["start_hash"])) == 64 and len(str(s["end_hash"])) == 64 for s in g.satirlar
+    )
+    assert "ozet biciminde" in kalan(bozulmus(g, lambda s: s[0].update(start_hash="x")), "G-CAP")
+    assert "ozet biciminde" in kalan(bozulmus(g, lambda s: s[0].update(end_hash="A" * 64)), "G-CAP")
+    assert "ozet birimle farkli" in kalan(
+        bozulmus(g, lambda s: s[1].update(end_hash="0" * 64)), "G-CAP"
+    )
+    assert "alan kumesi" in kalan(bozulmus(g, lambda s: s[0].pop("start_hash")), "G-BUT")
+
+
 def test_g_but_json_meta_ve_kilit_sayfa_sayisi_kalir(bk: RnkKoku) -> None:
     assert bk.zincir() == 0 and baski(bk) == 0
     g = girdi_yukle(bk)

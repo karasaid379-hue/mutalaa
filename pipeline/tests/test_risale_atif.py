@@ -801,3 +801,22 @@ def test_cli_uctan_uca(s: Senaryo) -> None:
     assert "G-KAY gecti" in r.output and "G-NOR gecti" in r.output
     r = runner.invoke(cli.app, ["export", "pg", "--source", ATIF, "--prune", "--kok", str(s.kok)])
     assert r.exit_code == 2  # --prune --yedek-alindi olmadan reddedilir (DB'ye baglanmadan)
+
+
+def test_prune_run_ile_birlikte_reddedilir(s: Senaryo) -> None:
+    """Eski bir `--run` ile `--prune`: guncel adaylar silinirdi; cikis 2, DB'ye baglanmadan."""
+    from mutalaa_pipeline.export import pg_risale_atif as atif_modulu
+
+    with pytest.raises(GirdiHatasi, match="--run"):
+        atif_modulu.prune_denetle(ATIF, True, True, "01a1d225-8f55-7309-b24f-34684721026c")
+    atif_modulu.prune_denetle(ATIF, True, True, None)  # varsayilan calisma: gecer
+    atif_modulu.prune_denetle(ATIF, False, False, "01a1d225-8f55-7309-b24f-34684721026c")
+    r = runner.invoke(
+        cli.app,
+        [
+            "export", "pg", "--source", ATIF, "--prune", "--yedek-alindi",
+            "--run", "01a1d225-8f55-7309-b24f-34684721026c", "--kok", str(s.kok),
+        ],
+    )  # fmt: skip
+    assert r.exit_code == 2
+    assert "--run" in ansisiz(r.output)

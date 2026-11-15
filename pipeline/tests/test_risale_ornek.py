@@ -350,6 +350,8 @@ def test_page_map_kendi_kaynagi_altinda(veri: Path) -> None:
             "end_anchor",
             "end_offset",
             "data_version",
+            "start_hash",
+            "end_hash",
         }
         assert s.metin("source_id") == KAYNAK != risale_kaynaklari.KAYNAK_BASKI
         assert s.sayi("volume") == risale_ornek.CILT
@@ -705,7 +707,7 @@ def test_export_yukleme_tek_islemde_birimler_sonra_page_map(veri: Path, tmp_path
     assert sira == sorted(sira) and len(set(sira)) == 10
     ((_, capa_params),) = db.sorgular("FROM (SELECT start_anchor AS anchor")
     assert capa_params == (KAYNAK,)  # sayfa capalari fiksturun kendi birimlerinde aranir
-    sayfa_satirlari = [r for r in db.kopya_satirlari() if len(r) == 8]
+    sayfa_satirlari = [r for r in db.kopya_satirlari() if len(r) == 10 and r[6] == KAYNAK]
     assert len(sayfa_satirlari) == 4
     assert {r[6] for r in sayfa_satirlari} == {KAYNAK}  # source_id sutunu
     rapor = next(
@@ -722,7 +724,7 @@ def test_export_yukleme_tek_islemde_birimler_sonra_page_map(veri: Path, tmp_path
     assert rapor["sayilar"]["lugat_review_acilan"] == 15  # type: ignore[index]
     assert rapor["sayilar"]["xref_staging"] == 2  # type: ignore[index]
     assert rapor["sayilar"]["xref_eklenen"] == 2  # type: ignore[index]
-    xref_kopya = [r for r in db.kopya_satirlari() if len(r) == 10]
+    xref_kopya = [r for r in db.kopya_satirlari() if len(r) == 10 and isinstance(r[1], str)]
     assert len(xref_kopya) == 2
     assert {r[6] for r in xref_kopya} == {1.0}  # score: 1 -> binde 1000 -> 1,0
     assert any(r[5] is not None for r in xref_kopya)  # kelime araligi q:1:1:1-2 -> [1, 3)

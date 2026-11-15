@@ -7,6 +7,7 @@ klasoru, sentetik kilit ve tek kitaplik sentetik tablo yamayla baglanir.
 """
 
 import json
+import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -17,7 +18,7 @@ from test_sources import alanlar_kur, kayit_yaz, kok_kur
 from typer.testing import CliRunner
 
 from mutalaa_pipeline import cli
-from mutalaa_pipeline.export.ortak import depo_koku
+from mutalaa_pipeline.export.ortak import GirdiHatasi, depo_koku
 from mutalaa_pipeline.ingest import risale_kaynaklari
 from mutalaa_pipeline.ingest import risale_rnk_kaynaklari as kaynak_modulu
 from mutalaa_pipeline.ingest import risale_rnk_kilit as kilit_modulu
@@ -138,6 +139,41 @@ def test_rnk_cli_ingest_cikis_kodlari_ve_idempotentlik(rk: RnkKoku) -> None:
     assert len(ikinci) == 2
     for ad in ("units.jsonl", "sayfalar.jsonl", "yapi.jsonl", "kitaplar.jsonl"):
         assert (ikinci[0] / ad).read_bytes() == (ikinci[1] / ad).read_bytes()
+
+
+def test_rnk_cli_gelen_tarih_yol_olarak_kullanilamaz(rk: RnkKoku) -> None:
+    """`--gelen-tarih` yalniz gecerli `YYYY-AA-GG`; yol ayiraci ve `..` dosya aranmadan reddedilir.
+
+    Hedef klasorler GERCEKTEN vardir (kilitli dosyalarin kopyasi): ret, dosya yoklugundan degil
+    tarih dogrulamasindan gelir ve `data/raw` altina hicbir sey yazilmaz.
+    """
+    gelen = rk.veri_kok / "gelen"
+    gercek = gelen / "risale-baski-rnk" / "2026-11-12"
+    for ad in ("baska-kaynak", "2026-13-45"):
+        shutil.copytree(gercek, gelen / ad)
+    mutlak = str((gelen / "baska-kaynak").resolve())
+    for kotu in (
+        "../baska-kaynak",
+        "..",
+        mutlak,
+        "2026-11-12/../2026-11-12",
+        "2026-13-45",
+        "2026-11-12 ",
+        "",
+    ):
+        assert rk.ingest("--gelen-tarih", kotu) == 2, kotu
+    assert not (rk.veri_kok / "raw").exists() and rk.staged() == []
+    assert rk.ingest("--gelen-tarih", "2026-11-12") == 0  # gecerli tarih calisir
+
+
+def test_rnk_kilitteki_gelen_tarih_dogrulanir(rk: RnkKoku) -> None:
+    belge = json.loads(rk.kilit_yolu.read_text(encoding="utf-8"))
+    for kotu in ("../baska", "2026-13-45", "..", ""):
+        belge["gelen_tarih"] = kotu
+        with pytest.raises(GirdiHatasi, match="gelen_tarih"):
+            kilit_modulu.kilit_coz(json.dumps(belge).encode("utf-8"))
+    belge["gelen_tarih"] = "2026-11-12"
+    assert kilit_modulu.kilit_coz(json.dumps(belge).encode("utf-8")).gelen_tarih == "2026-11-12"
 
 
 def test_rnk_cli_kilit_oner_hesaplanan_kilitle_ayni_ve_hicbir_sey_yazmaz(rk: RnkKoku) -> None:

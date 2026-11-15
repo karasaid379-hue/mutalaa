@@ -310,6 +310,63 @@ def test_rnk_gidis_donus_isaretler_marks_icinden() -> None:
     )
 
 
+def _girintili_kitap(girinti: str) -> list[str]:
+    return [
+        "#1",
+        "   Deneme paragrafı 1 başı",
+        f"{girinti},Deneme ortalı satır>",
+        f"{girinti},* * *>",
+        f"{girinti}<Deneme Başlık>",
+        "   Deneme paragrafı 2 başı",
+        "devam satırı",
+    ]
+
+
+@pytest.mark.parametrize("girinti", ["", " "])
+def test_rnk_girinti_0_ve_1_ayni_siniflandirma(girinti: str) -> None:
+    """Tek bosluk girintili `,...>` ve `<...>` satiri girintisizle ayni sonucu verir (K-51 md 2)."""
+    txt = sentetik_txt(_girintili_kitap(girinti))
+    a = R.ayristir(txt, "tr_k")
+    assert [(b.tur, b.metin) for b in a.birimler] == [
+        ("paragraf", "Deneme paragrafı 1 başı"),
+        ("paragraf", "Deneme ortalı satır"),  # `,` ve `>` metne girmez; ortali paragraf
+        ("baslik", "Deneme Başlık"),
+        ("paragraf", "Deneme paragrafı 2 başı devam satırı"),
+    ]
+    assert [no for no, _ in a.yapi] == [4]  # ayirac satiri birim uretmez
+    assert a.satir_turleri["ayirac"] == 1
+    for b in a.birimler:
+        assert not any(c in R.ISARETLER or c == "," for c in b.metin)
+    assert not any(b.isaretler and any(m.get("u") for m in b.isaretler) for b in a.birimler)
+    assert not a.uyarilar
+    assert R.yeniden_kur_ayristirma(a) == txt
+
+
+def test_rnk_girinti_varyanti_birim_ve_paragraf_numarasini_kaydirmaz() -> None:
+    sade = R.ayristir(sentetik_txt(_girintili_kitap("")), "tr_k")
+    bir = R.ayristir(sentetik_txt(_girintili_kitap(" ")), "tr_k")
+    assert [(b.tur, b.metin) for b in sade.birimler] == [(b.tur, b.metin) for b in bir.birimler]
+    assert [(s.n, s.birim, s.ofs) for s in sade.sayfalar] == [
+        (s.n, s.birim, s.ofs) for s in bir.sayfalar
+    ]
+
+
+def test_rnk_tek_bosluklu_ayirac_paragraf_ve_ayirac_ayrimi() -> None:
+    """Yalniz `,* * *>`/`,***>` ayirac; ortada metin olan `,...>` ortali paragraftir."""
+    satirlar = ["#1", "   Deneme paragrafı", " ,***>", " ,Deneme ortalı>", " ,* Deneme>"]
+    a = R.ayristir(sentetik_txt(satirlar), "tr")
+    assert [b.metin for b in a.birimler] == ["Deneme paragrafı", "Deneme ortalı", "* Deneme"]
+    assert [no for no, _ in a.yapi] == [3]
+
+
+def test_rnk_tek_bosluklu_virgul_satiri_hasiye_icinde_yeni_ic_paragraftir() -> None:
+    txt = sentetik_txt(["   Deneme paragrafı", "{(*)|Deneme dipnotu bir", " ,Deneme ortalı>", "}"])
+    a = R.ayristir(txt, "tr_k")
+    assert R.yeniden_kur_ayristirma(a) == txt
+    assert [b.tur for b in a.birimler] == ["paragraf", "hasiye", "hasiye"]
+    assert all("," not in b.metin and ">" not in b.metin for b in a.birimler)
+
+
 # ---------------------------------------------------------------------------
 # haşiye
 

@@ -33,10 +33,12 @@ from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest.risale_kaynaklari import KAYNAK_RNK
 
 runner = CliRunner()
+OZET = re.compile(r"[0-9a-f]{64}")
 UPSERT_ESLESME = "INSERT INTO icerik.page_map"
 SAYAC_ESLESME = "count(*) FILTER (WHERE (p.start_anchor"
 EKSIK_CAPA_ESLESME = "FROM (SELECT start_anchor AS anchor"
 TASAN_ESLESME = "char_length(b.metin)"
+OZET_ESLESME = "b.content_hash IS DISTINCT FROM"
 EKSIK_SATIR_ESLESME = "AND NOT EXISTS (SELECT 1 FROM pg_temp.staging_risale_sayfa s"
 
 
@@ -113,6 +115,7 @@ def test_ilk_yukleme_tek_islem_kilit_kaynak_copy_ve_upsert(bk: RnkKoku) -> None:
             "INSERT INTO icerik.source",
             "CREATE TEMP TABLE staging_risale_sayfa",
             EKSIK_CAPA_ESLESME,
+            OZET_ESLESME,
             TASAN_ESLESME,
             EKSIK_SATIR_ESLESME,
             SAYAC_ESLESME,
@@ -142,7 +145,7 @@ def test_copy_satirlari_sutun_sirasiyla_ve_sayfa_sirasiyla(bk: RnkKoku) -> None:
     assert sutunlar is not None
     assert [a.strip() for a in sutunlar.group(1).split(",")] == [
         "volume", "page", "start_anchor", "start_offset", "end_anchor", "end_offset",
-        "source_id", "data_version",
+        "source_id", "data_version", "start_hash", "end_hash",
     ]  # fmt: skip
     satirlar = db.kopya_satirlari()
     assert [r[1] for r in satirlar] == [4, 5, 6, 7]
@@ -250,6 +253,7 @@ def test_source_varsa_yalniz_betimleyici_alan_guncellenir(bk: RnkKoku) -> None:
     ("eslesme", "parca"),
     [
         (EKSIK_CAPA_ESLESME, "biriminde yok"),
+        (OZET_ESLESME, "staged'den sonra degismis"),
         (TASAN_ESLESME, "metnine sigmiyor"),
         (EKSIK_SATIR_ESLESME, "staged icinde yok"),
     ],
@@ -377,6 +381,8 @@ def _satir(**degisim: object) -> bytes:
         "end_anchor": "rn:deneme-kitap:p1",
         "end_offset": 5,
         "data_version": f"{KAYNAK}@{SURUM}",
+        "start_hash": "a" * 64,
+        "end_hash": "b" * 64,
     }
     taban.update(degisim)
     return (json.dumps(taban, sort_keys=True, separators=(",", ":")) + "\n").encode()
@@ -385,6 +391,7 @@ def _satir(**degisim: object) -> bytes:
 def test_satirlari_coz_gecerli_satir() -> None:
     (s,) = pg_risale_sayfa.satirlari_coz(_satir(), KAYNAK)
     assert (s.volume, s.page, s.start_offset, s.end_offset) == (1, 1, 0, 5)
+    assert (s.start_hash, s.end_hash) == ("a" * 64, "b" * 64)
 
 
 @pytest.mark.parametrize(
@@ -401,6 +408,10 @@ def test_satirlari_coz_gecerli_satir() -> None:
         {"start_anchor": "rn:deneme-kitap:p1:s2"},  # cumle capasi birim degil
         {"end_anchor": "rn:Deneme:p1"},
         {"data_version": ""},
+        {"start_hash": ""},
+        {"end_hash": "A" * 64},  # buyuk harf
+        {"start_hash": "a" * 63},
+        {"start_hash": 5},
     ],
 )
 def test_satirlari_coz_bozuk_satir_girdi_hatasi(degisim: dict[str, object]) -> None:
@@ -429,7 +440,7 @@ def test_rapor_ve_gunluk_metin_tasimaz(bk: RnkKoku) -> None:
     assert kayitlar and b"Deneme paragraf" not in kayitlar and b"Deneme dipnot" not in kayitlar
     # COPY satirlari da yalniz capa ve sayi tasir
     assert all(
-        not isinstance(a, str) or a.startswith(("rn:", KAYNAK))
+        not isinstance(a, str) or a.startswith(("rn:", KAYNAK)) or OZET.fullmatch(a)
         for r in db.kopya_satirlari()
         for a in r
     )
@@ -441,3 +452,33 @@ def test_cli_yardim_ve_kayit_tablosu(monkeypatch: pytest.MonkeyPatch) -> None:
     assert sonuc.exit_code == 0
     for secenek in ("--source", "--run", "--dry-run", "--force"):
         assert secenek in ansisiz(sonuc.output)
+
+
+def test_staged_satirlar_uc_birimlerin_content_hash_degerini_tasir(bk: RnkKoku) -> None:
+    """`start_hash`/`end_hash` anchor ciktisindaki birimlerin `content_hash` degeridir ve
+    COPY ile staging'e gider; `page_map` tablosuna yazilmaz (UPSERT sutun listesinde yok)."""
+    hazir(bk)
+    (klasor,) = baski_klasorleri(bk)
+    satirlar = [
+        json.loads(k) for k in (klasor / "page_map.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    anchor = sorted((bk.veri_kok / "staged" / KAYNAK_RNK).glob("*/units.jsonl"))[-1]
+    ozet = {
+        (u := json.loads(k))["anchor"]: u["content_hash"]
+        for k in anchor.read_text(encoding="utf-8").splitlines()
+    }
+    assert satirlar
+    for s in satirlar:
+        assert s["start_hash"] == ozet[s["start_anchor"]]
+        assert s["end_hash"] == ozet[s["end_anchor"]]
+    db = SahteBaglanti(esle((UPSERT_ESLESME, SahteSonuc(rowcount=4))))
+    assert calistir(bk, db) == 0
+    kopya = db.kopya_satirlari()
+    assert [(r[8], r[9]) for r in kopya] == [(s["start_hash"], s["end_hash"]) for s in satirlar]
+    assert "hash" not in pg_risale_sayfa.UPSERT
+
+
+def test_ozet_farki_sorgusu_staged_ozeti_veritabaniyla_karsilastirir() -> None:
+    sql = pg_risale_sayfa.OZET_FARKI
+    assert "b.content_hash IS DISTINCT FROM s.start_hash" in sql
+    assert "e.content_hash IS DISTINCT FROM s.end_hash" in sql

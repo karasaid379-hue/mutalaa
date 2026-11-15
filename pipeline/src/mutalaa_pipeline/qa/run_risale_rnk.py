@@ -123,10 +123,11 @@ def _anchor_akisi(calisma: Calisma, etiket: str) -> Callable[[], Iterator[dict[s
     return akis
 
 
-def _onceki(ctx: RunContext, once: str) -> tuple[Onceki | None, str | None]:
+def _onceki(ctx: RunContext, once: str) -> tuple[Onceki | None, str | None, str | None]:
     """G-CAP tabani: `once` kimliginden onceki, kapilarini gecmis en yeni anchor calismasi.
 
-    Donus: capa ozetleri ve o calismanin ingest'indeki kilit ozeti (okunamazsa `(None, None)`).
+    Donus: capa ozetleri, o calismanin ingest'indeki kilit ozeti ve ayristirici surumu
+    (okunamazsa `(None, None, None)`).
     """
     raporlar = QaRaporlari(ctx.veri_kok)
 
@@ -141,7 +142,7 @@ def _onceki(ctx: RunContext, once: str) -> tuple[Onceki | None, str | None]:
                 "onceki anchor calistirmalari var ama dort kapisini da gecmis olan yok:"
                 " onceki capa denetimi yapilamadi"
             )
-        return None, None
+        return None, None, None
     try:
         ozetler = {
             s.metin("anchor"): s.metin("content_hash")
@@ -150,9 +151,14 @@ def _onceki(ctx: RunContext, once: str) -> tuple[Onceki | None, str | None]:
         ingest = _ust(ctx, _ust(ctx, onceki, NORMALIZE_ADIMI), INGEST_ADIMI)
     except GirdiHatasi:
         ctx.uyar("onceki anchor calistirmasi okunamadi: onceki capa denetimi yapilamadi")
-        return None, None
+        return None, None, None
     kilit = ingest.ayrinti("kilit_sha256")
-    return Onceki(onceki.run_id, ozetler), kilit if isinstance(kilit, str) else None
+    surum = ingest.ayrinti("ayristirici_surumu")
+    return (
+        Onceki(onceki.run_id, ozetler),
+        kilit if isinstance(kilit, str) else None,
+        surum if isinstance(surum, str) else None,
+    )
 
 
 def yukle(ctx: RunContext, *, run: str | None = None) -> Yuklenen:
@@ -173,7 +179,8 @@ def yukle(ctx: RunContext, *, run: str | None = None) -> Yuklenen:
     ingest = _ust(ctx, normalize, INGEST_ADIMI)
     ctx.rapor_ek["ingest_run_id"] = ingest.run_id
     kilit_ozeti_manifest = ingest.ayrinti("kilit_sha256")
-    onceki, onceki_kilit = _onceki(ctx, anchor.run_id)
+    ayristirici = ingest.ayrinti("ayristirici_surumu")
+    onceki, onceki_kilit, onceki_ayristirici = _onceki(ctx, anchor.run_id)
     girdi = RnkGirdisi(
         kayit=kayit,
         kilit=kilit_yukle(),
@@ -190,6 +197,8 @@ def yukle(ctx: RunContext, *, run: str | None = None) -> Yuklenen:
         anchor=_anchor_akisi(anchor, f"anchor {KAYNAK} units.jsonl"),
         onceki=onceki,
         onceki_kilit_ozeti=onceki_kilit,
+        ayristirici_surumu=ayristirici if isinstance(ayristirici, str) else None,
+        onceki_ayristirici_surumu=onceki_ayristirici,
     )
     return Yuklenen(girdi, anchor, normalize, ingest)
 

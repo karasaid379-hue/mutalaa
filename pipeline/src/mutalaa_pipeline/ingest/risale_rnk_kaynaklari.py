@@ -182,7 +182,13 @@ class RnkBagdastirici:
     def fetch(self, ctx: RunContext) -> list[RawFile]:
         kilit_tablo_uyumu(self._kilit, self._tablo)
         gelen = meal_ortak.gelen_dizini(ctx.veri_kok, GELEN_KAYNAK)
-        tarih = self._istenen_tarih or self._kilit.gelen_tarih
+        # Tarih yola eklenir: `YYYY-AA-GG` degilse (`../`, mutlak yol, takvimde olmayan tarih)
+        # dosya aranmadan `GirdiHatasi` (cikis 2). Kilitteki tarih `kilit_coz`da denetlenir.
+        tarih = (
+            meal_ortak.gelen_tarihi_coz(gelen, self._istenen_tarih, GELEN_KAYNAK)
+            if self._istenen_tarih is not None
+            else self._kilit.gelen_tarih
+        )
         dosyalar = kilit_dosyalari(self._kilit)
         icerik: dict[str, bytes] = {}
         for dosya in dosyalar:

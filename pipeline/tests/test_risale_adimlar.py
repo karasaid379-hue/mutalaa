@@ -465,6 +465,26 @@ def test_g_cap_onceki_calisma_yoksa_atlanir_varsa_capalar_ve_hash_tutar() -> Non
     assert bulgu(g, parca="kaybolan capa")
 
 
+def test_g_cap_ayristirici_surumu_degisince_hash_farki_kabul_edilir() -> None:
+    """Kilit ayni, ayristirici duzeltildi (K-51 md 2): hash farki kabul; kaybolan capa kalir."""
+    g = capa_girdisi()
+    ozetler = {a["anchor"]: a["content_hash"] for a in g.anchor()}  # type: ignore[misc]
+    ilk = next(iter(ozetler))
+    g.onceki = Onceki("0" * 36, {**ozetler, ilk: "2" * 64})
+    g.onceki_kilit_ozeti = g.kilit_ozeti_manifest
+    assert bulgu(g, parca="content_hash farkli")  # surum bilgisi yok: kabul edilmez
+    g.ayristirici_surumu, g.onceki_ayristirici_surumu = "2", "2"
+    assert bulgu(g, parca="content_hash farkli")  # ayni surum: kabul edilmez
+    g.onceki_ayristirici_surumu = None
+    assert bulgu(g, parca="content_hash farkli")  # onceki surum bilinmiyor: kabul edilmez
+    g.onceki_ayristirici_surumu = "1"
+    sonuc = Q.g_cap(g)
+    assert sonuc.gecti and sonuc.sayilar["ayristirici_degisti"] == 1
+    assert sonuc.sayilar["hash_degisen"] == 1  # fark yine sayilir ve raporlanir
+    g.onceki = Onceki("0" * 36, {**ozetler, "rn:deneme-kitap:eski-bolum:p1": "1" * 64})
+    assert bulgu(g, parca="kaybolan capa")  # capa yine kaybolamaz
+
+
 # --- G-NOR (anchor ciktisi) ------------------------------------------------------------------
 
 

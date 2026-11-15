@@ -4,6 +4,8 @@ RNK Neşriyat kitap dosyasi (`{raf}/{uid}.txt`) satir satir ayristirilir:
 
 * `#n` satirlari basili sayfa basidir (`sayfalar`); `,* * *>` ayirac ve bos satirlar `yapi`dir;
   ikisi de birim uretmez.
+* Girinti 0 ve 1 (tek bosluk) ayni sinifa girer: `,* * *>` ayirac, `<&€∑...>` baslik ve `,...>`
+  ortali paragraf (ayirac olmayan virgul zinciri) tek bosluk girintili de ayni sekilde sayilir.
 * `<`, `&`, `€`, `∑` ile baslayip `>` ile biten satirlar baslik birimidir; girintili satirlar
   (3 sutun: 3 bosluk, 2 bosluk + `\\`, 2 bosluk + `∫`) paragraf basidir; 1 bosluklu ve girintisiz
   satirlar ayni paragrafa eklenir (ar ve ar_k raflarinda girinti yoktur: her girintisiz satir
@@ -31,7 +33,7 @@ from typing import Final
 
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 
-AYRISTIRICI_SURUMU: Final = "1"
+AYRISTIRICI_SURUMU: Final = "2"
 
 BOM: Final = "\ufeff"
 
@@ -533,19 +535,23 @@ class _Ayristirici:
         girinti = len(satir) - len(satir.lstrip(" "))
         govde = satir[girinti:]
         ilk = govde[0]
-        if girinti == 0 and AYIRAC_DESENI.fullmatch(satir):
+        # Girinti 0 ve 1 (tek bosluk) ayni sinifa girer: basta bosluk satir turunu degistirmez.
+        kenar = girinti <= 1
+        if kenar and AYIRAC_DESENI.fullmatch(govde):
             self.tur["ayirac"] += 1
             self.yapi.append((no, satir))
             self.kapat_acik()
             return
-        if girinti == 0 and ilk in BASLIK_ACILISLARI and satir.endswith(">"):
+        if kenar and ilk in BASLIK_ACILISLARI and satir.endswith(">"):
             self.tur["baslik"] += 1
             self.kapat_acik()
             b = self.yeni("baslik", no)
             self.son_par = b  # sonraki satir basi dipnot basliga baglanir
             b.ozellik["baslik_isareti"] = ilk
             self.cur = b
-            self.tara(no, satir, 0, 0)
+            if girinti:
+                self.isaret_yaz(b, satir[:girinti], no, 0)
+            self.tara(no, satir, girinti, girinti)
             self.bitir(b)
             self.cur = None
             return
@@ -560,6 +566,7 @@ class _Ayristirici:
             girinti >= 3
             or (girinti == 2 and ilk in "\\\u222b")
             or (girinti == 0 and ilk in YENI_PARAGRAF_ISARETLERI)
+            or (kenar and ilk == ",")  # ortali paragraf: `,...>` (K-51 madde 2); ayirac degil
         )
         if girinti == 2 and not yeni_baslangic:
             yeni_baslangic = True
@@ -598,7 +605,11 @@ class _Ayristirici:
         assert h is not None
         girinti = len(satir) - len(satir.lstrip(" "))
         ilk = satir[girinti]
-        yeni_ic = girinti >= 2 or (girinti == 0 and ilk in YENI_PARAGRAF_ISARETLERI)
+        yeni_ic = (
+            girinti >= 2
+            or (girinti == 0 and ilk in YENI_PARAGRAF_ISARETLERI)
+            or (girinti == 1 and ilk == ",")
+        )
         if h.birimler[-1].uzunluk == 0:  # govde onceki satirda baslamamis: ayni birim surer
             b = h.birimler[-1]
             self.tur["hasiye_govde_alt_satirda"] += 1

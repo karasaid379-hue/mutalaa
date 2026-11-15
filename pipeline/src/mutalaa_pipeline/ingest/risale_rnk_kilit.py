@@ -32,6 +32,7 @@ from mutalaa_pipeline.ingest.risale_rnk import (
     kod_adi,
     nfc_olmayan_satir,
 )
+from mutalaa_pipeline.ingest.tanzil import tarih_gecerli
 
 KILIT_YOLU: Final = Path(__file__).with_name("risale_rnk.lock.json")
 KILIT_SURUMU: Final = 1
@@ -162,6 +163,8 @@ def kilit_coz(ham: bytes) -> RnkKilidi:
         or not isinstance(tarih, str)
     ):
         raise GirdiHatasi("risale_rnk.lock.json: katalog, kitaplar ve gelen_tarih bekleniyor")
+    if not tarih_gecerli(tarih):  # tarih `data/gelen` ve `data/raw` yoluna eklenir
+        raise GirdiHatasi("risale_rnk.lock.json: gelen_tarih YYYY-AA-GG biciminde gecerli degil")
     boyut, sha = katalog.get("boyut"), katalog.get("sha256")
     if not isinstance(boyut, int) or not isinstance(sha, str):
         raise GirdiHatasi("risale_rnk.lock.json: katalog boyut ve sha256 bekleniyor")

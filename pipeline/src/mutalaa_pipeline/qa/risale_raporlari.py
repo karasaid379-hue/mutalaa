@@ -43,6 +43,7 @@ from mutalaa_pipeline.anchor import risale
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest.risale_karsilastirma import rnk_birim_turu, rnk_kitap_slugu
 from mutalaa_pipeline.ingest.risale_rnk_staged import JsonBilgisi
+from mutalaa_pipeline.ingest.tanzil import tarih_gecerli
 from mutalaa_pipeline.normalize import lower_turkish
 
 RAPOR_SURUMU: Final = 1
@@ -258,7 +259,7 @@ def eslesme_ozeti(
 
 def son_tarih(klasor: Path) -> str:
     """`klasor` altindaki en yeni tarih klasorunun adi."""
-    adaylar = sorted(p.name for p in klasor.iterdir() if p.is_dir())
+    adaylar = sorted(p.name for p in klasor.iterdir() if p.is_dir() and tarih_gecerli(p.name))
     if not adaylar:
         raise GirdiHatasi(f"{klasor.name}: tarih klasoru bulunamadi")
     return adaylar[-1]

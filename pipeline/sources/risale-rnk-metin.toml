@@ -1,15 +1,16 @@
 # A20.0 (2026-11-12) · kaynak: docs/04-icerik/01-kaynaklar.md §3.5 · karar: K-51 madde 2, 3 ve 4
 slug = "risale-rnk-metin"
 tur = "risale"
-baslik = "RNK Neşriyat, Risale-i Nur Külliyatı (Diyanet'te bulunmayan metin; Osmanlıca ve Arapça kitaplar)"
+baslik = "RNK Neşriyat, Risale-i Nur Külliyatı (birincil metin kaynağı; Türkçe, Osmanlıca ve Arapça kitapların tamamı)"
 yazar = "Said Nursî"
 surum = "katalog-sha256-55634c134c99-2026-11-12"
 provider = "rnknesriyat.com"
 kaynak_url = "https://rnknesriyat.com/res/metinler/json_files/shelves.json"
 atif_metni = "Risale-i Nur Külliyatı, Said Nursî; RNK Neşriyat baskısı (RNK uygulaması içeriği)."
 notlar = '''
-K-51: Diyanet deposunda (risale-asil-nusha) bulunmayan metin bu kaynaktan gelir: Asâr-ı Bedîiyye ve Latif Nükteler'in Diyanet dışı kısmı, derlemelerin Diyanet'te olmayan parçaları, Osmanlıca (osm) ve Arapça (ar, ar_k) kitapların tamamı. Derleme kitaplarda Diyanet'te bulunan paragraf Diyanet'ten kopyalanır (provenance'ta kaynak çapa).
+K-51 madde 1-3 (13 Kasım 2026 kararı: RNK yayınlarına öncelik): RNK Türkçe (tr, tr_k), Osmanlıca (osm) ve Arapça (ar, ar_k) raflarındaki bütün kitapların birimleri, çapaları ve metni bu kaynaktan gelir; birincil metin kaynağıdır. Derleme kitaplar kendi slug'ı, kendi rn: çapaları ve kendi metniyle girer; metin RNK'dan alınır.
+Diyanet deposu (risale-asil-nusha) karşılaştırma ve doğrulama verisidir, birim olarak yüklenmez; karşılaştırma raporu kitap başına yazılır, Diyanet'te olup RNK'da bulunmayan ya da farklı olan kısım raporlanır, metne eklenmez.
 Dosyalar risale-baski-rnk ile aynıdır (data/gelen/risale-baski-rnk/2026-11-12/); ikinci kez indirilmez.
-Metin üçüncü taraf kanonik metindir: bayt bayt saklanır, NFC uygulanmaz (K-26). RNK işaretlemesi yapıya çevrilir, anlamı çıkmayan işaret yorumlanmaz.
+Metin üçüncü taraf kanonik metindir: bayt bayt saklanır, NFC uygulanmaz (K-26). RNK işaretleme karakterleri birim metninden çıkarılır ve marks'a yazılır (t: "rnk"); yalnız #n sayfa işaretleri ve ,* * *> ayraç satırları birim üretmez. Anlamı veriden çıkmayan işaret yorumlanmaz.
 Arapça kitapların mütercimi ve Osmanlıca baskıların künyesi RNK verisinde yoktur; hafızadan yazılmaz, editör doldurur (İ-24).
 Birimler taslak girer; kitap bazında toplu onayla açılır (K-51 madde 11).'''

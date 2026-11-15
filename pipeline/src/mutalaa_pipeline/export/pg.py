@@ -267,6 +267,9 @@ class RisaleSayfaSatiri:
     end_offset: int
     source_id: str
     data_version: str
+    # Yukleme on kosulu (veritabanina yazilmaz): uc birimlerin staged `content_hash` degeri.
+    start_hash: str
+    end_hash: str
 
 
 @dataclass(frozen=True)
@@ -1326,7 +1329,7 @@ def komut_export_pg(
             raise GirdiHatasi("tanimsiz kaynak: export pg icin kayit yok")
         from mutalaa_pipeline.export import pg_risale_atif
 
-        pg_risale_atif.prune_denetle(source, prune, yedek_alindi)
+        pg_risale_atif.prune_denetle(source, prune, yedek_alindi, run)
         if force:
             c.uyar("--force export pg icin etkisiz: parmak izi atlamasi yok (K-39 madde 8)")
         h = hazirla(c, source, run, ek)

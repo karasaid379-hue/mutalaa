@@ -17,11 +17,12 @@ from typing import Annotated, Final
 
 import typer
 
-from mutalaa_pipeline import cikis, lineage
+from mutalaa_pipeline import cikis, lineage, zincir
 from mutalaa_pipeline.anchor import risale
 from mutalaa_pipeline.export.ortak import GirdiHatasi
 from mutalaa_pipeline.ingest import risale_karsilastirma
 from mutalaa_pipeline.ingest.risale_rnk_staged import JsonBilgisi, json_oku
+from mutalaa_pipeline.ingest.tanzil import INGEST_ADIMI, tarih_gecerli
 from mutalaa_pipeline.komut_ortak import komutu_yurut
 from mutalaa_pipeline.logs import json_baytlari
 from mutalaa_pipeline.qa import risale_raporlari
@@ -55,16 +56,21 @@ def _calisma(ctx: RunContext, kaynak: str, calisma: str | None) -> Path:
         raise GirdiHatasi(f"{kaynak}: staged klasoru yok (once ingest)")
     if calisma is None:
         return risale_karsilastirma.son_calisma(klasor)
-    yol = klasor / calisma
-    if not (yol / "units.jsonl").is_file():
+    # Acik `--*-run`: kimlik UUID olmali (yola eklenir), calisma manifestli ve adimi `ingest`
+    # (karsilastirma ham ayristirma ciktisini okur) ve ciktilari saglam olmali.
+    secilen = zincir.calisma_bul(ctx, kaynak, calisma, INGEST_ADIMI)
+    zincir.saglam_olmali(ctx, secilen)
+    if not (secilen.klasor / "units.jsonl").is_file():
         raise GirdiHatasi(f"{kaynak}: staged calisma bulunamadi")
-    return yol
+    return secilen.klasor
 
 
 def _gelen(ctx: RunContext, kaynak: str, tarih: str | None) -> Path:
     klasor = ctx.veri_kok / "gelen" / kaynak
     if not klasor.is_dir():
         raise GirdiHatasi(f"{kaynak}: gelen klasoru yok")
+    if tarih is not None and not tarih_gecerli(tarih):  # yola eklenir: `../` ve yol ayiraci yok
+        raise GirdiHatasi("tarih YYYY-AA-GG biciminde gecerli bir tarih olmali")
     ad = tarih if tarih is not None else risale_raporlari.son_tarih(klasor)
     if not (klasor / ad).is_dir():
         raise GirdiHatasi(f"{kaynak}: tarih klasoru yok")

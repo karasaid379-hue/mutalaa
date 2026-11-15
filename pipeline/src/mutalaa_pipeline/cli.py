@@ -224,7 +224,8 @@ def export_pg_komutu(
             "--prune",
             help=(
                 "YALNIZ risale-atif-dizini: staged'de olmayan hat+aday xref satirlarini SILER."
-                " Kullanici onayi ve yedek gerekir; --yedek-alindi ile birlikte verilir."
+                " Kullanici onayi ve yedek gerekir; --yedek-alindi ile birlikte verilir;"
+                " --run ile verilmez (yalniz en yeni calisma)."
             ),
         ),
     ] = False,

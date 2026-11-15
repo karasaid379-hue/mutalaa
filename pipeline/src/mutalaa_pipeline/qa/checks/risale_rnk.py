@@ -114,6 +114,10 @@ class RnkGirdisi:
     anchor: Callable[[], Iterator[Satir]] | None = None
     onceki: Onceki | None = None  # G-CAP tabani (kapilari gecmis onceki anchor calismasi)
     onceki_kilit_ozeti: str | None = None  # o calismanin ingest'indeki kilit ozeti
+    # Ayristirici surumu (ingest manifesti): kilit ayni kalsa da ayristirici duzeltilince
+    # metin (ve content_hash) degisebilir; surum degisimi kayit altina alinir.
+    ayristirici_surumu: str | None = None
+    onceki_ayristirici_surumu: str | None = None
 
 
 def girdi_yukle(klasor: Path) -> tuple[list[Satir], list[Satir], list[Satir], list[Satir]]:
@@ -577,18 +581,25 @@ def g_cap(g: RnkGirdisi) -> KapiSonucu:
         kilit_degisti = (
             g.onceki_kilit_ozeti is None or g.onceki_kilit_ozeti != g.kilit_ozeti_manifest
         )
+        ayristirici_degisti = (
+            g.ayristirici_surumu is not None
+            and g.onceki_ayristirici_surumu is not None
+            and g.ayristirici_surumu != g.onceki_ayristirici_surumu
+        )
         sayilar.update(
             onceki_capa=len(g.onceki.ozetler),
             hash_degisen=len(degisen),
             kilit_degisti=1 if kilit_degisti else 0,
+            ayristirici_degisti=1 if ayristirici_degisti else 0,
         )
         _bulgu(bulgular, "onceki surumde olup kaybolan capa", kayip, "capa kullanim disi olamaz")
-        if not kilit_degisti:  # content_hash yalniz kaynak kilidi degisince degisebilir
+        if not (kilit_degisti or ayristirici_degisti):
+            # content_hash yalniz kaynak kilidi ya da ayristirici surumu degisince degisebilir
             _bulgu(
                 bulgular,
                 "onceki surumle content_hash farkli",
                 degisen,
-                "kilit ayni iken metin degismis",
+                "kilit ve ayristirici surumu ayni iken metin degismis",
             )
     return KapiSonucu("G-CAP", tuple(bulgular), sayilar)
 

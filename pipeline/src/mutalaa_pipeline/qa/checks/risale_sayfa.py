@@ -29,6 +29,7 @@ from itertools import pairwise
 from pathlib import Path
 from typing import Final
 
+from mutalaa_pipeline import lineage
 from mutalaa_pipeline.adimlar.risale import rn_yolu
 from mutalaa_pipeline.adimlar.risale_sayfa import (
     BOLUM_BASI_EKI,
@@ -299,6 +300,7 @@ def g_cap(g: SayfaGirdisi) -> KapiSonucu:
     tablo = {k.slug for k in g.tablo}
     ters = _ters_cilt(g)
     tum_capalar = {b.capa for liste in g.birimler.values() for b in liste}
+    ozetler = {b.capa: b.ozet for liste in g.birimler.values() for b in liste}
     sozluk: dict[str, list[str]] = defaultdict(list)
     gorulen: set[tuple[str, int, int]] = set()
     surum = g.kayit.surum or ""
@@ -329,6 +331,12 @@ def g_cap(g: SayfaGirdisi) -> KapiSonucu:
                 continue
             if yol[0] not in tablo:
                 sozluk["kitap tabloda yok"].append(yer)
+        for capa_alan, ozet_alan in (("start_anchor", "start_hash"), ("end_anchor", "end_hash")):
+            ozet = s[ozet_alan]
+            if not isinstance(ozet, str) or lineage.OZET_DESENI.fullmatch(ozet) is None:
+                sozluk["ozet biciminde"].append(yer)
+            elif ozetler.get(_metin(s[capa_alan])) not in (None, ozet):
+                sozluk["ozet birimle farkli"].append(yer)
     sayilar: dict[str, int] = {"capa": 2 * len(g.satirlar), "onceki_run": 0, "onceki_satir": 0}
     if g.onceki is not None:
         sayilar["onceki_run"] = 1
@@ -357,6 +365,8 @@ def g_cap(g: SayfaGirdisi) -> KapiSonucu:
         ("page", "page 1'den kucuk"),
         ("gecersiz capa", "capa gramere, rn: dogrulayicisina ya da kanonik bicime uymuyor"),
         ("kitap tabloda yok", "kitap slug'i risale-kitaplar.json'da yok"),
+        ("ozet biciminde", "start_hash/end_hash 64 haneli kucuk harfli onaltilik degil"),
+        ("ozet birimle farkli", "start_hash/end_hash anchor ciktisindaki content_hash ile farkli"),
         ("onceki surumde olup kaybolan satir", "satir silinemez"),
         ("onceki capa anchor ciktisinda yok", "onceki satirin capasi kullanim disi olamaz"),
     ):

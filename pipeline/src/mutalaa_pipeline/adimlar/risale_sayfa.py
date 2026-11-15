@@ -8,6 +8,8 @@
   `dosya`, `n`, `satir`, `capa`, `ofs`, `tur`).
 
 Cikti `page_map.jsonl` (yalniz sayi ve capa; METIN YOK) ve kitap basina `page_map_rapor.jsonl`.
+Her satir `start_hash` ve `end_hash` (uc birimlerin `content_hash` degeri) tasir: `page_map`
+tablosuna yazilmaz, `export pg` yukleme anindaki birim ozeti denetimi icindir.
 
 SATIR KURALLARI (K-51 madde 6; Editoryal veritabani 9.1):
 
@@ -87,6 +89,10 @@ SATIR_ALANLARI: Final = frozenset(
         "end_anchor",
         "end_offset",
         "data_version",
+        # Yukleme anindaki on kosul icin (page_map tablosuna YAZILMAZ): baslangic ve bitis
+        # birimlerinin staged `content_hash` degeri; veritabanindaki birimle karsilastirilir.
+        "start_hash",
+        "end_hash",
     }
 )
 SAYFA_ALANLARI: Final = frozenset({"dosya", "n", "satir", "capa", "ofs", "tur"})
@@ -145,6 +151,7 @@ class BirimKonumu:
     bolum_sayfasi: int | None
     sayfa: int | None
     cumle_baslari: tuple[tuple[int, int], ...] | None = None
+    ozet: str = ""  # birimin `content_hash` degeri (page_map yukleme on kosulu)
 
 
 def _tam(deger: object, ad: str) -> int:
@@ -183,6 +190,7 @@ def birim_konumu(satir: Satir, cumle_kumesi: frozenset[str]) -> BirimKonumu:
         bolum_sayfasi=bolum,
         sayfa=sayfa if isinstance(sayfa, int) and not isinstance(sayfa, bool) else None,
         cumle_baslari=cumleler,
+        ozet=satir.metin("content_hash"),
     )
 
 
@@ -271,6 +279,8 @@ def _satir(
         "end_anchor": birimler[bit.r].capa,
         "end_offset": bit.o,
         "data_version": data_versiyonu(surum, bolum_basi=bolum_basi),
+        "start_hash": birimler[bas.r].ozet,
+        "end_hash": birimler[bit.r].ozet,
     }
 
 

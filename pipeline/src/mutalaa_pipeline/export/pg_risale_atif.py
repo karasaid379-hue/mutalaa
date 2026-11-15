@@ -115,14 +115,22 @@ def kaynak_denetle(source_id: str) -> None:
         raise GirdiHatasi(f"{source_id}: xref yuklemesi yalniz {KAYNAK_ID} ve fiksturu icindir")
 
 
-def prune_denetle(source_id: str, prune: bool, yedek_alindi: bool) -> None:
-    """`--prune` yalniz atif dizininde ve `--yedek-alindi` ile birlikte gecerlidir (cikis 2)."""
+def prune_denetle(source_id: str, prune: bool, yedek_alindi: bool, run: str | None = None) -> None:
+    """`--prune` yalniz atif dizininde, varsayilan (en yeni) calismayla ve `--yedek-alindi` ile.
+
+    `--run` ile eski bir zincir secilmisse `--prune` reddedilir (cikis 2): eski calismada
+    olmayan guncel adaylar silinir, turetilmis sutunlar eski degere doner.
+    """
     if yedek_alindi and not prune:
         raise GirdiHatasi("--yedek-alindi yalniz --prune ile birlikte verilir")
     if not prune:
         return
     if source_id != KAYNAK_ID:
         raise GirdiHatasi(f"--prune yalniz {KAYNAK_ID} icindir")
+    if run is not None:
+        raise GirdiHatasi(
+            "--prune --run ile birlikte verilmez: silme yalniz en yeni calismayla yapilir"
+        )
     if not yedek_alindi:
         raise GirdiHatasi(PRUNE_UYARISI)
 

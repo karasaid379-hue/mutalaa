@@ -15,8 +15,11 @@ Yazma kurali (K-51 madde 6; Editoryal veritabani 9.1):
 * Satir SILINMEZ: veritabaninda `risale-baski-rnk` altinda olup staged'de olmayan satir islemi
   geri aldirir (cikis 1, `QaKaldi`).
 * Onkosul: her baslangic ve bitis capasi `icerik.unit` tablosunda ve `risale-rnk-metin` altindadir,
-  ofsetler birimin veritabanindaki metnine sigar. `risale-rnk-metin` yuklenmemisse ya da farkliysa
-  islem geri alinir (cikis 1) ve veritabaninda hicbir sey degismez.
+  uc birimlerin veritabanindaki `content_hash` degeri staged'deki (`start_hash`, `end_hash`) ile
+  ayni, ofsetler birimin veritabanindaki metnine sigar. `risale-rnk-metin` yuklenmemisse, metni
+  staged'den farkliysa (editor duzeltmesi, eski yukleme) ya da ofset sigmiyorsa islem geri
+  alinir (cikis 1) ve veritabaninda hicbir sey degismez. Ozetler `page_map` tablosuna YAZILMAZ;
+  yalniz yukleme anindaki bu denetim icindir (xref'teki `src_hash` denetiminin karsiligi).
 * `volume` RNK dosyasinin cilt numarasidir (`adimlar/risale_sayfa.py`).
 
 Iletiler ve rapor yalniz sayi, sayfa ve capa tasir; metin yazilmaz. Sayaclar: `sayfa_staging`,
@@ -102,6 +105,12 @@ def satirlari_coz(veri: bytes, source_id: str) -> list[RisaleSayfaSatiri]:
         surum = satir.metin("data_version")
         if surum == "" or "\x00" in surum:
             raise GirdiHatasi(f"{yer}: data_version gecersiz")
+        ozetler: list[str] = []
+        for alan in ("start_hash", "end_hash"):
+            ozet = satir.metin(alan)
+            if lineage.OZET_DESENI.fullmatch(ozet) is None:
+                raise GirdiHatasi(f"{yer}: {alan} 64 haneli kucuk harfli onaltilik degil")
+            ozetler.append(ozet)
         satirlar.append(
             RisaleSayfaSatiri(
                 volume=volume,
@@ -112,6 +121,8 @@ def satirlari_coz(veri: bytes, source_id: str) -> list[RisaleSayfaSatiri]:
                 end_offset=_ofset(yer, satir.veri["end_offset"], "end_offset"),
                 source_id=source_id,
                 data_version=surum,
+                start_hash=ozetler[0],
+                end_hash=ozetler[1],
             )
         )
     if not satirlar:
@@ -198,11 +209,12 @@ def hazirla(
 STAGING: Final = (
     "CREATE TEMP TABLE staging_risale_sayfa (volume smallint, page integer,"
     ' start_anchor text COLLATE "C", start_offset integer, end_anchor text COLLATE "C",'
-    " end_offset integer, source_id text, data_version text) ON COMMIT DROP"
+    " end_offset integer, source_id text, data_version text, start_hash text, end_hash text)"
+    " ON COMMIT DROP"
 )
 STAGING_COPY: Final = (
     "COPY pg_temp.staging_risale_sayfa (volume, page, start_anchor, start_offset, end_anchor,"
-    " end_offset, source_id, data_version) FROM STDIN"
+    " end_offset, source_id, data_version, start_hash, end_hash) FROM STDIN"
 )
 # Capalar `risale-rnk-metin` biriminde olmali (yuklenmemis metin: islem geri alinir, cikis 1).
 EKSIK_CAPA: Final = (
@@ -210,6 +222,14 @@ EKSIK_CAPA: Final = (
     " UNION SELECT end_anchor FROM pg_temp.staging_risale_sayfa) x WHERE NOT EXISTS"
     " (SELECT 1 FROM icerik.unit u WHERE u.anchor = x.anchor AND u.source_id = %s)"
     " ORDER BY x.anchor"
+)
+# Uc birimlerin veritabanindaki `content_hash` degeri staged'deki ile ayni olmali: farkliysa birim
+# staged'den sonra degismis (ya da eski yukleme) ve ofsetler baska metne ait olurdu.
+OZET_FARKI: Final = (
+    "SELECT 'sayfa ' || s.volume || '/' || s.page FROM pg_temp.staging_risale_sayfa s"
+    " JOIN icerik.unit b ON b.anchor = s.start_anchor JOIN icerik.unit e ON e.anchor = s.end_anchor"
+    " WHERE b.content_hash IS DISTINCT FROM s.start_hash"
+    " OR e.content_hash IS DISTINCT FROM s.end_hash ORDER BY s.volume, s.page"
 )
 # Ofsetler birimin veritabanindaki metnine sigmali (kod noktasi: char_length).
 OFSET_TASAN: Final = (
@@ -272,6 +292,8 @@ def yukle(conn: psycopg.Connection, h: Hazirlik) -> dict[str, int]:
                     s.end_offset,
                     s.source_id,
                     s.data_version,
+                    s.start_hash,
+                    s.end_hash,
                 )
             )
     metin_kaynagi = kaynak_denetle(h.source_id)
@@ -280,6 +302,13 @@ def yukle(conn: psycopg.Connection, h: Hazirlik) -> dict[str, int]:
         raise QaKaldi(
             f"page_map capasi {metin_kaynagi} biriminde yok ({len(eksik_capa)}):"
             f" {_capalar(eksik_capa)} (once export pg --source {metin_kaynagi})"
+        )
+    ozet_farki = _capa_listesi(conn, OZET_FARKI)
+    if ozet_farki:
+        raise QaKaldi(
+            f"page_map uc birimi staged'den sonra degismis ({len(ozet_farki)}):"
+            f" {_capalar(ozet_farki)} (once export pg --source {metin_kaynagi}"
+            " ya da anchor yeniden calismali)"
         )
     tasan = _capa_listesi(conn, OFSET_TASAN)
     if tasan:

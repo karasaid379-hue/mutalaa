@@ -920,7 +920,9 @@ def test_gercek_onayli_satira_yazilmaz_taslak_metni_degismez(
     degisen = varsayilan_satirlar()
     degisen[1]["data_version"] = f"{KAYNAK}@deneme-2.0"  # onayli satir: yazilmamali
     degisen[2]["data_version"] = f"{KAYNAK}@deneme-2.0"  # taslak, ayni ozet: guncellenir
-    degisen[3] = satir(1, kitap=KITAP_OTA, dil="ota", metin="Deneme baska metin.")  # metin farki
+    degisen[3] = satir(
+        1, kitap=KITAP_OTA, dil="ota", metin="Deneme baska metin. Ikinci cumle 1."
+    )  # metin farki
     zincir_kur(s, degisen)
     assert calistir(s, lambda: conn) == 0
     sayi = sayilar(s)
