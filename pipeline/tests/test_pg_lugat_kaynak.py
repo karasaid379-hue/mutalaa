@@ -765,7 +765,7 @@ def test_gercek_kapali_review_yeniden_acilmaz_ve_turetilmis_sutunlar_guncellenir
 ) -> None:
     assert calistir(kz, KAYNAK_RNK, lambda: conn) == 0
     conn.execute(
-        "UPDATE icerik.review SET durum = 'kabul' WHERE hedef_anahtar = %s",
+        "UPDATE icerik.review SET durum = 'onaylandi' WHERE hedef_anahtar = %s",
         (f"{KAYNAK_RNK}:1:denemea",),
     )
     conn.execute(
@@ -776,7 +776,8 @@ def test_gercek_kapali_review_yeniden_acilmaz_ve_turetilmis_sutunlar_guncellenir
     )
     assert calistir(kz, KAYNAK_RNK, lambda: conn) == 0
     s = sayilar(kz)
-    assert s["lugat_guncellenen"] == 3 and s["lugat_review_acilan"] == 0  # kapali review var
+    # UPDATE ham basligi tam "denemea" olan iki satiri (anlam 1 ve 2) bozdu; "Denemea" aynidir.
+    assert s["lugat_guncellenen"] == 2 and s["lugat_review_acilan"] == 0  # kapali review var
     assert (
         _say(
             conn,
