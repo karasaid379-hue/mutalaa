@@ -22,7 +22,7 @@
     "class-variance-authority": "0.7.1",
     "cn": "0.5.2",
     "diff": "9.0.0",
-    "lucide-react": "1.70.0",
+    "lucide-react": "1.73.0",
     "openapi-fetch": "0.17.0",
     "openapi-react-query": "0.5.4",
     "react": "19.3.1",
@@ -37,7 +37,7 @@
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",
-    "@testing-library/user-event": "14.6.9",
+    "@testing-library/user-event": "14.6.10",
     "@types/node": "26.6.6",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
@@ -46,11 +46,11 @@
     "eslint-plugin-jsx-a11y": "6.10.2",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.7",
-    "jsdom": "31.0.0",
+    "jsdom": "31.0.1",
     "openapi-typescript": "7.13.0",
     "shadcn": "4.23.0",
     "tailwindcss": "4.3.5",
-    "vite": "8.3.7",
-    "vitest": "5.0.5"
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
   }
 }
